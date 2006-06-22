@@ -313,19 +313,6 @@ function biblio_filter_form() {
 
   print theme('page', form($output));
 } 
-function biblio_search_form() {
-  // print_r($_POST);
-  if ($_POST['op'] == 'Search') {
-    $edit = $_POST['edit']; 
-    // print_r($_POST);
-    biblio_search($edit['test']);
-  } else {
-    $form = form_textfield('Test', 'test', '', 10, 10);
-    $form .= form_submit('Search');
-    $group = form_group("test group", $form);
-    print theme('page', form($group));
-  } 
-} 
 /**
 * Implementation of hook_form().
 * 
