@@ -1,0 +1,59 @@
+# Table: 'biblio'
+# 
+CREATE TABLE `biblio` (
+  `nid` int(10) NOT NULL default '0',
+  `biblio_type` int(11) NOT NULL default '0',
+  `biblio_number` varchar(10) default NULL,
+  `biblio_other_number` varchar(24) default NULL,
+  `biblio_secondary_title` varchar(255) default NULL,
+  `biblio_tertiary_title` varchar(255) default NULL,
+  `biblio_authors` varchar(255) default NULL,
+  `biblio_secondary_authors` varchar(255) default NULL,
+  `biblio_tertiary_authors` varchar(255) default NULL,
+  `biblio_corp_author` varchar(255) default NULL,
+  `biblio_other_author_affiliations` varchar(255) default NULL,
+  `biblio_edition` varchar(255) default NULL,
+  `biblio_publisher` varchar(255) default NULL,
+  `biblio_place_published` varchar(255) default NULL,
+  `biblio_year` int(11) NOT NULL default '0',
+  `biblio_volume` varchar(10) default NULL,
+  `biblio_pages` varchar(24) default NULL,
+  `biblio_date` varchar(16) default NULL,
+  `biblio_isbn` varchar(24) default NULL,
+  `biblio_lang` varchar(24) default 'eng',
+  `biblio_abst_e` text,
+  `biblio_abst_f` text,
+  `biblio_full_text` tinyint(4) default '0',
+  `biblio_keywords` varchar(255) default NULL,
+  `biblio_url` varchar(255) default NULL,
+  `biblio_issue` varchar(10) default NULL,
+  `biblio_type_of_work` varchar(255) default NULL,
+  `biblio_accession_number` varchar(24) default NULL,
+  `biblio_call_number` varchar(24) default NULL,
+  `biblio_notes` text,
+  PRIMARY KEY  (`nid`),
+  KEY `type` (`biblio_type`),
+  KEY `year` (`biblio_year`),
+  FULLTEXT KEY `authors` (`biblio_authors`)
+) ENGINE=MyISAM; 
+
+# Table: 'biblio_types'
+# 
+CREATE TABLE `biblio_types` (
+  `tid` int(11) NOT NULL ,
+  `name` varchar(64) NOT NULL default '',
+  `description` varchar(255) default NULL,
+  PRIMARY KEY  (`tid`)
+) ENGINE=MyISAM; 
+
+INSERT INTO `biblio_types` (`tid`,`name`,`description`) VALUES 
+ (0,'Select Type...',NULL),
+ (1,'Journal Paper',NULL),
+ (2,'Refereed Conference Paper',NULL),
+ (3,'Non-Refereed Conference Paper',NULL),
+ (4,'Conference Poster Presentation',NULL),
+ (5,'Report',NULL),
+ (6,'Book or Book Chapter',NULL),
+ (7,'Thesis',NULL),
+ (8,'Patent',NULL),
+ (9,'Other Publication',NULL);
