@@ -222,7 +222,7 @@ function biblio_filter_clear() {
 function biblio_filter_form() {
   $op = $_POST['op'];
   $edit = $_POST['edit'];
-  $result = db_query('SELECT b.biblio_year, b.biblio_authors, t.name , t.tid FROM biblio as b  left join biblio_types as t on b.biblio_type = t.tid ORDER BY b.biblio_year DESC');
+  $result = db_query('SELECT b.biblio_year, b.biblio_authors, t.name , t.tid FROM {biblio} as b  left join {biblio_types} as t on b.biblio_type = t.tid ORDER BY b.biblio_year DESC');
   while ($option = db_fetch_object($result)) {
     $pub_years["$option->biblio_year"] = t("$option->biblio_year");
     $pub_type["$option->tid"] = t("$option->name");
@@ -541,7 +541,7 @@ function biblio_block($op = 'list', $delta = 0) {
     } else if ($op == 'view') {
       // Retrieve the latest pubs
       // $sql = "SELECT n.title FROM (node) n WHERE n.type = 'biblio' ORDER BY n.created DESC"
-      $result = db_query_range(db_rewrite_sql("SELECT n.title, n.nid FROM node AS n WHERE n.type = 'biblio' ORDER BY n.created DESC"), 0, 4);
+      $result = db_query_range(db_rewrite_sql("SELECT n.title, n.nid FROM {node} AS n WHERE n.type = 'biblio' ORDER BY n.created DESC"), 0, 4);
       if (db_num_rows($result)) {
         $block['subject'] = t('New Publications');
         $block['content'] .= '<div class="item-list"><ul>';
@@ -633,8 +633,8 @@ function theme_biblio_short($pub) {
   if ($pub->biblio_year) $output .= ', (' . $pub->biblio_year . ")\n";
   if ($pub->biblio_abst_e) $output .= l("Abstract", "node/$pub->nid") . "\n";
   if (variable_get('biblio_endnote_export', 0)) {
-    $output .= '<b>Export:</b> <a href="biblio/export/endnote/' . $pub->nid . '">Tagged</a>';
-    $output .= '<a href="biblio/export/endnote7XML/' . $pub->nid . '"> XML</a>';
+    $output .= '<em>Export: <a href="biblio/export/endnote/' . $pub->nid . '">Tagged</a>&nbsp';
+    $output .= '<a href="biblio/export/endnote7XML/' . $pub->nid . '">XML</a></em>';
   } 
   return $output;
 } 
@@ -697,10 +697,12 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
     $content .= "</div>\n";
   } //end while
   $content .= theme('pager', 0, variable_get('biblio_rowsperpage', 25), 0, $attrib);
-  if (!db_num_rows($result)) $content .= t("<H3>No items found</H3>");
-  if (strstr($content, "Filters:")) {
-    $content .= t('<a href="biblio/filter">Modify</a>
-                   or <a href="biblio/filter/clear">remove</a> your filters and try again.');
+  if (!db_num_rows($result)) {
+    $content .= t("<H3>No items found</H3>");
+    if (strstr($content, "Filters:")) {
+      $content .= t('<a href="biblio/filter">Modify</a>
+                     or <a href="biblio/filter/clear">remove</a> your filters and try again.');
+    }
   } 
   print theme('page', $content);
 } 
@@ -787,7 +789,7 @@ function biblio_db_search() {
       } 
     } 
   } 
-  $query = "SELECT * FROM node n left join biblio b  on n.nid=b.nid 
+  $query = "SELECT * FROM {node} n left join {biblio} b  on n.nid=b.nid 
             WHERE n.type='biblio' $limit $sortby ";
   db_escape_string($query);
   $_SESSION['last_biblio_query'] = $query;
@@ -799,11 +801,13 @@ function biblio_db_search() {
 
 function _endnote7_XML_export($nid = null) {
 if (extension_loaded('domxml')) {
-  if ($nid == null) {
+  if ($nid === null && isset($_SESSION['last_biblio_query']) && !empty($_SESSION['last_biblio_query']) ) {
     $query = $_SESSION['last_biblio_query'];
-  } else {
-    $query = "SELECT * FROM node n left join biblio b  on n.nid=b.nid 
+  } elseif (!empty($nid)) {
+    $query = "SELECT * FROM {node} n left join {biblio} b  on n.nid=b.nid 
                 WHERE n.nid=$nid ";
+  }else{
+    return;
   } 
 
   $result = db_query(db_rewrite_sql($query));
@@ -895,11 +899,13 @@ if (extension_loaded('domxml')) {
 } 
 
 function _endnote_tagged_export($nid = null) {
-  if ($nid == null) {
+  if ($nid === null && isset($_SESSION['last_biblio_query']) && !empty($_SESSION['last_biblio_query']) ) {
     $query = $_SESSION['last_biblio_query'];
-  } else {
-    $query = "SELECT * FROM node n left join biblio b  on n.nid=b.nid 
+  } elseif (!empty($nid)) {
+    $query = "SELECT * FROM {node} n left join {biblio} b  on n.nid=b.nid 
                 WHERE n.nid=$nid ";
+  }else{
+    return;
   } 
 
   $result = db_query(db_rewrite_sql($query));
