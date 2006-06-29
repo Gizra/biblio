@@ -1,5 +1,4 @@
 <?php 
-// $Id$
 /**
  * biblio.module for Drupal
  * Author:  Ron Jerome (ron.jerome@nrc.ca)
@@ -71,16 +70,10 @@ function biblio_help($section) {
   } 
 } 
 
-/**
-* Implementation of hook_node_name().
-* 
-* This is a required node hook. Since our module only defines one node
-* type, we won't implement hook_node_types(), and our hook_node_name()
-* implementation simply returns the translated name of the node type.
-*/
-function biblio_node_name($node) {
-  return t('biblio');
-} 
+function biblio_node_info() {
+  return array('biblio' => array('name' => t('biblio'), 'base' => 'biblio'));
+}
+
 
 /**
 * Implementation of hook_access().
@@ -141,16 +134,33 @@ function biblio_link($type, $node = 0, $main) {
 * Implementation of hook_settings().
 */
 function biblio_settings() {
-  $output .= form_checkbox(t('Normalize author names when displaying biblio records'),
-    'biblio_normalize', 1, variable_get('biblio_normalize', 0),
-    t('Tries (doesn\'t always work) to reformat author names such that thay are all in the 
-                             format lastname followed by initials, e.g. Smith, J.S. 
-                             (Note: This setting does not change the entry in the database, 
-                             only how it is formated after it is retrieved from the database,
-                             thus you can turn it on and off at will.)'));
-  $output .= form_checkbox(t('Allow the export of biblio search results in EndNote "Tagged" format'), 'biblio_endnote_export', 1, variable_get('biblio_endnote_export', 0), t('This adds an export link to the search result pages.'));
-  $output .= form_textfield(t('Number of results per page on biblio queries'), 'biblio_rowsperpage', variable_get('biblio_rowsperpage', 25), 6, 6, 'This limits the number of results that will be displayed on a page.  The appropriate "Next, Previous, etc. links will be added to the bottom of the page');
-  return $output;
+  $form['biblio_normalize'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Normalize author names when displaying biblio records'),
+    '#return_value' => 1,
+    '#default_value' => variable_get('biblio_normalize', 0),
+    '#description' => t('Tries (doesn\'t always work) to reformat author names such that thay are all in the 
+                               format lastname followed by initials, e.g. Smith, J.S. 
+                               (Note: This setting does not change the entry in the database, 
+                               only how it is formated after it is retrieved from the database,
+                               thus you can turn it on and off at will.)'),
+  );
+  $form['biblio_endnote_export'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Allow the export of biblio search results in EndNote "Tagged" format'),
+    '#return_value' => 1,
+    '#default_value' => variable_get('biblio_endnote_export', 0),
+    '#description' => t('This adds an export link to the search result pages.'),
+  );
+  $form['biblio_rowsperpage'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Number of results per page on biblio queries'),
+    '#default_value' => variable_get('biblio_rowsperpage', 25),
+    '#size' => 6,
+    '#maxlength' => 6,
+    '#description' => 'This sets the number of results that will be displayed per page. ',
+  );
+  return $form;
 } 
 
 /**
@@ -313,6 +323,18 @@ function biblio_filter_form() {
 
   print theme('page', form($output));
 } 
+function biblio_pre_render($form_id, &$form, $next_page = TRUE) {
+  global $form_values;
+print_r($form_values);
+echo "in biblio_pre_render";
+
+}
+function biblio_form_alter($form_id, &$form) {
+  global $form_values;
+print_r($form);
+echo "in biblio_form_alter";
+
+}
 
 /**
 * Implementation of hook_form().
@@ -322,14 +344,20 @@ function biblio_filter_form() {
 * that will be later placed inside the form.
 */
 function biblio_form(&$node, &$param) {
+  global $form_values;
+echo "in form";
   $output = '';
   $param['options'] = array("enctype" => "multipart/form-data"); 
-  // print_r($node);
-  // In order to be able to attach taxonomy terms to this node, we need
-  // to display the appropriate form elements.
-  if (function_exists('taxonomy_node_form')) {
-    $output .= implode('', taxonomy_node_form('biblio', $node));
-  } 
+  $form['title'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Title'),
+    '#required' => TRUE,
+    '#default_value' => $node->title,
+    '#size' => 60,
+    '#maxlenght' => 255,
+    '#weight' => -5
+  );
+
   // Now we define the form elements specific to our node type.
   // $output .= form_textarea(t('Body'), 'body', $node->body, 60, 20);
   // $output .= filter_form('format', $node->format);
@@ -338,90 +366,473 @@ function biblio_form(&$node, &$param) {
     $options["$option->tid"] = t("$option->name");
   } 
 
-  $output .= form_select(t('Publication Type'), 'biblio_type', $node->biblio_type, $options, null, 'onchange="document.getElementById(\'node-form\').submit()"', false, true);
-
+//  $output .= form_select(t('Publication Type'), 'biblio_type', $node->biblio_type, $options, null, 'onchange="document.getElementById(\'node-form\').submit()"', false, true);
+  $form['biblio_type'] = array(
+    '#type' => 'select',
+    '#title' => t('Publication Type'),
+    '#default_value' => $node->biblio_type,
+    '#options' => $options,
+    '#description' => null,
+    '#attributes' => array('onchange'=>'document.getElementById(\'node-form\').submit()'),
+    '#multiple' => false,
+    '#required' => true,
+  );
   if (isset($node->biblio_type) && $node->biblio_type > 0) {
-    $output .= form_textfield(t('Authors'), 'biblio_authors', $node->biblio_authors,
-      60, 128,
-      'Author names must be separated by semicolons', 0, true);
-    $output .= form_textfield(t('Year of Publication'), 'biblio_year', $node->biblio_year, 10, 10, '(YYYY)', 0, true);
-
+//    $output .= form_textfield(t('Authors'), 'biblio_authors', $node->biblio_authors,
+ //     60, 128,
+ //    'Author names must be separated by semicolons', 0, true);
+  $form['biblio_authors'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Authors'),
+    '#default_value' => $node->biblio_authors,
+    '#size' => 60,
+    '#maxlength' => 128,
+    '#description' => 'Author names must be separated by semicolons',
+    '#required' => true,
+  ); 
+//    $output .= form_textfield(t('Year of Publication'), 'biblio_year', $node->biblio_year, 10, 10, '(YYYY)', 0, true);
+  $form['biblio_year'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Year of Publication'),
+    '#default_value' => $node->biblio_year,
+    '#size' => 10,
+    '#maxlength' => 10,
+    '#description' => '(YYYY)',
+    '#required' => true,
+  );
+print_r($form);
     switch ($node->biblio_type) {
       case 1: // Journal Paper
-        $output .= form_textfield(t('Journal Title'), 'biblio_secondary_title', $node->biblio_secondary_title, 60, 255, 0, 0, true);
-        $output .= form_textfield(t('Volume'), 'biblio_volume', $node->biblio_volume, 60, 128);
-        $output .= form_textfield(t('Issue'), 'biblio_issue', $node->biblio_issue, 60, 128);
-        $output .= form_textfield(t('Pagination'), 'biblio_pages', $node->biblio_pages, 60, 128);
-        $output .= form_textfield(t('Journal Date'), 'biblio_date', $node->biblio_date, 60, 128, '(mm/yyyy)');
+        //$output .= form_textfield(t('Journal Title'), 'biblio_secondary_title', $node->biblio_secondary_title, 60, 255, 0, 0, true);
+        $form['biblio_secondary_title'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Journal Title'),
+          '#default_value' => $node->biblio_secondary_title,
+          '#size' => 60,
+          '#maxlength' => 255,
+          '#description' => '',
+          '#required' => true,
+        );      
+//        $output .= form_textfield(t('Volume'), 'biblio_volume', $node->biblio_volume, 60, 128);
+        $form['biblio_volume'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Volume'),
+          '#default_value' => $node->biblio_volume,
+          '#size' => 60,
+          '#maxlength' => 128,
+        );
+//        $output .= form_textfield(t('Issue'), 'biblio_issue', $node->biblio_issue, 60, 128);
+        $form['biblio_issue'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Issue'),
+          '#default_value' => $node->biblio_issue,
+          '#size' => 60,
+          '#maxlength' => 128,
+        );
+//        $output .= form_textfield(t('Pagination'), 'biblio_pages', $node->biblio_pages, 60, 128);
+        $form['biblio_pages'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Pagination'),
+          '#default_value' => $node->biblio_pages,
+          '#size' => 60,
+          '#maxlength' => 128,
+        );
+//        $output .= form_textfield(t('Journal Date'), 'biblio_date', $node->biblio_date, 60, 128, '(mm/yyyy)');
+        $form['biblio_date'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Journal Date'),
+          '#default_value' => $node->biblio_date,
+          '#size' => 60,
+          '#maxlength' => 128,
+          '#description' => '(mm/yyyy)',
+        );
         break;
       case 2: // Refereed Conference Paper
       case 3: // Non-Refereed Conference Paper
       case 4: // Non-Refereed Conference Poster
-        $output .= form_textfield(t('Conference Name'), 'biblio_secondary_title', $node->biblio_secondary_title, 60, 255, 0, 0, true);
-        $output .= form_textfield(t('Conference Location'), 'biblio_place_published', $node->biblio_place_published, 60, 128);
-        $output .= form_textfield(t('Publisher'), 'biblio_publisher', $node->biblio_publisher, 60, 128);
-        $output .= form_textfield(t('Volume'), 'biblio_volume', $node->biblio_volume, 60, 128);
-        $output .= form_textfield(t('Pagination'), 'biblio_pages', $node->biblio_pages, 60, 128);
-        $output .= form_textfield(t('Series Title'), 'biblio_tertiary_title', $node->biblio_tertiary_title, 60, 128);
-        $output .= form_textfield(t('Series Editor'), 'biblio_tertiary_authors', $node->biblio_tertiary_authors, 60, 128);
-        $output .= form_textfield(t('Edition'), 'biblio_edition', $node->biblio_edition, 60, 128);
-        $output .= form_textfield(t('Conference Start Date'), 'biblio_date', $node->biblio_date, 60, 128, '(dd/mm/yyyy)');
+//        $output .= form_textfield(t('Conference Name'), 'biblio_secondary_title', $node->biblio_secondary_title, 60, 255, 0, 0, true);
+        $form['biblio_secondary_title'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Conference Name'),
+          '#default_value' => $node->biblio_secondary_title,
+          '#size' => 60,
+          '#maxlength' => 255,
+          '#description' => '',
+          '#required' => true,
+        );
+//        $output .= form_textfield(t('Conference Location'), 'biblio_place_published', $node->biblio_place_published, 60, 128);
+        $form['biblio_place_published'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Conference Location'),
+          '#default_value' => $node->biblio_place_published,
+          '#size' => 60,
+          '#maxlength' => 128,
+        );
+//        $output .= form_textfield(t('Publisher'), 'biblio_publisher', $node->biblio_publisher, 60, 128);
+        $form['biblio_publisher'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Publisher'),
+          '#default_value' => $node->biblio_publisher,
+          '#size' => 60,
+          '#maxlength' => 128,
+        );
+//        $output .= form_textfield(t('Volume'), 'biblio_volume', $node->biblio_volume, 60, 128);
+        $form['biblio_volume'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Volume'),
+          '#default_value' => $node->biblio_volume,
+          '#size' => 60,
+          '#maxlength' => 128,
+        );
+//        $output .= form_textfield(t('Pagination'), 'biblio_pages', $node->biblio_pages, 60, 128);
+        $form['biblio_pages'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Pagination'),
+          '#default_value' => $node->biblio_pages,
+          '#size' => 60,
+          '#maxlength' => 128,
+        );
+//        $output .= form_textfield(t('Series Title'), 'biblio_tertiary_title', $node->biblio_tertiary_title, 60, 128);
+        $form['biblio_tertiary_title'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Series Title'),
+          '#default_value' => $node->biblio_tertiary_title,
+          '#size' => 60,
+          '#maxlength' => 128,
+        );
+//        $output .= form_textfield(t('Series Editor'), 'biblio_tertiary_authors', $node->biblio_tertiary_authors, 60, 128);
+        $form['biblio_tertiary_authors'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Series Editor'),
+          '#default_value' => $node->biblio_tertiary_authors,
+          '#size' => 60,
+          '#maxlength' => 128,
+        );
+//        $output .= form_textfield(t('Edition'), 'biblio_edition', $node->biblio_edition, 60, 128);
+        $form['biblio_edition'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Edition'),
+          '#default_value' => $node->biblio_edition,
+          '#size' => 60,
+          '#maxlength' => 128,
+        );
+//        $output .= form_textfield(t('Conference Start Date'), 'biblio_date', $node->biblio_date, 60, 128, '(dd/mm/yyyy)');
+        $form['biblio_date'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Conference Start Date'),
+          '#default_value' => $node->biblio_date,
+          '#size' => 60,
+          '#maxlength' => 128,
+          '#description' => '(dd/mm/yyyy)',
+        );
+
         break;
       case 5: // Report
-        $output .= form_textfield(t('Prepared for / Presented at'), 'biblio_secondary_title', $node->biblio_secondary_title, 60, 255, 0, 0, true);
-        $output .= form_textfield(t('City'), 'biblio_place_published', $node->biblio_place_published, 60, 128);
-        $output .= form_textfield(t('Institution'), 'biblio_publisher', $node->biblio_publisher, 60, 128);
-        $output .= form_textfield(t('Pages'), 'biblio_pages', $node->biblio_pages, 60, 128);
-        $output .= form_textfield(t('Date'), 'biblio_date', $node->biblio_date, 60, 128, '(dd/mm/yyyy)');
-
+//        $output .= form_textfield(t('Prepared for / Presented at'), 'biblio_secondary_title', $node->biblio_secondary_title, 60, 255, 0, 0, true);
+        $form['biblio_secondary_title'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Prepared for / Presented at'),
+          '#default_value' => $node->biblio_secondary_title,
+          '#size' => 60,
+          '#maxlength' => 255,
+          '#description' => 0,
+          '#attributes' => 0,
+          '#required' => true,
+        );
+//        $output .= form_textfield(t('City'), 'biblio_place_published', $node->biblio_place_published, 60, 128);
+        $form['biblio_place_published'] = array(
+          '#type' => 'textfield',
+          '#title' => t('City'),
+          '#default_value' => $node->biblio_place_published,
+          '#size' => 60,
+          '#maxlength' => 128,
+        );
+//        $output .= form_textfield(t('Institution'), 'biblio_publisher', $node->biblio_publisher, 60, 128);
+        $form['biblio_publisher'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Institution'),
+          '#default_value' => $node->biblio_publisher,
+          '#size' => 60,
+          '#maxlength' => 128,
+        );
+//        $output .= form_textfield(t('Pages'), 'biblio_pages', $node->biblio_pages, 60, 128);
+        $form['biblio_pages'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Pages'),
+          '#default_value' => $node->biblio_pages,
+          '#size' => 60,
+          '#maxlength' => 128,
+        );
+//        $output .= form_textfield(t('Date'), 'biblio_date', $node->biblio_date, 60, 128, '(dd/mm/yyyy)');
+        $form['biblio_date'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Date'),
+          '#default_value' => $node->biblio_date,
+          '#size' => 60,
+          '#maxlength' => 128,
+          '#description' => '(dd/mm/yyyy)',
+        );
         break;
       case 6: // Book or Book Chapter
-        $output .= form_textfield(t('Editor'), 'biblio_secondary_authors', $node->biblio_secondary_authors, 60, 128);
-        $output .= form_textfield(t('Book Title'), 'biblio_secondary_title', $node->biblio_secondary_title, 60, 255, 0, 0, true);
-        $output .= form_textfield(t('Pages'), 'biblio_pages', $node->biblio_pages, 60, 128);
-        $output .= form_textfield(t('Series Title'), 'biblio_tertiary_title', $node->biblio_tertiary_title, 60, 128);
-        $output .= form_textfield(t('Series Editor'), 'biblio_tertiary_authors', $node->biblio_tertiary_authors, 60, 128);
-        $output .= form_textfield(t('Edition'), 'biblio_edition', $node->biblio_edition, 60, 128);
-        $output .= form_textfield(t('Publisher'), 'biblio_publisher', $node->biblio_publisher, 60, 128);
-        $output .= form_textfield(t('Place of Publication'), 'biblio_place_published', $node->biblio_place_published, 60, 128);
+//        $output .= form_textfield(t('Editor'), 'biblio_secondary_authors', $node->biblio_secondary_authors, 60, 128);
+        $form['biblio_secondary_authors'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Editor'),
+          '#default_value' => $node->biblio_secondary_authors,
+          '#size' => 60,
+          '#maxlength' => 128,
+        );
+//        $output .= form_textfield(t('Book Title'), 'biblio_secondary_title', $node->biblio_secondary_title, 60, 255, 0, 0, true);
+        $form['biblio_secondary_title'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Book Title'),
+          '#default_value' => $node->biblio_secondary_title,
+          '#size' => 60,
+          '#maxlength' => 255,
+          '#description' => 0,
+          '#required' => true,
+        );
+//        $output .= form_textfield(t('Pages'), 'biblio_pages', $node->biblio_pages, 60, 128);
+        $form['biblio_pages'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Pages'),
+          '#default_value' => $node->biblio_pages,
+          '#size' => 60,
+          '#maxlength' => 128,
+        );
+//        $output .= form_textfield(t('Series Title'), 'biblio_tertiary_title', $node->biblio_tertiary_title, 60, 128);
+        $form['biblio_tertiary_title'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Series Title'),
+          '#default_value' => $node->biblio_tertiary_title,
+          '#size' => 60,
+          '#maxlength' => 128,
+        );
+//        $output .= form_textfield(t('Series Editor'), 'biblio_tertiary_authors', $node->biblio_tertiary_authors, 60, 128);
+        $form['biblio_tertiary_authors'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Series Editor'),
+          '#default_value' => $node->biblio_tertiary_authors,
+          '#size' => 60,
+          '#maxlength' => 128,
+        );
+//        $output .= form_textfield(t('Edition'), 'biblio_edition', $node->biblio_edition, 60, 128);
+        $form['biblio_edition'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Edition'),
+          '#default_value' => $node->biblio_edition,
+          '#size' => 60,
+          '#maxlength' => 128,
+        );
+//        $output .= form_textfield(t('Publisher'), 'biblio_publisher', $node->biblio_publisher, 60, 128);
+        $form['biblio_publisher'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Publisher'),
+          '#default_value' => $node->biblio_publisher,
+          '#size' => 60,
+          '#maxlength' => 128,
+        );
+//        $output .= form_textfield(t('Place of Publication'), 'biblio_place_published', $node->biblio_place_published, 60, 128);
+        $form['biblio_place_published'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Place of Publication'),
+          '#default_value' => $node->biblio_place_published,
+          '#size' => 60,
+          '#maxlength' => 128,
+        );
         break;
       case 7: // Thesis
-        $output .= form_textfield(t('Academic Department'), 'biblio_secondary_title', $node->biblio_secondary_title, 60, 255, 0, 0, true);
-        $output .= form_textfield(t('City'), 'biblio_place_published', $node->biblio_place_published, 60, 128);
-        $output .= form_textfield(t('University'), 'biblio_publisher', $node->biblio_publisher, 60, 128);
-        $output .= form_textfield(t('Degree'), 'biblio_pages', $node->biblio_type_of_work, 24, 24);
-        $output .= form_textfield(t('Number of Pages'), 'biblio_pages', $node->biblio_pages, 60, 128);
-
+//        $output .= form_textfield(t('Academic Department'), 'biblio_secondary_title', $node->biblio_secondary_title, 60, 255, 0, 0, true);
+        $form['biblio_secondary_title'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Academic Department'),
+          '#default_value' => $node->biblio_secondary_title,
+          '#size' => 60,
+          '#maxlength' => 255,
+          '#description' => 0,
+          '#attributes' => 0,
+          '#required' => true,
+        );
+//        $output .= form_textfield(t('City'), 'biblio_place_published', $node->biblio_place_published, 60, 128);
+        $form['biblio_place_published'] = array(
+          '#type' => 'textfield',
+          '#title' => t('City'),
+          '#default_value' => $node->biblio_place_published,
+          '#size' => 60,
+          '#maxlength' => 128,
+        );
+//        $output .= form_textfield(t('University'), 'biblio_publisher', $node->biblio_publisher, 60, 128);
+        $form['biblio_publisher'] = array(
+          '#type' => 'textfield',
+          '#title' => t('University'),
+          '#default_value' => $node->biblio_publisher,
+          '#size' => 60,
+          '#maxlength' => 128,
+        );
+//        $output .= form_textfield(t('Degree'), 'biblio_pages', $node->biblio_type_of_work, 24, 24);
+        $form['biblio_type_of_work'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Degree'),
+          '#default_value' => $node->biblio_type_of_work,
+          '#size' => 24,
+          '#maxlength' => 24,
+        );
+//        $output .= form_textfield(t('Number of Pages'), 'biblio_pages', $node->biblio_pages, 60, 128);
+        $form['biblio_pages'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Number of Pages'),
+          '#default_value' => $node->biblio_pages,
+          '#size' => 60,
+          '#maxlength' => 128,
+        );
         break;
       case 8: // Patent
-        $output .= form_textfield(t('Published Source'), 'biblio_secondary_title', $node->biblio_secondary_title, 60, 255, 0, 0, true);
-        $output .= form_textfield(t('Country'), 'biblio_place_published', $node->biblio_place_published, 60, 128);
-        $output .= form_textfield(t('Assignee'), 'biblio_publisher', $node->biblio_publisher, 60, 128);
-        $output .= form_textfield(t('Volume'), 'biblio_volume', $node->biblio_volume, 60, 128);
-        $output .= form_textfield(t('Issue'), 'biblio_issue', $node->biblio_issue, 60, 128);
-        $output .= form_textfield(t('Pages'), 'biblio_pages', $node->biblio_pages, 60, 128);
-        $output .= form_textfield(t('Date'), 'biblio_date', $node->biblio_date, 60, 128, '(dd/mm/yyyy)');
-
+//        $output .= form_textfield(t('Published Source'), 'biblio_secondary_title', $node->biblio_secondary_title, 60, 255, 0, 0, true);
+        $form['biblio_secondary_title'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Published Source'),
+          '#default_value' => $node->biblio_secondary_title,
+          '#size' => 60,
+          '#maxlength' => 255,
+          '#description' => 0,
+          '#attributes' => 0,
+          '#required' => true,
+        );
+//        $output .= form_textfield(t('Country'), 'biblio_place_published', $node->biblio_place_published, 60, 128);
+        $form['biblio_place_published'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Country'),
+          '#default_value' => $node->biblio_place_published,
+          '#size' => 60,
+          '#maxlength' => 128,
+        );
+//        $output .= form_textfield(t('Assignee'), 'biblio_publisher', $node->biblio_publisher, 60, 128);
+        $form['biblio_publisher'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Assignee'),
+          '#default_value' => $node->biblio_publisher,
+          '#size' => 60,
+          '#maxlength' => 128,
+        );
+//        $output .= form_textfield(t('Volume'), 'biblio_volume', $node->biblio_volume, 60, 128);
+        $form['biblio_volume'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Volume'),
+          '#default_value' => $node->biblio_volume,
+          '#size' => 60,
+          '#maxlength' => 128,
+        );
+//        $output .= form_textfield(t('Issue'), 'biblio_issue', $node->biblio_issue, 60, 128);
+        $form['biblio_issue'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Issue'),
+          '#default_value' => $node->biblio_issue,
+          '#size' => 60,
+          '#maxlength' => 128,
+        );
+//        $output .= form_textfield(t('Pages'), 'biblio_pages', $node->biblio_pages, 60, 128);
+        $form['biblio_pages'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Pages'),
+          '#default_value' => $node->biblio_pages,
+          '#size' => 60,
+          '#maxlength' => 128,
+        );
+//        $output .= form_textfield(t('Date'), 'biblio_date', $node->biblio_date, 60, 128, '(dd/mm/yyyy)');
+        $form['biblio_date'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Date'),
+          '#default_value' => $node->biblio_date,
+          '#size' => 60,
+          '#maxlength' => 128,
+          '#description' => '(dd/mm/yyyy)',
+        );
         break;
       case 9: // Other
-        $output .= form_textfield(t('Prepared for / Presented at'), 'biblio_secondary_title', $node->biblio_secondary_title, 60, 255, 0, 0, true);
-
+//        $output .= form_textfield(t('Prepared for / Presented at'), 'biblio_secondary_title', $node->biblio_secondary_title, 60, 255, 0, 0, true);
+        $form['biblio_secondary_title'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Prepared for / Presented at'),
+          '#default_value' => $node->biblio_secondary_title,
+          '#size' => 60,
+          '#maxlength' => 255,
+          '#description' => 0,
+          '#attributes' => 0,
+          '#required' => true,
+        );
         break;
     } //end switch  
     // now output the fields common to all types...
-    $output .= form_textfield(t('Key Words'), 'biblio_keywords', $node->biblio_keywords, 60, 255);
-    $output .= form_textarea(t('Abstract'), 'biblio_abst_e', $node->biblio_abst_e, 60, 15);
-    $output .= form_textfield(t('ISBN/ISSN Number'), 'biblio_isbn', $node->biblio_isbn, 24, 24);
-    $output .= form_textfield(t('Call Number'), 'biblio_call_number', $node->biblio_call_number, 24, 24);
-    $output .= form_textfield(t('Accession Number'), 'biblio_accession_number', $node->biblio_accession_number, 24, 24);
-    $output .= form_textfield(t('Other Numbers'), 'biblio_other_number', $node->biblio_other_number, 24, 24);
-    $output .= form_textfield(t('URL'), 'biblio_url', $node->biblio_url, 120, 120);
-    $output .= form_textfield(t('Notes'), 'biblio_notes', $node->biblio_notes, 120, 120);
-    $output .= "<div id='message'><div class='messages error'><B><blink>NOTE:</blink> Do not attach copies of papers for which you do not <u>own</u> the copyright!</b></div></div>"; 
+//    $output .= form_textfield(t('Key Words'), 'biblio_keywords', $node->biblio_keywords, 60, 255);
+    $form['biblio_keywords'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Key Words'),
+      '#default_value' => $node->biblio_keywords,
+      '#size' => 60,
+      '#maxlength' => 255,
+    );
+//    $output .= form_textarea(t('Abstract'), 'biblio_abst_e', $node->biblio_abst_e, 60, 15);
+    $form['biblio_abst_e'] = array(
+      '#type' => 'textarea',
+      '#title' => t('Abstract'),
+      '#default_value' => $node->biblio_abst_e,
+      '#cols' => 60,
+      '#rows' => 15,
+    );
+//    $output .= form_textfield(t('ISBN/ISSN Number'), 'biblio_isbn', $node->biblio_isbn, 24, 24);
+    $form['biblio_isbn'] = array(
+      '#type' => 'textfield',
+      '#title' => t('ISBN/ISSN Number'),
+      '#default_value' => $node->biblio_isbn,
+      '#size' => 24,
+      '#maxlength' => 24,
+    );
+//    $output .= form_textfield(t('Call Number'), 'biblio_call_number', $node->biblio_call_number, 24, 24);
+    $form['biblio_call_number'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Call Number'),
+      '#default_value' => $node->biblio_call_number,
+      '#size' => 24,
+      '#maxlength' => 24,
+    );
+//    $output .= form_textfield(t('Accession Number'), 'biblio_accession_number', $node->biblio_accession_number, 24, 24);
+    $form['biblio_accession_number'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Accession Number'),
+      '#default_value' => $node->biblio_accession_number,
+      '#size' => 24,
+      '#maxlength' => 24,
+    );
+//    $output .= form_textfield(t('Other Numbers'), 'biblio_other_number', $node->biblio_other_number, 24, 24);
+    $form['biblio_other_number'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Other Numbers'),
+      '#default_value' => $node->biblio_other_number,
+      '#size' => 24,
+      '#maxlength' => 24,
+    );
+//    $output .= form_textfield(t('URL'), 'biblio_url', $node->biblio_url, 120, 120);
+    $form['biblio_url'] = array(
+      '#type' => 'textfield',
+      '#title' => t('URL'),
+      '#default_value' => $node->biblio_url,
+      '#size' => 120,
+      '#maxlength' => 120,
+    );
+//    $output .= form_textfield(t('Notes'), 'biblio_notes', $node->biblio_notes, 120, 120);
+    $form['biblio_notes'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Notes'),
+      '#default_value' => $node->biblio_notes,
+      '#size' => 120,
+      '#maxlength' => 120,
+    );
+
+//    $output .= "<div id='message'><div class='messages error'><B><blink>NOTE:</blink> Do not attach copies of papers for which you do not <u>own</u> the copyright!</b></div></div>"; 
     // $output .= form_item('Note: please do not attach copies of papers for which you do not own the copyright');
     // $output .= form_file('Associated File', 'biblio_file', 30, 'You may attach a file of any format (Word, PDF, etc.) to this entry') ;
   } //endif
-  return $output;
+  return $form;
 } 
 
 /**
@@ -431,6 +842,7 @@ function biblio_form(&$node, &$param) {
 * Errors should be signaled with form_set_error().
 */
 function biblio_validate(&$node) {
+//print_r($node);
   if ($node->biblio_type == 0) {
     form_set_error('biblio_type', t('You must select the type of publication'));
     return;
@@ -1001,26 +1413,42 @@ function biblio_import_form() {
   if (biblio_access('import', $node)) { // && !user_access('administer nodes')) {
     $op = $_POST['op'];
     $filetype = $_POST['edit']['filetype'];
-    $attributes = array("enctype" => "multipart/form-data");
+    $edit = $_POST['edit'];
+
     if($op == Import && $filetype == '') drupal_set_message("You must select a file type",'error');
     if ($op == Import && $filetype) {
-      $import = file_check_upload('import');
+      $import = file_check_upload('file_upload');
       if ($import) {
         $import = file_save_upload($import);
         drupal_set_message("File was successfully uploaded", 'status');
-        if ($filetype == 'tagged') _endnote_tagged_import($import->filepath);
-        if ($filetype == 'xml') _endnote7_XML_import($import->filepath);
+        if ($filetype == 'tagged') $content = _endnote_tagged_import($import->filepath);
+        if ($filetype == 'xml') $content = _endnote7_XML_import($import->filepath);
         file_delete($import->filepath);
       } else {
         drupal_set_message("File was NOT successfully uploaded", 'error');
       } 
-      print theme('page', "");
+      return $content;
     } else {
-      $form = "";
-      $form .= form_file(t('Import Endnote file'), "import", 60); 
-      $form .= form_radios(t('File Type'), 'filetype', $edit['filetype'], array('tagged' => t('EndNote Tagged') , 'xml'=>t('EndNote 7 XML')));
-      $form .= form_button(t('Import'));
-      print theme('page', form($form, 'post', null, $attributes));
+      $form['#attributes']['enctype'] = 'multipart/form-data';
+      $form["file_upload"] = array(
+        '#type' => 'file',
+        '#title' => t('Import Endnote file'),
+        '#default_value' => $edit['file_upload'],
+        '#size' => 60,
+      );
+      $form['filetype'] = array(
+        '#type' => 'radios',
+        '#title' => t('File Type'),
+        '#default_value' => $edit['filetype'],
+        '#options' => array('tagged' => t('EndNote Tagged') , 'xml'=>t('EndNote 7 XML')),
+      );
+      $form['button'] = array(
+        '#type' => 'button',
+        '#title' => t('Import'),
+        '#value' => t('Import')
+      );
+      return drupal_get_form('biblio_import_form' ,$form);
+      //print theme('page', form($form, 'post', null, $attributes));
     } 
   } else {
     drupal_set_message("You are not authorized to access the biblio import page", 'error');
@@ -1203,16 +1631,17 @@ function _endnote_tagged_import($filename = null) {
     } // end if($handle) 
 
   } // end if ($filename 
-  
-  if (function_exists('node_save')) {
+  $content = null;
+  if (function_exists('node_save')) {  
     foreach ($node_array as $node) {
-      $nodeid = node_save((object)$node);
-      if ($nodeid) { 
-         $content .= t('Successfully imported node' . l("$nodeid", "node/$nodeid")) . '<br>';
+      $node_obj = (object)$node;
+      $nodeid = node_save($node_obj);
+      if ($node_obj->nid) { 
+         $content .= t('Successfully imported node' . l("$node_obj->nid", "node/$node_obj->nid")) . '<br>';
       }
     } 
-    print theme('page', $content);
   } 
+  return $content;
 } 
 
 function _endnote7_XML_import($filename = null) {
@@ -1333,20 +1762,21 @@ if (extension_loaded('domxml')) {
     if ($elements = $rec->get_elements_by_tagname('DATE')) 
       $node_array[$node_id]['biblio_date'] = (string)$elements[0]->get_content();
   } 
+  
+  $content = null;
   if (function_exists('node_save')) {
-    $content = "";
     foreach ($node_array as $node) {
-      $node_id = node_save((object)$node);
-      if ($node_id) { 
-         $content .= t('Successfully imported node' . l("$node_id", "node/$node_id")) . '<br>';
+      $node_obj = (object)$node;
+      $nodeid = node_save($node_obj);
+      if ($node_obj->nid) { 
+         $content .= t('Successfully imported node' . l("$node_obj->nid", "node/$node_obj->nid")) . '<br>';
       }
     } 
-    if (!$content) drupal_set_message("No records were successfully imported", 'error');
-
-    print theme('page', $content);
-  } 
+  }
+  return $content;   
  }else{
-   print theme("page","DOMXML php extension is not loaded, so you cannot import files in XML format");
+   $msg = "DOMXML php extension is not loaded, so you cannot import files in XML format";
+   return $msg;
 }
 
 } 
