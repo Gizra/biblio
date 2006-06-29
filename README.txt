@@ -1,7 +1,8 @@
 
-biblio.module README.txt
-v0.1  Ron Jerome
-Released under the GPL license
+                           biblio.module
+
+Author:  Ron Jerome (ron.jerome@nrc.ca)
+Released under the GPL
 
 
 Description:
