@@ -160,6 +160,23 @@ function biblio_settings() {
     '#maxlength' => 6,
     '#description' => 'This sets the number of results that will be displayed per page. ',
   );
+  $form['sort'] = array(
+  '#type' => 'fieldset',
+  '#title' => t('Initial Defaults'),
+  '#description' => t('You can set the default sorting and ordering for the /biblio page here.'),
+  );
+  $form['sort']['biblio_sort'] = array(
+  '#type' => 'radios',
+  '#title' => t('Sort by'),
+  '#default_value' => variable_get('biblio_sort', 'year'),
+  '#options' => array('year'=>t('Year'), 'type'=>t('Type'),'title'=>t('Title')),
+  );
+  $form['sort']['biblio_order'] = array(
+  '#type' => 'radios',
+  '#title' => t('Order'),
+  '#default_value' => variable_get('biblio_order', 'DESC'),
+  '#options' => array('DESC'=>t('Descending'), 'ASC'=>t('Ascending')),
+  );
   return $form;
 } 
 
@@ -179,7 +196,7 @@ function biblio_settings() {
 *   
 */
 function biblio_menu($may_cache) {
-  drupal_set_html_head('<style type="text/css">@import url(' . drupal_get_path('module', 'biblio') . '/biblio.css);</style>');
+//  drupal_set_html_head('<style type="text/css">@import url(' . drupal_get_path('module', 'biblio') . '/biblio.css);</style>');
 
   $items = array();
 
@@ -199,15 +216,24 @@ function biblio_menu($may_cache) {
     $items[] = array('path' => 'admin/settings/biblio/types', 'title' => t('Types'),
       'callback' => 'biblio_form_types',
       'type' => MENU_LOCAL_TASK, 'weight' => -9);  
+    $items[] = array('path' => 'admin/settings/biblio/types/edit', 'title' => t(''),
+      'callback' => 'biblio_form_types_edit',
+      'type' => MENU_CALLBACK );  
+    $items[] = array('path' => 'admin/settings/biblio/types/add', 'title' => t(''),
+      'callback' => 'biblio_form_types_add',
+      'type' => MENU_CALLBACK );  
+    $items[] = array('path' => 'admin/settings/biblio/types/delete', 'title' => t(''),
+      'callback' => 'biblio_form_types_delete',
+      'type' => MENU_CALLBACK );  
     $items[] = array('path' => 'admin/settings/biblio/types/new', 'title' => t('New'),
       'callback' => 'biblio_form_types',
       'type' => MENU_DEFAULT_LOCAL_TASK, 'weight' => -9);  
-    $result = db_query('SELECT * FROM {biblio_types} as t where t.tid > 0  ORDER BY t.tid ASC');
-    while ($type = db_fetch_object($result)) {
-      $items[] = array('path' => 'admin/settings/biblio/types/'.$type->tid, 'title' => $type->name,
+//    $result = db_query('SELECT * FROM {biblio_types} as t where t.tid > 0  ORDER BY t.tid ASC');
+//    while ($type = db_fetch_object($result)) {
+//      $items[] = array('path' => 'admin/settings/biblio/types/'.$type->tid, 'title' => $type->name,
      // 'callback' => 'biblio_form_types',
-      'type' => MENU_LOCAL_TASK, 'weight' => $type->tid);  
-    }
+//      'type' => MENU_LOCAL_TASK, 'weight' => $type->tid);  
+//    }
     $items[] = array('path' => 'biblio/list', 'title' => t('List'),
       'type' => MENU_DEFAULT_LOCAL_TASK, 'weight' => -10);
     $items[] = array('path' => 'biblio/filter', 'title' => t('Filter'),
@@ -237,7 +263,60 @@ function biblio_menu($may_cache) {
 
   return $items;
 } 
+function biblio_form_types_add(){
+    $form['name'] = array('#type'=>'textfield','#title'=>'Type Name:','#size'=>20,'#maxlength'=>64);
+    $form['description'] = array('#type'=>'textfield','#title'=>'Description:','#size'=>20,'#maxlength'=>255);
+    $form[] = array('#type' => 'submit', '#value' => t('Create New Type'));
+    return drupal_get_form('biblio_form_types_add',$form);
+}
+function biblio_form_types_add_submit($form_id, $edit){
+   $query = "INSERT INTO {biblio_types} (`name`,`description`) VALUES ('%s', '%s')";
+    db_query($query,$edit['name'],$edit['description']);
+    drupal_goto('admin/settings/biblio/types');
+}
+function biblio_form_types_delete(){
+ $args = func_get_args();
+ if ($args[0] > 0 && is_numeric($args[0]) ) {
+    $result = db_query('SELECT t.* FROM {biblio_types} as t WHERE t.tid = '.$args[0]);
+    $row = db_fetch_array($result);
+    $result = db_query('SELECT b.* FROM {biblio} as b WHERE b.biblio_type = '.$row['tid']);
+    if ($num_rows = db_num_rows($result)){
+      $existing_msg = 'There are '.$num_rows.' publications of this type, they will be given a temporary id of -'.$row['tid'];
+    }
+    
+    $form['tid'] = array('#type' => 'value', '#value' => $row['tid']);
+    $output = confirm_form('biblio_form_types_delete', $form,
+           t('Are you sure you want to delete %title? '.$existing_msg, array('%title' => theme('placeholder', $row['name']))),
+           $_GET['destination'] ? $_GET['destination'] : 'admin/settings/biblio/types', t('This action cannot be undone.'),
+           t('Delete'), t('Cancel')  );
+  
+    return $output;                
+  }else{
+    drupal_goto('admin/settings/biblio/types');  
+  }
+}
+function biblio_form_types_delete_submit($form_id, $edit){
+print_r($edit);
+  if ($form_id = "biblio_form_types_delete" ){
+    db_query('DELETE FROM {biblio_types} WHERE tid = %d', $edit['tid']);
+  }   
+    drupal_goto('admin/settings/biblio/types');  
+}
 function biblio_form_types(){
+
+  $result = db_query('SELECT t.* FROM {biblio_types as t WHERE t.tid > 0}');
+  $rows[] = array('','Default',l('edit', 'admin/settings/biblio/types/edit'),'');
+
+  while ($row = db_fetch_object($result)) {
+    $rows[] = array($row->tid,$row->name,l('edit', 'admin/settings/biblio/types/edit/'. $row->tid),l('delete', 'admin/settings/biblio/types/delete/'. $row->tid));
+  } 
+  $header =array('Type Id','Type Name', array('data' => t('Operations'), 'colspan' => '2'));
+  $output  = theme('table',$header,$rows);
+  $output .= '<p>'.l('Add New Type','admin/settings/biblio/types/add').'</a>';
+  return $output;
+  
+}
+function biblio_form_types_edit(){
 
   // first get all of the field info
   $result = db_query('SELECT * FROM {biblio_fields} as b  ORDER BY b.weight ASC');
@@ -245,7 +324,11 @@ function biblio_form_types(){
     $fields[$row['fid']] = $row;
   }
   if ($arg_list = func_get_args()){// show an existing type  
-    // now get any type specific customizations 
+   $result = db_query('SELECT t.* FROM {biblio_types as t WHERE t.tid = '.$arg_list[0].'}');
+   $row = db_fetch_array($result);
+   $form['type_name'] =array('#type'=>'hidden','#title'=>'tid','#value'=>$row['name']);
+  
+   // now get any type specific customizations 
     $result = db_query('SELECT * FROM {biblio_type_details} as b where tid='.$arg_list[0].'  ORDER BY b.weight ASC');
     while ($row = db_fetch_array($result)){
       $type_fields[$row['fid']] = $row;
@@ -256,18 +339,18 @@ function biblio_form_types(){
       $fields[$key] = array_merge($fields[$key],$value);
     } 
     }
-    $form['tid'] =array('#type'=>'hidden','#title'=>'tid','#value'=>$arg_list[0]);
+    $form['tid'] =array('#type'=>'value','#value'=>$arg_list[0]);
   } 
 
   uasort($fields, "_biblio_form_sort"); // resort the fields since the weight may have changed
 
 
       $options['common'] = '';
-      $options['manditory'] = '';
+      $options['required'] = '';
       $options['visible'] = '';
      foreach($fields as $key=>$fld){
       if ($fld['common']) $def_values[$fld['name']][] = 'common';
-      if ($fld['manditory']) $def_values[$fld['name']][] = 'manditory';
+      if ($fld['required']) $def_values[$fld['name']][] = 'required';
       if ($fld['visible']) $def_values[$fld['name']][] = 'visible';
       $form['name'][$fld['name']] = array('#type'=>'markup', '#value'=>$fld['name'],'#weight'=>$fld['weight']);
       $form['types'][$fld['name']] = array('#tree'=>1);
@@ -280,10 +363,11 @@ function biblio_form_types(){
   
    $form['submit'] = array('#type' => 'submit', '#value' => t('Save Type Info'));
   
-  return drupal_get_form('biblio_type_form',$form);
+  return drupal_get_form('biblio_type_form_edit',$form);
 }
-function theme_biblio_type_form($form){
+function theme_biblio_type_form_edit($form){
 //print_r($form);
+  drupal_set_title($form['type_name']?$form['type_name']['#value']:"Default");
   $rows = array();
   foreach(element_children($form['name']) as $fld){
     $row = array();
@@ -299,22 +383,23 @@ function theme_biblio_type_form($form){
       $rows[] = $row;
   }
   $header =array('Field Name','Default Title','Hint','Common','Required','Visible','Weight');
-  $output = theme('table',$header,$rows);
+  $output .= '<p>';
+  $output .= theme('table',$header,$rows);
   $output .= form_render($form);
   return $output;
   
 }
-function biblio_type_form_submit($form_id, $edit) {
+function biblio_type_form_edit_submit($form_id, $edit) {
 
-  $query = "title = '%s', weight = %d, common = %d, manditory = %d, visible = %d";
+  $query = "title = '%s', weight = %d, common = %d, required = %d, visible = %d";
 
   foreach ($edit as $key=>$value){
     $common = ($value['checkboxes']['common'])?TRUE:FALSE;
-    $manditory = ($value['checkboxes']['manditory'])?TRUE:FALSE;
+    $required = ($value['checkboxes']['required'])?TRUE:FALSE;
     $visible = ($value['checkboxes']['visible'])?TRUE:FALSE;
     if(strstr($key,"biblio")){
       db_query("UPDATE {biblio_fields} SET $query WHERE name = '%s'", 
-      $value['title'],$value['weight'],$common,$manditory,$visible,$key);
+      $value['title'],$value['weight'],$common,$required,$visible,$key);
       //print_r(array_merge($value,array($key)));
     }
  }    
@@ -431,36 +516,52 @@ function biblio_filter_form() {
 
   print theme('page', form($output));
 } 
+function theme_biblio_node_form($form){
+
+}
+
 function biblio_pre_render($form_id, &$form, $next_page = TRUE) {
   global $form_values;
-//print_r($form_values);
-//echo "Form";
-echo "in biblio_pre_render\n\n<br>";
-  if ($form_id == 'biblio_node_form' && $form_values['biblio_type']) {
-    switch ($form_values['biblio_type']){
-    case 1:
-    case 2:
-    case 3:
-    case 4:
-    case 5:
-    case 6:
-    case 7:
-    case 8:
-    case 9:
-    
+    if ($form_id == 'biblio_node_form'&& isset($form_values['biblio_type']) && $form_values['biblio_type'] >0 ){
+
+    $form['title']['#type'] = 'textfield';
+
+    $result = db_query('SELECT * FROM {biblio_fields} as b  ORDER BY b.weight ASC');
+    while ($row = db_fetch_array($result)){
+      $fields[$row['fid']] = $row;
     }
-    print_r($form_values);
-  }
+ 
+    $result = db_query('SELECT * FROM {biblio_type_details} as b where tid='.$form_values['biblio_type'].'  ORDER BY b.weight ASC');
+    while ($row = db_fetch_array($result)){
+      $type_fields[$row['fid']] = $row;
+    }
+ 
+    if(count($type_fields)){
+    // now merge the customizations with the main field array
+      foreach($type_fields as $key=>$value){
+        $fields[$key] = array_merge($fields[$key],$value);
+      } 
+    }
 
+    foreach ($fields as $key=>$fld){
+      $type = ($fld['visible'] || $fld['common'])?$fld['type']:'value'; //determine which fields will be visible and get their type
+  
+      $form[$fld['name']] = array_merge($form[$fld['name']],array(
+                                          '#default_value' => $node->$fld['name'],
+                                          '#type' => $type,
+                                          '#title' => t($fld['title']),
+                                          '#required' => $fld['required'],
+                                          '#size' => $fld['size'],
+                                          '#maxlength' => $fld['maxsize'],
+                                          '#weight' => $fld['weight']/10,
+                                          '#description' => $fld['hint'])
+                                        ); // end array_merge
+
+    } //end foreach
+
+  }//endif ($form_id == 'biblio_node_form...  
 }
-function biblio_form_alter($form_id, &$form) {
-  global $form_values;
-//echo "in biblio_form_alter\n\n<br>";
-//echo "Form ID: ".$form_id."<br";
-if ($form_id == 'biblio_node_form') print_r($form_values);
 
-
-}
 
 /**
 * Implementation of hook_form().
@@ -471,288 +572,58 @@ if ($form_id == 'biblio_node_form') print_r($form_values);
 */
 function biblio_form(&$node, &$param) {
   global $form_values;
-echo "in biblio_form\n\n<br>";
-print_r($node);
   $output = '';
   $param['options'] = array("enctype" => "multipart/form-data"); 
 
   $form['#pre_render'] = array('biblio_pre_render');
 
-  $form['title'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Title'),
-    '#required' => TRUE,
-    '#default_value' => $node->title,
-    '#size' => 60,
-    '#maxlenght' => 255,
-    '#weight' => -5
-  );
-
-  // Now we define the form elements specific to our node type.
-  // $output .= form_textarea(t('Body'), 'body', $node->body, 60, 20);
-  // $output .= filter_form('format', $node->format);
   $result = db_query('SELECT t.* FROM {biblio_types as t}');
   while ($option = db_fetch_object($result)) {
     $options["$option->tid"] = t("$option->name");
   } 
 
-//  $output .= form_select(t('Publication Type'), 'biblio_type', $node->biblio_type, $options, null, 'onchange="document.getElementById(\'node-form\').submit()"', false, true);
   $form['biblio_type'] = array(
     '#type' => 'select', 
     '#title' => t('Publication Type'),
     '#default_value' => $node->biblio_type,
     '#options' => $options,
     '#description' => null,
+    '#weight' => -5,
     '#attributes' => array('onchange'=>'document.getElementById(\'node-form\').submit()'),
     '#multiple' => false, '#required' => true);
-  if (isset($node->biblio_type) && $node->biblio_type > 0) {
-//    $output .= form_textfield(t('Authors'), 'biblio_authors', $node->biblio_authors,
- //     60, 128,
- //    'Author names must be separated by semicolons', 0, true);
-  $form['biblio_authors'] = array('#type' => 'textfield', '#title' => t('Authors'), '#default_value' => $node->biblio_authors, '#size' => 60, '#maxlength' => 128, '#description' => 'Author names must be separated by semicolons', '#required' => true); 
-//    $output .= form_textfield(t('Year of Publication'), 'biblio_year', $node->biblio_year, 10, 10, '(YYYY)', 0, true);
-  $form['biblio_year'] = array('#type' => 'textfield', '#title' => t('Year of Publication'), '#default_value' => $node->biblio_year, '#size' => 10, '#maxlength' => 10, '#description' => '(YYYY)', '#required' => true );
-//print_r($form);
-    switch ($node->biblio_type) {
-      case 1: // Journal Paper
-        //$output .= form_textfield(t('Journal Title'), 'biblio_secondary_title', $node->biblio_secondary_title, 60, 255, 0, 0, true);
-        $form['biblio_secondary_title'] = array(
-          '#default_value' => $node->biblio_secondary_title, 
-          '#type' => 'textfield',
-          '#title' => t('Journal Title'),
-          '#size' => 60, '#maxlength' => 255, '#description' => '', '#required' => true );      
-//        $output .= form_textfield(t('Volume'), 'biblio_volume', $node->biblio_volume, 60, 128);
-        $form['biblio_volume'] = array(
-          '#default_value' => $node->biblio_volume,
-          '#type' => 'textfield',
-          '#title' => t('Volume'),
-          '#size' => 60,
-          '#maxlength' => 128,
-        );
-//        $output .= form_textfield(t('Issue'), 'biblio_issue', $node->biblio_issue, 60, 128);
-        $form['biblio_issue'] = array(
-          '#default_value' => $node->biblio_issue,
-          '#type' => 'textfield',
-          '#title' => t('Issue'),
-          '#size' => 60,
-          '#maxlength' => 128,
-        );
-//        $output .= form_textfield(t('Pagination'), 'biblio_pages', $node->biblio_pages, 60, 128);
-        $form['biblio_pages'] = array(
-          '#default_value' => $node->biblio_pages,
-          '#type' => 'textfield',
-          '#title' => t('Pagination'),
-          '#size' => 60,
-          '#maxlength' => 128,
-        );
-//        $output .= form_textfield(t('Journal Date'), 'biblio_date', $node->biblio_date, 60, 128, '(mm/yyyy)');
-        $form['biblio_date'] = array(
-          '#default_value' => $node->biblio_date,
-          '#type' => 'textfield',
-          '#title' => t('Journal Date'),
-          '#size' => 60,
-          '#maxlength' => 128,
-          '#description' => '(mm/yyyy)',
-        );
-        break;
-      case 2: // Refereed Conference Paper
-      case 3: // Non-Refereed Conference Paper
-      case 4: // Non-Refereed Conference Poster
-//        $output .= form_textfield(t('Conference Name'), 'biblio_secondary_title', $node->biblio_secondary_title, 60, 255, 0, 0, true);
-        $form['biblio_secondary_title'] = array(
-          '#type' => 'textfield',
-          '#title' => t('Conference Name'),
-          '#default_value' => $node->biblio_secondary_title,
-          '#size' => 60,
-          '#maxlength' => 255,
-          '#description' => '',
-          '#required' => true,
-        );
-//        $output .= form_textfield(t('Conference Location'), 'biblio_place_published', $node->biblio_place_published, 60, 128);
-        $form['biblio_place_published'] = array(
-          '#type' => 'textfield',
-          '#title' => t('Conference Location'),
-          '#default_value' => $node->biblio_place_published,
-          '#size' => 60,
-          '#maxlength' => 128,
-        );
-//        $output .= form_textfield(t('Publisher'), 'biblio_publisher', $node->biblio_publisher, 60, 128);
-        $form['biblio_publisher'] = array(
-          '#type' => 'textfield',
-          '#title' => t('Publisher'),
-          '#default_value' => $node->biblio_publisher,
-          '#size' => 60,
-          '#maxlength' => 128,
-        );
-//        $output .= form_textfield(t('Volume'), 'biblio_volume', $node->biblio_volume, 60, 128);
-        $form['biblio_volume'] = array(
-          '#type' => 'textfield',
-          '#title' => t('Volume'),
-          '#default_value' => $node->biblio_volume,
-          '#size' => 60,
-          '#maxlength' => 128,
-        );
-//        $output .= form_textfield(t('Pagination'), 'biblio_pages', $node->biblio_pages, 60, 128);
-        $form['biblio_pages'] = array(
-          '#type' => 'textfield',
-          '#title' => t('Pagination'),
-          '#default_value' => $node->biblio_pages,
-          '#size' => 60,
-          '#maxlength' => 128,
-        );
-//        $output .= form_textfield(t('Series Title'), 'biblio_tertiary_title', $node->biblio_tertiary_title, 60, 128);
-        $form['biblio_tertiary_title'] = array(
-          '#type' => 'textfield',
-          '#title' => t('Series Title'),
-          '#default_value' => $node->biblio_tertiary_title,
-          '#size' => 60,
-          '#maxlength' => 128,
-        );
-//        $output .= form_textfield(t('Series Editor'), 'biblio_tertiary_authors', $node->biblio_tertiary_authors, 60, 128);
-        $form['biblio_tertiary_authors'] = array(
-          '#type' => 'textfield',
-          '#title' => t('Series Editor'),
-          '#default_value' => $node->biblio_tertiary_authors,
-          '#size' => 60,
-          '#maxlength' => 128,
-        );
-//        $output .= form_textfield(t('Edition'), 'biblio_edition', $node->biblio_edition, 60, 128);
-        $form['biblio_edition'] = array(
-          '#type' => 'textfield',
-          '#title' => t('Edition'),
-          '#default_value' => $node->biblio_edition,
-          '#size' => 60,
-          '#maxlength' => 128,
-        );
-//        $output .= form_textfield(t('Conference Start Date'), 'biblio_date', $node->biblio_date, 60, 128, '(dd/mm/yyyy)');
-        $form['biblio_date'] = array(
-          '#type' => 'textfield',
-          '#title' => t('Conference Start Date'),
-          '#default_value' => $node->biblio_date,
-          '#size' => 60,
-          '#maxlength' => 128,
-          '#description' => '(dd/mm/yyyy)',
+
+  $form['title']= array( // this will be set to textfield type in pre_render once the pub type is set.
+    '#type' => 'value',
+    '#title' => t('Title'),
+    '#required' => TRUE,
+    '#default_value' => $node->title,
+    '#size' => 60,
+    '#maxlenght' => 255,
+    '#weight' => -4
+  );
+
+    // Build the field array used to make the form
+    $result = db_query('SELECT * FROM {biblio_fields} as b  ORDER BY b.weight ASC');
+    while ($row = db_fetch_array($result)){
+      $fields[$row['fid']] = $row;
+    }
+    
+    // Now set all the fields to "value" type so the will not be visible, and 
+    // then in biblio_pre_render the correct type will be set.
+    foreach ($fields as $key=>$fld){  
+          $form[$fld['name']] = array(
+          '#default_value' => $node->$fld['name'],
+          '#type' => 'value',
+          '#title' => t($fld['title']),
+          '#size' => $fld['size'],
+          '#required' => $fld['required'],
+          '#maxlength' => $fld['maxsize'],
+          '#weight' => $fld['weight']/10,
+          '#description' => $fld['hint']
         );
 
-        break;
-      case 5: // Report
-//        $output .= form_textfield(t('Prepared for / Presented at'), 'biblio_secondary_title', $node->biblio_secondary_title, 60, 255, 0, 0, true);
-        $form['biblio_secondary_title'] = array(
-          '#type' => 'textfield',
-          '#title' => t('Prepared for / Presented at'),
-          '#default_value' => $node->biblio_secondary_title,
-          '#size' => 60,
-          '#maxlength' => 255,
-          '#description' => '',
-          '#required' => true,
-        );
-//        $output .= form_textfield(t('City'), 'biblio_place_published', $node->biblio_place_published, 60, 128);
-        $form['biblio_place_published'] = array(
-          '#type' => 'textfield',
-          '#title' => t('City'),
-          '#default_value' => $node->biblio_place_published,
-          '#size' => 60,
-          '#maxlength' => 128,
-        );
-//        $output .= form_textfield(t('Institution'), 'biblio_publisher', $node->biblio_publisher, 60, 128);
-        $form['biblio_publisher'] = array(
-          '#type' => 'textfield',
-          '#title' => t('Institution'),
-          '#default_value' => $node->biblio_publisher,
-          '#size' => 60,
-          '#maxlength' => 128,
-        );
-//        $output .= form_textfield(t('Pages'), 'biblio_pages', $node->biblio_pages, 60, 128);
-        $form['biblio_pages'] = array(
-          '#type' => 'textfield',
-          '#title' => t('Pages'),
-          '#default_value' => $node->biblio_pages,
-          '#size' => 60,
-          '#maxlength' => 128,
-        );
-//        $output .= form_textfield(t('Date'), 'biblio_date', $node->biblio_date, 60, 128, '(dd/mm/yyyy)');
-        $form['biblio_date'] = array(
-          '#type' => 'textfield',
-          '#title' => t('Date'),
-          '#default_value' => $node->biblio_date,
-          '#size' => 60,
-          '#maxlength' => 128,
-          '#description' => '(dd/mm/yyyy)',
-        );
-        break;
-      case 6: // Book or Book Chapter
-//        $output .= form_textfield(t('Editor'), 'biblio_secondary_authors', $node->biblio_secondary_authors, 60, 128);
-        $form['biblio_secondary_authors'] = array('#type' => 'textfield', '#title' => t('Editor'), '#default_value' => $node->biblio_secondary_authors, '#size' => 60, '#maxlength' => 128 );
-//        $output .= form_textfield(t('Book Title'), 'biblio_secondary_title', $node->biblio_secondary_title, 60, 255, 0, 0, true);
-        $form['biblio_secondary_title'] = array('#type' => 'textfield', '#title' => t('Book Title'), '#default_value' => $node->biblio_secondary_title, '#size' => 60, '#maxlength' => 255, '#description' => '', '#required' => true );
-//        $output .= form_textfield(t('Pages'), 'biblio_pages', $node->biblio_pages, 60, 128);
-        $form['biblio_pages'] = array('#type' => 'textfield', '#title' => t('Pages'), '#default_value' => $node->biblio_pages, '#size' => 60, '#maxlength' => 128 );
-//        $output .= form_textfield(t('Series Title'), 'biblio_tertiary_title', $node->biblio_tertiary_title, 60, 128);
-        $form['biblio_tertiary_title'] = array('#type' => 'textfield', '#title' => t('Series Title'), '#default_value' => $node->biblio_tertiary_title, '#size' => 60, '#maxlength' => 128 );
-//        $output .= form_textfield(t('Series Editor'), 'biblio_tertiary_authors', $node->biblio_tertiary_authors, 60, 128);
-        $form['biblio_tertiary_authors'] = array('#type' => 'textfield', '#title' => t('Series Editor'), '#default_value' => $node->biblio_tertiary_authors, '#size' => 60, '#maxlength' => 128 );
-//        $output .= form_textfield(t('Edition'), 'biblio_edition', $node->biblio_edition, 60, 128);
-        $form['biblio_edition'] = array('#type' => 'textfield', '#title' => t('Edition'), '#default_value' => $node->biblio_edition, '#size' => 60, '#maxlength' => 128 );
-//        $output .= form_textfield(t('Publisher'), 'biblio_publisher', $node->biblio_publisher, 60, 128);
-        $form['biblio_publisher'] = array('#type' => 'textfield', '#title' => t('Publisher'), '#default_value' => $node->biblio_publisher, '#size' => 60, '#maxlength' => 128);
-//        $output .= form_textfield(t('Place of Publication'), 'biblio_place_published', $node->biblio_place_published, 60, 128);
-        $form['biblio_place_published'] = array('#type' => 'textfield', '#title' => t('Place of Publication'), '#default_value' => $node->biblio_place_published, '#size' => 60, '#maxlength' => 12);
-        break;
-      case 7: // Thesis
-//        $output .= form_textfield(t('Academic Department'), 'biblio_secondary_title', $node->biblio_secondary_title, 60, 255, 0, 0, true);
-        $form['biblio_secondary_title'] = array('#type' => 'textfield', '#title' => t('Academic Department'), '#default_value' => $node->biblio_secondary_title, '#size' => 60, '#maxlength' => 255, '#description' => '', '#required' => true);
-//        $output .= form_textfield(t('City'), 'biblio_place_published', $node->biblio_place_published, 60, 128);
-        $form['biblio_place_published'] = array('#type' => 'textfield', '#title' => t('City'), '#default_value' => $node->biblio_place_published, '#size' => 60, '#maxlength' => 128);
-//        $output .= form_textfield(t('University'), 'biblio_publisher', $node->biblio_publisher, 60, 128);
-        $form['biblio_publisher'] = array('#type' => 'textfield', '#title' => t('University'), '#default_value' => $node->biblio_publisher, '#size' => 60, '#maxlength' => 128 );
-//        $output .= form_textfield(t('Degree'), 'biblio_pages', $node->biblio_type_of_work, 24, 24);
-        $form['biblio_type_of_work'] = array('#type' => 'textfield', '#title' => t('Degree'), '#default_value' => $node->biblio_type_of_work, '#size' => 24, '#maxlength' => 24);
-//        $output .= form_textfield(t('Number of Pages'), 'biblio_pages', $node->biblio_pages, 60, 128);
-        $form['biblio_pages'] = array('#type' => 'textfield', '#title' => t('Number of Pages'), '#default_value' => $node->biblio_pages, '#size' => 60, '#maxlength' => 128);
-        break;
-      case 8: // Patent
-//        $output .= form_textfield(t('Published Source'), 'biblio_secondary_title', $node->biblio_secondary_title, 60, 255, 0, 0, true);
-        $form['biblio_secondary_title'] = array('#type' => 'textfield', '#title' => t('Published Source'), '#default_value' => $node->biblio_secondary_title, '#size' => 60, '#maxlength' => 255, '#description' => '', '#required' => true );
-//        $output .= form_textfield(t('Country'), 'biblio_place_published', $node->biblio_place_published, 60, 128);
-        $form['biblio_place_published'] = array('#type' => 'textfield', '#title' => t('Country'), '#default_value' => $node->biblio_place_published, '#size' => 60, '#maxlength' => 128);
-//        $output .= form_textfield(t('Assignee'), 'biblio_publisher', $node->biblio_publisher, 60, 128);
-        $form['biblio_publisher'] = array('#type' => 'textfield', '#title' => t('Assignee'), '#default_value' => $node->biblio_publisher, '#size' => 60, '#maxlength' => 128);
-//        $output .= form_textfield(t('Volume'), 'biblio_volume', $node->biblio_volume, 60, 128);
-        $form['biblio_volume'] = array('#type' => 'textfield', '#title' => t('Volume'), '#default_value' => $node->biblio_volume, '#size' => 60, '#maxlength' => 128);
-//        $output .= form_textfield(t('Issue'), 'biblio_issue', $node->biblio_issue, 60, 128);
-        $form['biblio_issue'] = array('#type' => 'textfield', '#title' => t('Issue'), '#default_value' => $node->biblio_issue, '#size' => 60, '#maxlength' => 128);
-//        $output .= form_textfield(t('Pages'), 'biblio_pages', $node->biblio_pages, 60, 128);
-        $form['biblio_pages'] = array('#type' => 'textfield', '#title' => t('Pages'), '#default_value' => $node->biblio_pages, '#size' => 60, '#maxlength' => 128);
-//        $output .= form_textfield(t('Date'), 'biblio_date', $node->biblio_date, 60, 128, '(dd/mm/yyyy)');
-        $form['biblio_date'] = array('#type' => 'textfield', '#title' => t('Date'), '#default_value' => $node->biblio_date, '#size' => 60, '#maxlength' => 128, '#description' => '(dd/mm/yyyy)');
-        break;
-      case 9: // Other
-//        $output .= form_textfield(t('Prepared for / Presented at'), 'biblio_secondary_title', $node->biblio_secondary_title, 60, 255, 0, 0, true);
-        $form['biblio_secondary_title'] = array('#type' => 'textfield', '#title' => t('Prepared for / Presented at'), '#default_value' => $node->biblio_secondary_title, '#size' => 60, '#maxlength' => 255, '#description' => '', '#required' => true);
-        break;
-    } //end switch  
-    // now output the fields common to all types...
-//    $output .= form_textfield(t('Key Words'), 'biblio_keywords', $node->biblio_keywords, 60, 255);
-    $form['biblio_keywords'] = array('#type' => 'textfield', '#title' => t('Key Words'), '#default_value' => $node->biblio_keywords, '#size' => 60, '#maxlength' => 255);
-//    $output .= form_textarea(t('Abstract'), 'biblio_abst_e', $node->biblio_abst_e, 60, 15);
-    $form['biblio_abst_e'] = array('#type' => 'textarea', '#title' => t('Abstract'), '#default_value' => $node->biblio_abst_e, '#cols' => 60, '#rows' => 15);
-//    $output .= form_textfield(t('ISBN/ISSN Number'), 'biblio_isbn', $node->biblio_isbn, 24, 24);
-    $form['biblio_isbn'] = array('#type' => 'textfield', '#title' => t('ISBN/ISSN Number'), '#default_value' => $node->biblio_isbn, '#size' => 24, '#maxlength' => 24);
-//    $output .= form_textfield(t('Call Number'), 'biblio_call_number', $node->biblio_call_number, 24, 24);
-    $form['biblio_call_number'] = array('#type' => 'textfield', '#title' => t('Call Number'), '#default_value' => $node->biblio_call_number, '#size' => 24, '#maxlength' => 24);
-//    $output .= form_textfield(t('Accession Number'), 'biblio_accession_number', $node->biblio_accession_number, 24, 24);
-    $form['biblio_accession_number'] = array('#type' => 'textfield', '#title' => t('Accession Number'),  '#default_value' => $node->biblio_accession_number, '#size' => 24, '#maxlength' => 24 );
-//    $output .= form_textfield(t('Other Numbers'), 'biblio_other_number', $node->biblio_other_number, 24, 24);
-    $form['biblio_other_number'] = array('#type' => 'textfield', '#title' => t('Other Numbers'), '#default_value' => $node->biblio_other_number, '#size' => 24, '#maxlength' => 24 );
-//    $output .= form_textfield(t('URL'), 'biblio_url', $node->biblio_url, 120, 120);
-    $form['biblio_url'] = array('#type' => 'textfield', '#title' => t('URL'), '#default_value' => $node->biblio_url, '#size' => 120, '#maxlength' => 120);
-//    $output .= form_textfield(t('Notes'), 'biblio_notes', $node->biblio_notes, 120, 120);
-    $form['biblio_notes'] = array('#type' => 'textfield','#title' => t('Notes'), '#default_value' => $node->biblio_notes, '#size' => 120, '#maxlength' => 120);
+    }
 
-//    $output .= "<div id='message'><div class='messages error'><B><blink>NOTE:</blink> Do not attach copies of papers for which you do not <u>own</u> the copyright!</b></div></div>"; 
-    // $output .= form_item('Note: please do not attach copies of papers for which you do not own the copyright');
-    // $output .= form_file('Associated File', 'biblio_file', 30, 'You may attach a file of any format (Word, PDF, etc.) to this entry') ;
-  } //endif
   return $form;
 } 
 
@@ -764,7 +635,7 @@ print_r($node);
 */
 function biblio_validate(&$node) {
 //print_r($node);
-echo "in biblio_validate\n\n<br>";
+//echo "in biblio_validate\n\n<br>";
 
   if ($node->biblio_type == 0) {
     form_set_error('biblio_type', t('You must select the type of publication'));
@@ -1043,7 +914,7 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
 } 
 
 function biblio_db_search() {
-  $pager_attrib = array("sort" => 'year', 'order' => 'DESC');
+  $pager_attrib = array("sort" => variable_get('biblio_sort', 'year'), 'order' => variable_get('biblio_order', 'DESC'));
   $limits = null;
 
   $params = array('sort', 'order');
