@@ -196,7 +196,7 @@ function biblio_settings() {
 *   
 */
 function biblio_menu($may_cache) {
-//  drupal_set_html_head('<style type="text/css">@import url(' . drupal_get_path('module', 'biblio') . '/biblio.css);</style>');
+  drupal_set_html_head('<style type="text/css">@import url(' . drupal_get_path('module', 'biblio') . '/biblio.css);</style>');
 
   $items = array();
 
@@ -441,9 +441,8 @@ function biblio_filter_clear() {
   $_SESSION['biblio_filter'] = array();
   drupal_goto('biblio/');
 } 
-function biblio_filter_form() {
-  $op = $_POST['op'];
-  $edit = $_POST['edit'];
+
+function biblio_filters(){
   $result = db_query('SELECT b.biblio_year, b.biblio_authors, t.name , t.tid FROM {biblio} as b  left join {biblio_types} as t on b.biblio_type = t.tid ORDER BY b.biblio_year DESC');
   while ($option = db_fetch_object($result)) {
     $pub_years["$option->biblio_year"] = t("$option->biblio_year");
@@ -469,72 +468,111 @@ function biblio_filter_form() {
       'options' => $pub_type),
     'year' => array('title' => t('Year'),
       'options' => $pub_years)); 
-  // Initialize/reset filters
-  if (!isset($_SESSION['biblio_filter']) || !is_array($_SESSION['biblio_filter']) || $op == t('Clear All')) {
-    $_SESSION['biblio_filter'] = array();
-  } 
+  
+  return $filters;
+}
+
+function biblio_filter_form() {
   $session = &$_SESSION['biblio_filter'];
-  $filter = $edit['filter'];
-  if (($op == t('Filter') || $op == t('Refine')) && isset($filter)) {
-    if (isset($filters[$filter]['options'][$edit[$filter]])) {
-      $session[] = array($filter, $edit[$filter]);
-    } 
-  } 
-  if ($op == t('Undo')) {
-    array_pop($session);
-  } 
-  if ($op) { 
-    drupal_goto('biblio');
-  } 
+  $session = is_array($session) ? $session : array();
+  $filters = biblio_filters();
 
-  if ($op != '') {
-    drupal_goto('biblio/filter');
-  } 
 
-  /*
-  ** Form
-  */
-  $output .= '<div id="biblio-filter">'; 
-  // Existing filters
-  $form = '<ul>';
-  $i = 0;
+   $i = 0;
+  $form['filters'] = array('#type' => 'fieldset',
+    '#title' => t('Show only items where'),
+    '#theme' => 'biblio_filters',
+  );
   foreach ($session as $filter) {
     list($type, $value) = $filter;
-    $params = array('%a' => '<strong>' . $filters[$type]['title'] . '</strong>', '%b' => '<strong>' . $filters[$type]['options'][$value] . '</strong>');
-    $form .= '<li>' . ($i++ ? t('<em>and</em> where <strong>%a</strong> is <strong>%b</strong>', $params) : t('<strong>%a</strong> is <strong>%b</strong>', $params)) . '</li>';
-  } 
+    if ($type == 'category') {
+      // Load term name from DB rather than search and parse options array.
+      $value = module_invoke('taxonomy', 'get_term', $value);
+      $value = $value->name;
+    }
+    else {
+      $value = $filters[$type]['options'][$value];
+    }
+    $string = ($i++ ? '<em>and</em> where <strong>%a</strong> is <strong>%b</strong>' : '<strong>%a</strong> is <strong>%b</strong>');
+    $form['filters']['current'][] = array('#value' => t($string, array('%a' => $filters[$type]['title'] , '%b' => $value)));
+  }
 
-  $values = '';
-  $options = array();
-  foreach ($filters as $key => $value) {
-    $options[$key] = $value['title'];
-    $b .= form_select('', $key, 1, $filters[$key]['options']);
-  } 
+  foreach ($filters as $key => $filter) {
+    $names[$key] = $filter['title'];
+    $form['filters']['status'][$key] = array('#type' => 'select', '#options' => $filter['options']);
+  }
 
-  $buttons = '';
-  if (count($options)) {
-    $form .= '<li><dl class="biblio_multiselect">';
-    $a = '';
-    foreach ($options as $key => $value) {
-      $a .= form_radio($value, 'filter', $key);
-    } 
-    if (!$i) {
-      $form .= t('<dd class="a">%a</dd> <dt>is</dt> <dd class="b">%b</dd>', array('%a' => $a, '%b' => $b));
-    } else {
-      $form .= t('<dt><em>and</em> where</dt> <dd class="a">%a</dd> <dt>is</dt> <dd class="b">%b</dd>', array('%a' => $a, '%b' => $b));
-    } 
-    $form .= '</dl>';
-    $buttons = form_submit(count($session) ? t('Refine') : t('Filter'));
-  } 
+  $form['filters']['filter'] = array('#type' => 'radios', '#options' => $names, '#default_value' => 'status');
+  $form['filters']['buttons']['submit'] = array('#type' => 'submit', '#value' => (count($session) ? t('Refine') : t('Filter')));
   if (count($session)) {
-    $buttons .= form_submit(t('Undo')) . form_submit(t('Clear All'));
-  } 
-  $form .= '<div class="container-inline" id="biblio-buttons">' . $buttons . '</div>';
-  $form .= '</li></ul><br class="clear" />';
-  $output .= form_group(t('Show only items where'), $form) . '</div>';
+    $form['filters']['buttons']['undo'] = array('#type' => 'submit', '#value' => t('Undo'));
+    $form['filters']['buttons']['reset'] = array('#type' => 'submit', '#value' => t('Reset'));
+  }
 
-  print theme('page', form($output));
+  return drupal_get_form('biblio_filter_form', $form);
+}
+function theme_biblio_filters(&$form) {
+  $output .= '<ul>';
+  if (sizeof($form['current'])) {
+    foreach (element_children($form['current']) as $key) {
+      $output .= '<li>' . form_render($form['current'][$key]) . '</li>';
+    }
+  }
+
+  $output .= '<li><dl class="bibliomultiselect">' . (sizeof($form['current']) ? '<dt><em>'. t('and') .'</em> '. t('where') .'</dt>' : '') . '<dd class="a">';
+  foreach (element_children($form['filter']) as $key) {
+    $output .= form_render($form['filter'][$key]);
+  }
+  $output .= '</dd>';
+
+  $output .= '<dt>'. t('is') .'</dt>' . '<dd class="b">';
+
+  foreach (element_children($form['status']) as $key) {
+    $output .= form_render($form['status'][$key]);
+  }
+  $output .= '</dd>';
+
+  $output .= '</dl>';
+  $output .= '<div class="container-inline" id="biblio-buttons">'. form_render($form['buttons']) .'</div>';
+  $output .= '</li></ul><br class="clear" />';
+
+  return $output;
+}
+
+function biblio_filter_form_submit() {
+  global $form_values;
+  $op = $_POST['op'];
+  $filters = node_filters();
+  switch ($op) {
+    case t('Filter'):
+    case t('Refine'):
+      if (isset($form_values['filter'])) {
+        $filter = $form_values['filter'];
+
+        // Flatten the options array to accommodate hierarchical/nested options.
+        $flat_options = form_options_flatten($filters[$filter]['options']);
+
+        if (isset($flat_options[$form_values[$filter]])) {
+          $_SESSION['biblio_filter'][] = array($filter, $form_values[$filter]);
+        }
+      }
+      break;
+    case t('Undo'):
+      array_pop($_SESSION['biblio_filter']);
+      break;
+    case t('Reset'):
+      $_SESSION['biblio_filter'] = array();
+      break;
+  }
 } 
+function theme_biblio_filter_form(&$form) {
+  $output .= '<div id="biblio-admin-filter">';
+  $output .= form_render($form['filters']);
+  $output .= '</div>';
+  $output .= form_render($form);
+  return $output;
+}
+
 function theme_biblio_node_form($form){
 
 }
