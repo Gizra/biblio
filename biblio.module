@@ -296,7 +296,7 @@ function biblio_form_types_delete(){
   }
 }
 function biblio_form_types_delete_submit($form_id, $edit){
-print_r($edit);
+
   if ($form_id = "biblio_form_types_delete" ){
     db_query('DELETE FROM {biblio_types} WHERE tid = %d', $edit['tid']);
   }   
@@ -324,12 +324,13 @@ function biblio_form_types_edit(){
     $fields[$row['fid']] = $row;
   }
   if ($arg_list = func_get_args()){// show an existing type  
-   $result = db_query('SELECT t.* FROM {biblio_types as t WHERE t.tid = '.$arg_list[0].'}');
-   $row = db_fetch_array($result);
-   $form['type_name'] =array('#type'=>'hidden','#title'=>'tid','#value'=>$row['name']);
+    $tid = $arg_list[0];
+    $result = db_query('SELECT t.* FROM {biblio_types} as t WHERE t.tid = '.$tid);
+    $row = db_fetch_array($result);
+    $form['type_name'] =array('#type'=>'value','#title'=>'tid','#value'=>$row['name']);
   
    // now get any type specific customizations 
-    $result = db_query('SELECT * FROM {biblio_type_details} as b where tid='.$arg_list[0].'  ORDER BY b.weight ASC');
+    $result = db_query('SELECT * FROM {biblio_type_details} as b where tid='.$tid.'  ORDER BY b.weight ASC');
     while ($row = db_fetch_array($result)){
       $type_fields[$row['fid']] = $row;
     }
@@ -339,26 +340,26 @@ function biblio_form_types_edit(){
       $fields[$key] = array_merge($fields[$key],$value);
     } 
     }
-    $form['tid'] =array('#type'=>'value','#value'=>$arg_list[0]);
+    $form['tid'] =array('#type'=>'value','#value'=>$tid);
   } 
 
   uasort($fields, "_biblio_form_sort"); // resort the fields since the weight may have changed
 
+  $vis_comm = $tid?'visible':'common';
+  $options["$vis_comm"] = '';
+  $options['required'] = '';
 
-      $options['common'] = '';
-      $options['required'] = '';
-      $options['visible'] = '';
-     foreach($fields as $key=>$fld){
-      if ($fld['common']) $def_values[$fld['name']][] = 'common';
-      if ($fld['required']) $def_values[$fld['name']][] = 'required';
-      if ($fld['visible']) $def_values[$fld['name']][] = 'visible';
-      $form['name'][$fld['name']] = array('#type'=>'markup', '#value'=>$fld['name'],'#weight'=>$fld['weight']);
-      $form['types'][$fld['name']] = array('#tree'=>1);
-      $form['types'][$fld['name']]['title'] = array('#type'=>'textfield','#default_value' => $fld['title'],'#size'=>20,'#weight'=>$fld['weight']);
-      $form['types'][$fld['name']]['weight'] = array('#type'=>'textfield','#default_value' => $fld['weight'],'#size'=>2,'#weight'=>$fld['weight']);
-      $form['types'][$fld['name']]['hint'] = array('#type'=>'textfield','#default_value' => $fld['hint'],'#size'=>10,'#weight'=>$fld['weight']);
-      $form['types'][$fld['name']]['checkboxes'] = array('#type'=>'checkboxes','#options'=>$options,'#default_value' =>$def_values[$fld['name']],'#weight'=>$fld['weight']);      
-    }
+  foreach($fields as $key=>$fld){
+    if ($fld['common']) $def_values[$fld['name']][] = 'common';
+    if ($fld['required']) $def_values[$fld['name']][] = 'required';
+    if ($fld['visible']) $def_values[$fld['name']][] = 'visible';
+    $form['name'][$fld['fid']] = array('#type'=>'markup', '#value'=>$fld['name'],'#weight'=>$fld['weight']);
+    $form['types'][$fld['fid']] = array('#tree'=>1);
+    $form['types'][$fld['fid']]['title'] = array('#type'=>'textfield','#default_value' => $fld['title'],'#size'=>20,'#weight'=>$fld['weight']);
+    $form['types'][$fld['fid']]['weight'] = array('#type'=>'textfield','#default_value' => $fld['weight'],'#size'=>2,'#weight'=>$fld['weight']);
+    $form['types'][$fld['fid']]['hint'] = array('#type'=>'textfield','#default_value' => $fld['hint'],'#size'=>10,'#weight'=>$fld['weight']);
+    $form['types'][$fld['fid']]['checkboxes'] = array('#type'=>'checkboxes','#options'=>$options,'#default_value' =>$def_values[$fld['name']],'#weight'=>$fld['weight']);      
+  }
  // }
   
    $form['submit'] = array('#type' => 'submit', '#value' => t('Save Type Info'));
@@ -371,7 +372,7 @@ function theme_biblio_type_form_edit($form){
   $rows = array();
   foreach(element_children($form['name']) as $fld){
     $row = array();
-        $row[] = array('data'=>form_render($form['name'][$fld]));
+        $row[] = array('data' => form_render($form['name'][$fld]));
         $row[] = array('data' => form_render($form['types'][$fld]['title']),'align' => 'center');
         $row[] = array('data' => form_render($form['types'][$fld]['hint']),'align' => 'center');
        foreach (element_children($form['types'][$fld]['checkboxes']) as $oid) {
@@ -382,7 +383,8 @@ function theme_biblio_type_form_edit($form){
         $row[] = array('data' => form_render($form['types'][$fld]['weight']),'align' => 'center');
       $rows[] = $row;
   }
-  $header =array('Field Name','Default Title','Hint','Common','Required','Visible','Weight');
+  $vis_comm = $form['tid']?'Visible':'Common';
+  $header =array('Field Name','Default Title','Hint',$vis_comm,'Required','Weight');
   $output .= '<p>';
   $output .= theme('table',$header,$rows);
   $output .= form_render($form);
@@ -391,15 +393,31 @@ function theme_biblio_type_form_edit($form){
 }
 function biblio_type_form_edit_submit($form_id, $edit) {
 
-  $query = "title = '%s', weight = %d, common = %d, required = %d, visible = %d";
+  $tid = $edit['tid']?$edit['tid']:NULL;
+  if ($tid){
+    $vis_comm = $tid?'visible':'common';
 
-  foreach ($edit as $key=>$value){
-    $common = ($value['checkboxes']['common'])?TRUE:FALSE;
-    $required = ($value['checkboxes']['required'])?TRUE:FALSE;
-    $visible = ($value['checkboxes']['visible'])?TRUE:FALSE;
-    if(strstr($key,"biblio")){
-      db_query("UPDATE {biblio_fields} SET $query WHERE name = '%s'", 
-      $value['title'],$value['weight'],$common,$required,$visible,$key);
+    db_query('DELETE FROM {biblio_type_details} WHERE tid = %d', $tid);
+  
+    $type_query = "INSERT INTO {biblio_type_details} (tid, fid, title, weight, visible , required , hint)
+                   VALUES (%d,%d,'%s',%d,%d,%d,'%s') ";
+  }else{
+    $vis_comm = $tid?'visible':'common';  
+    $field_query = "UPDATE {biblio_fields} SET title = '%s', weight = %d, 
+                    common = %d, required = %d, hint = '%s' WHERE fid = %d";  
+  }
+
+
+  foreach ($edit as $key=>$v){
+    $common = ($v['checkboxes']['common'])?TRUE:FALSE;
+    $required = ($v['checkboxes']['required'])?TRUE:FALSE;
+    $visible = ($v['checkboxes']['visible'])?TRUE:FALSE;
+    if(is_numeric($key) ){
+      if($tid && $visible){
+        db_query($type_query, $tid,$key,$v['title'],$v['weight'],$visible,$required,$v['hint']);      
+      }elseif(!$tid){
+        db_query($field_query, $v['title'],$v['weight'],$common,$required,$v['hint'],$key);
+      }
       //print_r(array_merge($value,array($key)));
     }
  }    
@@ -407,6 +425,7 @@ function biblio_type_form_edit_submit($form_id, $edit) {
 
   // Clear the cached pages and menus:
   menu_rebuild();
+    drupal_goto('admin/settings/biblio/types');  
 
 }
 function _biblio_form_sort($a, $b) {
