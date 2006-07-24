@@ -7,7 +7,7 @@
  */  
 function biblio_help_page() {
   $text .= t('<H3>General:</H3>');
-  $text .= t('By default, the <a href="/biblio">/biblio</a> page will list all 
+  $text .= t('By default, the '.l('','biblio/').' page will list all 
             of the entries in the database sorted by Year in descending order.  
             If you wish to sort by "Title" or "Type",  you may do so by
             clicking on the appropriate links at the top of the page.  To 
@@ -196,8 +196,9 @@ function biblio_settings() {
 *   
 */
 function biblio_menu($may_cache) {
-  drupal_set_html_head('<style type="text/css">@import url(' . drupal_get_path('module', 'biblio') . '/biblio.css);</style>');
-
+  //drupal_set_html_head('<style type="text/css">@import url(' . drupal_get_path('module', 'biblio') . '/biblio.css);</style>');
+  //echo "menu: $may_cache";
+  drupal_set_html_head(theme('stylesheet_import', base_path() . drupal_get_path('module', 'biblio') . '/biblio.css'));
   $items = array();
 
   if ($may_cache) {
@@ -358,6 +359,7 @@ function biblio_form_types_edit(){
     $form['types'][$fld['fid']]['title'] = array('#type'=>'textfield','#default_value' => $fld['title'],'#size'=>20,'#weight'=>$fld['weight']);
     $form['types'][$fld['fid']]['weight'] = array('#type'=>'textfield','#default_value' => $fld['weight'],'#size'=>2,'#weight'=>$fld['weight']);
     $form['types'][$fld['fid']]['hint'] = array('#type'=>'textfield','#default_value' => $fld['hint'],'#size'=>10,'#weight'=>$fld['weight']);
+    if($tid) {$form['types'][$fld['fid']]['common'] = array('#type'=>'markup','#value' => $fld['common']?'X':' ','#weight'=>$fld['weight']);}
     $form['types'][$fld['fid']]['checkboxes'] = array('#type'=>'checkboxes','#options'=>$options,'#default_value' =>$def_values[$fld['name']],'#weight'=>$fld['weight']);      
   }
  // }
@@ -371,10 +373,14 @@ function theme_biblio_type_form_edit($form){
   drupal_set_title($form['type_name']?$form['type_name']['#value']:"Default");
   $rows = array();
   foreach(element_children($form['name']) as $fld){
+//  if ($form['types'][$fld]['checkboxes']['#value']['common'] || $form['types'][$fld]['checkboxes']['#value']['visible']){
     $row = array();
         $row[] = array('data' => form_render($form['name'][$fld]));
         $row[] = array('data' => form_render($form['types'][$fld]['title']),'align' => 'center');
         $row[] = array('data' => form_render($form['types'][$fld]['hint']),'align' => 'center');
+       if ($form['tid']){
+               $row[] = array('data' => form_render($form['types'][$fld]['common']),'align' => 'center');
+      }
        foreach (element_children($form['types'][$fld]['checkboxes']) as $oid) {
           if (is_array($form['types'][$fld]['checkboxes'])) {
             $row[] = array('data' => form_render($form['types'][$fld]['checkboxes'][$oid]), 'align' => 'center', 'title' => t($oid));
@@ -382,9 +388,15 @@ function theme_biblio_type_form_edit($form){
         }
         $row[] = array('data' => form_render($form['types'][$fld]['weight']),'align' => 'center');
       $rows[] = $row;
+//  }
   }
-  $vis_comm = $form['tid']?'Visible':'Common';
-  $header =array('Field Name','Default Title','Hint',$vis_comm,'Required','Weight');
+  if ($form['tid']){
+    $header =array('Field Name','Default Title','Hint','Common','Custom','Required','Weight');
+  }else{
+    $header =array('Field Name','Default Title','Hint','Common','Required','Weight');
+
+  }
+  
   $output .= '<p>';
   $output .= theme('table',$header,$rows);
   $output .= form_render($form);
@@ -439,7 +451,7 @@ function _biblio_form_sort($a, $b) {
 
 function biblio_filter_clear() {
   $_SESSION['biblio_filter'] = array();
-  drupal_goto('biblio/');
+  drupal_goto('/biblio');
 } 
 
 function biblio_filters(){
@@ -512,6 +524,7 @@ function biblio_filter_form() {
   return drupal_get_form('biblio_filter_form', $form);
 }
 function theme_biblio_filters(&$form) {
+//echo "in theme";
   $output .= '<ul>';
   if (sizeof($form['current'])) {
     foreach (element_children($form['current']) as $key) {
@@ -519,7 +532,7 @@ function theme_biblio_filters(&$form) {
     }
   }
 
-  $output .= '<li><dl class="bibliomultiselect">' . (sizeof($form['current']) ? '<dt><em>'. t('and') .'</em> '. t('where') .'</dt>' : '') . '<dd class="a">';
+  $output .= '<li><dl class="multiselect">' . (sizeof($form['current']) ? '<dt><em>'. t('and') .'</em> '. t('where') .'</dt>' : '') . '<dd class="a">';
   foreach (element_children($form['filter']) as $key) {
     $output .= form_render($form['filter'][$key]);
   }
@@ -533,7 +546,7 @@ function theme_biblio_filters(&$form) {
   $output .= '</dd>';
 
   $output .= '</dl>';
-  $output .= '<div class="container-inline" id="biblio-buttons">'. form_render($form['buttons']) .'</div>';
+  $output .= '<div class="container-inline" id="node-buttons">'. form_render($form['buttons']) .'</div>';
   $output .= '</li></ul><br class="clear" />';
 
   return $output;
@@ -542,7 +555,7 @@ function theme_biblio_filters(&$form) {
 function biblio_filter_form_submit() {
   global $form_values;
   $op = $_POST['op'];
-  $filters = node_filters();
+  $filters = biblio_filters();
   switch ($op) {
     case t('Filter'):
     case t('Refine'):
@@ -551,9 +564,10 @@ function biblio_filter_form_submit() {
 
         // Flatten the options array to accommodate hierarchical/nested options.
         $flat_options = form_options_flatten($filters[$filter]['options']);
-
         if (isset($flat_options[$form_values[$filter]])) {
           $_SESSION['biblio_filter'][] = array($filter, $form_values[$filter]);
+              drupal_goto('biblio');
+
         }
       }
       break;
@@ -863,13 +877,13 @@ function theme_biblio_long($pub) {
   if ($pub->biblio_call_number) $output .= '<h3>'.t("Call Number").':</h3> ' . check_plain($pub->biblio_call_number) . "\n";
   if ($pub->biblio_accession_number) $output .= '<h3>'.t("Accession Number").':</h3> ' . check_plain($pub->biblio_accession_number) . "\n";
   if ($pub->biblio_other_number) $output .= '<h3>'.t("Other Number").':</h3> ' . check_plain($pub->biblio_other_number) . "\n";
-  if ($pub->biblio_url) $output .= '<h3>'.t("URL").':</h3><a href="' . check_url($pub->biblio_url) . '">' . $pub->biblio_url . "</a>\n";
+  if ($pub->biblio_url) $output .= '<h3>'.t("URL").':</h3>'.l("$pub->biblio_url",$pub->biblio_url) . "\n";
   if ($pub->biblio_keywords) $output .= '<h3>'.t("Keywords").':</h3> ' . check_plain($pub->biblio_keywords) . "\n";
   if ($pub->biblio_abst_e) $output .= '<H3>'.t("Abstract").':</h3> ' . check_plain($pub->biblio_abst_e) . "\n";
   if ($pub->biblio_notes) $output .= '<h3>'.t("Notes").': </h3>' . check_plain($pub->biblio_notes) . "\n";
   if (variable_get('biblio_endnote_export', 0)) {
-    $output .= '<br><br><B>'.t("Export").':</B><a href="biblio/export/endnote/' . $pub->nid . '">Tagged</a>';
-    $output .= '<a href="biblio/export/endnote7XML/' . $pub->nid . '"> XML</a>';
+    $output .= '<br><br><B>Export: '.l(t("Tagged"),"biblio/export/endnote/$pub->nid").' </B>';
+    $output .= l("XML","biblio/export/endnote7XML/$pub->nid");
   } 
 
   return $output;
@@ -896,14 +910,15 @@ function theme_biblio_short($pub) {
   if ($pub->biblio_year) $output .= ', (' . $pub->biblio_year . ")\n";
   if ($pub->biblio_abst_e) $output .= l("Abstract", "node/$pub->nid") . "\n";
   if (variable_get('biblio_endnote_export', 0)) {
-    $output .= '<em>Export: <a href="biblio/export/endnote/' . $pub->nid . '">Tagged</a>&nbsp';
-    $output .= '<a href="biblio/export/endnote7XML/' . $pub->nid . '">XML</a></em>';
+    $output .= '<em>Export: '.l("Tagged","biblio/export/endnote/$pub->nid") . '&nbsp';
+    $output .= l("XML","biblio/export/endnote7XML/$pub->nid") . '</em>';
   } 
   return $output;
 } 
 
 function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' => 'DESC'), $args = null) {
-  global $pager_total;
+  global $pager_total_items;
+
   $pub_types = db_query('SELECT t.* FROM {biblio_types as t} WHERE t.tid>0');
   while ($option = db_fetch_object($pub_types)) {
     $pub_type["$option->tid"] = t("$option->name");
@@ -911,7 +926,7 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
   // Add some links to the top of the page to change the sorting/ordering...
   $order = ($attrib['order'] == "desc" || $attrib['order'] == "DESC")?"asc":"desc";
   if (variable_get('biblio_endnote_export', 0)) {
-    $content .= '<div class="biblio_export">Export (' . $pager_total[0] . ') results in Endnote <a href="biblio/export/endnote">Tagged </a> or <a href="biblio/export/endnote7XML">XML</a></div>';
+    $content .= '<div class="biblio_export">Export (' . $pager_total_items[0] . ') results in Endnote '.l("Tagged","biblio/export/endnote"). ' or '.l("XML","biblio/export/endnote7XML").'</div>';
   } 
   $content .= '<div class="biblio_sort">Sort by: 
                  <a href="' . $_GET["q"] . '?sort=year&order=' . $order . '" title="Click a second time to reverse the sort order">' . 'Year</a> 
@@ -930,7 +945,7 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
       $params = array('%a' => '<strong>' . $type . '</strong>', '%b' => '<strong>' . $value . '</strong>');
       $content .= ($i++ ? t('<em> and</em> <strong>%a</strong> is <strong>%b</strong>', $params) : t('<strong>%a</strong> is <strong>%b</strong>', $params)) . '</li>';
     } 
-    $content .= '  <a href="biblio/filter/clear">Clear All Filters</a>';
+    $content .= l('Clear All Filters','biblio/filter/clear');
   } while ($pub = db_fetch_object($result)) {
     switch ($attrib['sort']) {
       case 'title':
@@ -963,8 +978,8 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
   if (!db_num_rows($result)) {
     $content .= t("<H3>No items found</H3>");
     if (strstr($content, "Filters:")) {
-      $content .= t('<a href="biblio/filter">Modify</a>
-                     or <a href="biblio/filter/clear">remove</a> your filters and try again.');
+      $content .= l(t('Modify'),'biblio/filter');
+      $content .= ' or '.l(t('remove'),'biblio/filter/clear').' your filters and try again.';
     }
   } 
   print theme('page', $content);
@@ -997,6 +1012,7 @@ function biblio_db_search() {
   } 
 
   $session = &$_SESSION['biblio_filter'];
+  
   $numargs = func_num_args();
   $arg_list = func_get_args();
   foreach ($session as $filter) {
@@ -1689,7 +1705,7 @@ for($i = 0;
       if (substr_count($subchunks[$j], '.')) {
         $initials .= $subchunks[$j];
       } else {
-        $initials .= substr($subchunks[$j], 0, 1) . ".";
+        $initials .= drupal_substr($subchunks[$j], 0, 1) . ".";
       } 
     } 
   } else { // we have some form of firstname first (Fistname I. Lastname)
@@ -1702,7 +1718,7 @@ for($i = 0;
       if (substr_count($subchunks[$j], '.')) {
         $initials .= $subchunks[$j];
       } else {
-        $initials .= substr($subchunks[$j], 0, 1) . ".";
+        $initials .= drupal_substr($subchunks[$j], 0, 1) . ".";
       } 
     } 
   } 

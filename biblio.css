@@ -1,4 +1,4 @@
-
+/** Node admin filter **/
 #biblio-filter ul {
   padding:                    1px;
   margin:                     1px;
@@ -8,34 +8,27 @@
   float:                      left;
   margin-left:                0.5em;
   margin-top:                 1em;
-  clear:                      right;
+ /* clear:                      right; */
 }
-/*dl.biblio_multiselect dt, dl.biblio_multiselect dd {
-  float:                      left;
-  line-height:                1.75em;
-  padding:                    1;
-  margin:                     0 1em 0 0;
+dl.bibliomultiselect dd.b, dl.bibliomultiselect dd.b .form-item, dl.bibliomultiselect dd.b select {
+  font-family: inherit;
+  font-size: inherit;
+  width: 14em;
 }
-*/
-dl.biblio_multiselect dd.b, dl.biblio_multiselect dd.b .form-item, dl.biblio_multiselect dd.b select {
-  font-family:                inherit;
-  font-size:                  inherit;
-/*  width:                      14em;*/
+dl.bibliomultiselect dd.a, dl.bibliomultiselect dd.a .form-item {
+  width: 8em;
 }
-dl.biblio_multiselect dd.a, dl.multiselect dd.a .form-item {
-  width:                      12em;
+dl.bibliomultiselect dt, dl.bibliomultiselect dd {
+  float: left;
+  line-height: 1.75em;
+  padding: 0;
+  margin: 0 1em 0 0;
+}
+dl.bibliomultiselect .form-item {
+  height: 1.75em;
+  margin: 0;
 }
 
-dl.biblio_multiselect dt, dl.biblio_multiselect dd {
-  float:                      left;
-  line-height:                1.75em;
-  padding:                    0;
-  margin:                     0 1em 0 0;
-}
-dl.biblio_multiselect .form-item {
-  height:                     1.75em;
-  margin:                     0;
-}
 
 .biblio-year {
 	width: 98%;

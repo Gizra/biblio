@@ -38,6 +38,52 @@ CREATE TABLE `biblio` (
   FULLTEXT KEY `authors` (`biblio_authors`)
 ) ENGINE=MyISAM; 
 
+CREATE TABLE `biblio_fields` (
+  `fid` int(11) NOT NULL default '0',
+  `name` varchar(100) NOT NULL default '',
+  `title` varchar(100) NOT NULL default '',
+  `common` tinyint(1) NOT NULL default '0',
+  `type` varchar(100) NOT NULL default '',
+  `size` int(11) NOT NULL default '0',
+  `maxsize` int(11) NOT NULL default '0',
+  `hint` varchar(100) default '',
+  `required` tinyint(1) NOT NULL default '0',
+  `visible` tinyint(4) NOT NULL default '0',
+  `weight` int(11) NOT NULL default '0',
+  PRIMARY KEY  (`fid`)
+) ENGINE=MyISAM;
+
+INSERT INTO `biblio_fields` (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`weight`) VALUES 
+ (1,'biblio_authors','Authors',1,'textfield',60,255,'Author names must be separated by semicolons',1,0,1),
+ (2,'biblio_secondary_authors','Secondary Authors',0,'textfield',60,255,'',0,0,21),
+ (3,'biblio_tertiary_authors','Tertiary Authors',0,'textfield',60,255,'',0,0,26),
+ (4,'biblio_corp_author','Corporate Author',0,'textfield',60,255,'',0,0,25),
+ (5,'biblio_secondary_title','Secondary Title',0,'textfield',60,255,'',0,0,12),
+ (6,'biblio_tertiary_title','Tertiary Title',0,'textfield',60,255,'',0,0,13),
+ (7,'biblio_accession_number','Accession Number',1,'textfield',24,24,'',0,0,151),
+ (8,'biblio_isbn','ISBN/ISSN Number',1,'textfield',24,24,'',0,0,150),
+ (9,'biblio_call_number','Call Number',1,'textfield',24,24,'',0,0,152),
+ (10,'biblio_other_number','Other Numbers',1,'textfield',10,24,'',0,0,153),
+ (11,'biblio_other_author_affiliations','Other Author Affiliations',0,'textfield',60,255,'',0,0,24),
+ (12,'biblio_publisher','Publisher',0,'textfield',60,255,'',0,0,19);
+INSERT INTO `biblio_fields` (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`weight`) VALUES 
+ (13,'biblio_place_published','Place Published',0,'textfield',60,255,'',0,0,20),
+ (14,'biblio_year','Year of Publication',1,'textfield',4,4,'(yyyy)',1,0,-45),
+ (15,'biblio_edition','Edition',0,'textfield',60,255,'',0,0,15),
+ (16,'biblio_volume','Volume',0,'textfield',10,10,'',0,0,14),
+ (17,'biblio_number','Number',0,'textfield',10,10,'',0,0,16),
+ (18,'biblio_pages','Pagination',0,'textfield',24,24,'',0,0,17),
+ (19,'biblio_date','Date Published',0,'textfield',16,16,'(mm/yyyy)',0,0,18),
+ (20,'biblio_lang','Publication Language',0,'textfield',24,24,'',0,0,23),
+ (21,'biblio_abst_e','Abstract',1,'textarea',60,15,'',0,0,155),
+ (22,'biblio_abst_f','French Abstract',0,'textarea',60,15,'',0,0,156),
+ (23,'biblio_keywords','Key Words',1,'textfield',60,255,'',0,0,154),
+ (24,'biblio_type_of_work','Type of Work',0,'textfield',60,255,'Masters Thesis, PhD Thesis, etc.',0,0,22),
+ (25,'biblio_url','URL',1,'textfield',60,255,'',0,0,158);
+INSERT INTO `biblio_fields` (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`weight`) VALUES 
+ (26,'biblio_notes','Notes',1,'textarea',60,15,'',0,0,157),
+ (27,'biblio_issue','Issue',0,'textfield',10,10,'',0,0,15);
+
 # Table: 'biblio_types'
 # 
 CREATE TABLE `biblio_types` (
@@ -48,7 +94,7 @@ CREATE TABLE `biblio_types` (
 ) ENGINE=MyISAM; 
 
 INSERT INTO `biblio_types` (`tid`,`name`,`description`) VALUES 
- (0,'Select Type...',NULL),
+ (-1,'Select Type...',NULL),
  (1,'Journal Paper',NULL),
  (2,'Refereed Conference Paper',NULL),
  (3,'Non-Refereed Conference Paper',NULL),
@@ -58,3 +104,79 @@ INSERT INTO `biblio_types` (`tid`,`name`,`description`) VALUES
  (7,'Thesis',NULL),
  (8,'Patent',NULL),
  (9,'Other Publication',NULL);
+
+
+CREATE TABLE `biblio_type_details` (
+  `tdid` int(11) NOT NULL auto_increment,
+  `tid` int(11) NOT NULL default '0',
+  `fid` int(11) NOT NULL default '0',
+  `title` varchar(100) NOT NULL default '',
+  `hint` varchar(100) default '',
+  `required` tinyint(1) NOT NULL default '0',
+  `visible` tinyint(4) NOT NULL default '0',
+  `weight` int(11) NOT NULL default '0',
+  PRIMARY KEY  (`tdid`),
+  KEY `tid` (`tid`)
+) ENGINE=MyISAM;
+
+
+INSERT INTO `biblio_type_details` (`tid`,`fid`,`title`,`hint`,`required`,`visible`,`weight`) VALUES 
+ (1,16,'Volume','',0,1,14),
+ (1,19,'Journal Date','(mm/yyyy)',0,1,3),
+ (1,5,'Journal Title','',1,1,2),
+ (1,27,'Issue','',0,1,15),
+ (2,5,'Conference Name','',0,1,12),
+ (2,6,'Series Title','',0,1,13),
+ (2,16,'Volume','',0,1,14),
+ (2,15,'Edition','',0,1,15),
+ (2,18,'Pagination','',0,1,17),
+ (2,19,'Conference Start Date','(dd/mm/yyyy)',0,1,18),
+ (2,12,'Publisher','',0,1,19),
+ (2,13,'Conference Location','',0,1,20),
+ (2,2,'Editor','',0,1,21),
+ (3,5,'Conference Name','',0,1,12),
+ (3,6,'Series Title','',0,1,13),
+ (3,16,'Volume','',0,1,14),
+ (3,15,'Edition','',0,1,15),
+ (3,18,'Pagination','',0,1,17),
+ (3,19,'Conference Start Date','(dd/mm/yyyy)',0,1,18),
+ (3,12,'Publisher','',0,1,19),
+ (3,13,'Conference Location','',0,1,20),
+ (3,2,'Editor','',0,1,21),
+ (4,5,'Conference Name','',0,1,12),
+ (4,6,'Series Title','',0,1,13),
+ (4,16,'Volume','',0,1,14),
+ (4,15,'Edition','',0,1,15);
+INSERT INTO `biblio_type_details` (`tid`,`fid`,`title`,`hint`,`required`,`visible`,`weight`) VALUES 
+ (4,18,'Pagination','',0,1,17),
+ (4,19,'Conference Start Date','(dd/mm/yyyy)',0,1,18),
+ (4,12,'Publisher','',0,1,19),
+ (4,13,'Conference Location','',0,1,20),
+ (4,2,'Editor','',0,1,21),
+ (5,19,'Date','(mm/yyyy)',0,1,18),
+ (5,18,'Pages','',0,1,17),
+ (5,5,'Prepared for','',0,1,12),
+ (5,12,'Institution','',0,1,19),
+ (5,13,'City','',0,1,20),
+ (6,5,'Book Title','',0,1,12),
+ (6,6,'SeriesTitle','',0,1,13),
+ (6,15,'Edition','',0,1,15),
+ (6,18,'Pages','',0,1,17),
+ (6,12,'Publisher','',0,1,19),
+ (6,13,'Place of Publication','',0,1,20),
+ (6,2,'Editor','',0,1,21),
+ (6,3,'Series Editor','',0,1,26),
+ (7,5,'Academic Department','',0,1,12),
+ (7,18,'Number of Pages','',0,1,17),
+ (7,12,'University','',0,1,19),
+ (7,13,'City','',0,1,20),
+ (7,24,'Degree','Masters Thesis, PhD Thesis, etc.',0,1,22),
+ (8,12,'Assignee','',0,1,19),
+ (8,19,'Date','(mm/yyyy)',0,1,18),
+ (8,18,'Pages','',0,1,17);
+INSERT INTO `biblio_type_details` (`tid`,`fid`,`title`,`hint`,`required`,`visible`,`weight`) VALUES 
+ (8,27,'Issue','',0,1,15),
+ (8,5,'Published Source','',0,1,12),
+ (8,13,'Country','',0,1,13),
+ (8,16,'Volume','',0,1,14),
+ (9,5,'Prepared for','',0,1,12);
