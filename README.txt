@@ -24,8 +24,7 @@ See liiscience.org for a live example.
 
 Requirements:
 =============
-Drupal 4.6.x.  This module has not been tested with any other version of Drupal 
-at the time of writing.
+Drupal 4.7.x.  (There is a separate version for Drupal 4.6.x available).
 
 The domxml php extension must be enabled in order to import or export XML files.
 
@@ -35,12 +34,11 @@ Installation:
 Create a directory called biblio in the modules directory, then place all of the
 files packaged with this module in that directory.
 
-This module requires additional tables to store information.  These tables can 
-be created using following command:
-
-mysql -u {userid} -p {drupaldatabase} < biblio.mysql
-
-You will also have to enable the module on the admin/modules page.
+This module will auto-install the required database tables the first time you 
+enable it on the admin/modules page. (A biblio.mysql file is supplied if you wish
+to manualy install the tables.)  This will also setup a number of pre-defined 
+publication types.  These types can be changed or deleted on the 
+admin/settings/biblio/types page.
 
 
 Settings:
@@ -48,6 +46,12 @@ Settings:
 A number of settings are available at admin/settings/biblio.  They control how 
 the author names are displayed, whether export links are added to pages and the
 number of entries per page to display.
+
+The admin/settings/biblio/types page allows the the site administrator to set
+the default field titles and set which fields are common to all publication 
+types.  When a new publication type is added, it will contain all the common 
+fields and any that are specifically activated (custom is checked).  This also
+allows the admin to over ride any of the default settings for any given type.
 
 Access Control:
 ===============
