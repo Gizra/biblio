@@ -476,7 +476,7 @@ function biblio_filters(){
   ksort($pub_authors);
   $filters = array('author' => array('title' => t('Author'),
       'options' => $pub_authors),
-    'type' => array('title' => t('Publication Type'),
+    'type' => array('title' => t('Type'),
       'options' => $pub_type),
     'year' => array('title' => t('Year'),
       'options' => $pub_years)); 
