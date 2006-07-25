@@ -41,6 +41,7 @@ function biblio_install() {
         KEY `year` (`biblio_year`),
         FULLTEXT KEY `authors` (`biblio_authors`)
       ) ENGINE=MyISAM;");
+      
       db_query("CREATE TABLE `biblio_fields` (
         `fid` int(11) NOT NULL default '0',
         `name` varchar(100) NOT NULL default '',
@@ -88,12 +89,13 @@ function biblio_install() {
        (27,'biblio_issue','Issue',0,'textfield',10,10,'',0,0,15);");
 
       db_query("CREATE TABLE `biblio_types` (
-        `tid` int(11) NOT NULL ,
+        `tid` int(11) NOT NULL auto_increment,
         `name` varchar(64) NOT NULL default '',
         `description` varchar(255) default NULL,
         PRIMARY KEY  (`tid`)
       ) ENGINE=MyISAM;"); 
 
+     // some default types...
       db_query("INSERT INTO `biblio_types` (`tid`,`name`,`description`) VALUES 
        (-1,'Select Type...',NULL),
        (1,'Journal Paper',NULL),
@@ -120,7 +122,7 @@ function biblio_install() {
         KEY `tid` (`tid`)
       ) ENGINE=MyISAM;");
 
-
+      // some customizations of the default types 
       db_query("INSERT INTO `biblio_type_details` (`tid`,`fid`,`title`,`hint`,`required`,`visible`,`weight`) VALUES 
        (1,16,'Volume','',0,1,14),
        (1,19,'Journal Date','(mm/yyyy)',0,1,3),
