@@ -745,7 +745,7 @@ function biblio_insert($node) {
   foreach ($node as $key => $value) {
     if (in_array((string) $key, $fields)) {
       $k[] = db_escape_string($key);
-      $v[] = $value;
+      $v[] = utf8_encode($value);
       $s[] = "'%s'";
     } 
   } 
@@ -879,8 +879,9 @@ function theme_biblio_long($pub) {
   if ($pub->biblio_other_number) $output .= '<h3>'.t("Other Number").':</h3> ' . check_plain($pub->biblio_other_number) . "\n";
   if ($pub->biblio_url) $output .= '<h3>'.t("URL").':</h3>'.l("$pub->biblio_url",$pub->biblio_url) . "\n";
   if ($pub->biblio_keywords) $output .= '<h3>'.t("Keywords").':</h3> ' . check_plain($pub->biblio_keywords) . "\n";
-  if ($pub->biblio_abst_e) $output .= '<H3>'.t("Abstract").':</h3> ' . check_plain($pub->biblio_abst_e) . "\n";
-  if ($pub->biblio_notes) $output .= '<h3>'.t("Notes").': </h3>' . check_plain($pub->biblio_notes) . "\n";
+  if ($pub->biblio_abst_e) $output .= '<H3>'.t("Abstract").':</h3> ' . check_markup($pub->biblio_abst_e,FILTER_HTML_ESCAPE,FALSE) . "\n";
+  if ($pub->biblio_abst_f) $output .= '<p>' . check_markup($pub->biblio_abst_f,FILTER_HTML_ESCAPE,FALSE) . "\n";
+  if ($pub->biblio_notes) $output .= '<h3>'.t("Notes").': </h3>' . check_markup($pub->biblio_notes,FILTER_HTML_ESCAPE,FALSE) . "\n";
   if (variable_get('biblio_endnote_export', 0)) {
     $output .= '<br><br><B>Export: '.l(t("Tagged"),"biblio/export/endnote/$pub->nid").' </B>';
     $output .= l("XML","biblio/export/endnote7XML/$pub->nid");
@@ -1163,7 +1164,7 @@ if (extension_loaded('domxml')) {
         } 
       } 
       if ($pub->biblio_abst_f) $record->new_child("ABSTRACT", trim($pub->biblio_abst_f));
-      if ($pub->biblio_abst_e) $record->new_child("ABSTRACT", trim($pub->biblio_abst_e));
+      if ($pub->biblio_abst_e) $record->new_child("ABSTRACT", htmlentities(trim($pub->biblio_abst_e)));
       if ($pub->biblio_url) $record->new_child("URL", htmlentities($pub->biblio_url));
       if ($pub->biblio_notes) $record->new_child("NOTES", trim($pub->biblio_notes));
 
@@ -1516,8 +1517,9 @@ function _endnote7_XML_import($filename = null) {
 if (extension_loaded('domxml')) {
 
   if (!$dom = domxml_open_file($filename)) {
-    echo "Error while parsing the document\n";
-    return;
+      	drupal_set_message(t('The biblio module was unable to read the XML file supplied.'), 'error');
+
+    drupal_goto("admin/settings/biblio/import");
   } 
   
   $elements = array();
