@@ -278,9 +278,9 @@ function biblio_form_types_add_submit($form_id, $edit){
 function biblio_form_types_delete(){
  $args = func_get_args();
  if ($args[0] > 0 && is_numeric($args[0]) ) {
-    $result = db_query('SELECT t.* FROM {biblio_types} as t WHERE t.tid = '.$args[0]);
+    $result = db_query('SELECT t.* FROM {biblio_types} as t WHERE t.tid = %d ', $args[0]);
     $row = db_fetch_array($result);
-    $result = db_query('SELECT b.* FROM {biblio} as b WHERE b.biblio_type = '.$row['tid']);
+    $result = db_query('SELECT b.* FROM {biblio} as b WHERE b.biblio_type = %d',$row['tid']);
     if ($num_rows = db_num_rows($result)){
       $existing_msg = 'There are '.$num_rows.' publications of this type, they will be given a temporary id of -'.$row['tid'];
     }
@@ -326,12 +326,12 @@ function biblio_form_types_edit(){
   }
   if ($arg_list = func_get_args()){// show an existing type  
     $tid = $arg_list[0];
-    $result = db_query('SELECT t.* FROM {biblio_types} as t WHERE t.tid = '.$tid);
+    $result = db_query('SELECT t.* FROM {biblio_types} as t WHERE t.tid = %d',$tid);
     $row = db_fetch_array($result);
     $form['type_name'] =array('#type'=>'value','#title'=>'tid','#value'=>$row['name']);
   
    // now get any type specific customizations 
-    $result = db_query('SELECT * FROM {biblio_type_details} as b where tid='.$tid.'  ORDER BY b.weight ASC');
+    $result = db_query('SELECT * FROM {biblio_type_details} as b where tid=%d  ORDER BY b.weight ASC', $tid);
     while ($row = db_fetch_array($result)){
       $type_fields[$row['fid']] = $row;
     }
@@ -602,7 +602,7 @@ function biblio_pre_render($form_id, &$form, $next_page = TRUE) {
       $fields[$row['fid']] = $row;
     }
  
-    $result = db_query('SELECT * FROM {biblio_type_details} as b where tid='.$form_values['biblio_type'].'  ORDER BY b.weight ASC');
+    $result = db_query('SELECT * FROM {biblio_type_details} as b where tid= %d ORDER BY b.weight ASC',$form_values['biblio_type']);
     while ($row = db_fetch_array($result)){
       $type_fields[$row['fid']] = $row;
     }
@@ -834,42 +834,42 @@ function biblio_block($op = 'list', $delta = 0) {
 
 function theme_biblio_long($pub) {
   if (variable_get('biblio_normalize', 0)) {
-    $authors = _parse_authors($pub->biblio_authors);
+    $authors = check_plain(_parse_authors($pub->biblio_authors));
   } else {
-    $authors = $pub->biblio_authors;
+    $authors = check_plain($pub->biblio_authors);
   } 
 
   $output .= '<div class="biblio_authors"><H3>'.t("Authors").':</H3> ' . _author_links($authors) . "</div>\n";
   $output .= '<div class="biblio_source"><H3>'.t("Source").': </H3> ';
   $source = null;
-  if ($pub->biblio_secondary_title) $source .= $pub->biblio_secondary_title;
+  if ($pub->biblio_secondary_title) $source .= check_plain($pub->biblio_secondary_title);
   if ($pub->biblio_publisher) {
     $source .= $source?", ":"";
-    $source .= $pub->biblio_publisher;
+    $source .= check_plain($pub->biblio_publisher);
   } 
   if ($pub->biblio_volume) {
     $source .= $source?", ":"";
-    $source .= t('Volume ') . $pub->biblio_volume;
+    $source .= t('Volume ') . check_plain($pub->biblio_volume);
   } 
   if ($pub->biblio_issue) {
     $source .= $source?", ":"";
-    $source .= t('Issue ') . $pub->biblio_issue;
+    $source .= t('Issue ') . check_plain($pub->biblio_issue);
   } 
   if ($pub->biblio_number) {
     $source .= $source?", ":"";
-    $source .= t('Number ') . $pub->biblio_number;
+    $source .= t('Number ') . check_plain($pub->biblio_number);
   } 
 
   if ($pub->biblio_place_published) {
     $source .= $source?", ":"";
-    $source .= $pub->biblio_place_published;
+    $source .= check_plain($pub->biblio_place_published);
   } 
   if ($pub->biblio_pages) {
     $source .= $source?", ":"";
-    $source .= 'p.' . $pub->biblio_pages;
+    $source .= 'p.' . check_plain($pub->biblio_pages);
   } 
   if ($pub->biblio_year) {
-    $source .= ' (' . $pub->biblio_year . ')';
+    $source .= ' (' . check_plain($pub->biblio_year) . ')';
   } 
   $output .= "$source</div>\n";
 
@@ -892,23 +892,23 @@ function theme_biblio_long($pub) {
 
 function theme_biblio_short($pub) {
   if (variable_get('biblio_normalize', 0)) {
-    $authors = _parse_authors($pub->biblio_authors);
+    $authors = check_plain(_parse_authors($pub->biblio_authors));
   } else {
-    $authors = $pub->biblio_authors;
+    $authors = check_plain($pub->biblio_authors);
   } 
-  $output .= '<span class="biblio-title">' . l("$pub->title", "node/$pub->nid") . "</span> \n";
+  $output .= '<span class="biblio-title">' . l($pub->title, "node/$pub->nid") . "</span> \n";
   $output .= '<span class="biblio-authors">' . _author_links($authors) . "</span> \n";
   if ($pub->biblio_secondary_title) {
-    $output .= ', ' . $pub->biblio_secondary_title;
+    $output .= ', ' . check_plain($pub->biblio_secondary_title);
   } 
-  if ($pub->biblio_date) $output .= ', ' . $pub->biblio_date;
-  if ($pub->biblio_volume) $output .= ', Volume ' . $pub->biblio_volume;
-  if ($pub->biblio_issue) $output .= ', Issue ' . $pub->biblio_issue;
-  if ($pub->biblio_number) $output .= ', Number ' . $pub->biblio_number;
+  if ($pub->biblio_date) $output .= ', ' . check_plain($pub->biblio_date);
+  if ($pub->biblio_volume) $output .= ', Volume ' . check_plain($pub->biblio_volume);
+  if ($pub->biblio_issue) $output .= ', Issue ' . check_plain($pub->biblio_issue);
+  if ($pub->biblio_number) $output .= ', Number ' . check_plain($pub->biblio_number);
 
-  if ($pub->biblio_place_published) $output .= ', ' . $pub->biblio_place_published;
-  if ($pub->biblio_pages) $output .= ', p.' . $pub->biblio_pages;
-  if ($pub->biblio_year) $output .= ', (' . $pub->biblio_year . ")\n";
+  if ($pub->biblio_place_published) $output .= ', ' . check_plain($pub->biblio_place_published);
+  if ($pub->biblio_pages) $output .= ', p.' . check_plain($pub->biblio_pages);
+  if ($pub->biblio_year) $output .= ', (' . check_plain($pub->biblio_year) . ")\n";
   if ($pub->biblio_abst_e) $output .= l("Abstract", "node/$pub->nid") . "\n";
   if (variable_get('biblio_endnote_export', 0)) {
     $output .= '<em>Export: '.l("Tagged","biblio/export/endnote/$pub->nid") . '&nbsp';
@@ -960,7 +960,7 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
       case 'type':
         if ($pub->biblio_type != $_type) {
           $_type = $pub->biblio_type;
-          $name = db_result(db_query("SELECT name FROM {biblio_types as t} where t.tid=" . $pub->biblio_type)) ;
+          $name = db_result(db_query("SELECT name FROM {biblio_types as t} where t.tid=%d", $pub->biblio_type)) ;
           $content .= '<div class="biblio-year">' . $name . "</div>\n";
         } 
         break;
@@ -993,20 +993,20 @@ function biblio_db_search() {
   $params = array('sort', 'order');
   foreach ($params as $param) {
     if (isset($_GET[$param])) {
-      $pager_attrib["$param"] = $_GET[$param];
+      $pager_attrib["$param"] = db_escape_string($_GET[$param]);
     } 
   } 
 
   switch ($pager_attrib['sort']) {
     case 'type':
-      $sortby = "ORDER BY b.biblio_type " . $pager_attrib['order'] . ", b.biblio_year DESC, SUBSTRING(n.title,1,1) ASC ";
+      $sortby = "ORDER BY b.biblio_type %s, b.biblio_year DESC, SUBSTRING(n.title,1,1) ASC ";
       break;
     case 'title':
-      $sortby = "ORDER BY SUBSTRING(n.title,1,1) " . $pager_attrib['order'] . ", b.biblio_year DESC ";
+      $sortby = "ORDER BY SUBSTRING(n.title,1,1) %s, b.biblio_year DESC ";
       break;
     case 'year':
     default:
-      $sortby = "ORDER BY b.biblio_year " . $pager_attrib['order'] . ", SUBSTRING(n.title,1,1) ASC, b.biblio_type ASC ";
+      $sortby = "ORDER BY b.biblio_year %s, SUBSTRING(n.title,1,1) ASC, b.biblio_type ASC ";
   } //end switch
   if (!isset($_SESSION['biblio_filter']) || !is_array($_SESSION['biblio_filter'])) {
     $_SESSION['biblio_filter'] = array();
@@ -1028,20 +1028,23 @@ function biblio_db_search() {
         case 'author':
           $term = db_escape_string($arg_list[0]);
           array_shift($arg_list);
-          $limit .= " AND MATCH(b.biblio_authors) AGAINST('$term'  IN BOOLEAN MODE)";
+          $limit .= " AND MATCH(b.biblio_authors) AGAINST('%s'  IN BOOLEAN MODE)";
+          $terms[] = $term;
           array_push($args, $type, $term);
           break;
         case 'year':
           $term = db_escape_string($arg_list[0]);
           array_shift($arg_list);
-          $limit .= " AND b.biblio_year='" . (int)$term . "'";
-          array_push($args, $type, $term);
+          $limit .= " AND b.biblio_year=%d ";
+          $terms[] = (int)$term;
+          array_push($args, $type, (int)$term);
           break;
         case 'type':
           $term = db_escape_string($arg_list[0]);
           array_shift($arg_list);
-          $limit .= " AND b.biblio_type='" . (int)$term . "'";
-          array_push($args, $type, $term);
+          $limit .= " AND b.biblio_type=%d ";
+          $terms[] = (int)$term;
+          array_push($args, $type, (int)$term);
           break;
         case 'order':
           $term = db_escape_string($arg_list[0]);
@@ -1056,25 +1059,25 @@ function biblio_db_search() {
           array_push($args, $type, $term);
           switch ($term) {
             case 'type':
-              $sortby = "ORDER BY b.biblio_type " . $pager_attrib['order'] . ", b.biblio_year DESC, SUBSTRING(n.title,1,1) ASC ";
+              $sortby = "ORDER BY b.biblio_type %s, b.biblio_year DESC, SUBSTRING(n.title,1,1) ASC ";
               break;
             case 'title':
-              $sortby = "ORDER BY SUBSTRING(n.title,1,1) " . $pager_attrib['order'] . ", b.biblio_year DESC ";
+              $sortby = "ORDER BY SUBSTRING(n.title,1,1) %s, b.biblio_year DESC ";
               break;
             case 'year':
             default:
-              $sortby = "ORDER BY b.biblio_year " . $pager_attrib['order'] . ", SUBSTRING(n.title,1,1) ASC, b.biblio_type ASC ";
+              $sortby = "ORDER BY b.biblio_year %s, SUBSTRING(n.title,1,1) ASC, b.biblio_type ASC ";
           } //end switch
           break;
       } 
     } 
   } 
-  $query = "SELECT * FROM {node} n left join {biblio} b  on n.nid=b.nid 
-            WHERE n.type='biblio' $limit $sortby ";
-  db_escape_string($query);
-  $_SESSION['last_biblio_query'] = $query;
+  $query = "SELECT * FROM {node} n left join {biblio} b  on n.nid=b.nid  WHERE n.type='biblio' $limit $sortby ";
 
-  $result = pager_query(db_rewrite_sql($query), variable_get('biblio_rowsperpage', 25));
+  $_SESSION['last_biblio_query'] = $query;
+  $terms[] = $pager_attrib['order'];
+
+  $result = pager_query(db_rewrite_sql($query), variable_get('biblio_rowsperpage', 25),0,null,$terms);
 
   biblio_show_results($result, $pager_attrib, $args);
 } 
@@ -1085,12 +1088,12 @@ if (extension_loaded('domxml')) {
     $query = $_SESSION['last_biblio_query'];
   } elseif (!empty($nid)) {
     $query = "SELECT * FROM {node} n left join {biblio} b  on n.nid=b.nid 
-                WHERE n.nid=$nid ";
+                WHERE n.nid=%d ";
   }else{
     return;
   } 
 
-  $result = db_query(db_rewrite_sql($query));
+  $result = db_query(db_rewrite_sql($query,$nid));
 
   if (db_num_rows($result)) {
     $doc = domxml_new_doc("1.0");
@@ -1183,12 +1186,12 @@ function _endnote_tagged_export($nid = null) {
     $query = $_SESSION['last_biblio_query'];
   } elseif (!empty($nid)) {
     $query = "SELECT * FROM {node} n left join {biblio} b  on n.nid=b.nid 
-                WHERE n.nid=$nid ";
+                WHERE n.nid= %d ";
   }else{
     return;
   } 
 
-  $result = db_query(db_rewrite_sql($query));
+  $result = db_query(db_rewrite_sql($query, $nid));
 
   if (db_num_rows($result)) {
     $doc = "";
