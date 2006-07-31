@@ -1076,6 +1076,7 @@ function biblio_db_search() {
 
   $_SESSION['last_biblio_query'] = $query;
   $terms[] = $pager_attrib['order'];
+  $_SESSION['last_biblio_query_terms'] = $terms;
 
   $result = pager_query(db_rewrite_sql($query), variable_get('biblio_rowsperpage', 25),0,null,$terms);
 
@@ -1083,17 +1084,20 @@ function biblio_db_search() {
 } 
 
 function _endnote7_XML_export($nid = null) {
+$params=array();
 if (extension_loaded('domxml')) {
   if ($nid === null && isset($_SESSION['last_biblio_query']) && !empty($_SESSION['last_biblio_query']) ) {
     $query = $_SESSION['last_biblio_query'];
+    $params = $_SESSION['last_biblio_query_terms'];    
   } elseif (!empty($nid)) {
     $query = "SELECT * FROM {node} n left join {biblio} b  on n.nid=b.nid 
                 WHERE n.nid=%d ";
+    $params[] = $nid;
   }else{
     return;
   } 
 
-  $result = db_query(db_rewrite_sql($query,$nid));
+  $result = db_query(db_rewrite_sql($query),$params);
 
   if (db_num_rows($result)) {
     $doc = domxml_new_doc("1.0");
@@ -1182,16 +1186,19 @@ if (extension_loaded('domxml')) {
 } 
 
 function _endnote_tagged_export($nid = null) {
+$params=array();
   if ($nid === null && isset($_SESSION['last_biblio_query']) && !empty($_SESSION['last_biblio_query']) ) {
     $query = $_SESSION['last_biblio_query'];
+    $params = $_SESSION['last_biblio_query_terms'];    
   } elseif (!empty($nid)) {
     $query = "SELECT * FROM {node} n left join {biblio} b  on n.nid=b.nid 
-                WHERE n.nid= %d ";
+                WHERE n.nid=%d ";
+    $params[] = $nid;
   }else{
     return;
   } 
 
-  $result = db_query(db_rewrite_sql($query, $nid));
+  $result = db_query(db_rewrite_sql($query),$params);
 
   if (db_num_rows($result)) {
     $doc = "";
