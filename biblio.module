@@ -999,14 +999,14 @@ function biblio_db_search() {
 
   switch ($pager_attrib['sort']) {
     case 'type':
-      $sortby = "ORDER BY b.biblio_type %s, b.biblio_year DESC, SUBSTRING(n.title,1,1) ASC ";
+      $sortby = "ORDER BY b.biblio_type '%s', b.biblio_year DESC, SUBSTRING(n.title,1,1) ASC ";
       break;
     case 'title':
-      $sortby = "ORDER BY SUBSTRING(n.title,1,1) %s, b.biblio_year DESC ";
+      $sortby = "ORDER BY SUBSTRING(n.title,1,1) '%s', b.biblio_year DESC ";
       break;
     case 'year':
     default:
-      $sortby = "ORDER BY b.biblio_year %s, SUBSTRING(n.title,1,1) ASC, b.biblio_type ASC ";
+      $sortby = "ORDER BY b.biblio_year '%s', SUBSTRING(n.title,1,1) ASC, b.biblio_type ASC ";
   } //end switch
   if (!isset($_SESSION['biblio_filter']) || !is_array($_SESSION['biblio_filter'])) {
     $_SESSION['biblio_filter'] = array();
@@ -1059,14 +1059,14 @@ function biblio_db_search() {
           array_push($args, $type, $term);
           switch ($term) {
             case 'type':
-              $sortby = "ORDER BY b.biblio_type %s, b.biblio_year DESC, SUBSTRING(n.title,1,1) ASC ";
+              $sortby = "ORDER BY b.biblio_type '%s', b.biblio_year DESC, SUBSTRING(n.title,1,1) ASC ";
               break;
             case 'title':
-              $sortby = "ORDER BY SUBSTRING(n.title,1,1) %s, b.biblio_year DESC ";
+              $sortby = "ORDER BY SUBSTRING(n.title,1,1) '%s', b.biblio_year DESC ";
               break;
             case 'year':
             default:
-              $sortby = "ORDER BY b.biblio_year %s, SUBSTRING(n.title,1,1) ASC, b.biblio_type ASC ";
+              $sortby = "ORDER BY b.biblio_year '%s', SUBSTRING(n.title,1,1) ASC, b.biblio_type ASC ";
           } //end switch
           break;
       } 
