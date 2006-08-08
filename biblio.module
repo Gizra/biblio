@@ -1,5 +1,6 @@
-<?php 
-/**
+<?php
+// $Id$ 
+/** 
  * biblio.module for Drupal
  * Author:  Ron Jerome (ron.jerome@nrc.ca)
  * Released under the GPL license
