@@ -118,7 +118,7 @@ function biblio_access($op, $node) {
   }
   if ($op == 'view'){
     if (variable_get('biblio_view_only_own', 0) ){
-       if ($user->uid == $node->uid) {
+       if (  $user->uid == $node->uid ) {
          return true;
        }else{
          return false;
@@ -1033,27 +1033,25 @@ global $user;
   $pager_attrib = array("sort" => variable_get('biblio_sort', 'year'), 'order' => variable_get('biblio_order', 'DESC'));
   $limits = null;
 
-  $params = array('sort', 'order');
-  foreach ($params as $param) {
-    if (isset($_GET[$param])) {
-      if ($param == 'order' ){
-         if (strtoupper($_GET[$param]) != "ASC" && strtoupper($_GET[$param]) != "DESC"){
-            $pager_attrib["$param"] = "DESC";
-         }else{
-            $pager_attrib["$param"] = db_escape_string($_GET[$param]);
-         }
-      }elseif ($param == 'sort' ){
-         if (strtoupper($_GET[$param]) != "YEAR" && 
-             strtoupper($_GET[$param]) != "TYPE" && 
-             strtoupper($_GET[$param]) != "TITLE") 
-         {
-            $pager_attrib["$param"] = "year";
-         }else{
-            $pager_attrib["$param"] = db_escape_string($_GET[$param]);
-         }
+  if (isset($_GET['order'])){
+    $pager_attrib['order'] = ($_GET['order'] == 'desc') ? 'desc' : 'asc';
+  }
+  if (isset($_GET['sort'])){
+    switch($_GET['sort']){
+    case "year":
+      $pager_attrib['sort'] = ($_GET['sort'] == 'year') ? 'year' : 'year';
+      break;
+    case "type":
+      $pager_attrib['sort'] = ($_GET['sort'] == 'type') ? 'type' : 'year';
+      break;
+    case "title":
+      $pager_attrib['sort'] = ($_GET['sort'] == 'title') ? 'title' : 'year';
+      break;
+    default:
+      $pager_attrib['sort'] =  'year';
+    
       }
-    } 
-  } 
+ }
 
   switch ($pager_attrib['sort']) {
     case 'type':
@@ -1105,10 +1103,7 @@ global $user;
           array_push($args, $type, (int)$term);
           break;
         case 'order':
-          $term = db_escape_string($arg_list[0]);
-          if (strtoupper($term) != "ASC" && strtoupper($term) != "DESC"){
-            $term = "DESC";
-          } 
+          $term = (db_escape_string($arg_list[0]) == 'desc')?'desc':'asc';
           array_shift($arg_list);
           $pager_attrib['order'] = $term;
           array_push($args, $type, $term);
