@@ -112,7 +112,20 @@ function biblio_access($op, $node) {
   if ($op == 'update' || $op == 'delete') {
     if (user_access('edit own biblio entries') && ($user->uid == $node->uid)) {
       return true;
+    }else{
+      return false;
     } 
+  }
+  if ($op == 'view'){
+    if (variable_get('biblio_view_only_own', 0) ){
+       if ($user->uid == $node->uid) {
+         return true;
+       }else{
+         return false;
+       }
+    }else{
+       return true;
+    }
   } 
 } 
 
@@ -159,6 +172,15 @@ function biblio_settings() {
                                (Note: This setting does not change the entry in the database, 
                                only how it is formated after it is retrieved from the database,
                                thus you can turn it on and off at will.)'),
+  );
+  $form['biblio_view_only_own'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Restrict users such that they can only view their own biblio entries'),
+    '#return_value' => 1,
+    '#default_value' => variable_get('biblio_view_only_own', 0),
+    '#description' => t('This option restricts the users capability to view biblio
+                         entries.  They will only be able to see the entries which
+                         they have created and own.')
   );
   $form['biblio_endnote_export'] = array(
     '#type' => 'checkbox',
@@ -1002,26 +1024,47 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
 } 
 
 function biblio_db_search() {
+global $user;
+
+   if (variable_get('biblio_view_only_own', 0) ){
+      $limit .= " AND n.uid=$user->uid ";
+   }
+
   $pager_attrib = array("sort" => variable_get('biblio_sort', 'year'), 'order' => variable_get('biblio_order', 'DESC'));
   $limits = null;
 
   $params = array('sort', 'order');
   foreach ($params as $param) {
     if (isset($_GET[$param])) {
-      $pager_attrib["$param"] = db_escape_string($_GET[$param]);
+      if ($param == 'order' ){
+         if (strtoupper($_GET[$param]) != "ASC" && strtoupper($_GET[$param]) != "DESC"){
+            $pager_attrib["$param"] = "DESC";
+         }else{
+            $pager_attrib["$param"] = db_escape_string($_GET[$param]);
+         }
+      }elseif ($param == 'sort' ){
+         if (strtoupper($_GET[$param]) != "YEAR" && 
+             strtoupper($_GET[$param]) != "TYPE" && 
+             strtoupper($_GET[$param]) != "TITLE") 
+         {
+            $pager_attrib["$param"] = "year";
+         }else{
+            $pager_attrib["$param"] = db_escape_string($_GET[$param]);
+         }
+      }
     } 
   } 
 
   switch ($pager_attrib['sort']) {
     case 'type':
-      $sortby = "ORDER BY b.biblio_type '%s', b.biblio_year DESC, SUBSTRING(n.title,1,1) ASC ";
+      $sortby = "ORDER BY b.biblio_type %s, b.biblio_year DESC, SUBSTRING(n.title,1,1) ASC ";
       break;
     case 'title':
-      $sortby = "ORDER BY SUBSTRING(n.title,1,1) '%s', b.biblio_year DESC ";
+      $sortby = "ORDER BY SUBSTRING(n.title,1,1) %s, b.biblio_year DESC ";
       break;
     case 'year':
     default:
-      $sortby = "ORDER BY b.biblio_year '%s', SUBSTRING(n.title,1,1) ASC, b.biblio_type ASC ";
+      $sortby = "ORDER BY b.biblio_year %s, SUBSTRING(n.title,1,1) ASC, b.biblio_type ASC ";
   } //end switch
   if (!isset($_SESSION['biblio_filter']) || !is_array($_SESSION['biblio_filter'])) {
     $_SESSION['biblio_filter'] = array();
@@ -1063,6 +1106,9 @@ function biblio_db_search() {
           break;
         case 'order':
           $term = db_escape_string($arg_list[0]);
+          if (strtoupper($term) != "ASC" && strtoupper($term) != "DESC"){
+            $term = "DESC";
+          } 
           array_shift($arg_list);
           $pager_attrib['order'] = $term;
           array_push($args, $type, $term);
@@ -1074,21 +1120,20 @@ function biblio_db_search() {
           array_push($args, $type, $term);
           switch ($term) {
             case 'type':
-              $sortby = "ORDER BY b.biblio_type '%s', b.biblio_year DESC, SUBSTRING(n.title,1,1) ASC ";
+              $sortby = "ORDER BY b.biblio_type %s, b.biblio_year DESC, SUBSTRING(n.title,1,1) ASC ";
               break;
             case 'title':
-              $sortby = "ORDER BY SUBSTRING(n.title,1,1) '%s', b.biblio_year DESC ";
+              $sortby = "ORDER BY SUBSTRING(n.title,1,1) %s, b.biblio_year DESC ";
               break;
             case 'year':
             default:
-              $sortby = "ORDER BY b.biblio_year '%s', SUBSTRING(n.title,1,1) ASC, b.biblio_type ASC ";
+              $sortby = "ORDER BY b.biblio_year %s, SUBSTRING(n.title,1,1) ASC, b.biblio_type ASC ";
           } //end switch
           break;
       } 
     } 
   } 
   $query = "SELECT * FROM {node} n left join {biblio} b  on n.nid=b.nid  WHERE n.type='biblio' $limit $sortby ";
-
   $_SESSION['last_biblio_query'] = $query;
   $terms[] = $pager_attrib['order'];
   $_SESSION['last_biblio_query_terms'] = $terms;
