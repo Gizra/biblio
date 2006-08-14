@@ -966,11 +966,14 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
   if (variable_get('biblio_endnote_export', 0)) {
     $content .= '<div class="biblio_export">Export (' . $pager_total_items[0] . ') results in Endnote '.l("Tagged","biblio/export/endnote"). ' or '.l("XML","biblio/export/endnote7XML").'</div>';
   } 
-  $content .= '<div class="biblio_sort">Sort by: 
-                 <a href="' . $_GET["q"] . '?sort=year&order=' . $order . '" title="Click a second time to reverse the sort order">' . 'Year</a> 
-                 <a href="' . $_GET["q"] . '?sort=title&order=' . $order . '" title="Click a second time to reverse the sort order">' . 'Title </a>
-                 <a href="' . $_GET["q"] . '?sort=type&order=' . $order . '" title="Click a second time to reverse the sort order">' . "Type </a>
-                </div> ";
+
+  $sort_attr = array("title"=>t("Click a second time to reverse the sort order"));
+  $content .= '<div class="biblio_sort">Sort by:';
+  $content .= " ".l("Year",$_GET['q'],$sort_attr,"&sort=year&order=$order");
+  $content .= " ".l("Title",$_GET['q'],$sort_attr,"&sort=title&order=$order");
+  $content .= " ".l("Type",$_GET['q'],$sort_attr,"&sort=type&order=$order");
+  $content .= "</div> ";
+
   $session = &$_SESSION['biblio_filter'];
   if (count($args)) {
     $content .= '<b>Filters: </b>';
