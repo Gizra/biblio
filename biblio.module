@@ -855,7 +855,7 @@ function biblio_block($op = 'list', $delta = 0) {
     } else if ($op == 'view') {
       // Retrieve the latest pubs
       // $sql = "SELECT n.title FROM (node) n WHERE n.type = 'biblio' ORDER BY n.created DESC"
-      $result = db_query_range(db_rewrite_sql("SELECT n.title, n.nid FROM {node} AS n WHERE n.type = 'biblio' ORDER BY n.created DESC"), 0, 4);
+      $result = db_query_range(db_rewrite_sql("SELECT n.nid, n.title FROM {node} AS n WHERE n.type = 'biblio' ORDER BY n.created DESC"), 0, 4);
       if (db_num_rows($result)) {
         $block['subject'] = t('New Publications');
         $block['content'] .= '<div class="item-list"><ul>';
