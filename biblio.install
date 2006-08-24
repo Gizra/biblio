@@ -6,7 +6,7 @@ function biblio_install() {
     case 'mysql':
     case 'mysqli':
         
-      $result[] = db_query ("CREATE TABLE `biblio` (
+      $result[] = db_query ("CREATE TABLE {biblio} (
         `nid` int(10) NOT NULL default '0',
         `biblio_type` int(11) NOT NULL default '0',
         `biblio_number` varchar(10) default NULL,
@@ -43,7 +43,7 @@ function biblio_install() {
         FULLTEXT KEY `authors` (`biblio_authors`)
       ) ENGINE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */;");
       
-      $result[] = db_query("CREATE TABLE `biblio_fields` (
+      $result[] = db_query("CREATE TABLE {biblio_fields} (
         `fid` int(11) NOT NULL default '0',
         `name` varchar(100) NOT NULL default '',
         `title` varchar(100) NOT NULL default '',
@@ -58,7 +58,7 @@ function biblio_install() {
         PRIMARY KEY  (`fid`)
       ) ENGINE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */;");
 
-      $result[] = db_query("INSERT INTO `biblio_fields` (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`weight`) VALUES 
+      $result[] = db_query("INSERT INTO {biblio_fields} (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`weight`) VALUES 
        (1,'biblio_authors','Authors',1,'textfield',60,255,'Author names must be separated by semicolons',1,0,1),
        (2,'biblio_secondary_authors','Secondary Authors',0,'textfield',60,255,'',0,0,21),
        (3,'biblio_tertiary_authors','Tertiary Authors',0,'textfield',60,255,'',0,0,26),
@@ -71,7 +71,8 @@ function biblio_install() {
        (10,'biblio_other_number','Other Numbers',1,'textfield',10,24,'',0,0,153),
        (11,'biblio_other_author_affiliations','Other Author Affiliations',0,'textfield',60,255,'',0,0,24),
        (12,'biblio_publisher','Publisher',0,'textfield',60,255,'',0,0,19);");
-      $result[] = db_query("INSERT INTO `biblio_fields` (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`weight`) VALUES 
+
+      $result[] = db_query("INSERT INTO {biblio_fields} (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`weight`) VALUES 
        (13,'biblio_place_published','Place Published',0,'textfield',60,255,'',0,0,20),
        (14,'biblio_year','Year of Publication',1,'textfield',4,4,'(yyyy)',1,0,-45),
        (15,'biblio_edition','Edition',0,'textfield',60,255,'',0,0,15),
@@ -85,11 +86,12 @@ function biblio_install() {
        (23,'biblio_keywords','Key Words',1,'textfield',60,255,'',0,0,154),
        (24,'biblio_type_of_work','Type of Work',0,'textfield',60,255,'Masters Thesis, PhD Thesis, etc.',0,0,22),
        (25,'biblio_url','URL',1,'textfield',60,255,'',0,0,158);");
-      $result[] = db_query("INSERT INTO `biblio_fields` (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`weight`) VALUES 
+
+      $result[] = db_query("INSERT INTO (biblio_fields} (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`weight`) VALUES 
        (26,'biblio_notes','Notes',1,'textarea',60,15,'',0,0,157),
        (27,'biblio_issue','Issue',0,'textfield',10,10,'',0,0,15);");
 
-      $result[] = db_query("CREATE TABLE `biblio_types` (
+      $result[] = db_query("CREATE TABLE {biblio_types} (
         `tid` int(11) NOT NULL auto_increment,
         `name` varchar(64) NOT NULL default '',
         `description` varchar(255) default NULL,
@@ -97,7 +99,7 @@ function biblio_install() {
       ) ENGINE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */;"); 
 
      // some default types...
-      $result[] = db_query("INSERT INTO `biblio_types` (`tid`,`name`,`description`) VALUES 
+      $result[] = db_query("INSERT INTO {biblio_types} (`tid`,`name`,`description`) VALUES 
        (-1,'Select Type...',NULL),
        (1,'Journal Paper',NULL),
        (2,'Refereed Conference Paper',NULL),
@@ -110,7 +112,7 @@ function biblio_install() {
        (9,'Other Publication',NULL);");
 
 
-      $result[] = db_query("CREATE TABLE `biblio_type_details` (
+      $result[] = db_query("CREATE TABLE {biblio_type_details} (
         `tdid` int(11) NOT NULL auto_increment,
         `tid` int(11) NOT NULL default '0',
         `fid` int(11) NOT NULL default '0',
@@ -124,7 +126,7 @@ function biblio_install() {
       ) ENGINE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */;");
 
       // some customizations of the default types 
-      $result[] = db_query("INSERT INTO `biblio_type_details` (`tid`,`fid`,`title`,`hint`,`required`,`visible`,`weight`) VALUES 
+      $result[] = db_query("INSERT INTO {biblio_type_details} (`tid`,`fid`,`title`,`hint`,`required`,`visible`,`weight`) VALUES 
        (1,16,'Volume','',0,1,14),
        (1,19,'Journal Date','(mm/yyyy)',0,1,3),
        (1,5,'Journal Title','',1,1,2),
@@ -152,7 +154,7 @@ function biblio_install() {
        (4,6,'Series Title','',0,1,13),
        (4,16,'Volume','',0,1,14),
        (4,15,'Edition','',0,1,15);");
-      $result[] = db_query("INSERT INTO `biblio_type_details` (`tid`,`fid`,`title`,`hint`,`required`,`visible`,`weight`) VALUES 
+      $result[] = db_query("INSERT INTO {biblio_type_details} (`tid`,`fid`,`title`,`hint`,`required`,`visible`,`weight`) VALUES 
        (4,18,'Pagination','',0,1,17),
        (4,19,'Conference Start Date','(dd/mm/yyyy)',0,1,18),
        (4,12,'Publisher','',0,1,19),
@@ -179,7 +181,7 @@ function biblio_install() {
        (8,12,'Assignee','',0,1,19),
        (8,19,'Date','(mm/yyyy)',0,1,18),
        (8,18,'Pages','',0,1,17);");
-      $result[] = db_query("INSERT INTO `biblio_type_details` (`tid`,`fid`,`title`,`hint`,`required`,`visible`,`weight`) VALUES 
+      $result[] = db_query("INSERT INTO {biblio_type_details} (`tid`,`fid`,`title`,`hint`,`required`,`visible`,`weight`) VALUES 
        (8,27,'Issue','',0,1,15),
        (8,5,'Published Source','',0,1,12),
        (8,13,'Country','',0,1,13),
@@ -203,7 +205,7 @@ function biblio_update_1() {
   return _system_update_utf8(array('biblio','biblio_fields','biblio_types','biblio_type_details'));
 }
 function biblio_update_2() {
-  $result = db_query("alter table biblio_types modify tid int(11) auto_increment;");
+  $result = db_query("alter table {biblio_types} modify tid int(11) auto_increment;");
   return $result;
 }
 
