@@ -87,7 +87,7 @@ function biblio_install() {
        (24,'biblio_type_of_work','Type of Work',0,'textfield',60,255,'Masters Thesis, PhD Thesis, etc.',0,0,22),
        (25,'biblio_url','URL',1,'textfield',60,255,'',0,0,158);");
 
-      $result[] = db_query("INSERT INTO (biblio_fields} (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`weight`) VALUES 
+      $result[] = db_query("INSERT INTO {biblio_fields} (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`weight`) VALUES 
        (26,'biblio_notes','Notes',1,'textarea',60,15,'',0,0,157),
        (27,'biblio_issue','Issue',0,'textfield',10,10,'',0,0,15);");
 
