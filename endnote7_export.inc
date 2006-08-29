@@ -1,4 +1,5 @@
 <?php
+// $Id$ 
 function _endnote7_XML_export($result){
 
 

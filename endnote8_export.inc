@@ -1,4 +1,5 @@
 <?PHP
+// $Id$ 
 function en8_XMLout($result){
   
   $sml = '<?xml version="1.0" encoding="UTF-8"?>';
