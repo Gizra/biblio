@@ -298,6 +298,10 @@ function biblio_menu($may_cache) {
       'access' => user_access('import from file'),
       'type' => MENU_CALLBACK);
   } 
+    $items[] = array('path' => 'atest', 'title' => t(''),
+      'callback' => 'author_test',
+      'access' => user_access('import from file'),
+      'type' => MENU_CALLBACK);
 
   return $items;
 } 
@@ -346,7 +350,7 @@ function biblio_form_types(){
   $rows[] = array('','Default',l('edit', 'admin/settings/biblio/types/edit'),'');
 
   while ($row = db_fetch_object($result)) {
-    $rows[] = array($row->tid,$row->name,l('edit', 'admin/settings/biblio/types/edit/'. $row->tid),l('delete', 'admin/settings/biblio/types/delete/'. $row->tid));
+    $rows[] = array($row->tid,$row->name,l('edit', 'admin/settings/biblio/types/edit/'. $row->tid),'');
   } 
   $header =array('Type Id','Type Name', array('data' => t('Operations'), 'colspan' => '2'));
   $output  = theme('table',$header,$rows);
@@ -428,7 +432,7 @@ function theme_biblio_type_form_edit($form){
 //  }
   }
   if ($form['tid']){
-    $header =array('Field Name','Default Title','Hint','Common','Custom','Required','Weight');
+    $header =array('Field Name','Default Title','Hint','Common','Visible','Required','Weight');
   }else{
     $header =array('Field Name','Default Title','Hint','Common','Required','Weight');
 
@@ -443,6 +447,7 @@ function theme_biblio_type_form_edit($form){
 function biblio_type_form_edit_submit($form_id, $edit) {
 
   $tid = $edit['tid']?$edit['tid']:NULL;
+
   if ($tid){
     $vis_comm = $tid?'visible':'common';
 
@@ -470,7 +475,7 @@ function biblio_type_form_edit_submit($form_id, $edit) {
       //print_r(array_merge($value,array($key)));
     }
  }    
-  drupal_set_message(t('The changes have been saved.'));
+  drupal_set_message(t("The changes have been saved."));
 
   // Clear the cached pages and menus:
   menu_rebuild();
@@ -769,7 +774,9 @@ function biblio_validate(&$node) {
 */
 
 } 
+function biblio_insert_authors($nid, $authors=array() ){
 
+}
 /**
 * Implementation of hook_insert().
 * 
@@ -1015,7 +1022,7 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
     $content .= theme('biblio_short', $pub);
     $content .= "</div>\n";
   } //end while
-  $content .= theme('pager', 0, variable_get('biblio_rowsperpage', 25), 0, $attrib);
+  $content .= theme('pager', 0, variable_get('biblio_rowsperpage', 25), 0);
   if (!db_num_rows($result)) {
     $content .= t("<H3>No items found</H3>");
     if (strstr($content, "Filters:")) {
@@ -1358,7 +1365,8 @@ function biblio_form_import() {
         $import = file_save_upload($import);
         drupal_set_message("File was successfully uploaded", 'status');
         if ($filetype == 'tagged') $content = _endnote_tagged_import($import->filepath);
-        if ($filetype == 'xml') $content = _endnote7_XML_import($import->filepath);
+        if ($filetype == 'xml')  $content = _endnote_XML_import($import->filepath,7);
+        if ($filetype == 'xml8') $content = _endnote_XML_import($import->filepath,8);
         file_delete($import->filepath);
       } else {
         drupal_set_message("File was NOT successfully uploaded", 'error');
@@ -1376,7 +1384,7 @@ function biblio_form_import() {
         '#type' => 'radios',
         '#title' => t('File Type'),
         '#default_value' => $edit['filetype'],
-        '#options' => array('tagged' => t('EndNote Tagged') , 'xml'=>t('EndNote 7 XML')),
+        '#options' => array('tagged' => t('EndNote Tagged') , 'xml'=>t('EndNote 7 XML'), 'xml8'=>t('EndNote 8+ XML')),
       );
       $form['button'] = array(
         '#type' => 'button',
@@ -1717,6 +1725,65 @@ if (extension_loaded('domxml')) {
 }
 
 } 
+function _endnote_XML_import($filename = null, $version = 8) {
+global $user,$records, $rec_count,$node_array,$node,$node_id;
+
+  $node_array = array();
+  $node = array();
+  $node['type'] = "biblio";
+  $node['created'] = time();
+  $node['changed'] = time();
+  $node['comment'] = 0;
+  $node['promote'] = 0;
+  $node['moderate'] = 0;
+  $node['sticky'] = 0;
+  $node['format'] = 0;
+  $node['status'] = 1;
+  $node['uid'] = $user->uid;
+  
+  if (!($fp = fopen($filename, "r"))) {
+   	drupal_set_message(t('The biblio module was unable to read the XML file supplied.'), 'error');
+    drupal_goto("admin/settings/biblio/import");
+  }
+  $data = fread($fp, filesize($filename));
+  $xml_parser = drupal_xml_parser_create($data);
+  
+// use case-folding so we are sure to find the tag in 
+  xml_parser_set_option($xml_parser, XML_OPTION_CASE_FOLDING, false);
+  xml_parser_set_option($xml_parser, XML_OPTION_SKIP_WHITE, true);
+  if ($version == 8){
+    require_once('./'.base_path() . drupal_get_path('module', 'biblio') . '/endnote8_parser.inc');
+    xml_set_element_handler($xml_parser, "en8_startElement", "en8_endElement");
+    xml_set_character_data_handler($xml_parser, "en8_characterData");
+  }elseif ($version == 7){
+    require_once('./'.base_path() . drupal_get_path('module', 'biblio') . '/endnote7_parser.inc');
+    xml_set_element_handler($xml_parser, "en7_startElement", "en7_endElement");
+    xml_set_character_data_handler($xml_parser, "en7_characterData");
+  
+  }
+/*  while ($data = fread($fp, 4096)) {
+    if (!xml_parse($xml_parser, $data, feof($fp))) {
+   	  drupal_set_message(t("XML error: ".xml_error_string(xml_get_error_code($xml_parser)).
+                            "at line ".xml_get_current_line_number($xml_parser)), 'error');
+      drupal_goto("admin/settings/biblio/import");
+    }
+}
+*/
+  xml_parse($xml_parser, $data,1);
+  xml_parser_free($xml_parser);
+  
+  if (function_exists('node_save')) {
+    foreach ($node_array as $node) {
+      $node_obj = (object)$node;
+      $nodeid = node_save($node_obj);
+      if ($node_obj->nid) { 
+         $content .= t('Successfully imported node' . l("$node_obj->nid", "node/$node_obj->nid")) . '<br>';
+      }
+    } 
+  }
+  
+  return $content;
+} 
 
 function biblio_get_db_fields() {
 return array('nid', 'biblio_type', 'biblio_number', 'biblio_other_number',
@@ -1759,9 +1826,7 @@ $authors = str_replace(",,", ",", $authors); // ditto
 $chunks = explode(";", $authors); // split the authors on the semicolon
 $num_chunks = count($chunks);
 // print_r($chunks);
-for($i = 0;
-  $i < count($chunks);
-  $i++) {
+for($i = 0;  $i < count($chunks);  $i++) {
   $suffix = _get_suffix($chunks[$i]); // get and strip out the suffix
   $prefix = _get_prefix($chunks[$i]); // get and strip out the prefix
   if (strstr($chunks[$i], ",")) { // we probably have lastname first
@@ -1769,9 +1834,7 @@ for($i = 0;
     $lastname = $subchunks[0];
     $subchunks = explode(" ", trim($subchunks[1]));
     $initials = "";
-    for ($j = 0;
-      $j < count($subchunks) ;
-      $j++) {
+    for ($j = 0; $j < count($subchunks) ;  $j++) {
       if (substr_count($subchunks[$j], '.')) {
         $initials .= $subchunks[$j];
       } else {
@@ -1916,4 +1979,107 @@ function _form_restore_attributes(&$element) {
     $element[str_replace('#_form_original_', '', $key)] = $element[$key];
   }
 }
+function author_test(){
+    $result  = db_query("SELECT nid, biblio_authors FROM {biblio} WHERE biblio_authors LIKE '%SMALLWOOD%'");
+    $carray = array();
+    while ($authors = db_fetch_object($result)){
+        $carray = explode(";",$authors->biblio_authors);
+        $creators = _parse_author_array($carray);
+       echo $authors->nid;
+        print_r($creators);
+         
+    }
+    //print_r($carray);
+    $creators = _parse_author_array($carray);
+    print_r($creators);
+}
+function _parse_author_array($authorArray)
+{
+//	$input = trim($input);
+// split on ' and ' 
+//	$authorArray = preg_split("/\s(and)\s/i", $input);
+// check if there's anything that looks like et. al
+  $count=1;
+	foreach($authorArray as $value)
+	{
+		$appellation = $prefix = $surname = $firstname = $initials = '';
+		$author = explode(",", preg_replace("/\s{2,}/", ' ', trim($value)));
+		$size = sizeof($author);
+// No commas therefore something like Mark Grimshaw, Mark Nicholas Grimshaw, M N Grimshaw, Mark N. Grimshaw
+		if($size == 1)
+		{
+			$author = split(" ", $value);
+// last of array is surname (no prefix if entered correctly)
+			$surname = array_pop($author);
+		}
+// Something like Grimshaw, Mark or Grimshaw, Mark Nicholas  or Grimshaw, M N or Grimshaw, Mark N.
+		else if($size == 2)
+		{
+// first of array is surname (perhaps with prefix)
+			list($surname, $prefix) = _grabSurname(array_shift($author));
+		}
+// If $size is > 2, we're looking at something like Bush, George W, III
+		else
+		{
+// last of array is 'Jr.', 'IV' etc.
+			$appellation = array_pop($author);
+// first of array is surname (perhaps with prefix)
+			list($surname, $prefix) = _grabSurname(array_shift($author));
+		}
+		$remainder = join(" ", $author);
+		list($firstname, $initials) = _grabFirstnameInitials($remainder);
+		$surname = $surname . ' ' . $appellation;
+		$creators[] = array('first_name'=> "$firstname", 
+                        'initials'  => "$initials", 
+                        'last_name' => "$surname", 
+                        'prefix'    => "$prefix",
+                        'order'     => "$count");
+    $count++;
+	}
+	if(isset($creators))
+		return $creators;
+	return FALSE;
+}
+// grab firstname and initials which may be of form "A.B.C." or "A. B. C. " or " A B C " etc.
+function _grabFirstnameInitials($remainder)
+{
+	$firstname = $initials = '';
+	$array = split(" ", $remainder);
+	foreach($array as $value)
+	{
+		if(preg_match("/[a-zA-Z]{2,}/", trim($value)))
+			$firstnameArray[] = trim($value);
+		else
+			$initialsArray[] = str_replace(".", " ", trim($value));
+	}
+	if(isset($initialsArray))
+	{
+		foreach($initialsArray as $initial)
+			$initials .= ' ' . trim($initial);
+	}
+	if(isset($firstnameArray))
+		$firstname = join(" ", $firstnameArray);
+	return array($firstname, $initials);
+}
+// surname may have title such as 'den', 'von', 'de la' etc. - characterised by first character lowercased
+function _grabSurname($input)
+{
+	$surnameArray = split(" ", $input);
+	foreach($surnameArray as $value)
+	{
+		$firstChar = substr($value, 0, 1);
+		if((ord($firstChar) >= 97) && (ord($firstChar) <= 122))
+			$prefix[] = $value;
+		else
+			$surname[] = $value;
+	}
+	$surname = join(" ", $surname);
+	if(isset($prefix))
+	{
+		$prefix = join(" ", $prefix);
+		return array($surname, $prefix);
+	}
+	return array($surname, FALSE);
+}
+
 
