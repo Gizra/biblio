@@ -246,7 +246,7 @@ function biblio_menu($may_cache) {
       'access' => user_access('access content'),
       'type' => MENU_CALLBACK);
     // The next two "LOCAL TASKS" are for the admin/settings/biblio page  
-    $items[] = array('path' => 'admin/settings/biblio/basic', 'title' => t('Basic'),
+    $items[] = array('path' => 'admin/settings/biblio/basic', 'title' => t('General'),
       'type' => MENU_DEFAULT_LOCAL_TASK, 'weight' => -10);
     $items[] = array('path' => 'admin/settings/biblio/import', 'title' => t('Import'),
       'callback' => 'biblio_form_import',
@@ -290,7 +290,7 @@ function biblio_menu($may_cache) {
       'access' => user_access('access content'),
       'type' => MENU_CALLBACK);
     $items[] = array('path' => 'biblio/export/endnote7XML', 'title' => t(''),
-      'callback' => '_endnote7_XML_export',
+      'callback' => '_endnote_XML_export',
       'access' => user_access('access content'),
       'type' => MENU_CALLBACK);
     $items[] = array('path' => 'biblio/import/form', 'title' => t(''),
@@ -1148,9 +1148,8 @@ global $user;
   biblio_show_results($result, $pager_attrib, $args);
 } 
 
-function _endnote7_XML_export($nid = null) {
+function _endnote_XML_export($nid = null, $version = 7) {
 $params=array();
-if (extension_loaded('domxml')) {
   if ($nid === null && isset($_SESSION['last_biblio_query']) && !empty($_SESSION['last_biblio_query']) ) {
     $query = $_SESSION['last_biblio_query'];
     $params = $_SESSION['last_biblio_query_terms'];    
@@ -1165,90 +1164,19 @@ if (extension_loaded('domxml')) {
   $result = db_query(db_rewrite_sql($query),$params);
 
   if (db_num_rows($result)) {
-    $doc = domxml_new_doc("1.0");
-    $root = $doc->add_root("XML");
-    $records = $root->new_child("RECORDS", "");
-    while ($pub = db_fetch_object($result)) {
-      $record = $records->new_child("RECORD", "");
-      switch ($pub->biblio_type) {
-        case 1: $reftype = 0;
-          break; // journal
-        case 2: // 2,3 and 4
-        case 3: // are all
-        case 4: $reftype = 3;
-          break; // conference proceedings 
-        case 5: $reftype = 10;
-          break; // report
-        case 6: $reftype = 7;
-          break; // book section
-        case 7: $reftype = 2;
-          break; // thesis
-        case 8: $reftype = 15;
-          break; // patent
-        case 9:
-        default:
-          $reftype = 31;
-          break; // generic
-      } 
-      $record->new_child("REFERENCE_TYPE", "$reftype");
-      $record->new_child("YEAR", trim($pub->biblio_year));
-      $record->new_child("TITLE", trim($pub->title));
-      $authors = $record->new_child("AUTHORS", "");
-      if (variable_get('biblio_normalize', 0)) {
-        $pub_authors = _parse_authors($pub->biblio_authors);
-      } else {
-        $pub_authors = $pub->biblio_authors;
-      } 
-      $author_array = explode(";", $pub_authors);
-      foreach($author_array as $auth) {
-        $authors->new_child("AUTHOR", trim($auth));
-      } 
-      if ($pub->biblio_secondary_authors) {
-        $sec_authors = $record->new_child("SECONDARY_AUTHORS", "");
-        $author_array = explode(";", $pub->biblio_secondary_authors);
-        foreach($author_array as $auth) {
-          $sec_authors->new_child("SECONDARY_AUTHOR", trim($auth));
-        } 
-      } 
-      if ($pub->biblio_tertiary_authors) {
-        $ter_authors = $record->new_child("TERTIARY_AUTHORS", "");
-        $author_array = explode(";", $pub->biblio_tertiary_authors);
-        foreach($author_array as $auth) {
-          $ter_authors->new_child("TERTIARY_AUTHOR", trim($auth));
-        } 
-      } 
-      if ($pub->biblio_secondary_title) $record->new_child("SECONDARY_TITLE", htmlspecialchars($pub->biblio_secondary_title));
-      if ($pub->biblio_place_published) $record->new_child("PLACE_PUBLISHED", "$pub->biblio_place_published");
-      if ($pub->biblio_publisher) $record->new_child("PUBLISHER", htmlspecialchars($pub->biblio_publisher));
-      if ($pub->biblio_volume) $record->new_child("VOLUME", "$pub->biblio_volume");
-      if ($pub->biblio_issue) $record->new_child("NUMBER", "$pub->biblio_issue");
-      if ($pub->biblio_pages) $record->new_child("PAGES", "$pub->biblio_pages");
-      if ($pub->biblio_tertiary_title) $record->new_child("TERTIARY_TITLE", "$pub->biblio_tertiary_title");
-      if ($pub->biblio_edition) $record->new_child("EDITION", "$pub->biblio_edition");
-      if ($pub->biblio_date) $record->new_child("DATE", "$pub->biblio_date");
-      if ($pub->biblio_isbn) $record->new_child("ISBN", "$pub->biblio_isbn");
-      if ($pub->biblio_keywords) {
-        $keywords = $record->new_child("KEYWORDS", "");
-        $splitchar = (strstr($pub->biblio_keywords, ";"))?";":" ";
-        $kw_array = explode($splitchar, $pub->biblio_keywords);
-        foreach($kw_array as $kw) {
-          $keywords->new_child("KEYWORD", trim($kw));
-        } 
-      } 
-      if ($pub->biblio_abst_f) $record->new_child("ABSTRACT", trim($pub->biblio_abst_f));
-      if ($pub->biblio_abst_e) $record->new_child("ABSTRACT", htmlentities(trim($pub->biblio_abst_e)));
-      if ($pub->biblio_url) $record->new_child("URL", htmlentities($pub->biblio_url));
-      if ($pub->biblio_notes) $record->new_child("NOTES", trim($pub->biblio_notes));
+     if ($version == 8){
+      require_once('./'.base_path() . drupal_get_path('module', 'biblio') . '/endnote8_export.inc');
+     $xml = _endnote8_XML_export($result);
+    }elseif ($version == 7){
+      require_once('./'.base_path() . drupal_get_path('module', 'biblio') . '/endnote7_export.inc');
+     $xml = _endnote7_XML_export($result);
+    }
+    header('Content-type: application/xml; charset=utf-8');
+    header('Content-Disposition: attachment; filename="endnote'.$version.'.xml"');
+    echo $xml;
 
-    } 
-  } 
-  header('Content-type: application/xml');
-  header('Content-Disposition: attachment; filename="endnote7.xml"');
-  echo $doc->dump_mem();
- }else{
-   print theme("page","DOMXML php extension is not loaded, so the item cannot be exported in XML format");
+  }
 }
-} 
 
 function _endnote_tagged_export($nid = null) {
 $params=array();
