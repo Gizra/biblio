@@ -13,6 +13,9 @@ function biblio_install() {
         `biblio_other_number` varchar(24) default NULL,
         `biblio_secondary_title` varchar(255) default NULL,
         `biblio_tertiary_title` varchar(255) default NULL,
+        `biblio_short_title` varchar(255) default NULL,
+        `biblio_alternate_title` varchar(255) default NULL,
+        `biblio_translated_title` varchar(255) default NULL,
         `biblio_authors` varchar(255) default NULL,
         `biblio_secondary_authors` varchar(255) default NULL,
         `biblio_tertiary_authors` varchar(255) default NULL,
@@ -20,6 +23,8 @@ function biblio_install() {
         `biblio_other_author_affiliations` varchar(255) default NULL,
         `biblio_edition` varchar(255) default NULL,
         `biblio_publisher` varchar(255) default NULL,
+        `biblio_original_publication` varchar(255) default NULL,
+        `biblio_reprint_edition` varchar(255) default NULL,
         `biblio_place_published` varchar(255) default NULL,
         `biblio_year` int(11) NOT NULL default '0',
         `biblio_volume` varchar(10) default NULL,
@@ -37,7 +42,15 @@ function biblio_install() {
         `biblio_accession_number` varchar(24) default NULL,
         `biblio_call_number` varchar(24) default NULL,
         `biblio_notes` text,
-        PRIMARY KEY  (`nid`),
+        `biblio_research_notes` text,
+        `biblio_custom1` varchar(255) default NULL,
+        `biblio_custom2` varchar(255) default NULL,
+        `biblio_custom3` varchar(255) default NULL,
+        `biblio_custom4` varchar(255) default NULL,
+        `biblio_custom5` varchar(255) default NULL,
+        `biblio_custom6` varchar(255) default NULL,
+        `biblio_custom7` varchar(255) default NULL,
+       PRIMARY KEY  (`nid`),
         KEY `type` (`biblio_type`),
         KEY `year` (`biblio_year`),
         FULLTEXT KEY `authors` (`biblio_authors`)
@@ -110,7 +123,39 @@ function biblio_install() {
        (7,'Thesis',NULL),
        (8,'Patent',NULL),
        (9,'Other Publication',NULL);");
-
+ /*
+ 				'book'			=>	6,
+				'book_article'		=>	5,
+				'journal_article'	=>	8, // also 11, 15, 16, 17, 18, 22, 24, 29, 30, 33
+				'newspaper_article'	=>	23,
+				'magazine_article'	=>	19,
+				'proceedings_article'	=>	10,
+				'thesis'		=>	32,
+				'web_article'	=>	12,
+				'film'			=>	21,
+				'broadcast'		=>	21,
+				'artwork'		=>	2,
+				'software'		=>	9,
+				'audiovisual'	=>	3,
+				'report'		=>	27,
+				'hearing'		=>	14,
+				'case'			=>	7,
+				'bill'			=>	4,
+				'statute'		=>	31,
+				'patent'		=>	25,
+				'personal'		=>	26,
+				'manuscript'	=>	36,
+				'map'			=>	20,
+				'chart'			=>	38,
+				'unpublished'	=>	34,
+				'database'		=>	45,
+				'government_report'	=>	46,
+				'conference_paper'	=>	47,
+				'classical'		=>	49,
+				'legal_ruling'	=>	50,
+				'miscellaneous'	=>	13, // Generic
+				'miscellaneous_section'	=>	13, // Generic
+*/
 
       $result[] = db_query("CREATE TABLE {biblio_type_details} (
         `tdid` int(11) NOT NULL auto_increment,
@@ -206,7 +251,49 @@ function biblio_update_1() {
 }
 function biblio_update_2() {
   $result = db_query("alter table {biblio_types} modify tid int(11) auto_increment;");
-  return $result;
+
+}
+function biblio_update_3() {
+$result = array();
+
+  $result[] = db_query("ALTER TABLE {biblio} 
+                ADD  `biblio_custom1` varchar(255) default NULL,
+                ADD  `biblio_custom2` varchar(255) default NULL,
+                ADD  `biblio_custom3` varchar(255) default NULL,
+                ADD  `biblio_custom4` varchar(255) default NULL,
+                ADD  `biblio_custom5` varchar(255) default NULL,
+                ADD  `biblio_custom6` varchar(255) default NULL,
+                ADD  `biblio_custom7` varchar(255) default NULL,
+                ADD  `biblio_research_notes` text,
+                ADD  `biblio_number_of_volumes` varchar(10) default NULL,
+                ADD  `biblio_short_title` varchar(255) default NULL,
+                ADD  `biblio_alternate_title` varchar(255) default NULL,
+                ADD  `biblio_original_publication` varchar(255) default NULL,
+                ADD  `biblio_reprint_edition` varchar(255) default NULL,
+                ADD  `biblio_translated_title` varchar(255) default NULL;");
+
+  $result[] = db_query("INSERT INTO {biblio_fields} (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`weight`) VALUES 
+       (28,'biblio_research_notes','Reseach Notes',0,'textarea',60,15,'',0,0,160),
+       (29,'biblio_custom1','Custom 1',0,'textfield',120,255,'',0,0,161),
+       (30,'biblio_custom2','Custom 2',0,'textfield',120,255,'',0,0,162),
+       (31,'biblio_custom3','Custom 3',0,'textfield',120,255,'',0,0,163),
+       (32,'biblio_custom4','Custom 4',0,'textfield',120,255,'',0,0,164),
+       (33,'biblio_custom5','Custom 5',0,'textfield',120,255,'',0,0,165),
+       (34,'biblio_custom6','Custom 6',0,'textfield',120,255,'',0,0,167),
+       (35,'biblio_custom7','Custom 7',0,'textfield',120,255,'',0,0,168),
+       (36,'biblio_number_of_volumes','Number of Volumes',0,'textfield',10,10,'',0,0,15),
+       (37,'biblio_short_title','Short Title',0,'textfield',120,255,'',0,0,169),
+       (38,'biblio_alternate_title','Alternate Title',0,'textfield',120,255,'',0,0,170),
+       (39,'biblio_translated_title','Translated Title',0,'textfield',120,255,'',0,0,170),
+       (40,'biblio_original_publication','Original Publication',0,'textfield',120,255,'',0,0,171),
+       (41,'biblio_reprint_edition','Reprint Edition',0,'textfield',120,255,'',0,0,172);");
+                
+  if (count($result) == count(array_filter($result))) {
+  	return true;
+  }
+  else {
+  	return false;
+  }
 }
 
 ?>
