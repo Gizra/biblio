@@ -378,7 +378,7 @@ function biblio_form_types_edit(){
       $fields[$row['fid']] = $row;
     }
   }
-  $form['current']= array('#tree'=>1);
+  $form['configured_flds']= array('#tree'=>1);
 
   if ($tid){// show an existing type  
 
@@ -409,34 +409,28 @@ function biblio_form_types_edit(){
   $options['required'] = '';
 
   foreach($fields as $key=>$fld){
-       if ($fld['common']) $def_values[$fld['name']][] = 'common';
+    if ($fld['common']) $def_values[$fld['name']][] = 'common';
     if ($fld['required']) $def_values[$fld['name']][] = 'required';
-  //  if ($fld['visible']) $def_values[$fld['name']][] = 'visible';
-  //  $form['current'][$key] = array('#tree'=>1);
-    $form['current'][$key]['name'] = array('#type'=>'markup', '#value'=>$fld['name'],'#weight'=>$fld['weight']);
-    $form['current'][$key]['title'] = array('#type'=>'textfield','#default_value' => $fld['title'],'#size'=>20,'#weight'=>$fld['weight']);
-    $form['current'][$key]['weight'] = array('#type'=>'textfield','#default_value' => $fld['weight'],'#size'=>2,'#weight'=>$fld['weight']);
-    $form['current'][$key]['hint'] = array('#type'=>'textfield','#default_value' => $fld['hint'],'#size'=>10,'#weight'=>$fld['weight']);
-   // if($tid) {$form['types'][$fld['fid']]['common'] = array('#type'=>'markup','#value' => $fld['common']?'X':' ','#weight'=>$fld['weight']);}
-    $form['current'][$key]['checkboxes'] = array('#type'=>'checkboxes','#options'=>$options,'#default_value' =>$def_values[$fld['name']],'#weight'=>$fld['weight']);      
+
+    $form['configured_flds'][$key]['name'] = array('#type'=>'markup', '#value'=>$fld['name'],'#weight'=>$fld['weight']);
+    $form['configured_flds'][$key]['title'] = array('#type'=>'textfield','#value' => $fld['title'],'#size'=>20,'#weight'=>$fld['weight']);
+    $form['configured_flds'][$key]['weight'] = array('#type'=>'textfield','#value' => $fld['weight'],'#size'=>2,'#weight'=>$fld['weight']);
+    $form['configured_flds'][$key]['hint'] = array('#type'=>'textfield','#value' => $fld['hint'],'#size'=>10,'#weight'=>$fld['weight']);
+    if (!$tid){
+      $form['configured_flds'][$key]['hint']['#type']= 'markup';
+      $form['configured_flds'][$key]['title']['#type']= 'markup';
+    }
+    $form['configured_flds'][$key]['checkboxes'] = array('#type'=>'checkboxes','#options'=>$options,'#default_value' =>$def_values[$fld['name']],'#weight'=>$fld['weight']);      
   }
- // }
- if($tid){
- foreach($other_fields as $key=>$fld){
-    $form['other'][$key] = array('#type'=>'markup', '#value'=>$fld['name'],'#weight'=>$fld['weight']);
-   // $form['other']['types'][$key] = array('#tree'=>1);
-    $form['othertypes'][$key]['title'] = array('#type'=>'markup','#value' => $fld['title'],'#weight'=>$fld['weight']);
- //   $form['othertypes'][$key]['type'] = array('#type'=>'markup','#value' => $fld['type'],'#weight'=>$fld['weight']);
-    $form['othertypes'][$key]['size'] = array('#type'=>'markup','#value' => $fld['maxsize'],'#weight'=>$fld['weight']);
-  //  $form['othertypes'][$key]['add'] = array('#type'=>'checkbox','#value' => '','#weight'=>$fld['weight']);
-//    $form['other']['types'][$fld['fid']]['weight'] = array('#type'=>'textfield','#default_value' => $fld['weight'],'#size'=>2,'#weight'=>$fld['weight']);
-//    $form['other']['types'][$fld['fid']]['hint'] = array('#type'=>'textfield','#default_value' => $fld['hint'],'#size'=>10,'#weight'=>$fld['weight']);
-   //// if($tid) {$form['types'][$fld['fid']]['common'] = array('#type'=>'markup','#value' => $fld['common']?'X':' ','#weight'=>$fld['weight']);}
-//    $form['types'][$fld['fid']]['checkboxes'] = array('#type'=>'checkboxes','#options'=>$options,'#default_value' =>$def_values[$fld['name']],'#weight'=>$fld['weight']);      
+
+  if($tid){
+    foreach($other_fields as $key=>$fld){
+      $form['avail_flds'][$key]['name'] = array('#type'=>'markup', '#value'=>$fld['name'],'#weight'=>$fld['weight']);
+      $form['avail_flds'][$key]['title'] = array('#type'=>'markup','#value' => $fld['title'],'#weight'=>$fld['weight']);
+      $form['avail_flds'][$key]['size'] = array('#type'=>'markup','#value' => $fld['maxsize'],'#weight'=>$fld['weight']);
+    }
   }
- //   $form['add'] = array('#type' => 'submit', '#value' => t('Add Selected'));
- }
-   $form['submit'] = array('#type' => 'submit', '#value' => t('Save Type'));
+  $form['submit'] = array('#type' => 'submit', '#value' => t('Save'));
   
   return drupal_get_form('biblio_form_types_edit',$form);
 }
@@ -445,71 +439,72 @@ function biblio_form_types_edit(){
 function theme_biblio_form_types_edit($form){
 //print_r($form);
 /*
-  foreach(element_children($form['current']) as $fld){
+  foreach(element_children($form['configured_flds']) as $fld){
   print $fld."\n";
   }
 */
-  $tid = $form['tid']['#value'];
+  $tid = (!empty($form['tid']['#value'])) ? $form['tid']['#value'] : FALSE;
   //print_r($tid);
   drupal_set_title($form['type_name']?$form['type_name']['#value']:"Default");
-  $rows = array();
-  foreach(element_children($form['current']) as $fld){
-//  if ($form['types'][$fld]['checkboxes']['#value']['common'] || $form['types'][$fld]['checkboxes']['#value']['visible']){
-    $row = array();
-        $row[] = array('data' => form_render($form['current'][$fld]['name']));
-        $row[] = array('data' => form_render($form['current'][$fld]['title']),'align' => 'center');
-        $row[] = array('data' => form_render($form['current'][$fld]['hint']),'align' => 'center');
-       if ($form['tid']){
+
+  // build the table with all the fields if no $tid is given, or only the common 
+  // and customized fields if $tid is given
+  $conf_table = array();
+  foreach(element_children($form['configured_flds']) as $fld){
+    $conf_row = array();
+    $conf_row[] = array('data' => form_render($form['configured_flds'][$fld]['name']));
+    $conf_row[] = array('data' => form_render($form['configured_flds'][$fld]['title']),'align' => 'center');
+    $conf_row[] = array('data' => form_render($form['configured_flds'][$fld]['hint']),'align' => 'center');
+    if ($tid){
        //        $row[] = array('data' => form_render($form['types'][$fld]['common']),'align' => 'center');
+    }
+    foreach (element_children($form['configured_flds'][$fld]['checkboxes']) as $oid) {
+      if (is_array($form['configured_flds'][$fld]['checkboxes'])) {
+            $conf_row[] = array('data' => form_render($form['configured_flds'][$fld]['checkboxes'][$oid]), 'align' => 'center', 'title' => t($oid));
       }
-       foreach (element_children($form['current'][$fld]['checkboxes']) as $oid) {
-          if (is_array($form['current'][$fld]['checkboxes'])) {
-            $row[] = array('data' => form_render($form['current'][$fld]['checkboxes'][$oid]), 'align' => 'center', 'title' => t($oid));
-          }
-        }
-        $row[] = array('data' => form_render($form['current'][$fld]['weight']),'align' => 'center');
-        if($form['cust'][$fld]) {
-          $row[] = array('data' => l('remove',"biblio/type/remove/$tid/$fld"),'align' => 'left');
-        }else{
-          $row[] = array('data' => "",'align' => 'left');
-          }
-      $rows[] = $row;
-//  }
+    }
+    $conf_row[] = array('data' => form_render($form['configured_flds'][$fld]['weight']),'align' => 'center');
+    if($form['cust'][$fld]) {
+      $conf_row[] = array('data' => l('remove',"biblio/type/remove/$tid/$fld"),'align' => 'left');
+    }else{
+      $conf_row[] = array('data' => "",'align' => 'left');
+    }
+    $conf_table[] = $conf_row;
   }
-  if ($form['tid']){
-//    $header =array('Field Name','Default Title','Hint','Common','Visible','Required','Weight');
+  if ($tid){
     $header =array('Field Name','Default Title','Hint','Required','Weight','Action');
   }else{
     $header =array('Field Name','Default Title','Hint','Common','Required','Weight');
 
   }
-  $rows2 = array();
-    foreach(element_children($form['other']) as $fld){
-//  if ($form['types'][$fld]['checkboxes']['#value']['common'] || $form['types'][$fld]['checkboxes']['#value']['visible']){
-    $row2 = array();
-       $row2[] = array('data' => '<div>'.form_render($form['other'][$fld]).'</div>');
-//       $row2[] = array('data' => '<b>'.form_render($form['othertypes'][$fld]['type']).'</b>','align' => 'right');
-       $row2[] = array('data' => '<div>'.form_render($form['othertypes'][$fld]['size']).'</div>','align' => 'left');
-       $row2[] = array('data' => '<b>'.form_render($form['othertypes'][$fld]['title']).'</b>','align' => 'left');
-       $row2[] = array('data' => l('add',"biblio/type/add/$tid/$fld"),'align' => 'left');
-        $rows2[] = $row2;
-    }
+  
    
   $output .= '<p>';
-    drupal_add_js('misc/collapse.js');
+  drupal_add_js('misc/collapse.js');
   $output .= '<p><fieldset class=" collapsible"><legend>Currently configured fields</legend>';
-  $output .= theme('table',$header,$rows);
-   $output .= '<p><center>'.form_render($form['submit']).'</center></p>';
+  $output .= theme('table',$header,$conf_table);
+  $output .= '<p><center>'.form_render($form['submit']).'</center></p>';
   $output .= '</fieldset>';
-//  $output .= form_render($form['other']);
  
-  if ($form['tid']){
-    $header2 =array(array('data'=>'Field Name','align'=>'right'),'Size','Default Name','Add');
+  if ($tid){
+    $avail_table = array();
+  
+    foreach(element_children($form['avail_flds']) as $fld){
+      $avail_row = array();
+  
+      $avail_row[] = array('data' => '<div>'.form_render($form['avail_flds'][$fld]['name']).'</div>');
+      $avail_row[] = array('data' => '<div>'.form_render($form['avail_flds'][$fld]['size']).'</div>','align' => 'left');
+      $avail_row[] = array('data' => '<b>'.form_render($form['avail_flds'][$fld]['title']).'</b>','align' => 'left');
+      $avail_row[] = array('data' => l('add',"biblio/type/add/$tid/$fld"),'align' => 'left');
+      $avail_table[] = $avail_row;
+    }
 
-  $output .= '<p><fieldset class=" collapsible"><legend>Other available fields</legend>';
-  $output .= theme('table',$header2,$rows2);
-   $output .= '<p><center>'.form_render($form['add']).'</center></p>';
-  $output .= '</fieldset>';
+    $header2 =array(array('data'=>'Field Name','align'=>'right'),'Size','Default Name','Action');
+
+    $output .= '<p><fieldset class=" collapsible"><legend>Other available fields</legend>';
+    $output .= theme('table',$header2,$avail_table);
+    $output .= '<p><center>'.form_render($form['add']).'</center></p>';
+    $output .= '</fieldset>';
   }
   $output .= form_render($form);
   return $output;
@@ -530,9 +525,10 @@ function biblio_type_remove($tid=0,$fid=0){
   drupal_goto("admin/settings/biblio/types/edit/$tid");
 }
 function biblio_form_types_edit_submit($form_id, $edit) {
-print_r($edit);
+echo "$form_id";
+print_r( $edit);
 die;
-  $tid = $edit['tid']?$edit['tid']:NULL;
+  $tid = $edit['tid']?$edit['tid']:false;
 
   if ($tid){
     $vis_comm = $tid?'visible':'common';
