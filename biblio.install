@@ -102,7 +102,22 @@ function biblio_install() {
 
       $result[] = db_query("INSERT INTO {biblio_fields} (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`weight`) VALUES 
        (26,'biblio_notes','Notes',1,'textarea',60,15,'',0,0,157),
-       (27,'biblio_issue','Issue',0,'textfield',10,10,'',0,0,15);");
+       (27,'biblio_issue','Issue',0,'textfield',10,10,'',0,0,15),
+       (28,'biblio_research_notes','Reseach Notes',0,'textarea',60,15,'',0,0,160),
+       (29,'biblio_custom1','Custom 1',0,'textfield',120,255,'',0,0,161),
+       (30,'biblio_custom2','Custom 2',0,'textfield',120,255,'',0,0,162),
+       (31,'biblio_custom3','Custom 3',0,'textfield',120,255,'',0,0,163),
+       (32,'biblio_custom4','Custom 4',0,'textfield',120,255,'',0,0,164),
+       (33,'biblio_custom5','Custom 5',0,'textfield',120,255,'',0,0,165),
+       (34,'biblio_custom6','Custom 6',0,'textfield',120,255,'',0,0,167),
+       (35,'biblio_custom7','Custom 7',0,'textfield',120,255,'',0,0,168),
+       (36,'biblio_number_of_volumes','Number of Volumes',0,'textfield',10,10,'',0,0,15),
+       (37,'biblio_short_title','Short Title',0,'textfield',120,255,'',0,0,169),
+       (38,'biblio_alternate_title','Alternate Title',0,'textfield',120,255,'',0,0,170),
+       (39,'biblio_translated_title','Translated Title',0,'textfield',120,255,'',0,0,170),
+       (40,'biblio_original_publication','Original Publication',0,'textfield',120,255,'',0,0,171),
+       (41,'biblio_reprint_edition','Reprint Edition',0,'textfield',120,255,'',0,0,172);");
+
 
       $result[] = db_query("CREATE TABLE {biblio_types} (
         `tid` int(11) NOT NULL auto_increment,
@@ -164,7 +179,6 @@ function biblio_install() {
         `title` varchar(100) NOT NULL default '',
         `hint` varchar(100) default '',
         `required` tinyint(1) NOT NULL default '0',
-        `visible` tinyint(4) NOT NULL default '0',
         `weight` int(11) NOT NULL default '0',
         PRIMARY KEY  (`tdid`),
         KEY `tid` (`tid`)
@@ -258,7 +272,9 @@ $result = array();
 }
 function biblio_update_3() {
 $result = array();
-
+  
+  $result[] = update_sql("ALTER TABLE {biblio_type_details} DROP COLUMN visible;");
+  
   $result[] = update_sql("ALTER TABLE {biblio} 
                 ADD  `biblio_custom1` varchar(255) default NULL,
                 ADD  `biblio_custom2` varchar(255) default NULL,
