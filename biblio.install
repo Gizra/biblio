@@ -10,6 +10,7 @@ function biblio_install() {
         `nid` int(10) NOT NULL default '0',
         `biblio_type` int(11) NOT NULL default '0',
         `biblio_number` varchar(10) default NULL,
+        `biblio_section` varchar(10) default NULL,
         `biblio_other_number` varchar(24) default NULL,
         `biblio_secondary_title` varchar(255) default NULL,
         `biblio_tertiary_title` varchar(255) default NULL,
@@ -116,18 +117,20 @@ function biblio_install() {
        (38,'biblio_alternate_title','Alternate Title',0,'textfield',120,255,'',0,0,170),
        (39,'biblio_translated_title','Translated Title',0,'textfield',120,255,'',0,0,170),
        (40,'biblio_original_publication','Original Publication',0,'textfield',120,255,'',0,0,171),
-       (41,'biblio_reprint_edition','Reprint Edition',0,'textfield',120,255,'',0,0,172);");
+       (41,'biblio_reprint_edition','Reprint Edition',0,'textfield',120,255,'',0,0,172),
+       (42,'biblio_section','Section',0,'textfield',10,10,'',0,0,15);");
 
 
       $result[] = db_query("CREATE TABLE {biblio_types} (
         `tid` int(11) NOT NULL auto_increment,
         `name` varchar(64) NOT NULL default '',
         `description` varchar(255) default NULL,
+        `weight` int(11) NOT NULL default '0',
         PRIMARY KEY  (`tid`)
       ) ENGINE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */;"); 
 
      // some default types...
-      $result[] = db_query("INSERT INTO {biblio_types} (`tid`,`name`,`description`) VALUES 
+/*      $result[] = db_query("INSERT INTO {biblio_types} (`tid`,`name`,`description`) VALUES 
        (-1,'Select Type...',NULL),
        (1,'Journal Paper',NULL),
        (2,'Refereed Conference Paper',NULL),
@@ -138,39 +141,41 @@ function biblio_install() {
        (7,'Thesis',NULL),
        (8,'Patent',NULL),
        (9,'Other Publication',NULL);");
- /*
- 				'book'			=>	6,
-				'book_article'		=>	5,
-				'journal_article'	=>	8, // also 11, 15, 16, 17, 18, 22, 24, 29, 30, 33
-				'newspaper_article'	=>	23,
-				'magazine_article'	=>	19,
-				'proceedings_article'	=>	10,
-				'thesis'		=>	32,
-				'web_article'	=>	12,
-				'film'			=>	21,
-				'broadcast'		=>	21,
-				'artwork'		=>	2,
-				'software'		=>	9,
-				'audiovisual'	=>	3,
-				'report'		=>	27,
-				'hearing'		=>	14,
-				'case'			=>	7,
-				'bill'			=>	4,
-				'statute'		=>	31,
-				'patent'		=>	25,
-				'personal'		=>	26,
-				'manuscript'	=>	36,
-				'map'			=>	20,
-				'chart'			=>	38,
-				'unpublished'	=>	34,
-				'database'		=>	45,
-				'government_report'	=>	46,
-				'conference_paper'	=>	47,
-				'classical'		=>	49,
-				'legal_ruling'	=>	50,
-				'miscellaneous'	=>	13, // Generic
-				'miscellaneous_section'	=>	13, // Generic
-*/
+ */
+      $result[] = db_query("INSERT INTO {biblio_types} (`tid`,`name`,`description`,weight) VALUES 
+       (-1,'Select Type...',NULL,-10),
+        (100,'Book',NULL,1),
+				(101,'Book Article',NULL,2),
+				(102,'Journal Article',NULL,3),
+				(103,'Conference Paper',NULL,4),
+				(104,'Proceedings Article',NULL,5),
+				(105,'Newspaper Article',NULL,6),
+				(106,'Magazine Article',NULL,7),
+				(107,'Web Article',NULL,8),
+				(108,'Thesis',NULL,9),
+				(109,'Report',NULL,10),
+				(110,'Film',NULL,11),
+				(111,'Broadcast',NULL,12),
+				(112,'Artwork',NULL,13),
+				(113,'Software',NULL,14),
+				(114,'Audiovisual',NULL,15),
+				(115,'Hearing',NULL,16),
+				(116,'Case',NULL,17),
+				(117,'Bill',NULL,18),
+				(118,'Statute',NULL,19),
+				(119,'Patent',NULL,20),
+				(120,'Personal',NULL,21),
+				(121,'Manuscript',NULL,22),
+				(122,'Map',NULL,23),
+				(123,'Chart',NULL,24),
+				(124,'Unpublished',NULL,25),
+				(125,'Database',NULL,26),
+				(126,'Government Report',NULL,27),
+				(127,'Classical'	,NULL,28),
+				(128,'Legal Ruling'	,NULL,29),
+				(129,'Miscellaneous'	,NULL,30),
+				(130,'Miscellaneous Section'	,NULL,31);");
+
 
       $result[] = db_query("CREATE TABLE {biblio_type_details} (
         `tdid` int(11) NOT NULL auto_increment,
@@ -306,10 +311,96 @@ $result = array();
        (39,'biblio_translated_title','Translated Title',0,'textfield',120,255,'',0,0,170),
        (40,'biblio_original_publication','Original Publication',0,'textfield',120,255,'',0,0,171),
        (41,'biblio_reprint_edition','Reprint Edition',0,'textfield',120,255,'',0,0,172);");
+}
+function biblio_update_4() {
+$result = array();
 
-  
+  $result[] = update_sql("ALTER TABLE {biblio_types} 
+                ADD  `weight` int(11) NOT NULL default '0';");
+                
+ $result[] = update_sql("INSERT INTO {biblio_types} (`tid`,`name`,`description`,weight) VALUES 
+        (100,'Book',NULL,1),
+				(101,'Book Article',NULL,2),
+				(102,'Journal Article',NULL,3),
+				(103,'Conference Paper',NULL,4),
+				(104,'Proceedings Article',NULL,5),
+				(105,'Newspaper Article',NULL,6),
+				(106,'Magazine Article',NULL,7),
+				(107,'Web Article',NULL,8),
+				(108,'Thesis',NULL,9),
+				(109,'Report',NULL,10),
+				(110,'Film',NULL,11),
+				(111,'Broadcast',NULL,12),
+				(112,'Artwork',NULL,13),
+				(113,'Software',NULL,14),
+				(114,'Audiovisual',NULL,15),
+				(115,'Hearing',NULL,16),
+				(116,'Case',NULL,17),
+				(117,'Bill',NULL,18),
+				(118,'Statute',NULL,19),
+				(119,'Patent',NULL,20),
+				(120,'Personal',NULL,21),
+				(121,'Manuscript',NULL,22),
+				(122,'Map',NULL,23),
+				(123,'Chart',NULL,24),
+				(124,'Unpublished',NULL,25),
+				(125,'Database',NULL,26),
+				(126,'Government Report',NULL,27),
+				(127,'Classical'	,NULL,28),
+				(128,'Legal Ruling'	,NULL,29),
+				(129,'Miscellaneous'	,NULL,30),
+				(130,'Miscellaneous Section'	,NULL,31);");
+              
+  $result[] = update_sql("UPDATE {biblio} SET biblio_type = 102 WHERE biblio_type = 1 ");
+  $result[] = update_sql("UPDATE {biblio} SET biblio_type = 103 WHERE biblio_type = 2 ");
+  $result[] = update_sql("UPDATE {biblio} SET biblio_type = 104 WHERE biblio_type = 3 ");
+  $result[] = update_sql("UPDATE {biblio} SET biblio_type = 104 WHERE biblio_type = 4 ");
+  $result[] = update_sql("UPDATE {biblio} SET biblio_type = 109 WHERE biblio_type = 5 ");
+  $result[] = update_sql("UPDATE {biblio} SET biblio_type = 100 WHERE biblio_type = 6 ");
+  $result[] = update_sql("UPDATE {biblio} SET biblio_type = 108 WHERE biblio_type = 7 ");
+  $result[] = update_sql("UPDATE {biblio} SET biblio_type = 119 WHERE biblio_type = 8 ");
+  $result[] = update_sql("UPDATE {biblio} SET biblio_type = 129 WHERE biblio_type = 9 ");
+}
+function biblio_update_5() {
+$result = array();
+
+  $result[] = update_sql("UPDATE {biblio_types} SET tid = -11 WHERE tid = 1 ");
+  $result[] = update_sql("UPDATE {biblio_types} SET tid = -12 WHERE tid = 2 ");
+  $result[] = update_sql("UPDATE {biblio_types} SET tid = -13 WHERE tid = 3 ");
+  $result[] = update_sql("UPDATE {biblio_types} SET tid = -14 WHERE tid = 4 ");
+  $result[] = update_sql("UPDATE {biblio_types} SET tid = -15 WHERE tid = 5 ");
+  $result[] = update_sql("UPDATE {biblio_types} SET tid = -16 WHERE tid = 6 ");
+  $result[] = update_sql("UPDATE {biblio_types} SET tid = -17 WHERE tid = 7 ");
+  $result[] = update_sql("UPDATE {biblio_types} SET tid = -18 WHERE tid = 8 ");
+  $result[] = update_sql("UPDATE {biblio_types} SET tid = -19 WHERE tid = 9 ");
+         
   return $result;
               
 }
+function biblio_update_6() {
+$result = array();
 
+  $result[] = update_sql("UPDATE {biblio_type_details} SET tid = 102 WHERE tid = 1 ");
+  $result[] = update_sql("UPDATE {biblio_type_details} SET tid = 103 WHERE tid = 2 ");
+  $result[] = update_sql("UPDATE {biblio_type_details} SET tid = 104 WHERE tid = 3 ");
+  $result[] = update_sql("UPDATE {biblio_type_details} SET tid = 104 WHERE tid = 4 ");
+  $result[] = update_sql("UPDATE {biblio_type_details} SET tid = 109 WHERE tid = 5 ");
+  $result[] = update_sql("UPDATE {biblio_type_details} SET tid = 100 WHERE tid = 6 ");
+  $result[] = update_sql("UPDATE {biblio_type_details} SET tid = 108 WHERE tid = 7 ");
+  $result[] = update_sql("UPDATE {biblio_type_details} SET tid = 119 WHERE tid = 8 ");
+  $result[] = update_sql("UPDATE {biblio_type_details} SET tid = 129 WHERE tid = 9 ");
+         
+  return $result;
+              
+}
+function biblio_update_7() {
+$result = array();
+
+  $result[] = update_sql("ALTER TABLE {biblio} 
+                ADD  `biblio_section` varchar(10) default NULL ;");
+  
+  $result[] = update_sql("INSERT INTO {biblio_fields} (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`weight`) VALUES 
+       (42,'biblio_section','Section',0,'textfield',10,10,'',0,0,15);");
+  return $result;
+}
 ?>
