@@ -1032,26 +1032,27 @@ function theme_biblio_short($pub) {
   return $output;
 } 
 
-function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' => 'DESC'), $args = null) {
+function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' => 'DESC'), $args = null,$inline=false) {
   global $pager_total_items;
 
   $pub_types = db_query('SELECT t.* FROM {biblio_types as t} WHERE t.tid>0');
   while ($option = db_fetch_object($pub_types)) {
     $pub_type["$option->tid"] = t("$option->name");
   } 
-  // Add some links to the top of the page to change the sorting/ordering...
-  $order = ($attrib['order'] == "desc" || $attrib['order'] == "DESC")?"asc":"desc";
-  if (variable_get('biblio_endnote_export', 0)) {
-    $content .= '<div class="biblio_export">Export (' . $pager_total_items[0] . ') results in Endnote '.l("Tagged","biblio/export/endnote"). ' or '.l("XML","biblio/export/endnote7XML").'</div>';
-  } 
-
-  $sort_attr = array("title"=>t("Click a second time to reverse the sort order"));
-  $content .= '<div class="biblio_sort">Sort by:';
-  $content .= " ".l("Year",$_GET['q'],$sort_attr,"&sort=year&order=$order");
-  $content .= " ".l("Title",$_GET['q'],$sort_attr,"&sort=title&order=$order");
-  $content .= " ".l("Type",$_GET['q'],$sort_attr,"&sort=type&order=$order");
-  $content .= "</div> ";
-
+  if(!$inline){
+    // Add some links to the top of the page to change the sorting/ordering...
+    $order = ($attrib['order'] == "desc" || $attrib['order'] == "DESC")?"asc":"desc";
+    if (variable_get('biblio_endnote_export', 0)) {
+      $content .= '<div class="biblio_export">Export (' . $pager_total_items[0] . ') results in Endnote '.l("Tagged","biblio/export/endnote"). ' or '.l("XML","biblio/export/endnote7XML").'</div>';
+    } 
+  
+    $sort_attr = array("title"=>t("Click a second time to reverse the sort order"));
+    $content .= '<div class="biblio_sort">Sort by:';
+    $content .= " ".l("Year",$_GET['q'],$sort_attr,"&sort=year&order=$order");
+    $content .= " ".l("Title",$_GET['q'],$sort_attr,"&sort=title&order=$order");
+    $content .= " ".l("Type",$_GET['q'],$sort_attr,"&sort=type&order=$order");
+    $content .= "</div> ";
+  }
   $session = &$_SESSION['biblio_filter'];
   if (count($args)) {
     $content .= '<b>Filters: </b>';
@@ -1101,11 +1102,17 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
       $content .= ' or '.l(t('remove'),'biblio/filter/clear').' your filters and try again.';
     }
   } 
-  print theme('page', $content);
+  if (!$inline) {
+    print theme('page', $content);
+  }else{ 
+    print $content;
+  }
+
 } 
 
 function biblio_db_search() {
 global $user;
+$inline = false;
 
    if (variable_get('biblio_view_only_own', 0) ){
       $limit .= " AND n.uid=$user->uid ";
@@ -1162,6 +1169,9 @@ global $user;
       $type = $arg_list[0];
       array_shift($arg_list);
       switch ($type) {
+        case 'inline':
+          $inline = true;
+          break;
         case 'author':
           $term = db_escape_string($arg_list[0]);
           array_shift($arg_list);
@@ -1216,7 +1226,7 @@ global $user;
 
   $result = pager_query(db_rewrite_sql($query), variable_get('biblio_rowsperpage', 25),0,null,$terms);
 
-  biblio_show_results($result, $pager_attrib, $args);
+  biblio_show_results($result, $pager_attrib, $args,$inline);
 } 
 
 function _endnote_XML_export($nid = null, $version = 7) {
