@@ -282,7 +282,11 @@ function biblio_menu($may_cache) {
       'callback' => 'biblio_help_page',
       'access' => user_access('access content'),
       'type' => MENU_CALLBACK);
-    $items[] = array('path' => 'biblio/export/endnote', 'title' => t(''),
+    $items[] = array('path' => 'biblio/export', 'title' => t(''),
+      'callback' => '_export',
+      'access' => user_access('access content'),
+      'type' => MENU_CALLBACK);
+/*    $items[] = array('path' => 'biblio/export/endnote', 'title' => t(''),
       'callback' => '_endnote_tagged_export',
       'access' => user_access('access content'),
       'type' => MENU_CALLBACK);
@@ -290,6 +294,7 @@ function biblio_menu($may_cache) {
       'callback' => '_endnote_XML_export',
       'access' => user_access('access content'),
       'type' => MENU_CALLBACK);
+*/
     $items[] = array('path' => 'biblio/import/form', 'title' => t(''),
       'callback' => 'biblio_form_import',
       'access' => user_access('import from file'),
@@ -805,8 +810,7 @@ function biblio_form(&$node, &$param) {
         );
 
     }
-
-  return $form;
+ return $form;
 } 
 
 /**
@@ -996,8 +1000,9 @@ function theme_biblio_long($pub) {
   if ($pub->biblio_abst_f) $output .= '<p>' . check_markup($pub->biblio_abst_f,FILTER_HTML_ESCAPE,FALSE) . "\n";
   if ($pub->biblio_notes) $output .= '<h3>'.t("Notes").': </h3>' . check_markup($pub->biblio_notes,FILTER_HTML_ESCAPE,FALSE) . "\n";
   if (variable_get('biblio_endnote_export', 0)) {
-    $output .= '<br><br><B>Export: '.l(t("Tagged"),"biblio/export/endnote/$pub->nid").' </B>';
-    $output .= l("XML","biblio/export/endnote7XML/$pub->nid");
+    $output .= '<br><br><B>Export: '.l(t("Tagged"),"biblio/export/tagged/$pub->nid").' </B>';
+    $output .= l("XML","biblio/export/xml/$pub->nid").' </B>';
+    $output .= l("BibTex","biblio/export/bib/$pub->nid");
   } 
 
   return $output;
@@ -1026,8 +1031,9 @@ function theme_biblio_short($pub) {
   if ($pub->biblio_year) $output .= ', (' . check_plain($pub->biblio_year) . ")\n";
   if ($pub->biblio_abst_e) $output .= l("Abstract", "node/$pub->nid") . "\n";
   if (variable_get('biblio_endnote_export', 0)) {
-    $output .= '<em>Export: '.l("Tagged","biblio/export/endnote/$pub->nid") . '&nbsp';
-    $output .= l("XML","biblio/export/endnote7XML/$pub->nid") . '</em>';
+    $output .= '<br><em>Export: '.l("Tagged","biblio/export/tagged/$pub->nid") . '&nbsp';
+    $output .= l("XML","biblio/export/xml/$pub->nid") . '&nbsp';
+    $output .= l("BibTex","biblio/export/bib/$pub->nid") . '</em>';
   } 
   return $output;
 } 
@@ -1043,7 +1049,7 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
     // Add some links to the top of the page to change the sorting/ordering...
     $order = ($attrib['order'] == "desc" || $attrib['order'] == "DESC")?"asc":"desc";
     if (variable_get('biblio_endnote_export', 0)) {
-      $content .= '<div class="biblio_export">Export (' . $pager_total_items[0] . ') results in Endnote '.l("Tagged","biblio/export/endnote"). ' or '.l("XML","biblio/export/endnote7XML").'</div>';
+      $content .= '<div class="biblio_export">Export (' . $pager_total_items[0] . ') results: '.l("Tagged","biblio/export/tagged"). ', '.l("XML","biblio/export/xml"). ', '.l("BibTex","biblio/export/bib").'</div>';
     } 
   
     $sort_attr = array("title"=>t("Click a second time to reverse the sort order"));
@@ -1179,6 +1185,13 @@ $inline = false;
           $terms[] = $term;
           array_push($args, $type, $term);
           break;
+        case 'publisher':
+          $term = db_escape_string($arg_list[0]);
+          array_shift($arg_list);
+          $limit .= " AND MATCH(b.biblio_publisher) AGAINST('%s'  IN BOOLEAN MODE)";
+          $terms[] = $term;
+          array_push($args, $type, $term);
+          break;
         case 'year':
           $term = db_escape_string($arg_list[0]);
           array_shift($arg_list);
@@ -1228,8 +1241,7 @@ $inline = false;
 
   biblio_show_results($result, $pager_attrib, $args,$inline);
 } 
-
-function _endnote_XML_export($nid = null, $version = 7) {
+function _export($format="tagged", $nid = null, $version = 7) {
 $params=array();
   if ($nid === null && isset($_SESSION['last_biblio_query']) && !empty($_SESSION['last_biblio_query']) ) {
     $query = $_SESSION['last_biblio_query'];
@@ -1245,7 +1257,109 @@ $params=array();
   $result = db_query(db_rewrite_sql($query),$params);
 
   if (db_num_rows($result)) {
-     if ($version == 8){
+     switch($format){
+     case "tagged":
+       _endnote_tagged_export($result);
+       break;
+     case "xml":
+       _endnote_XML_export($result, $version );
+       break;
+     case "bib":
+       _bibtex_export($result);
+       break;
+     }
+  }
+}
+function _bibtex_export($result){
+
+$bibtex = '';
+    while ($pub = db_fetch_object($result)) {
+    $type = "article";
+    $journal = $series = $booktitle = $school = $organization = null;
+    switch ($pub->biblio_type){
+      case 102:
+        $type = "article";
+        $journal = $pub->biblio_secondary_title;
+       break; 
+      case 100:
+        $type = "book";
+        $series = $pub->biblio_secondary_title;
+         break; 
+      case 101:
+        $type = "inbook";
+        $booktitle = $pub->biblio_secondary_title;
+         break; 
+      case 103:
+        $type = "conference";
+         break; 
+      case 100:
+        $type = "incollection";
+         break; 
+      case 103:
+        $type = "inproceedings";
+         break; 
+      case 129:
+        $type = "misc";
+         break; 
+      case 108:
+        $type = "phdthesis";
+        $school = $pub->biblio_publisher;
+        $pub->biblio_publisher = null;
+         break; 
+      case 104:
+        $type = "proceedings";
+         break; 
+      case 109:
+        $type = "techreport";
+        $organization = $pub->biblio_publisher;
+        $pub->biblio_publisher = null;
+         break; 
+      case 124:
+        $type = "unpublished";
+         break; 
+    }
+    
+    $bibtex .= '@'.$type.' { ';
+    $bibtex .= ($pub->biblio_cite)? $pub->biblio_cite.",\n":",\n";
+    if($pub->title) $bibtex .= "\ttitle = {".$pub->title."},\n";
+    if($journal) $bibtex .= "\tjournal = {".$journal."},\n";
+    if($booktitle) $bibtex .= "\tbooktitle = {".$booktitle."},\n";
+    if($series) $bibtex .= "\tseries = {".$series."},\n";
+    if($pub->biblio_secondary_authors) $bibtex .= "\teditor = {".$pub->biblio_secondary_authors."},\n";
+    if($pub->biblio_volume) $bibtex .= "\tvolume = {".$pub->biblio_volume."},\n";
+    if($pub->biblio_number) $bibtex .= "\tnumber = {".$pub->biblio_number."},\n";
+    if($pub->biblio_year) $bibtex .= "\tyear = {".$pub->biblio_year."},\n";
+    if($pub->biblio_notes) $bibtex .= "\tnote = {".$pub->biblio_notes."},\n";
+    if($pub->biblio_date) $bibtex .= "\tmonth = {".$pub->biblio_date."},\n";
+    if($pub->biblio_pages) $bibtex .= "\tpages = {".$pub->biblio_pages."},\n";
+    if($pub->biblio_publisher) $bibtex .= "\tpublisher = {".$pub->biblio_publisher."},\n";
+    if($school) $bibtex .= "\tschool = {".$school."},\n";
+    if($organization) $bibtex .= "\torganization = {".$organization."},\n";
+    if($institution) $bibtex .= "\tinstitution = {".$institution."},\n";
+    if($pub->biblio_type_of_work) $bibtex .= "\ttype = {".$pub->biblio_type_of_work."},\n";
+    if($pub->biblio_edition) $bibtex .= "\tedition = {".$pub->biblio_edition."},\n";
+    if($pub->biblio_section) $bibtex .= "\tchapter = {".$pub->biblio_section."},\n";
+    if($pub->biblio_place_published) $bibtex .= "\taddress = {".$pub->biblio_place_published."},\n";
+    if($pub->biblio_abst_e) $bibtex .= "\tabstract = {".$pub->biblio_abst_e."},\n";
+    if($pub->biblio_keywords) $bibtex .= "\tkeywords = {".$pub->biblio_keywords."},\n";
+    if($pub->biblio_isbn) $bibtex .= "\tISBN = {".$pub->biblio_isbn."},\n";
+    if($pub->biblio_url) $bibtex .= "\tURL = {".$pub->biblio_url."},\n";
+    $author =  str_replace("; ", " and ", $pub->biblio_authors);
+    $bibtex .= "\tauthor = {".$author."}\n";
+    
+    $bibtex.="}\n\n";
+
+  }
+
+  header('Content-type: 	application/text');
+  header('Content-Disposition:  filename="bibtex.bib"');
+  print utf8_decode($bibtex);
+
+
+}
+function _endnote_XML_export($result, $version = 7) {
+
+   if ($version == 8){
       require_once('./'.base_path() . drupal_get_path('module', 'biblio') . '/endnote8_export.inc');
      $xml = _endnote8_XML_export($result);
     }elseif ($version == 7){
@@ -1255,26 +1369,10 @@ $params=array();
     header('Content-type: application/xml; charset=utf-8');
     header('Content-Disposition: attachment; filename="endnote'.$version.'.xml"');
     echo $xml;
-
-  }
 }
 
-function _endnote_tagged_export($nid = null) {
-$params=array();
-  if ($nid === null && isset($_SESSION['last_biblio_query']) && !empty($_SESSION['last_biblio_query']) ) {
-    $query = $_SESSION['last_biblio_query'];
-    $params = $_SESSION['last_biblio_query_terms'];    
-  } elseif (!empty($nid)) {
-    $query = "SELECT * FROM {node} n left join {biblio} b  on n.nid=b.nid 
-                WHERE n.nid=%d ";
-    $params[] = $nid;
-  }else{
-    return;
-  } 
+function _endnote_tagged_export($result) {
 
-  $result = db_query(db_rewrite_sql($query),$params);
-
-  if (db_num_rows($result)) {
     $doc = "";
     while ($pub = db_fetch_object($result)) {
       switch ($pub->biblio_type) {
@@ -1355,7 +1453,7 @@ $params=array();
 
       $doc .= "\r\n";
     } 
-  } 
+   
   header('Content-type: 	application/x-endnote-refer');
   header('Content-Disposition:  filename="endnote.enw"');
   print utf8_decode($doc);
@@ -1376,6 +1474,7 @@ function biblio_form_import() {
         if ($filetype == 'tagged') $content = _endnote_tagged_import($import->filepath);
         if ($filetype == 'xml')  $content = _endnote_XML_import($import->filepath,7);
         if ($filetype == 'xml8') $content = _endnote_XML_import($import->filepath,8);
+        if ($filetype == 'bib') $content = _bibtex_import($import->filepath);
         file_delete($import->filepath);
       } else {
         drupal_set_message("File was NOT successfully uploaded", 'error');
@@ -1393,7 +1492,7 @@ function biblio_form_import() {
         '#type' => 'radios',
         '#title' => t('File Type'),
         '#default_value' => $edit['filetype'],
-        '#options' => array('tagged' => t('EndNote Tagged') , 'xml'=>t('EndNote 7 XML'), 'xml8'=>t('EndNote 8+ XML')),
+        '#options' => array('tagged' => t('EndNote Tagged') , 'xml'=>t('EndNote 7 XML'), 'xml8'=>t('EndNote 8+ XML'), 'bib'=>t('BibTex')),
       );
       $form['button'] = array(
         '#type' => 'button',
@@ -1674,6 +1773,46 @@ global $user,$records, $rec_count,$node_array,$node,$node_id;
     } 
   }
   
+  return $content;
+} 
+function _bibtex_import($filename = null) {
+require_once('./'.base_path() . drupal_get_path('module', 'biblio') . '/bibtex.php');
+
+  $node_array = array();
+  $node = array();
+  $node['type'] = "biblio";
+  $node['created'] = time();
+  $node['changed'] = time();
+  $node['comment'] = 0;
+  $node['promote'] = 0;
+  $node['moderate'] = 0;
+  $node['sticky'] = 0;
+  $node['format'] = 0;
+  $node['status'] = 1;
+  $node['uid'] = $user->uid;
+  
+  $bibtex = new Structures_BibTex();
+  $ret = $bibtex->loadFile($filename);
+  
+  
+  if (!$ret) {
+   	drupal_set_message(t('The biblio module was unable to read the bibtex file supplied.'), 'error');
+    drupal_goto("admin/settings/biblio/import");
+  }
+  $bibtex->parse();
+//  $content = print_r($bibtex->data);
+  if ($bibtex->amount()){
+    $bibtex->bib2node($node_array, $node);
+    if (function_exists('node_save')) {
+      foreach ($node_array as $node) {
+        $node_obj = (object)$node;
+        $nodeid = node_save($node_obj);
+        if ($node_obj->nid) { 
+           $content .= t('Successfully imported node' . l("$node_obj->nid", "node/$node_obj->nid")) . '<br>';
+        }
+      } 
+    }
+  }
   return $content;
 } 
 
