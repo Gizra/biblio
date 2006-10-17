@@ -4,7 +4,7 @@ function en8_XMLout($result){
   
   $sml = '<?xml version="1.0" encoding="UTF-8"?>';
   $xml .= '<records'>;
-  while ($rec = db_get_object($result)){
+  while ($rec = db_fetch_object($result)){
     $xml .= '<record>';
 //<!ELEMENT record (database?, source-app?, rec-number?, ref-type?, contributors?, auth-address?, auth-affiliaton?, titles?, periodical?, pages?, volume?, number?, issue?, secondary-volume?, secondary-issue?, num-vols?, edition?, section?, reprint-edition?, reprint-status?, keywords?, dates?, pub-location?, publisher?, orig-pub?, isbn?, accession-num?, call-num?, report-id?, coden?, electronic-resource-num?, abstract?, label?, image?, caption?, notes?, research-notes?, work-type?, reviewed-item?, availability?, remote-source?, meeting-place?, work-location?, work-extent?, pack-method?, size?, repro-ratio?, remote-database-name?, remote-database-provider?, language?, urls?, access-date?, modified-date?, custom1?, custom2?, custom3?, custom4?, custom5?, custom6?, custom7?, misc1?, misc2?, misc3?)>
 
@@ -21,6 +21,74 @@ function en8_XMLout($result){
 >
 <!ELEMENT rec-number (#PCDATA)>
 */
+    switch ((int) $rec->biblio_type) {
+      case 8: // Journal Article
+      case 11:
+      case 15:
+      case 16:
+      case 17: 
+      case 18:
+      case 22:
+      case 24:
+      case 29:
+      case 30: 
+      case 33:
+        $node_array[$node_id]['biblio_type'] = 1;
+        break;
+      case 32: // Thesis
+        $node_array[$node_id]['biblio_type'] = 7;
+        break;
+      case 10: // Conference Proceeding
+        $node_array[$node_id]['biblio_type'] = 2;
+        break;
+      case 5: // Book Section
+        $node_array[$node_id]['biblio_type'] = 6;
+        break;
+      case 27: // Report
+        $node_array[$node_id]['biblio_type'] = 5;
+        break;
+      case 25: // Patent
+        $node_array[$node_id]['biblio_type'] = 8;
+        break;
+      default:
+         $node_array[$node_id]['biblio_type'] = 9;
+         break;     
+ /*
+ 				'book'			=>	6,
+				'book_article'		=>	5,
+				'journal_article'	=>	8, // also 11, 15, 16, 17, 18, 22, 24, 29, 30, 33
+				'newspaper_article'	=>	23,
+				'magazine_article'	=>	19,
+				'proceedings_article'	=>	10,
+				'thesis'		=>	32,
+				'web_article'	=>	12,
+				'film'			=>	21,
+				'broadcast'		=>	21,
+				'artwork'		=>	2,
+				'software'		=>	9,
+				'audiovisual'	=>	3,
+				'report'		=>	27,
+				'hearing'		=>	14,
+				'case'			=>	7,
+				'bill'			=>	4,
+				'statute'		=>	31,
+				'patent'		=>	25,
+				'personal'		=>	26,
+				'manuscript'	=>	36,
+				'map'			=>	20,
+				'chart'			=>	38,
+				'unpublished'	=>	34,
+				'database'		=>	45,
+				'government_report'	=>	46,
+				'conference_paper'	=>	47,
+				'classical'		=>	49,
+				'legal_ruling'	=>	50,
+				'miscellaneous'	=>	13, // Generic
+				'miscellaneous_section'	=>	13, // Generic
+
+ */       
+    } 
+
   $xml .= '<ref-type name=" ">  </ref-type>';
 //<!-- Author information -->
   $xml .= '<contributors>';
