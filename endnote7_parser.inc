@@ -55,6 +55,9 @@ global $node_array,$node_id, $element, $contributors,   $dates, $urls;
         case 15: // Patent
           $node_array[$node_id]['biblio_type'] = 8;
           break;
+        case default: // Other
+          $node_array[$node_id]['biblio_type'] = 9;
+          break;
       } 
       break;
 //Author information
