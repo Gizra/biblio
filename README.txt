@@ -19,14 +19,13 @@ information on each publication.
 
 The lists can be sorted, filtered and ordered in many different ways.
 
-See liiscience.org for a live example.
+
 
 
 Requirements:
 =============
 Drupal 4.7.x.  (There is a separate version for Drupal 4.6.x available).
 
-The domxml php extension must be enabled in order to import or export XML files.
 
 
 Installation:
@@ -62,9 +61,10 @@ import from file.
 Adding/importing records:
 =========================
 Bibliographic entries can be added to the database in one of two ways, individualy
-from the node/add/biblio link, or by importing records from Endnote in their "Tagged"
-file format.  Administrators can go to admin/settings/biblio/import and fill in 
-the form to upload and import of an Endnote tagged file.
+from the node/add/biblio link, or by importing records from Endnote in "Tagged" or
+XML file format, also BibTex files can be imported on this page.  Administrators 
+can go to admin/settings/biblio/import and fill in the form to upload and import 
+of an Endnote and BibTex files.
 
 
 Features:
