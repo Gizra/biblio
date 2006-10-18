@@ -87,7 +87,7 @@ global $node_array,$node_id, $element, $contributors,   $dates, $urls;
       case 'SECONDARY_TITLE':
         $node_array[$node_id]['biblio_secondary_title'] .= $data;
         break;
-      case 'tertiary-title':
+      case 'TERTIARY_TITLE':
         $node_array[$node_id]['biblio_tertiary-title'] .= $data;
         break;
       case 'alt-title':
@@ -116,7 +116,7 @@ global $node_array,$node_id, $element, $contributors,   $dates, $urls;
     case 'NUMBER': 
         $node_array[$node_id]['biblio_number'] .= $data;
         break;    
-    case 'issue': 
+    case 'ISSUE': 
         $node_array[$node_id]['biblio_issue'] .= $data;
         break;    
     case 'secondary-volume':
@@ -155,10 +155,10 @@ global $node_array,$node_id, $element, $contributors,   $dates, $urls;
     case 'ISBN': 
       $node_array[$node_id]['biblio_isbn'] .= $data;
       break;   
-    case 'accession-num': 
+    case 'AACCESSION_NUMBER': 
       $node_array[$node_id]['biblio_accession_number'] .= $data;
       break;   
-    case 'call-num': 
+    case 'CALL_NUMBER': 
       $node_array[$node_id]['biblio_call_number'] .= $data;
       break;   
     case 'ABSTRACT': 
