@@ -662,7 +662,7 @@ function theme_biblio_filters(&$form) {
 
   $output .= '</dl>';
   $output .= '<div class="container-inline" id="node-buttons">'. form_render($form['buttons']) .'</div>';
-  $output .= '</li></ul><br class="clear" />';
+  $output .= '</li></ul><br /> class="clear" />';
 
   return $output;
 }
@@ -1000,7 +1000,7 @@ function theme_biblio_long($pub) {
   if ($pub->biblio_abst_f) $output .= '<p>' . check_markup($pub->biblio_abst_f,FILTER_HTML_ESCAPE,FALSE) . "\n";
   if ($pub->biblio_notes) $output .= '<h3>'.t("Notes").': </h3>' . check_markup($pub->biblio_notes,FILTER_HTML_ESCAPE,FALSE) . "\n";
   if (variable_get('biblio_endnote_export', 0)) {
-    $output .= '<br><br><B>Export: '.l(t("Tagged"),"biblio/export/tagged/$pub->nid").' </B>';
+    $output .= '<br />><br />><B>Export: '.l(t("Tagged"),"biblio/export/tagged/$pub->nid").' </B>';
     $output .= l("XML","biblio/export/xml/$pub->nid").' </B>';
     $output .= l("BibTex","biblio/export/bib/$pub->nid");
   } 
@@ -1031,8 +1031,8 @@ function theme_biblio_short($pub) {
   if ($pub->biblio_year) $output .= ', (' . check_plain($pub->biblio_year) . ")\n";
   if ($pub->biblio_abst_e) $output .= l("Abstract", "node/$pub->nid") . "\n";
   if (variable_get('biblio_endnote_export', 0)) {
-    $output .= '<br><em>Export: '.l("Tagged","biblio/export/tagged/$pub->nid") . '&nbsp';
-    $output .= l("XML","biblio/export/xml/$pub->nid") . '&nbsp';
+    $output .= '<br />><em>Export: '.l("Tagged","biblio/export/tagged/$pub->nid") . '&nbsp;';
+    $output .= l("XML","biblio/export/xml/$pub->nid") . '&nbsp;';
     $output .= l("BibTex","biblio/export/bib/$pub->nid") . '</em>';
   } 
   return $output;
@@ -1708,7 +1708,7 @@ function _endnote_tagged_import($filename = null) {
       $node_obj = (object)$node;
       $nodeid = node_save($node_obj);
       if ($node_obj->nid) { 
-         $content .= t('Successfully imported node' . l("$node_obj->nid", "node/$node_obj->nid")) . '<br>';
+         $content .= t('Successfully imported node' . l("$node_obj->nid", "node/$node_obj->nid")) . '<br />>';
       }
     } 
   } 
@@ -1768,7 +1768,7 @@ global $user,$records, $rec_count,$node_array,$node,$node_id;
       $node_obj = (object)$node;
       $nodeid = node_save($node_obj);
       if ($node_obj->nid) { 
-         $content .= t('Successfully imported node' . l("$node_obj->nid", "node/$node_obj->nid")) . '<br>';
+         $content .= t('Successfully imported node' . l("$node_obj->nid", "node/$node_obj->nid")) . '<br />>';
       }
     } 
   }
@@ -1808,7 +1808,7 @@ require_once('./'.base_path() . drupal_get_path('module', 'biblio') . '/bibtex.p
         $node_obj = (object)$node;
         $nodeid = node_save($node_obj);
         if ($node_obj->nid) { 
-           $content .= t('Successfully imported node' . l("$node_obj->nid", "node/$node_obj->nid")) . '<br>';
+           $content .= t('Successfully imported node' . l("$node_obj->nid", "node/$node_obj->nid")) . '<br />>';
         }
       } 
     }
