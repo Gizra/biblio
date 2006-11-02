@@ -197,6 +197,18 @@ class Structures_BibTex
             return false;
         }
     }
+    /**
+     * loads a given string
+     *
+     * @access public
+     * @param string $string String to load
+     */
+    function loadString($string)
+    {
+      $this->content = $string;
+      $this->_pos    = 0;
+      $this->_oldpos = 0;
+    }
 
     /**
      * Parses what is stored in content and clears the content if the parsing is successfull.
