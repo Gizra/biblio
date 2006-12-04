@@ -10,20 +10,27 @@ function _endnote7_XML_export($result){
     $xml .= "<RECORD>\n";
     switch ($rec->biblio_type) {
         case 1: $reftype = 0;
+        case 102: $reftype = 0;
           break; // journal
         case 2: // 2,3 and 4
         case 3: // are all
-        case 4: $reftype = 3;
+        case 4: // are all
+        case 103: $reftype = 3;
           break; // conference proceedings 
-        case 5: $reftype = 10;
+        case 5: 
+        case 109: $reftype = 10;
           break; // report
-        case 6: $reftype = 7;
+        case 5:
+        case 100: $reftype = 7;
           break; // book section
-        case 7: $reftype = 2;
+        case 7:
+        case 108: $reftype = 2;
           break; // thesis
-        case 8: $reftype = 15;
+        case 8:
+        case 119: $reftype = 15;
           break; // patent
         case 9:
+        case 129:
         default:
           $reftype = 31;
           break; // generic
