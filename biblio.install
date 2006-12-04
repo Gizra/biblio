@@ -403,4 +403,13 @@ $result = array();
        (42,'biblio_section','Section',0,'textfield',10,10,'',0,0,15);");
   return $result;
 }
+function biblio_update_8() {
+$result = array();
+
+  $result[] = update_sql("alter table {node} modify title varchar(255);");
+  $result[] = update_sql("alter table {node_revisions} modify title varchar(255);");
+  return $result;
+  
+}
+
 ?>
