@@ -145,7 +145,7 @@ function biblio_install() {
       $result[] = db_query("INSERT INTO {biblio_types} (`tid`,`name`,`description`,weight) VALUES 
        (-1,'Select Type...',NULL,-10),
         (100,'Book',NULL,1),
-				(101,'Book Article',NULL,2),
+				(101,'Book Chapter',NULL,2),
 				(102,'Journal Article',NULL,3),
 				(103,'Conference Paper',NULL,4),
 				(104,'Proceedings Article',NULL,5),
