@@ -82,6 +82,7 @@ function en8_characterData($parser, $data)
 {
 global $node_array,$node_id, $element, $contributors,   $dates, $urls;
  if (trim($data)){
+
   switch ($element) {
     case 'source-app':
       break;
@@ -102,88 +103,59 @@ global $node_array,$node_id, $element, $contributors,   $dates, $urls;
       case 33:
         $node_array[$node_id]['biblio_type'] = 102;
         break;
-      case 32: // Thesis
-        $node_array[$node_id]['biblio_type'] = 7;
-        break;
-      case 10: // Conference Proceeding
-        $node_array[$node_id]['biblio_type'] = 2;
-        break;
-      case 47: // Conference Proceeding
-        $node_array[$node_id]['biblio_type'] = 103;
+      case 6: // Book 
+        $node_array[$node_id]['biblio_type'] = 100;
         break;
       case 5: // Book Section
         $node_array[$node_id]['biblio_type'] = 101;
         break;
-      case 6: // Book 
-        $node_array[$node_id]['biblio_type'] = 100;
+      case 49: // conference_paper
+        $node_array[$node_id]['biblio_type'] = 103;
+        break;
+      case 47: // Conference Proceeding
+        $node_array[$node_id]['biblio_type'] = 103;
+        break;
+      case 10: // proceedings_article
+        $node_array[$node_id]['biblio_type'] = 104;
+        break;
+      case 23: // newspaper_article
+        $node_array[$node_id]['biblio_type'] = 105;
+        break;
+      case 19: // magazine_article
+        $node_array[$node_id]['biblio_type'] = 106;
+        break;
+      case 12: // web_article
+        $node_array[$node_id]['biblio_type'] = 107;
+        break;
+      case 32: // Thesis
+        $node_array[$node_id]['biblio_type'] = 108;
         break;
       case 27: // Report
-        $node_array[$node_id]['biblio_type'] = 5;
+        $node_array[$node_id]['biblio_type'] = 109;
         break;
-      case 25: // Patent
-        $node_array[$node_id]['biblio_type'] = 8;
+      case 21: // film
+        $node_array[$node_id]['biblio_type'] = 110;
         break;
-      default:
-         $node_array[$node_id]['biblio_type'] = 9;
-         break;     
- /*
-
+      case 21: // broadcast
+        $node_array[$node_id]['biblio_type'] = 111;
+        break;
       case 2: // artwork
-        $node_array[$node_id]['biblio_type'] = 117;
+        $node_array[$node_id]['biblio_type'] = 112;
+        break;
+      case 9: // software
+        $node_array[$node_id]['biblio_type'] = 113;
+        break;
+      case 14: // hearing
+        $node_array[$node_id]['biblio_type'] = 115;
+        break;
+      case 7: // case
+        $node_array[$node_id]['biblio_type'] = 116;
         break;
       case 4: // bill
         $node_array[$node_id]['biblio_type'] = 117;
         break;
-     case 5: // book_article
-        $node_array[$node_id]['biblio_type'] = 117;
-        break;
-     case 6: // book
-        $node_array[$node_id]['biblio_type'] = 117;
-        break;
-      case 7: // case
-        $node_array[$node_id]['biblio_type'] = 117;
-        break;
-      case 9: // software
-        $node_array[$node_id]['biblio_type'] = 117;
-        break;
-      case 8: // Journal Article
-      case 11:
-      case 15:
-      case 16:
-      case 17: 
-      case 18:
-      case 22:
-      case 24:
-      case 29:
-      case 30: 
-      case 33:
-        $node_array[$node_id]['biblio_type'] = 102;
-      case 10: // proceedings_article
-        $node_array[$node_id]['biblio_type'] = 117;
-        break;
-      case 12: // web_article
-        $node_array[$node_id]['biblio_type'] = 117;
-        break;
-      case 13: // miscellaneous
-        $node_array[$node_id]['biblio_type'] = 120;
-        break;
-      case 14: // hearing
-        $node_array[$node_id]['biblio_type'] = 117;
-        break;
-      case 19: // magazine_article
-        $node_array[$node_id]['biblio_type'] = 117;
-        break;
-      case 20: // map
-        $node_array[$node_id]['biblio_type'] = 120;
-        break;
-      case 21: // film
-        $node_array[$node_id]['biblio_type'] = 117;
-        break;
-      case 21: // broadcast
-        $node_array[$node_id]['biblio_type'] = 117;
-        break;
-     case 23: // newspaper_article
-        $node_array[$node_id]['biblio_type'] = 117;
+      case 31: // statute
+        $node_array[$node_id]['biblio_type'] = 118;
         break;
       case 25: // patent
         $node_array[$node_id]['biblio_type'] = 119;
@@ -191,39 +163,37 @@ global $node_array,$node_id, $element, $contributors,   $dates, $urls;
       case 26: // personal
         $node_array[$node_id]['biblio_type'] = 120;
         break;
-      case 27: // report
-        $node_array[$node_id]['biblio_type'] = 117;
-        break;
-      case 31: // statute
-        $node_array[$node_id]['biblio_type'] = 118;
-        break;
-      case 32: // thesis
-        $node_array[$node_id]['biblio_type'] = 117;
-        break;
-      case 34: // unpublished
-        $node_array[$node_id]['biblio_type'] = 120;
-        break;
-
       case 36: // manuscript
-        $node_array[$node_id]['biblio_type'] = 120;
+        $node_array[$node_id]['biblio_type'] = 121;
+        break;
+      case 20: // map
+        $node_array[$node_id]['biblio_type'] = 122;
         break;
       case 38: // chart
-        $node_array[$node_id]['biblio_type'] = 120;
+        $node_array[$node_id]['biblio_type'] = 123;
+        break;
+      case 34: // unpublished
+        $node_array[$node_id]['biblio_type'] = 124;
         break;
       case 45: // database
-        $node_array[$node_id]['biblio_type'] = 120;
+        $node_array[$node_id]['biblio_type'] = 125;
         break;
       case 46: // government_report
-        $node_array[$node_id]['biblio_type'] = 120;
-        break;
-      case 49: // conference_paper
-        $node_array[$node_id]['biblio_type'] = 120;
+        $node_array[$node_id]['biblio_type'] = 126;
         break;
       case 50: // legal_ruling
-        $node_array[$node_id]['biblio_type'] = 120;
+        $node_array[$node_id]['biblio_type'] = 128;
         break;
+      case 13: // miscellaneous
+        $node_array[$node_id]['biblio_type'] = 129;
+        break;
+      case 10: // Conference Proceeding
+        $node_array[$node_id]['biblio_type'] = 2;
+        break;
+      default:
+         $node_array[$node_id]['biblio_type'] = 129;
+         break;     
 
- */       
     } 
       break;
 //Author information
