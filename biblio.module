@@ -762,7 +762,7 @@ function biblio_form(&$node, &$param) {
 
   $form['#pre_render'] = array('biblio_pre_render');
 
-  $result = db_query('SELECT t.* FROM {biblio_types as t}');
+  $result = db_query('SELECT t.* FROM {biblio_types as t} WHERE tid > -2');
   while ($option = db_fetch_object($result)) {
     $options["$option->tid"] = t("$option->name");
   } 
@@ -1376,25 +1376,35 @@ function _endnote_tagged_export($result) {
     $doc = "";
     while ($pub = db_fetch_object($result)) {
       switch ($pub->biblio_type) {
-        case 1: $doc .= "%0 Journal Article\r\n";
+        case 1:
+        case 102: $doc .= "%0 Journal Article\r\n";
           if ($pub->biblio_secondary_title) $doc .= "%J " . trim($pub->biblio_secondary_title) . "\r\n";
           break; // journal
-        case 2: $doc .= "%0 Conference Paper\r\n";
+        case 2:  
+        case 103: $doc .= "%0 Conference Paper\r\n";
           if ($pub->biblio_secondary_title) $doc .= "%B " . trim($pub->biblio_secondary_title) . "\r\n";
           break;
         case 3: // are all
         case 4: $doc .= "%0 Conference Proceedings\r\n";
           if ($pub->biblio_secondary_title) $doc .= "%B " . trim($pub->biblio_secondary_title) . "\r\n";
           break; // conference proceedings 
-        case 5: $doc .= "%0 Report\r\n";
+        case 5: 
+        case 109:
+          $doc .= "%0 Report\r\n";
           break; // report
-        case 6: $doc .= "%0 Book Section\r\n";
+        case 6: 
+        case 101:
+          $doc .= "%0 Book Section\r\n";
           if ($pub->biblio_secondary_title) $doc .= "%B " . trim($pub->biblio_secondary_title) . "\r\n";
           break; // book section
-        case 7: $doc .= "%0 Thesis\r\n";
+        case 7: 
+        case 108:
+          $doc .= "%0 Thesis\r\n";
           if ($pub->biblio_secondary_title) $doc .= "%B " . trim($pub->biblio_secondary_title) . "\r\n";
           break; // thesis
-        case 8: $doc .= "%0 Patent\r\n";
+        case 8: 
+        case 119:
+          $doc .= "%0 Patent\r\n";
           if ($pub->biblio_secondary_title) $doc .= "%B " . trim($pub->biblio_secondary_title) . "\r\n";
           break; // patent
         case 9:
@@ -1422,7 +1432,7 @@ function _endnote_tagged_export($result) {
         } 
       } 
       if ($pub->biblio_publisher) $doc .= "%I " . trim($pub->biblio_publisher) . "\r\n";
-      if ($pub->biblio_keywords) $doc .= "%K " . trim($pub->biblio_keywordsn) . "\r\n";
+      if (trim($pub->biblio_keywords)) $doc .= "%K " . trim($pub->biblio_keywords) . "\r\n";
       if ($pub->biblio_call_number) $doc .= "%L " . trim($pub->biblio_call_number) . "\r\n";
       if ($pub->biblio_accession_number) $doc .= "%M " . trim($pub->biblio_accession_number) . "\r\n";
       if ($pub->biblio_issue) $doc .= "%N " . trim($pub->biblio_issue) . "\r\n";
@@ -1471,10 +1481,7 @@ function biblio_form_import() {
       if ($import) {
         $import = file_save_upload($import);
         drupal_set_message("File was successfully uploaded", 'status');
-        if ($filetype == 'tagged') $content = _endnote_tagged_import($import->filepath);
-        if ($filetype == 'xml')  $content = _endnote_XML_import($import->filepath,7);
-        if ($filetype == 'xml8') $content = _endnote_XML_import($import->filepath,8);
-        if ($filetype == 'bib') $content = _bibtex_import($import->filepath);
+        $content = _import($import->filepath,$filetype);
         file_delete($import->filepath);
       } else {
         drupal_set_message("File was NOT successfully uploaded", 'error');
@@ -1508,237 +1515,56 @@ function biblio_form_import() {
     print theme('page', '');
   } 
 } 
-
-function _endnote_tagged_import($filename = null) {
+function _import($filename = null,$type='tagged') {
   global $user;
-  $incite = false;
-  $node_array = array();
   $node = array();
-  $node['type'] = "biblio";
-  $node['created'] = time();
-  $node['changed'] = time();
-  $node['comment'] = 0;
-  $node['promote'] = 0;
-  $node['moderate'] = 0;
-  $node['sticky'] = 0;
-  $node['format'] = 0;
-  $node['status'] = 1;
-  $node['uid'] = $user->uid;
+  
+  if (file_exists($filename)) {
+    if (($file_content = @file_get_contents($filename)) === false) {
+        return false;
+    } else {
 
-  if ($filename) {
-    $handle = fopen ($filename, "r");
-    if ($handle) {
-      $list = array();
-      while (!feof ($handle)) {
-        $line = fgets($handle);
-        $line_len = strlen($line);
-        if ($line_len > 3){
-          $start = strpos($line, "%"); // There could be some unprintables at the beginning of the line so fine the location of the %
-          if ($start !== false) {
-            $tag = substr($line, $start, 2);
-            $value = substr($line, $start+3);
-          }else{
-            $value = $line;
-          }          
-        }       
-        if ( $line_len > 3) {      // if this is not a blank line
-          if (!$incite){
-            $node_id = array_push($node_array, $node) - 1;
-            $incite = true;
-          }
+      $node['type'] = "biblio";
+      $node['created'] = time();
+      $node['changed'] = time();
+      $node['comment'] = 0;
+      $node['promote'] = 0;
+      $node['moderate'] = 0;
+      $node['sticky'] = 0;
+      $node['format'] = 0;
+      $node['status'] = 1;
+      $node['uid'] = $user->uid;
 
-          switch ($tag) {
-            case '%0':              
-              switch ($value) {
-                case "Journal Article": 
-                  $node_array[$node_id]['biblio_type'] = 1;
-                  break; // journal
-                case "Conference Paper": 
-                  $node_array[$node_id]['biblio_type'] = 2;
-                  break;
-                case "Conference Proceedings": 
-                  $node_array[$node_id]['biblio_type'] = 3;
-                  break; // conference proceedings 
-                case "Report": 
-                  $node_array[$node_id]['biblio_type'] = 5;
-                  break; // report
-                case "Book": 
-                case "Edited Book": 
-                case "Book Section": 
-                  $node_array[$node_id]['biblio_type'] = 6;
-                  break; // book section
-                case "Thesis": 
-                  $node_array[$node_id]['biblio_type'] = 7;
-                  break; // thesis
-                case "Patent": 
-                  $node_array[$node_id]['biblio_type'] = 8;
-                  break; // patent
-                case "Generic":
-                default:
-                  $node_array[$node_id]['biblio_type'] = 9;
-                  break; // generic
-              } 
-              break;
-            case '%A': 
-              // $columns .= ", author";
-              if ($node_array[$node_id]['biblio_authors']) $node_array[$node_id]['biblio_authors'] .= "; ";
-              $node_array[$node_id]['biblio_authors'] .= "$value";
-              break;
-            case '%B':
-              $node_array[$node_id]['biblio_secondary_title'] = $value;
-              break;
-            case '%C':
-              $node_array[$node_id]['biblio_place_published'] = $value;
-              break;
-            case '%D':
-              $node_array[$node_id]['biblio_year'] = $value;
-              break;
-            case '%E':
-              if ($node_array[$node_id]['biblio_secondary_authors']) $node_array[$node_id]['biblio_secondary_authors'] .= "; ";
-              $node_array[$node_id]['biblio_secondary_authors'] .= $value;
-              break;
-            case '%F':
-              $node_array[$node_id]['label'] = $value;
-              break;
-            case '%I':
-              $node_array[$node_id]['biblio_publisher'] = $value;
-              break;
-            case '%J': // Journal
-              $node_array[$node_id]['biblio_secondary_title'] = $value;
-              break;
-            case '%K':
-              $node_array[$node_id]['biblio_keywords'] .= ($node_array[$node_id]['biblio_keywords'])?"; $value":$value;
-              break;
-            case '%L':
-              $node_array[$node_id]['biblio_call_number'] = $value;
-              break;
-            case '%M': // accession_number
-              $node_array[$node_id]['biblio_accession_number'] = $value;
-              break;
-            case '%N':
-              $node_array[$node_id]['biblio_issue'] = $value;
-              break;
-            case '%P':
-              $node_array[$node_id]['biblio_pages'] = $value;
-              break;
-            case '%S':
-              $node_array[$node_id]['biblio_tertiary_title'] = $value;
-              break;
-            case '%T':
-              $node_array[$node_id]['title'] = $value;
-              break;
-            case '%U':
-              $node_array[$node_id]['biblio_url'] = $value;
-              break;
-            case '%V':
-              $node_array[$node_id]['biblio_volume'] = $value;
-              break;
-            case '%X':
-              $node_array[$node_id]['biblio_abst_e'] .= $value;
-              break;
-            case '%Y':
-              if ($node_array[$node_id]['biblio_tertiary_authors']) $node_array[$node_id]['biblio_tertiary_authors'] .= "; ";
-              $node_array[$node_id]['biblio_tertiary_authors'] .= $value;
-              break;
-            case '%Z':
-              $node_array[$node_id]['biblio_notes'] .= $value;
-              break;
-            case '%1': // CUSTOM 1
-              $node_array[$node_id]['biblio_custom1'] = $value;
-              break;
-            case '%2':// CUSTOM 2
-              $node_array[$node_id]['biblio_custom2'] = $value;
-              break;
-            case '%3':// CUSTOM 3
-              $node_array[$node_id]['biblio_custom3'] = $value;
-              break;
-            case '%4':// CUSTOM 4
-              $node_array[$node_id]['biblio_custom4'] = $value;
-              break;
-            case '%#':// CUSTOM 5
-              $node_array[$node_id]['biblio_custom5'] = $value;
-              break;
-            case '%$':// CUSTOM 6
-              $node_array[$node_id]['biblio_custom6'] = $value;
-              break;
-            case '%6':
-              break;
-            case '%7':
-              $node_array[$node_id]['biblio_edition'] = $value;
-              break;
-            case '%8':
-              $node_array[$node_id]['biblio_date'] = $value;
-              break;
-            case '%9':
-              $node_array[$node_id]['biblio_type_of_work'] = $value;
-              break;
-            case '%?':
-              break;
-            case '%@':
-              $node_array[$node_id]['biblio_isbn'] = $value;
-              break;
-            case '%!':
-              break;
-            case '%&':
-              break;
-            case '%(':
-              break;
-            case '%)':
-              break;
-            case '%*':
-              break;
-            case '%+':
-              break;
-            default:
-              break;
-          } //end switch
-
-        }else{
-          $incite=false;
-        } // end if ($start !== false) 
-
-      } // end while 
-
-    } // end if($handle) 
-
-  } // end if ($filename 
-  $content = null;
-  if (function_exists('node_save')) {  
-    foreach ($node_array as $node) {
-      $node_obj = (object)$node;
-      $nodeid = node_save($node_obj);
-      if ($node_obj->nid) { 
-         $content .= t('Successfully imported node' . l("$node_obj->nid", "node/$node_obj->nid")) . '<br />>';
-      }
-    } 
-  } 
-  return $content;
-} 
+      switch($type){
+      case 'tagged': // EndNote Tagged 
+        require_once('./'.base_path() . drupal_get_path('module', 'biblio') . '/tagged_parser.inc');
+        $page_content  = _endnote_tagged_import($file_content,$node);
+        break;
+      case 'xml': // EndNote 7 XML
+       $page_content  = _endnote_XML_import($file_content ,$node, 7 ); 
+        break;
+      case 'xml8': // EndNote 8+ XML
+       $page_content  = _endnote_XML_import($file_content ,$node, 8 ); 
+        break;
+      case 'bib': // BibTex
+       $page_content  = _bibtex_import($file_content ,$node ); 
+        break;
+     }  
+      return $page_content;
+    }
+  } else {
+    return false;
+  }
+}
 
  
-function _endnote_XML_import($filename = null, $version = 8) {
+function _endnote_XML_import($data ,$nodedata, $version = 8) {
 global $user,$records, $rec_count,$node_array,$node,$node_id;
-
+  $node = $nodedata;
   $node_array = array();
-  $node = array();
-  $node['type'] = "biblio";
-  $node['created'] = time();
-  $node['changed'] = time();
-  $node['comment'] = 0;
-  $node['promote'] = 0;
-  $node['moderate'] = 0;
-  $node['sticky'] = 0;
-  $node['format'] = 0;
-  $node['status'] = 1;
-  $node['uid'] = $user->uid;
-  
-  if (!($fp = fopen($filename, "r"))) {
-   	drupal_set_message(t('The biblio module was unable to read the XML file supplied.'), 'error');
-    drupal_goto("admin/settings/biblio/import");
-  }
-  $data = fread($fp, filesize($filename));
+
   $xml_parser = drupal_xml_parser_create($data);
-  
+
 // use case-folding so we are sure to find the tag in 
   xml_parser_set_option($xml_parser, XML_OPTION_CASE_FOLDING, false);
   xml_parser_set_option($xml_parser, XML_OPTION_SKIP_WHITE, true);
@@ -1746,23 +1572,20 @@ global $user,$records, $rec_count,$node_array,$node,$node_id;
     require_once('./'.base_path() . drupal_get_path('module', 'biblio') . '/endnote8_parser.inc');
     xml_set_element_handler($xml_parser, "en8_startElement", "en8_endElement");
     xml_set_character_data_handler($xml_parser, "en8_characterData");
+    xml_parse($xml_parser, $data,1);
   }elseif ($version == 7){
     require_once('./'.base_path() . drupal_get_path('module', 'biblio') . '/endnote7_parser.inc');
-    xml_set_element_handler($xml_parser, "en7_startElement", "en7_endElement");
-    xml_set_character_data_handler($xml_parser, "en7_characterData");
+//    xml_set_element_handler($xml_parser, "en7_startElement", "en7_endElement");
+//    xml_set_character_data_handler($xml_parser, "en7_characterData");
+
+    xml_parse_into_struct($xml_parser, $data, $values);
+
+    en7_parse($values,$node_array,$node) ;
   
   }
-/*  while ($data = fread($fp, 4096)) {
-    if (!xml_parse($xml_parser, $data, feof($fp))) {
-   	  drupal_set_message(t("XML error: ".xml_error_string(xml_get_error_code($xml_parser)).
-                            "at line ".xml_get_current_line_number($xml_parser)), 'error');
-      drupal_goto("admin/settings/biblio/import");
-    }
-}
-*/
-  xml_parse($xml_parser, $data,1);
+
   xml_parser_free($xml_parser);
-  
+//  print_r($node_array);die;
   if (function_exists('node_save')) {
     foreach ($node_array as $node) {
       $node_obj = (object)$node;
@@ -1775,34 +1598,20 @@ global $user,$records, $rec_count,$node_array,$node,$node_id;
   
   return $content;
 } 
-function _bibtex_import($filename = null) {
+function _bibtex_import($data, $node) {
 require_once('./'.base_path() . drupal_get_path('module', 'biblio') . '/bibtex.php');
 
   $node_array = array();
-  $node = array();
-  $node['type'] = "biblio";
-  $node['created'] = time();
-  $node['changed'] = time();
-  $node['comment'] = 0;
-  $node['promote'] = 0;
-  $node['moderate'] = 0;
-  $node['sticky'] = 0;
-  $node['format'] = 0;
-  $node['status'] = 1;
-  $node['uid'] = $user->uid;
   
   $bibtex = new Structures_BibTex();
-  $ret = $bibtex->loadFile($filename);
+  $bibtex->loadString($data);
   
   
-  if (!$ret) {
-   	drupal_set_message(t('The biblio module was unable to read the bibtex file supplied.'), 'error');
-    drupal_goto("admin/settings/biblio/import");
-  }
   $bibtex->parse();
 //  $content = print_r($bibtex->data);
   if ($bibtex->amount()){
     $bibtex->bib2node($node_array, $node);
+
     if (function_exists('node_save')) {
       foreach ($node_array as $node) {
         $node_obj = (object)$node;
