@@ -1489,8 +1489,8 @@ function biblio_form_import() {
     $filetype = $_POST['edit']['filetype'];
     $edit = $_POST['edit'];
 
-    if($op == Import && $filetype == '') drupal_set_message("You must select a file type",'error');
-    if ($op == Import && $filetype) {
+    if($op == t('Import') && $filetype == '') drupal_set_message("You must select a file type",'error');
+    if ($op == t('Import') && $filetype) {
       $import = file_check_upload('file_upload');
       if ($import) {
         $import = file_save_upload($import);
@@ -1517,7 +1517,6 @@ function biblio_form_import() {
       );
       $form['button'] = array(
         '#type' => 'button',
-        '#title' => t('Import'),
         '#value' => t('Import')
       );
       return drupal_get_form('biblio_form_import' ,$form);
