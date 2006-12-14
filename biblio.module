@@ -111,7 +111,7 @@ function biblio_access($op, $node) {
   } 
   if ($op == 'export') {
     // Only users with permission to do so may export entries from file.
-    return user_access('export to file');
+    return user_access('show export links');
   } 
   // Users who create a node may edit or delete it later, assuming they have the
   // necessary permissions.
@@ -143,7 +143,7 @@ function biblio_access($op, $node) {
 * to allow users to edit the nodes they created.
 */
 function biblio_perm() {
-  return array('create biblio', 'edit own biblio entries', 'import from file','export to file');
+  return array('create biblio', 'edit own biblio entries', 'import from file','show export links','show filter tab','show sort links');
 } 
 /**
 * Implementation of hook_link().
@@ -288,6 +288,7 @@ function biblio_menu($may_cache) {
       'type' => MENU_DEFAULT_LOCAL_TASK, 'weight' => -10);
   $items[] = array('path' => "$base/filter", 'title' => t('Filter'),
       'callback' => 'biblio_filter_form',
+      'access' => user_access('show filter tab'),
       'type' => MENU_LOCAL_TASK, 'weight' => -9);
   $items[] = array('path' =>  "$base/filter/clear", 'title' => t(''),
       'callback' => 'biblio_filter_clear',
@@ -303,7 +304,7 @@ function biblio_menu($may_cache) {
       'type' => MENU_CALLBACK);
   $items[] = array('path' => "$base/export", 'title' => t(''),
       'callback' => '_export',
-      'access' => user_access('export to file'),
+      'access' => user_access('show export links'),
       'type' => MENU_CALLBACK);
 
 
@@ -1056,13 +1057,14 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
     if ( biblio_access('export',$pub)) {
       $content .= '<div class="biblio_export">Export (' . $pager_total_items[0] . ') results: '.l("Tagged","$base/export/tagged"). ', '.l("XML","$base/export/xml"). ', '.l("BibTex","$base/export/bib").'</div>';
     } 
-  
-    $sort_attr = array("title"=>t("Click a second time to reverse the sort order"));
-    $content .= '<div class="biblio_sort">Sort by:';
-    $content .= " ".l("Year",$_GET['q'],$sort_attr,"&sort=year&order=$order");
-    $content .= " ".l("Title",$_GET['q'],$sort_attr,"&sort=title&order=$order");
-    $content .= " ".l("Type",$_GET['q'],$sort_attr,"&sort=type&order=$order");
-    $content .= "</div> ";
+    if(user_access('show sort links')){
+      $sort_attr = array("title"=>t("Click a second time to reverse the sort order"));
+      $content .= '<div class="biblio_sort">Sort by:';
+      $content .= " ".l("Year",$_GET['q'],$sort_attr,"&sort=year&order=$order");
+      $content .= " ".l("Title",$_GET['q'],$sort_attr,"&sort=title&order=$order");
+      $content .= " ".l("Type",$_GET['q'],$sort_attr,"&sort=type&order=$order");
+      $content .= "</div> ";
+    }
   }
   $session = &$_SESSION['biblio_filter'];
   if (count($args)) {
@@ -1246,7 +1248,10 @@ $inline = false;
       } 
     } 
   } 
-  $query = "SELECT * FROM {node} n left join {biblio} b  on n.nid=b.nid  WHERE n.type='biblio' $limit $sortby ";
+  $published = ($user->uid == 1)?'':'AND n.status=1 ';//show only published entries to everyone except admin
+
+  $query = "SELECT * FROM {node} n left join {biblio} b  on n.nid=b.nid  WHERE n.type='biblio' $published $limit $sortby ";
+
   $_SESSION['last_biblio_query'] = $query;
   $terms[] = $pager_attrib['order'];
   $_SESSION['last_biblio_query_terms'] = $terms;
