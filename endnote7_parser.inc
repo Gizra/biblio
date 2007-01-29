@@ -23,6 +23,31 @@
 
 function en7_parse($tags,&$node_array,$node) 
 {
+  $type_map = array('0'=>'102', // Journal Article
+                    '1'=>'100', // Book
+                    '2'=>'108', // Thesis
+                    '3'=>'103', // Conference Proceedings
+                    '4'=>'120', // Personal Communication
+                    '5'=>'105', // NewsPaper Article
+                    '6'=>'113', // Computer Program
+                    '7'=>'101', // Book Section
+                    '8'=>'106', // Magazine Article
+                    '9'=>'100', // Edited Book
+                    '10'=>'109', // Report
+                    '11'=>'122', // Map
+                    '12'=>'114', // Audiovisual Material
+                    '13'=>'112', // Artwork
+                    '15'=>'119', // Patent
+                    '16'=>'107', // Electronic Source
+                    '17'=>'117', // Bill
+                    '18'=>'116', // Case
+                    '19'=>'115', // Hearing
+                    '20'=>'121', // Manuscript
+                    '21'=>'110', // Film or Broadcast
+                    '22'=>'118', // Statute
+                    '26'=>'123', // Chart or Table
+                    '31'=>'129' // Generic        
+                    );
   foreach($tags as $tag ){
     if ( $tag['type'] == "complete" || $tag['type'] == "open" )
     {
@@ -35,45 +60,21 @@ function en7_parse($tags,&$node_array,$node)
           }
           break;
           case 'REFERENCE_TYPE':
-            switch ($data) {
-              case '0': // Journal Article
-                $node_array[$node_id]['biblio_type'] = 1;
-                break;
-              case '2': // Thesis
-                $node_array[$node_id]['biblio_type'] = 7;
-                break;
-              case '3': // Conference Proceeding
-                $node_array[$node_id]['biblio_type'] = 2;
-                break;
-              case '7': // Book Section
-                $node_array[$node_id]['biblio_type'] = 6;
-                break;
-              case '10': // Report
-                $node_array[$node_id]['biblio_type'] = 5;
-                break;
-              case '15': // Patent
-                $node_array[$node_id]['biblio_type'] = 8;
-                break;
-            } 
+            $node_array[$node_id]['biblio_type'] = $type_map["$data"];
             break;
   //Author information
         case 'AUTHOR':
           $node_array[$node_id]['biblio_authors'] .= (empty($node_array[$node_id]['biblio_authors'])) ? $data : "; $data";          
-  //         $node_array[$node_id]['biblio_authors'][] = $data;
            break;
         case 'SECONDARY_AUTHOR':
           $node_array[$node_id]['biblio_secondary_authors'] .= (empty($node_array[$node_id]['biblio_secondary_authors'])) ? $data : "; $data";          
-  //         $node_array[$node_id]['biblio_secondary_authors'][] = $data;
            break;
         case 'TERTIARY_AUTHOR':
           $node_array[$node_id]['biblio_tertiary_authors'] .= (empty($node_array[$node_id]['biblio_tertiary_authors'])) ? $data : "; $data";          
-  //         $node_array[$node_id]['biblio_tertiary_authors'][] = $data;
            break;
-        case 'subsidiary-authors':
-  //         $node_array[$node_id]['biblio_subsidiary_authors'][] = $data;
+        case 'SUBSIDIARY_AUTHOR':
           break; 
         case 'translated-authors':
-  //         $node_array[$node_id]['biblio_translated_authors'][] = $data;
           break; 
       case 'auth-address':
         break; 
@@ -87,13 +88,16 @@ function en7_parse($tags,&$node_array,$node)
           $node_array[$node_id]['biblio_secondary_title'] .= $data;
           break;
         case 'TERTIARY_TITLE':
-          $node_array[$node_id]['biblio_tertiary-title'] .= $data;
+          $node_array[$node_id]['biblio_tertiary_title'] .= $data;
           break;
-        case 'alt-title':
+        case 'ALTERNATE_TITLE':
+          $node_array[$node_id]['biblio_alternate_title'] .= $data;
           break; 
-        case 'short-title':
+        case 'SHORT_TITLE':
+          $node_array[$node_id]['biblio_short_title'] .= $data;
           break; 
         case 'translated-title':
+          $node_array[$node_id]['biblio_translated_title'] .= $data;
           break;
   // Periodical information
         case 'full-title':
@@ -122,13 +126,17 @@ function en7_parse($tags,&$node_array,$node)
         break; 
       case 'secondary-issue': 
         break; 
-      case 'num-vols': 
+      case 'NUMBER_OF_VOLUMES': 
+          $node_array[$node_id]['biblio_number_of_volumes'] .= $data;
         break; 
-      case 'edition': 
+      case 'EDITION': 
+          $node_array[$node_id]['biblio_edition'] .= $data;
         break; 
-      case 'section': 
+      case 'SECTION': 
+          $node_array[$node_id]['biblio_section'] .= $data;
         break; 
-      case 'reprint-edition': 
+      case 'REPRINT_EDITION': 
+          $node_array[$node_id]['biblio_reprint_edition'] .= $data;
         break; 
       case 'reprint-status':
         break; 
@@ -154,7 +162,7 @@ function en7_parse($tags,&$node_array,$node)
       case 'ISBN': 
         $node_array[$node_id]['biblio_isbn'] .= $data;
         break;   
-      case 'AACCESSION_NUMBER': 
+      case 'ACCESSION_NUMBER': 
         $node_array[$node_id]['biblio_accession_number'] .= $data;
         break;   
       case 'CALL_NUMBER': 
@@ -182,17 +190,23 @@ function en7_parse($tags,&$node_array,$node)
         break; 
       case 'modified-date': 
         break; 
-      case 'custom1': 
+      case 'CUSTOM1': 
+            $node_array[$node_id]['biblio_custom1'] .= $data;
         break; 
-      case 'custom2': 
+      case 'CUSTOM2': 
+            $node_array[$node_id]['biblio_custom2'] .= $data;
         break; 
-      case 'custom3': 
+      case 'CUSTOM3': 
+            $node_array[$node_id]['biblio_custom3'] .= $data;
         break; 
-      case 'custom4': 
+      case 'CUSTOM4': 
+            $node_array[$node_id]['biblio_custom4'] .= $data;
         break; 
-      case 'custom5': 
+      case 'CUSTOM5': 
+            $node_array[$node_id]['biblio_custom5'] .= $data;
         break; 
-      case 'custom6': 
+      case 'CUSTOM6': 
+            $node_array[$node_id]['biblio_custom6'] .= $data;
         break; 
       case 'custom7': 
         break; 
@@ -201,6 +215,9 @@ function en7_parse($tags,&$node_array,$node)
       case 'misc2': 
         break; 
       case 'misc3':
+        break; 
+      case 'TYPE_OF_WORK': 
+            $node_array[$node_id]['biblio_type_of_work'] .= $data;
         break; 
             
       }

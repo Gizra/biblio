@@ -13,7 +13,28 @@ global $node_array,$node,$node_id, $element, $contributors, $titles, $periodical
       case 'style':
         break;
         
-      case 'authors': 
+      case 'author': 
+        switch ($contributors){
+          case 'authors':
+             $node_array[$node_id]['biblio_authors'] .= (empty($node_array[$node_id]['biblio_authors']))?"":"; ";
+             break;
+          case 'secondary-authors':
+             $node_array[$node_id]['biblio_secondary_authors'] .= (empty($node_array[$node_id]['biblio_secondary_authors'])) ? "" : "; ";
+             break;
+          case 'tertiary-authors':
+             $node_array[$node_id]['biblio_tertiary_authors'] .= (empty($node_array[$node_id]['biblio_tertiary_authors'])) ? "" : "; ";
+             break;
+          case 'subsidiary-authors':
+             $node_array[$node_id]['biblio_subsidiary_authors'] .= (empty($node_array[$node_id]['biblio_subsidiary_authors'])) ? "" : "; ";
+            break; 
+          case 'translated-authors':
+             $node_array[$node_id]['biblio_translated_authors'] .= (empty($node_array[$node_id]['biblio_translated_authors'])) ? "" : "; ";
+            break; 
+        }
+       $element = $name;
+      break;
+      
+      case 'authors':
       case 'secondary-authors':
       case 'tertiary-authors':
       case 'subsidiary-authors':
@@ -26,7 +47,7 @@ global $node_array,$node,$node_id, $element, $contributors, $titles, $periodical
       case 'copyright-dates':
         $dates = $name;
         break;
-        
+         
       case 'web-urls':
       case 'pdf-urls':
       case 'text-urls':
@@ -43,7 +64,7 @@ global $node_array,$node,$node_id, $element, $contributors, $titles, $periodical
 
 function en8_endElement($parser, $name) 
 {
-    global $element, $contributors, $dates, $urls;
+    global  $element, $contributors, $dates, $urls;
     switch ($name){
         
       case 'authors': 
@@ -54,8 +75,8 @@ function en8_endElement($parser, $name)
         $contributors = '';
         $element = '';
         break;
-        
           
+
       case 'year':
       case 'pub-dates':
       case 'copyright-dates':
@@ -80,7 +101,7 @@ function en8_endElement($parser, $name)
 
 function en8_characterData($parser, $data) 
 {
-global $node_array,$node_id, $element, $contributors,   $dates, $urls;
+global  $node_array,$node_id, $element, $contributors,   $dates, $urls;
  if (trim($data)){
 
   switch ($element) {
@@ -188,7 +209,7 @@ global $node_array,$node_id, $element, $contributors,   $dates, $urls;
         $node_array[$node_id]['biblio_type'] = 129;
         break;
       case 10: // Conference Proceeding
-        $node_array[$node_id]['biblio_type'] = 2;
+        //$node_array[$node_id]['biblio_type'] = 2;
         break;
       default:
          $node_array[$node_id]['biblio_type'] = 129;
@@ -199,26 +220,21 @@ global $node_array,$node_id, $element, $contributors,   $dates, $urls;
 //Author information
     case 'author': 
       switch ($contributors){
-      case 'authors':
-        $node_array[$node_id]['biblio_authors'] .= (empty($node_array[$node_id]['biblio_authors'])) ? $data : "; $data";          
-         //$node_array[$node_id]['biblio_authors'][] = $data;
-         break;
-      case 'secondary-authors':
-         $node_array[$node_id]['biblio_secondary_authors'] .= (empty($node_array[$node_id]['biblio_secondary_authors'])) ? $data : "; $data";
-//         $node_array[$node_id]['biblio_secondary_authors'][] = $data;
-         break;
-      case 'tertiary-authors':
-         $node_array[$node_id]['biblio_tertiary_authors'] .= (empty($node_array[$node_id]['biblio_tertiary_authors'])) ? $data : "; $data";
-//         $node_array[$node_id]['biblio_tertiary_authors'][] = $data;
-         break;
-      case 'subsidiary-authors':
-         $node_array[$node_id]['biblio_subsidiary_authors'] .= (empty($node_array[$node_id]['biblio_subsidiary_authors'])) ? $data : "; $data";
-//         $node_array[$node_id]['biblio_subsidiary_authors'][] = $data;
-        break; 
-      case 'translated-authors':
-         $node_array[$node_id]['biblio_translated_authors'] .= (empty($node_array[$node_id]['biblio_translated_authors'])) ? $data : "; $data";
-//         $node_array[$node_id]['biblio_translated_authors'][] = $data;
-        break; 
+        case 'authors':
+          $node_array[$node_id]['biblio_authors'] .=  $data;           
+           break;
+        case 'secondary-authors':
+           $node_array[$node_id]['biblio_secondary_authors'] .=  $data;
+           break;
+        case 'tertiary-authors':
+           $node_array[$node_id]['biblio_tertiary_authors'] .=  $data;
+           break;
+        case 'subsidiary-authors':
+           $node_array[$node_id]['biblio_subsidiary_authors'] .=  $data;
+          break; 
+        case 'translated-authors':
+           $node_array[$node_id]['biblio_translated_authors'] .=  $data;
+          break; 
       }
       break; 
     case 'auth-address':
@@ -233,13 +249,16 @@ global $node_array,$node_id, $element, $contributors,   $dates, $urls;
         $node_array[$node_id]['biblio_secondary_title'] .= $data;
         break;
       case 'tertiary-title':
-        $node_array[$node_id]['biblio_tertiary-title'] .= $data;
+        $node_array[$node_id]['biblio_tertiary_title'] .= $data;
         break;
       case 'alt-title':
+        $node_array[$node_id]['biblio_alternate_title'] .= $data;
         break; 
       case 'short-title':
+        $node_array[$node_id]['biblio_short_title'] .= $data;
         break; 
       case 'translated-title':
+        $node_array[$node_id]['biblio_translated_title'] .= $data;
         break;
 // Periodical information
       case 'full-title':
@@ -269,12 +288,16 @@ global $node_array,$node_id, $element, $contributors,   $dates, $urls;
     case 'secondary-issue': 
       break; 
     case 'num-vols': 
+        $node_array[$node_id]['biblio_number_of_volumes'] .= $data;
       break; 
     case 'edition': 
+        $node_array[$node_id]['biblio_edition'] .= $data;
       break; 
     case 'section': 
+        $node_array[$node_id]['biblio_section'] .= $data;
       break; 
     case 'reprint-edition': 
+        $node_array[$node_id]['biblio_reprint_edition'] .= $data;
       break; 
     case 'reprint-status':
       break; 
@@ -333,6 +356,7 @@ global $node_array,$node_id, $element, $contributors,   $dates, $urls;
       $node_array[$node_id]['biblio_notes'] .= $data;
       break; 
     case 'work-type': 
+      $node_array[$node_id]['biblio_type_of_work'] .= $data;
       break; 
     case 'reviewed-item': 
       break; 
@@ -357,6 +381,7 @@ global $node_array,$node_id, $element, $contributors,   $dates, $urls;
     case 'remote-database-provider': 
       break; 
     case 'language': 
+      $node_array[$node_id]['biblio_lang'] .= $data;
       break; 
     case 'urls': 
     case 'url':

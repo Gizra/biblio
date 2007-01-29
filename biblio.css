@@ -29,12 +29,26 @@ dl.bibliomultiselect .form-item {
   margin: 0;
 }
 
-
+.biblio-head {
+	width: 97%;
+	color: Black;
+	font-weight: normal;
+	background-color: #EAEAEA;
+	border: medium solid;
+	border-left-color: #F0F8FF;
+	border-right-color: Gray;
+	border-bottom-color: Gray;
+	border-top-color: #F0F8FF;
+	padding: 3px;
+}
+ .biblio-head a:link , .biblio-head a.active, .biblio-head a:visited,
+ .biblio-head a:focus,  .biblio-head a:hover  {
+	color: black;
+}
 .biblio-year {
-	width: 98%;
-	color: #fff;
+	color: #000000;
 	font-weight: bold;
-	background-color: #0F659E;
+	background-color: #e1e1e1;
 	border: 1px solid #ccc;
 	padding: 0.5em;
 	margin: 1em 0 1em 0;
@@ -69,12 +83,15 @@ dl.bibliomultiselect .form-item {
 	text-autospace: none;
 	text-justify: auto;
 	word-wrap: normal;
-	layout-grid-mode: line;
-	vertical-align: top;
 	font: "@Arial Unicode MS", Arial, sans-serif;
 	word-break: keep-all;
 	color: #336599;
 }
+
+a:active {
+	
+}
+
 .biblio-authors a{
 	font-weight: normal;
 	text-decoration: none;

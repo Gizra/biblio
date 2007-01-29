@@ -1,13 +1,18 @@
 <?php
 // $Id$
+function biblio_style_cse_info(){
+
+    return array('cse'=>'Council of Science Editors (CSE)');
+                 
+}
 function biblio_style_cse($pub){
 
   if (variable_get('biblio_normalize', 0)) {
-    $authors = _parse_authors(check_plain($pub->biblio_authors));
+    $authors = _biblio_parse_authors(check_plain($pub->biblio_authors));
   } else {
     $authors = check_plain($pub->biblio_authors);
   } 
-  $output .= '<span class="biblio-authors">' . str_replace(";", ",", str_replace(array(".",","),"",_author_links($authors))) . "</span>.&nbsp; \n";
+  $output .= '<span class="biblio-authors">' . str_replace(";", ",", str_replace(array(".",","),"",_biblio_author_links($authors))) . "</span>.&nbsp; \n";
 //  $output .= (strrpos($authors, '.' ) == strlen($authors))? ".&nbsp;&nbsp;":" ";
 
       switch ($pub->biblio_type) {

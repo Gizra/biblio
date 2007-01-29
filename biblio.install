@@ -1,13 +1,18 @@
 <?PHP
+// $Id$
 function biblio_install() {
   $result = array();
   
   switch ($GLOBALS['db_type']) {
     case 'mysql':
     case 'mysqli':
-        
+    
+      $result[] = db_query("alter table {node} modify title varchar(255);");
+      $result[] = db_query("alter table {node_revisions} modify title varchar(255);");
+  
       $result[] = db_query ("CREATE TABLE {biblio} (
         `nid` int(10) NOT NULL default '0',
+        `vid` int(10) NOT NULL default '0',
         `biblio_type` int(11) NOT NULL default '0',
         `biblio_number` varchar(10) default NULL,
         `biblio_section` varchar(10) default NULL,
@@ -29,6 +34,7 @@ function biblio_install() {
         `biblio_place_published` varchar(255) default NULL,
         `biblio_year` int(11) NOT NULL default '0',
         `biblio_volume` varchar(10) default NULL,
+        `biblio_number_of_volumes` varchar(10) default NULL,
         `biblio_pages` varchar(24) default NULL,
         `biblio_date` varchar(16) default NULL,
         `biblio_isbn` varchar(24) default NULL,
@@ -51,12 +57,26 @@ function biblio_install() {
         `biblio_custom5` varchar(255) default NULL,
         `biblio_custom6` varchar(255) default NULL,
         `biblio_custom7` varchar(255) default NULL,
+        `biblio_citekey` varchar(16) default NULL,
        PRIMARY KEY  (`nid`),
         KEY `type` (`biblio_type`),
         KEY `year` (`biblio_year`),
         FULLTEXT KEY `authors` (`biblio_authors`)
-      ) ENGINE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */;");
+      )  /*!40100 ENGINE=MyISAM DEFAULT CHARACTER SET utf8 */;");
       
+      $result[] = db_query("CREATE TABLE {biblio_author_index} (
+                  `aid` int(11) NOT NULL default '0',
+                  `author` varchar(100) NOT NULL default '',
+                  PRIMARY KEY  (`aid`)
+      ) /*!40100 DEFAULT CHARSET=utf8 */;");
+      
+      $result[] = db_query("CREATE TABLE `biblio_has_author` (
+                  `nid` int(11) NOT NULL default '0',
+                  `aid` int(11) NOT NULL default '0',
+                  `rank` int(11) NOT NULL default '0',
+                  PRIMARY KEY  (`nid`,`aid`,`rank`)
+      ) /*!40100 DEFAULT CHARSET=utf8 */;");
+
       $result[] = db_query("CREATE TABLE {biblio_fields} (
         `fid` int(11) NOT NULL default '0',
         `name` varchar(100) NOT NULL default '',
@@ -70,7 +90,7 @@ function biblio_install() {
         `visible` tinyint(4) NOT NULL default '0',
         `weight` int(11) NOT NULL default '0',
         PRIMARY KEY  (`fid`)
-      ) ENGINE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */;");
+      )  /*!40100 DEFAULT CHARACTER SET utf8 */;");
 
       $result[] = db_query("INSERT INTO {biblio_fields} (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`weight`) VALUES 
        (1,'biblio_authors','Authors',1,'textfield',60,255,'Author names must be separated by semicolons',1,0,1),
@@ -95,16 +115,16 @@ function biblio_install() {
        (18,'biblio_pages','Pagination',0,'textfield',24,24,'',0,0,17),
        (19,'biblio_date','Date Published',0,'textfield',16,16,'(mm/yyyy)',0,0,18),
        (20,'biblio_lang','Publication Language',0,'textfield',24,24,'',0,0,23),
-       (21,'biblio_abst_e','Abstract',1,'textarea',60,15,'',0,0,155),
-       (22,'biblio_abst_f','French Abstract',0,'textarea',60,15,'',0,0,156),
+       (21,'biblio_abst_e','Abstract',1,'textarea',60,65535 ,'',0,0,155),
+       (22,'biblio_abst_f','French Abstract',0,'textarea',60,65535 ,'',0,0,156),
        (23,'biblio_keywords','Key Words',1,'textfield',60,255,'',0,0,154),
        (24,'biblio_type_of_work','Type of Work',0,'textfield',60,255,'Masters Thesis, PhD Thesis, etc.',0,0,22),
        (25,'biblio_url','URL',1,'textfield',60,255,'',0,0,158);");
 
       $result[] = db_query("INSERT INTO {biblio_fields} (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`weight`) VALUES 
-       (26,'biblio_notes','Notes',1,'textarea',60,15,'',0,0,157),
+       (26,'biblio_notes','Notes',1,'textarea',60,65535 ,'',0,0,157),
        (27,'biblio_issue','Issue',0,'textfield',10,10,'',0,0,15),
-       (28,'biblio_research_notes','Reseach Notes',0,'textarea',60,15,'',0,0,160),
+       (28,'biblio_research_notes','Reseach Notes',0,'textarea',60,65535 ,'',0,0,160),
        (29,'biblio_custom1','Custom 1',0,'textfield',120,255,'',0,0,161),
        (30,'biblio_custom2','Custom 2',0,'textfield',120,255,'',0,0,162),
        (31,'biblio_custom3','Custom 3',0,'textfield',120,255,'',0,0,163),
@@ -113,12 +133,13 @@ function biblio_install() {
        (34,'biblio_custom6','Custom 6',0,'textfield',120,255,'',0,0,167),
        (35,'biblio_custom7','Custom 7',0,'textfield',120,255,'',0,0,168),
        (36,'biblio_number_of_volumes','Number of Volumes',0,'textfield',10,10,'',0,0,15),
-       (37,'biblio_short_title','Short Title',0,'textfield',120,255,'',0,0,169),
-       (38,'biblio_alternate_title','Alternate Title',0,'textfield',120,255,'',0,0,170),
-       (39,'biblio_translated_title','Translated Title',0,'textfield',120,255,'',0,0,170),
-       (40,'biblio_original_publication','Original Publication',0,'textfield',120,255,'',0,0,171),
+       (37,'biblio_short_title','Short Title',0,'textfield',60,255,'',0,0,169),
+       (38,'biblio_alternate_title','Alternate Title',0,'textfield',60,255,'',0,0,170),
+       (39,'biblio_translated_title','Translated Title',0,'textfield',60,255,'',0,0,170),
+       (40,'biblio_original_publication','Original Publication',0,'textfield',60,255,'',0,0,171),
        (41,'biblio_reprint_edition','Reprint Edition',0,'textfield',120,255,'',0,0,172),
-       (42,'biblio_section','Section',0,'textfield',10,10,'',0,0,15);");
+       (42,'biblio_section','Section',0,'textfield',10,10,'',0,0,15),
+       (43,'biblio_citekey','Citation Key',0,'textfield',16,16,'',0,0,175);");
 
 
       $result[] = db_query("CREATE TABLE {biblio_types} (
@@ -126,8 +147,9 @@ function biblio_install() {
         `name` varchar(64) NOT NULL default '',
         `description` varchar(255) default NULL,
         `weight` int(11) NOT NULL default '0',
+        `visible` tinyint(1) NOT NULL default '1' ,
         PRIMARY KEY  (`tid`)
-      ) ENGINE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */;"); 
+      )  /*!40100 DEFAULT CHARACTER SET utf8 */;"); 
 
      // some default types...
 /*      $result[] = db_query("INSERT INTO {biblio_types} (`tid`,`name`,`description`) VALUES 
@@ -177,80 +199,9 @@ function biblio_install() {
 				(130,'Miscellaneous Section'	,NULL,31);");
 
 
-      $result[] = db_query("CREATE TABLE {biblio_type_details} (
-        `tdid` int(11) NOT NULL auto_increment,
-        `tid` int(11) NOT NULL default '0',
-        `fid` int(11) NOT NULL default '0',
-        `title` varchar(100) NOT NULL default '',
-        `hint` varchar(100) default '',
-        `required` tinyint(1) NOT NULL default '0',
-        `weight` int(11) NOT NULL default '0',
-        PRIMARY KEY  (`tdid`),
-        KEY `tid` (`tid`)
-      ) ENGINE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */;");
 
       // some customizations of the default types 
-      $result[] = db_query("INSERT INTO {biblio_type_details} (`tid`,`fid`,`title`,`hint`,`required`,`visible`,`weight`) VALUES 
-       (1,16,'Volume','',0,1,14),
-       (1,19,'Journal Date','(mm/yyyy)',0,1,3),
-       (1,5,'Journal Title','',1,1,2),
-       (1,27,'Issue','',0,1,15),
-       (1,18,'Pagination','',0,1,17),
-       (2,5,'Conference Name','',0,1,12),
-       (2,6,'Series Title','',0,1,13),
-       (2,16,'Volume','',0,1,14),
-       (2,15,'Edition','',0,1,15),
-       (2,18,'Pagination','',0,1,17),
-       (2,19,'Conference Start Date','(dd/mm/yyyy)',0,1,18),
-       (2,12,'Publisher','',0,1,19),
-       (2,13,'Conference Location','',0,1,20),
-       (2,2,'Editor','',0,1,21),
-       (3,5,'Conference Name','',0,1,12),
-       (3,6,'Series Title','',0,1,13),
-       (3,16,'Volume','',0,1,14),
-       (3,15,'Edition','',0,1,15),
-       (3,18,'Pagination','',0,1,17),
-       (3,19,'Conference Start Date','(dd/mm/yyyy)',0,1,18),
-       (3,12,'Publisher','',0,1,19),
-       (3,13,'Conference Location','',0,1,20),
-       (3,2,'Editor','',0,1,21),
-       (4,5,'Conference Name','',0,1,12),
-       (4,6,'Series Title','',0,1,13),
-       (4,16,'Volume','',0,1,14),
-       (4,15,'Edition','',0,1,15);");
-      $result[] = db_query("INSERT INTO {biblio_type_details} (`tid`,`fid`,`title`,`hint`,`required`,`visible`,`weight`) VALUES 
-       (4,18,'Pagination','',0,1,17),
-       (4,19,'Conference Start Date','(dd/mm/yyyy)',0,1,18),
-       (4,12,'Publisher','',0,1,19),
-       (4,13,'Conference Location','',0,1,20),
-       (4,2,'Editor','',0,1,21),
-       (5,19,'Date','(mm/yyyy)',0,1,18),
-       (5,18,'Pages','',0,1,17),
-       (5,5,'Prepared for','',0,1,12),
-       (5,12,'Institution','',0,1,19),
-       (5,13,'City','',0,1,20),
-       (6,5,'Book Title','',0,1,12),
-       (6,6,'SeriesTitle','',0,1,13),
-       (6,15,'Edition','',0,1,15),
-       (6,18,'Pages','',0,1,17),
-       (6,12,'Publisher','',0,1,19),
-       (6,13,'Place of Publication','',0,1,20),
-       (6,2,'Editor','',0,1,21),
-       (6,3,'Series Editor','',0,1,26),
-       (7,5,'Academic Department','',0,1,12),
-       (7,18,'Number of Pages','',0,1,17),
-       (7,12,'University','',0,1,19),
-       (7,13,'City','',0,1,20),
-       (7,24,'Degree','Masters Thesis, PhD Thesis, etc.',0,1,22),
-       (8,12,'Assignee','',0,1,19),
-       (8,19,'Date','(mm/yyyy)',0,1,18),
-       (8,18,'Pages','',0,1,17);");
-      $result[] = db_query("INSERT INTO {biblio_type_details} (`tid`,`fid`,`title`,`hint`,`required`,`visible`,`weight`) VALUES 
-       (8,27,'Issue','',0,1,15),
-       (8,5,'Published Source','',0,1,12),
-       (8,13,'Country','',0,1,13),
-       (8,16,'Volume','',0,1,14),
-       (9,5,'Prepared for','',0,1,12);");
+      _add_types($result);
         
       break;
    
@@ -265,9 +216,131 @@ function biblio_install() {
   	drupal_set_message(t('Drupal was unable to install the database tables for the biblio module.'), 'error');
   }
 }
+function biblio_reset_types(){
+  $result = array();
+  $result[] = db_query("DROP TABLE {biblio_type_details} ");
+ 
+  _add_types($result);
+}
+
+function _add_types(&$result){
+
+      $result[] = db_query("CREATE TABLE {biblio_type_details} (
+        `tid` int(11) NOT NULL default '0',
+        `fid` int(11) NOT NULL default '0',
+        `title` varchar(100) NOT NULL default '',
+        `hint` varchar(100) default '',
+        `required` tinyint(1) NOT NULL default '0',
+        `weight` int(11) NOT NULL default '0',
+        PRIMARY KEY  (`tid`,`fid`),
+        KEY `tid` (`tid`)
+      ) /*!40100 ENGINE=MyISAM DEFAULT CHARACTER SET utf8 */;");
+      $result[] = db_query("/*!40000 ALTER TABLE `biblio_type_details` DISABLE KEYS */;");
+      $result[] = db_query("INSERT INTO {biblio_type_details} (`tid`,`fid`,`title`,`hint`,`required`,`weight`) VALUES 
+       (100,5,'Series Title','',0,3),
+       (100,15,'Edition','',0,10),
+       (100,18,'Number of Pages','',0,9),
+       (100,12,'Publisher','',0,5),
+       (100,13,'City','',0,4),
+       (100,2,'Series Editor','',0,2),
+       (100,16,'Volume','',0,6),
+       (100,36,'Number of Volumes','',0,7),
+       (100,17,'Series Volume','',0,8),
+       (100,37,'Short Title','',0,11),
+       (100,41,'Reprint Edition','',0,12),
+       (101,36,'Number of Volumes','',0,7),
+       (101,16,'Volume','',0,6),
+       (101,17,'Series Volume','',0,8),
+       (101,18,'Pages','',0,9),
+       (101,42,'Chapter','',0,10),
+       (101,3,'Series Editor','',0,11),
+       (101,6,'Series Title','',0,12),
+       (101,15,'Edition','',0,13),
+       (101,37,'Short Title','',0,14),
+       (101,40,'Original Publication','',0,171),
+       (101,41,'Reprint Edition','',0,172),
+       (101,20,'Language','',0,23),
+       (101,12,'Publisher','',0,5),
+       (101,5,'Book Title','',0,3),
+       (101,2,'Editor','',0,2),
+       (101,13,'City','',0,4);"); 
+      $result[] = db_query("INSERT INTO {biblio_type_details} (`tid`,`fid`,`title`,`hint`,`required`,`weight`) VALUES 
+       (102,42,'Start Page','',0,6),
+       (102,37,'Short Title','',0,15),
+       (102,41,'Reprint Edition','',0,172),
+       (102,12,'Publisher','',0,19),
+       (102,16,'Volume','',0,3),
+       (102,19,'Journal Date','(mm/yyyy)',0,14),
+       (102,5,'Journal Title','',1,2),
+       (102,27,'Issue','',0,4),
+       (102,18,'Pages','',0,5),
+       (103,5,'Conference Name','',0,12),
+       (103,6,'Series Title','',0,13),
+       (103,16,'Volume','',0,14),
+       (103,15,'Edition','',0,15),
+       (103,18,'Pagination','',0,17),
+       (103,19,'Conference Start Date','(dd/mm/yyyy)',0,18),
+       (103,12,'Publisher','',0,19),
+       (103,13,'Conference Location','',0,20),
+       (103,2,'Editor','',0,21),
+       (104,5,'Conference Name','',0,12),
+       (104,6,'Series Title','',0,13),
+       (104,16,'Volume','',0,14),
+       (104,15,'Edition','',0,15),
+       (104,18,'Pagination','',0,17),
+       (104,19,'Conference Start Date','(dd/mm/yyyy)',0,18),
+       (104,12,'Publisher','',0,19),
+       (104,13,'Conference Location','',0,20),
+       (104,2,'Editor','',0,21);");
+      $result[] = db_query("INSERT INTO {biblio_type_details} (`tid`,`fid`,`title`,`hint`,`required`,`weight`) VALUES 
+       (108,5,'Academic Department','',0,12),
+       (108,18,'Number of Pages','',0,17),
+       (108,12,'University','',0,19),
+       (108,13,'City','',0,20),
+       (108,24,'Degree','Masters Thesis, PhD Thesis, etc.',0,22),
+       (109,19,'Date','(mm/yyyy)',0,18),
+       (109,18,'Pages','',0,17),
+       (109,5,'Prepared for','',0,12),
+       (109,12,'Institution','',0,19),
+       (109,13,'City','',0,20),
+       (119,12,'Assignee','',0,19),
+       (119,19,'Date','(mm/yyyy)',0,18),
+       (119,18,'Pages','',0,17),
+       (119,27,'Issue','',0,15),
+       (119,5,'Published Source','',0,12),
+       (119,13,'Country','',0,13),
+       (119,16,'Volume','',0,14),
+       (129,5,'Prepared for','',0,12);");
+      $result[] = db_query("/*!40000 ALTER TABLE `biblio_type_details` ENABLE KEYS */;");
+
+}
+function biblio_uninstall(){
+    $result = db_query("SELECT * FROM {node} where type='biblio' ");
+    while ($row = db_fetch_object($result)){
+      node_delete($row->nid);
+    }
+
+  db_query("DROP TABLE {biblio} ");
+  db_query("DROP TABLE {biblio_types} ");
+  db_query("DROP TABLE {biblio_fields} ");
+  db_query("DROP TABLE {biblio_type_details} ");
+  db_query("DROP TABLE {biblio_author_index} ");
+  db_query("DROP TABLE {biblio_has_author} ");
+  variable_del('biblio_base');
+  variable_del('biblio_normalize');
+  variable_del('biblio_order');
+  variable_del('biblio_rowsperpage');
+  variable_del('biblio_sort');
+  variable_del('biblio_style');
+  variable_del('biblio_view_only_own');
+  variable_del('biblio_max_user_tid');
+  variable_del('biblio_ai_last_nid');
+}
+
 function biblio_update_1() {
   return _system_update_utf8(array('biblio','biblio_fields','biblio_types','biblio_type_details'));
 }
+
 function biblio_update_2() {
 $result = array();
 
@@ -276,6 +349,12 @@ $result = array();
   
 }
 function biblio_update_3() {
+  $result = update_sql("alter table {node} modify title varchar(255);");
+  $result = update_sql("alter table {node_revisions} modify title varchar(255);");
+  return $result;
+}
+
+function biblio_update_4() {
 $result = array();
   
   $result[] = update_sql("ALTER TABLE {biblio_type_details} DROP COLUMN visible;");
@@ -311,8 +390,10 @@ $result = array();
        (39,'biblio_translated_title','Translated Title',0,'textfield',120,255,'',0,0,170),
        (40,'biblio_original_publication','Original Publication',0,'textfield',120,255,'',0,0,171),
        (41,'biblio_reprint_edition','Reprint Edition',0,'textfield',120,255,'',0,0,172);");
+ return($result);
 }
-function biblio_update_4() {
+
+function biblio_update_5() {
 $result = array();
 
   $result[] = update_sql("ALTER TABLE {biblio_types} 
@@ -360,8 +441,10 @@ $result = array();
   $result[] = update_sql("UPDATE {biblio} SET biblio_type = 108 WHERE biblio_type = 7 ");
   $result[] = update_sql("UPDATE {biblio} SET biblio_type = 119 WHERE biblio_type = 8 ");
   $result[] = update_sql("UPDATE {biblio} SET biblio_type = 129 WHERE biblio_type = 9 ");
+ return $result;  
 }
-function biblio_update_5() {
+
+function biblio_update_6() {
 $result = array();
 
   $result[] = update_sql("UPDATE {biblio_types} SET tid = -11 WHERE tid = 1 ");
@@ -377,7 +460,8 @@ $result = array();
   return $result;
               
 }
-function biblio_update_6() {
+
+function biblio_update_7() {
 $result = array();
 
   $result[] = update_sql("UPDATE {biblio_type_details} SET tid = 102 WHERE tid = 1 ");
@@ -393,23 +477,66 @@ $result = array();
   return $result;
               
 }
-function biblio_update_7() {
+
+function biblio_update_8() {
 $result = array();
 
   $result[] = update_sql("ALTER TABLE {biblio} 
                 ADD  `biblio_section` varchar(10) default NULL ;");
-  
+ 
   $result[] = update_sql("INSERT INTO {biblio_fields} (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`weight`) VALUES 
        (42,'biblio_section','Section',0,'textfield',10,10,'',0,0,15);");
   return $result;
 }
-function biblio_update_8() {
+
+function biblio_update_9() {
 $result = array();
 
   $result[] = update_sql("alter table {node} modify title varchar(255);");
   $result[] = update_sql("alter table {node_revisions} modify title varchar(255);");
   return $result;
   
+}
+function biblio_update_10(){
+$result = array();
+  $result[] = update_sql("UPDATE {biblio_fields} SET maxsize = 65535 WHERE type = 'textarea' ");
+  $result[] = update_sql("ALTER TABLE {biblio} ADD `vid` int(10) NOT NULL default '0';");
+
+  return $result;
+}
+function biblio_update_11(){
+$result = array();
+  $result[] = update_sql("UPDATE {biblio} SET vid = nid ");
+  $result[] = update_sql("UPDATE {node} SET vid = nid WHERE type = 'biblio' ");
+
+  return $result;
+}
+function biblio_update_12(){
+$result = array();
+  $result[] = update_sql("ALTER TABLE {biblio_types} ADD  `visible` tinyint(1) NOT NULL default '1' ;");
+  return $result;
+}
+function biblio_update_13(){
+$result = array();
+  $result[] = update_sql("ALTER TABLE {biblio} ADD  `biblio_citekey` varchar(16)  ;");
+  $result[] = update_sql("INSERT INTO {biblio_fields} (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`weight`) VALUES 
+       (43,'biblio_citekey','Citation Key',0,'textfield',16,16,'',0,0,175);");
+  return $result;
+}
+function biblio_update_14(){
+$result = array();
+      $result[] = update_sql("CREATE TABLE {biblio_author_index} (
+                  `aid` int(11) NOT NULL default '0',
+                  `author` varchar(100) NOT NULL default '',
+                  PRIMARY KEY  (`aid`) )  /*!40100 DEFAULT CHARACTER SET utf8 */;");
+      $result[] = update_sql("CREATE TABLE {biblio_has_author} (
+                  `nid` int(11) NOT NULL default '0',
+                  `aid` int(11) NOT NULL default '0',
+                  `rank` int(11) NOT NULL default '0',
+                  PRIMARY KEY  (`nid`,`aid`,`rank`) ) /*!40100 DEFAULT CHARACTER SET utf8 */;");
+
+
+  return $result;
 }
 
 ?>

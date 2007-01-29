@@ -1,0 +1,5 @@
+; $Id$
+name = Biblio
+description = Maintains biblographic lists.
+package = 
+version = "5.0-rc1"

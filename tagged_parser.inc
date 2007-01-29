@@ -1,4 +1,5 @@
 <?php
+// $Id$
 /** 
  *   Copyright (C) 2006  Ron Jerome
  *
@@ -199,9 +200,10 @@ function _endnote_tagged_import($data,$node) {
       $node_obj = (object)$node;
       $nodeid = node_save($node_obj);
       if ($node_obj->nid) { 
-         $content .= t('Successfully imported node' . l("$node_obj->nid", "node/$node_obj->nid")) . '<br>';
+         $count++;
       }
     } 
   } 
-  return $content;
+    drupal_set_message(t("Succesfully imported ").$count.t(" entries."), 'status');
+  return ;
 } 

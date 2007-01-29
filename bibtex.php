@@ -20,10 +20,9 @@
    * @copyright  1997-2005 The PHP Group
    * @license    http://www.php.net/license/3_0.txt  PHP License 3.0
    * @version    CVS: $Id$
-   * @link       http://pear.php.net/File/BibTex
+   * @link       http://pear.php.net/package/Structures_BibTex
    */
 
-//require_once 'PEAR.php' ;
 /**
  * Structures_BibTex
  *
@@ -53,13 +52,15 @@
  * </code>
  * Example 3: Adding an entry and printing it in BibTex Format
  * <code>
- * $bibtex                = new Structures_BibTex();
- * $addarray              = array();
- * $addarray['type']      = 'Article';
- * $addarray['cite']      = 'art2';
- * $addarray['title']     = 'Titel2';
- * $addarray['author'][0] = 'John Doe';
- * $addarray['author'][1] = 'Jane Doe';
+ * $bibtex                         = new Structures_BibTex();
+ * $addarray                       = array();
+ * $addarray['type']               = 'Article';
+ * $addarray['cite']               = 'art2';
+ * $addarray['title']              = 'Titel2';
+ * $addarray['author'][0]['first'] = 'John';
+ * $addarray['author'][0]['last']  = 'Doe';
+ * $addarray['author'][1]['first'] = 'Jane';
+ * $addarray['author'][1]['last']  = 'Doe';
  * $bibtex->addEntry($addarray);
  * print nl2br($bibtex->bibTex());
  * </code>
@@ -123,7 +124,21 @@ class Structures_BibTex
      * @var string
      */
     var $htmlstring;
-
+    /**
+     * Array with the "allowed" types
+     *
+     * @access public
+     * @var array
+     */
+    var $allowedTypes;
+    /**
+     * Author Format Strings
+     *
+     * @access public
+     * @var string
+     */
+    var $authorstring;
+     
     /**
      * Constructor
      *
@@ -140,12 +155,13 @@ class Structures_BibTex
         //$this->_validate       = $val;
         $this->warnings        = array();
         $this->_options        = array(
-            'stripDelimiter' => true,
-            'validate'       => true,
-            'unwrap'         => false,
-            'wordWrapWidth'  => false,
-            'wordWrapBreak'  => "\n",
-            'wordWrapCut'    => 0,
+            'stripDelimiter'    => true,
+            'validate'          => true,
+            'unwrap'            => false,
+            'wordWrapWidth'     => false,
+            'wordWrapBreak'     => "\n",
+            'wordWrapCut'       => 0,
+            'removeCurlyBraces' => false,
         );
         foreach ($options as $option => $value) {
             $test = $this->setOption($option, $value);
@@ -153,8 +169,25 @@ class Structures_BibTex
                 //Currently nothing is done here, but it could for example raise an warning
             }
         }
-        $this->rtfstring  = 'AUTHORS, "{\b TITLE}", {\i JOURNAL}, YEAR';
-        $this->htmlstring = 'AUTHORS, "<strong>TITLE</strong>", <em>JOURNAL</em>, YEAR<br />';
+        $this->rtfstring    = 'AUTHORS, "{\b TITLE}", {\i JOURNAL}, YEAR';
+        $this->htmlstring   = 'AUTHORS, "<strong>TITLE</strong>", <em>JOURNAL</em>, YEAR<br />';
+        $this->allowedTypes = array(
+            'article',
+            'book',
+            'booklet',
+            'confernce',
+            'inbook',
+            'incollection',
+            'inproceedings',
+            'manual',
+            'masterthesis',
+            'misc',
+            'phdthesis',
+            'proceedings',
+            'techreport',
+            'unpublished'
+        );
+        $this->authorstring = 'VON LAST, JR, FIRST';
     }
 
     /**
@@ -163,7 +196,7 @@ class Structures_BibTex
      * @access public
      * @param string $option option name
      * @param mixed  $value value for the option
-     * @return mixed true on success false on failure
+     * @return mixed true on success PEAR_Error on failure
      */
     function setOption($option, $value)
     {
@@ -171,6 +204,7 @@ class Structures_BibTex
         if (array_key_exists($option, $this->_options)) {
             $this->_options[$option] = $value;
         } else {
+            drupal_set_message('Unknown option '.$option, 'error');
             $ret = false;
         }
         return $ret;
@@ -181,28 +215,24 @@ class Structures_BibTex
      *
      * @access public
      * @param string $filename Name of the file
-     * @return mixed true on success false on failure
+     * @return mixed true on success PEAR_Error on failure
      */
     function loadFile($filename)
     {
         if (file_exists($filename)) {
             if (($this->content = @file_get_contents($filename)) === false) {
-                return false;
+                drupal_set_message('Could not open file '.$filename, 'error');
+                $ret = false;
             } else {
                 $this->_pos    = 0;
                 $this->_oldpos = 0;
                 return true;
             }
         } else {
-            return false;
+           drupal_set_message('Could not find file '.$filename, 'error');
+           return false;
         }
     }
-    /**
-     * loads a given string
-     *
-     * @access public
-     * @param string $string String to load
-     */
     function loadString($string)
     {
       $this->content = $string;
@@ -214,7 +244,7 @@ class Structures_BibTex
      * Parses what is stored in content and clears the content if the parsing is successfull.
      *
      * @access public
-     * @return boolean true on success and false if there was a problem
+     * @return boolean true on success and PEAR_Error if there was a problem
      */
     function parse()
     {
@@ -230,6 +260,14 @@ class Structures_BibTex
         $buffer         = '';
         for ($i = 0; $i < strlen($this->content); $i++) {
             $char = substr($this->content, $i, 1);
+            if ((0 != $open) && ('@' == $char)) {
+                if (!$this->_checkAt($buffer)) {
+                    $this->_generateWarning('WARNING_MISSING_END_BRACE', '', $buffer);
+                    //To correct the data we need to insert a closing brace
+                    $char     = '}';
+                    $i--;
+                }
+            }
             if ((0 == $open) && ('@' == $char)) { //The beginning of an entry
                 $entry = true;
             } elseif ($entry && ('{' == $char) && ('\\' != $lastchar)) { //Inside an entry and non quoted brace is opening
@@ -260,6 +298,17 @@ class Structures_BibTex
             }
             $lastchar = $char;
         }
+        //If open is one it may be possible that the last ending brace is missing
+        if (1 == $open) {
+            $entrydata = $this->_parseEntry($buffer);
+            if (!$entrydata) {
+                $valid = false;
+            } else {
+                $this->data[] = $entrydata;
+                $buffer = '';
+                $open   = 0;
+            }
+        }
         //At this point the open should be zero
         if (0 != $open) {
             $valid = false;
@@ -285,7 +334,8 @@ class Structures_BibTex
             $this->content = '';
             return true;
         } else {
-            return false;
+           drupal_set_message('Unbalanced parenthesis', 'error');
+           return false;
         }
     }
 
@@ -365,6 +415,9 @@ class Structures_BibTex
                 if ($this->_options['unwrap']) {
                     $value = $this->_unwrap($value);
                 }
+                if ($this->_options['removeCurlyBraces']) {
+                    $value = $this->_removeCurlyBraces($value);
+                }
                 $position    = strrpos($entry, ',');
                 $field       = strtolower(trim(substr($entry, $position+1)));
                 $ret[$field] = $value;
@@ -376,6 +429,11 @@ class Structures_BibTex
             $ret['type'] = strtolower(trim($arr[0]));
             if ('@' == $ret['type']{0}) {
                 $ret['type'] = substr($ret['type'], 1);
+            }
+            if ($this->_options['validate']) {
+                if (!$this->_checkAllowedType($ret['type'])) {
+                    $this->_generateWarning('WARNING_NOT_ALLOWED_TYPE', $ret['type'], $entry.'}');
+                }
             }
             //Handling the authors
             if (in_array('author', array_keys($ret))) {
@@ -449,6 +507,70 @@ class Structures_BibTex
     }
 
     /**
+     * Checking if the type is allowed
+     *
+     * @access private
+     * @param string $entry The entry to check
+     * @return bool true if allowed, false otherwise
+     */
+    function _checkAllowedType($entry)
+    {
+        return in_array($entry, $this->allowedTypes);
+    }
+    
+    /**
+     * Checking whether an at is outside an entry
+     *
+     * Sometimes an entry misses an entry brace. Then the at of the next entry seems to be
+     * inside an entry. This is checked here. When it is most likely that the at is an opening
+     * at of the next entry this method returns true.
+     *
+     * @access private
+     * @param string $entry The text of the entry until the at
+     * @return bool true if the at is correct, false if the at is likely to begin the next entry.
+     */
+    function _checkAt($entry)
+    {
+        $ret     = false;
+        $opening = array_keys($this->_delimiters);
+        $closing = array_values($this->_delimiters);
+        //Getting the value (at is only allowd in values)
+        if (strrpos($entry,'=') !== false) {
+            $position = strrpos($entry, '=');
+            $proceed  = true;
+            if (substr($entry, $position-1, 1) == '\\') {
+                $proceed = false;
+            }
+            while (!$proceed) {
+                $substring = substr($entry, 0, $position);
+                $position  = strrpos($substring,'=');
+                $proceed   = true;
+                if (substr($entry, $position-1, 1) == '\\') {
+                    $proceed = false;
+                }
+            }
+            $value    = trim(substr($entry, $position+1));
+            $open     = 0;
+            $char     = '';
+            $lastchar = '';
+            for ($i = 0; $i < strlen($value); $i++) {
+                $char = substr($this->content, $i, 1);
+                if (in_array($char, $opening) && ('\\' != $lastchar)) {
+                    $open++;
+                } elseif (in_array($char, $closing) && ('\\' != $lastchar)) {
+                    $open--;
+                }
+                $lastchar = $char;
+            }
+            //if open is grater zero were are inside an entry
+            if ($open>0) {
+                $ret = true;
+            }
+        }
+        return $ret;
+    }
+
+    /**
      * Stripping Delimiter
      *
      * @access private
@@ -458,9 +580,9 @@ class Structures_BibTex
     function _stripDelimiter($entry)
     {
         $beginningdels = array_keys($this->_delimiters);
-        $length    = strlen($entry);
-        $firstchar = substr($entry, 0, 1);
-        $lastchar  = substr($entry, -1, 1);
+        $length        = strlen($entry);
+        $firstchar     = substr($entry, 0, 1);
+        $lastchar      = substr($entry, -1, 1);
         while (in_array($firstchar, $beginningdels)) { //The first character is an opening delimiter
             if ($lastchar == $this->_delimiters[$firstchar]) { //Matches to closing Delimiter
                 $entry = substr($entry, 1, -1);
@@ -509,6 +631,7 @@ class Structures_BibTex
      * @return array the extracted authors
      */
     function _extractAuthors($entry) {
+        $entry       = $this->_unwrap($entry);
         $authorarray = array();
         $authorarray = split(' and ', $entry);
         for ($i = 0; $i < sizeof($authorarray); $i++) {
@@ -521,7 +644,8 @@ class Structures_BibTex
             $jr       = '';
             if (strpos($author, ',') === false) {
                 $tmparray = array();
-                $tmparray = explode(' ', $author);
+                //$tmparray = explode(' ', $author);
+                $tmparray = split(' |~', $author);
                 $size     = sizeof($tmparray);
                 if (1 == $size) { //There is only a last
                     $last = $tmparray[0];
@@ -536,14 +660,14 @@ class Structures_BibTex
                             $last .= ' '.$tmparray[$j];
                         } elseif ($invon) {
                             $case = $this->_determineCase($tmparray[$j]);
-                            if ($case = -1) {
+                            if ($case == -1) {
                                 // IGNORE?
                             } elseif ((0 == $case) || (-1 == $case)) { //Change from von to last
                                 //You only change when there is no more lower case there
                                 $islast = true;
                                 for ($k=($j+1); $k<($size-1); $k++) {
                                     $futurecase = $this->_determineCase($tmparray[$k]);
-                                    if ($case = -1 ) {
+                                    if ($case == -1) {
                                         // IGNORE?
                                     } elseif (0 == $futurecase) {
                                         $islast = false;
@@ -564,7 +688,7 @@ class Structures_BibTex
                             }
                         } else {
                             $case = $this->_determineCase($tmparray[$j]);
-                            if ($case = -1) {
+                            if ($case == -1) {
                                 // IGNORE?
                             } elseif (0 == $case) { //Change from first to von
                                 $invon = true;
@@ -597,7 +721,7 @@ class Structures_BibTex
                                 for ($k=($j+1); $k<($size-1); $k++) {
                                     $this->_determineCase($vonlastarray[$k]);
                                     $case = $this->_determineCase($vonlastarray[$k]);
-                                    if ($case = -1) {
+                                    if ($case == -1) {
                                         // IGNORE?
                                     } elseif (0 == $case) {
                                         $islast = false;
@@ -639,7 +763,7 @@ class Structures_BibTex
      *
      * @access private
      * @param string $word
-     * @return int The Case or -1 if there was a problem
+     * @return int The Case or PEAR_Error if there was a problem
      */
     function _determineCase($word) {
         $ret         = -1;
@@ -669,6 +793,9 @@ class Structures_BibTex
                     $i++;
                 }
             }
+        } else {
+            drupal_set_message('Could not determine case on word: '.(string)$word, 'error');
+            $ret = false;
         }
         return $ret;
     }
@@ -715,6 +842,41 @@ class Structures_BibTex
     }
 
     /**
+     * Remove curly braces from entry
+     *
+     * @access private
+     * @param string $value The value in which curly braces to be removed
+     * @param string Value with removed curly braces
+     */
+    function _removeCurlyBraces($value)
+    {
+        //First we save the delimiters
+        $beginningdels = array_keys($this->_delimiters);
+        $firstchar     = substr($entry, 0, 1);
+        $lastchar      = substr($entry, -1, 1);
+        $begin         = '';
+        $end           = '';
+        while (in_array($firstchar, $beginningdels)) { //The first character is an opening delimiter
+            if ($lastchar == $this->_delimiters[$firstchar]) { //Matches to closing Delimiter
+                $begin .= $firstchar;
+                $end   .= $lastchar;
+                $value  = substr($value, 1, -1);
+            } else {
+                break;
+            }
+            $firstchar = substr($value, 0, 1);
+            $lastchar  = substr($value, -1, 1);
+        }
+        //Now we get rid of the curly braces
+        $pattern     = '/([^\\\\])\{(.*?[^\\\\])\}/';
+        $replacement = '$1$2';
+        $value       = preg_replace($pattern, $replacement, $value);
+        //Reattach delimiters
+        $value       = $begin.$value.$end;
+        return $value;
+    }
+    
+    /**
      * Generates a warning
      *
      * @access private
@@ -735,7 +897,8 @@ class Structures_BibTex
      *
      * @access public
      */
-    function clearWarnings() {
+    function clearWarnings()
+    {
         $this->warnings = array();
     }
 
@@ -760,6 +923,45 @@ class Structures_BibTex
     function amount()
     {
         return sizeof($this->data);
+    }
+    
+    /**
+     * Returns the author formatted
+     *
+     * The Author is formatted as setted in the authorstring
+     *
+     * @access private
+     * @param array $array Author array
+     * @return string the formatted author string
+     */
+    function _formatAuthor($array)
+    {
+        if (!array_key_exists('von', $array)) {
+            $array['von'] = '';
+        } else {
+            $array['von'] = trim($array['von']);
+        }
+        if (!array_key_exists('last', $array)) {
+            $array['last'] = '';
+        } else {
+            $array['last'] = trim($array['last']);
+        }
+        if (!array_key_exists('jr', $array)) {
+            $array['jr'] = '';
+        } else {
+            $array['jr'] = trim($array['jr']);
+        }
+        if (!array_key_exists('first', $array)) {
+            $array['first'] = '';
+        } else {
+            $array['first'] = trim($array['first']);
+        }
+        $ret = $this->authorstring;
+        $ret = str_replace("VON", $array['von'], $ret);
+        $ret = str_replace("LAST", $array['last'], $ret);
+        $ret = str_replace("JR", $array['jr'], $ret);
+        $ret = str_replace("FIRST", $array['first'], $ret);
+        return trim($ret);
     }
 
     /**
@@ -789,22 +991,7 @@ class Structures_BibTex
             if (array_key_exists('author', $entry)) {
                 $tmparray = array(); //In this array the authors are saved and the joind with an and
                 foreach ($entry['author'] as $authorentry) {
-                    /*We build the author following the third form.
-                     This is easy to build and less error-prone.
-                     In the future there sould be an option to change this!*/
-                    if (!array_key_exists('von', $authorentry)) {
-                        $authorentry['von'] = '';
-                    }
-                    if (!array_key_exists('last', $authorentry)) {
-                        $authorentry['last'] = '';
-                    }
-                    if (!array_key_exists('jr', $authorentry)) {
-                        $authorentry['jr'] = '';
-                    }
-                    if (!array_key_exists('first', $authorentry)) {
-                        $authorentry['first'] = '';
-                    }
-                    $tmparray[] = trim($authorentry['von'].' '.$authorentry['last'].', '.$authorentry['jr'].', '.$authorentry['first']);
+                    $tmparray[] = $this->_formatAuthor($authorentry);
                 }
                 $author = join(' and ', $tmparray);
             } else {
@@ -866,7 +1053,6 @@ class Structures_BibTex
      */
     function rtf()
     {
-        //$this->rtfstring = 'AUTHORS, " {\b TITLE}", {\i JOURNAL}, YEAR';
         $ret = "{\\rtf\n";
         foreach ($this->data as $entry) {
             $line    = $this->rtfstring;
@@ -886,31 +1072,7 @@ class Structures_BibTex
             if (array_key_exists('author', $entry)) {
                 $tmparray = array(); //In this array the authors are saved and the joind with an and
                 foreach ($entry['author'] as $authorentry) {
-                    $first = '';
-                    $von   = '';
-                    $last  = '';
-                    $jr    = '';
-                    if (array_key_exists('von', $authorentry)) {
-                        if (''!=$authorentry['von']) {
-                            $von = ' '.trim($authorentry['von']);
-                        }
-                    }
-                    if (array_key_exists('last', $authorentry)) {
-                        if (''!=$authorentry['last']) {
-                            $last = ' '.trim($authorentry['last']);
-                        }
-                    }
-                    if (array_key_exists('jr', $authorentry)) {
-                        if (''!=$authorentry['jr']) {
-                            $jr = ' '.trim($authorentry['jr']);
-                        }
-                    }
-                    if (array_key_exists('first', $authorentry)) {
-                        if (''!=$authorentry['first']) {
-                            $first = trim($authorentry['first']);
-                        }
-                    }
-                    $tmparray[] = trim($first.$von.$last.$jr);
+                    $tmparray[] = $this->_formatAuthor($authorentry);
                 }
                 $authors = join(', ', $tmparray);
             }
@@ -963,31 +1125,7 @@ class Structures_BibTex
             if (array_key_exists('author', $entry)) {
                 $tmparray = array(); //In this array the authors are saved and the joind with an and
                 foreach ($entry['author'] as $authorentry) {
-                    $first = '';
-                    $von   = '';
-                    $last  = '';
-                    $jr    = '';
-                    if (array_key_exists('von', $authorentry)) {
-                        if (''!=$authorentry['von']) {
-                            $von = ' '.trim($authorentry['von']);
-                        }
-                    }
-                    if (array_key_exists('last', $authorentry)) {
-                        if (''!=$authorentry['last']) {
-                            $last = ' '.trim($authorentry['last']);
-                        }
-                    }
-                    if (array_key_exists('jr', $authorentry)) {
-                        if (''!=$authorentry['jr']) {
-                            $jr = ' '.trim($authorentry['jr']);
-                        }
-                    }
-                    if (array_key_exists('first', $authorentry)) {
-                        if (''!=$authorentry['first']) {
-                            $first = trim($authorentry['first']);
-                        }
-                    }
-                    $tmparray[] = trim($first.$von.$last.$jr);
+                    $tmparray[] = $this->_formatAuthor($authorentry);
                 }
                 $authors = join(', ', $tmparray);
             }
@@ -1005,91 +1143,86 @@ class Structures_BibTex
         $ret .= "</p>\n";
         return $ret;
     }
-
-   function bib2node(&$node_array, $node){
-    foreach($this->data as $entry){
-      $node_id = array_push($node_array, $node) - 1;
-      switch ($entry['type']){
-      case article:
-         $node_array[$node_id]['biblio_type'] = 102;
-         break; 
-      case book:
-         $node_array[$node_id]['biblio_type'] = 100;
-         break; 
-      case booklet:
-      case inbook:
-         $node_array[$node_id]['biblio_type'] = 101;
-         break; 
-      case conference:
-          $node_array[$node_id]['biblio_type'] = 103;
-         break; 
-     case incollection:
-         $node_array[$node_id]['biblio_type'] = 100;
-         break; 
-      case inproceedings:
-         $node_array[$node_id]['biblio_type'] = 103;
-         break; 
-      case manual:
-         $node_array[$node_id]['biblio_type'] = 129;
-         break; 
-      case mastersthesis:
-         $node_array[$node_id]['biblio_type'] = 108;
-         break; 
-      case misc:
-         $node_array[$node_id]['biblio_type'] = 129;
-         break; 
-      case phdthesis:
-         $node_array[$node_id]['biblio_type'] = 108;
-         break; 
-      case proceedings:
-         $node_array[$node_id]['biblio_type'] = 104;
-         break; 
-      case techreport:
-         $node_array[$node_id]['biblio_type'] = 109;
-         break; 
-      case unpublished:
-         $node_array[$node_id]['biblio_type'] = 124;
-         break; 
+    function bib2node(&$node_array, $node){
+      foreach($this->data as $entry){
+        $node_id = array_push($node_array, $node) - 1;
+        switch ($entry['type']){
+        case article:
+           $node_array[$node_id]['biblio_type'] = 102;
+           break; 
+        case book:
+           $node_array[$node_id]['biblio_type'] = 100;
+           break; 
+        case booklet:
+        case inbook:
+           $node_array[$node_id]['biblio_type'] = 101;
+           break; 
+        case conference:
+            $node_array[$node_id]['biblio_type'] = 103;
+           break; 
+       case incollection:
+           $node_array[$node_id]['biblio_type'] = 100;
+           break; 
+        case inproceedings:
+           $node_array[$node_id]['biblio_type'] = 103;
+           break; 
+        case manual:
+           $node_array[$node_id]['biblio_type'] = 129;
+           break; 
+        case mastersthesis:
+           $node_array[$node_id]['biblio_type'] = 108;
+           break; 
+        case misc:
+           $node_array[$node_id]['biblio_type'] = 129;
+           break; 
+        case phdthesis:
+           $node_array[$node_id]['biblio_type'] = 108;
+           break; 
+        case proceedings:
+           $node_array[$node_id]['biblio_type'] = 104;
+           break; 
+        case techreport:
+           $node_array[$node_id]['biblio_type'] = 109;
+           break; 
+        case unpublished:
+           $node_array[$node_id]['biblio_type'] = 124;
+           break; 
+        }
+        
+        foreach ($entry['author'] as $auth){
+          $node_array[$node_id]['biblio_authors'] .= (empty($node_array[$node_id]['biblio_authors'])) ? $auth["von"]." ".$auth["last"].", ".$auth["first"]." ".$auth["jr"]: "; ".$auth["von"]." ".$auth["last"].", ".$auth["first"]." ".$auth["jr"];
+        }          
+        if (!empty($entry['cite'])) $node_array[$node_id]['biblio_citekey'] = $entry['cite'];          
+        if (!empty($entry['editor'])) $node_array[$node_id]['biblio_secondary_authors'] = $entry['editor'];          
+        
+  
+        if (!empty($entry['journal']))$node_array[$node_id]['biblio_secondary_title'] = $entry['journal'];
+        if (!empty($entry['booktitle']))$node_array[$node_id]['biblio_secondary_title'] = $entry['booktitle'];
+        if (!empty($entry['series']))$node_array[$node_id]['biblio_secondary_title'] = $entry['series'];
+        
+   
+        if (!empty($entry['volume'])) $node_array[$node_id]['biblio_volume'] = $entry['volume'];
+        if (!empty($entry['number'])) $node_array[$node_id]['biblio_number'] = $entry['number'];
+        if (!empty($entry['year']))   $node_array[$node_id]['biblio_year']   = $entry['year'];
+        if (!empty($entry['note']))   $node_array[$node_id]['biblio_notes']  = $entry['note'];
+        if (!empty($entry['month']))   $node_array[$node_id]['biblio_date']  = $entry['month'];
+        if (!empty($entry['pages']))   $node_array[$node_id]['biblio_pages']  = $entry['pages'];
+        if (!empty($entry['publisher']))   $node_array[$node_id]['biblio_publisher']  = $entry['publisher'];
+        if (!empty($entry['organization']))   $node_array[$node_id]['biblio_publisher']  = $entry['organization'];
+        if (!empty($entry['school']))   $node_array[$node_id]['biblio_publisher']  = $entry['school'];
+        if (!empty($entry['institution']))   $node_array[$node_id]['biblio_publisher']  = $entry['institution'];
+        if (!empty($entry['title']))   $node_array[$node_id]['title']  = $entry['title'];
+        if (!empty($entry['type']))   $node_array[$node_id]['biblio_type_of_work']  = $entry['type'];
+        if (!empty($entry['edition']))   $node_array[$node_id]['biblio_edition']  = $entry['edition'];
+        if (!empty($entry['chapter']))   $node_array[$node_id]['biblio_section']  = $entry['chapter'];
+        if (!empty($entry['address']))   $node_array[$node_id]['biblio_place_published']  = $entry['address'];
+        if (!empty($entry['abstract']))   $node_array[$node_id]['biblio_abst_e']  = $entry['abstract'];
+        if (!empty($entry['keywords']))   $node_array[$node_id]['biblio_keywords']  = $entry['keywords'];
+        if (!empty($entry['isbn']))   $node_array[$node_id]['biblio_isbn']  = $entry['isbn'];
+        if (!empty($entry['url']))   $node_array[$node_id]['biblio_url']  = $entry['url'];
+  
       }
-      
-      foreach ($entry['author'] as $auth){
-        $node_array[$node_id]['biblio_authors'] .= (empty($node_array[$node_id]['biblio_authors'])) ? $auth["von"]." ".$auth["last"].", ".$auth["first"]." ".$auth["jr"]: "; ".$auth["von"]." ".$auth["last"].", ".$auth["first"]." ".$auth["jr"];
-      }          
-      
-      if (!empty($entry['editor'])) $node_array[$node_id]['biblio_secondary_authors'] = $entry['editor'];          
 
-
-      if (!empty($entry['journal']))$node_array[$node_id]['biblio_secondary_title'] = $entry['journal'];
-      if (!empty($entry['booktitle']))$node_array[$node_id]['biblio_secondary_title'] = $entry['booktitle'];
-      if (!empty($entry['series']))$node_array[$node_id]['biblio_secondary_title'] = $entry['series'];
-      
- 
-      if (!empty($entry['volume'])) $node_array[$node_id]['biblio_volume'] = $entry['volume'];
-      if (!empty($entry['number'])) $node_array[$node_id]['biblio_number'] = $entry['number'];
-      if (!empty($entry['year']))   $node_array[$node_id]['biblio_year']   = $entry['year'];
-      if (!empty($entry['note']))   $node_array[$node_id]['biblio_notes']  = $entry['note'];
-      if (!empty($entry['month']))   $node_array[$node_id]['biblio_date']  = $entry['month'];
-      if (!empty($entry['pages']))   $node_array[$node_id]['biblio_pages']  = $entry['pages'];
-      if (!empty($entry['publisher']))   $node_array[$node_id]['biblio_publisher']  = $entry['publisher'];
-      if (!empty($entry['organization']))   $node_array[$node_id]['biblio_publisher']  = $entry['organization'];
-      if (!empty($entry['school']))   $node_array[$node_id]['biblio_publisher']  = $entry['school'];
-      if (!empty($entry['institution']))   $node_array[$node_id]['biblio_publisher']  = $entry['institution'];
-      if (!empty($entry['title']))   $node_array[$node_id]['title']  = $entry['title'];
-      if (!empty($entry['type']))   $node_array[$node_id]['biblio_type_of_work']  = $entry['type'];
-      if (!empty($entry['edition']))   $node_array[$node_id]['biblio_edition']  = $entry['edition'];
-      if (!empty($entry['chapter']))   $node_array[$node_id]['biblio_section']  = $entry['chapter'];
-      if (!empty($entry['address']))   $node_array[$node_id]['biblio_place_published']  = $entry['address'];
-      if (!empty($entry['abstract']))   $node_array[$node_id]['biblio_abst_e']  = $entry['abstract'];
-      if (!empty($entry['keywords']))   $node_array[$node_id]['biblio_keywords']  = $entry['keywords'];
-      if (!empty($entry['isbn']))   $node_array[$node_id]['biblio_isbn']  = $entry['isbn'];
-      if (!empty($entry['url']))   $node_array[$node_id]['biblio_url']  = $entry['url'];
-
-    }
-
-
-
- }
-
+   }
 }
-
 ?>

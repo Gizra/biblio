@@ -1,13 +1,18 @@
 <?PHP
+function biblio_style_classic_info(){
+
+    return array('classic'=>'Classic - This is the original biblio style');
+                 
+}
 
 function biblio_style_classic($pub){
   if (variable_get('biblio_normalize', 0)) {
-    $authors = check_plain(_parse_authors($pub->biblio_authors));
+    $authors = check_plain(_biblio_parse_authors($pub->biblio_authors));
   } else {
     $authors = check_plain($pub->biblio_authors);
   } 
   $output .=  l($pub->title, "node/$pub->nid") . "</span> \n";
-  $output .=  _author_links($authors) . "</span> \n";
+  $output .=  _biblio_author_links($authors) . "</span> \n";
   if ($pub->biblio_secondary_title) {
     $output .= ', ' . check_plain($pub->biblio_secondary_title);
   } 

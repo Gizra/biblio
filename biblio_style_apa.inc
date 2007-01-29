@@ -1,13 +1,18 @@
 <?php
 // $Id$
+function biblio_style_apa_info(){
+
+    return array('apa'=>'American Psychological Association (APA)');
+                 
+}
 function biblio_style_apa($pub){
 
   if (variable_get('biblio_normalize', 0)) {
-    $authors = _parse_authors(check_plain($pub->biblio_authors));
+    $authors = _biblio_parse_authors(check_plain($pub->biblio_authors));
   } else {
     $authors = check_plain($pub->biblio_authors);
   } 
-  $output .= '<span class="biblio-authors">' . str_replace(";", ",", _author_links($authors)) . "</span> \n";
+  $output .= '<span class="biblio-authors">' . str_replace(";", ",", _biblio_author_links($authors)) . "</span> \n";
   $output .= (strrpos($authors, '.' ) == strlen($authors))? ".&nbsp;&nbsp;":" ";
 
       switch ($pub->biblio_type) {
