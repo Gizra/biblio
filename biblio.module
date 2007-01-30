@@ -583,7 +583,7 @@ function theme_biblio_form_types_edit($form){
   
 }
 function biblio_type_add($tid=0,$fid=0){
-   $result = db_query("SELECT fid,title,weight,required,hint FROM biblio_fields WHERE fid=%d",$fid);
+   $result = db_query("SELECT fid,title,weight,required,hint FROM {biblio_fields} WHERE fid=%d",$fid);
    if ($fld = db_fetch_object($result)){
      db_query("INSERT INTO {biblio_type_details} (tid, fid, title, weight, required, hint)
                    VALUES (%d,%d,'%s',%d,%d,'%s')",$tid,$fid,$fld->title,$fld->weight,$fld->required,$fld->hint);
@@ -852,7 +852,7 @@ function biblio_form(&$node, &$param) {
 
   //$form['#pre_render'] = array('biblio_pre_render');
 
-  $result = db_query('SELECT t.* FROM {biblio_types as t} WHERE tid > -2 AND visible = 1');
+  $result = db_query('SELECT t.* FROM {biblio_types} as t WHERE tid > -2 AND visible = 1');
   while ($option = db_fetch_object($result)) {
     $options["$option->tid"] = t('!name',array('!name'=>$option->name));
   } 
@@ -1181,7 +1181,7 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
   $base =  variable_get('biblio_base', 'biblio');
   drupal_add_css(drupal_get_path('module', 'biblio').'/biblio.css');
 
-  $pub_types = db_query('SELECT t.* FROM {biblio_types as t} WHERE t.tid>0');
+  $pub_types = db_query('SELECT t.* FROM {biblio_types} as t WHERE t.tid>0');
   while ($option = db_fetch_object($pub_types)) {
     $pub_type["$option->tid"] = t('!name',array('!name'=>$option->name));
   } 
@@ -1233,7 +1233,7 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
       case 'type':
         if ($pub->biblio_type != $_type) {
           $_type = $pub->biblio_type;
-          $name = db_result(db_query("SELECT name FROM {biblio_types as t} where t.tid=%d", $pub->biblio_type)) ;
+          $name = db_result(db_query("SELECT name FROM {biblio_types} as t where t.tid=%d", $pub->biblio_type)) ;
           $content .= '<div class="biblio-year">' . $name . "</div>\n";
         } 
         break;
