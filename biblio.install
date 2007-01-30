@@ -70,7 +70,7 @@ function biblio_install() {
                   PRIMARY KEY  (`aid`)
       ) /*!40100 DEFAULT CHARSET=utf8 */;");
       
-      $result[] = db_query("CREATE TABLE `biblio_has_author` (
+      $result[] = db_query("CREATE TABLE {biblio_has_author} (
                   `nid` int(11) NOT NULL default '0',
                   `aid` int(11) NOT NULL default '0',
                   `rank` int(11) NOT NULL default '0',
@@ -235,7 +235,7 @@ function _add_types(&$result){
         PRIMARY KEY  (`tid`,`fid`),
         KEY `tid` (`tid`)
       ) /*!40100 ENGINE=MyISAM DEFAULT CHARACTER SET utf8 */;");
-      $result[] = db_query("/*!40000 ALTER TABLE `biblio_type_details` DISABLE KEYS */;");
+      $result[] = db_query("/*!40000 ALTER TABLE {biblio_type_details} DISABLE KEYS */;");
       $result[] = db_query("INSERT INTO {biblio_type_details} (`tid`,`fid`,`title`,`hint`,`required`,`weight`) VALUES 
        (100,5,'Series Title','',0,3),
        (100,15,'Edition','',0,10),
@@ -311,7 +311,7 @@ function _add_types(&$result){
        (119,13,'Country','',0,13),
        (119,16,'Volume','',0,14),
        (129,5,'Prepared for','',0,12);");
-      $result[] = db_query("/*!40000 ALTER TABLE `biblio_type_details` ENABLE KEYS */;");
+      $result[] = db_query("/*!40000 ALTER TABLE {biblio_type_details} ENABLE KEYS */;");
 
 }
 function biblio_uninstall(){
