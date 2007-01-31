@@ -298,7 +298,7 @@ function biblio_menu($may_cache) {
   $items[] = array('path' => "$base/list", 'title' => t('List'),
       'type' => MENU_DEFAULT_LOCAL_TASK, 'weight' => -10);
   $items[] = array('path' => "$base/filter", 'title' => t('Filter'),
-      'callback' => 'drupal_get_form', 'callback arguments' => array('biblio_filter_form'),
+      'callback' => 'drupal_get_form', 'callback arguments' => array('biblio_form_filter'),
       'access' => user_access('show filter tab'),
       'type' => MENU_LOCAL_TASK, 'weight' => -9);
   $items[] = array('path' =>  "$base/filter/clear", 'title' => t(''),
@@ -643,7 +643,7 @@ function biblio_filter_clear() {
   drupal_goto($base);
 } 
 
-function biblio_filters(){
+function _get_biblio_filters(){
   $result = db_query('SELECT b.biblio_year, b.biblio_authors, t.name , t.tid FROM {biblio} as b  left join {biblio_types} as t on b.biblio_type = t.tid ORDER BY b.biblio_year DESC');
   while ($option = db_fetch_object($result)) {
     if ($option->biblio_year == 0) { $option->biblio_year = t("In Press"); }
@@ -674,11 +674,10 @@ function biblio_filters(){
   return $filters;
 }
 
-function biblio_filter_form() {
+function biblio_form_filter() {
   $session = &$_SESSION['biblio_filter'];
   $session = is_array($session) ? $session : array();
-  $filters = biblio_filters();
-
+  $filters = _get_biblio_filters();
 
    $i = 0;
   $form['filters'] = array('#type' => 'fieldset',
@@ -745,10 +744,10 @@ function theme_biblio_filters(&$form) {
   return $output;
 }
 
-function biblio_filter_form_submit() {
-  global $form_values;
-  $op = $_POST['op'];
-  $filters = biblio_filters();
+function biblio_form_filter_submit($form_id,$form_values) {
+  //global $form_values;
+  $op = $form_values['op'];
+  $filters = _get_biblio_filters();
   switch ($op) {
     case t('Filter'):
     case t('Refine'):
@@ -775,7 +774,8 @@ function biblio_filter_form_submit() {
       break;
   }
 } 
-function theme_biblio_filter_form(&$form) {
+function theme_biblio_form_filter(&$form) {
+
   $output .= '<div id="biblio-admin-filter">';
   $output .= drupal_render($form['filters']);
   $output .= '</div>';
@@ -2104,3 +2104,32 @@ function biblio_views_arguments(){
 function biblio_views_default_views(){
 
 }
+function biblio_filter($op, $delta = 0, $format = -1, $text = '') {
+
+  if ($op == 'list') {
+    return array(
+      0 => t('Biblio_citekey filter'));
+  }
+
+  switch ($delta) {
+
+    case 0:
+
+      switch ($op) {
+        case 'description':
+          return t('Replaces "biblio_citekeys" with a link to a bibliography entry added to the end of the text.');
+
+        // We don't need the "prepare" operation for this filter, but it's required
+        // to at least return the input text as-is.
+        case 'prepare':
+          return $text;
+
+        // The actual filtering is performed here. The supplied text should be
+        // returned, once any necessary substitutions have taken place.
+        case 'process':
+          return str_replace('foo', variable_get("filter_example_foo_$format", 'bar'), $text);
+
+      }
+      break;
+  }
+} 
