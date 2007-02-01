@@ -1499,7 +1499,7 @@ $bibtex = '';
     }
     
     $bibtex .= '@'.$type.' { ';
-    $bibtex .= ($pub->biblio_cite)? $pub->biblio_cite.",\n":",\n";
+    $bibtex .= ($pub->biblio_citekey)? $pub->biblio_citekey.",\n":",\n";
     if($pub->title) $bibtex .= "\ttitle = {".$pub->title."},\n";
     if($journal) $bibtex .= "\tjournal = {".$journal."},\n";
     if($booktitle) $bibtex .= "\tbooktitle = {".$booktitle."},\n";
@@ -1718,16 +1718,18 @@ function _biblio_import($filename = null,$type='tagged') {
         return false;
     } else {
 
-      $node['type'] = "biblio";
-      $node['created'] = time();
-      $node['changed'] = time();
-      $node['comment'] = 0;
-      $node['promote'] = 0;
-      $node['moderate'] = 0;
-      $node['sticky'] = 0;
-      $node['format'] = 0;
-      $node['status'] = 1;
-      $node['uid'] = $user->uid;
+      $options = variable_get('node_options_biblio',array('status'));
+      
+      $node['type']     = "biblio";
+      $node['created']  = time();
+      $node['changed']  = time();
+      $node['comment']  = variable_get('comment_biblio',0); 
+      $node['promote']  = in_array('promote',$options);
+      $node['moderate'] = in_array('moderate',$options);
+      $node['sticky']   = in_array('sticky',$options);
+      $node['format']   = 0;
+      $node['status']   = in_array('status',$options);
+      $node['uid']      = $user->uid;
 
       switch($type){
       case 'tagged': // EndNote Tagged 
