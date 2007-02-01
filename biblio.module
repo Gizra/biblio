@@ -1225,8 +1225,8 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
         } 
         break;
       case 'author':
-        if ($pub->biblio_authors{0} != $_char) {
-          $_char = $pub->biblio_authors{0} ;
+        if ($pub->author{0} != $_char) {
+          $_char = $pub->author{0} ;
           $content .= '<div class="biblio-year">' . $_char . "</div>\n";
         } 
         break;
@@ -1265,18 +1265,12 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
   }
 
 } 
-/*
-SELECT  b.*
-FROM `biblio_author_index` as a 
-inner join biblio_has_author as ha on a.aid = ha.aid 
-inner join biblio as b on b.nid= ha.nid 
-where ha.rank = 1
-ORDER BY a.author ASC
-*/
+
 function biblio_db_search() {
 global $user;
 $inline = false;
-
+$join = array();
+  $join[] = "left join {biblio} b  on n.nid=b.nid";
    if (variable_get('biblio_view_only_own', 0) ){
       $limit .= " AND n.uid=$user->uid ";
    }
@@ -1315,7 +1309,11 @@ $inline = false;
       $sortby = "ORDER BY SUBSTRING(n.title,1,1) %s, b.biblio_year DESC ";
       break;
     case 'author':
-      $sortby = "ORDER BY SUBSTRING(b.biblio_authors,1,1) %s, b.biblio_year DESC ";
+      $join[] = "inner join {biblio_has_author} as ha on a.aid = ha.aid"; 
+      $join[] = "inner join  {biblio_author_index} as a on b.nid= ha.nid";
+      $sortby = " ORDER BY a.author %s ";
+      $where[] = "ha.rank = 1 ";
+      //$sortby = "ORDER BY SUBSTRING(b.biblio_authors,1,1) %s, b.biblio_year DESC ";
       break;
     case 'year':
     default:
@@ -1358,7 +1356,8 @@ $inline = false;
         case 'year':
           $term = db_escape_string($arg_list[0]);
           array_shift($arg_list);
-          $limit .= " AND b.biblio_year=%d ";
+          $where[] = "b.biblio_year=%d ";
+          //$limit .= " AND b.biblio_year=%d ";
           $terms[] = (int)$term;
           array_push($args, $type, (int)$term);
           break;
@@ -1402,10 +1401,17 @@ $inline = false;
       } 
     } 
   } 
-  $published = ($user->uid == 1)?'':'AND n.status=1 ';//show only published entries to everyone except admin
+  $where[] = "n.type='biblio' ";
+  if ($user->uid > 1) {
+    $where[] = 'n.status = 1 ';
+  }//show only published entries to everyone except admin
+  
+  $joins = implode(' ', $join);
 
-  $query = "SELECT * FROM {node} n left join {biblio} b  on n.nid=b.nid  WHERE n.type='biblio' $published $limit $sortby ";
+  $where_clause = count($where) > 1 ? '('. implode(') AND (', $where) .')': $where[0];
 
+  $query = "SELECT * FROM {node} n $joins  WHERE $where_clause $published $limit $sortby ";
+//echo $query; die;
   $_SESSION['last_biblio_query'] = $query;
   $terms[] = $pager_attrib['order'];
   $_SESSION['last_biblio_query_terms'] = $terms;
