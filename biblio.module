@@ -873,7 +873,7 @@ function biblio_form(&$node, &$param) {
     '#required' => TRUE,
     '#default_value' => $node->title,
     '#size' => 60,
-    '#maxlenght' => 255,
+    '#maxlength' => 255,
     '#weight' => -4
   );
 
