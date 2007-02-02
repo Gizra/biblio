@@ -538,5 +538,12 @@ $result = array();
 
   return $result;
 }
+function biblio_update_15(){
+$result = array();
+  $result[] = update_sql("ALTER TABLE {biblio}  DROP PRIMARY KEY ;");
+  $result[] = update_sql("ALTER TABLE {biblio}  ADD PRIMARY KEY (`nid`,`vid`) ;");
+  return $result;
+}
 
 ?>
+
