@@ -58,7 +58,7 @@ function biblio_install() {
         `biblio_custom6` varchar(255) default NULL,
         `biblio_custom7` varchar(255) default NULL,
         `biblio_citekey` varchar(16) default NULL,
-       PRIMARY KEY  (`nid`),
+       PRIMARY KEY  (`nid`,`vid`),
         KEY `type` (`biblio_type`),
         KEY `year` (`biblio_year`),
         FULLTEXT KEY `authors` (`biblio_authors`)
