@@ -1000,12 +1000,18 @@ function biblio_update($node) {
   $fields = biblio_get_db_fields();
   foreach ($node as $key => $value) {
     if (in_array($key, $fields) && $key !="0") { //$key != "0" to fix a bug related to book module
-      $q[] = db_escape_string($key) . " = '%s'";
+      $k[] = db_escape_string($key);
+      $q[] = $k . " = '%s'";
       $v[] = $value;
+      $s[] = "'%s'";
     } 
   } 
   // Update the node in the database:
-  db_query("UPDATE {biblio} SET " . implode(', ', $q) . " WHERE nid = '$node->nid'", $v);
+  if ($node->revision){
+    db_query("INSERT INTO {biblio} (" . implode(", ", $k) . ") VALUES(" . implode(", ", $s) . ")", $v);
+  }else{
+    db_query("UPDATE {biblio} SET " . implode(', ', $q) . " WHERE nid = '$node->nid'", $v);
+  }  
 } 
 
 /**
@@ -1015,6 +1021,7 @@ function biblio_update($node) {
 */
 function biblio_delete($node) {
   db_query('DELETE FROM {biblio} WHERE nid = %d', $node->nid);
+  db_query('DELETE FROM {biblio_has_author} WHERE nid = %d', $node->nid);
 } 
 
 /**
@@ -1025,12 +1032,12 @@ function biblio_delete($node) {
 * 
 */
 function biblio_load($node) {
-  $additions = db_fetch_object(db_query('SELECT * FROM {biblio} WHERE nid = %d', $node->nid));
+  $additions = db_fetch_object(db_query('SELECT * FROM {biblio} WHERE vid = %d', $node->vid));
   return $additions;
 } 
 function biblio_citekey_view(){
   $citekey = arg(2);
-  $nid = db_fetch_object(db_query("SELECT nid FROM {biblio} WHERE biblio_citekey = '%s'", $citekey));
+  $nid = db_fetch_object(db_query("SELECT nid FROM {biblio} WHERE biblio_citekey = '%s' ORDER BY vid DESC", $citekey));
   if ($nid->nid > 0){
     $node = node_load($nid->nid);
     return node_page_view($node);
@@ -1219,14 +1226,14 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
   } while ($pub = db_fetch_object($result)) {
     switch ($attrib['sort']) {
       case 'title':
-        if ($pub->title {0} != $_char) {
-          $_char = $pub->title {0} ;
+        if ( drupal_substr($pub->title, 0, 1)  != $_char) {
+          $_char = drupal_substr($pub->title, 0, 1) ;
           $content .= '<div class="biblio-year">' . $_char . "</div>\n";
         } 
         break;
       case 'author':
-        if ($pub->author{0} != $_char) {
-          $_char = $pub->author{0} ;
+        if ( drupal_substr($pub->author, 0, 1) != $_char) {
+          $_char = drupal_substr($pub->author, 0, 1) ;
           $content .= '<div class="biblio-year">' . $_char . "</div>\n";
         } 
         break;
@@ -1270,7 +1277,7 @@ function biblio_db_search() {
 global $user;
 $inline = false;
 $join = array();
-  $join[] = "left join {biblio} b  on n.nid=b.nid";
+  $join[] = "left join {biblio} b  on n.vid=b.vid";
    if (variable_get('biblio_view_only_own', 0) ){
       $limit .= " AND n.uid=$user->uid ";
    }
@@ -1426,7 +1433,7 @@ $params=array();
     $query = $_SESSION['last_biblio_query'];
     $params = $_SESSION['last_biblio_query_terms'];    
   } elseif (!empty($nid)) {
-    $query = "SELECT * FROM {node} n left join {biblio} b  on n.nid=b.nid 
+    $query = "SELECT * FROM {node} n left join {biblio} b  on n.vid=b.vid 
                 WHERE n.nid=%d ";
     $params[] = $nid;
   }else{
@@ -2110,6 +2117,15 @@ function biblio_views_arguments(){
 }
 
 function biblio_views_default_views(){
+
+}
+function biblio_nodeapi($node, $op){
+  switch ($op){
+  case 'delete revision':
+      db_query('DELETE FROM {biblio} WHERE vid = %d', $node->vid);
+      break;
+      
+  }
 
 }
 function biblio_filter($op, $delta = 0, $format = -1, $text = '') {
