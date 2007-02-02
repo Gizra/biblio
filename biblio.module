@@ -1001,7 +1001,7 @@ function biblio_update($node) {
   foreach ($node as $key => $value) {
     if (in_array($key, $fields) && $key !="0") { //$key != "0" to fix a bug related to book module
       $k[] = db_escape_string($key);
-      $q[] = $k . " = '%s'";
+      $q[] = end($k) . " = '%s'";
       $v[] = $value;
       $s[] = "'%s'";
     } 
