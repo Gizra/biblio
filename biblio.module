@@ -787,6 +787,11 @@ function theme_biblio_form_filter(&$form) {
 echo "in node form";die;
 }
 */
+function biblio_submit($node){
+  //print_r($node);die;
+ // $node->taxonomy['tags'][1] = $node->biblio_keywords;
+
+}
 //function biblio_pre_render($form_id, &$form, $next_page = TRUE) {
 function theme_biblio_node_form($form) {
   global $form_values;
@@ -1202,7 +1207,7 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
     }
     if(user_access('show sort links')){
       $sort_attr = array("title"=>t("Click a second time to reverse the sort order"));
-      $content .= '<div class="biblio_sort">Sort by:';
+      $content .= '<div class="biblio_sort">'.t('Sort by').':';
       $content .= "[".l(t("Year"),$_GET['q'],$sort_attr,"&sort=year&order=$order");
       $content .= "][".l(t("Title"),$_GET['q'],$sort_attr,"&sort=title&order=$order");
       $content .= "][".l(t("Type"),$_GET['q'],$sort_attr,"&sort=type&order=$order");
