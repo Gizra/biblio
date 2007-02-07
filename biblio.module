@@ -1076,7 +1076,11 @@ function biblio_view(&$node, $teaser = false, $page = false) {
     $node->content['body']['#value'] =   ($node->body?'<h3>'.t('Full Text:').$node->body.'</h3>':"");
     break;
   case 1:
-    $node->content['biblio'] = array('#value' => '<div class="biblio-head">'.theme('biblio_short', $node).'</div>', '#weight' => -10 );
+    $node->content['biblio'] = $node->body?array('#value' => '<div class="biblio-head">'.theme('biblio_short', $node).'</div>',
+                                               '#weight' => -10 )
+                                        :array('#value' => theme('biblio_long', $node),
+                            '#weight' => -10 );
+
     break;                                      
   }
   $base =  variable_get('biblio_base', 'biblio');
