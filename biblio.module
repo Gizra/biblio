@@ -195,6 +195,12 @@ function biblio_settings() {
     '#default_value' => variable_get('biblio_order', 'DESC'),
     '#options' => array('DESC'=>t('Descending'), 'ASC'=>t('Ascending')),
   );
+  $form['sort']['biblio_node_layout'] = array(
+    '#type' => 'radios',
+    '#title' => t('Node Layout'),
+    '#default_value' => variable_get('biblio_node_layout', '0'),
+    '#options' => array('0'=>t('Original'), '1'=>t('Only Fulltext if available')),
+  );
   $form['sort']['biblio_style'] = array(
     '#type' => 'radios',
     '#title' => t('Style'),
@@ -1062,12 +1068,17 @@ function biblio_view(&$node, $teaser = false, $page = false) {
   drupal_add_css(drupal_get_path('module', 'biblio').'/biblio.css');
 
   $node = node_prepare($node, $teaser);
-  $node->content['body']['#value'] =   ($node->body?$node->body:"");
-  $node->content['biblio'] = $node->body?array('#value' => '<div class="biblio-head">'.theme('biblio_short', $node).'</div>',
-                                               '#weight' => -10 )
-                                        :array('#value' => theme('biblio_long', $node),
-                            '#weight' => -10 );
-
+  $layout = variable_get('biblio_node_layout', 0);
+  switch ($layout){
+  case 0:
+  default:
+    $node->content['biblio'] = array('#value' => theme('biblio_long', $node), '#weight' => -10 );
+    $node->content['body']['#value'] =   ($node->body?'<h3>'.t('Full Text:').$node->body.'</h3>':"");
+    break;
+  case 1:
+    $node->content['biblio'] = array('#value' => '<div class="biblio-head">'.theme('biblio_short', $node).'</div>', '#weight' => -10 );
+    break;                                      
+  }
   $base =  variable_get('biblio_base', 'biblio');
   drupal_set_breadcrumb(array(l(t('Home'), NULL), l(t($base), $base)));
 
@@ -1159,9 +1170,9 @@ function theme_biblio_long($pub) {
   if ($pub->biblio_notes) $output .= '<h3>'.t("Notes").': </h3>' . check_markup($pub->biblio_notes,FILTER_HTML_ESCAPE,FALSE) . "\n";
   if ( biblio_access('export',$pub)) {
     $base =  variable_get('biblio_base', 'biblio');
-    $output .= '<br /><br /><B>Export: '.l(t("Tagged"),"$base/export/tagged/$pub->nid").' </B>';
-    $output .= l("XML","$base/export/xml/$pub->nid").' </B>';
-    $output .= l("BibTex","$base/export/bib/$pub->nid");
+    $output .= '<br /><br />Export: ['.l(t("Tagged"),"$base/export/tagged/$pub->nid").']';
+    $output .= '['.l(t("XML"),"$base/export/xml/$pub->nid").']';
+    $output .= '['.l(t("BibTex"),"$base/export/bib/$pub->nid").']<br /><br />';
   } 
 
   return $output;
@@ -1682,6 +1693,30 @@ function biblio_form_import() {
         '#type' => 'submit',
         '#value' => t('Import')
       );
+   // Get the vocabularies  attached to the biblio node type ...
+      $vocabularies = module_invoke('taxonomy', 'get_vocabularies', 'biblio');
+
+      // ... and print a form to select the terms in each of them
+      if (count($vocabularies)){
+          $form['import_taxonomy'] = array(
+            '#type' => 'fieldset',
+            '#title' => t('Taxonomy Settings'),
+            '#description' => t('You can select terms to assign to imported records and allow the mapping of keywords to taxonomy'),
+          );
+
+        $i=0;
+        foreach ($vocabularies as $vocabulary) {
+          $form['import_taxonomy']['vocabulary'.$i] = module_invoke('taxonomy', 'form', $vocabulary->vid, 0);     
+          $form['import_taxonomy']['vocabulary'.$i++]['#description'] = t("Select taxonomy term to assigned to imported entries");
+        }
+          $form['import_taxonomy']['keywordmap'] = array(
+            '#type' => 'checkbox',
+            '#title' => t('Use keywords for free tagging.'),
+            '#return_value' => 1,
+            '#default_value' => variable_get('biblio_keywordmap', 0),
+            '#description' => t('Selecting this checkbox will cause the keywords, if any, to be used for free tagging'), );
+      
+      }
       return $form;
       //print theme('page', form($form, 'post', null, $attributes));
      
