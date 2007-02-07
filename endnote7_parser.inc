@@ -141,7 +141,7 @@ function en7_parse($tags,&$node_array,$node)
       case 'reprint-status':
         break; 
       case 'KEYWORD':
-          $node_array[$node_id]['biblio_keywords'] .= (empty($node_array[$node_id]['biblio_keywords'])) ? $data : "; $data";          
+          $node_array[$node_id]['biblio_keywords'] .= (empty($node_array[$node_id]['biblio_keywords'])) ? $data : ", $data";          
    //       $node_array[$node_id]['biblio_keywords'][] = $data;
         break;
   

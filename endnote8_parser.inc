@@ -302,7 +302,7 @@ global  $node_array,$node_id, $element, $contributors,   $dates, $urls;
     case 'reprint-status':
       break; 
     case 'keyword':
-        $node_array[$node_id]['biblio_keywords'] .= (empty($node_array[$node_id]['biblio_keywords'])) ? $data : "; $data";
+        $node_array[$node_id]['biblio_keywords'] .= (empty($node_array[$node_id]['biblio_keywords'])) ? $data : ", $data";
 //        $node_array[$node_id]['biblio_keywords'][] = $data;
         break;
 
