@@ -1689,10 +1689,6 @@ function biblio_form_import() {
         '#default_value' => $edit['filetype'],
         '#options' => array('tagged' => t('EndNote Tagged') , 'xml'=>t('EndNote 7 XML'), 'xml8'=>t('EndNote 8+ XML'), 'bib'=>t('BibTex')),
       );
-      $form['button'] = array(
-        '#type' => 'submit',
-        '#value' => t('Import')
-      );
    // Get the vocabularies  attached to the biblio node type ...
       $vocabularies = module_invoke('taxonomy', 'get_vocabularies', 'biblio');
 
@@ -1709,14 +1705,20 @@ function biblio_form_import() {
           $form['import_taxonomy']['vocabulary'.$i] = module_invoke('taxonomy', 'form', $vocabulary->vid, 0);     
           $form['import_taxonomy']['vocabulary'.$i++]['#description'] = t("Select taxonomy term to assigned to imported entries");
         }
-          $form['import_taxonomy']['keywordmap'] = array(
+       /*   $form['import_taxonomy']['keywordmap'] = array(
             '#type' => 'checkbox',
             '#title' => t('Use keywords for free tagging.'),
             '#return_value' => 1,
             '#default_value' => variable_get('biblio_keywordmap', 0),
             '#description' => t('Selecting this checkbox will cause the keywords, if any, to be used for free tagging'), );
+      */
+      }      
       
-      }
+      $form['button'] = array(
+        '#type' => 'submit',
+        '#value' => t('Import')
+      );
+
       return $form;
       //print theme('page', form($form, 'post', null, $attributes));
      
