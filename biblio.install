@@ -58,9 +58,12 @@ function biblio_install() {
         `biblio_custom6` varchar(255) default NULL,
         `biblio_custom7` varchar(255) default NULL,
         `biblio_citekey` varchar(16) default NULL,
-       PRIMARY KEY  (`nid`,`vid`),
+       PRIMARY KEY  (`vid`),
+        KEY `nid` (`nid`),
         KEY `type` (`biblio_type`),
         KEY `year` (`biblio_year`),
+        FULLTEXT KEY `keywords` (`biblio_keywords`),
+        FULLTEXT KEY `publisher` (`biblio_publisher`),
         FULLTEXT KEY `authors` (`biblio_authors`)
       )  /*!40100 ENGINE=MyISAM DEFAULT CHARACTER SET utf8 */;");
       
@@ -550,6 +553,8 @@ $result = array();
   $result[] = update_sql("ALTER TABLE {biblio}  DROP PRIMARY KEY ;");
   $result[] = update_sql("ALTER TABLE {biblio}  ADD PRIMARY KEY (`vid`) ;");
   $result[] = update_sql("ALTER TABLE {biblio}  ADD KEY nid (`nid`) ;");
+  $result[] = update_sql("ALTER TABLE {biblio}  ADD FULLTEXT KEY `keywords` (`biblio_keywords`) ;");
+  $result[] = update_sql("ALTER TABLE {biblio}  ADD FULLTEXT KEY `publisher` (`biblio_publisher`) ;");
   return $result;
 }
 
