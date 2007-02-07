@@ -158,6 +158,21 @@ function biblio_link($type, $node = 0, $main) {
 * Implementation of hook_settings().
 */
 function biblio_settings() {
+  $form['biblio_base'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Base URL'),
+    '#size' => 20,
+    '#default_value' => variable_get('biblio_base', 'biblio'),
+    '#description' => t('This sets the base URL used to access the biblio module. (e.g. /biblio )'),
+  );
+  $form['biblio_rowsperpage'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Number of results per page.'),
+    '#default_value' => variable_get('biblio_rowsperpage', 25),
+    '#size' => 6,
+    '#maxlength' => 6,
+    '#description' => t('This sets the number of results that will be displayed per page.'),
+  );
   $form['biblio_normalize'] = array(
     '#type' => 'checkbox',
     '#title' => t('Normalize author names when displaying biblio records'),
@@ -170,17 +185,11 @@ function biblio_settings() {
     '#return_value' => 1,
     '#default_value' => variable_get('biblio_view_only_own', 0),
     '#description' => t('This option restricts the users capability to view biblio entries.  They will only be able to see the entries which they have created and own.') );
-  $form['biblio_rowsperpage'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Number of results per page on biblio queries'),
-    '#default_value' => variable_get('biblio_rowsperpage', 25),
-    '#size' => 6,
-    '#maxlength' => 6,
-    '#description' => 'This sets the number of results that will be displayed per page. ',
-  );
   $form['sort'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Initial Defaults'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#title' => t('Sorting'),
     '#description' => t('You can set the default sorting and ordering for the /biblio page here.'),
   );
   $form['sort']['biblio_sort'] = array(
@@ -195,23 +204,63 @@ function biblio_settings() {
     '#default_value' => variable_get('biblio_order', 'DESC'),
     '#options' => array('DESC'=>t('Descending'), 'ASC'=>t('Ascending')),
   );
-  $form['sort']['biblio_node_layout'] = array(
+  $form['style'] = array(
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#title' => t('Styling'),
+    '#description' => t('You can set the default sorting and ordering for the /biblio page here.'),
+  );
+  $form['style']['biblio_node_layout'] = array(
     '#type' => 'radios',
     '#title' => t('Node Layout'),
     '#default_value' => variable_get('biblio_node_layout', '0'),
     '#options' => array('0'=>t('Original'), '1'=>t('Only Fulltext if available')),
+    '#description' => t('This alters the layout of the "node" (full) view'),
   );
-  $form['sort']['biblio_style'] = array(
+  $form['style']['biblio_style'] = array(
     '#type' => 'radios',
     '#title' => t('Style'),
     '#default_value' => variable_get('biblio_style', 'classic'),
     '#options' => _biblio_get_styles(),
+    '#description' => t('This alters the layout of the "list" (short) view'),
   );
-  $form['sort']['biblio_base'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Base URL'),
-    '#default_value' => variable_get('biblio_base', 'biblio'),
+
+  $form['taxo'] = array(
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#title' => t('Taxonomy'),
+    '#description' => t('You can set the Taxonomy defaults here.'),
   );
+  $form['taxo']['biblio_keyword_freetagging'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Use keywords from biblio entries as taxonomy "free tags"'),
+    '#return_value' => 1,
+    '#default_value' => variable_get('biblio_keyword_freetagging', 0),
+    '#description' => t('Selcting this will cause any keywords entered to be registered at taxonomy free tags related to the given entry'),
+   );
+  $vocabularies = module_invoke('taxonomy', 'get_vocabularies', 'biblio');
+   // ... and print a form to select the terms in each of them
+  if (count($vocabularies)){
+    foreach ($vocabularies as $voc) {
+        $choice = new stdClass();
+        $choice->option = array($voc->vid =>  $voc->name);
+        $options[] = $choice;
+    }
+  
+    $form['taxo']['biblio_freetagging_vocab'] = array('#type' => 'select',
+    '#title' => t('Vocabulary'),
+    '#default_value' => variable_get('biblio_freetagging_vocab', 0),
+    '#options' => $options,
+    '#description' => t('Select vocabulary (catagory) to use for free tags'),
+    '#multiple' => FALSE,
+    '#disabled' => (!variable_get('biblio_keyword_freetagging', 0)),
+    '#size' => $multiple ? min(9, count($options)) : 0,
+    '#weight' => 15,
+    );
+
+  }
   menu_rebuild();
 
   return system_settings_form($form);
@@ -265,12 +314,12 @@ function biblio_menu($may_cache) {
     $items[] = array('path' => 'admin/settings/biblio', 'title' => t('Biblio settings'),
       'description' => t('Configure default behavior of the biblio module.'),
       'callback' => 'drupal_get_form', 'callback arguments' => array('biblio_settings'));
-    $items[] = array('path' => 'admin/settings/biblio/basic', 'title' => t('Basic'),
+    $items[] = array('path' => 'admin/settings/biblio/basic', 'title' => t('Preferences'),
       'type' => MENU_DEFAULT_LOCAL_TASK, 'weight' => -10);
-    $items[] = array('path' => 'admin/settings/biblio/import', 'title' => t('Import'),
+    $items[] = array('path' => 'admin/settings/biblio/import', 'title' => t('File Import'),
       'callback' => 'drupal_get_form', 'callback arguments' => array('biblio_form_import'),
-      'type' => MENU_LOCAL_TASK, 'weight' => -9);  
-    $items[] = array('path' => 'admin/settings/biblio/types', 'title' => t('Types'),
+      'type' => MENU_LOCAL_TASK, 'weight' => -8);  
+    $items[] = array('path' => 'admin/settings/biblio/types', 'title' => t('Type Management'),
       'callback' => 'biblio_form_types',
       'type' => MENU_LOCAL_TASK, 'weight' => -9);  
     $items[] = array('path' => 'admin/settings/biblio/types/edit', 'title' => t(''),
@@ -795,8 +844,9 @@ echo "in node form";die;
 */
 function biblio_submit($node){
   //print_r($node);die;
- // $node->taxonomy['tags'][1] = $node->biblio_keywords;
-
+  if (variable_get('biblio_keyword_freetagging',0) && variable_get('biblio_freetagging_vocab',0)){
+    $node->taxonomy['tags'][variable_get('biblio_freetagging_vocab',0)] = $node->biblio_keywords;
+  }
 }
 //function biblio_pre_render($form_id, &$form, $next_page = TRUE) {
 function theme_biblio_node_form($form) {
@@ -1677,7 +1727,6 @@ function _endnote_tagged_export($result) {
 
 function biblio_form_import() {
 
-
   if (biblio_access('import', $node)) { // && !user_access('administer nodes')) {
 
       $form['#attributes']['enctype'] = 'multipart/form-data';
@@ -1700,6 +1749,8 @@ function biblio_form_import() {
       if (count($vocabularies)){
           $form['import_taxonomy'] = array(
             '#type' => 'fieldset',
+            '#collapsible' => TRUE,
+            '#collapsed' => FALSE,
             '#title' => t('Taxonomy Settings'),
             '#description' => t('You can select terms to assign to imported records and allow the mapping of keywords to taxonomy'),
           );
@@ -1709,6 +1760,16 @@ function biblio_form_import() {
           $form['import_taxonomy']['vocabulary'.$i] = module_invoke('taxonomy', 'form', $vocabulary->vid, 0);     
           $form['import_taxonomy']['vocabulary'.$i++]['#description'] = t("Select taxonomy term to assigned to imported entries");
         }
+        
+        if (variable_get('biblio_keyword_freetagging', 0)){
+          $freetag_vocab = module_invoke('taxonomy', 'get_vocabulary', variable_get('biblio_freetagging_vocab', 0));
+          $msg = t('Keywords will be added to the').' "<b>'.$freetag_vocab->name.'</b>" '.t('vocabulary as specified ').l(t('on the settings page.'),'admin/settings/biblio');
+        }else{
+          $msg = t('Keywords will').' <b>'.t('NOT').'</b> '.t('be added to the vocabulary as specified ').l(t('on the settings page.'),'admin/settings/biblio');
+        } 
+        $form['import_taxonomy']['freetagging_information'] = array('#value' => '<div>'.$msg.'</div>');
+        
+        
        /*   $form['import_taxonomy']['keywordmap'] = array(
             '#type' => 'checkbox',
             '#title' => t('Use keywords for free tagging.'),
@@ -1738,10 +1799,12 @@ function biblio_form_import_validate($form_id, $form_values) {
     $filetype = $form_values['filetype'];
     $edit = $_POST;
     if (!file_check_upload('file_upload')){
-       drupal_set_message(t("You must provide a file name"),'error');   
+        form_set_error('',t("You must provide a file name")); 
+      
     }
     if($op == t('Import') && $filetype == '') {
-      drupal_set_message(t("You must select a file type"),'error');
+       form_set_error('',t("You must select a file type"));
+      
     }
 
 }
@@ -1765,8 +1828,6 @@ function biblio_form_import_submit($form_id, $form_values) {
         // the array of terms to be attached to the node(s)
         $content = _biblio_import($import->filepath,$form_values['filetype'], $terms);
         file_delete($import->filepath);
-//       drupal_set_message($content, 'status');
- //      print theme('page', $content);
 
       } else {
         drupal_set_message(t("File was NOT successfully uploaded"), 'error');
@@ -1852,10 +1913,19 @@ global $user,$records, $rec_count,$node_array,$node,$node_id;
 
   if (function_exists('node_save')) {
     foreach ($node_array as $node) {
-      $node_obj = (object)$node;
-      node_save($node_obj);
-      if ($node_obj->nid) { 
-         $node_ids[] = $node_obj->nid;
+      $node = (object)$node;
+      $vid = variable_get('biblio_freetagging_vocab',0);
+      $node->taxonomy['tags'][$vid] = $node->biblio_keywords;
+
+      node_save($node);
+      if ($node->nid) { 
+  //      if (variable_get('biblio_keyword_freetagging',0) 
+    //       && variable_get('biblio_freetagging_vocab',0)
+      //     && !empty($node->biblio_keywords)){
+        //      $terms['tags'][variable_get('biblio_freetagging_vocab',0)] = $node->biblio_keywords;
+          //    module_invoke('taxonomy', 'node_save', $node->nid, $terms );
+      //  }
+         $node_ids[] = $node->nid;
       }
     } 
   }
@@ -2222,3 +2292,19 @@ function biblio_filter($op, $delta = 0, $format = -1, $text = '') {
       break;
   }
 } 
+function biblio_taxonomy($op, $type, $array = NULL) { 
+
+  if ($op == 'delete' && $term['vid'] == variable_get('biblio_freetagging_vocab',0)) {
+    switch ($type) {
+      case 'term':
+        break;
+      case 'vocabulary':
+        variable_del('biblio_keyword_freetagging');
+        variable_del('biblio_freetagging_vocab');
+        break;
+    
+    }
+    
+  }  
+
+}
