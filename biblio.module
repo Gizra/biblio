@@ -1746,7 +1746,18 @@ function biblio_form_import_submit($form_id, $form_values) {
       if ($import) {
         $import = file_save_upload($import);
         drupal_set_message($import->filename.t(" was uploaded"), 'status');
-        $content = _biblio_import($import->filepath,$form_values['filetype']);
+
+        // Concatenate all the terms of the different vocabularies
+        // in a single array to be sent to _biblio_import
+        $terms = array();
+        foreach (array_keys($form_values) as $key) {
+          if (preg_match('/(vocabulary[0-9]+)/', $key)){
+            $terms[] = $form_values[$key];
+          }
+        }
+        // Added the $terms argument
+        // the array of terms to be attached to the node(s)
+        $content = _biblio_import($import->filepath,$form_values['filetype'], $terms);
         file_delete($import->filepath);
 //       drupal_set_message($content, 'status');
  //      print theme('page', $content);
@@ -1757,7 +1768,7 @@ function biblio_form_import_submit($form_id, $form_values) {
   }
 }
 
-function _biblio_import($filename = null,$type='tagged') {
+function _biblio_import($filename = null,$type='tagged',$terms = null) {
   global $user;
   $node = array();
   if (file_exists($filename)) {
@@ -1793,6 +1804,12 @@ function _biblio_import($filename = null,$type='tagged') {
        $node_ids  = _bibtex_import($file_content ,$node ); 
         break;
      }  
+     if ($terms){
+    	  // set the vocabulary for the returned nodes 
+    	  foreach ($node_ids as $node_id){
+    		  module_invoke('taxonomy', 'node_save', $node_id,  $terms);
+    	  }
+     }
       return $node_ids;
     }
   } else {
@@ -1857,12 +1874,14 @@ require_once(drupal_get_path('module', 'biblio') . '/bibtex.php');
         $node_obj = (object)$node;
         $nodeid = node_save($node_obj);
         if ($node_obj->nid) { 
-           $content .= t('Successfully imported node' . l("$node_obj->nid", "node/$node_obj->nid")) . '<br />>';
+    			$node_ids[] = $node_obj->nid;
+    			drupal_set_message(t('Succesfully imported node ' . l("$node_obj->nid", "node/$node_obj->nid")));
+
         }
       } 
     }
   }
-  return $content;
+  return $node_ids;
 } 
 
 function biblio_get_db_fields() {
