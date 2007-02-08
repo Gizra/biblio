@@ -242,6 +242,7 @@ function biblio_settings() {
    );
   $vocabularies = module_invoke('taxonomy', 'get_vocabularies', 'biblio');
    // ... and print a form to select the terms in each of them
+  $options[0] = array(0 => '<'. t('none') .'>'); 
   if (count($vocabularies)){
     foreach ($vocabularies as $voc) {
         $choice = new stdClass();
@@ -842,16 +843,15 @@ function theme_biblio_form_filter(&$form) {
 echo "in node form";die;
 }
 */
-function biblio_submit($node){
-  //print_r($node);die;
+function biblio_submit(&$node){
   if (variable_get('biblio_keyword_freetagging',0) && variable_get('biblio_freetagging_vocab',0)){
-    $node->taxonomy['tags'][variable_get('biblio_freetagging_vocab',0)] = $node->biblio_keywords;
+    $vid = variable_get('biblio_freetagging_vocab',0);
+    $node->taxonomy['tags'][$vid] = $node->biblio_keywords;
   }
 }
 //function biblio_pre_render($form_id, &$form, $next_page = TRUE) {
 function theme_biblio_node_form($form) {
   global $form_values;
- // echo "in theme form";
  //print_r($form);
     if ( isset($form['biblio_type']['#value']) && $form['biblio_type']['#value'] >0 ){
 
@@ -1123,7 +1123,7 @@ function biblio_view(&$node, $teaser = false, $page = false) {
   case 0:
   default:
     $node->content['biblio'] = array('#value' => theme('biblio_long', $node), '#weight' => -10 );
-    $node->content['body']['#value'] =   ($node->body?'<h3>'.t('Full Text:').$node->body.'</h3>':"");
+    $node->content['body']['#value'] =   ($node->body)?'<h3>'.t('Full Text').':</h3>'.$node->body:"";
     break;
   case 1:
     $node->content['biblio'] = $node->body?array('#value' => '<div class="biblio-head">'.theme('biblio_short', $node).'</div>',
@@ -1800,11 +1800,9 @@ function biblio_form_import_validate($form_id, $form_values) {
     $edit = $_POST;
     if (!file_check_upload('file_upload')){
         form_set_error('',t("You must provide a file name")); 
-      
     }
     if($op == t('Import') && $filetype == '') {
        form_set_error('',t("You must select a file type"));
-      
     }
 
 }
@@ -1914,17 +1912,13 @@ global $user,$records, $rec_count,$node_array,$node,$node_id;
   if (function_exists('node_save')) {
     foreach ($node_array as $node) {
       $node = (object)$node;
-      $vid = variable_get('biblio_freetagging_vocab',0);
-      $node->taxonomy['tags'][$vid] = $node->biblio_keywords;
+      if (variable_get('biblio_keyword_freetagging',0) && variable_get('biblio_freetagging_vocab',0)){
+        $vid = variable_get('biblio_freetagging_vocab',0);
+        $node->taxonomy['tags'][$vid] = $node->biblio_keywords;
+      }
 
       node_save($node);
       if ($node->nid) { 
-  //      if (variable_get('biblio_keyword_freetagging',0) 
-    //       && variable_get('biblio_freetagging_vocab',0)
-      //     && !empty($node->biblio_keywords)){
-        //      $terms['tags'][variable_get('biblio_freetagging_vocab',0)] = $node->biblio_keywords;
-          //    module_invoke('taxonomy', 'node_save', $node->nid, $terms );
-      //  }
          $node_ids[] = $node->nid;
       }
     } 
