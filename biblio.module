@@ -163,7 +163,7 @@ function biblio_settings() {
     '#title' => t('Base URL'),
     '#size' => 20,
     '#default_value' => variable_get('biblio_base', 'biblio'),
-    '#description' => t('This sets the base URL used to access the biblio module. (e.g. /biblio )'),
+    '#description' =>  t('This sets the base URL used to access the biblio module (e.g. /biblio ).'),
   );
   $form['biblio_rowsperpage'] = array(
     '#type' => 'textfield',
@@ -178,7 +178,7 @@ function biblio_settings() {
     '#title' => t('Normalize author names when displaying biblio records'),
     '#return_value' => 1,
     '#default_value' => variable_get('biblio_normalize', 0),
-    '#description' => t('Tries (doesn\'t always work) to reformat author names such that thay are all in the format lastname followed by initials, e.g. Smith, J.S. (Note: This setting does not change the entry in the database, only how it is formated after it is retrieved from the database, thus you can turn it on and off at will.)'), );
+    '#description' => t('Tries (doesn\'t always work) to reformat author names so that they are displayed in the format "Lastname, Initials" e.g. Smith, J.S. (Note: This setting does not modify the entry in the database, it only reformats it\'s presentation. This option can be turned off at any time to diplay the oringal format.)'), );
   $form['biblio_view_only_own'] = array(
     '#type' => 'checkbox',
     '#title' => t('Restrict users such that they can only view their own biblio entries'),
@@ -209,21 +209,21 @@ function biblio_settings() {
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
     '#title' => t('Styling'),
-    '#description' => t('You can set the default sorting and ordering for the /biblio page here.'),
+    '#description' => t('You can set the default style for the /biblio page here.'),
   );
   $form['style']['biblio_node_layout'] = array(
     '#type' => 'radios',
     '#title' => t('Node Layout'),
     '#default_value' => variable_get('biblio_node_layout', '0'),
     '#options' => array('0'=>t('Original'), '1'=>t('Only Fulltext if available')),
-    '#description' => t('This alters the layout of the "node" (full) view'),
+    '#description' => t('This alters the layout of the "node" (full) view.'),
   );
   $form['style']['biblio_style'] = array(
     '#type' => 'radios',
     '#title' => t('Style'),
     '#default_value' => variable_get('biblio_style', 'classic'),
     '#options' => _biblio_get_styles(),
-    '#description' => t('This alters the layout of the "list" (short) view'),
+    '#description' => t('This alters the layout of the "list" (short) view.'),
   );
 
   $form['taxo'] = array(
@@ -238,7 +238,7 @@ function biblio_settings() {
     '#title' => t('Use keywords from biblio entries as taxonomy "free tags"'),
     '#return_value' => 1,
     '#default_value' => variable_get('biblio_keyword_freetagging', 0),
-    '#description' => t('Selcting this will cause any keywords entered to be registered at taxonomy free tags related to the given entry'),
+    '#description' => t('This option allows user to add keywords (free tags) to describe their documents. These keywords will registered as taxonomy.'),
    );
   $vocabularies = module_invoke('taxonomy', 'get_vocabularies', 'biblio');
    // ... and print a form to select the terms in each of them
@@ -254,7 +254,7 @@ function biblio_settings() {
     '#title' => t('Vocabulary'),
     '#default_value' => variable_get('biblio_freetagging_vocab', 0),
     '#options' => $options,
-    '#description' => t('Select vocabulary (catagory) to use for free tags'),
+    '#description' => t('Select vocabulary (catagory) to use for free tags.'),
     '#multiple' => FALSE,
     '#disabled' => (!variable_get('biblio_keyword_freetagging', 0)),
     '#size' => $multiple ? min(9, count($options)) : 0,
