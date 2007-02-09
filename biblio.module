@@ -242,10 +242,11 @@ function biblio_settings() {
    );
   $vocabularies = module_invoke('taxonomy', 'get_vocabularies', 'biblio');
    // ... and print a form to select the terms in each of them
-  $options[0] = array(0 => '<'. t('none') .'>'); 
+  $choice = new stdClass();
+  $choice->option = array(0 =>  '<'. t('none') .'>');
+  $options[0] = $choice;
   if (count($vocabularies)){
     foreach ($vocabularies as $voc) {
-        $choice = new stdClass();
         $choice->option = array($voc->vid =>  $voc->name);
         $options[] = $choice;
     }
