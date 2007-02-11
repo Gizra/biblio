@@ -240,13 +240,14 @@ function biblio_settings() {
     '#default_value' => variable_get('biblio_keyword_freetagging', 0),
     '#description' => t('This option allows user to add keywords (free tags) to describe their documents. These keywords will registered as taxonomy.'),
    );
-  $vocabularies = module_invoke('taxonomy', 'get_vocabularies', 'biblio');
+  $vocabularies = module_invoke('taxonomy', 'get_vocabularies');
    // ... and print a form to select the terms in each of them
   $choice = new stdClass();
   $choice->option = array(0 =>  '<'. t('none') .'>');
   $options[0] = $choice;
   if (count($vocabularies)){
     foreach ($vocabularies as $voc) {
+        $choice = new stdClass();
         $choice->option = array($voc->vid =>  $voc->name);
         $options[] = $choice;
     }
