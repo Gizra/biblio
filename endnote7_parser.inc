@@ -21,8 +21,9 @@
  *
  */  
 
-function en7_parse($tags,&$node_array,$node) 
+function en7_parse(&$tags,&$node_array,$node) 
 {
+
   $type_map = array('0'=>'102', // Journal Article
                     '1'=>'100', // Book
                     '2'=>'108', // Thesis
