@@ -19,7 +19,7 @@
  *
  */  
 
-function _endnote_tagged_import($data,$node) {
+function _endnote_tagged_import(&$data,$node) {
   $incite = false;
   $node_array = array();
 
@@ -29,8 +29,8 @@ function _endnote_tagged_import($data,$node) {
         if ($line_len > 3){
           $start = strpos($line, "%"); // There could be some unprintables at the beginning of the line so fine the location of the %
           if ($start !== false) {
-            $tag = substr($line, $start, 2);
-            $value = trim(substr($line, $start+3));
+            $tag = drupal_substr($line, $start, 2);
+            $value = trim(drupal_substr($line, $start+3));
           }else{
             $value = $line;
           }          
@@ -194,16 +194,6 @@ function _endnote_tagged_import($data,$node) {
         } // end if ($start !== false) 
 
       } // end while 
-  $content = null;
-  if (function_exists('node_save')) {  
-    foreach ($node_array as $node) {
-      $node_obj = (object)$node;
-      $nodeid = node_save($node_obj);
-      if ($node_obj->nid) { 
-         $count++;
-      }
-    } 
-  } 
-    drupal_set_message(t("Succesfully imported ").$count.t(" entries."), 'status');
-  return ;
+  $node_ids = _biblio_save_imported_nodes($node_array);
+  return $node_ids;
 } 
