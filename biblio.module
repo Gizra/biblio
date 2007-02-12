@@ -256,7 +256,7 @@ function biblio_settings() {
     '#title' => t('Vocabulary'),
     '#default_value' => variable_get('biblio_freetagging_vocab', 0),
     '#options' => $options,
-    '#description' => t('Select vocabulary (catagory) to use for free tags.'),
+    '#description' => t('Select vocabulary (category) to use for free tags.'),
     '#multiple' => FALSE,
     '#disabled' => (!variable_get('biblio_keyword_freetagging', 0)),
     '#size' => $multiple ? min(9, count($options)) : 0,
@@ -1884,12 +1884,10 @@ function _biblio_import($filename = null,$type='tagged',$terms = null) {
   }
 }
 
- 
-function _endnote_XML_import($data ,$nodedata, $version = 8) {
+function _endnote_XML_import(&$data ,$nodedata, $version = 8) {
 global $user,$records, $rec_count,$node_array,$node,$node_id;
-  $node = $nodedata;
   $node_array = array();
-
+  $node = $nodedata;
   $xml_parser = drupal_xml_parser_create($data);
 
 // use case-folding so we are sure to find the tag in 
@@ -1911,24 +1909,12 @@ global $user,$records, $rec_count,$node_array,$node,$node_id;
 
   xml_parser_free($xml_parser);
 
-  if (function_exists('node_save')) {
-    foreach ($node_array as $node) {
-      $node = (object)$node;
-      if (variable_get('biblio_keyword_freetagging',0) && variable_get('biblio_freetagging_vocab',0)){
-        $vid = variable_get('biblio_freetagging_vocab',0);
-        $node->taxonomy['tags'][$vid] = $node->biblio_keywords;
-      }
+  $node_ids = _biblio_save_imported_nodes($node_array);
 
-      node_save($node);
-      if ($node->nid) { 
-         $node_ids[] = $node->nid;
-      }
-    } 
-  }
-  drupal_set_message(t("Succesfully imported ").count($node_ids).t(" entries."), 'status');
   return ($node_ids);
-} 
-function _bibtex_import($data, $node) {
+}
+ 
+function _bibtex_import(&$data, $node) {
 require_once(drupal_get_path('module', 'biblio') . '/bibtex.php');
 
   $node_array = array();
@@ -1940,22 +1926,31 @@ require_once(drupal_get_path('module', 'biblio') . '/bibtex.php');
   $bibtex->parse();
   if ($bibtex->amount()){
     $bibtex->bib2node($node_array, $node);
-
-    if (function_exists('node_save')) {
-      foreach ($node_array as $node) {
-        $node_obj = (object)$node;
-        $nodeid = node_save($node_obj);
-        if ($node_obj->nid) { 
-    			$node_ids[] = $node_obj->nid;
-    			drupal_set_message(t('Succesfully imported node ' . l("$node_obj->nid", "node/$node_obj->nid")));
-
-        }
-      } 
-    }
+    $node_ids = _biblio_save_imported_nodes($node_array);
   }
   return $node_ids;
 } 
 
+function _biblio_save_imported_nodes(&$node_array){
+
+  if (function_exists('node_save')) {
+    foreach ($node_array as $node) {
+      $node = (object)$node;
+      if (variable_get('biblio_keyword_freetagging',0) && variable_get('biblio_freetagging_vocab',0)){
+        $vid = variable_get('biblio_freetagging_vocab',0);
+        $node->taxonomy['tags'][$vid] = $node->biblio_keywords;
+      }
+      node_save($node);
+      if ($node->nid) { 
+         $node_ids[] = $node->nid;
+      }
+    } 
+  }
+  drupal_set_message(t("Succesfully imported ").count($node_ids).t(" entries."), 'status');
+
+  return $node_ids;
+}
+ 
 function biblio_get_db_fields() {
   $fields = array();
   $fields[] = 'nid';  
