@@ -1754,7 +1754,7 @@ function biblio_form_import() {
         '#type' => 'radios',
         '#title' => t('File Type'),
         '#default_value' => $edit['filetype'],
-        '#options' => array('tagged' => t('EndNote Tagged') , 'xml'=>t('EndNote 7 XML'), 'xml8'=>t('EndNote 8+ XML'), 'bib'=>t('BibTex')),
+        '#options' => array('tagged' => t('EndNote Tagged'),'ris' => t('RIS') , 'xml'=>t('EndNote 7 XML'), 'xml8'=>t('EndNote 8+ XML'), 'bib'=>t('BibTex')),
       );
    // Get the vocabularies  attached to the biblio node type ...
       $vocabularies = module_invoke('taxonomy', 'get_vocabularies', 'biblio');
@@ -1881,6 +1881,10 @@ function _biblio_import($filename = null,$type='tagged',$terms = null) {
         break;
       case 'bib': // BibTex
        $node_ids  = _bibtex_import($file_content ,$node ); 
+        break;
+      case 'ris': // RIS
+        require_once(drupal_get_path('module', 'biblio') . '/ris_parser.inc');
+        $node_ids  = _ris_tagged_import($file_content,$node);
         break;
      }  
      if ($terms){
