@@ -238,7 +238,7 @@ function biblio_settings() {
     '#title' => t('Use keywords from biblio entries as taxonomy "free tags"'),
     '#return_value' => 1,
     '#default_value' => variable_get('biblio_keyword_freetagging', 0),
-    '#description' => t('This option allows user to add keywords (free tags) to describe their documents. These keywords will registered as taxonomy.'),
+    '#description' => t('This option allows user to add keywords (free tags) to describe their documents. These keywords will be registered as taxonomy.'),
    );
   $vocabularies = module_invoke('taxonomy', 'get_vocabularies');
    // ... and print a form to select the terms in each of them
@@ -383,6 +383,10 @@ function biblio_menu($may_cache) {
       'type' => MENU_CALLBACK);
     $items[] = array('path' => "$base/citekey", 'title' => t(''),
       'callback' => 'biblio_citekey_view',
+      'type' => MENU_CALLBACK);
+    $items[] = array('path' => "$base/rss.xml", 'title' => t('RSS feed'),
+      'callback' => 'biblio_feed',
+      'access' => user_access('access content'),
       'type' => MENU_CALLBACK);
 
   return $items;
@@ -1157,10 +1161,10 @@ function biblio_block($op = 'list', $delta = 0) {
       return $blocks;
     } else if ($op == 'view') {
       // Retrieve the latest pubs
-      // $sql = "SELECT n.title FROM (node) n WHERE n.type = 'biblio' ORDER BY n.created DESC"
       $result = db_query_range(db_rewrite_sql("SELECT n.nid, n.title FROM {node} AS n WHERE n.type = 'biblio' ORDER BY n.created DESC"), 0, 4);
       if (db_num_rows($result)) {
-        $block['subject'] = t('New Publications');
+        $base =  variable_get('biblio_base', 'biblio');
+        $block['subject'] = t('New Publications'). theme('feed_icon', url("$base/rss.xml"));
         $block['content'] .= '<div class="item-list"><ul>';
         while ($pub = db_fetch_object($result)) {
           $block['content'] .= '<li >' . l("$pub->title", "node/$pub->nid") . '</li>';
@@ -1171,6 +1175,14 @@ function biblio_block($op = 'list', $delta = 0) {
     } 
   } 
 } 
+
+function biblio_feed(){
+      
+  $result = db_query_range(db_rewrite_sql("SELECT * FROM {node} AS n left join {biblio} b  on n.vid=b.vid WHERE n.type = 'biblio' ORDER BY n.created DESC"), 0, 6);
+  $channel['title'] = variable_get('site_name', 'Drupal') .' - '. t("New Publications");
+  node_feed($result, $channel);
+
+}
 
 function theme_biblio_long($pub) {
 
