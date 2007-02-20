@@ -1287,10 +1287,10 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
     if(user_access('show sort links')){
       $sort_attr = array("title"=>t("Click a second time to reverse the sort order"));
       $content .= '<div class="biblio_sort">'.t('Sort by').':';
-      $content .= "[".l(t("Year"),$_GET['q'],$sort_attr,"&sort=year&order=$order");
-      $content .= "][".l(t("Title"),$_GET['q'],$sort_attr,"&sort=title&order=$order");
-      $content .= "][".l(t("Type"),$_GET['q'],$sort_attr,"&sort=type&order=$order");
-      $content .= "][".l(t("Author"),$_GET['q'],$sort_attr,"&sort=author&order=$order");
+      $content .= "[".l(t("Year"),$_GET['q'],$sort_attr,"sort=year&order=$order");
+      $content .= "][".l(t("Title"),$_GET['q'],$sort_attr,"sort=title&order=$order");
+      $content .= "][".l(t("Type"),$_GET['q'],$sort_attr,"sort=type&order=$order");
+      $content .= "][".l(t("Author"),$_GET['q'],$sort_attr,"sort=author&order=$order");
       $content .= "]</div> ";
     }
   }
@@ -1431,18 +1431,18 @@ $join = array();
           $inline = true;
           break;
         case 'author':
-          $term = db_escape_string($arg_list[0]);
+          $term = explode("?",$arg_list[0]);
           array_shift($arg_list);
-          $limit .= " AND MATCH(b.biblio_authors) AGAINST('%s'  IN BOOLEAN MODE)";
-          $terms[] = $term;
-          array_push($args, $type, $term);
+          $limit .= " AND MATCH(b.biblio_authors) AGAINST('%s')";
+          $terms[] = db_escape_string($term[0]);
+          array_push($args, $type, $term[0]);
           break;
         case 'publisher':
-          $term = db_escape_string($arg_list[0]);
+          $term = explode("?",$arg_list[0]);
           array_shift($arg_list);
-          $limit .= " AND MATCH(b.biblio_publisher) AGAINST('%s'  IN BOOLEAN MODE)";
-          $terms[] = $term;
-          array_push($args, $type, $term);
+          $limit .= " AND MATCH(b.biblio_publisher) AGAINST('%s')";
+          $terms[] = db_escape_string($term[0]);
+          array_push($args, $type, $term[0]);
           break;
         case 'year':
           $term = db_escape_string($arg_list[0]);
@@ -1453,11 +1453,11 @@ $join = array();
           array_push($args, $type, (int)$term);
           break;
         case 'keyword':
-          $term = db_escape_string($arg_list[0]);
+          $term = explode("?",$arg_list[0]);
           array_shift($arg_list);
-          $limit .= " AND MATCH(b.biblio_keywords) AGAINST('%s'  IN BOOLEAN MODE)";
-          $terms[] = $term;
-          array_push($args, $type, $term);
+          $limit .= " AND MATCH(b.biblio_keywords) AGAINST('%s')";
+          $terms[] = db_escape_string($term[0]);
+          array_push($args, $type, $term[0]);
           break;
         case 'type':
           $term = db_escape_string($arg_list[0]);
@@ -1979,8 +1979,13 @@ function biblio_get_db_fields() {
   return $fields ;
 } 
 function _biblio_author_links($author) {
+$attr = null;
 if (isset($_GET['sort'])) {
-  $sort = "?sort=" . $_GET['sort'];
+  $attr .= "sort=" . $_GET['sort'];
+} 
+if (isset($_GET['order'])) {
+  $attr .= $attr?"&":"";
+  $attr .= "order=" . $_GET['order'];
 } 
 
 $html = "";
@@ -1997,7 +2002,7 @@ foreach($author_array as $auth) {
   } 
   // list($lastname, $init) = split(",", $auth);
   $base =  variable_get('biblio_base', 'biblio');
-  $html .= l(trim($auth), "$base/author/" . trim($lastname) . $sort);
+  $html .= l(trim($auth), "$base/author/" . trim($lastname),null, $attr);
 } 
 return $html;
 } 
