@@ -196,7 +196,7 @@ function biblio_settings() {
     '#type' => 'radios',
     '#title' => t('Sort by'),
     '#default_value' => variable_get('biblio_sort', 'year'),
-    '#options' => array('year'=>t('Year'), 'type'=>t('Type'),'title'=>t('Title')),
+    '#options' => array('author'=>t('Author'), 'title'=>t('Title'),'type'=>t('Type'),'year'=>t('Year')),
   );
   $form['sort']['biblio_order'] = array(
     '#type' => 'radios',
@@ -1372,25 +1372,9 @@ $join = array();
   if (isset($_GET['order'])){
     $pager_attrib['order'] = ($_GET['order'] == 'desc') ? 'desc' : 'asc';
   }
-  if (isset($_GET['sort'])){
-    switch($_GET['sort']){
-    case "year":
-      $pager_attrib['sort'] = ($_GET['sort'] == 'year') ? 'year' : 'year';
-      break;
-    case "type":
-      $pager_attrib['sort'] = ($_GET['sort'] == 'type') ? 'type' : 'year';
-      break;
-    case "title":
-      $pager_attrib['sort'] = ($_GET['sort'] == 'title') ? 'title' : 'year';
-      break;
-    case "author":
-      $pager_attrib['sort'] = ($_GET['sort'] == 'author') ? 'author' : 'year';
-      break;
-    default:
-      $pager_attrib['sort'] =  'year';
-    
-      }
- }
+  if (isset($_GET['sort'])) {
+    $pager_attrib['sort'] = check_plain($_GET['sort']);
+  } 
 
   switch ($pager_attrib['sort']) {
     case 'type':
@@ -1404,7 +1388,7 @@ $join = array();
       $join[] = "inner join  {biblio_author_index} as a on b.nid= ha.nid";
       $sortby = " ORDER BY a.author %s ";
       $where[] = "ha.rank = 1 ";
-      //$sortby = "ORDER BY SUBSTRING(b.biblio_authors,1,1) %s, b.biblio_year DESC ";
+      //$sortby = "ORDER BY SUBSTRING(LTRIM(b.biblio_authors),1,1) %s, b.biblio_year DESC ";
       break;
     case 'year':
     default:
