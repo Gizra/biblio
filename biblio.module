@@ -2259,35 +2259,154 @@ function biblio_nodeapi($node, $op){
   }
 
 }
+
+ /*******************************************
+  * Filter
+  * Largely inspired from the footnote module 
+  *  
+ *******************************************/
+ 
+function _biblio_citekey_print($citekey){
+   $nid = db_fetch_object(db_query("SELECT nid FROM {biblio} WHERE biblio_citekey = '%s' ORDER BY vid DESC", $citekey));
+   if ($nid->nid > 0){
+     $node = node_load($nid->nid);
+     return theme('biblio_short', $node);
+   } else {
+     return t("Citekey: ").$citekey.t(" not found");
+   }
+ 
+}
+ 
+ 
+ /**
+  * Implementation of hook_filter_tips().
+  *
+  * This hook allows filters to provide help text to users during the content
+  * editing process. Short tips are provided on the content editing screen, while
+  * long tips are provided on a separate linked page. Short tips are optional,
+  * but long tips are highly recommended.
+  */
+function biblio_filter_tips($delta, $format, $long = FALSE) {
+   switch ($delta) {
+     case 0:
+       if ($long) {
+         return t('You can cite references directly into texts with <code>&lt;bib&gt;citekey&lt;/bib&gt;</code>. This will be replaced with a running number (the publication reference) and the publication referenced by the citekey within the &lt;bib&gt; tags will be print to the bottom of the page (the reference).');
+       }
+       else {
+         return t('Use &lt;bib&gt;...&lt;/bib&gt; to insert automatically numbered references.');
+       }
+       break;
+   }
+}
+ 
+ /**
+  * Implementation of hook_filter().
+  *
+  * The bulk of filtering work is done here. This hook is quite complicated, so
+  * we'll discuss each operation it defines.
+  */
 function biblio_filter($op, $delta = 0, $format = -1, $text = '') {
-
-  if ($op == 'list') {
-    return array(
-      0 => t('Biblio_citekey filter'));
-  }
-
-  switch ($delta) {
-
-    case 0:
-
-      switch ($op) {
-        case 'description':
-          return t('Replaces "biblio_citekeys" with a link to a bibliography entry added to the end of the text.');
-
-        // We don't need the "prepare" operation for this filter, but it's required
-        // to at least return the input text as-is.
-        case 'prepare':
-          return $text;
-
-        // The actual filtering is performed here. The supplied text should be
-        // returned, once any necessary substitutions have taken place.
-        case 'process':
-          return str_replace('foo', variable_get("filter_example_foo_$format", 'bar'), $text);
-
-      }
-      break;
-  }
-} 
+   // The "list" operation provides the module an opportunity to declare both how
+   // many filters it defines and a human-readable name for each filter. Note that
+   // the returned name should be passed through t() for translation.
+   if ($op == 'list') {
+     return array(
+       0 => t('References &lt;bib&gt;'),
+     );
+   }
+   if ($op == 'no cache') { return true; }
+  
+   // All operations besides "list" provide a $delta argument so we know which
+   // filter they refer to. We'll switch on that argument now so that we can
+   // discuss each filter in turn.
+   switch ($delta) {
+ 
+     // First is the html footnotes filter
+     case 0:
+ 
+       switch ($op) {
+         // This description is shown in the administrative interface, unlike the
+         // filter tips which are shown in the content editing interface.
+         case 'description':
+           return t('Use &lt;bib&gt;...&lt;/bib&gt; to insert automatically numbered references.');
+ 
+         // We don't need the "prepare" operation for this filter, but it's required
+         // to at least return the input text as-is.
+         //TODO: May need to escape <fn> if we use HTML filter too, but Footnotes could be first
+         case 'prepare':
+           return $text;
+ 
+         // The actual filtering is performed here. The supplied text should be
+         // returned, once any necessary substitutions have taken place.
+         case 'process':
+           $text = preg_replace_callback('|<bib>(.*?)</bib>|s', '_biblio_filter_replace_callback', $text);
+           
+           //Replace tag <footnotes> with the list of footnotes.
+           //If tag is not present, by default add the footnotes at the end.
+           //Thanks to acp on drupal.org for this idea. see http://drupal.org/node/87226 
+           $footer = '';
+           $footer = _biblio_filter_replace_callback(NULL, 'output footer');
+           if( preg_match( '/<bibliography(\/( )?)?>/', $text ) > 0 ) {
+             $text = preg_replace('/<bibliography(\/( )?)?>/', $footer, $text, 1);
+             return $text;
+           }
+           else {
+             return $text . "\n\n" . $footer;
+           }
+       }
+       break;
+   }
+}
+ 
+ 
+ /**
+  * Helper function called from preg_replace_callback() above
+  *
+  * Uses static vars to temporarily store footnotes found.
+  * In my understanding, this is not threadsafe?!
+  */
+function _biblio_filter_replace_callback( $matches, $op = '' ) {
+   static $n = 0;
+   static $store_matches = array();
+   $str = '';
+   
+   if( $op == 'output footer' ) {
+     drupal_add_css(drupal_get_path('module', 'biblio').'/biblio.css');
+     if( $n > 0 ) {
+       $str = '<p><hr /><p><h3>'.t('References').'</h3>';
+       $str .= '<div class="references"><ol>';
+       for( $m = 1; $m <= $n; $m++ ){
+         $str .= '<li id="reference' . $m . '">' . _biblio_citekey_print($store_matches[ $m - 1 ]) . " </li>\n\n";
+       }
+       $str .= '</ol></div>';
+     }
+     $n = 0;
+     $store_matches = array();
+     return $str;
+   }
+ 
+   //default op: act as called by preg_replace_callback()
+   array_push( $store_matches, $matches[1] );
+   $n++;
+   $allowed_tags = array();
+   $title = filter_xss($matches[1], $allowed_tags);
+   //html attribute cannot contain quotes
+   $title = str_replace('"', "&quot;", $title);
+   //remove newlines. Browsers don't support them anyway and they'll confuse line break converter in filter.module
+   $title = str_replace("\n", " ", $title);
+   $title = str_replace("\r", "", $title);
+   //return '<sup class="see_reference" title="'. $title .'"><a href="#reference' . $n . '">' . $n . '</a></sup>';  
+   //$text = '<span><a href="#reference' . $n . '">[' . $n . ']</a> </span>';
+   //$text = '<span>[' . $n . ']</span>';
+   //$text .= '<span class="hovertip">'._biblio_citekey_print($title) .'</span>';
+ 
+   $text = '<span hovertip="reference'. $n .'">[' . $n .']</span>';
+   if (module_exists('hovertip')) { 
+     $text .= '<div id="reference'. $n .'" class="hovertip"><h1>Reference</h1>'._biblio_citekey_print($title) .'</div>';
+   }
+   return $text;
+ 
+}
 function biblio_taxonomy($op, $type, $array = NULL) { 
 
   if ($op == 'delete' && $term['vid'] == variable_get('biblio_freetagging_vocab',0)) {
