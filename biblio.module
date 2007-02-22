@@ -1178,7 +1178,7 @@ function biblio_block($op = 'list', $delta = 0) {
 
 function biblio_feed(){
       
-  $result = db_query_range(db_rewrite_sql("SELECT * FROM {node} AS n left join {biblio} b  on n.vid=b.vid WHERE n.type = 'biblio' ORDER BY n.created DESC"), 0, 6);
+  $result = db_query_range(db_rewrite_sql("SELECT * FROM {node} AS n left join {biblio} b  on n.vid=b.vid WHERE n.type = 'biblio' AND n.status=1 ORDER BY n.created DESC"), 0, 6);
   $channel['title'] = variable_get('site_name', 'Drupal') .' - '. t("New Publications");
   node_feed($result, $channel);
 
