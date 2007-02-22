@@ -1161,7 +1161,7 @@ function biblio_block($op = 'list', $delta = 0) {
       return $blocks;
     } else if ($op == 'view') {
       // Retrieve the latest pubs
-      $result = db_query_range(db_rewrite_sql("SELECT n.nid, n.title FROM {node} AS n WHERE n.type = 'biblio' ORDER BY n.created DESC"), 0, 4);
+      $result = db_query_range(db_rewrite_sql("SELECT n.nid, n.title, n.status FROM {node} AS n WHERE n.type = 'biblio' AND n.status=1 ORDER BY n.created DESC"), 0, 4);
       if (db_num_rows($result)) {
         $base =  variable_get('biblio_base', 'biblio');
         $block['subject'] = t('New Publications'). theme('feed_icon', url("$base/rss.xml"));
