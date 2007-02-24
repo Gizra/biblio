@@ -20,6 +20,15 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  */  
+function biblio_autocomplete($field,$string=''){
+    $matches = array();
+    $result = db_query_range("SELECT $field FROM {biblio} WHERE LOWER($field) LIKE LOWER('%s%%') ORDER BY $field ASC", $string, 0, 10);
+    while ($data = db_fetch_object($result)) {
+      $matches[$data->$field] = check_plain($data->$field);
+    }
+    print drupal_to_js($matches);
+    exit();
+}
 function biblio_help_page() {
   $base =  variable_get('biblio_base', 'biblio');
   
@@ -215,7 +224,7 @@ function biblio_settings() {
     '#type' => 'radios',
     '#title' => t('Node Layout'),
     '#default_value' => variable_get('biblio_node_layout', '0'),
-    '#options' => array('0'=>t('Original'), '1'=>t('Only Fulltext if available')),
+    '#options' => array('orig'=>t('Original'), 'ft'=>t('Only Fulltext if available')),
     '#description' => t('This alters the layout of the "node" (full) view.'),
   );
   $form['style']['biblio_style'] = array(
@@ -346,7 +355,11 @@ function biblio_menu($may_cache) {
     $items[] = array('path' => 'admin/settings/biblio/types/show', 'title' => t(''),
       'callback' => 'biblio_types_show',
       'type' => MENU_CALLBACK );  
-      
+    $items[] = array('path' => 'biblio/autocomplete',
+      'title' => t('Autocomplete '),
+      'callback' => 'biblio_autocomplete',
+      'access' => user_access('access content'),
+      'type' => MENU_CALLBACK);
   } 
   $base =  variable_get('biblio_base', 'biblio');
   $items[] = array('path' => $base, 'title' => t(''),
@@ -546,13 +559,15 @@ function biblio_form_types_edit(){
   $vis_comm = $tid?'visible':'common';
   if (!$tid) $options["$vis_comm"] = '';
   $options['required'] = '';
+  $options['autocomplete'] = '';
 
   foreach($fields as $key=>$fld){
     if ($fld['common']) $def_values[$fld['name']][] = 'common';
     if ($fld['required']) $def_values[$fld['name']][] = 'required';
+    if ($fld['autocomplete']) $def_values[$fld['name']][] = 'autocomplete';
 
     $form['configured_flds'][$key]['name'] = array('#type'=>'markup', '#value'=>$fld['name'],'#weight'=>$fld['weight']);
-    $form['configured_flds'][$key]['title'] = array('#type'=>'textfield','#default_value' => $fld['title'],'#size'=>20,'#weight'=>$fld['weight']);
+    $form['configured_flds'][$key]['title'] = array('#type'=>'textfield','#default_value' => $fld['title'],'#size'=>15,'#weight'=>$fld['weight']);
     $form['configured_flds'][$key]['weight'] = array('#type'=>'textfield','#default_value' => $fld['weight'],'#size'=>2,'#weight'=>$fld['weight']);
     $form['configured_flds'][$key]['hint'] = array('#type'=>'textfield','#default_value' => $fld['hint'],'#size'=>10,'#weight'=>$fld['weight']);
     //if (!$tid){
@@ -608,7 +623,7 @@ function theme_biblio_form_types_edit($form){
   if ($tid){
     $header =array(t('Field Name'),t('Default Title'),t('Hint'),t('Required'),t('Weight'),t('Action'));
   }else{
-    $header =array(t('Field Name'),t('Default Title'),t('Hint'),t('Common'),t('Required'),t('Weight'));
+    $header =array(t('Field Name'),t('Default Title'),t('Hint'),t('Common'),t('Required'),t('Auto Complete'),t('Weight'));
 
   }
   
@@ -668,17 +683,18 @@ function biblio_form_types_edit_submit($form_id, $edit) {
                       WHERE fid = %d AND tid = %d";
   }else{
     $field_query = "UPDATE {biblio_fields} SET title = '%s', weight = %d, 
-                    common = %d, required = %d, hint = '%s' WHERE fid = %d";  
+                    common = %d, required = %d, autocomplete = %d, hint = '%s' WHERE fid = %d";  
   }
 
   foreach ($edit['configured_flds'] as $key=>$v){
     $common = ($v['checkboxes']['common'])?TRUE:FALSE;
     $required = ($v['checkboxes']['required'])?TRUE:FALSE;
+    $autocomplete = ($v['checkboxes']['autocomplete'])?TRUE:FALSE;
     if(is_numeric($key) ){
       if($tid && $edit['cust'][$key]){ // is type and not a common field update biblio_type_details
         db_query($type_query, $v['title'],$v['weight'],$v['hint'],$required,$key,$tid);      
       }elseif(!$tid){ // is a common field, update the biblio_field table
-        db_query($field_query, $v['title'],$v['weight'],$common,$required,$v['hint'],$key);
+        db_query($field_query, $v['title'],$v['weight'],$common,$required,$autocomplete,$v['hint'],$key);
       }
     }
  }    
@@ -954,7 +970,7 @@ function biblio_form(&$node, &$param) {
     
     // Now set all the fields to "value" type so the will not be visible, and 
     // then in biblio_pre_render the correct type will be set.
-    foreach ($fields as $key=>$fld){  
+    foreach ($fields as $key=>$fld){
           $form[$fld['name']] = array(
           '#default_value' => $node->$fld['name'],
           '#type' => 'value',
@@ -963,6 +979,7 @@ function biblio_form(&$node, &$param) {
           '#required' => $fld['required'],
           '#maxlength' => $fld['maxsize'],
           '#weight' => $fld['weight']/10,
+          '#autocomplete_path' => ($fld['autocomplete']) ? 'biblio/autocomplete/'.$fld['name'] : '',
           '#description' => $fld['hint']
         );
 
@@ -1124,15 +1141,15 @@ function biblio_view(&$node, $teaser = false, $page = false) {
   drupal_add_css(drupal_get_path('module', 'biblio').'/biblio.css');
 
   $node = node_prepare($node, $teaser);
-  $layout = variable_get('biblio_node_layout', 0);
+  $layout = variable_get('biblio_node_layout', 'orig');
   switch ($layout){
-  case 0:
+  case 'orig':
   default:
     $node->content['biblio'] = array('#value' => theme('biblio_long', $node), '#weight' => -10 );
-    $node->content['body']['#value'] =   ($node->body)?'<h3>'.t('Full Text').':</h3>'.$node->body:"";
+    $node->content['body']['#value'] =   (!empty($node->body))?'<h3>'.t('Full Text').':</h3>'.$node->body:"";
     break;
-  case 1:
-    $node->content['biblio'] = $node->body?array('#value' => '<div class="biblio-head">'.theme('biblio_short', $node).'</div>',
+  case 'ft':
+    $node->content['biblio'] = (!empty($node->body))?array('#value' => '<div class="biblio-head">'.theme('biblio_short', $node).'</div>',
                                                '#weight' => -10 )
                                         :array('#value' => theme('biblio_long', $node),
                             '#weight' => -10 );
@@ -1271,7 +1288,7 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
   global $pager_total_items;
   $base =  variable_get('biblio_base', 'biblio');
   drupal_add_css(drupal_get_path('module', 'biblio').'/biblio.css');
-
+  drupal_set_html_head('<link rel="alternate" type="application/rss+xml" title="'.variable_get('site_name', 'Drupal').' RSS" href="'.url("$base/rss.xml").'" />');
   $pub_types = db_query('SELECT t.* FROM {biblio_types} as t WHERE t.tid>0');
   while ($option = db_fetch_object($pub_types)) {
     $pub_type["$option->tid"] = t('!name',array('!name'=>$option->name));
