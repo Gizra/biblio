@@ -330,25 +330,28 @@ function biblio_menu($may_cache) {
       'type' => MENU_DEFAULT_LOCAL_TASK, 'weight' => -10);
     $items[] = array('path' => 'admin/settings/biblio/import', 'title' => t('File Import'),
       'callback' => 'drupal_get_form', 'callback arguments' => array('biblio_form_import'),
-      'type' => MENU_LOCAL_TASK, 'weight' => -8);  
-    $items[] = array('path' => 'admin/settings/biblio/types', 'title' => t('Type Management'),
+      'type' => MENU_LOCAL_TASK, 'weight' => -7);  
+    $items[] = array('path' => 'admin/settings/biblio/types', 'title' => t('Type Customization'),
       'callback' => 'biblio_form_types',
-      'type' => MENU_LOCAL_TASK, 'weight' => -9);  
-    $items[] = array('path' => 'admin/settings/biblio/types/edit', 'title' => t(''),
+      'type' => MENU_LOCAL_TASK, 'weight' => -8);  
+    $items[] = array('path' => 'admin/settings/biblio/defaults', 'title' => t('Type Defaults'),
       'callback' => 'drupal_get_form', 'callback arguments' => array('biblio_form_types_edit'),
-      'type' => MENU_CALLBACK );  
+      'type' => MENU_LOCAL_TASK , 'weight' => -9);  
     $items[] = array('path' => 'admin/settings/biblio/types/add', 'title' => t(''),
       'callback' => 'drupal_get_form', 'callback arguments' => array('biblio_form_types_add'),
+       'type' => MENU_CALLBACK );  
+    $items[] = array('path' => 'admin/settings/biblio/types/edit', 'title' => t(''),
+      'callback' => 'drupal_get_form', 'callback arguments' => array('biblio_form_types_edit'),
        'type' => MENU_CALLBACK );  
     $items[] = array('path' => 'admin/settings/biblio/types/delete', 'title' => t(''),
       'callback' => 'drupal_get_form', 'callback arguments' => array('biblio_form_types_delete'),
       'type' => MENU_CALLBACK );  
-    $items[] = array('path' => 'admin/settings/biblio/types/new', 'title' => t('New'),
-      'callback' => 'biblio_form_types',
-      'type' => MENU_DEFAULT_LOCAL_TASK, 'weight' => -9);  
-    $items[] = array('path' => 'admin/settings/biblio/types/reset', 'title' => t(''),
+    $items[] = array('path' => 'admin/settings/biblio/types/new', 'title' => t('Add New Type'),
+      'callback' => 'drupal_get_form', 'callback arguments' => array('biblio_form_types_add'),
+      'type' => MENU_LOCAL_TASK, 'weight' => -9);  
+    $items[] = array('path' => 'admin/settings/biblio/types/reset', 'title' => t('Reset all types to defaults '),
       'callback' => 'drupal_get_form', 'callback arguments' => array('biblio_types_reset'),
-      'type' => MENU_CALLBACK );  
+      'type' => MENU_LOCAL_TASK );  
     $items[] = array('path' => 'admin/settings/biblio/types/hide', 'title' => t(''),
       'callback' => 'biblio_types_hide',
       'type' => MENU_CALLBACK );  
@@ -476,7 +479,7 @@ function biblio_form_types_delete_submit($form_id, $edit){
 function biblio_form_types(){
 
   $result = db_query('SELECT t.* FROM {biblio_types as t WHERE t.tid > 0}');
-  $rows[] = array('',t('Fields Common To All Types'),l('edit', 'admin/settings/biblio/types/edit'),'');
+  //$rows[] = array('',t('Fields Common To All Types'),l('edit', 'admin/settings/biblio/types/edit'),'');
 
   while ($row = db_fetch_object($result)) {
     if ($row->tid < 999){
