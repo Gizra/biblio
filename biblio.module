@@ -234,6 +234,20 @@ function biblio_settings() {
     '#options' => _biblio_get_styles(),
     '#description' => t('This alters the layout of the "list" (short) view.'),
   );
+  $form['syndication'] = array(
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#title' => t('Syndication'),
+    '#description' => t('You can set the RSS defaults here.'),
+  );
+  $form['syndication']['biblio_rss'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Allow RSS feeds of new biblio entries'),
+    '#return_value' => 1,
+    '#default_value' => variable_get('biblio_rss', 0),
+    '#description' => t('The will create an rss feed of the 10 most recent biblio entries. It will be available at /biblio/rss.xml'), 
+  );
 
   $form['taxo'] = array(
     '#type' => 'fieldset',
@@ -400,11 +414,13 @@ function biblio_menu($may_cache) {
     $items[] = array('path' => "$base/citekey", 'title' => t(''),
       'callback' => 'biblio_citekey_view',
       'type' => MENU_CALLBACK);
-    $items[] = array('path' => "$base/rss.xml", 'title' => t('RSS feed'),
-      'callback' => 'biblio_feed',
-      'access' => user_access('access content'),
-      'type' => MENU_CALLBACK);
 
+    if (variable_get('biblio_rss', 0)){
+      $items[] = array('path' => "$base/rss.xml", 'title' => t('RSS feed'),
+        'callback' => 'biblio_feed',
+        'access' => user_access('access content'),
+        'type' => MENU_CALLBACK);
+    }
   return $items;
 } 
 function biblio_form_types_add(){
@@ -1184,11 +1200,14 @@ function biblio_block($op = 'list', $delta = 0) {
       $result = db_query_range(db_rewrite_sql("SELECT n.nid, n.title, n.status FROM {node} AS n WHERE n.type = 'biblio' AND n.status=1 ORDER BY n.created DESC"), 0, 4);
       if (db_num_rows($result)) {
         $base =  variable_get('biblio_base', 'biblio');
-        $block['subject'] = t('New Publications'). theme('feed_icon', url("$base/rss.xml"));
+        $block['subject'] = t('New Publications');
         $block['content'] .= '<div class="item-list"><ul>';
         while ($pub = db_fetch_object($result)) {
           $block['content'] .= '<li >' . l("$pub->title", "node/$pub->nid") . '</li>';
-        } 
+        }
+        if (variable_get('biblio_rss', 0)){ 
+          $block['content'] .=  theme('feed_icon', url("$base/rss.xml"));
+        }
         $block['content'] .= '</ul></div>';
       } 
       return $block;
@@ -1291,7 +1310,9 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
   global $pager_total_items;
   $base =  variable_get('biblio_base', 'biblio');
   drupal_add_css(drupal_get_path('module', 'biblio').'/biblio.css');
-  drupal_set_html_head('<link rel="alternate" type="application/rss+xml" title="'.variable_get('site_name', 'Drupal').' RSS" href="'.url("$base/rss.xml").'" />');
+  if(variable_get('biblio_rss', 0)){  
+    drupal_set_html_head('<link rel="alternate" type="application/rss+xml" title="'.variable_get('site_name', 'Drupal').' RSS" href="'.url("$base/rss.xml").'" />');
+  }  
   $pub_types = db_query('SELECT t.* FROM {biblio_types} as t WHERE t.tid>0');
   while ($option = db_fetch_object($pub_types)) {
     $pub_type["$option->tid"] = t('!name',array('!name'=>$option->name));
