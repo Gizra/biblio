@@ -351,7 +351,7 @@ function biblio_menu($may_cache) {
     $items[] = array('path' => 'admin/settings/biblio/types', 'title' => t('Type Customization'),
       'callback' => 'biblio_form_types',
       'type' => MENU_LOCAL_TASK, 'weight' => -8);  
-    $items[] = array('path' => 'admin/settings/biblio/defaults', 'title' => t('Type Defaults'),
+    $items[] = array('path' => 'admin/settings/biblio/defaults', 'title' => t('Field Defaults'),
       'callback' => 'drupal_get_form', 'callback arguments' => array('biblio_form_types_edit'),
       'type' => MENU_LOCAL_TASK , 'weight' => -9);  
     $items[] = array('path' => 'admin/settings/biblio/types/add', 'title' => t(''),
