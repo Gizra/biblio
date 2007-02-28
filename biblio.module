@@ -152,16 +152,19 @@ function biblio_perm() {
 * the rights to edit a node.
 */
 function biblio_link($type, $node = 0, $main) {
-  $links = array();
-
-  if ($type == 'node' && $node->type == 'biblio') {
-    // Don't display a redundant edit link if they are node administrators.
-    if (biblio_access('update', $node) && !user_access('administer nodes')) {
-      $links[] = l(t('edit this entry'), "node/$node->nid/edit");
-    } 
+   $links = array();
+ 
+   if ($type == 'node' && $node->type == 'biblio') {
+     // Don't display a redundant edit link if they are node administrators.
+     if (biblio_access('update', $node) && !user_access('administer nodes')) {
+       $links['biblio_edit'] = array(
+          'title' => t('edit this entry'),
+          'href' => "node/$node->nid/edit",
+        );
+        return $links;
+     }
   } 
-
-  return $links;
+  return;
 } 
 /**
 * Implementation of hook_settings().
