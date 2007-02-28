@@ -1159,33 +1159,19 @@ function biblio_citekey_view(){
 * the output filters.
 */
 function biblio_view(&$node, $teaser = false, $page = false) {
-//print_r($node);
   drupal_add_css(drupal_get_path('module', 'biblio').'/biblio.css');
 
   $node = node_prepare($node, $teaser);
-  $layout = variable_get('biblio_node_layout', 'orig');
-  switch ($layout){
-  case 'orig':
-  default:
-    $node->content['biblio'] = array('#value' => theme('biblio_long', $node), '#weight' => -10 );
-    $node->content['body']['#value'] =   (!empty($node->body))?'<h3>'.t('Full Text').':</h3>'.$node->body:"";
-    break;
-  case 'ft':
-    $node->content['biblio'] = (!empty($node->body))?array('#value' => '<div class="biblio-head">'.theme('biblio_short', $node).'</div>',
-                                               '#weight' => -10 )
-                                        :array('#value' => theme('biblio_long', $node),
-                            '#weight' => -10 );
 
-    break;                                      
-  }
-  $base =  variable_get('biblio_base', 'biblio');
-  drupal_set_breadcrumb(array(l(t('Home'), NULL), l(t($base), $base)));
+  $node->content['body']['#value'] = theme('biblio_long', $node);
 
-return $node;
-//  $biblio_info = theme('biblio_long', $node);
-//  $node->body = $biblio_info . ($node->body?"<br /><br /><B>Full Text:</b><br />".$node->body:"");
-//  $node->teaser .= $biblio_info; 
-  // $node = node_prepare($node, $teaser);
+  if ($page){
+    $base =  variable_get('biblio_base', 'biblio');
+    drupal_set_breadcrumb(array(l(t('Home'), NULL), l(t("!base",array('!base'=>$base)), $base)));
+  }  
+
+  return $node;
+
 } 
 
 /**
@@ -1227,6 +1213,16 @@ function biblio_feed(){
 }
 
 function theme_biblio_long($pub) {
+  
+  $layout = variable_get('biblio_node_layout', 'orig');
+  if (variable_get('biblio_node_layout', 'orig') == 'ft' && $pub->body){
+    $output .= '<div class="biblio-head">'.theme('biblio_short', $pub).'</div>';
+    $output .= check_markup($pub->body,FILTER_HTML_ESCAPE,FALSE) ;
+    if ( biblio_access('export',$pub)) {
+      $output .= theme_biblio_export_links();
+    } 
+    return $output;
+  }
 
   if (variable_get('biblio_normalize', 0)) {
     $authors = check_plain(_biblio_parse_authors($pub->biblio_authors));
@@ -1278,15 +1274,26 @@ function theme_biblio_long($pub) {
   if ($pub->biblio_abst_e) $output .= '<H3>'.t("Abstract").':</h3> ' . check_markup($pub->biblio_abst_e,FILTER_HTML_ESCAPE,FALSE) . "\n";
   if ($pub->biblio_abst_f) $output .= '<p>' . check_markup($pub->biblio_abst_f,FILTER_HTML_ESCAPE,FALSE) . "\n";
   if ($pub->biblio_notes) $output .= '<h3>'.t("Notes").': </h3>' . check_markup($pub->biblio_notes,FILTER_HTML_ESCAPE,FALSE) . "\n";
+  if ($pub->body) $output .= '<h3>'.t('Full Text').':</h3>'.check_markup($pub->body,FILTER_HTML_ESCAPE,FALSE); 
   if ( biblio_access('export',$pub)) {
-    $base =  variable_get('biblio_base', 'biblio');
-    $output .= '<br /><br />Export: ['.l(t("Tagged"),"$base/export/tagged/$pub->nid").']';
-    $output .= '['.l(t("XML"),"$base/export/xml/$pub->nid").']';
-    $output .= '['.l(t("BibTex"),"$base/export/bib/$pub->nid").']<br /><br />';
+    $output .= theme_biblio_export_links();
   } 
 
   return $output;
 } 
+
+function theme_biblio_export_links(){
+//     $output .= '<br /><br />Export: ['.l(t("Tagged"),"$base/export/tagged/$pub->nid").']';
+//     $output .= '['.l(t("XML"),"$base/export/xml/$pub->nid").']';
+//     $output .= '['.l(t("BibTex"),"$base/export/bib/$pub->nid").']<br /><br />';
+  $base =  variable_get('biblio_base', 'biblio');
+  $links .= '<br /><ul class="tabs secondary">';
+  $links .= '<li> '.l(t("Tagged"),"$base/export/tagged/$pub->nid").'</li>';
+  $links .= '<li> '.l(t("XML"),"$base/export/xml/$pub->nid").'</li>';
+  $links .= '<li> '.l(t("BibTex"),"$base/export/bib/$pub->nid").'</li></ul>';
+  
+  return $links;
+}
 
 function theme_biblio_short($pub,$style=null) {
   $style_name = $style ? $sytle : variable_get('biblio_style', 'classic');
