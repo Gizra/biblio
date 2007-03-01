@@ -1212,106 +1212,108 @@ function biblio_feed(){
 
 }
 
-function theme_biblio_long($pub) {
+function theme_biblio_long($node) {
   
   $layout = variable_get('biblio_node_layout', 'orig');
-  if (variable_get('biblio_node_layout', 'orig') == 'ft' && $pub->body){
-    $output .= '<div class="biblio-head">'.theme('biblio_short', $pub).'</div>';
-    $output .= check_markup($pub->body,FILTER_HTML_ESCAPE,FALSE) ;
-    if ( biblio_access('export',$pub)) {
-      $output .= theme_biblio_export_links();
+  if (variable_get('biblio_node_layout', 'orig') == 'ft' && strlen(trim($node->body))){
+    $output .= '<div class="biblio-head">'.theme('biblio_short', $node).'</div>';
+    $output .= check_markup($node->body,FILTER_HTML_ESCAPE,FALSE) ;
+    if ( biblio_access('export',$node)) {
+      $output .= theme_biblio_export_links($node->nid);
     } 
     return $output;
   }
 
   if (variable_get('biblio_normalize', 0)) {
-    $authors = check_plain(_biblio_parse_authors($pub->biblio_authors));
+    $authors = check_plain(_biblio_parse_authors($node->biblio_authors));
   } else {
-    $authors = check_plain($pub->biblio_authors);
+    $authors = check_plain($node->biblio_authors);
   } 
 
   $output .= '<div class="biblio_authors"><H3>'.t("Authors").':</H3> ' . _biblio_author_links($authors) . "</div>\n";
   $output .= '<div class="biblio_source"><H3>'.t("Source").': </H3> ';
   $source = null;
-  if ($pub->biblio_secondary_title) $source .= check_plain($pub->biblio_secondary_title);
-  if ($pub->biblio_publisher) {
+  if ($node->biblio_secondary_title) $source .= check_plain($node->biblio_secondary_title);
+  if ($node->biblio_publisher) {
     $source .= $source?", ":"";
-    $source .= check_plain($pub->biblio_publisher);
+    $source .= check_plain($node->biblio_publisher);
   } 
-  if ($pub->biblio_volume) {
+  if ($node->biblio_volume) {
     $source .= $source?", ":"";
-    $source .= t('Volume ') . check_plain($pub->biblio_volume);
+    $source .= t('Volume ') . check_plain($node->biblio_volume);
   } 
-  if ($pub->biblio_issue) {
+  if ($node->biblio_issue) {
     $source .= $source?", ":"";
-    $source .= t('Issue ') . check_plain($pub->biblio_issue);
+    $source .= t('Issue ') . check_plain($node->biblio_issue);
   } 
-  if ($pub->biblio_number) {
+  if ($node->biblio_number) {
     $source .= $source?", ":"";
-    $source .= t('Number ') . check_plain($pub->biblio_number);
+    $source .= t('Number ') . check_plain($node->biblio_number);
   } 
 
-  if ($pub->biblio_place_published) {
+  if ($node->biblio_place_published) {
     $source .= $source?", ":"";
-    $source .= check_plain($pub->biblio_place_published);
+    $source .= check_plain($node->biblio_place_published);
   } 
-  if ($pub->biblio_pages) {
+  if ($node->biblio_pages) {
     $source .= $source?", ":"";
-    $source .= 'p.' . check_plain($pub->biblio_pages);
+    $source .= 'p.' . check_plain($node->biblio_pages);
   } 
-  if (isset($pub->biblio_year)) {
-    if ($pub->biblio_year == 0) { $pub->biblio_year = t("In Press"); }
-    $source .= ' (' . check_plain($pub->biblio_year) . ')';
+  if (isset($node->biblio_year)) {
+    if ($node->biblio_year == 0) { $node->biblio_year = t("In Press"); }
+    $source .= ' (' . check_plain($node->biblio_year) . ')';
   } 
   $output .= "$source</div>\n";
 
-  if ($pub->biblio_isbn) $output .= '<h3>'.t("ISBN").':</h3> ' . check_plain($pub->biblio_isbn) . "\n";
-  if ($pub->biblio_call_number) $output .= '<h3>'.t("Call Number").':</h3> ' . check_plain($pub->biblio_call_number) . "\n";
-  if ($pub->biblio_accession_number) $output .= '<h3>'.t("Accession Number").':</h3> ' . check_plain($pub->biblio_accession_number) . "\n";
-  if ($pub->biblio_other_number) $output .= '<h3>'.t("Other Number").':</h3> ' . check_plain($pub->biblio_other_number) . "\n";
-  if ($pub->biblio_url) $output .= '<h3>'.t("URL").':</h3>'.l("$pub->biblio_url",$pub->biblio_url) . "\n";
-  if ($pub->biblio_keywords) $output .= '<h3>'.t("Keywords").':</h3> ' . _biblio_keyword_links($pub->biblio_keywords) . "\n";
-  if ($pub->biblio_abst_e) $output .= '<H3>'.t("Abstract").':</h3> ' . check_markup($pub->biblio_abst_e,FILTER_HTML_ESCAPE,FALSE) . "\n";
-  if ($pub->biblio_abst_f) $output .= '<p>' . check_markup($pub->biblio_abst_f,FILTER_HTML_ESCAPE,FALSE) . "\n";
-  if ($pub->biblio_notes) $output .= '<h3>'.t("Notes").': </h3>' . check_markup($pub->biblio_notes,FILTER_HTML_ESCAPE,FALSE) . "\n";
-  if ($pub->body) $output .= '<h3>'.t('Full Text').':</h3>'.check_markup($pub->body,FILTER_HTML_ESCAPE,FALSE); 
-  if ( biblio_access('export',$pub)) {
-    $output .= theme_biblio_export_links();
+  if ($node->biblio_isbn) $output .= '<h3>'.t("ISBN").':</h3> ' . check_plain($node->biblio_isbn) . "\n";
+  if ($node->biblio_call_number) $output .= '<h3>'.t("Call Number").':</h3> ' . check_plain($node->biblio_call_number) . "\n";
+  if ($node->biblio_accession_number) $output .= '<h3>'.t("Accession Number").':</h3> ' . check_plain($node->biblio_accession_number) . "\n";
+  if ($node->biblio_other_number) $output .= '<h3>'.t("Other Number").':</h3> ' . check_plain($node->biblio_other_number) . "\n";
+  if ($node->biblio_url) $output .= '<h3>'.t("URL").':</h3>'.l("$node->biblio_url",$node->biblio_url) . "\n";
+  if ($node->biblio_keywords) $output .= '<h3>'.t("Keywords").':</h3> ' . _biblio_keyword_links($node->biblio_keywords) . "\n";
+  if ($node->biblio_abst_e) $output .= '<H3>'.t("Abstract").':</h3> ' . check_markup($node->biblio_abst_e,FILTER_HTML_ESCAPE,FALSE) . "\n";
+  if ($node->biblio_abst_f) $output .= '<p>' . check_markup($node->biblio_abst_f,FILTER_HTML_ESCAPE,FALSE) . "\n";
+  if ($node->biblio_notes) $output .= '<h3>'.t("Notes").': </h3>' . check_markup($node->biblio_notes,FILTER_HTML_ESCAPE,FALSE) . "\n";
+  if (strlen(trim($node->body))) {
+     $output .= '<h3>'.t('Full Text').':</h3>'.check_markup($node->body,FILTER_HTML_ESCAPE,FALSE);
+  }    
+  if ( biblio_access('export',$node)) {
+    $output .= theme_biblio_export_links($node->nid);
   } 
 
   return $output;
 } 
 
-function theme_biblio_export_links(){
-//     $output .= '<br /><br />Export: ['.l(t("Tagged"),"$base/export/tagged/$pub->nid").']';
-//     $output .= '['.l(t("XML"),"$base/export/xml/$pub->nid").']';
-//     $output .= '['.l(t("BibTex"),"$base/export/bib/$pub->nid").']<br /><br />';
+function theme_biblio_export_links($nid){
+//     $output .= '<br /><br />Export: ['.l(t("Tagged"),"$base/export/tagged/$node->nid").']';
+//     $output .= '['.l(t("XML"),"$base/export/xml/$node->nid").']';
+//     $output .= '['.l(t("BibTex"),"$base/export/bib/$node->nid").']<br /><br />';
   $base =  variable_get('biblio_base', 'biblio');
   $links .= '<br /><ul class="tabs secondary">';
-  $links .= '<li> '.l(t("Tagged"),"$base/export/tagged/$pub->nid").'</li>';
-  $links .= '<li> '.l(t("XML"),"$base/export/xml/$pub->nid").'</li>';
-  $links .= '<li> '.l(t("BibTex"),"$base/export/bib/$pub->nid").'</li></ul>';
+  $links .= '<li> '.l(t("Tagged"),"$base/export/tagged/$nid").'</li>';
+  $links .= '<li> '.l(t("XML"),"$base/export/xml/$nid").'</li>';
+  $links .= '<li> '.l(t("BibTex"),"$base/export/bib/$nid").'</li></ul>';
   
   return $links;
 }
 
-function theme_biblio_short($pub,$style=null) {
+function theme_biblio_short($node,$style=null) {
   $style_name = $style ? $sytle : variable_get('biblio_style', 'classic');
   require_once( drupal_get_path('module', 'biblio') . "/biblio_style_$style_name.inc");
   
   $style_function = "biblio_style_$style_name";
-  return($style_function($pub));
+  return($style_function($node));
 
 }
-function theme_biblio_list($pub,$style=null) {
+function theme_biblio_list($node,$style=null) {
 //  var $output;
-  $output = theme_biblio_short($pub);
-  if ($pub->biblio_abst_e) $output .= l(" Abstract", "node/$pub->nid") . "\n";
-  if ( biblio_access('export',$pub)) {
+  $output = theme_biblio_short($node);
+  if ($node->biblio_abst_e) $output .= l(" Abstract", "node/$node->nid") . "\n";
+  if ( biblio_access('export',$node)) {
     $base =  variable_get('biblio_base', 'biblio');
-    $output .= '<br /><em>Export: '.l("Tagged","$base/export/tagged/$pub->nid") . '&nbsp;';
-    $output .= l("XML","$base/export/xml/$pub->nid") . '&nbsp;';
-    $output .= l("BibTex","$base/export/bib/$pub->nid") . '</em>';
+    $output .= '<br /><em>Export: '.l("Tagged","$base/export/tagged/$node->nid") . '&nbsp;';
+    $output .= l("XML","$base/export/xml/$node->nid") . '&nbsp;';
+    $output .= l("BibTex","$base/export/bib/$node->nid") . '</em>';
   } 
   return $output;
 } 
@@ -1330,7 +1332,7 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
   if(!$inline){
     // Add some links to the top of the page to change the sorting/ordering...
     $order = ($attrib['order'] == "desc" || $attrib['order'] == "DESC")?"asc":"desc";
-    if ( biblio_access('export',$pub)) {
+    if ( biblio_access('export',$node)) {
       $content .= '<div class="biblio_export">'.t('Export').' (' . $pager_total_items[0] . ') '.t('results').':['.l("Tagged","$base/export/tagged"). ']['.l("XML","$base/export/xml"). ']['.l("BibTex","$base/export/bib").']</div>';
     }else{
       $content .= '<div class="biblio_export">'.t('Found ').$pager_total_items[0] . t(' results') .'</div><br>';    
@@ -1358,38 +1360,38 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
       $content .= ($i++ ? t('<em> and</em> <strong>%a</strong> is <strong>%b</strong>', $params) : t('<strong>%a</strong> is <strong>%b</strong>', $params)) . '</li>';
     } 
     $content .= '&nbsp;&nbsp;'.l('['.t('Clear All Filters').']',"$base/filter/clear");
-  } while ($pub = db_fetch_object($result)) {
+  } while ($node = db_fetch_object($result)) {
     switch ($attrib['sort']) {
       case 'title':
-        if ( drupal_substr($pub->title, 0, 1)  != $_char) {
-          $_char = drupal_substr($pub->title, 0, 1) ;
+        if ( drupal_substr($node->title, 0, 1)  != $_char) {
+          $_char = drupal_substr($node->title, 0, 1) ;
           $content .= '<div class="biblio-year">' . $_char . "</div>\n";
         } 
         break;
       case 'author':
-        if ( drupal_substr($pub->author, 0, 1) != $_char) {
-          $_char = drupal_substr($pub->author, 0, 1) ;
+        if ( drupal_substr($node->author, 0, 1) != $_char) {
+          $_char = drupal_substr($node->author, 0, 1) ;
           $content .= '<div class="biblio-year">' . $_char . "</div>\n";
         } 
         break;
       case 'type':
-        if ($pub->biblio_type != $_type) {
-          $_type = $pub->biblio_type;
-          $name = db_result(db_query("SELECT name FROM {biblio_types} as t where t.tid=%d", $pub->biblio_type)) ;
+        if ($node->biblio_type != $_type) {
+          $_type = $node->biblio_type;
+          $name = db_result(db_query("SELECT name FROM {biblio_types} as t where t.tid=%d", $node->biblio_type)) ;
           $content .= '<div class="biblio-year">' . $name . "</div>\n";
         } 
         break;
       case 'year':
       default:
-        if ($pub->biblio_year != $_year) {
-          $_year = $pub->biblio_year;
+        if ($node->biblio_year != $_year) {
+          $_year = $node->biblio_year;
           $content .= '<div class="biblio-year">'
                    .  ((isset($_year) and ($_year == 0)) ? t("In Press")
                                                          : $_year)
                    .  "</div>\n";        } 
     } //end switch
     $content .= '<div class="biblio-entry">' . "\n";
-    $content .= theme('biblio_list', $pub);
+    $content .= theme('biblio_list', $node);
     $content .= "</div>\n";
   } //end while
   $content .= theme('pager', 0, variable_get('biblio_rowsperpage', 25));
