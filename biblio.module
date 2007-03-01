@@ -1215,7 +1215,7 @@ function biblio_feed(){
 function theme_biblio_long($node) {
   
   $layout = variable_get('biblio_node_layout', 'orig');
-  if (variable_get('biblio_node_layout', 'orig') == 'ft' && strlen(trim($node->body))){
+  if (variable_get('biblio_node_layout', 'orig') == 'ft' && strlen(trim($node->body)) && trim($node->body) != '<br />'){
     $output .= '<div class="biblio-head">'.theme('biblio_short', $node).'</div>';
     $output .= check_markup($node->body,FILTER_HTML_ESCAPE,FALSE) ;
     if ( biblio_access('export',$node)) {
@@ -1274,7 +1274,7 @@ function theme_biblio_long($node) {
   if ($node->biblio_abst_e) $output .= '<H3>'.t("Abstract").':</h3> ' . check_markup($node->biblio_abst_e,FILTER_HTML_ESCAPE,FALSE) . "\n";
   if ($node->biblio_abst_f) $output .= '<p>' . check_markup($node->biblio_abst_f,FILTER_HTML_ESCAPE,FALSE) . "\n";
   if ($node->biblio_notes) $output .= '<h3>'.t("Notes").': </h3>' . check_markup($node->biblio_notes,FILTER_HTML_ESCAPE,FALSE) . "\n";
-  if (strlen(trim($node->body))) {
+  if (strlen(trim($node->body)) && trim($node->body) != '<br />' ) {
      $output .= '<h3>'.t('Full Text').':</h3>'.check_markup($node->body,FILTER_HTML_ESCAPE,FALSE);
   }    
   if ( biblio_access('export',$node)) {
@@ -1289,7 +1289,7 @@ function theme_biblio_export_links($nid){
 //     $output .= '['.l(t("XML"),"$base/export/xml/$node->nid").']';
 //     $output .= '['.l(t("BibTex"),"$base/export/bib/$node->nid").']<br /><br />';
   $base =  variable_get('biblio_base', 'biblio');
-  $links .= '<br /><ul class="tabs secondary">';
+  $links .= '<p><ul class="tabs secondary">';
   $links .= '<li> '.l(t("Tagged"),"$base/export/tagged/$nid").'</li>';
   $links .= '<li> '.l(t("XML"),"$base/export/xml/$nid").'</li>';
   $links .= '<li> '.l(t("BibTex"),"$base/export/bib/$nid").'</li></ul>';
