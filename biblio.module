@@ -1215,7 +1215,7 @@ function biblio_feed(){
 function theme_biblio_long($node) {
   
   $layout = variable_get('biblio_node_layout', 'orig');
-  if (variable_get('biblio_node_layout', 'orig') == 'ft' && strlen(trim($node->body)) && trim($node->body) != '<br />'){
+  if (variable_get('biblio_node_layout', 'orig') == 'ft' && strlen(trim($node->body)) && trim($node->body) != '<br />' && trim($node->body) != '<br class="clear" />'){
     $output .= '<div class="biblio-head">'.theme('biblio_short', $node).'</div>';
     $output .= check_markup($node->body,FILTER_HTML_ESCAPE,FALSE) ;
     if ( biblio_access('export',$node)) {
@@ -1274,7 +1274,7 @@ function theme_biblio_long($node) {
   if ($node->biblio_abst_e) $output .= '<H3>'.t("Abstract").':</h3> ' . check_markup($node->biblio_abst_e,FILTER_HTML_ESCAPE,FALSE) . "\n";
   if ($node->biblio_abst_f) $output .= '<p>' . check_markup($node->biblio_abst_f,FILTER_HTML_ESCAPE,FALSE) . "\n";
   if ($node->biblio_notes) $output .= '<h3>'.t("Notes").': </h3>' . check_markup($node->biblio_notes,FILTER_HTML_ESCAPE,FALSE) . "\n";
-  if (strlen(trim($node->body)) && trim($node->body) != '<br />' ) {
+  if (strlen(trim($node->body)) && trim($node->body) != '<br />'  && trim($node->body) != '<br class="clear" />' ) {
      $output .= '<h3>'.t('Full Text').':</h3>'.check_markup($node->body,FILTER_HTML_ESCAPE,FALSE);
   }    
   if ( biblio_access('export',$node)) {
