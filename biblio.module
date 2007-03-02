@@ -1140,7 +1140,8 @@ function biblio_delete($node) {
 function biblio_load($node) {
   $additions = db_fetch_object(db_query('SELECT * FROM {biblio} WHERE vid = %d', $node->vid));
   return $additions;
-} 
+}
+ 
 function biblio_citekey_view(){
   $citekey = arg(2);
   $nid = db_fetch_object(db_query("SELECT nid FROM {biblio} WHERE biblio_citekey = '%s' ORDER BY vid DESC", $citekey));
@@ -1152,6 +1153,27 @@ function biblio_citekey_view(){
   }
 
 }
+
+function biblio_citekey_generate(){
+  
+  $result = db_query("SELECT n.title, b.biblio_citekey, b.biblio_authors, b.biblio_year FROM {node} AS n LEFT JOIN {biblio} AS b ON n.nid = b.nid WHERE n.type = 'biblio' ");
+  while ($node = db_fetch_object($result)) {
+     if (!$node->biblio_citekey){
+       $author_array = explode(";", _biblio_parse_authors($node->biblio_authors));
+       $auth = $author_array[0];
+       if (strstr($auth, ",")) {
+         $parts = split(",", $auth);
+         $lastname = $parts[0];
+       } else {
+         $parts = split(" ", $auth);
+         $lastname = end($parts);
+       } 
+
+     }    
+  }  
+
+}
+
 /**
 * Implementation of hook_view().
 * 
@@ -1161,7 +1183,7 @@ function biblio_citekey_view(){
 function biblio_view(&$node, $teaser = false, $page = false) {
   drupal_add_css(drupal_get_path('module', 'biblio').'/biblio.css');
 
-  $node = node_prepare($node, $teaser);
+  //$node = node_prepare($node, $teaser);
 
   $node->content['body']['#value'] = theme('biblio_long', $node);
 
@@ -1215,7 +1237,7 @@ function biblio_feed(){
 function theme_biblio_long($node) {
   
   $layout = variable_get('biblio_node_layout', 'orig');
-  if (variable_get('biblio_node_layout', 'orig') == 'ft' && strlen(trim($node->body)) && trim($node->body) != '<br />' && trim($node->body) != '<br class="clear" />'){
+  if (variable_get('biblio_node_layout', 'orig') == 'ft' && strlen(trim($node->body)) ){
     $output .= '<div class="biblio-head">'.theme('biblio_short', $node).'</div>';
     $output .= check_markup($node->body,FILTER_HTML_ESCAPE,FALSE) ;
     if ( biblio_access('export',$node)) {
@@ -1274,7 +1296,7 @@ function theme_biblio_long($node) {
   if ($node->biblio_abst_e) $output .= '<H3>'.t("Abstract").':</h3> ' . check_markup($node->biblio_abst_e,FILTER_HTML_ESCAPE,FALSE) . "\n";
   if ($node->biblio_abst_f) $output .= '<p>' . check_markup($node->biblio_abst_f,FILTER_HTML_ESCAPE,FALSE) . "\n";
   if ($node->biblio_notes) $output .= '<h3>'.t("Notes").': </h3>' . check_markup($node->biblio_notes,FILTER_HTML_ESCAPE,FALSE) . "\n";
-  if (strlen(trim($node->body)) && trim($node->body) != '<br />'  && trim($node->body) != '<br class="clear" />' ) {
+  if ( strlen(trim($node->body)) ) {
      $output .= '<h3>'.t('Full Text').':</h3>'.check_markup($node->body,FILTER_HTML_ESCAPE,FALSE);
   }    
   if ( biblio_access('export',$node)) {
@@ -1360,7 +1382,8 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
       $content .= ($i++ ? t('<em> and</em> <strong>%a</strong> is <strong>%b</strong>', $params) : t('<strong>%a</strong> is <strong>%b</strong>', $params)) . '</li>';
     } 
     $content .= '&nbsp;&nbsp;'.l('['.t('Clear All Filters').']',"$base/filter/clear");
-  } while ($node = db_fetch_object($result)) {
+  } 
+  while ($node = db_fetch_object($result)) {
     switch ($attrib['sort']) {
       case 'title':
         if ( drupal_substr($node->title, 0, 1)  != $_char) {
