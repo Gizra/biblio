@@ -197,6 +197,30 @@ function biblio_settings() {
     '#return_value' => 1,
     '#default_value' => variable_get('biblio_view_only_own', 0),
     '#description' => t('This option restricts the users capability to view biblio entries.  They will only be able to see the entries which they have created and own.') );
+  $form['footnotes'] = array(
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#title' => t('Footnotes'),
+    '#description' => t('You can integrate with the '. l('footnotes',url("http://www.drupal.org/project/footnotes",NULL,NULL,TRUE)).' module here.'),
+  );
+  if (!module_exists('footnotes')) {
+    $additional_text = '<div class="admin-dependencies">'.t('Depends on').': '.t('Footnotes').' (<span class="admin-disabled">'.t('disabled').'</span>)</div>';
+    $disabled = TRUE;
+    variable_set('biblio_footnotes_integration',0);
+  }else{
+    $additional_text = '<div class="admin-dependencies">'.t('Depends on').': '.t('Footnotes').' (<span class="admin-enabled">'.t('enabled').'</span>)</div>';
+    $disabled = FALSE;
+
+  }
+  $form['footnotes']['biblio_footnotes_integration'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Integration with the footnotes module') . $additional_text,
+    '#disabled' => $disabled,
+    '#return_value' => 1,
+    '#default_value' => variable_get('biblio_footnotes_integration', 0),
+    '#description' => t('This will convert &lt;bib&gt; tags into &lt;fn&gt; tags.  This will cause intermingled &lt;bib&gt; and &lt;fn&gt; tags to be sequentially numbered.  For this to work, you must put the &lt;bib&gt; filter ahead of the &lt;fn&gt; filter in the filter chain.  If this option is not set, &lt;bib&gt; and &lt;fn&gt; tags will be handled separately.'), 
+  );
   $form['sort'] = array(
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
@@ -249,7 +273,7 @@ function biblio_settings() {
     '#title' => t('Allow RSS feeds of new biblio entries'),
     '#return_value' => 1,
     '#default_value' => variable_get('biblio_rss', 0),
-    '#description' => t('The will create an rss feed of the 10 most recent biblio entries. It will be available at /biblio/rss.xml'), 
+    '#description' => t('This will create an rss feed of the 10 most recent biblio entries. It will be available at /biblio/rss.xml'), 
   );
 
   $form['taxo'] = array(
@@ -1183,7 +1207,7 @@ function biblio_citekey_generate(){
 function biblio_view(&$node, $teaser = false, $page = false) {
   drupal_add_css(drupal_get_path('module', 'biblio').'/biblio.css');
 
-  //$node = node_prepare($node, $teaser);
+  if ( strlen(trim($node->body)) ) $node = node_prepare($node, $teaser);
 
   $node->content['body']['#value'] = theme('biblio_long', $node);
 
@@ -2415,25 +2439,38 @@ function biblio_filter($op, $delta = 0, $format = -1, $text = '') {
          // The actual filtering is performed here. The supplied text should be
          // returned, once any necessary substitutions have taken place.
          case 'process':
-           $text = preg_replace_callback('|<bib>(.*?)</bib>|s', '_biblio_filter_replace_callback', $text);
-           
-           //Replace tag <footnotes> with the list of footnotes.
-           //If tag is not present, by default add the footnotes at the end.
-           //Thanks to acp on drupal.org for this idea. see http://drupal.org/node/87226 
-           $footer = '';
-           $footer = _biblio_filter_replace_callback(NULL, 'output footer');
-           if( preg_match( '/<bibliography(\/( )?)?>/', $text ) > 0 ) {
-             $text = preg_replace('/<bibliography(\/( )?)?>/', $footer, $text, 1);
+          if (variable_get('biblio_footnote_integration', 0))
+          {  // this is used with footnote module integration to replace the <bib> tags with <fn> tags
+             $text = preg_replace_callback('|<bib>(.*?)</bib>|s', '_biblio_filter_footnote_callback', $text);
              return $text;
-           }
-           else {
-             return $text . "\n\n" . $footer;
-           }
+          }else{
+             $text = preg_replace_callback('|<bib>(.*?)</bib>|s', '_biblio_filter_replace_callback', $text);
+             
+             //Replace tag <footnotes> with the list of footnotes.
+             //If tag is not present, by default add the footnotes at the end.
+             //Thanks to acp on drupal.org for this idea. see http://drupal.org/node/87226 
+             $footer = '';
+             $footer = _biblio_filter_replace_callback(NULL, 'output footer');
+             if( preg_match( '/<bibliography(\/( )?)?>/', $text ) > 0 ) {
+               $text = preg_replace('/<bibliography(\/( )?)?>/', $footer, $text, 1);
+               return $text;
+             }
+             else {
+               return $text . "\n\n" . $footer;
+             }
+          }
        }
        break;
    }
 }
  
+function _biblio_filter_footnote_callback( $matches ) {
+   
+  $text = '<fn>' . _biblio_citekey_print($matches[1]) . "</fn>";
+ 
+  return $text;
+ 
+}
  
  /**
   * Helper function called from preg_replace_callback() above
