@@ -185,12 +185,6 @@ function biblio_settings() {
     '#maxlength' => 6,
     '#description' => t('This sets the number of results that will be displayed per page.'),
   );
-  $form['biblio_normalize'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Normalize author names when displaying biblio records'),
-    '#return_value' => 1,
-    '#default_value' => variable_get('biblio_normalize', 0),
-    '#description' => t('Tries (doesn\'t always work) to reformat author names so that they are displayed in the format "Lastname, Initials" e.g. Smith, J.S. (Note: This setting does not modify the entry in the database, it only reformats it\'s presentation. This option can be turned off at any time to diplay the oringal format.)'), );
   $form['biblio_view_only_own'] = array(
     '#type' => 'checkbox',
     '#title' => t('Restrict users such that they can only view their own biblio entries'),
@@ -247,6 +241,12 @@ function biblio_settings() {
     '#title' => t('Styling'),
     '#description' => t('You can set the default style for the /biblio page here.'),
   );
+  $form['style']['biblio_normalize'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Normalize author names when displaying biblio records'),
+    '#return_value' => 1,
+    '#default_value' => variable_get('biblio_normalize', 0),
+    '#description' => t('Tries (doesn\'t always work) to reformat author names so that they are displayed in the format "Lastname, Initials" e.g. Smith, J.S. (Note: This setting does not modify the entry in the database, it only reformats it\'s presentation. This option can be turned off at any time to diplay the oringal format.)'), );
   $form['style']['biblio_node_layout'] = array(
     '#type' => 'radios',
     '#title' => t('Node Layout'),
@@ -2439,7 +2439,7 @@ function biblio_filter($op, $delta = 0, $format = -1, $text = '') {
          // The actual filtering is performed here. The supplied text should be
          // returned, once any necessary substitutions have taken place.
          case 'process':
-          if (variable_get('biblio_footnote_integration', 0))
+          if (variable_get('biblio_footnotes_integration', 0) && module_exists('footnotes'))
           {  // this is used with footnote module integration to replace the <bib> tags with <fn> tags
              $text = preg_replace_callback('|<bib>(.*?)</bib>|s', '_biblio_filter_footnote_callback', $text);
              return $text;
