@@ -133,3 +133,8 @@ a:active {
 	text-decoration: none;
 	text-align: left;
 }
+.biblio-openurl-text{
+	text-align: right;
+	text-decoration: none;
+	float: right;
+}
