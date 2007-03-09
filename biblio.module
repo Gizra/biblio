@@ -215,6 +215,27 @@ function biblio_settings() {
     '#default_value' => variable_get('biblio_footnotes_integration', 0),
     '#description' => t('This will convert &lt;bib&gt; tags into &lt;fn&gt; tags.  This will cause intermingled &lt;bib&gt; and &lt;fn&gt; tags to be sequentially numbered.  For this to work, you must put the &lt;bib&gt; filter ahead of the &lt;fn&gt; filter in the filter chain.  If this option is not set, &lt;bib&gt; and &lt;fn&gt; tags will be handled separately.'), 
   );
+	 $form['openurl'] = array(
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#title' => t('OpenURL'),
+    '#description' => t('You can set an <a href="http://en.wikipedia.org/wiki/OpenURL">openurl</a> link here'),
+  );
+  $form['openurl']['biblio_baseopenurl'] = array(
+    '#type' => 'textfield',
+    '#title' => t('OpenURL Base URL'),
+    '#size' => 95,
+    '#default_value' => variable_get('biblio_baseopenurl', ''),
+    '#description' =>  t('This sets your institution\'s base <a href="http://en.wikipedia.org/wiki/OpenURL">OpenURL</a> gateway, which is used to generate OpenURL links. To implement a "Universal" OpenURL system, try using OCLC\'s <a href="http://www.oclc.org/productworks/urlresolver.htm">OpenURL Resolver Registry</a> gateway: <a href="http://worldcatlibraries.org/registry/gateway">http://worldcatlibraries.org/registry/gateway</a>'),
+  );
+  $form['openurl']['biblio_openurlimage'] = array(
+    '#type' => 'textfield',
+    '#title' => t('OpenURL Image'),
+    '#size' => 95,
+    '#default_value' => variable_get('biblio_openurlimage', ''),
+    '#description' =>  t('Enter a path to your image here'),
+  );	
   $form['sort'] = array(
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
@@ -1276,6 +1297,11 @@ function theme_biblio_long($node) {
     $authors = check_plain($node->biblio_authors);
   } 
 
+  $openurl_base = variable_get('biblio_baseopenurl','');
+  
+  if($openurl_base) $output .= biblio_openurl($node, $openurl_base);
+  
+
   $output .= '<div class="biblio_authors"><H3>'.t("Authors").':</H3> ' . _biblio_author_links($authors) . "</div>\n";
   $output .= '<div class="biblio_source"><H3>'.t("Source").': </H3> ';
   $source = null;
@@ -1352,9 +1378,13 @@ function theme_biblio_short($node,$style=null) {
 
 }
 function theme_biblio_list($node,$style=null) {
-//  var $output;
-  $output = theme_biblio_short($node);
+  
+  $output .= theme_biblio_short($node);
   if ($node->biblio_abst_e) $output .= l(" Abstract", "node/$node->nid") . "\n";
+
+  $openurl_base = variable_get('biblio_baseopenurl','');
+  if($openurl_base) $output .= biblio_openurl($node, $openurl_base);
+
   if ( biblio_access('export',$node)) {
     $base =  variable_get('biblio_base', 'biblio');
     $output .= '<br /><em>Export: '.l("Tagged","$base/export/tagged/$node->nid") . '&nbsp;';
@@ -2535,4 +2565,30 @@ function biblio_taxonomy($op, $type, $array = NULL) {
     
   }  
 
+}
+
+function biblio_openurl($node, $openurl_base) {
+    $openurl = '';
+    $openurl_base .=  '?';
+	
+	$openurl_image .= variable_get('biblio_openurlimage','');
+    if ($node->biblio_type_of_work) $openurl .=  '&genre=' . check_plain($node->biblio_type_of_work);  
+    if ($node->biblio_isbn) $openurl .=  '&issn=' . preg_replace("(-)", "", check_plain($node->biblio_isbn));   
+    if ($node->biblio_secondary_title) $openurl .=  '&title=' . preg_replace("(\s)", "+", check_plain($node->biblio_secondary_title));  
+    if ($node->title) $openurl .=  '&atitle=' . preg_replace("(\s)", "+", check_plain($node->title));   
+    if ($node->biblio_year) $openurl .=  '&year=' . check_plain($node->biblio_year);   
+    if ($node->biblio_volume) $openurl .=  '&volume=' . check_plain($node->biblio_volume);  
+    if ($node->biblio_issue) $openurl .=  '&issue=' . check_plain($node->biblio_issue);  
+    if ($node->biblio_pages) $openurl .=  '&spage=' . preg_replace("(-.*)", "", check_plain($node->biblio_pages)); 
+
+    //trim off the first ampersand
+    $openurl = substr($openurl, 1); 
+	
+	if($openurl_image !='') 
+  {
+    $output .= '<div class="biblio-openurl-image"><a href="'. $openurl_base . $openurl . '"><img border="0" src="' . $openurl_image . '" /></a></div>';
+  } else {
+    $output .= '<div class="biblio-openurl-text"><a href="'. $openurl_base . $openurl . '">'.t('Find It Via OpenURL!').'</a></div>';
+	}
+	return $output;
 }
