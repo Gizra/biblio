@@ -166,6 +166,12 @@ function biblio_link($type, $node = 0, $main) {
   } 
   return;
 } 
+function theme_biblio_coin_button($element) {
+  // Make sure not to overwrite classes.
+
+  return '<a href="/biblio/regen_coins"><input type="button"  name="'.$element['#name'] .'" value="'. $element['#value'] .'"  /></a>';
+}
+
 /**
 * Implementation of hook_settings().
 */
@@ -219,7 +225,7 @@ function biblio_settings() {
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
-    '#title' => t('OpenURL'),
+    '#title' => t('OpenURL / COinS'),
     '#description' => t('You can set an <a href="http://en.wikipedia.org/wiki/OpenURL">openurl</a> link here'),
   );
   $form['openurl']['biblio_baseopenurl'] = array(
@@ -234,7 +240,14 @@ function biblio_settings() {
     '#title' => t('OpenURL Image'),
     '#size' => 95,
     '#default_value' => variable_get('biblio_openurlimage', ''),
-    '#description' =>  t('Enter a path to your image here'),
+    '#description' =>  t('Enter a path to your image here, this image will be used as button which when clicked will find the entry via the OpenURL link'),
+  );	
+  $form['openurl']['biblio_coins'] = array(
+    '#type' => 'button',
+    '#value' => 'Regenerate COinS Data',
+    '#theme' => 'biblio_coin_button',
+    '#description' =>  t('This will rebuild the COinS data for all your biblio entries.'),
+
   );	
   $form['sort'] = array(
     '#type' => 'fieldset',
@@ -430,6 +443,10 @@ function biblio_menu($may_cache) {
   $items[] = array('path' => $base, 'title' => t(''),
       'callback' => 'biblio_db_search',
       'access' => user_access('access content'),
+      'type' => MENU_CALLBACK);
+  $items[] = array('path' => 'biblio/regen_coins', 'title' => t(''),
+      'callback' => 'biblio_coins_generate',
+      'access' => user_access('create biblio'),
       'type' => MENU_CALLBACK);
   $items[] = array('path' => "$base/list", 'title' => t('List'),
       'type' => MENU_DEFAULT_LOCAL_TASK, 'weight' => -10);
@@ -1130,6 +1147,8 @@ function biblio_insert_authors($nid, $authors=array() ){
 function biblio_insert($node) {
   // Prepare the query:
   $fields = biblio_get_db_fields();
+  $node->biblio_coins = biblio_coins($node);
+
   foreach ($node as $key => $value) {
     if (in_array((string) $key, $fields)) {
       $k[] = db_escape_string($key);
@@ -1149,6 +1168,8 @@ function biblio_insert($node) {
 */
 function biblio_update($node) {
   $fields = biblio_get_db_fields();
+  $node->biblio_coins = biblio_coins($node);
+
   foreach ($node as $key => $value) {
     if (in_array($key, $fields) && $key !="0") { //$key != "0" to fix a bug related to book module
       $k[] = db_escape_string($key);
@@ -1280,7 +1301,7 @@ function biblio_feed(){
 }
 
 function theme_biblio_long($node) {
-  
+  $output .= $node->biblio_coins;
   $layout = variable_get('biblio_node_layout', 'orig');
   if (variable_get('biblio_node_layout', 'orig') == 'ft' && strlen(trim($node->body)) ){
     $output .= '<div class="biblio-head">'.theme('biblio_short', $node).'</div>';
@@ -1299,7 +1320,7 @@ function theme_biblio_long($node) {
 
   $openurl_base = variable_get('biblio_baseopenurl','');
   
-  if($openurl_base) $output .= biblio_openurl($node, $openurl_base);
+  if($openurl_base) $output .= theme_biblio_openurl(biblio_openurl($node, $openurl_base));
   
 
   $output .= '<div class="biblio_authors"><H3>'.t("Authors").':</H3> ' . _biblio_author_links($authors) . "</div>\n";
@@ -1374,7 +1395,8 @@ function theme_biblio_short($node,$style=null) {
   require_once( drupal_get_path('module', 'biblio') . "/biblio_style_$style_name.inc");
   
   $style_function = "biblio_style_$style_name";
-  return($style_function($node));
+  $styled_node = $style_function($node);
+  return($styled_node.$node->biblio_coins);
 
 }
 function theme_biblio_list($node,$style=null) {
@@ -1383,7 +1405,7 @@ function theme_biblio_list($node,$style=null) {
   if ($node->biblio_abst_e) $output .= l(" Abstract", "node/$node->nid") . "\n";
 
   $openurl_base = variable_get('biblio_baseopenurl','');
-  if($openurl_base) $output .= biblio_openurl($node, $openurl_base);
+  if($openurl_base) $output .= theme_biblio_openurl(biblio_openurl($node));
 
   if ( biblio_access('export',$node)) {
     $base =  variable_get('biblio_base', 'biblio');
@@ -2205,39 +2227,41 @@ $authors = str_replace(",,", ",", $authors); // ditto
 $chunks = explode(";", $authors); // split the authors on the semicolon
 $num_chunks = count($chunks);
 
-for($i = 0;  $i < count($chunks);  $i++) {
-  $suffix = _biblio_get_suffix($chunks[$i]); // get and strip out the suffix
-  $prefix = _biblio_get_prefix($chunks[$i]); // get and strip out the prefix
-  if (strstr($chunks[$i], ",")) { // we probably have lastname first
-    $subchunks = explode(",", trim($chunks[$i]));
-    $lastname = $subchunks[0];
-    $subchunks = explode(" ", trim($subchunks[1]));
-    $initials = "";
-    for ($j = 0; $j < count($subchunks) ;  $j++) {
-      if (substr_count($subchunks[$j], '.')) {
-        $initials .= $subchunks[$j];
-      } else {
-        $initials .= drupal_substr($subchunks[$j], 0, 1) . ".";
+  for($i = 0;  $i < count($chunks);  $i++) {
+    $suffix = _biblio_get_suffix($chunks[$i]); // get and strip out the suffix
+    $prefix = _biblio_get_prefix($chunks[$i]); // get and strip out the prefix
+    if (strstr($chunks[$i], ",")) { // we probably have lastname first
+      $subchunks = explode(",", trim($chunks[$i]));
+      $lastname = $subchunks[0];
+      $subchunks = explode(" ", trim($subchunks[1]));
+      $initials = "";
+      for ($j = 0; $j < count($subchunks) ;  $j++) {
+        if (substr_count($subchunks[$j], '.')) {
+          $initials .= $subchunks[$j];
+        } else {
+          $initials .= drupal_substr($subchunks[$j], 0, 1) . ".";
+        } 
+      } 
+    } else { // we have some form of firstname first (Fistname I. Lastname)
+      $subchunks = explode(" ", trim($chunks[$i]));
+      $lastname = end($subchunks);
+      $initials = "";
+      for ($j = 0;
+        $j < count($subchunks) - 1 ;
+        $j++) {
+        if (substr_count($subchunks[$j], '.')) {
+          $initials .= $subchunks[$j];
+        } else {
+          $initials .= drupal_substr($subchunks[$j], 0, 1) . ".";
+        } 
       } 
     } 
-  } else { // we have some form of firstname first (Fistname I. Lastname)
-    $subchunks = explode(" ", trim($chunks[$i]));
-    $lastname = end($subchunks);
-    $initials = "";
-    for ($j = 0;
-      $j < count($subchunks) - 1 ;
-      $j++) {
-      if (substr_count($subchunks[$j], '.')) {
-        $initials .= $subchunks[$j];
-      } else {
-        $initials .= drupal_substr($subchunks[$j], 0, 1) . ".";
-      } 
-    } 
-  } 
-  $chunks[$i] = trim($prefix . ' ' . $lastname . ', ' . $initials . ' ' . $suffix);
+    $chunks[$i] = trim($prefix . ' ' . $lastname . ', ' . $initials . ' ' . $suffix);
+  }
+   
+  return implode("; ", $chunks);
 } 
-return implode("; ", $chunks);
-} 
+
 function _biblio_get_suffix(&$name) {
 $suffix = null;
   if (preg_match("/[, \.]+(Jr|Sr|Snr)\.?\s*$/", $name, $match)) {
@@ -2317,10 +2341,10 @@ function _parse_author_array($authorArray)
 		$remainder = join(" ", $author);
 		list($firstname, $initials) = _grabFirstnameInitials($remainder);
 		$surname = $surname . ' ' . $appellation;
-		$creators[] = array('first_name'=> "$firstname", 
-                        'initials'  => "$initials", 
-                        'last_name' => "$surname", 
-                        'prefix'    => "$prefix",
+		$creators[] = array('first_name'=> trim("$firstname"), 
+                        'initials'  => trim("$initials"), 
+                        'last_name' => trim("$surname"), 
+                        'prefix'    => trim("$prefix"),
                         'order'     => "$count");
     $count++;
 	}
@@ -2567,28 +2591,222 @@ function biblio_taxonomy($op, $type, $array = NULL) {
 
 }
 
-function biblio_openurl($node, $openurl_base) {
-    $openurl = '';
-    $openurl_base .=  '?';
-	
-	$openurl_image .= variable_get('biblio_openurlimage','');
-    if ($node->biblio_type_of_work) $openurl .=  '&genre=' . check_plain($node->biblio_type_of_work);  
-    if ($node->biblio_isbn) $openurl .=  '&issn=' . preg_replace("(-)", "", check_plain($node->biblio_isbn));   
-    if ($node->biblio_secondary_title) $openurl .=  '&title=' . preg_replace("(\s)", "+", check_plain($node->biblio_secondary_title));  
-    if ($node->title) $openurl .=  '&atitle=' . preg_replace("(\s)", "+", check_plain($node->title));   
-    if ($node->biblio_year) $openurl .=  '&year=' . check_plain($node->biblio_year);   
-    if ($node->biblio_volume) $openurl .=  '&volume=' . check_plain($node->biblio_volume);  
-    if ($node->biblio_issue) $openurl .=  '&issue=' . check_plain($node->biblio_issue);  
-    if ($node->biblio_pages) $openurl .=  '&spage=' . preg_replace("(-.*)", "", check_plain($node->biblio_pages)); 
-
-    //trim off the first ampersand
-    $openurl = substr($openurl, 1); 
+function theme_biblio_openurl($openURL) {
 	
 	if($openurl_image !='') 
   {
-    $output .= '<div class="biblio-openurl-image"><a href="'. $openurl_base . $openurl . '"><img border="0" src="' . $openurl_image . '" /></a></div>';
+    $output .= '<div class="biblio-openurl-image"><a href="'.  $openURL . '"><img border="0" src="' . $openurl_image . '" /></a></div>';
   } else {
-    $output .= '<div class="biblio-openurl-text"><a href="'. $openurl_base . $openurl . '">'.t('Find It Via OpenURL!').'</a></div>';
-	}
+    $output .= '<div class="biblio-openurl-text"><a href="'.  $openURL . '">'.t('Find It Via OpenURL!').'</a></div>';
+	
+  }
 	return $output;
+}
+
+function biblio_openURL($node) {
+  // Copyright:          Matthias Steffens <mailto:refbase@extracts.de> and the file's
+  //                     original author.
+  // Original Author:    Richard Karnesky <mailto:karnesky@gmail.com>  //
+  // Adapted for biblio: Ron Jerome
+
+//  global $openURLResolver; // these variables are defined in 'ini.inc.php'
+//  global $hostInstitutionAbbrevName;
+  $openURLResolver = variable_get('biblio_baseopenurl','');
+
+  $co = biblio_contextObject($node); 
+  $co["sid"] = "biblio:" . variable_get('site_name', 'Drupal');
+
+  $openURL = $openURLResolver;
+
+  if (!ereg("\?", $openURLResolver))
+    $openURL .= "?";
+  else
+    $openURL .= "&amp;";
+
+  $openURL .= "ctx_ver=Z39.88-2004";
+
+  foreach ($co as $coKey => $coValue) {
+    $coKey = ereg_replace("rft.", "", $coKey);
+    $coKey = ereg_replace("au[0-9]*", "au", $coKey);
+    $openURL .= "&amp;" . $coKey . "=" . rawurlencode($coValue);
+  }
+
+  return $openURL;
+}
+
+function biblio_coins_generate(){
+  
+  $result = db_query("SELECT nr.*, b.*  FROM {node} AS n LEFT JOIN {node_revisions}  AS nr ON n.vid = nr.vid LEFT JOIN {biblio} AS b ON n.vid = b.vid WHERE n.type = 'biblio'  ");
+  while ($node = db_fetch_object($result)) {
+    $node->biblio_coins = biblio_coins($node);
+    db_query("UPDATE {biblio} SET biblio_coins = '%s' WHERE vid = %d",$node->biblio_coins,$node->vid);
+  }
+  drupal_goto('');
+}
+
+function biblio_coins($node) {
+  // Copyright:          Matthias Steffens <mailto:refbase@extracts.de> and the file's
+  //                     original author.
+  // Original Author:    Richard Karnesky <mailto:karnesky@gmail.com>  //
+  // Adapted for biblio: Ron Jerome
+  // fmt_info (type)
+  $fmt = "info:ofi/fmt:kev:mtx:";
+  // 'dissertation' is compatible with the 1.0 spec, but not the 0.1 spec
+  if ($node->biblio_type == 108)
+    $fmt .= "dissertation";
+  elseif ( $node->biblio_type  == 102)
+    $fmt .= "journal";
+  elseif ($node->biblio_type  == 100 || $node->biblio_type  == 101 )
+    $fmt .= "book";
+  // 'dc' (dublin core) is compatible with the 1.0 spec, but not the 0.1 spec.
+  // We default to this, as it is the most generic type.
+  else
+    $fmt .= "dc";
+
+  $co = biblio_contextObject($node); 
+
+  $coins = "ctx_ver=Z39.88-2004" . "&amp;rft_val_fmt=" . urlencode($fmt);
+
+  foreach ($co as $coKey => $coValue) {
+    // 'urlencode()' differs from 'rawurlencode() (i.e., RFC1738 encoding)
+    // in that spaces are encoded as plus (+) signs
+    $coKey = ereg_replace("au[0-9]*", "au", $coKey);
+    $coins .= "&amp;" . $coKey . "=" . urlencode($coValue);
+  }
+
+  $coinsSpan = "<span class=\"Z3988\" title=\"" . $coins . "\"></span>";
+
+  return $coinsSpan;
+}
+
+function biblio_contextObject($node) {
+  // Copyright:          Matthias Steffens <mailto:refbase@extracts.de> and the file's
+  //                     original author.
+  // Original Author:    Richard Karnesky <mailto:karnesky@gmail.com>  //
+  // Adapted for biblio: Ron Jerome 
+  global $base_url;
+ // $openurl_base = variable_get('biblio_baseopenurl','');
+
+  $co = array();
+
+  // rfr_id
+  $co["rfr_id"] = "info:sid/" . ereg_replace("http://", "", $base_url);
+
+  // genre (type)
+  if (isset($node->biblio_type )) {
+    if ($node->biblio_type  == 102 )
+      $co["rft.genre"] = "article";
+    elseif ($node->biblio_type  == 101 )
+      $co["rft.genre"] = "bookitem";
+    elseif ($node->biblio_type  == 100 )
+      $co["rft.genre"] = "book";
+    elseif ($node->biblio_type  == "Journal")
+      $co["rft.genre"] = "journal";
+  }
+
+  // atitle, btitle, title (title, publication)
+  if (($node->biblio_type  == 102) || ($node->biblio_type  == 101)) {
+    if (!empty($node->title ))
+      $co["rft.atitle"] = $node->title ;
+    if (!empty($node->biblio_secondary_title )) {
+      $co["rft.title"] = $node->biblio_secondary_title ;
+      if ($node->biblio_type  == 101)
+        $co["rft.btitle"] = $node->biblio_secondary_title ;
+    }
+  }
+  elseif (!empty($node->title ))
+    $co["rft.title"] = $node->title ;
+  if (($node->biblio_type  == 100) && (!empty($node->title )))
+    $co["rft.btitle"] = $node->title ;
+
+  // stitle (abbrev_journal)
+  if (!empty($node->biblio_short_title ))
+    $co["rft.stitle"] = $node->biblio_short_title ;
+
+  // series (series_title)
+  if (!empty($node->biblio_tertiary_title ))
+    $co["rft.series"] = $node->biblio_tertiary_title ;
+
+  // issn
+  if (!empty($node->issn ))
+    $co["rft.issn"] = $node->issn ;
+
+  // isbn
+  if (!empty($node->biblio_isbn ))
+    $co["rft.isbn"] = $node->biblio_isbn ;
+
+  // date (year)
+  if (!empty($node->biblio_year ))
+    $co["rft.date"] = $node->biblio_year ;
+
+  // volume
+  if (!empty($node->biblio_volume ))
+    $co["rft.volume"] = $node->biblio_volume ;
+
+  // issue
+  if (!empty($node->biblio_issue ))
+    $co["rft.issue"] = $node->biblio_issue ;
+
+  // spage, epage, tpages (pages)
+  // NOTE: lifted from modsxml.inc.php--should throw some into a new include file
+  if (!empty($node->biblio_pages )) {
+    if (ereg("[0-9] *- *[0-9]", $node->biblio_pages )) {
+      list($pagestart, $pageend) = preg_split('/\s*[-]\s*/', $node->biblio_pages );
+      if ($pagestart < $pageend) {
+        $co["rft.spage"] = $pagestart;
+        $co["rft.epage"] = $pageend;
+      }
+    }
+    elseif ($node->biblio_type  == 100) {//"Book Whole") {
+      $pagetotal = preg_replace('/^(\d+)\s*pp?\.?$/', "\\1", $node->biblio_pages );
+      $co["rft.tpages"] = $pagetotal;
+    }
+    else
+      $co["rft.spage"] = $node->biblio_pages ;
+  }
+
+  // aulast, aufirst, author (author)
+  if (!empty($node->biblio_authors )) {
+    $author_array = explode(";", $node->biblio_authors );
+     $creators = _parse_author_array($author_array);
+//     print_r($creators);
+    if (!empty($creators[0]['last_name']))
+      $co["rft.aulast"] = $creators[0]['last_name'];
+    if (!empty($creators[0]['first_name'])){
+      $co["rft.aufirst"] = $creators[0]['first_name'];
+    }elseif (!empty($creators[0]['initials'])){
+      $co["rft.aufirst"] = $creators[0]['initials'];    
+    }
+    // TODO: cleanup and put this function in include.inc.php?
+    $authorcount = count($creators);
+    for ($i=1; $i < $authorcount; $i++){
+      if (!empty($creators[$i]['last_name'])) {
+        $au = $creators[$i]['last_name'];
+        if (!empty($creators[$i]['first_name']) ||!empty($creators[$i]['initials']))
+          $au .= ", ";
+      }
+      if (!empty($creators[$i]['first_name'])){
+        $au .= $creators[$i]['first_name'];
+      } elseif (!empty($creators[$i]['initials'])){
+        $au .=  $creators[$i]['initials'];    
+      }
+      if (!empty($au))
+        $co["rft.au".$i] = $au;
+    }
+  }
+
+  // pub (publisher)
+  if (!empty($node->biblio_publisher ))
+    $co["rft.pub"] = $node->biblio_publisher ;
+
+  // place
+  if (!empty($node->biblio_place_published ))
+    $co["rft.place"] = $node->biblio_place_published ;
+
+  // id (doi, url)
+  if (!empty($node->biblio_doi ))
+    $co["rft_id"] = "info:doi/" . $node->biblio_doi ;
+  elseif (!empty($node->biblio_url ))
+    $co["rft_id"] = $node->biblio_url ;
+  return $co;
 }
