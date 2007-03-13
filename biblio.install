@@ -38,12 +38,14 @@ function biblio_install() {
         `biblio_pages` varchar(128) default NULL,
         `biblio_date` varchar(16) default NULL,
         `biblio_isbn` varchar(24) default NULL,
+        `biblio_issn` varchar(24) default NULL,
         `biblio_lang` varchar(24) default 'eng',
         `biblio_abst_e` text,
         `biblio_abst_f` text,
         `biblio_full_text` tinyint(4) default '0',
         `biblio_keywords` varchar(255) default NULL,
         `biblio_url` varchar(255) default NULL,
+        `biblio_doi` varchar(100) default NULL,
         `biblio_issue` varchar(10) default NULL,
         `biblio_type_of_work` varchar(255) default NULL,
         `biblio_accession_number` varchar(24) default NULL,
@@ -104,7 +106,7 @@ function biblio_install() {
        (5,'biblio_secondary_title','Secondary Title',0,'textfield',60,255,'',0,0,1,12),
        (6,'biblio_tertiary_title','Tertiary Title',0,'textfield',60,255,'',0,0,1,13),
        (7,'biblio_accession_number','Accession Number',1,'textfield',24,24,'',0,0,0,151),
-       (8,'biblio_isbn','ISBN/ISSN Number',1,'textfield',24,24,'',0,0,0,150),
+       (8,'biblio_isbn','ISBN Number',1,'textfield',24,24,'',0,0,0,150),
        (9,'biblio_call_number','Call Number',1,'textfield',24,24,'',0,0,0,152),
        (10,'biblio_other_number','Other Numbers',1,'textfield',10,24,'',0,0,0,153),
        (11,'biblio_other_author_affiliations','Other Author Affiliations',0,'textfield',60,255,'',0,0,0,24),
@@ -143,7 +145,11 @@ function biblio_install() {
        (40,'biblio_original_publication','Original Publication',0,'textfield',60,255,'',0,0,0,171),
        (41,'biblio_reprint_edition','Reprint Edition',0,'textfield',120,255,'',0,0,0,172),
        (42,'biblio_section','Section',0,'textfield',10,10,'',0,0,0,15),
-       (43,'biblio_citekey','Citation Key',0,'textfield',16,16,'',0,0,1,175);");
+       (43,'biblio_citekey','Citation Key',0,'textfield',16,16,'',0,0,1,175),
+       (44,'biblio_coins','COinS Data',1,'textarea',60,65535 ,'This will be automatically generated, only edit if you know what you are doing.',0,0,0,176),
+       (45,'biblio_issn','ISSN Number',1,'textfield',24,24,'',0,0,0,150),
+       (46,'biblio_doi','DOI',1,'textfield',60,255,'',0,0,0,159),
+       ;");
 
 
       $result[] = db_query("CREATE TABLE {biblio_types} (
@@ -512,9 +518,13 @@ $result = array();
 }
 function biblio_update_11(){
 $result = array();
-  $result[] = update_sql("UPDATE {biblio} SET vid = nid ");
-  $result[] = update_sql("UPDATE {node} SET vid = nid WHERE type = 'biblio' ");
-
+      $nodes = db_query("SELECT * FROM {node} as n WHERE n.type='biblio' ");
+      while ($node = db_fetch_object($nodes)) {
+         $node->vid = db_next_id('{node_revisions}_vid');
+         $result[] = update_sql("UPDATE {node} SET vid = $node->vid WHERE nid = $node->nid;");
+         $result[] = update_sql("UPDATE {node_revisions} SET vid = $node->vid WHERE nid = $node->nid;");
+         $result[] = update_sql("UPDATE {biblio} SET vid = $node->vid WHERE nid = $node->nid;");
+      }
   return $result;
 }
 function biblio_update_12(){
@@ -572,4 +582,23 @@ $result = array();
   $result[] = update_sql("ALTER TABLE {biblio_fields}  ADD  `autocomplete` tinyint(1) NOT NULL default '0' ;");
   return $result;
 }
+function biblio_update_20(){
+$result = array();
+  $result[] = update_sql("ALTER TABLE {biblio}  ADD  `biblio_coins` text   ;");
+  $result[] = update_sql("INSERT INTO {biblio_fields} (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`autocomplete`,`weight`) VALUES 
+       (44,'biblio_coins','COinS Data',1,'textarea',60,65535 ,'This will be automatically generated, only edit if you know what you are doing.',0,0,0,176);");
+  return $result;
+}
+function biblio_update_21(){
+$result = array(); 
+
+  $result[] = update_sql("ALTER TABLE {biblio}  ADD  `biblio_doi` varchar(100) default NULL;");
+  $result[] = update_sql("ALTER TABLE {biblio}  ADD  `biblio_issn` varchar(24) default NULL;");
+  $result[] = update_sql("INSERT INTO {biblio_fields} (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`autocomplete`,`weight`) VALUES 
+                        (45,'biblio_issn','ISSN Number',1,'textfield',24,24,'',0,0,0,150),
+                        (46,'biblio_doi','DOI',1,'textfield',60,255,'',0,0,0,159);");
+  $result[] = update_sql("UPDATE {biblio_fields}  SET  title = 'ISBN Number' WHERE name = 'biblio_isbn';");
+  return $result;
+}
+       
 
