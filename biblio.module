@@ -225,7 +225,7 @@ function biblio_settings() {
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
-    '#title' => t('OpenURL / COinS'),
+    '#title' => t('OpenURL'),
     '#description' => t('You can set an <a href="http://en.wikipedia.org/wiki/OpenURL">openurl</a> link here'),
   );
   $form['openurl']['biblio_baseopenurl'] = array(
@@ -241,13 +241,6 @@ function biblio_settings() {
     '#size' => 95,
     '#default_value' => variable_get('biblio_openurlimage', ''),
     '#description' =>  t('Enter a path to your image here, this image will be used as button which when clicked will find the entry via the OpenURL link'),
-  );	
-  $form['openurl']['biblio_coins'] = array(
-    '#type' => 'button',
-    '#value' => 'Regenerate COinS Data',
-    '#theme' => 'biblio_coin_button',
-    '#description' =>  t('This will rebuild the COinS data for all your biblio entries.'),
-
   );	
   $form['sort'] = array(
     '#type' => 'fieldset',
@@ -443,10 +436,6 @@ function biblio_menu($may_cache) {
   $items[] = array('path' => $base, 'title' => t(''),
       'callback' => 'biblio_db_search',
       'access' => user_access('access content'),
-      'type' => MENU_CALLBACK);
-  $items[] = array('path' => 'biblio/regen_coins', 'title' => t(''),
-      'callback' => 'biblio_coins_generate',
-      'access' => user_access('create biblio'),
       'type' => MENU_CALLBACK);
   $items[] = array('path' => "$base/list", 'title' => t('List'),
       'type' => MENU_DEFAULT_LOCAL_TASK, 'weight' => -10);
@@ -1301,6 +1290,8 @@ function biblio_feed(){
 }
 
 function theme_biblio_long($node) {
+  
+  if(empty($node->biblio_coins)) biblio_coins_generate($node);
   $output .= $node->biblio_coins;
   $layout = variable_get('biblio_node_layout', 'orig');
   if (variable_get('biblio_node_layout', 'orig') == 'ft' && strlen(trim($node->body)) ){
@@ -1396,6 +1387,7 @@ function theme_biblio_short($node,$style=null) {
   
   $style_function = "biblio_style_$style_name";
   $styled_node = $style_function($node);
+  if(empty($node->biblio_coins)) biblio_coins_generate($node);
   return($styled_node.$node->biblio_coins);
 
 }
@@ -2634,14 +2626,20 @@ function biblio_openURL($node) {
   return $openURL;
 }
 
-function biblio_coins_generate(){
+function biblio_coins_generate(&$node=null){
+
+  if($node){
+      $node->biblio_coins = biblio_coins($node);
+      db_query("UPDATE {biblio} SET biblio_coins = '%s' WHERE vid = %d",$node->biblio_coins,$node->vid);
   
-  $result = db_query("SELECT nr.*, b.*  FROM {node} AS n LEFT JOIN {node_revisions}  AS nr ON n.vid = nr.vid LEFT JOIN {biblio} AS b ON n.vid = b.vid WHERE n.type = 'biblio'  ");
-  while ($node = db_fetch_object($result)) {
-    $node->biblio_coins = biblio_coins($node);
-    db_query("UPDATE {biblio} SET biblio_coins = '%s' WHERE vid = %d",$node->biblio_coins,$node->vid);
+  }else{  
+    $result = db_query("SELECT nr.*, b.*  FROM {node} AS n LEFT JOIN {node_revisions}  AS nr ON n.vid = nr.vid LEFT JOIN {biblio} AS b ON n.vid = b.vid WHERE n.type = 'biblio'  ");
+    while ($node = db_fetch_object($result)) {
+      $node->biblio_coins = biblio_coins($node);
+      db_query("UPDATE {biblio} SET biblio_coins = '%s' WHERE vid = %d",$node->biblio_coins,$node->vid);
+    }
+    drupal_goto('');
   }
-  drupal_goto('');
 }
 
 function biblio_coins($node) {
@@ -2728,8 +2726,8 @@ function biblio_contextObject($node) {
     $co["rft.series"] = $node->biblio_tertiary_title ;
 
   // issn
-  if (!empty($node->issn ))
-    $co["rft.issn"] = $node->issn ;
+  if (!empty($node->biblio_issn ))
+    $co["rft.issn"] = $node->biblio_issn ;
 
   // isbn
   if (!empty($node->biblio_isbn ))
