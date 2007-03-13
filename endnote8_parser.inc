@@ -387,12 +387,12 @@ global  $node_array,$node_id, $element, $contributors,   $dates, $urls;
     case 'url':
       switch ($urls){
         case 'web-urls':
-          $node_array[$node_id]['biblio_url'] .= $data;
-          break;
+        case 'related-urls':
         case 'pdf-urls':
         case 'text-urls':
-        case 'related-urls':
         case 'image-urls':
+          $node_array[$node_id]['biblio_url'] .= $data;
+          break;
       }
       break;
     case 'access-date': 
