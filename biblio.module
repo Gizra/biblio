@@ -2626,7 +2626,7 @@ function biblio_openURL($node) {
   return $openURL;
 }
 
-function biblio_coins_generate(&$node=null){
+function biblio_coins_generate(&$node){
 
   if($node){
       $node->biblio_coins = biblio_coins($node);
