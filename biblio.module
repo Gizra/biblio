@@ -1236,8 +1236,7 @@ function biblio_citekey_generate(){
 * the output filters.
 */
 function biblio_view(&$node, $teaser = false, $page = false) {
-  drupal_add_css(drupal_get_path('module', 'biblio').'/biblio.css');
-
+  theme('biblio_add_css');
   if ( strlen(trim($node->body)) ) $node = node_prepare($node, $teaser);
 
   $node->content['body']['#value'] = theme('biblio_long', $node);
@@ -1298,7 +1297,7 @@ function theme_biblio_long($node) {
     $output .= '<div class="biblio-head">'.theme('biblio_short', $node).'</div>';
     $output .= check_markup($node->body,FILTER_HTML_ESCAPE,FALSE) ;
     if ( biblio_access('export',$node)) {
-      $output .= theme_biblio_export_links($node->nid);
+      $output .= theme('biblio_export_links',$node->nid);
     } 
     return $output;
   }
@@ -1311,7 +1310,7 @@ function theme_biblio_long($node) {
 
   $openurl_base = variable_get('biblio_baseopenurl','');
   
-  if($openurl_base) $output .= theme_biblio_openurl(biblio_openurl($node, $openurl_base));
+  if($openurl_base) $output .= theme('biblio_openurl',biblio_openurl($node, $openurl_base));
   
 
   $output .= '<div class="biblio_authors"><H3>'.t("Authors").':</H3> ' . _biblio_author_links($authors) . "</div>\n";
@@ -1362,7 +1361,7 @@ function theme_biblio_long($node) {
      $output .= '<h3>'.t('Full Text').':</h3>'.check_markup($node->body,FILTER_HTML_ESCAPE,FALSE);
   }    
   if ( biblio_access('export',$node)) {
-    $output .= theme_biblio_export_links($node->nid);
+    $output .= theme('biblio_export_links',$node->nid);
   } 
 
   return $output;
@@ -1393,11 +1392,11 @@ function theme_biblio_short($node,$style=null) {
 }
 function theme_biblio_list($node,$style=null) {
   
-  $output .= theme_biblio_short($node);
+  $output .= theme('biblio_short',$node);
   if ($node->biblio_abst_e) $output .= l(" Abstract", "node/$node->nid") . "\n";
 
   $openurl_base = variable_get('biblio_baseopenurl','');
-  if($openurl_base) $output .= theme_biblio_openurl(biblio_openurl($node));
+  if($openurl_base) $output .= theme('biblio_openurl',biblio_openurl($node));
 
   if ( biblio_access('export',$node)) {
     $base =  variable_get('biblio_base', 'biblio');
@@ -1408,10 +1407,14 @@ function theme_biblio_list($node,$style=null) {
   return $output;
 } 
 
+function theme_biblio_add_css(){
+  drupal_add_css(drupal_get_path('module', 'biblio').'/biblio.css');
+}
+
 function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' => 'DESC'), $args = null,$inline=false) {
   global $pager_total_items;
   $base =  variable_get('biblio_base', 'biblio');
-  drupal_add_css(drupal_get_path('module', 'biblio').'/biblio.css');
+  theme('biblio_add_css');
   if(variable_get('biblio_rss', 0)){  
     drupal_set_html_head('<link rel="alternate" type="application/rss+xml" title="'.variable_get('site_name', 'Drupal').' RSS" href="'.url("$base/rss.xml").'" />');
   }  
@@ -2530,7 +2533,7 @@ function _biblio_filter_replace_callback( $matches, $op = '' ) {
    $str = '';
    
    if( $op == 'output footer' ) {
-     drupal_add_css(drupal_get_path('module', 'biblio').'/biblio.css');
+     theme('biblio_add_css');     
      if( $n > 0 ) {
        $str = '<p><hr /><p><h3>'.t('References').'</h3>';
        $str .= '<div class="references"><ol>';
