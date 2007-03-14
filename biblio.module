@@ -1382,7 +1382,7 @@ function theme_biblio_export_links($nid){
 }
 
 function theme_biblio_short($node,$style=null) {
-  $style_name = $style ? $sytle : variable_get('biblio_style', 'classic');
+  $style_name = $style ? $style : variable_get('biblio_style', 'classic');
   require_once( drupal_get_path('module', 'biblio') . "/biblio_style_$style_name.inc");
   
   $style_function = "biblio_style_$style_name";
