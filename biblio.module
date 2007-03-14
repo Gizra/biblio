@@ -143,7 +143,7 @@ function biblio_access($op, $node) {
 * to allow users to edit the nodes they created.
 */
 function biblio_perm() {
-  return array('create biblio', 'edit own biblio entries', 'import from file','show export links','show filter tab','show sort links');
+  return array('create biblio', 'edit own biblio entries', 'import from file','show export links','show filter tab','show sort links', 'view full text');
 } 
 /**
 * Implementation of hook_link().
@@ -1294,7 +1294,7 @@ function theme_biblio_long($node) {
   if(empty($node->biblio_coins)) biblio_coins_generate($node);
   $output .= $node->biblio_coins;
   $layout = variable_get('biblio_node_layout', 'orig');
-  if (variable_get('biblio_node_layout', 'orig') == 'ft' && strlen(trim($node->body)) ){
+  if (variable_get('biblio_node_layout', 'orig') == 'ft' && strlen(trim($node->body)) && user_access('view full text') ){
     $output .= '<div class="biblio-head">'.theme('biblio_short', $node).'</div>';
     $output .= check_markup($node->body,FILTER_HTML_ESCAPE,FALSE) ;
     if ( biblio_access('export',$node)) {
@@ -1358,7 +1358,7 @@ function theme_biblio_long($node) {
   if ($node->biblio_abst_e) $output .= '<H3>'.t("Abstract").':</h3> ' . check_markup($node->biblio_abst_e,FILTER_HTML_ESCAPE,FALSE) . "\n";
   if ($node->biblio_abst_f) $output .= '<p>' . check_markup($node->biblio_abst_f,FILTER_HTML_ESCAPE,FALSE) . "\n";
   if ($node->biblio_notes) $output .= '<h3>'.t("Notes").': </h3>' . check_markup($node->biblio_notes,FILTER_HTML_ESCAPE,FALSE) . "\n";
-  if ( strlen(trim($node->body)) ) {
+  if ( strlen(trim($node->body)) && user_access('view full text') ) {
      $output .= '<h3>'.t('Full Text').':</h3>'.check_markup($node->body,FILTER_HTML_ESCAPE,FALSE);
   }    
   if ( biblio_access('export',$node)) {
