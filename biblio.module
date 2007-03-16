@@ -1428,7 +1428,7 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
     if ( biblio_access('export',$node)) {
       $content .= '<div class="biblio_export">'.t('Export').' (' . $pager_total_items[0] . ') '.t('results').':['.l("Tagged","$base/export/tagged"). ']['.l("XML","$base/export/xml"). ']['.l("BibTex","$base/export/bib").']</div>';
     }else{
-      $content .= '<div class="biblio_export">'.t('Found ').$pager_total_items[0] . t(' results') .'</div><br>';    
+      $content .= '<div class="biblio_export">'.t('Found ').$pager_total_items[0] . t(' results') .'</div><br />';    
     }
     if(user_access('show sort links')){
       $sort_attr = array("title"=>t("Click a second time to reverse the sort order"));
@@ -2535,7 +2535,7 @@ function _biblio_filter_replace_callback( $matches, $op = '' ) {
    if( $op == 'output footer' ) {
      theme('biblio_add_css');     
      if( $n > 0 ) {
-       $str = '<p><hr /><p><h3>'.t('References').'</h3>';
+       $str = '<p><hr /><p><h3>'.t('References').'</h3></p>';
        $str .= '<div class="references"><ol>';
        for( $m = 1; $m <= $n; $m++ ){
          $str .= '<li id="reference' . $m . '">' . _biblio_citekey_print($store_matches[ $m - 1 ]) . " </li>\n\n";
