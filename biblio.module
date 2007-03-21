@@ -1557,23 +1557,32 @@ $join = array();
     while ($arg_list) {
       $type = $arg_list[0];
       array_shift($arg_list);
+      $operator = ($operator)?$operator:" AND "; //defaults to AND
       switch ($type) {
+        case 'and':
+          $operator = " AND ";
+          break;
+        case 'or':
+          $operator = " OR ";
+          break;
         case 'inline':
           $inline = true;
           break;
         case 'author':
           $term = explode("?",$arg_list[0]);
           array_shift($arg_list);
-          $limit .= " AND MATCH(b.biblio_authors) AGAINST('%s')";
+          $limit .= $operator."MATCH(b.biblio_authors) AGAINST('%s'  IN BOOLEAN MODE)";
           $terms[] = db_escape_string($term[0]);
           array_push($args, $type, $term[0]);
+          $operator = NULL;
           break;
         case 'publisher':
           $term = explode("?",$arg_list[0]);
           array_shift($arg_list);
-          $limit .= " AND MATCH(b.biblio_publisher) AGAINST('%s')";
+          $limit .= $operator."MATCH(b.biblio_publisher) AGAINST('%s'  IN BOOLEAN MODE)";
           $terms[] = db_escape_string($term[0]);
           array_push($args, $type, $term[0]);
+          $operator = NULL;
           break;
         case 'year':
           $term = db_escape_string($arg_list[0]);
@@ -1582,20 +1591,23 @@ $join = array();
           //$limit .= " AND b.biblio_year=%d ";
           $terms[] = (int)$term;
           array_push($args, $type, (int)$term);
+          $operator = NULL;
           break;
         case 'keyword':
           $term = explode("?",$arg_list[0]);
           array_shift($arg_list);
-          $limit .= " AND MATCH(b.biblio_keywords) AGAINST('%s')";
+          $limit .= $operator."MATCH(b.biblio_keywords) AGAINST('%s'  IN BOOLEAN MODE)";
           $terms[] = db_escape_string($term[0]);
           array_push($args, $type, $term[0]);
+          $operator = NULL;
           break;
         case 'type':
           $term = db_escape_string($arg_list[0]);
           array_shift($arg_list);
-          $limit .= " AND b.biblio_type=%d ";
+          $limit .= $operator. "b.biblio_type=%d ";
           $terms[] = (int)$term;
           array_push($args, $type, (int)$term);
+          $operator = NULL;
           break;
         case 'order':
           $term = (db_escape_string($arg_list[0]) == 'desc')?'desc':'asc';
@@ -1891,38 +1903,33 @@ function biblio_form_import() {
       $vocabularies = module_invoke('taxonomy', 'get_vocabularies', 'biblio');
 
       // ... and print a form to select the terms in each of them
-      if (count($vocabularies)){
-          $form['import_taxonomy'] = array(
-            '#type' => 'fieldset',
-            '#collapsible' => TRUE,
-            '#collapsed' => FALSE,
-            '#title' => t('Taxonomy Settings'),
-            '#description' => t('You can select terms to assign to imported records and allow the mapping of keywords to taxonomy'),
-          );
+      $form['import_taxonomy'] = array(
+        '#type' => 'fieldset',
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE,
+        '#title' => t('Taxonomy Settings'),
+        '#description' => t('Here you may select terms to be assigned to imported records (if any vocabularoes are assigned to the biblio node type)'),
+      );
 
+      if (count($vocabularies)){
         $i=0;
         foreach ($vocabularies as $vocabulary) {
           $form['import_taxonomy']['vocabulary'.$i] = module_invoke('taxonomy', 'form', $vocabulary->vid, 0);     
           $form['import_taxonomy']['vocabulary'.$i++]['#description'] = t("Select taxonomy term to assigned to imported entries");
         }
-        
-        if (variable_get('biblio_keyword_freetagging', 0)){
-          $freetag_vocab = module_invoke('taxonomy', 'get_vocabulary', variable_get('biblio_freetagging_vocab', 0));
-          $msg = t('Keywords will be added to the').' "<b>'.$freetag_vocab->name.'</b>" '.t('vocabulary as specified ').l(t('on the settings page.'),'admin/settings/biblio');
-        }else{
-          $msg = t('Keywords will').' <b>'.t('NOT').'</b> '.t('be added to the vocabulary as specified ').l(t('on the settings page.'),'admin/settings/biblio');
-        } 
-        $form['import_taxonomy']['freetagging_information'] = array('#value' => '<div>'.$msg.'</div>');
-        
-        
-       /*   $form['import_taxonomy']['keywordmap'] = array(
-            '#type' => 'checkbox',
-            '#title' => t('Use keywords for free tagging.'),
-            '#return_value' => 1,
-            '#default_value' => variable_get('biblio_keywordmap', 0),
-            '#description' => t('Selecting this checkbox will cause the keywords, if any, to be used for free tagging'), );
-      */
+      }else{
+        $vocab_msg = t('There are currently no vocabularies assigned to the biblio node type, please go the the ').l(t('admin/taxonomy'),'admin/taxonomy').t(' page to fix this');
+        $form['import_taxonomy']['vocabulary_message'] = array('#value' => '<p><div>'.$vocab_msg.'</div></p>');
       }      
+        
+      if (variable_get('biblio_keyword_freetagging', 0)){
+        $freetag_vocab = module_invoke('taxonomy', 'get_vocabulary', variable_get('biblio_freetagging_vocab', 0));
+        $msg = t('Keywords will be added to the').' "<b>'.$freetag_vocab->name.'</b>" '.t('vocabulary as specified in the Taxonomy section of the ').l(t('admin/settings/biblio'),'admin/settings/biblio').t(' page.');
+      }else{
+        $msg = t('Keywords will').' <b>'.t('NOT').'</b> '.t('be added to the vocabulary as specified in the Taxonomy section of the ').l(t('admin/settings/biblio'),'admin/settings/biblio').t(' page.');
+      } 
+      $form['import_taxonomy']['freetagging_information'] = array('#value' => '<p><div>'.$msg.'</div></p>');
+        
       
       $form['button'] = array(
         '#type' => 'submit',
@@ -2380,7 +2387,7 @@ function _grabSurname($input)
 		else
 			$surname[] = $value;
 	}
-	$surname = join(" ", $surname);
+	if(isset($surname)) $surname = join(" ", $surname);
 	if(isset($prefix))
 	{
 		$prefix = join(" ", $prefix);
