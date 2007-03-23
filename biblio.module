@@ -151,7 +151,7 @@ function biblio_perm() {
 * This is implemented so that an edit link is displayed for users who have
 * the rights to edit a node.
 */
-function biblio_link($type, $node = 0, $main) {
+function biblio_link($type, $node = NULL, $teaser = FALSE) {
    $links = array();
  
    if ($type == 'node' && $node->type == 'biblio') {
@@ -632,7 +632,7 @@ function biblio_form_types_edit(){
   $vis_comm = $tid?'visible':'common';
   if (!$tid) $options["$vis_comm"] = '';
   $options['required'] = '';
-  $options['autocomplete'] = '';
+  if (!$tid) $options['autocomplete'] = '';
 
   foreach($fields as $key=>$fld){
     if ($fld['common']) $def_values[$fld['name']][] = 'common';
@@ -1971,7 +1971,7 @@ function biblio_form_import_submit($form_id, $form_values) {
         $terms = array();
         foreach (array_keys($form_values) as $key) {
           if (preg_match('/(vocabulary[0-9]+)/', $key)){
-            $terms[] = $form_values[$key];
+            if ($form_values[$key] > 0) $terms[] = $form_values[$key];
           }
         }
         // Added the $terms argument
