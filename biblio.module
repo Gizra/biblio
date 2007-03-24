@@ -1182,7 +1182,6 @@ function biblio_update($node) {
 */
 function biblio_delete($node) {
   db_query('DELETE FROM {biblio} WHERE nid = %d', $node->nid);
-  db_query('DELETE FROM {biblio_has_author} WHERE nid = %d', $node->nid);
 } 
 
 /**
@@ -1463,8 +1462,8 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
         } 
         break;
       case 'author':
-        if ( drupal_substr($node->author, 0, 1) != $_char) {
-          $_char = drupal_substr($node->author, 0, 1) ;
+        if ( drupal_substr(drupal_ucfirst(ltrim($node->biblio_authors)), 0, 1) != $_char) {
+          $_char = drupal_substr(drupal_ucfirst(ltrim($node->biblio_authors)), 0, 1) ;
           $content .= '<div class="biblio-year">' . $_char . "</div>\n";
         } 
         break;
@@ -1531,11 +1530,12 @@ $join = array();
       $sortby = "ORDER BY SUBSTRING(n.title,1,1) %s, b.biblio_year DESC ";
       break;
     case 'author':
-      $join[] = "inner join {biblio_has_author} as ha on a.aid = ha.aid"; 
+      /*$join[] = "inner join {biblio_has_author} as ha on a.aid = ha.aid"; 
       $join[] = "inner join  {biblio_author_index} as a on b.nid= ha.nid";
       $sortby = " ORDER BY a.author %s ";
       $where[] = "ha.rank = 1 ";
-      //$sortby = "ORDER BY SUBSTRING(LTRIM(b.biblio_authors),1,1) %s, b.biblio_year DESC ";
+      */
+      $sortby = "ORDER BY SUBSTRING(LTRIM(b.biblio_authors),1,1) %s, b.biblio_year DESC ";
       break;
     case 'year':
     default:
@@ -1549,6 +1549,7 @@ $join = array();
   
   $numargs = func_num_args();
   $arg_list = func_get_args();
+
   foreach ($session as $filter) {
     $arg_list = array_merge($arg_list, $filter);
   } 
@@ -1567,6 +1568,15 @@ $join = array();
           break;
         case 'inline':
           $inline = true;
+          break;
+        case 'term':
+          $term = explode("?",$arg_list[0]);
+          array_shift($arg_list);
+          $join[] = "inner join {term_node} as tn on n.nid = tn.nid"; 
+          $join[] = "inner join  {term_data} as td on tn.tid= td.tid";
+          $where[] = "td.name = '%s' ";
+          $terms[] = db_escape_string($term[0]);
+          array_push($args, $type, $term[0]);
           break;
         case 'author':
           $term = explode("?",$arg_list[0]);
