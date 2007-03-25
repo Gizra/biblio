@@ -21,91 +21,169 @@ function en8_XMLout($result){
 >
 <!ELEMENT rec-number (#PCDATA)>
 */
-    switch ((int) $rec->biblio_type) {
-      case 8: // Journal Article
-      case 11:
-      case 15:
-      case 16:
-      case 17: 
-      case 18:
-      case 22:
-      case 24:
-      case 29:
-      case 30: 
-      case 33:
-        $node_array[$node_id]['biblio_type'] = 1;
+    switch ((int) $data) {
+//      case 8: // Journal Article
+//      case 11:
+//      case 15:
+//      case 16:
+//      case 17: 
+//      case 18:
+//      case 22:
+//      case 24:
+//      case 29:
+//      case 30: 
+      case 102:
+        $type = 8;
+        $node_array[$node_id]['biblio_type'] = 102;
         break;
-      case 32: // Thesis
-        $node_array[$node_id]['biblio_type'] = 7;
+      case 100: // Book 
+        $type = 6;
+       // $node_array[$node_id]['biblio_type'] = 100;
         break;
-      case 10: // Conference Proceeding
-        $node_array[$node_id]['biblio_type'] = 2;
+      case 101: // Book Section
+        $type = 5;
+        //$node_array[$node_id]['biblio_type'] = 101;
         break;
-      case 5: // Book Section
-        $node_array[$node_id]['biblio_type'] = 6;
+      case 103: // conference_paper
+        $type = 49;
+       // $node_array[$node_id]['biblio_type'] = 103;
         break;
-      case 27: // Report
-        $node_array[$node_id]['biblio_type'] = 5;
+      case 103: // Conference Proceeding
+        $type = 47;
+        //$node_array[$node_id]['biblio_type'] = 103;
         break;
-      case 25: // Patent
-        $node_array[$node_id]['biblio_type'] = 8;
+      case 104: // proceedings_article
+        $type = 10;
+        //$node_array[$node_id]['biblio_type'] = 104;
         break;
+      case 105: // newspaper_article
+        $type = 23;
+       // $node_array[$node_id]['biblio_type'] = 105;
+        break;
+      case 106: // magazine_article
+        $type = 19;
+       // $node_array[$node_id]['biblio_type'] = 106;
+        break;
+      case 107: // web_article
+        $type = 12;
+       // $node_array[$node_id]['biblio_type'] = 107;
+        break;
+      case 108: // Thesis
+        $type = 32;
+        //$node_array[$node_id]['biblio_type'] = 108;
+        break;
+      case 109: // Report
+        $type = 27;
+        //$node_array[$node_id]['biblio_type'] = 109;
+        break;
+      case 110: // film
+        $type = 21;
+        //$node_array[$node_id]['biblio_type'] = 110;
+        break;
+      case 111: // broadcast
+        $type = 21;
+        //$node_array[$node_id]['biblio_type'] = 111;
+        break;
+      case 112: // artwork
+        $type = 2;
+        //$node_array[$node_id]['biblio_type'] = 112;
+        break;
+      case 113: // software
+        $type = 9;
+        //$node_array[$node_id]['biblio_type'] = 113;
+        break;
+      case 115: // hearing
+        $type = 14;
+        //$node_array[$node_id]['biblio_type'] = 115;
+        break;
+      case 116: // case
+        $type = 7;
+        //$node_array[$node_id]['biblio_type'] = 116;
+        break;
+      case 117: // bill
+        $type = 4;
+        //$node_array[$node_id]['biblio_type'] = 117;
+        break;
+      case 118: // statute
+        $type = 31;
+        //$node_array[$node_id]['biblio_type'] = 118;
+        break;
+      case 119: // patent
+        $type = 25;
+        //$node_array[$node_id]['biblio_type'] = 119;
+        break;
+      case 120: // personal
+        $type = 26;
+        //$node_array[$node_id]['biblio_type'] = 120;
+        break;
+      case 121: // manuscript
+        $type = 36;
+        //$node_array[$node_id]['biblio_type'] = 121;
+        break;
+      case 122: // map
+        $type = 20;
+        //$node_array[$node_id]['biblio_type'] = 122;
+        break;
+      case 123: // chart
+        $type = 38;
+        //$node_array[$node_id]['biblio_type'] = 123;
+        break;
+      case 124: // unpublished
+        $type = 34;
+        //$node_array[$node_id]['biblio_type'] = 124;
+        break;
+      case 125: // database
+        $type = 45;
+        //$node_array[$node_id]['biblio_type'] = 125;
+        break;
+      case 126: // government_report
+        $type = 46;
+        //$node_array[$node_id]['biblio_type'] = 126;
+        break;
+      case 128: // legal_ruling
+       $type = 50;
+       //$node_array[$node_id]['biblio_type'] = 128;
+        break;
+      case 129: // miscellaneous
+        $type = 13;
+        $node_array[$node_id]['biblio_type'] = 129;
+        break;
+//      case 10: // Conference Proceeding
+        //$node_array[$node_id]['biblio_type'] = 2;
+ //       break;
       default:
-         $node_array[$node_id]['biblio_type'] = 9;
+        $type = 13;
          break;     
- /*
- 				'book'			=>	6,
-				'book_article'		=>	5,
-				'journal_article'	=>	8, // also 11, 15, 16, 17, 18, 22, 24, 29, 30, 33
-				'newspaper_article'	=>	23,
-				'magazine_article'	=>	19,
-				'proceedings_article'	=>	10,
-				'thesis'		=>	32,
-				'web_article'	=>	12,
-				'film'			=>	21,
-				'broadcast'		=>	21,
-				'artwork'		=>	2,
-				'software'		=>	9,
-				'audiovisual'	=>	3,
-				'report'		=>	27,
-				'hearing'		=>	14,
-				'case'			=>	7,
-				'bill'			=>	4,
-				'statute'		=>	31,
-				'patent'		=>	25,
-				'personal'		=>	26,
-				'manuscript'	=>	36,
-				'map'			=>	20,
-				'chart'			=>	38,
-				'unpublished'	=>	34,
-				'database'		=>	45,
-				'government_report'	=>	46,
-				'conference_paper'	=>	47,
-				'classical'		=>	49,
-				'legal_ruling'	=>	50,
-				'miscellaneous'	=>	13, // Generic
-				'miscellaneous_section'	=>	13, // Generic
 
- */       
     } 
 
-  $xml .= '<ref-type name=" ">  </ref-type>';
+
+  $xml .= '<ref-type name=" ">'.$type.'</ref-type>';
 //<!-- Author information -->
   $xml .= '<contributors>';
   $xml .= '<authors>';
-  $xml .= '<author><style face="normal" font="default" size="100%">';
-  $xml .= ; // insert author here.
-  $xml .= '</style></author> ';    
+  $author_array = explode(";", $rec->biblio_authors);
+    foreach($author_array as $auth) {
+      $xml .= '<author><style face="normal" font="default" size="100%">';
+      $xml .= trim($auth); // insert author here.
+      $xml .= '</style></author> '; 
+    } 
   $xml .= '</authors>';
+  $author_array = explode(";", $rec->biblio_secondary_authors);
   $xml .= '<secondary-authors>';
-  $xml .= '<author><style face="normal" font="default" size="100%">';
-  $xml .= ; // insert author here.
-  $xml .= '</style></author> ';    
+    foreach($author_array as $auth) {
+      $xml .= '<author><style face="normal" font="default" size="100%">';
+      $xml .= trim($auth); // insert author here.
+      $xml .= '</style></author> '; 
+    } 
   $xml .= '</secondary-authors>';
+  $author_array = explode(";", $rec->biblio_tertiary_authors);
   $xml .= '<tertiary-authors>';
-  $xml .= '<author><style face="normal" font="default" size="100%">';
-  $xml .= ; // insert author here.
-  $xml .= '</style></author> ';    
+    foreach($author_array as $auth) {
+      $xml .= '<author><style face="normal" font="default" size="100%">';
+      $xml .= trim($auth); // insert author here.
+      $xml .= '</style></author> '; 
+    } 
   $xml .= '</tertiary-authors>';
   $xml .= '<subsidiary-authors>';
   $xml .= '<author><style face="normal" font="default" size="100%">';
