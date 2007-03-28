@@ -1570,11 +1570,16 @@ $join = array();
           $inline = true;
           break;
         case 'term':
+        case 'term_id':
           $term = explode("?",$arg_list[0]);
           array_shift($arg_list);
-          $join[] = "inner join {term_node} as tn on n.nid = tn.nid"; 
-          $join[] = "inner join  {term_data} as td on tn.tid= td.tid";
-          $where[] = "td.name = '%s' ";
+          $join[] = "inner join {term_node} as tn on n.nid = tn.nid";
+          if ($type == 'term'){
+            $join[] = "inner join  {term_data} as td on tn.tid= td.tid";
+            $where[] = "td.name = '%s' ";
+          }elseif ($type == 'term_id'){
+            $where[] = "tn.tid = '%d' ";          
+          }  
           $terms[] = db_escape_string($term[0]);
           array_push($args, $type, $term[0]);
           break;
