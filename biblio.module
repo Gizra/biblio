@@ -1922,7 +1922,7 @@ function biblio_form_import() {
         '#collapsible' => TRUE,
         '#collapsed' => TRUE,
         '#title' => t('Taxonomy Settings'),
-        '#description' => t('Here you may select terms to be assigned to imported records (if any vocabularoes are assigned to the biblio node type)'),
+        '#description' => t('Here you may select terms to be assigned to imported records (if any vocabularies are assigned to the biblio node type)'),
       );
 
       if (count($vocabularies)){
