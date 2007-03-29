@@ -341,7 +341,6 @@ function biblio_settings() {
     );
 
   }
-  menu_rebuild();
 
   return system_settings_form($form);
 } 
