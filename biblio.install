@@ -337,17 +337,23 @@ function biblio_uninstall(){
   db_query("DROP TABLE {biblio_type_details} ");
   db_query("DROP TABLE {biblio_author_index} ");
   db_query("DROP TABLE {biblio_has_author} ");
-  variable_del('biblio_base');
-  variable_del('biblio_normalize');
-  variable_del('biblio_order');
-  variable_del('biblio_rowsperpage');
-  variable_del('biblio_sort');
-  variable_del('biblio_style');
-  variable_del('biblio_view_only_own');
-  variable_del('biblio_max_user_tid');
-  variable_del('biblio_ai_last_nid');
-  variable_del('biblio_keyword_freetagging');
-  variable_del('biblio_freetagging_vocab');
+  variable_del('biblio_base');                    
+  variable_del('biblio_baseopenurl');             
+  variable_del('biblio_footnotes_integration');   
+  variable_del('biblio_freetagging_vocab');       
+  variable_del('biblio_keyword_freetagging');     
+  variable_del('biblio_links_target_new_window'); 
+  variable_del('biblio_max_user_tid');            
+  variable_del('biblio_node_layout');             
+  variable_del('biblio_normalize');               
+  variable_del('biblio_openurlimage');            
+  variable_del('biblio_order');                   
+  variable_del('biblio_rowsperpage');             
+  variable_del('biblio_rss');                     
+  variable_del('biblio_rss_number_of_entries');   
+  variable_del('biblio_sort');                    
+  variable_del('biblio_style');                   
+  variable_del('biblio_view_only_own');           
 }
 
 function biblio_update_1() {
