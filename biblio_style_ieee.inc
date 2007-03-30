@@ -10,6 +10,8 @@ function biblio_style_ieee_info(){
 
 function biblio_style_ieee($pub){
 
+  $attrib = (variable_get('biblio_links_target_new_window',null)) ? array('target'=>'_blank') : null;
+
   if (variable_get('biblio_normalize', 0)) {
     $authors = _biblio_parse_authors(check_plain($pub->biblio_authors));
   } else {
@@ -21,11 +23,11 @@ function biblio_style_ieee($pub){
         default:
 
           if ($pub->biblio_secondary_title) {
-            $output .=  '<span class="biblio-title">&quot;' .l("$pub->title", "node/$pub->nid") . "&quot;, </span> \n";
+            $output .=  '<span class="biblio-title">&quot;' .l("$pub->title", "node/$pub->nid",$attrib) . "&quot;, </span> \n";
             $output .= '<i>'.check_plain($pub->biblio_secondary_title).'</i>';
 
           } else {
-            $output .=  '<span class="biblio-title"><i>' .l("$pub->title", "node/$pub->nid") . ", </i></span> \n";
+            $output .=  '<span class="biblio-title"><i>' .l("$pub->title", "node/$pub->nid", $attrib) . ", </i></span> \n";
           }
 
           if ($pub->biblio_edition) $output .= ', ' . check_plain($pub->biblio_edition);

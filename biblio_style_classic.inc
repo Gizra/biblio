@@ -1,4 +1,5 @@
 <?PHP
+// $Id$
 function biblio_style_classic_info(){
 
     return array('classic'=>'Classic - This is the original biblio style');
@@ -6,12 +7,14 @@ function biblio_style_classic_info(){
 }
 
 function biblio_style_classic($pub){
+  $attrib = (variable_get('biblio_links_target_new_window',null)) ? array('target'=>'_blank') : null;
+
   if (variable_get('biblio_normalize', 0)) {
     $authors = check_plain(_biblio_parse_authors($pub->biblio_authors));
   } else {
     $authors = check_plain($pub->biblio_authors);
   } 
-  $output .=  l($pub->title, "node/$pub->nid") . "</span> \n";
+  $output .=  l($pub->title, "node/$pub->nid",$attrib) . "</span> \n";
   $output .=  _biblio_author_links($authors) . "</span> \n";
   if ($pub->biblio_secondary_title) {
     $output .= ', ' . check_plain($pub->biblio_secondary_title);
