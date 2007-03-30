@@ -274,6 +274,12 @@ function biblio_settings() {
     '#return_value' => 1,
     '#default_value' => variable_get('biblio_normalize', 0),
     '#description' => t('Tries (doesn\'t always work) to reformat author names so that they are displayed in the format "Lastname, Initials" e.g. Smith, J.S. (Note: This setting does not modify the entry in the database, it only reformats it\'s presentation. This option can be turned off at any time to diplay the oringal format.)'), );
+  $form['style']['biblio_links_target_new_window'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Links open in new browser'),
+    '#return_value' => 1,
+    '#default_value' => variable_get('biblio_links_target_new_window', 0),
+    '#description' => t('This causes the Author and Title links to open in a new browser window') );
   $form['style']['biblio_node_layout'] = array(
     '#type' => 'radios',
     '#title' => t('Node Layout'),
@@ -301,6 +307,14 @@ function biblio_settings() {
     '#return_value' => 1,
     '#default_value' => variable_get('biblio_rss', 0),
     '#description' => t('This will create an rss feed of the 10 most recent biblio entries. It will be available at /biblio/rss.xml'), 
+  );
+  $form['syndication']['biblio_rss_number_of_entries'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Number of items in the RSS feed.'),
+    '#default_value' => variable_get('biblio_rss_number_of_entries', 10),
+    '#size' => 6,
+    '#maxlength' => 6,
+    '#description' => t('Limits the number of items in the /biblio/rss.xml feed to this number.'),
   );
 
   $form['taxo'] = array(
@@ -1280,7 +1294,7 @@ function biblio_block($op = 'list', $delta = 0) {
 
 function biblio_feed(){
       
-  $result = db_query_range(db_rewrite_sql("SELECT * FROM {node} AS n left join {biblio} b  on n.vid=b.vid WHERE n.type = 'biblio' AND n.status=1 ORDER BY n.created DESC"), 0, 6);
+  $result = db_query_range(db_rewrite_sql("SELECT * FROM {node} AS n left join {biblio} b  on n.vid=b.vid WHERE n.type = 'biblio' AND n.status=1 ORDER BY n.created DESC"), 0, variable_get('biblio_rss_number_of_entries',10));
   $channel['title'] = variable_get('site_name', 'Drupal') .' - '. t("New Publications");
   node_feed($result, $channel);
 
@@ -1585,7 +1599,8 @@ $join = array();
         case 'author':
           $term = explode("?",$arg_list[0]);
           array_shift($arg_list);
-          $limit .= $operator."MATCH(b.biblio_authors) AGAINST('%s'  IN BOOLEAN MODE)";
+          //$limit .= $operator."MATCH(b.biblio_authors) AGAINST('%s'  IN BOOLEAN MODE)";
+          $where[] = "(b.biblio_authors) RLIKE '%s' ";
           $terms[] = db_escape_string($term[0]);
           array_push($args, $type, $term[0]);
           $operator = NULL;
@@ -1593,7 +1608,8 @@ $join = array();
         case 'publisher':
           $term = explode("?",$arg_list[0]);
           array_shift($arg_list);
-          $limit .= $operator."MATCH(b.biblio_publisher) AGAINST('%s'  IN BOOLEAN MODE)";
+          //$limit .= $operator."MATCH(b.biblio_publisher) AGAINST('%s'  IN BOOLEAN MODE)";
+          $where[] = "{b.biblio_publisher} RLIKE '%s' ";
           $terms[] = db_escape_string($term[0]);
           array_push($args, $type, $term[0]);
           $operator = NULL;
@@ -1610,7 +1626,8 @@ $join = array();
         case 'keyword':
           $term = explode("?",$arg_list[0]);
           array_shift($arg_list);
-          $limit .= $operator."MATCH(b.biblio_keywords) AGAINST('%s'  IN BOOLEAN MODE)";
+          //$limit .= $operator."MATCH(b.biblio_keywords) AGAINST('%s'  IN BOOLEAN MODE)";
+          $where[] = "{b.biblio_keywords} RLIKE '%s' ";
           $terms[] = db_escape_string($term[0]);
           array_push($args, $type, $term[0]);
           $operator = NULL;
@@ -2131,13 +2148,15 @@ function biblio_get_db_fields() {
   return $fields ;
 } 
 function _biblio_author_links($author) {
-$attr = null;
+$query = null;
+$attrib = (variable_get('biblio_links_target_new_window',null)) ? array('target'=>'_blank') : null;
+
 if (isset($_GET['sort'])) {
-  $attr .= "sort=" . $_GET['sort'];
+  $query  .= "sort=" . $_GET['sort'];
 } 
 if (isset($_GET['order'])) {
-  $attr .= $attr?"&":"";
-  $attr .= "order=" . $_GET['order'];
+  $query  .= $query ?"&":"";
+  $query  .= "order=" . $_GET['order'];
 } 
 
 $html = "";
@@ -2154,7 +2173,7 @@ foreach($author_array as $auth) {
   } 
   // list($lastname, $init) = split(",", $auth);
   $base =  variable_get('biblio_base', 'biblio');
-  $html .= l(trim($auth), "$base/author/" . trim($lastname),null, $attr);
+  $html .= l(trim($auth), "$base/author/" . trim($lastname),$attrib, $query );
 } 
 return $html;
 } 
