@@ -1,0 +1,31 @@
+<?php
+// $Id$
+
+function biblio_views_info() {
+  return array('biblio_views' => array(
+                    'name' => t('Biblio Views'), 
+                    'module' => 'biblio_views',
+                    'description' => t('Provides the Views module with information from the Biblio module.')));
+}
+function biblio_views_views_tables() {
+  
+  $table = views_new_table('biblio', 'internal', 'node', 'vid', 'vid');
+  $result = db_query('SELECT name,title FROM {biblio_fields} ');
+  while ($field = db_fetch_array($result)){
+    views_table_add_field($table, $field['name'], "Biblio: ".$field['title'], "test", array(
+      'sortable' => true,
+      'handler' => 'views_handler_biblio_field',
+      'notafield' => false,
+    ));
+  }
+
+  $tables['biblio'] = $table;
+  $table = views_new_table('biblio_types', 'internal', 'biblio', 'tid', 'tid');
+  $tables['biblio_types'] = $table;
+  return $tables;
+}
+function views_handler_biblio_field($fieldinfo, $fielddata, $value, $data){
+
+print_r($fieldinfo, $fielddata, $value, $data);die;
+
+}

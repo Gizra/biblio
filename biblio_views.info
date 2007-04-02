@@ -1,0 +1,5 @@
+; $Id$
+name = Biblio Views
+description = Provides the Views module with information from the Biblio module.
+
+package = 

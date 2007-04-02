@@ -1,0 +1,301 @@
+<?php
+// $Id$ 
+/* Originaly written for Drupal 4.6 by yecarrillo
+   Ported to Drupal 5 and integrated with biblio by R. Jerome
+*/
+/**
+ * @file
+ * Lets users search metadata in z39.50 compliant servers.
+ */
+function biblio_z3950_node_info() {
+  return array('biblio_z3950' => array(
+                    'name' => t('biblio_z3950'), 
+                    'module' => 'biblio_z3950',
+                    'description' => t('Lets users search metadata in z39.50 compliant servers.')));
+}
+
+/**
+ *  Implementation of hook_menu()
+ */
+function biblio_z3950_menu($may_cache) {
+    $items[] = array('path' => 'admin/settings/biblio/z3950', 'title' => t('Z39.50'),
+      'callback' => 'drupal_get_form', 'callback arguments' => array('biblio_z3950_settings'),
+      'type' => MENU_LOCAL_TASK, 'weight' => -1);  
+  
+    $items[] = array('path' => 'biblio/z3950' ,
+                     'title' => '',
+                     'access' => user_access('search in z3950 servers'),
+                     'type' => MENU_HIDDEN_ITEM,
+                     'callback' => '_biblio_z3950_get');
+
+  return $items;
+}
+
+
+/**
+ * Implementation of hook_help().
+ */
+function biblio_z3950_help($section) {
+
+  switch ($section) {
+    case 'admin/help#z3950':
+      return t('');
+    case 'admin/modules#description':
+      return t('Lets users search metadata in z39.50 compliant servers.');  
+    case 'admin/settings/z3950':
+      return t('<p>This module implements the %Z3950 Protocol for Information Retrieval using PHP interface to the %YAZ. With this module you can easily search or scan Z39.50 targets (servers) in parallel using the standard Drupal search api and present the results.</p>', array('%Z3950' => l('z39.50', 'http://www.loc.gov/z3950/agency/'), '%YAZ' => l('YAZ toolkit','http://www.indexdata.dk/yaz/')));
+    case 'user/help#z3950':
+      return t('');
+  }
+}
+
+
+/**
+ * Implementation of hook_settings().
+ */
+function biblio_z3950_perm() {
+  return array('search in z3950 servers');
+}
+
+
+/**
+ * Implementation of hook_settings().
+ */
+function biblio_z3950_settings() {
+  
+  // Check if Php Yaz module is loaded
+  if (!function_exists('yaz_connect')) {
+  //  form_set_error('z3950_zurls', t('You must compile Php with %YAZ and enable this module in %phpini file.', array('%YAZ' => l('YAZ','http://www.php.net/ref.yaz'), 'phpini' => l('php.ini', 'http://www.php.net/configuration#configuration.file'))));  
+    watchdog('php', t('Yaz extension not loaded. Yaz module couldn\'t be used for metadata searches.'), WATCHDOG_WARNING);
+  } 
+
+  $form['z3950_zurls'] = array(
+    '#type'  => 'textarea',
+    '#title' => t('z39.50 zURLs'),
+    '#rows'  => 5,
+    '#default_value' => variable_get('z3950_zurls', ''),
+    '#description' =>  t('Valid zURLs to perform searches of metadata. Add one zURL per row.') . '<br />' . t('zURL is a string that takes the form host[:port][/database]. If port is omitted, port 210 is used. If database is omitted Default is used.'),
+  );
+  $options =  array(
+  '1.2.840.10003.5.1' => 'Unimarc',
+  '1.2.840.10003.5.2' => 'Intermarc',
+  '1.2.840.10003.5.3' => 'CCF',
+  '1.2.840.10003.5.10' => 'Marc21',
+  '1.2.840.10003.5.10.1' => 'USMARC bibliographic',
+  '1.2.840.10003.5.10.2' => 'USMARC authority',
+  '1.2.840.10003.5.10.3' => 'USMARC holdings',
+  '1.2.840.10003.5.10.4' => 'USMARC community information',
+  '1.2.840.10003.5.10.5' => 'USMARC classification',
+  '1.2.840.10003.5.11' => 'UKmarc',
+  '1.2.840.10003.5.12' => 'Normarc',
+  '1.2.840.10003.5.13' => 'Librismarc',
+  '1.2.840.10003.5.14' => 'Danmarc',
+  '1.2.840.10003.5.15' => 'Finmarc',
+  '1.2.840.10003.5.16' => 'MAB',
+  '1.2.840.10003.5.17' => 'Canmarc',
+  '1.2.840.10003.5.18' => 'SBN',
+  '1.2.840.10003.5.19' => 'Picamarc',
+  '1.2.840.10003.5.20' => 'Ausmarc',
+  '1.2.840.10003.5.21' => 'Ibermarc',
+  '1.2.840.10003.5.22' => 'Catmarc',
+  '1.2.840.10003.5.23' => 'Malmarc',
+  '1.2.840.10003.5.24' => 'JPmarc',
+  '1.2.840.10003.5.25' => 'SWEMarc',
+  '1.2.840.10003.5.26' => 'SIGLEmarc',
+  '1.2.840.10003.5.27' => 'ISDS/ ISSNmarc',
+  '1.2.840.10003.5.28' => 'RUSMarc',
+  '1.2.840.10003.5.29' => 'Hunmarc',
+  '1.2.840.10003.5.30' => 'NACSIS-CATP',
+  '1.2.840.10003.5.31' => 'FINMARC2000',
+  '1.2.840.10003.5.32' => 'MARC21-fin',
+  '1.2.840.10003.5.33' => 'COMARC',
+  '1.2.840.10003.5.100' => 'Explain',
+  '1.2.840.10003.5.100.1' => 'Revised Explain Syntax definition to support ZSQL query',
+  '1.2.840.10003.5.101' => 'SUTRS',
+  '1.2.840.10003.5.102' => 'OPAC',
+  '1.2.840.10003.5.103' => 'Summary',
+  '1.2.840.10003.5.104' => 'GRS-0',
+  '1.2.840.10003.5.105' => 'GRS-1',
+  '1.2.840.10003.5.106' => 'ESTaskPackage',
+  '1.2.840.10003.5.107' => 'fragment',
+  '1.2.840.10003.5.109.1' => 'pdf',
+  '1.2.840.10003.5.109.2' => 'postscript',
+  '1.2.840.10003.5.109.3' => 'html',
+  '1.2.840.10003.5.109.4' => 'tiff',
+  '1.2.840.10003.5.109.5' => 'gif',
+  '1.2.840.10003.5.109.6' => 'jpeg',
+  '1.2.840.10003.5.109.7' => 'png',
+  '1.2.840.10003.5.109.8' => 'mpeg',
+  '1.2.840.10003.5.109.9' => 'sgml',
+  '1.2.840.10003.5.109.10' => 'xml',
+  '1.2.840.10003.5.109.11' => '(not used)',
+  '1.2.840.10003.5.110.1' => 'tiff-b',
+  '1.2.840.10003.5.110.2' => 'wav',
+  '1.2.840.10003.5.111' => 'SQL-RS',
+  '1.2.840.10003.5.112' => 'xml-b',
+  '1.2.840.10003.5.1000.3.1' => 'Latin-1',
+  '1.2.840.10003.5.1000.3.2' => 'TIFF',
+  '1.2.840.10003.5.1000.3.3' => 'Postscript',
+  '1.2.840.10003.5.1000.6.1' => 'GRS-0',
+  '1.2.840.10003.5.1000.6.2' => 'CXF',
+  '1.2.840.10003.5.1000.147.1' => 'ADF'
+  );
+  $form['z3950_syntax'] = array(
+    '#type'  => 'select',
+    '#title' => t('Record Syntax'),
+    '#options' => $options,
+    '#multiple' => false, 
+    '#required' => true,
+    '#default_value' => variable_get('z3950_syntax', '1.2.840.10003.5.10'),
+    '#description' =>  t('Specifies the preferred record syntax for retrieval.' . ' (' . l('http://www.loc.gov/z3950/agency/defns/oids.html#5', 'http://www.loc.gov/z3950/agency/defns/oids.html#5') . ').'),
+  
+  );
+    
+
+  return system_settings_form($form);
+}
+
+
+/**
+ * Implementation of hook_search().
+ */
+function biblio_z3950_search($op = 'search', $keys = null) {
+  switch ($op) {
+    case 'name':
+      if (user_access('search in z3950 servers') && function_exists('yaz_connect')) {
+        return t('Z39.50');
+      }
+    case 'search':
+      if (user_access('search in z3950 servers') && function_exists('yaz_connect')) {
+        $find = array();
+        
+        $servers = split("/\r\n|\n|\r/", variable_get('z3950_zurls', array()));
+        $num_servers = count($servers);
+        
+        for ($i = 0; $i < $num_servers; $i++) {
+            $id[$i] = yaz_connect($servers[$i]);
+            yaz_syntax($id[$i], variable_get('z3950_syntax', '1.2.840.10003.5.10'));
+            yaz_search($id[$i], 'rpn', $keys);
+        }
+
+        yaz_wait();
+        
+        for ($i = 0;  $i < $num_servers; $i++)
+        {   
+            $error = yaz_error($id[$i]);
+            if (!empty($error)) {
+                watchdog('search', t('Z39.50 search returns this error: %error in server %server', array('%error' => $error, '%server' => $servers[$i])), WATCHDOG_WARNING);
+                continue;
+            } else {
+              $hits = yaz_hits($id[$i]);
+                if ($hits == 0) continue;
+            }
+            
+            for ($p = 1; $p <= $hits; $p++)
+            {   
+                
+                preg_match('/^([^\/|^:]+):*([0-9]*)\/*(.*)/i', $servers[$i], $zurl_parts);
+                
+                if (($zurl_parts[1] == 'localhost') or ($zurl_parts[1] == '127.0.0.1')) $zurl_parts[1] = $_SERVER["SERVER_NAME"];
+                
+                $rec_syntax = yaz_record($id[$i], $p, 'syntax');
+                $rec_database = yaz_record($id[$i], $p, 'database');
+                
+                if ($rec_syntax == 'SUTRS') {
+                  $rec_string = yaz_record($id[$i], $p, 'string');
+                  if (empty($rec_string)) continue;
+                  array_push($find, array('type' => t('metadata'), 'link' => url('z3950/'. $i . '/' . $p . '/' . $keys), 'title' => $rec_string, 'extra' => array('syntax' => t('syntax: ') . $rec_syntax, 'source' => t('source: ') . l($zurl_parts[1], 'http://' . $zurl_parts[1]) . '(' . $rec_database . ')')));
+                    
+                }
+                else if ($rec_syntax == 'USmarc') {
+                  $rec_array = yaz_record($id[$i], $p, 'array');
+
+                  if (is_null($rec_array)) {
+                    
+                    $rec_string = yaz_record($id[$i], $p, 'string');
+
+                    if (empty($rec_string)) continue;
+                    array_push($find, array('type' => t('metadata'), 'link' => url('z3950/'. $i . '/' . $p . '/' . $keys), 'title' => $rec_string, 'extra' => array('syntax' => t('syntax: ') . $rec_syntax, 'source' => t('source: ') . l($zurl_parts[1], 'http://' . $zurl_parts[1]) . '(' . $rec_database . ')')));
+                  }
+                  else {
+                    
+                    array_push($find, array('type' => t('metadata'), 'link' => url('z3950/'. $i . '/' . $p . '/' . $keys), 'title' => '---' .$rec_array[4][1], 'snippet' => $rec_array[10][1], 'extra' => array('syntax' => t('syntax: ') . $rec_syntax, 'time_period' => $rec_array[13][1], 'source' => t('source: ') . l($zurl_parts[1], 'http://' . $zurl_parts[1]) . '(' . $rec_database . ')')));
+                  }
+                  
+                }
+                else {
+                  watchdog('search', t('Z39.50 search is not valid for %syntax syntax.', array('%syntax' => $rec_syntax)), WATCHDOG_WARNING);
+                }
+            }
+        }
+        return $find;
+      }
+  }
+}
+
+/**
+ *  
+ */
+function _biblio_z3950_get() {
+  $i = arg(1);
+  $p = arg(2);
+  $keys = arg(3);
+
+  if (is_numeric($i) && is_numeric($p)) {
+    
+    $servers = split("/\r\n|\n|\r/", variable_get('z3950_zurls', array()));
+    
+    $id = yaz_connect($servers[$i]);
+    yaz_syntax($id, variable_get('z3950_syntax', '1.2.840.10003.5.10'));
+    yaz_search($id, 'rpn', $keys);
+    
+    yaz_wait();
+    
+    $error = yaz_error($id);
+    if (!empty($error)) {
+        watchdog('search', t('Z39.50 search returns this error: %error in server %server', array('%error' => $error, '%server' => $servers[$i])), WATCHDOG_WARNING);
+        drupal_goto('search/z3950');
+    }
+    
+    drupal_set_title(t('Metadata Contents'));
+    
+    $output .= '<div><pre>';
+    
+    $rec_syntax = yaz_record($id, $p, 'syntax');
+    
+    if ($rec_syntax == 'SUTRS') {
+      $rec_string = yaz_record($id, $p, 'string');
+      if (empty($rec_string)){
+        $output .= t('Not records found.');
+      }
+      else {
+        $output .= $rec_string;
+      }
+    }
+    else if ($rec_syntax == 'USmarc') {
+        $rec_array = yaz_record($id, $p, 'array');
+        $rec_string = yaz_record($id, $p, 'string');
+
+        if (!is_null($rec_array)) {
+          drupal_set_title($rec_array[4][1]);
+        }
+        
+        $output .= $rec_string;
+    }
+    else {
+      watchdog('search', t('z39.50 search is not valid for %syntax syntax.', array('%syntax' => $rec_syntax)), WATCHDOG_WARNING);
+    }
+    
+    $output .= '</pre></div>';
+    
+    print theme('page', $output, t('Metadata Search Result'));
+    
+  }
+  else {
+    
+    drupal_goto('search/z3950');
+  }
+}
+
+
+?>
