@@ -33,8 +33,8 @@ function biblio_help_page() {
   $base =  variable_get('biblio_base', 'biblio');
   
   $text .= "<H3>".t('General: ')."</H3>";
-  $text .= t('By default, the ').l('',$base).
-           t(' page will list all of the entries in the database sorted by Year in descending order. If you wish to sort by "Title" or "Type",  you may do so by clicking on the appropriate links at the top of the page.  To reverse the sort order, simply click the link a second time.');
+  $text .= "<p>".t('By default, the ').l('',$base).
+           t(' page will list all of the entries in the database sorted by Year in descending order. If you wish to sort by "Title" or "Type",  you may do so by clicking on the appropriate links at the top of the page.  To reverse the sort order, simply click the link a second time.')."</p>";
   $text .= "<H3>".t('Filtering Search Results:')."</H3><P>";
   $text .= t('If you wish to filter the results, click on the "Filter" tab at the top of the page.  To add a filter, click the radio button to the left of the filter type you wish to apply, then select the filter criteria from the drop down list on the right, then click the filter button.');
   $text .= "</P><P>";
@@ -61,7 +61,7 @@ function biblio_help_page() {
               </pre></P>';
   $text .= "<P>".t('Clicking on one of the export links should cause your browser to ask you whether you want to Open, or Save To Disk, the file endnote.enw.  If you choose to open it, Endnote should start and ask you which library you would like store the results in.  Alternatively, you can save the file to disk and manually import it into EndNote.')."</P>";
 
-  print theme('page', $text);
+  return  ($text);
 } 
 
 /**
@@ -75,6 +75,9 @@ function biblio_help_page() {
 
 function biblio_help($section) {
   switch ($section) {
+    case 'admin/help#biblio':
+      return biblio_help_page();
+
     case 'admin/modules#description': 
       // This description is shown in the listing at admin/modules.
       return t('Manages a list of scholarly papers on your site');
