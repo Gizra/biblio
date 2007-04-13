@@ -92,6 +92,9 @@ function en8_endElement($parser, $name)
         $urls = '';
         $element = '';
         break;
+
+      case 'style':
+        break;
         
       default:
         $element = '';
@@ -134,10 +137,10 @@ global  $node_array,$node_id, $element, $contributors,   $dates, $urls;
         $node_array[$node_id]['biblio_type'] = 103;
         break;
       case 47: // Conference Proceeding
-        $node_array[$node_id]['biblio_type'] = 103;
+        $node_array[$node_id]['biblio_type'] = 104;
         break;
       case 10: // proceedings_article
-        $node_array[$node_id]['biblio_type'] = 104;
+        $node_array[$node_id]['biblio_type'] = 103;
         break;
       case 23: // newspaper_article
         $node_array[$node_id]['biblio_type'] = 105;
@@ -238,6 +241,7 @@ global  $node_array,$node_id, $element, $contributors,   $dates, $urls;
       }
       break; 
     case 'auth-address':
+      $node_array[$node_id]['biblio_auth_address'] .=  $data;
       break; 
     case 'auth-affiliaton':
       break;
@@ -377,8 +381,10 @@ global  $node_array,$node_id, $element, $contributors,   $dates, $urls;
     case 'repro-ratio': 
       break; 
     case 'remote-database-name': 
+      $node_array[$node_id]['biblio_remote_db_name'] .= $data;
       break; 
     case 'remote-database-provider': 
+      $node_array[$node_id]['biblio_remote_db_provider'] .= $data;
       break; 
     case 'language': 
       $node_array[$node_id]['biblio_lang'] .= $data;
@@ -387,10 +393,11 @@ global  $node_array,$node_id, $element, $contributors,   $dates, $urls;
     case 'url':
       switch ($urls){
         case 'web-urls':
-        case 'related-urls':
         case 'pdf-urls':
         case 'text-urls':
         case 'image-urls':
+          break;
+        case 'related-urls':
           $node_array[$node_id]['biblio_url'] .= $data;
           break;
       }
