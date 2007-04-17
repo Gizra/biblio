@@ -1257,8 +1257,8 @@ function biblio_view(&$node, $teaser = false, $page = false) {
   $node->content['body']['#value'] = theme('biblio_long', $node);
 
   if ($page){
-    $base =  drupal_ucfirst(variable_get('biblio_base', 'biblio'));
-    drupal_set_breadcrumb(array(l(t('Home'), NULL), l(t("!base",array('!base'=>$base)), $base)));
+    $base =  variable_get('biblio_base', 'biblio');
+    drupal_set_breadcrumb(array(l(t('Home'), NULL), l(t("!base",array('!base'=>drupal_ucfirst($base))), $base)));
   }  
 
   return $node;
