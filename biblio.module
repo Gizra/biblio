@@ -1679,12 +1679,13 @@ $join = array();
   $where_clause = count($where) > 1 ? '('. implode(') AND (', $where) .')': $where[0];
 
   $query = "SELECT DISTINCT n.*, b.* FROM {node} n $joins  WHERE $where_clause $published $limit $sortby ";
-//echo $query; die;
+  $count_query = "SELECT DISTINCT COUNT(*) FROM {node} n $joins  WHERE $where_clause $published $limit ";
+
   $_SESSION['last_biblio_query'] = $query;
   $terms[] = $pager_attrib['order'];
   $_SESSION['last_biblio_query_terms'] = $terms;
 
-  $result = pager_query(db_rewrite_sql($query), variable_get('biblio_rowsperpage', 25),0,null,$terms);
+  $result = pager_query(db_rewrite_sql($query), variable_get('biblio_rowsperpage', 25),0,$count_query,$terms);
 
   biblio_show_results($result, $pager_attrib, $args,$inline);
 } 
