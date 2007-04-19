@@ -348,6 +348,7 @@ global  $node_array,$node_id, $element, $contributors,   $dates, $urls;
       $node_array[$node_id]['biblio_abst_e'] .= $data;
       break; 
     case 'label': 
+      $node_array[$node_id]['biblio_label'] .= $data;
       break; 
     case 'image': 
       break; 
@@ -403,6 +404,7 @@ global  $node_array,$node_id, $element, $contributors,   $dates, $urls;
       }
       break;
     case 'access-date': 
+          $node_array[$node_id]['biblio_access_date'] .= $data;
       break; 
     case 'modified-date': 
       break; 

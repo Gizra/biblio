@@ -64,6 +64,8 @@ function biblio_install() {
         `biblio_remote_db_name` varchar(255) default NULL,
         `biblio_remote_db_provider` varchar(255) default NULL,
         `biblio_citekey` varchar(16) default NULL,
+        `biblio_label` varchar(255) default NULL,
+        `biblio_access_date` varchar(255) default NULL,
        PRIMARY KEY  (`vid`),
         KEY `nid` (`nid`),
         KEY `type` (`biblio_type`),
@@ -155,7 +157,9 @@ function biblio_install() {
        (46,'biblio_doi','DOI',1,'textfield',60,255,'',0,0,0,159),
        (47,'biblio_auth_address','Author Address',0,'textarea',60,65535,'',0,0,0,178),
        (48,'biblio_remote_db_name','Remote Database Name',0,'textfield',60,255,'',0,0,0,176),
-       (49,'biblio_remote_db_provider','Remote Database Provider',0,'textfield',60,255,'',0,0,0,177)
+       (49,'biblio_remote_db_provider','Remote Database Provider',0,'textfield',60,255,'',0,0,0,177),
+       (50,'biblio_label','Label',0,'textfield',60,255,'',0,0,0,178),
+       (51,'biblio_access_date','Access Date',0,'textfield',60,255,'',0,0,0,179)
        ;");
 
 
@@ -628,10 +632,15 @@ $result = array();
   $result[] = update_sql("ALTER TABLE {biblio}  ADD  `biblio_auth_address` text ;");
   $result[] = update_sql("ALTER TABLE {biblio}  ADD  `biblio_remote_db_name` varchar(255) default NULL;");
   $result[] = update_sql("ALTER TABLE {biblio}  ADD  `biblio_remote_db_provider` varchar(255) default NULL;");
+  $result[] = update_sql("ALTER TABLE {biblio}  ADD  `biblio_label` varchar(255) default NULL;");
+  $result[] = update_sql("ALTER TABLE {biblio}  ADD  `biblio_access_date` varchar(255) default NULL;");
   $result[] = update_sql("INSERT INTO {biblio_fields} (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`autocomplete`,`weight`) VALUES 
                         (47,'biblio_auth_address','Author Address',0,'textarea',60,65535,'',0,0,0,178),
                         (48,'biblio_remote_db_name','Remote Database Name',0,'textfield',60,255,'',0,0,0,176),
-                        (49,'biblio_remote_db_provider','Remote Database Provider',0,'textfield',60,255,'',0,0,0,177);");
+                        (49,'biblio_remote_db_provider','Remote Database Provider',0,'textfield',60,255,'',0,0,0,177),
+                        (50,'biblio_label','Label',0,'textfield',60,255,'',0,0,0,178),
+                        (51,'biblio_access_date','Access Date',0,'textfield',60,255,'',0,0,0,179)
+                        ;");
 
   return $result;
   
