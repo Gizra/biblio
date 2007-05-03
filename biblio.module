@@ -119,7 +119,9 @@ function biblio_access($op, $node) {
   // Users who create a node may edit or delete it later, assuming they have the
   // necessary permissions.
   if ($op == 'update' || $op == 'delete') {
-    if (user_access('edit own biblio entries') && ($user->uid == $node->uid)) {
+    if ( user_access('edit own biblio entries') && ($user->uid == $node->uid)) {
+      return true;
+    }else if  (user_access('edit all biblio entries')){
       return true;
     }else{
       return false;
@@ -146,7 +148,7 @@ function biblio_access($op, $node) {
 * to allow users to edit the nodes they created.
 */
 function biblio_perm() {
-  return array('create biblio', 'edit own biblio entries', 'import from file','show export links','show filter tab','show sort links', 'view full text');
+  return array('create biblio', 'edit all biblio entries', 'edit own biblio entries', 'import from file','show export links','show filter tab','show sort links', 'view full text');
 } 
 /**
 * Implementation of hook_link().
@@ -2438,7 +2440,7 @@ function biblio_views_tables() {
   $table = views_new_table('biblio', 'internal', 'node', 'vid', 'vid');
   $result = db_query('SELECT name,title FROM {biblio_fields} ');
   while ($field = db_fetch_array($result)){
-    views_table_add_field($table, $field['name'], "Biblio: ".$field['title'], "test", array(
+    views_table_add_field($table, $field['name'], "Biblio: ".$field['title'], "", array(
       'sortable' => true,
       'notafield' => false,
     ));
