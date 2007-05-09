@@ -260,6 +260,13 @@ function biblio_settings() {
     '#default_value' => variable_get('biblio_sort', 'year'),
     '#options' => array('author'=>t('Author'), 'title'=>t('Title'),'type'=>t('Type'),'year'=>t('Year')),
   );
+  $form['sort']['biblio_sort_tabs'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Show sort links'),
+    '#default_value' => variable_get('biblio_sort_tabs', array('author','title','type','year')),
+    '#options' => array('author'=>t('Author'), 'title'=>t('Title'),'type'=>t('Type'),'year'=>t('Year')),
+    '#description' => t('You turn the sorting links at the top of the /biblio page here.'),
+  );
   $form['sort']['biblio_order'] = array(
     '#type' => 'radios',
     '#title' => t('Order'),
@@ -284,7 +291,7 @@ function biblio_settings() {
     '#title' => t('Links open in new browser'),
     '#return_value' => 1,
     '#default_value' => variable_get('biblio_links_target_new_window', 0),
-    '#description' => t('This causes the Author and Title links to open in a new browser window') );
+    '#description' => t('This causes related URLs to open in a new browser window') );
   $form['style']['biblio_node_layout'] = array(
     '#type' => 'radios',
     '#title' => t('Node Layout'),
@@ -1369,7 +1376,10 @@ function theme_biblio_long($node) {
   if ($node->biblio_call_number) $output .= '<h3>'.t("Call Number").':</h3> ' . check_plain($node->biblio_call_number) . "\n";
   if ($node->biblio_accession_number) $output .= '<h3>'.t("Accession Number").':</h3> ' . check_plain($node->biblio_accession_number) . "\n";
   if ($node->biblio_other_number) $output .= '<h3>'.t("Other Number").':</h3> ' . check_plain($node->biblio_other_number) . "\n";
-  if ($node->biblio_url) $output .= '<h3>'.t("URL").':</h3>'.l("$node->biblio_url",$node->biblio_url) . "\n";
+  if ($node->biblio_url) {
+      $attrib = (variable_get('biblio_links_target_new_window',null)) ? array('target'=>'_blank') : null;
+      $output .= '<h3>'.t("URL").':</h3>'.l("$node->biblio_url",$node->biblio_url,$attrib) . "\n";
+  }
   if ($node->biblio_keywords) $output .= '<h3>'.t("Keywords").':</h3> ' . _biblio_keyword_links($node->biblio_keywords) . "\n";
   if ($node->biblio_abst_e) $output .= '<H3>'.t("Abstract").':</h3> ' . check_markup($node->biblio_abst_e,FILTER_HTML_ESCAPE,FALSE) . "\n";
   if ($node->biblio_abst_f) $output .= '<p>' . check_markup($node->biblio_abst_f,FILTER_HTML_ESCAPE,FALSE) . "\n";
@@ -1449,12 +1459,21 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
     }
     if(user_access('show sort links')){
       $sort_attr = array("title"=>t("Click a second time to reverse the sort order"));
-      $content .= '<div class="biblio_sort">'.t('Sort by').':';
-      $content .= "[".l(t("Year"),$_GET['q'],$sort_attr,"sort=year&order=$order");
-      $content .= "][".l(t("Title"),$_GET['q'],$sort_attr,"sort=title&order=$order");
-      $content .= "][".l(t("Type"),$_GET['q'],$sort_attr,"sort=type&order=$order");
-      $content .= "][".l(t("Author"),$_GET['q'],$sort_attr,"sort=author&order=$order");
-      $content .= "]</div> ";
+
+      $sort_links =  variable_get('biblio_sort_tabs', array('author'=>'author','title'=>'title','type'=>'type','year'=>'year'));
+
+      $content .= '<div class="biblio_sort">';
+      foreach($sort_links as $key => $link){ 
+        if ($key === $link){
+          $content .= t('Sort by').':';
+          break;
+        }
+      }
+      if($sort_links['year']) $content .= "[".l(t("Year"),$_GET['q'],$sort_attr,"sort=year&order=$order")."]";
+      if($sort_links['title']) $content .= "[".l(t("Title"),$_GET['q'],$sort_attr,"sort=title&order=$order")."]";
+      if($sort_links['type']) $content .= "[".l(t("Type"),$_GET['q'],$sort_attr,"sort=type&order=$order")."]";
+      if($sort_links['author']) $content .= "[".l(t("Author"),$_GET['q'],$sort_attr,"sort=author&order=$order")."]";
+      $content .= "</div> ";
     }
   }
   $session = &$_SESSION['biblio_filter'];
@@ -1605,7 +1624,7 @@ $join = array();
           $term = explode("?",$arg_list[0]);
           array_shift($arg_list);
           //$limit .= $operator."MATCH(b.biblio_authors) AGAINST('%s'  IN BOOLEAN MODE)";
-          $where[] = "(b.biblio_authors) RLIKE '%s' ";
+          $where[] = "b.biblio_authors RLIKE '%s' ";
           $terms[] = db_escape_string($term[0]);
           array_push($args, $type, $term[0]);
           $operator = NULL;
@@ -1614,7 +1633,7 @@ $join = array();
           $term = explode("?",$arg_list[0]);
           array_shift($arg_list);
           //$limit .= $operator."MATCH(b.biblio_publisher) AGAINST('%s'  IN BOOLEAN MODE)";
-          $where[] = "{b.biblio_publisher} RLIKE '%s' ";
+          $where[] = "b.biblio_publisher RLIKE '%s' ";
           $terms[] = db_escape_string($term[0]);
           array_push($args, $type, $term[0]);
           $operator = NULL;
@@ -1632,7 +1651,7 @@ $join = array();
           $term = explode("?",$arg_list[0]);
           array_shift($arg_list);
           //$limit .= $operator."MATCH(b.biblio_keywords) AGAINST('%s'  IN BOOLEAN MODE)";
-          $where[] = "{b.biblio_keywords} RLIKE '%s' ";
+          $where[] = "b.biblio_keywords RLIKE '%s' ";
           $terms[] = db_escape_string($term[0]);
           array_push($args, $type, $term[0]);
           $operator = NULL;
@@ -2155,7 +2174,8 @@ function biblio_get_db_fields() {
 } 
 function _biblio_author_links($author) {
 $query = null;
-$attrib = (variable_get('biblio_links_target_new_window',null)) ? array('target'=>'_blank') : null;
+//$attrib = (variable_get('biblio_links_target_new_window',null)) ? array('target'=>'_blank') : null;
+$attrib = null;
 
 if (isset($_GET['sort'])) {
   $query  .= "sort=" . $_GET['sort'];

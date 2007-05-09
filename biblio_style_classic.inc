@@ -7,7 +7,8 @@ function biblio_style_classic_info(){
 }
 
 function biblio_style_classic($pub){
-  $attrib = (variable_get('biblio_links_target_new_window',null)) ? array('target'=>'_blank') : null;
+  //$attrib = (variable_get('biblio_links_target_new_window',null)) ? array('target'=>'_blank') : null;
+  $attrib = null;
 
   if (variable_get('biblio_normalize', 0)) {
     $authors = check_plain(_biblio_parse_authors($pub->biblio_authors));

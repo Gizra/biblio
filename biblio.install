@@ -362,6 +362,7 @@ function biblio_uninstall(){
   variable_del('biblio_rss');                     
   variable_del('biblio_rss_number_of_entries');   
   variable_del('biblio_sort');                    
+  variable_del('biblio_sort_tabs');                    
   variable_del('biblio_style');                   
   variable_del('biblio_view_only_own');           
 }
