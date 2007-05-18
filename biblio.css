@@ -129,6 +129,27 @@ a:active {
 	text-decoration: none;
 	float: right;
 }
+.biblio_abstract_link{
+	text-align: left;
+	text-decoration: none;
+  font-style: normal;
+  font-weight: normal;
+  font-size:75%;
+}
+.biblio_export_links{
+	text-align: left;
+	text-decoration: none;
+  font-style: normal;
+  font-weight: normal;
+  font-size:75%;
+}
+.biblio_annotation{
+	text-align: left;
+	text-decoration: none;  
+  margin-left:  2.5em;
+  margin-top:   0.5em;
+  margin-right: 2.5em;
+}
 .biblio_sort{
 	text-decoration: none;
 	text-align: left;

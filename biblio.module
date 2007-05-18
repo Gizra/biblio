@@ -299,6 +299,15 @@ function biblio_settings() {
     '#options' => array('orig'=>t('Original'), 'ft'=>t('Only Fulltext if available')),
     '#description' => t('This alters the layout of the "node" (full) view.'),
   );
+  $form['style']['biblio_annotations'] = array(
+    '#type' => 'select',
+    '#title' => t('Annotations'),
+    '#default_value' => variable_get('biblio_annotations', 'none'),
+    '#options' => array('none'=>t('none'),'biblio_notes'=>t('notes'),'biblio_custom1'=>t('custom1'),'biblio_custom2'=>t('custom2'),'biblio_custom3'=>t('custom3'),'biblio_custom4'=>t('custom4'),'biblio_custom5'=>t('custom5'),'biblio_custom6'=>t('custom6'),'biblio_custom7'=>t('custom7')),
+    '#description' => t('Select a field from which an annotation will be displayed below biblo entry in "short" listings'),
+    '#multiple' => FALSE,
+    '#size' =>  0
+  );
   $form['style']['biblio_style'] = array(
     '#type' => 'radios',
     '#title' => t('Style'),
@@ -355,7 +364,8 @@ function biblio_settings() {
         $options[] = $choice;
     }
   
-    $form['taxo']['biblio_freetagging_vocab'] = array('#type' => 'select',
+    $form['taxo']['biblio_freetagging_vocab'] = array(
+    '#type' => 'select',
     '#title' => t('Vocabulary'),
     '#default_value' => variable_get('biblio_freetagging_vocab', 0),
     '#options' => $options,
@@ -1319,6 +1329,12 @@ function theme_biblio_long($node) {
   $layout = variable_get('biblio_node_layout', 'orig');
   if (variable_get('biblio_node_layout', 'orig') == 'ft' && strlen(trim($node->body)) && user_access('view full text') ){
     $output .= '<div class="biblio-head">'.theme('biblio_short', $node).'</div>';
+    $annotation_field = variable_get('biblio_annotations','none');
+    if ($annotation_field != 'none' && $node->$annotation_field){
+      $output .= '<div class="biblio_annotation">';
+      $output .= check_markup($node->$annotation_field,FILTER_HTML_ESCAPE,FALSE);
+      $output .= '</div>';
+    }
     $output .= check_markup($node->body,FILTER_HTML_ESCAPE,FALSE) ;
     if ( biblio_access('export',$node)) {
       $output .= theme('biblio_export_links',$node->nid);
@@ -1420,16 +1436,29 @@ function theme_biblio_short($node,$style=null) {
 function theme_biblio_list($node,$style=null) {
   
   $output .= theme('biblio_short',$node);
-  if ($node->biblio_abst_e) $output .= l(" Abstract", "node/$node->nid") . "\n";
+  if ($node->biblio_abst_e) {
+    $output .= '<span class="biblio_abstract_link">';
+    $output .= l(" Abstract", "node/$node->nid") . "\n";
+    $output .= '</span>';
+  }
 
+  $annotation_field = variable_get('biblio_annotations','none');
+  if ($annotation_field != 'none' && $node->$annotation_field){
+    $output .= '<div class="biblio_annotation">';
+    $output .= check_markup($node->$annotation_field,FILTER_HTML_ESCAPE,FALSE);
+    $output .= '</div>';
+  }
+  
   $openurl_base = variable_get('biblio_baseopenurl','');
   if($openurl_base) $output .= theme('biblio_openurl',biblio_openurl($node));
-
+  
   if ( biblio_access('export',$node)) {
     $base =  variable_get('biblio_base', 'biblio');
-    $output .= '<br /><em>Export: '.l("Tagged","$base/export/tagged/$node->nid") . '&nbsp;';
+    $output .= '<span class="biblio_export_links">';
+    $output .= l("Tagged","$base/export/tagged/$node->nid") . '&nbsp;';
     $output .= l("XML","$base/export/xml/$node->nid") . '&nbsp;';
-    $output .= l("BibTex","$base/export/bib/$node->nid") . '</em>';
+    $output .= l("BibTex","$base/export/bib/$node->nid") ;
+    $output .= '</span>';
   } 
   return $output;
 } 

@@ -365,6 +365,7 @@ function biblio_uninstall(){
   variable_del('biblio_sort_tabs');                    
   variable_del('biblio_style');                   
   variable_del('biblio_view_only_own');           
+  variable_del('biblio_annotations');           
 }
 
 function biblio_update_1() {
@@ -545,6 +546,7 @@ $result = array();
       }
   return $result;
 }
+
 function biblio_update_12(){
 $result = array();
   $result[] = update_sql("ALTER TABLE {biblio_types} ADD  `visible` tinyint(1) NOT NULL default '1' ;");
