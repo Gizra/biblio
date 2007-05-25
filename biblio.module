@@ -1304,10 +1304,11 @@ function biblio_block($op = 'list', $delta = 0) {
         while ($pub = db_fetch_object($result)) {
           $block['content'] .= '<li >' . l("$pub->title", "node/$pub->nid") . '</li>';
         }
+        $block['content'] .= '</ul>';
         if (variable_get('biblio_rss', 0)){ 
           $block['content'] .=  theme('feed_icon', url("$base/rss.xml"));
         }
-        $block['content'] .= '</ul></div>';
+        $block['content'] .= '</div>';
       } 
       return $block;
     } 
