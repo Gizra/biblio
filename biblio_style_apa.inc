@@ -5,19 +5,17 @@ function biblio_style_apa_info(){
     return array('apa'=>'American Psychological Association (APA)');
                  
 }
-function biblio_style_apa($pub){
+function biblio_style_apa($node,$base='biblio'){
 
-  //$attrib = (variable_get('biblio_links_target_new_window',null)) ? array('target'=>'_blank') : null;
-  $attrib = null;
   if (variable_get('biblio_normalize', 0)) {
-    $authors = _biblio_parse_authors(check_plain($pub->biblio_authors));
+    $authors = _biblio_parse_authors(check_plain($node->biblio_authors));
   } else {
-    $authors = check_plain($pub->biblio_authors);
+    $authors = check_plain($node->biblio_authors);
   } 
-  $output .= '<span class="biblio-authors">' . str_replace(";", ",", _biblio_author_links($authors)) . "</span> \n";
+  $output .= '<span class="biblio-authors">' . str_replace(";", ",", _biblio_author_links($authors,$base)) . "</span> \n";
   $output .= (strrpos($authors, '.' ) == strlen($authors))? ".&nbsp;&nbsp;":" ";
 
-      switch ($pub->biblio_type) {
+      switch ($node->biblio_type) {
         case 1: // Journal Article
         case 2: //Conference Paper
         case 3: // are all
@@ -28,22 +26,22 @@ function biblio_style_apa($pub){
         case 8: 
         case 9:
         default:
-          if (isset($pub->biblio_year)) {
-            if ($pub->biblio_year == 0) { $pub->biblio_year = t("In Press"); }
-            $output .= "(" . check_plain($pub->biblio_year) . ").&nbsp;&nbsp;" ;
+          if (isset($node->biblio_year)) {
+            if ($node->biblio_year == 0) { $node->biblio_year = t("In Press"); }
+            $output .= "(" . check_plain($node->biblio_year) . ").&nbsp;&nbsp;" ;
           }
-          $output .=  '<span class="biblio-title-apa">' .l("$pub->title", "node/$pub->nid", $attrib) . ". </span> \n";
-          $output .= ($pub->biblio_secondary_title) ? '<u>'.check_plain($pub->biblio_secondary_title).'. ' : '<u>';
-          $output .= ($pub->biblio_volume)?  check_plain($pub->biblio_volume).($pub->biblio_issue?'</u>('.check_plain($pub->biblio_issue).'),&nbsp;' :',</u> ') : '</u> ';
-        //  $output .= ($pub->biblio_issue) ? '(' . check_plain($pub->biblio_issue).')' :'';
-          $output .= ($pub->biblio_pages) ?  check_plain($pub->biblio_pages).'.' :'';
+          $output .=  '<span class="biblio-title-apa">' .l("$node->title", "node/$node->nid") . ". </span> \n";
+          $output .= ($node->biblio_secondary_title) ? '<u>'.check_plain($node->biblio_secondary_title).'. ' : '<u>';
+          $output .= ($node->biblio_volume)?  check_plain($node->biblio_volume).($node->biblio_issue?'</u>('.check_plain($node->biblio_issue).'),&nbsp;' :',</u> ') : '</u> ';
+        //  $output .= ($node->biblio_issue) ? '(' . check_plain($node->biblio_issue).')' :'';
+          $output .= ($node->biblio_pages) ?  check_plain($node->biblio_pages).'.' :'';
           break; // generic
       } 
 
-/*  if ($pub->biblio_date) $output .= ', ' . check_plain($pub->biblio_date);
-  if ($pub->biblio_number) $output .= ', Number ' . check_plain($pub->biblio_number);
+/*  if ($node->biblio_date) $output .= ', ' . check_plain($node->biblio_date);
+  if ($node->biblio_number) $output .= ', Number ' . check_plain($node->biblio_number);
 
-  if ($pub->biblio_place_published) $output .= ', ' . check_plain($pub->biblio_place_published);
+  if ($node->biblio_place_published) $output .= ', ' . check_plain($node->biblio_place_published);
 */
   return $output;
 
