@@ -1272,11 +1272,13 @@ function biblio_citekey_generate(){
 function biblio_view(&$node, $teaser = false, $page = false) {
   theme('biblio_add_css');
   if ( strlen(trim($node->body)) ) $node = node_prepare($node, $teaser);
+  
+  $style = variable_get('biblio_style', 'classic');
+  $base =  variable_get('biblio_base', 'biblio'); 
 
-  $node->content['body']['#value'] = theme('biblio_long', $node);
+  $node->content['body']['#value'] = theme('biblio_long', $node,$base,$style);
 
   if ($page){
-    $base =  variable_get('biblio_base', 'biblio');
     drupal_set_breadcrumb(array(l(t('Home'), NULL), l(t("!base",array('!base'=>drupal_ucfirst($base))), $base)));
   }  
 
@@ -1323,13 +1325,13 @@ function biblio_feed(){
 
 }
 
-function theme_biblio_long($node) {
+function theme_biblio_long($node,$base='biblio',$style='classic') {
   
   if(empty($node->biblio_coins)) biblio_coins_generate($node);
   $output .= $node->biblio_coins;
   $layout = variable_get('biblio_node_layout', 'orig');
   if (variable_get('biblio_node_layout', 'orig') == 'ft' && strlen(trim($node->body)) && user_access('view full text') ){
-    $output .= '<div class="biblio-head">'.theme('biblio_short', $node).'</div>';
+    $output .= '<div class="biblio-head">'.theme('biblio_short', $node,$base,$style).'</div>';
     $annotation_field = variable_get('biblio_annotations','none');
     if ($annotation_field != 'none' && $node->$annotation_field){
       $output .= '<div class="biblio_annotation">';
@@ -1354,7 +1356,7 @@ function theme_biblio_long($node) {
   if($openurl_base) $output .= theme('biblio_openurl',biblio_openurl($node, $openurl_base));
   
 
-  $output .= '<div class="biblio_authors"><H3>'.t("Authors").':</H3> ' . _biblio_author_links($authors) . "</div>\n";
+  $output .= '<div class="biblio_authors"><H3>'.t("Authors").':</H3> ' . _biblio_author_links($authors,$base) . "</div>\n";
   $output .= '<div class="biblio_source"><H3>'.t("Source").': </H3> ';
   $source = null;
   if ($node->biblio_secondary_title) $source .= check_plain($node->biblio_secondary_title);
@@ -1397,7 +1399,7 @@ function theme_biblio_long($node) {
       $attrib = (variable_get('biblio_links_target_new_window',null)) ? array('target'=>'_blank') : null;
       $output .= '<h3>'.t("URL").':</h3>'.l("$node->biblio_url",$node->biblio_url,$attrib) . "\n";
   }
-  if ($node->biblio_keywords) $output .= '<h3>'.t("Keywords").':</h3> ' . _biblio_keyword_links($node->biblio_keywords) . "\n";
+  if ($node->biblio_keywords) $output .= '<h3>'.t("Keywords").':</h3> ' . _biblio_keyword_links($node->biblio_keywords,$base) . "\n";
   if ($node->biblio_abst_e) $output .= '<H3>'.t("Abstract").':</h3> ' . check_markup($node->biblio_abst_e,FILTER_HTML_ESCAPE,FALSE) . "\n";
   if ($node->biblio_abst_f) $output .= '<p>' . check_markup($node->biblio_abst_f,FILTER_HTML_ESCAPE,FALSE) . "\n";
   if ($node->biblio_notes) $output .= '<h3>'.t("Notes").': </h3>' . check_markup($node->biblio_notes,FILTER_HTML_ESCAPE,FALSE) . "\n";
@@ -1424,19 +1426,19 @@ function theme_biblio_export_links($nid){
   return $links;
 }
 
-function theme_biblio_short($node,$style=null) {
-  $style_name = $style ? $style : variable_get('biblio_style', 'classic');
+function theme_biblio_short($node,$base='biblio',$style_name='classic') {
+ // $style_name = $style ? $style : variable_get('biblio_style', 'classic');
   require_once( drupal_get_path('module', 'biblio') . "/biblio_style_$style_name.inc");
   
   $style_function = "biblio_style_$style_name";
-  $styled_node = $style_function($node);
+  $styled_node = $style_function($node,$base);
   if(empty($node->biblio_coins)) biblio_coins_generate($node);
   return($styled_node.$node->biblio_coins);
 
 }
-function theme_biblio_list($node,$style=null) {
+function theme_biblio_list($node,$base='biblio',$style='classic') {
   
-  $output .= theme('biblio_short',$node);
+  $output .= theme('biblio_short',$node,$base,$style);
   if ($node->biblio_abst_e) {
     $output .= '<span class="biblio_abstract_link">';
     $output .= l(" Abstract", "node/$node->nid") . "\n";
@@ -1471,6 +1473,8 @@ function theme_biblio_add_css(){
 function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' => 'DESC'), $args = null,$inline=false) {
   global $pager_total_items;
   $base =  variable_get('biblio_base', 'biblio');
+  $style = variable_get('biblio_style', 'classic');
+
   theme('biblio_add_css');
   if(variable_get('biblio_rss', 0)){  
     drupal_set_html_head('<link rel="alternate" type="application/rss+xml" title="'.variable_get('site_name', 'Drupal').' RSS" href="'.url("$base/rss.xml").'" />');
@@ -1551,7 +1555,7 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
                    .  "</div>\n";        } 
     } //end switch
     $content .= '<div class="biblio-entry">' . "\n";
-    $content .= theme('biblio_list', $node);
+    $content .= theme('biblio_list', $node,$base,$style);
     $content .= "</div>\n";
   } //end while
   $content .= theme('pager', 0, variable_get('biblio_rowsperpage', 25));
@@ -1653,7 +1657,6 @@ $join = array();
         case 'author':
           $term = explode("?",$arg_list[0]);
           array_shift($arg_list);
-          //$limit .= $operator."MATCH(b.biblio_authors) AGAINST('%s'  IN BOOLEAN MODE)";
           $where[] = "b.biblio_authors RLIKE '%s' ";
           $terms[] = db_escape_string($term[0]);
           array_push($args, $type, $term[0]);
@@ -1662,7 +1665,6 @@ $join = array();
         case 'publisher':
           $term = explode("?",$arg_list[0]);
           array_shift($arg_list);
-          //$limit .= $operator."MATCH(b.biblio_publisher) AGAINST('%s'  IN BOOLEAN MODE)";
           $where[] = "b.biblio_publisher RLIKE '%s' ";
           $terms[] = db_escape_string($term[0]);
           array_push($args, $type, $term[0]);
@@ -1680,7 +1682,6 @@ $join = array();
         case 'keyword':
           $term = explode("?",$arg_list[0]);
           array_shift($arg_list);
-          //$limit .= $operator."MATCH(b.biblio_keywords) AGAINST('%s'  IN BOOLEAN MODE)";
           $where[] = "b.biblio_keywords RLIKE '%s' ";
           $terms[] = db_escape_string($term[0]);
           array_push($args, $type, $term[0]);
@@ -1717,6 +1718,19 @@ $join = array();
               $sortby = "ORDER BY b.biblio_year %s, SUBSTRING(n.title,1,1) ASC, b.biblio_type ASC ";
           } //end switch
           break;
+        default:
+          $fields = biblio_get_db_fields();
+          $term = explode("?",$arg_list[0]);
+          array_shift($arg_list);
+          if (in_array("biblio_$type",$fields))
+          {
+            $where[] = "b.biblio_$type RLIKE '%s' ";
+            $terms[] = db_escape_string($term[0]);
+            array_push($args, $type, $term[0]);
+            $operator = NULL;
+          }
+          break;
+            
       } 
     } 
   } 
@@ -2202,36 +2216,35 @@ function biblio_get_db_fields() {
   }
   return $fields ;
 } 
-function _biblio_author_links($author) {
-$query = null;
-//$attrib = (variable_get('biblio_links_target_new_window',null)) ? array('target'=>'_blank') : null;
-$attrib = null;
-
-if (isset($_GET['sort'])) {
-  $query  .= "sort=" . $_GET['sort'];
-} 
-if (isset($_GET['order'])) {
-  $query  .= $query ?"&":"";
-  $query  .= "order=" . $_GET['order'];
-} 
-
-$html = "";
-$author_array = explode(";", $author);
-foreach($author_array as $auth) {
-  if ($i) $html .= "; ";
-  $i++;
-  if (strstr($auth, ",")) {
-    $parts = split(",", $auth);
-    $lastname = $parts[0];
-  } else {
-    $parts = split(" ", $auth);
-    $lastname = end($parts);
+function _biblio_author_links($author,$base='biblio') {
+  $query = null;
+  //$attrib = (variable_get('biblio_links_target_new_window',null)) ? array('target'=>'_blank') : null;
+  $attrib = null;
+  
+  if (isset($_GET['sort'])) {
+    $query  .= "sort=" . $_GET['sort'];
   } 
-  // list($lastname, $init) = split(",", $auth);
-  $base =  variable_get('biblio_base', 'biblio');
-  $html .= l(trim($auth), "$base/author/" . trim($lastname),$attrib, $query );
-} 
-return $html;
+  if (isset($_GET['order'])) {
+    $query  .= $query ?"&":"";
+    $query  .= "order=" . $_GET['order'];
+  } 
+  
+  $html = "";
+  $author_array = explode(";", $author);
+  
+  foreach($author_array as $auth) {
+    $html .= (empty($html))? "" : "; ";
+    if (strstr($auth, ",")) {
+      $parts = split(",", $auth);
+      $lastname = $parts[0];
+    } else {
+      $parts = split(" ", $auth);
+      $lastname = end($parts);
+    } 
+    // list($lastname, $init) = split(",", $auth);
+    $html .= l(trim($auth), "$base/author/" . trim($lastname),$attrib, $query );
+  } 
+  return $html;
 } 
 function biblio_author_index_shutdown(){
   global  $biblio_last_nid;
@@ -2287,23 +2300,22 @@ function _biblio_author_index_insert($nid, $author,$rank) {
   }
   return ;
 }
-function _biblio_keyword_links($keywords) {
+function _biblio_keyword_links($keywords,$base='biblio') {
   if (isset($_GET['sort'])) {
     $sort = "?sort=" . $_GET['sort'];
   } 
   
   $html = "";
-  if (strstr($keywords,';')){
+//  if (strstr($keywords,';')){
     $keyword_array = explode(";", $keywords);
-  }elseif(strstr($keywords,',')){
+/*  }elseif(strstr($keywords,',')){
     $keyword_array = explode(",", $keywords);  
   }else{
     $keyword_array = explode(" ", $keywords);  
   }
+*/
   foreach($keyword_array as $kw) {
-    if ($i) $html .= "; ";
-    $i++;
-    $base =  variable_get('biblio_base', 'biblio');
+    $html .= (empty($html))? "" : "; ";
     $html .= l(trim($kw), "$base/keyword/" . trim($kw) . $sort);
   } 
   return $html;
@@ -2579,8 +2591,10 @@ function biblio_nodeapi($node, $op){
 function _biblio_citekey_print($citekey){
    $nid = db_fetch_object(db_query("SELECT nid FROM {biblio} WHERE biblio_citekey = '%s' ORDER BY vid DESC", $citekey));
    if ($nid->nid > 0){
-     $node = node_load($nid->nid);
-     return theme('biblio_short', $node);
+     $style = variable_get('biblio_style', 'classic');
+     $base =  variable_get('biblio_base', 'biblio'); 
+     $node = node_load($nid->nid);     
+     return theme('biblio_short', $node, $base, $style);
    } else {
      return t("Citekey: ").$citekey.t(" not found");
    }
