@@ -77,14 +77,9 @@ dl.bibliomultiselect .form-item {
 	font-weight: bold;
 	text-decoration: none;
 	font-style: normal;
-	line-break: strict;
 	line-height: normal;
 	text-align: left;
-	text-autospace: none;
-	text-justify: auto;
-	word-wrap: normal;
-	font: "@Arial Unicode MS", Arial, sans-serif;
-	word-break: keep-all;
+	font-family: "@Arial Unicode MS", Arial, sans-serif;
 	color: #336599;
 }
 

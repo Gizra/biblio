@@ -1,18 +1,38 @@
 <?php
 // $Id$
+/**
+ * Get the style information
+ *
+ * @return
+ *   The name of the style
+ */
 function biblio_style_apa_info(){
 
     return array('apa'=>'American Psychological Association (APA)');
                  
 }
-function biblio_style_apa($node,$base='biblio'){
+/**
+ * Apply a bibliographic style to the node
+ *
+ *
+ * @param $node
+ *   An object containing the node data to render
+ * @param $base
+ *   The base URL of the biblio module (defaults to /biblio)
+ * @param $inline
+ *   A logical value indicating if this is being rendered within the
+ *   Drupal framwork (false) or we are just passing back the html (true)
+ * @return
+ *   The styled biblio entry
+ */
+function biblio_style_apa($node, $base='biblio', $inline=false){
 
   if (variable_get('biblio_normalize', 0)) {
-    $authors = _biblio_parse_authors(check_plain($node->biblio_authors));
+    $authors = _biblio_parse_authors($node->biblio_authors);
   } else {
-    $authors = check_plain($node->biblio_authors);
+    $authors = $node->biblio_authors;
   } 
-  $output .= '<span class="biblio-authors">' . str_replace(";", ",", _biblio_author_links($authors,$base)) . "</span> \n";
+  $output .= '<span class="biblio-authors">' . str_replace(";", ",", _biblio_author_links($authors,$base,$inline)) . "</span> \n";
   $output .= (strrpos($authors, '.' ) == strlen($authors))? ".&nbsp;&nbsp;":" ";
 
       switch ($node->biblio_type) {
@@ -30,7 +50,9 @@ function biblio_style_apa($node,$base='biblio'){
             if ($node->biblio_year == 0) { $node->biblio_year = t("In Press"); }
             $output .= "(" . check_plain($node->biblio_year) . ").&nbsp;&nbsp;" ;
           }
-          $output .=  '<span class="biblio-title-apa">' .l("$node->title", "node/$node->nid") . ". </span> \n";
+          $output .=  '<span class="biblio-title-apa">' ;
+          $output .= $inline ? l("$node->title", "$base/viewinline/$node->nid") : l("$node->title", "node/$node->nid"); 
+          $output .= ". </span> \n";
           $output .= ($node->biblio_secondary_title) ? '<u>'.check_plain($node->biblio_secondary_title).'. ' : '<u>';
           $output .= ($node->biblio_volume)?  check_plain($node->biblio_volume).($node->biblio_issue?'</u>('.check_plain($node->biblio_issue).'),&nbsp;' :',</u> ') : '</u> ';
         //  $output .= ($node->biblio_issue) ? '(' . check_plain($node->biblio_issue).')' :'';

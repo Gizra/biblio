@@ -51,7 +51,7 @@ function _endnote_tagged_import(&$data,$node) {
                   $node_array[$node_id]['biblio_type'] = 103;
                   break;
                 case "Conference Proceedings": 
-                  $node_array[$node_id]['biblio_type'] = 3;
+                  $node_array[$node_id]['biblio_type'] = 104;
                   break; // conference proceedings 
                 case "Report": 
                   $node_array[$node_id]['biblio_type'] = 109;

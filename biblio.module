@@ -32,34 +32,34 @@ function biblio_autocomplete($field,$string=''){
 function biblio_help_page() {
   $base =  variable_get('biblio_base', 'biblio');
   
-  $text .= "<H3>".t('General: ')."</H3>";
+  $text .= "<h3>".t('General: ')."</h3>";
   $text .= "<p>".t('By default, the ').l('',$base).
            t(' page will list all of the entries in the database sorted by Year in descending order. If you wish to sort by "Title" or "Type",  you may do so by clicking on the appropriate links at the top of the page.  To reverse the sort order, simply click the link a second time.')."</p>";
-  $text .= "<H3>".t('Filtering Search Results:')."</H3><P>";
+  $text .= "<h3>".t('Filtering Search Results:')."</h3><p>";
   $text .= t('If you wish to filter the results, click on the "Filter" tab at the top of the page.  To add a filter, click the radio button to the left of the filter type you wish to apply, then select the filter criteria from the drop down list on the right, then click the filter button.');
-  $text .= "</P><P>";
+  $text .= "</p><p>";
   $text .= t('It is possible to create complex filters by returning to the ');
   $text .= "<i>".t('"Filter"')."</i>";
-  $text .= t(' tab and adding additional filters.  Simply follow the steps outlined above and press the "Refine" button.')."</P>";
-  $text .= "<P>".t('All filters can be removed by clicking the ')."<I>".
+  $text .= t(' tab and adding additional filters.  Simply follow the steps outlined above and press the "Refine" button.')."</p>";
+  $text .= "<p>".t('All filters can be removed by clicking the ')."<I>".
               t('"Clear All Filters"')."</I>".
               t('link at the top of the result page, or on the ')."<i>".
               t('"Filter"')."</i>". 
               t(' tab they can be removed one at a time using the ')."<i>".t('"Undo"')."</i>".
               t(' button, or you can remove them all using the ')."<i>".t('"Clear All"')."</i>".
-              t(' button.')."</P>";
-  $text .= "<P>".t('You may also construct URLs which filter.  For example, /biblio/year/2005 will show all of the entries for 2005.  /biblio/year/2005/author/smith will show all of entries from 2005 for smith.')."</P>";
-  $text .= "<H3>".t('Exporting Search Results:')."</H3>";
-  $text .= "<P>".t('Assuming this option has been enabled by the administrator, you can export search results directly into EndNote.  The link at the top of the result page will export all of the search results, and the links on individual entries will export the information related to that single entry.')."</P>";
-  $text .= "<P>".t('The information is exported in EndNote "Tagged" format similar to this...').
+              t(' button.')."</p>";
+  $text .= "<p>".t('You may also construct URLs which filter.  For example, /biblio/year/2005 will show all of the entries for 2005.  /biblio/year/2005/author/smith will show all of entries from 2005 for smith.')."</p>";
+  $text .= "<h3>".t('Exporting Search Results:')."</h3>";
+  $text .= "<p>".t('Assuming this option has been enabled by the administrator, you can export search results directly into EndNote.  The link at the top of the result page will export all of the search results, and the links on individual entries will export the information related to that single entry.')."</p>";
+  $text .= "<p>".t('The information is exported in EndNote "Tagged" format similar to this...').
               "<pre>". t('
               %0  Book
               %A  John Smith 
               %D  1959
               %T  The Works of John Smith
               ...').'
-              </pre></P>';
-  $text .= "<P>".t('Clicking on one of the export links should cause your browser to ask you whether you want to Open, or Save To Disk, the file endnote.enw.  If you choose to open it, Endnote should start and ask you which library you would like store the results in.  Alternatively, you can save the file to disk and manually import it into EndNote.')."</P>";
+              </pre></p>';
+  $text .= "<p>".t('Clicking on one of the export links should cause your browser to ask you whether you want to Open, or Save To Disk, the file endnote.enw.  If you choose to open it, Endnote should start and ask you which library you would like store the results in.  Alternatively, you can save the file to disk and manually import it into EndNote.')."</p>";
 
   return  ($text);
 } 
@@ -181,6 +181,11 @@ function theme_biblio_coin_button($element) {
 * Implementation of hook_settings().
 */
 function biblio_settings() {
+  $version = '$Revision$ $Date$';
+  $version = str_replace('$','',$version);
+  $form['biblio_rev'] = array(
+     '#value' => $version,
+  );
   $form['biblio_base'] = array(
     '#type' => 'textfield',
     '#title' => t('Base URL'),
@@ -202,6 +207,36 @@ function biblio_settings() {
     '#return_value' => 1,
     '#default_value' => variable_get('biblio_view_only_own', 0),
     '#description' => t('This option restricts the users capability to view biblio entries.  They will only be able to see the entries which they have created and own.') );
+  $form['block'] = array(
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#title' => t('Block settings'),
+    '#description' => t(''),
+  );
+  $form['block']['biblio_block_title'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Title for the "New Publications" block'),
+    '#default_value' => variable_get('biblio_block_title', 'New Publications'),
+    '#size' => 40,
+    '#maxlength' => 40,
+    '#description' => t(''),
+  );
+  $form['block']['biblio_rowsperblock'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Number of results in the "New Publications" block'),
+    '#default_value' => variable_get('biblio_rowsperblock', 4),
+    '#size' => 2,
+    '#maxlength' => 2,
+    '#description' => t('This sets the number of results that will be displayed in the "New Publications" block.'),
+  );
+  $form['block']['biblio_block_order'] = array(
+    '#type' => 'radios',
+    '#title' => t('Order by'),
+    '#default_value' => variable_get('biblio_block_order', 'n.created'),
+    '#options' => array('n.created'=>t('Date Created'), 'b.biblio_year'=>t('Year Published')),
+  );
+  
   $form['footnotes'] = array(
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
@@ -225,6 +260,20 @@ function biblio_settings() {
     '#return_value' => 1,
     '#default_value' => variable_get('biblio_footnotes_integration', 0),
     '#description' => t('This will convert &lt;bib&gt; tags into &lt;fn&gt; tags.  This will cause intermingled &lt;bib&gt; and &lt;fn&gt; tags to be sequentially numbered.  For this to work, you must put the &lt;bib&gt; filter ahead of the &lt;fn&gt; filter in the filter chain.  If this option is not set, &lt;bib&gt; and &lt;fn&gt; tags will be handled separately.'), 
+  );
+  $form['keywords'] = array(
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#title' => t('Keywords'),
+    '#description' => t('' ),
+  );
+  $form['keywords']['biblio_keyword_sep'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Keyword separator'),
+    '#size' => 2,
+    '#default_value' => variable_get('biblio_keyword_sep', ','),
+    '#description' =>  t('Enter the character which will be used to separate multiple keywords in the keyword field'),
   );
 	 $form['openurl'] = array(
     '#type' => 'fieldset',
@@ -295,8 +344,8 @@ function biblio_settings() {
   $form['style']['biblio_node_layout'] = array(
     '#type' => 'radios',
     '#title' => t('Node Layout'),
-    '#default_value' => variable_get('biblio_node_layout', '0'),
-    '#options' => array('orig'=>t('Original'), 'ft'=>t('Only Fulltext if available')),
+    '#default_value' => variable_get('biblio_node_layout', 'orig'),
+    '#options' => array('orig'=>t('Original'), 'ft'=>t('Only Fulltext if available'),'tabular'=>t('Tabular')),
     '#description' => t('This alters the layout of the "node" (full) view.'),
   );
   $form['style']['biblio_annotations'] = array(
@@ -503,6 +552,16 @@ function biblio_menu($may_cache) {
     $items[] = array('path' => "$base/citekey", 'title' => t(''),
       'callback' => 'biblio_citekey_view',
       'type' => MENU_CALLBACK);
+    if (arg(1) == 'viewinline' && is_numeric(arg(2))) {
+      $node = node_load(arg(2));
+      if ($node->nid) {
+        $items[] = array('path' => "$base/viewinline/". arg(2), 'title' => t(''),
+          'callback' => 'biblio_view_inline',
+          'callback arguments' => array($node),
+          'access' => node_access('view', $node),
+          'type' => MENU_CALLBACK);
+      }
+    }
 
     if (variable_get('biblio_rss', 0)){
       $items[] = array('path' => "$base/rss.xml", 'title' => t('RSS feed'),
@@ -619,7 +678,66 @@ function biblio_types_reset_submit($form_id, $edit){
   drupal_goto("admin/settings/biblio/types");
 
 }
+function biblio_show_node($node,$base){
+  $tid=$node->biblio_type;
+  $result = db_query('SELECT * FROM {biblio_fields} as b  ORDER BY b.weight ASC');
+  while ($row = db_fetch_array($result)){
+    if ($row['common']){
+      $fields[$row['fid']] = $row;
+    }
+  }
+  $result = db_query('SELECT t.* FROM {biblio_types} as t WHERE t.tid = %d',$tid);
+  $row = db_fetch_array($result);
+  $type_name=$row['name'];
+  $rows[] =array(array('data' => 'Publication Type','align'=>'right'),
+                 array('data' => $type_name));
+  $result = db_query('SELECT d.*, f.name FROM {biblio_type_details} as d INNER JOIN {biblio_fields} as f on d.fid=f.fid where d.tid=%d  ORDER BY d.weight ASC', $tid);
+  while ($row = db_fetch_array($result)){
+    $fields[$row['fid']] = (isset($fields[$row['fid']])) ? array_merge($fields[$row['fid']],$row) : $row;
+  }
+  uasort($fields, "_biblio_form_sort"); // resort the fields since the weight may have changed
+  if($node->biblio_authors){
+    if (variable_get('biblio_normalize', 0)) {
+      $node->biblio_authors = _biblio_parse_authors($node->biblio_authors);
+    }
+    $node->biblio_authors = _biblio_author_links($node->biblio_authors,$base);
+  }
+  if($node->biblio_keywords){
+   $node->biblio_keywords = _biblio_keyword_links($node->biblio_keywords,$base);
+  }
+  if($node->biblio_url){
+   $node->biblio_url = l(t("Click Here"),$node->biblio_url,$attrib);
+  }
 
+  foreach ($fields as $key => $row){
+    if (!empty($node->$row['name'])){
+      switch($key){
+      case 1:
+      case 23:
+      case 25:
+        // check_plain is not need on these since they have gone through
+        // the l() function which does a check_plain
+        $data = $node->$row['name'];
+        break;
+      case 44:
+        $row['title']=""; 
+        $data = "";
+        break;
+      default:
+        $data = check_plain($node->$row['name']);
+      }
+      $rows[] = array(array('data' => $row['title'],'align'=>'right','valign'=>'top','width'=>'20%'),
+                      array('data' => $data));
+    }
+  }
+
+  $output = '<div id="biblio-node">';
+  $output .= $node->biblio_coins;
+  $output .= theme('table',$header,$rows);
+  $output .= '</div>';
+  
+  return $output;
+}  
 function biblio_form_types_edit(){
   if ($arg_list = func_get_args()){// show an existing type  
     $tid = $arg_list[0];
@@ -830,11 +948,26 @@ function biblio_filter_clear() {
 } 
 
 function _get_biblio_filters(){
-  $result = db_query('SELECT b.biblio_year, b.biblio_authors, t.name , t.tid FROM {biblio} as b  left join {biblio_types} as t on b.biblio_type = t.tid ORDER BY b.biblio_year DESC');
+  $fields = " b.biblio_year, b.biblio_authors, t.name , t.tid ";
+  $order = " b.biblio_year DESC";
+  $taxo_fields = "td.name as termname,td.tid as taxid, v.name as vocab_name";
+  $taxo_order = "vocab_name ASC, termname ASC";
+  $table = "{node} as n  inner join {biblio} as b on n.vid=b.vid ";
+  $join = "left join {biblio_types} as t on b.biblio_type = t.tid";  
+  $taxo_join = array("inner join {term_node} as tn on n.nid = tn.nid",
+                     "left join  {term_data} as td on tn.tid= td.tid",
+                     "left join  {vocabulary} as v on v.vid= td.vid");
+
+  $taxo_joins = implode(' ',$taxo_join);
+  
+  $result = db_query("SELECT $fields FROM $table $join ORDER BY $order");
+  $taxoresult = db_query("SELECT $taxo_fields FROM $table $taxo_joins ORDER BY $taxo_order");
+
   while ($option = db_fetch_object($result)) {
     if ($option->biblio_year == 0) { $option->biblio_year = t("In Press"); }
     $pub_years["$option->biblio_year"] = t("!year",array('!year'=>$option->biblio_year));
     $pub_type["$option->tid"] = t("!name",array('!name'=>$option->name));
+    
     $author_array = explode(";", $option->biblio_authors);
     foreach($author_array as $auth) {
       if (strstr($auth, ",")) {
@@ -847,15 +980,26 @@ function _get_biblio_filters(){
       if ($lastname) $pub_authors["$lastname"] = $lastname;
     } 
   } 
+  while ($tax = db_fetch_object($taxoresult)) {
+    $pub_taxo["$tax->taxid"] = t("!name",array('!name'=>"$tax->vocab_name - $tax->termname"));
+  }
+
   $pub_years = array_unique($pub_years);
   $pub_type = array_unique($pub_type);
+  if (!empty($pub_taxo))$pub_taxo = array_unique($pub_taxo);
+
+  if (!empty($pub_taxo)){
+    $tax_select =  array('title' => t('Term'),'options' => $pub_taxo);
+  }else{$tax_select = null;
+  }
+  
   ksort($pub_authors);
-  $filters = array('author' => array('title' => t('Author'),
-      'options' => $pub_authors),
-    'type' => array('title' => t('Type'),
-      'options' => $pub_type),
-    'year' => array('title' => t('Year'),
-      'options' => $pub_years)); 
+  $filters = array(
+    'author' => array('title' => t('Author'),'options' => $pub_authors),
+    'type' => array('title' => t('Type'),'options' => $pub_type),
+    'term_id' => $tax_select,
+    'year' => array('title' => t('Year'),'options' => $pub_years)
+  ); 
   
   return $filters;
 }
@@ -886,8 +1030,10 @@ function biblio_form_filter() {
   }
 
   foreach ($filters as $key => $filter) {
+    if (count ($filter['options'])){
     $names[$key] = $filter['title'];
     $form['filters']['status'][$key] = array('#type' => 'select', '#options' => $filter['options']);
+   }
   }
   $form['filters']['status']['keyword']=array('#type' => 'textfield','#size' => 25, '#maxlength' => 255);
   $names['keyword'] = "Keyword";
@@ -904,10 +1050,11 @@ function biblio_form_filter() {
 function theme_biblio_filters(&$form) {
 
   if (sizeof($form['current'])) {
-  $output .= '<ul>';
+    $output .= '<ul>';
     foreach (element_children($form['current']) as $key) {
       $output .= '<li>' . drupal_render($form['current'][$key]) . '</li>';
     }
+    $output .= '</ul>';
   }
 
   $output .= '<dl class="multiselect">' . (sizeof($form['current']) ? '<dt><em>'. t('and') .'</em> '. t('where') .'</dt>' : '') . '<dd class="a">';
@@ -925,7 +1072,7 @@ function theme_biblio_filters(&$form) {
 
   $output .= '</dl>';
   $output .= '<div class="container-inline" id="node-buttons">'. drupal_render($form['buttons']) .'</div>';
-  $output .= '</li></ul><br class="clear" />';
+  $output .= '<br class="clear" />';
 
   return $output;
 }
@@ -944,6 +1091,7 @@ function biblio_form_filter_submit($form_id,$form_values) {
         if (isset($filters[$filter]['options'])){
           $flat_options = form_options_flatten($filters[$filter]['options']);
         }
+
         if (isset($flat_options[$form_values[$filter]]) || $filter == 'keyword') {
           $_SESSION['biblio_filter'][] = array($filter, $form_values[$filter]);
           $base =  variable_get('biblio_base', 'biblio');
@@ -980,10 +1128,14 @@ function biblio_submit(&$node){
   }
 }
 //function biblio_pre_render($form_id, &$form, $next_page = TRUE) {
-function theme_biblio_node_form($form) {
+function biblio_form_alter($form_id, &$form){
   global $form_values;
- //print_r($form);
-    if ( isset($form['biblio_type']['#value']) && $form['biblio_type']['#value'] >0 ){
+  if ($form_id == "biblio_node_form") {
+    if (!empty($form['#node']->biblio_type)) $type = $form['#node']->biblio_type;
+    if (!empty($form['#post']['biblio_type'])) $type = $form['#post']['biblio_type'];
+    //$type = $form['#post']['biblio_type'] ? $form['#post']['biblio_type']:;
+    
+    if ( $type >0 ){
 
     $form['title']['#type'] = 'textfield';
 
@@ -995,7 +1147,7 @@ function theme_biblio_node_form($form) {
         if($row['common']) $form[$row['name']]['#type'] = $row['type'];
     }
  
-    $result = db_query('SELECT b.*, c.name, c.type FROM {biblio_type_details} as b INNER JOIN {biblio_fields} as c ON b.fid = c.fid where tid= %d ORDER BY b.weight ASC',$form['biblio_type']['#value']);
+    $result = db_query('SELECT b.*, c.name, c.type FROM {biblio_type_details} as b INNER JOIN {biblio_fields} as c ON b.fid = c.fid where tid= %d ORDER BY b.weight ASC',$type);
     while ($row = db_fetch_array($result)){
       $type_fields[$row['fid']] = $row;
       $form[$row['name']]['#type'] = $row['type'];
@@ -1011,7 +1163,7 @@ function theme_biblio_node_form($form) {
     foreach ($fields as $key=>$fld){
   
       $form[$fld['name']] = array_merge($form[$fld['name']],array(
-                                          '#default_value' => $node->$fld['name'],
+                                          '#default_value' =>$form['#node']->$fld['name'],
                                           '#title' => t('!title',array('!title'=>$fld['title'])),
                                           '#required' => $fld['required'],
                                           '#size' => $fld['size'],
@@ -1021,10 +1173,11 @@ function theme_biblio_node_form($form) {
                                         ); // end array_merge
 
     } //end foreach
+    $form['biblio_keywords']['#description'] = t("Separate key words with a ")."<b>".variable_get('biblio_keyword_sep', ',')."</b>".t(" character");
 
-  }//endif ($form_id == 'biblio_node_form...  
-    $output .= drupal_render($form);
-  return $output;
+  } //endif type > 0
+ } //endif ($form_id == 'biblio_node_form...  
+ return $form;
 
 }
 
@@ -1260,9 +1413,17 @@ function biblio_citekey_generate(){
 
      }    
   }  
-
 }
 
+function biblio_view_inline(&$node){
+  $style = variable_get('biblio_style', 'classic');
+  $base =  variable_get('biblio_base', 'biblio'); 
+  
+  $output  = '<div class="biblio-inline">';
+  $output .= theme('biblio_long', $node, $base, $style);
+  $output .= '</div>';
+  print $output;
+}
 /**
 * Implementation of hook_view().
 * 
@@ -1275,8 +1436,15 @@ function biblio_view(&$node, $teaser = false, $page = false) {
   
   $style = variable_get('biblio_style', 'classic');
   $base =  variable_get('biblio_base', 'biblio'); 
-
-  $node->content['body']['#value'] = theme('biblio_long', $node,$base,$style);
+  switch (variable_get('biblio_node_layout', '0')){
+  case 'orig':
+    $node->content['body']['#value'] = theme('biblio_long', $node,$base,$style);
+    break;
+  case 'tabular':
+  default:
+    $node->content['body']['#value'] = biblio_show_node($node,$base);
+    break;
+  }
 
   if ($page){
     drupal_set_breadcrumb(array(l(t('Home'), NULL), l(t("!base",array('!base'=>drupal_ucfirst($base))), $base)));
@@ -1298,10 +1466,12 @@ function biblio_block($op = 'list', $delta = 0) {
       return $blocks;
     } else if ($op == 'view') {
       // Retrieve the latest pubs
-      $result = db_query_range(db_rewrite_sql("SELECT n.nid, n.title, n.status FROM {node} AS n WHERE n.type = 'biblio' AND n.status=1 ORDER BY n.created DESC"), 0, 4);
+      $num_in_block = variable_get('biblio_rowsperblock', 4);
+      $block_order  = variable_get('biblio_block_order', 'n.created');
+      $result = db_query_range(db_rewrite_sql("SELECT n.nid, n.title, n.status, b.biblio_year FROM {node} n left join {biblio} b  on n.vid=b.vid WHERE n.type = 'biblio' AND n.status=1 ORDER BY $block_order DESC"), 0, $num_in_block);
       if (db_num_rows($result)) {
         $base =  variable_get('biblio_base', 'biblio');
-        $block['subject'] = t('New Publications');
+        $block['subject'] = t(variable_get('biblio_block_title', 'New Publications'));
         $block['content'] .= '<div class="item-list"><ul>';
         while ($pub = db_fetch_object($result)) {
           $block['content'] .= '<li >' . l("$pub->title", "node/$pub->nid") . '</li>';
@@ -1346,9 +1516,9 @@ function theme_biblio_long($node,$base='biblio',$style='classic') {
   }
 
   if (variable_get('biblio_normalize', 0)) {
-    $authors = check_plain(_biblio_parse_authors($node->biblio_authors));
+    $authors = _biblio_parse_authors($node->biblio_authors);
   } else {
-    $authors = check_plain($node->biblio_authors);
+    $authors = $node->biblio_authors;
   } 
 
   $openurl_base = variable_get('biblio_baseopenurl','');
@@ -1356,8 +1526,8 @@ function theme_biblio_long($node,$base='biblio',$style='classic') {
   if($openurl_base) $output .= theme('biblio_openurl',biblio_openurl($node, $openurl_base));
   
 
-  $output .= '<div class="biblio_authors"><H3>'.t("Authors").':</H3> ' . _biblio_author_links($authors,$base) . "</div>\n";
-  $output .= '<div class="biblio_source"><H3>'.t("Source").': </H3> ';
+  $output .= '<div class="biblio_authors"><h3>'.t("Authors").':</h3> ' . _biblio_author_links($authors,$base) . "</div>\n";
+  $output .= '<div class="biblio_source"><h3>'.t("Source").': </h3> ';
   $source = null;
   if ($node->biblio_secondary_title) $source .= check_plain($node->biblio_secondary_title);
   if ($node->biblio_publisher) {
@@ -1400,7 +1570,7 @@ function theme_biblio_long($node,$base='biblio',$style='classic') {
       $output .= '<h3>'.t("URL").':</h3>'.l("$node->biblio_url",$node->biblio_url,$attrib) . "\n";
   }
   if ($node->biblio_keywords) $output .= '<h3>'.t("Keywords").':</h3> ' . _biblio_keyword_links($node->biblio_keywords,$base) . "\n";
-  if ($node->biblio_abst_e) $output .= '<H3>'.t("Abstract").':</h3> ' . check_markup($node->biblio_abst_e,FILTER_HTML_ESCAPE,FALSE) . "\n";
+  if ($node->biblio_abst_e) $output .= '<h3>'.t("Abstract").':</h3> ' . check_markup($node->biblio_abst_e,FILTER_HTML_ESCAPE,FALSE) . "\n";
   if ($node->biblio_abst_f) $output .= '<p>' . check_markup($node->biblio_abst_f,FILTER_HTML_ESCAPE,FALSE) . "\n";
   if ($node->biblio_notes) $output .= '<h3>'.t("Notes").': </h3>' . check_markup($node->biblio_notes,FILTER_HTML_ESCAPE,FALSE) . "\n";
   if ( strlen(trim($node->body)) && user_access('view full text') ) {
@@ -1418,7 +1588,7 @@ function theme_biblio_export_links($nid){
 //     $output .= '['.l(t("XML"),"$base/export/xml/$node->nid").']';
 //     $output .= '['.l(t("BibTex"),"$base/export/bib/$node->nid").']<br /><br />';
   $base =  variable_get('biblio_base', 'biblio');
-  $links .= '<p><ul class="tabs secondary">';
+  $links .= '<p /><ul class="tabs secondary">';
   $links .= '<li> '.l(t("Tagged"),"$base/export/tagged/$nid").'</li>';
   $links .= '<li> '.l(t("XML"),"$base/export/xml/$nid").'</li>';
   $links .= '<li> '.l(t("BibTex"),"$base/export/bib/$nid").'</li></ul>';
@@ -1426,19 +1596,18 @@ function theme_biblio_export_links($nid){
   return $links;
 }
 
-function theme_biblio_short($node,$base='biblio',$style_name='classic') {
+function theme_biblio_short($node, $base='biblio', $style_name='classic', $inline=false) {
  // $style_name = $style ? $style : variable_get('biblio_style', 'classic');
-  require_once( drupal_get_path('module', 'biblio') . "/biblio_style_$style_name.inc");
-  
+  require_once( drupal_get_path('module', 'biblio') . "/biblio_style_$style_name.inc");  
   $style_function = "biblio_style_$style_name";
-  $styled_node = $style_function($node,$base);
+  $styled_node = $style_function($node, $base, $inline);
   if(empty($node->biblio_coins)) biblio_coins_generate($node);
   return($styled_node.$node->biblio_coins);
 
 }
-function theme_biblio_list($node,$base='biblio',$style='classic') {
+function theme_biblio_list($node, $base='biblio', $style='classic', $inline=false) {
   
-  $output .= theme('biblio_short',$node,$base,$style);
+  $output .= theme('biblio_short', $node, $base, $style, $inline);
   if ($node->biblio_abst_e) {
     $output .= '<span class="biblio_abstract_link">';
     $output .= l(" Abstract", "node/$node->nid") . "\n";
@@ -1509,26 +1678,35 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
       if($sort_links['author']) $content .= "[".l(t("Author"),$_GET['q'],$sort_attr,"sort=author&order=$order")."]";
       $content .= "</div> ";
     }
+    
+    $session = &$_SESSION['biblio_filter'];
+    // if there are any filters in place, print them at the top of the list
+    if (count($args)) {
+      $content .= '<b>'.t('Filters').': </b>';
+      while ($args) {
+        $type = $args[0];
+        array_shift($args);
+        $value = db_escape_string($args[0]);
+        if ($type == 'term_id'){
+          $term_result = db_query('SELECT name FROM {term_data} as td WHERE td.tid = %d',$value);
+          $term = db_fetch_object($term_result);
+          $value = $term->name;
+          $type = t("Taxonomy Term");
+        }
+        if ($type == 'type') $value = $pub_type["$value"];
+        array_shift($args);
+        $params = array('%a' =>  $type , '%b' =>  $value );
+        $content .= ($i++ ? t('<em> and</em> <strong>%a</strong> is <strong>%b</strong>', $params) : t('<strong>%a</strong> is <strong>%b</strong>', $params)) ;
+      } 
+      $content .= '&nbsp;&nbsp;'.l('['.t('Clear All Filters').']',"$base/filter/clear");
+    }
   }
-  $session = &$_SESSION['biblio_filter'];
-  if (count($args)) {
-    $content .= '<b>'.t('Filters').': </b>';
-    while ($args) {
-      $type = $args[0];
-      array_shift($args);
-      $value = db_escape_string($args[0]);
-      if ($type == 'type') $value = $pub_type["$value"];
-      array_shift($args);
-      $params = array('%a' =>  $type , '%b' =>  $value );
-      $content .= ($i++ ? t('<em> and</em> <strong>%a</strong> is <strong>%b</strong>', $params) : t('<strong>%a</strong> is <strong>%b</strong>', $params)) . '</li>';
-    } 
-    $content .= '&nbsp;&nbsp;'.l('['.t('Clear All Filters').']',"$base/filter/clear");
-  } 
+  if($inline) print '<div class="biblio-inline">';
   while ($node = db_fetch_object($result)) {
     switch ($attrib['sort']) {
       case 'title':
-        if ( drupal_substr($node->title, 0, 1)  != $_char) {
-          $_char = drupal_substr($node->title, 0, 1) ;
+        if ( drupal_substr(drupal_ucfirst(ltrim($node->title)), 0, 1)  != $_char) {
+          $_char =  drupal_substr(drupal_ucfirst(ltrim($node->title)), 0, 1) ;
           $content .= '<div class="biblio-year">' . $_char . "</div>\n";
         } 
         break;
@@ -1555,12 +1733,12 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
                    .  "</div>\n";        } 
     } //end switch
     $content .= '<div class="biblio-entry">' . "\n";
-    $content .= theme('biblio_list', $node,$base,$style);
+    $content .= theme('biblio_list', $node,$base,$style,$inline);
     $content .= "</div>\n";
   } //end while
   $content .= theme('pager', 0, variable_get('biblio_rowsperpage', 25));
   if (!db_num_rows($result)) {
-    $content .= "<H3>".t("No items found")."</H3>";
+    $content .= "<h3>".t("No items found")."</h3>";
     if (strstr($content, "Filters:")) {
       $content .= l(t('Modify'),"$base/filter");
       $content .= ' or '.l(t('remove'),"$base/filter/clear").' your filters and try again.';
@@ -1569,7 +1747,7 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
   if (!$inline) {
     print theme('page', $content);
   }else{ 
-    print $content;
+    print $content . "</div>";
   }
 
 } 
@@ -1745,7 +1923,7 @@ $join = array();
 
   $query = db_rewrite_sql("SELECT DISTINCT n.*, b.* FROM {node} n $joins  WHERE $where_clause $published $limit $sortby ");
   $count_query = db_rewrite_sql("SELECT DISTINCT COUNT(*) FROM {node} n $joins  WHERE $where_clause $published $limit ");
-
+//echo $query; die;
   $_SESSION['last_biblio_query'] = $query;
   $terms[] = $pager_attrib['order'];
   $_SESSION['last_biblio_query_terms'] = $terms;
@@ -1760,14 +1938,14 @@ $params=array();
     $query = $_SESSION['last_biblio_query'];
     $params = $_SESSION['last_biblio_query_terms'];    
   } elseif (!empty($nid)) {
-    $query = "SELECT * FROM {node} n left join {biblio} b  on n.vid=b.vid 
-                WHERE n.nid=%d ";
+    $query = db_rewrite_sql("SELECT * FROM {node} n left join {biblio} b  on n.vid=b.vid 
+                WHERE n.nid=%d ");
     $params[] = $nid;
   }else{
     return;
   } 
 
-  $result = db_query(db_rewrite_sql($query),$params);
+  $result = db_query($query,$params);
 
   if (db_num_rows($result)) {
      switch($format){
@@ -2216,8 +2394,9 @@ function biblio_get_db_fields() {
   }
   return $fields ;
 } 
-function _biblio_author_links($author,$base='biblio') {
+function _biblio_author_links($author,$base='biblio',$inline=false) {
   $query = null;
+  $inline = $inline ? "/inline" : "";
   //$attrib = (variable_get('biblio_links_target_new_window',null)) ? array('target'=>'_blank') : null;
   $attrib = null;
   
@@ -2242,7 +2421,8 @@ function _biblio_author_links($author,$base='biblio') {
       $lastname = end($parts);
     } 
     // list($lastname, $init) = split(",", $auth);
-    $html .= l(trim($auth), "$base/author/" . trim($lastname),$attrib, $query );
+
+    $html .= l(trim($auth), "$base/author/" . trim($lastname) . $inline,$attrib, $query );
   } 
   return $html;
 } 
@@ -2302,12 +2482,17 @@ function _biblio_author_index_insert($nid, $author,$rank) {
 }
 function _biblio_keyword_links($keywords,$base='biblio') {
   if (isset($_GET['sort'])) {
-    $sort = "?sort=" . $_GET['sort'];
+    $query  .= "sort=" . $_GET['sort'];
+  } 
+  if (isset($_GET['order'])) {
+    $query  .= $query ?"&":"";
+    $query  .= "order=" . $_GET['order'];
   } 
   
   $html = "";
+  $sep = variable_get('biblio_keyword_sep', ',');
 //  if (strstr($keywords,';')){
-    $keyword_array = explode(";", $keywords);
+    $keyword_array = explode($sep, $keywords);
 /*  }elseif(strstr($keywords,',')){
     $keyword_array = explode(",", $keywords);  
   }else{
@@ -2316,7 +2501,7 @@ function _biblio_keyword_links($keywords,$base='biblio') {
 */
   foreach($keyword_array as $kw) {
     $html .= (empty($html))? "" : "; ";
-    $html .= l(trim($kw), "$base/keyword/" . trim($kw) . $sort);
+    $html .= l(trim($kw), "$base/keyword/" . trim($kw) . $sort, NULL, $query);
   } 
   return $html;
 }

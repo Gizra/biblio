@@ -1,19 +1,40 @@
 <?PHP
 // $Id$
+/**
+ * Get the style information
+ *
+ * @return
+ *   The name of the style
+ */
 function biblio_style_classic_info(){
 
     return array('classic'=>'Classic - This is the original biblio style');
                  
 }
-
-function biblio_style_classic($node,$base='biblio'){
+/**
+ * Apply a bibliographic style to the node
+ *
+ *
+ * @param $node
+ *   An object containing the node data to render
+ * @param $base
+ *   The base URL of the biblio module (defaults to /biblio)
+ * @param $inline
+ *   A logical value indicating if this is being rendered within the
+ *   Drupal framwork (false) or we are just passing back the html (true)
+ * @return
+ *   The styled biblio entry
+ */
+function biblio_style_classic($node, $base='biblio', $inline=false){
   if (variable_get('biblio_normalize', 0)) {
-    $authors = check_plain(_biblio_parse_authors($node->biblio_authors));
+    $authors = _biblio_parse_authors($node->biblio_authors);
   } else {
-    $authors = check_plain($node->biblio_authors);
+    $authors = $node->biblio_authors;
   } 
-  $output .=  l($node->title, "node/$node->nid") . "</span> \n";
-  $output .=  _biblio_author_links($authors,$base) . "</span> \n";
+  $output .=  '<span class="biblio-title">';
+  $output .= $inline ? l("$node->title", "$base/viewinline/$node->nid") : l("$node->title", "node/$node->nid"); 
+  $output .= "</span>, \n";
+  $output .=  '<span class="biblio-authors">' . _biblio_author_links($authors,$base,$inline) . "</span> \n";
   if ($node->biblio_secondary_title) {
     $output .= ', ' . check_plain($node->biblio_secondary_title);
   } 
