@@ -1,3 +1,5 @@
+<?php
+
 $schema['biblio'] = array (
         'fields' => array(
           'nid'                     => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
@@ -57,10 +59,44 @@ $schema['biblio'] = array (
           'biblio_access_date'      => array('type' => 'varchar', 'length' => 255, 'default' => NULL)
         ),  
         'primary key' => array('vid'),
-        KEY 'nid' ('nid'),
-        KEY 'type' ('biblio_type'),
-        KEY 'year' ('biblio_year'),
-        FULLTEXT KEY 'keywords' ('biblio_keywords'),
-        FULLTEXT KEY 'publisher' ('biblio_publisher'),
-        FULLTEXT KEY 'authors' ('biblio_authors')
-      )  /*!40100 ENGINE=MyISAM DEFAULT CHARACTER SET utf8 */;");
+        'indexes' => array(
+           'nid'  => array('nid'),
+           'type' => array('biblio_type'),
+           'year' => array('biblio_year')
+        ),
+      );
+  $schema['biblio_author_index'] = array(
+    'fields' => array(
+       'aid'    => array('type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE),
+       'author' => array('type' => 'varchar', 'length' => 255, 'default' => NULL)
+    ),
+    'primary key' => array('aid')
+  );
+      
+  $schema['biblio_has_author'] = array(
+    'fields' => array(    
+        'nid'  => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+        'aid'  => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+        'rank' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0)
+      ),
+      'primary key' => array('nid','aid','rank')
+    );
+
+  $schema['biblio_fields'] = array(
+    'fields' => array(    
+        'fid'           => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+        'name'          => array('type' => 'varchar', 'length' => 100, 'default' => NULL),
+        'title'         => array('type' => 'varchar', 'length' => 100, 'default' => NULL),
+        'common'        => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+        'type'          => array('type' => 'varchar', 'length' => 100, 'default' => NULL),
+        'size'          => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+        'maxsize'       => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+        'hint'          => array('type' => 'varchar', 'length' => 100, 'default' => NULL),
+        'required'      => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+        'autocomplete'  => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+        'visible'       => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+        'weight'        => array('type' => 'int', 'not null' => TRUE, 'default' => 0)
+      ),
+      'primary key' => array('fid')
+      );
+
