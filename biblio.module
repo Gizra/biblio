@@ -471,104 +471,181 @@ function _biblio_get_styles(){
 function biblio_menu($may_cache) {
   $items = array();
 
-  if ($may_cache) {
-    $items[] = array('path' => 'node/add/biblio', 'title' => t('bibliography'),
-      'access' => user_access('create biblio'));
-    // The next two "LOCAL TASKS" are for the admin/settings/biblio page  
-    $items[] = array('path' => 'admin/settings/biblio', 'title' => t('Biblio settings'),
-      'description' => t('Configure default behavior of the biblio module.'),
-      'callback' => 'drupal_get_form', 'callback arguments' => array('biblio_settings'));
-    $items[] = array('path' => 'admin/settings/biblio/basic', 'title' => t('Preferences'),
-      'type' => MENU_DEFAULT_LOCAL_TASK, 'weight' => -10);
-    $items[] = array('path' => 'admin/settings/biblio/import', 'title' => t('File Import'),
-      'callback' => 'drupal_get_form', 'callback arguments' => array('biblio_form_import'),
-      'type' => MENU_LOCAL_TASK, 'weight' => -7);  
-    $items[] = array('path' => 'admin/settings/biblio/types', 'title' => t('Type Customization'),
-      'callback' => 'biblio_form_types',
-      'type' => MENU_LOCAL_TASK, 'weight' => -8);  
-    $items[] = array('path' => 'admin/settings/biblio/defaults', 'title' => t('Field Defaults'),
-      'callback' => 'drupal_get_form', 'callback arguments' => array('biblio_form_types_edit'),
-      'type' => MENU_LOCAL_TASK , 'weight' => -9);  
-    $items[] = array('path' => 'admin/settings/biblio/types/add', 'title' => t(''),
-      'callback' => 'drupal_get_form', 'callback arguments' => array('biblio_form_types_add'),
-       'type' => MENU_CALLBACK );  
-    $items[] = array('path' => 'admin/settings/biblio/types/edit', 'title' => t(''),
-      'callback' => 'drupal_get_form', 'callback arguments' => array('biblio_form_types_edit'),
-       'type' => MENU_CALLBACK );  
-    $items[] = array('path' => 'admin/settings/biblio/types/delete', 'title' => t(''),
-      'callback' => 'drupal_get_form', 'callback arguments' => array('biblio_form_types_delete'),
-      'type' => MENU_CALLBACK );  
-    $items[] = array('path' => 'admin/settings/biblio/types/new', 'title' => t('Add New Type'),
-      'callback' => 'drupal_get_form', 'callback arguments' => array('biblio_form_types_add'),
-      'type' => MENU_LOCAL_TASK, 'weight' => -9);  
-    $items[] = array('path' => 'admin/settings/biblio/types/reset', 'title' => t('Reset all types to defaults '),
-      'callback' => 'drupal_get_form', 'callback arguments' => array('biblio_types_reset'),
-      'type' => MENU_LOCAL_TASK );  
-    $items[] = array('path' => 'admin/settings/biblio/types/hide', 'title' => t(''),
-      'callback' => 'biblio_types_hide',
-      'type' => MENU_CALLBACK );  
-    $items[] = array('path' => 'admin/settings/biblio/types/show', 'title' => t(''),
-      'callback' => 'biblio_types_show',
-      'type' => MENU_CALLBACK );  
-    $items[] = array('path' => 'biblio/autocomplete',
-      'title' => t('Autocomplete '),
-      'callback' => 'biblio_autocomplete',
-      'access' => user_access('access content'),
-      'type' => MENU_CALLBACK);
-  } 
   $base =  variable_get('biblio_base', 'biblio');
-  $items[] = array('path' => $base, 'title' => t(''),
-      'callback' => 'biblio_db_search',
-      'access' => user_access('access content'),
-      'type' => MENU_CALLBACK);
-  $items[] = array('path' => "$base/list", 'title' => t('List'),
-      'type' => MENU_DEFAULT_LOCAL_TASK, 'weight' => -10);
-  $items[] = array('path' => "$base/filter", 'title' => t('Filter'),
-      'callback' => 'drupal_get_form', 'callback arguments' => array('biblio_form_filter'),
-      'access' => user_access('show filter tab'),
-      'type' => MENU_LOCAL_TASK, 'weight' => -9);
-  $items[] = array('path' =>  "$base/filter/clear", 'title' => t(''),
-      'callback' => 'biblio_filter_clear',
-      'access' => user_access('access content'),
-      'type' => MENU_CALLBACK);
-  $items[] = array('path' => "$base/help", 'title' => t('Help'),
-      'callback' => 'biblio_help_page',
-      'access' => user_access('access content'),
-      'type' => MENU_CALLBACK);
-  $items[] = array('path' => "$base/import/form", 'title' => t(''),
-      'callback' => 'drupal_get_form', 'callback arguments' => array('biblio_form_import'),
-      'access' => user_access('import from file'),
-      'type' => MENU_CALLBACK);
-  $items[] = array('path' => "$base/export", 'title' => t(''),
-      'callback' => '_biblio_export',
-      'access' => user_access('show export links'),
-      'type' => MENU_CALLBACK);
-    $items[] = array('path' => "$base/type/add", 'title' => t(''),
-      'callback' => 'biblio_type_add',
-      'type' => MENU_CALLBACK);
-    $items[] = array('path' => "$base/type/remove", 'title' => t(''),
-      'callback' => 'biblio_type_remove',
-      'type' => MENU_CALLBACK);
-    $items[] = array('path' => "$base/citekey", 'title' => t(''),
-      'callback' => 'biblio_citekey_view',
-      'type' => MENU_CALLBACK);
-    if (arg(1) == 'viewinline' && is_numeric(arg(2))) {
-      $node = node_load(arg(2));
-      if ($node->nid) {
-        $items[] = array('path' => "$base/viewinline/". arg(2), 'title' => t(''),
-          'callback' => 'biblio_view_inline',
-          'callback arguments' => array($node),
-          'access' => node_access('view', $node),
-          'type' => MENU_CALLBACK);
-      }
-    }
+  
+  $items['node/add/biblio'] = array(
+    'title' => t('bibliography'),
+    'access callback' => 'user_access',
+    'access arguments' => array('create biblio')
+  );
+    // The next two "LOCAL TASKS" are for the admin/settings/biblio page  
+  $items['admin/settings/biblio'] = array(
+    'title' => t('Biblio settings'),
+    'description' => t('Configure default behavior of the biblio module.'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('biblio_settings')
+  );
+  $items['admin/settings/biblio/basic'] = array(
+    'title' => t('Preferences'),
+    'type' => MENU_DEFAULT_LOCAL_TASK, 
+    'weight' => -10
+  );
+  $items['admin/settings/biblio/import'] = array(
+    'title' => t('File Import'),
+    'page callback' => 'drupal_get_form', 
+    'page arguments' => array('biblio_form_import'),
+    'type' => MENU_LOCAL_TASK, 
+    'weight' => -7
+  );  
+  $items['admin/settings/biblio/types'] = array(
+    'title' => t('Type Customization'),
+    'page callback' => 'biblio_form_types',
+    'type' => MENU_LOCAL_TASK, 
+    'weight' => -8
+  );  
+  $items['admin/settings/biblio/defaults'] = array(
+    'title' => t('Field Defaults'),
+    'page callback' => 'drupal_get_form', 
+    'page arguments' => array('biblio_form_types_edit'),
+    'type' => MENU_LOCAL_TASK , 
+    'weight' => -9
+  );  
+  $items['admin/settings/biblio/types/add'] = array(
+    'title' => t(''),
+    'page callback' => 'drupal_get_form', 
+    'page arguments' => array('biblio_form_types_add'),
+    'type' => MENU_CALLBACK 
+  );  
+  $items['admin/settings/biblio/types/edit'] = array(
+    'title' => t(''),
+    'page callback' => 'drupal_get_form', 
+    'page arguments' => array('biblio_form_types_edit'),
+    'type' => MENU_CALLBACK 
+  );  
+  $items['admin/settings/biblio/types/delete'] = array(
+    'title' => t(''),
+    'page callback' => 'drupal_get_form', 
+    'page arguments' => array('biblio_form_types_delete'),
+    'type' => MENU_CALLBACK 
+  );  
+  $items['admin/settings/biblio/types/new'] = array(
+    'title' => t('Add New Type'),
+    'page callback' => 'drupal_get_form', 
+    'page arguments' => array('biblio_form_types_add'),
+    'type' => MENU_LOCAL_TASK, 
+    'weight' => -9
+  );  
+  $items['admin/settings/biblio/types/reset'] = array(
+    'title' => t('Reset all types to defaults '),
+    'page callback' => 'drupal_get_form', 
+    'page arguments' => array('biblio_types_reset'),
+    'type' => MENU_LOCAL_TASK 
+  );  
+  $items['admin/settings/biblio/types/hide'] = array(
+    'title' => t(''),
+    'callback' => 'biblio_types_hide',
+    'type' => MENU_CALLBACK 
+  );  
+  $items['admin/settings/biblio/types/show'] = array(
+    'title' => t(''),
+    'callback' => 'biblio_types_show',
+    'type' => MENU_CALLBACK 
+  );  
+  $items['biblio/autocomplete'] = array(
+    'title' => t('Autocomplete '),
+    'callback' => 'biblio_autocomplete',
+    'access' => user_access('access content'),
+    'type' => MENU_CALLBACK
+  );
+  $items[$base] = array(
+    'title' => t(''),
+    'callback' => 'biblio_db_search',
+    'access callback' => 'user_access',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK
+  );
+  $items["$base/list"] = array(
+    'title' => t('List'),
+    'type' => MENU_DEFAULT_LOCAL_TASK, 
+    'weight' => -10
+  );
+  $items["$base/filter"] = array(
+    'title' => t('Filter'),
+    'page callback' => 'drupal_get_form', 
+    'page arguments' => array('biblio_form_filter'),
+    'access callback' => 'user_access',
+    'access arguments' => array('show filter tab'),
+    'type' => MENU_LOCAL_TASK, 
+    'weight' => -9
+  );
+  $items["$base/filter/clear"] = array(
+    'title' => t(''),
+    'page callback' => 'biblio_filter_clear',
+    'access callback' => 'user_access',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK
+  );
+  $items["$base/help"] = array(
+    'title' => t('Help'),
+    'page callback' => 'biblio_help_page',
+    'page callback' => 'user_access',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK
+  );
+  $items["$base/import/form"] = array(
+    'title' => t(''),
+    'page callback' => 'drupal_get_form', 
+    'page arguments' => array('biblio_form_import'),
+    'access callback' => 'user_access',
+    'access arguments' => array('import from file'),
+    'type' => MENU_CALLBACK
+  );
+  $items["$base/export"] = array(
+    'title' => t(''),
+    'page callback' => '_biblio_export',
+    'access callback' => 'user_access',
+    'access arguments' => array('show export links'),
+    'type' => MENU_CALLBACK
+  );
+  $items["$base/type/add"] = array(
+    'title' => t(''),
+    'callback' => 'biblio_type_add',
+    'type' => MENU_CALLBACK
+  );
+  $items["$base/type/remove"] = array(
+    'title' => t(''),
+    'callback' => 'biblio_type_remove',
+    'type' => MENU_CALLBACK
+  );
+  $items["$base/citekey"] = array(
+    'title' => t(''),
+    'callback' => 'biblio_citekey_view',
+    'type' => MENU_CALLBACK
+  );
 
-    if (variable_get('biblio_rss', 0)){
-      $items[] = array('path' => "$base/rss.xml", 'title' => t('RSS feed'),
-        'callback' => 'biblio_feed',
-        'access' => user_access('access content'),
-        'type' => MENU_CALLBACK);
+  if (arg(1) == 'viewinline' && is_numeric(arg(2))) {
+    $node = node_load(arg(2));
+    if ($node->nid) {        
+      $items["$base/viewinline/". arg(2)] = array(
+        'title' => t(''),
+        'callback' => 'biblio_view_inline',
+        'callback arguments' => array($node),
+        'access callback' => 'node_access',          
+        'access arguments' => array('view', $node),
+        'type' => MENU_CALLBACK
+      );
     }
+  }
+
+  if (variable_get('biblio_rss', 0)){
+    $items["$base/rss.xml"] = array(
+      'title' => t('RSS feed'),
+      'callback' => 'biblio_feed',
+      'access callback' => 'user_access',
+      'access arguments' => array('access content'),
+      'type' => MENU_CALLBACK
+    );
+  }
   return $items;
 } 
 function biblio_form_types_add(){
