@@ -3,232 +3,109 @@
 function biblio_install() {
   $result = array();
   
-  switch ($GLOBALS['db_type']) {
-    case 'mysql':
-    case 'mysqli':
-    
-      $result[] = db_query("alter table {node} modify title varchar(255);");
-      $result[] = db_query("alter table {node_revisions} modify title varchar(255);");
-  
-      $result[] = db_query ("CREATE TABLE {biblio} (
-        `nid` int(10) NOT NULL default '0',
-        `vid` int(10) NOT NULL default '0',
-        `biblio_type` int(11) NOT NULL default '0',
-        `biblio_number` varchar(10) default NULL,
-        `biblio_section` varchar(10) default NULL,
-        `biblio_other_number` varchar(24) default NULL,
-        `biblio_secondary_title` varchar(255) default NULL,
-        `biblio_tertiary_title` varchar(255) default NULL,
-        `biblio_short_title` varchar(255) default NULL,
-        `biblio_alternate_title` varchar(255) default NULL,
-        `biblio_translated_title` varchar(255) default NULL,
-        `biblio_authors` varchar(255) default NULL,
-        `biblio_secondary_authors` varchar(255) default NULL,
-        `biblio_tertiary_authors` varchar(255) default NULL,
-        `biblio_corp_author` varchar(255) default NULL,
-        `biblio_other_author_affiliations` varchar(255) default NULL,
-        `biblio_edition` varchar(255) default NULL,
-        `biblio_publisher` varchar(255) default NULL,
-        `biblio_original_publication` varchar(255) default NULL,
-        `biblio_reprint_edition` varchar(255) default NULL,
-        `biblio_place_published` varchar(255) default NULL,
-        `biblio_year` int(11) NOT NULL default '0',
-        `biblio_volume` varchar(10) default NULL,
-        `biblio_number_of_volumes` varchar(10) default NULL,
-        `biblio_pages` varchar(128) default NULL,
-        `biblio_date` varchar(16) default NULL,
-        `biblio_isbn` varchar(24) default NULL,
-        `biblio_issn` varchar(24) default NULL,
-        `biblio_lang` varchar(24) default 'eng',
-        `biblio_abst_e` text,
-        `biblio_abst_f` text,
-        `biblio_full_text` tinyint(4) default '0',
-        `biblio_keywords` varchar(255) default NULL,
-        `biblio_url` varchar(255) default NULL,
-        `biblio_doi` varchar(100) default NULL,
-        `biblio_issue` varchar(10) default NULL,
-        `biblio_type_of_work` varchar(255) default NULL,
-        `biblio_accession_number` varchar(24) default NULL,
-        `biblio_call_number` varchar(24) default NULL,
-        `biblio_notes` text,
-        `biblio_coins` text,
-        `biblio_research_notes` text,
-        `biblio_custom1` text,
-        `biblio_custom2` text,
-        `biblio_custom3` text,
-        `biblio_custom4` text,
-        `biblio_custom5` text,
-        `biblio_custom6` text,
-        `biblio_custom7` text,
-        `biblio_auth_address` text,
-        `biblio_remote_db_name` varchar(255) default NULL,
-        `biblio_remote_db_provider` varchar(255) default NULL,
-        `biblio_citekey` varchar(16) default NULL,
-        `biblio_label` varchar(255) default NULL,
-        `biblio_access_date` varchar(255) default NULL,
-       PRIMARY KEY  (`vid`),
-        KEY `nid` (`nid`),
-        KEY `type` (`biblio_type`),
-        KEY `year` (`biblio_year`),
-        FULLTEXT KEY `keywords` (`biblio_keywords`),
-        FULLTEXT KEY `publisher` (`biblio_publisher`),
-        FULLTEXT KEY `authors` (`biblio_authors`)
-      )  /*!40100 ENGINE=MyISAM DEFAULT CHARACTER SET utf8 */;");
-      
-      $result[] = db_query("CREATE TABLE {biblio_author_index} (
-                  `aid` int(11) NOT NULL default '0',
-                  `author` varchar(100) NOT NULL default '',
-                  PRIMARY KEY  (`aid`)
-      ) /*!40100 DEFAULT CHARSET=utf8 */;");
-      
-      $result[] = db_query("CREATE TABLE {biblio_has_author} (
-                  `nid` int(11) NOT NULL default '0',
-                  `aid` int(11) NOT NULL default '0',
-                  `rank` int(11) NOT NULL default '0',
-                  PRIMARY KEY  (`nid`,`aid`,`rank`)
-      ) /*!40100 DEFAULT CHARSET=utf8 */;");
-
-      $result[] = db_query("CREATE TABLE {biblio_fields} (
-        `fid` int(11) NOT NULL default '0',
-        `name` varchar(100) NOT NULL default '',
-        `title` varchar(100) NOT NULL default '',
-        `common` tinyint(1) NOT NULL default '0',
-        `type` varchar(100) NOT NULL default '',
-        `size` int(11) NOT NULL default '0',
-        `maxsize` int(11) NOT NULL default '0',
-        `hint` varchar(100) default '',
-        `required` tinyint(1) NOT NULL default '0',
-        `autocomplete` tinyint(1) NOT NULL default '0',
-        `visible` tinyint(4) NOT NULL default '0',
-        `weight` int(11) NOT NULL default '0',
-        PRIMARY KEY  (`fid`)
-      )  /*!40100 DEFAULT CHARACTER SET utf8 */;");
-
-      $result[] = db_query("INSERT INTO {biblio_fields} (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`autocomplete`,`weight`) VALUES 
-       (1,'biblio_authors','Authors',1,'textfield',60,255,'Author names must be separated by semicolons',1,0,0,1),
-       (2,'biblio_secondary_authors','Secondary Authors',0,'textfield',60,255,'',0,0,0,21),
-       (3,'biblio_tertiary_authors','Tertiary Authors',0,'textfield',60,255,'',0,0,0,26),
-       (4,'biblio_corp_author','Corporate Author',0,'textfield',60,255,'',0,0,1,25),
-       (5,'biblio_secondary_title','Secondary Title',0,'textfield',60,255,'',0,0,1,12),
-       (6,'biblio_tertiary_title','Tertiary Title',0,'textfield',60,255,'',0,0,1,13),
-       (7,'biblio_accession_number','Accession Number',1,'textfield',24,24,'',0,0,0,151),
-       (8,'biblio_isbn','ISBN Number',1,'textfield',24,24,'',0,0,0,150),
-       (9,'biblio_call_number','Call Number',1,'textfield',24,24,'',0,0,0,152),
-       (10,'biblio_other_number','Other Numbers',1,'textfield',10,24,'',0,0,0,153),
-       (11,'biblio_other_author_affiliations','Other Author Affiliations',0,'textfield',60,255,'',0,0,0,24),
-       (12,'biblio_publisher','Publisher',0,'textfield',60,255,'',0,0,1,19);");
-
-      $result[] = db_query("INSERT INTO {biblio_fields} (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`autocomplete`,`weight`) VALUES 
-       (13,'biblio_place_published','Place Published',0,'textfield',60,255,'',0,0,1,20),
-       (14,'biblio_year','Year of Publication',1,'textfield',4,4,'(yyyy)',1,0,0,-45),
-       (15,'biblio_edition','Edition',0,'textfield',60,255,'',0,0,0,15),
-       (16,'biblio_volume','Volume',0,'textfield',10,10,'',0,0,0,14),
-       (17,'biblio_number','Number',0,'textfield',10,10,'',0,0,0,16),
-       (18,'biblio_pages','Pagination',0,'textfield',24,128,'',0,0,0,17),
-       (19,'biblio_date','Date Published',0,'textfield',16,16,'(mm/yyyy)',0,0,0,18),
-       (20,'biblio_lang','Publication Language',0,'textfield',24,24,'',0,0,0,23),
-       (21,'biblio_abst_e','Abstract',1,'textarea',60,65535 ,'',0,0,0,155),
-       (22,'biblio_abst_f','French Abstract',0,'textarea',60,65535 ,'',0,0,0,156),
-       (23,'biblio_keywords','Key Words',1,'textfield',60,255,'',0,0,0,154),
-       (24,'biblio_type_of_work','Type of Work',0,'textfield',60,255,'Masters Thesis, PhD Thesis, etc.',0,0,0,22),
-       (25,'biblio_url','URL',1,'textfield',60,255,'',0,0,0,158);");
-
-      $result[] = db_query("INSERT INTO {biblio_fields} (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`autocomplete`,`weight`) VALUES 
-       (26,'biblio_notes','Notes',1,'textarea',60,65535 ,'',0,0,0,157),
-       (27,'biblio_issue','Issue',0,'textfield',10,10,'',0,0,0,15),
-       (28,'biblio_research_notes','Reseach Notes',0,'textarea',60,65535 ,'',0,0,0,160),
-       (29,'biblio_custom1','Custom 1',0,'textarea',60,65535,'',0,0,0,161),
-       (30,'biblio_custom2','Custom 2',0,'textarea',60,65535,'',0,0,0,162),
-       (31,'biblio_custom3','Custom 3',0,'textarea',60,65535,'',0,0,0,163),
-       (32,'biblio_custom4','Custom 4',0,'textarea',60,65535,'',0,0,0,164),
-       (33,'biblio_custom5','Custom 5',0,'textarea',60,65535,'',0,0,0,165),
-       (34,'biblio_custom6','Custom 6',0,'textarea',60,65535,'',0,0,0,167),
-       (35,'biblio_custom7','Custom 7',0,'textarea',60,65535,'',0,0,0,168),
-       (36,'biblio_number_of_volumes','Number of Volumes',0,'textfield',10,10,'',0,0,0,15),
-       (37,'biblio_short_title','Short Title',0,'textfield',60,255,'',0,0,0,169),
-       (38,'biblio_alternate_title','Alternate Title',0,'textfield',60,255,'',0,0,0,170),
-       (39,'biblio_translated_title','Translated Title',0,'textfield',60,255,'',0,0,0,170),
-       (40,'biblio_original_publication','Original Publication',0,'textfield',60,255,'',0,0,0,171),
-       (41,'biblio_reprint_edition','Reprint Edition',0,'textfield',120,255,'',0,0,0,172),
-       (42,'biblio_section','Section',0,'textfield',10,10,'',0,0,0,15),
-       (43,'biblio_citekey','Citation Key',0,'textfield',16,16,'',0,0,1,175),
-       (44,'biblio_coins','COinS Data',1,'textarea',60,65535 ,'This will be automatically generated, only edit if you know what you are doing.',0,0,0,176),
-       (45,'biblio_issn','ISSN Number',1,'textfield',24,24,'',0,0,0,150),
-       (46,'biblio_doi','DOI',1,'textfield',60,255,'',0,0,0,159),
-       (47,'biblio_auth_address','Author Address',0,'textarea',60,65535,'',0,0,0,178),
-       (48,'biblio_remote_db_name','Remote Database Name',0,'textfield',60,255,'',0,0,0,176),
-       (49,'biblio_remote_db_provider','Remote Database Provider',0,'textfield',60,255,'',0,0,0,177),
-       (50,'biblio_label','Label',0,'textfield',60,255,'',0,0,0,178),
-       (51,'biblio_access_date','Access Date',0,'textfield',60,255,'',0,0,0,179)
-       ;");
+ 
+  $result[] = db_query("alter table {node} modify title varchar(255);");
+  $result[] = db_query("alter table {node_revisions} modify title varchar(255);");
 
 
-      $result[] = db_query("CREATE TABLE {biblio_types} (
-        `tid` int(11) NOT NULL auto_increment,
-        `name` varchar(64) NOT NULL default '',
-        `description` varchar(255) default NULL,
-        `weight` int(11) NOT NULL default '0',
-        `visible` tinyint(1) NOT NULL default '1' ,
-        PRIMARY KEY  (`tid`)
-      )  /*!40100 DEFAULT CHARACTER SET utf8 */;"); 
+  $result[] = db_query("INSERT INTO {biblio_fields} (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`autocomplete`,`weight`) VALUES 
+   (1,'biblio_authors','Authors',1,'textfield',60,255,'Author names must be separated by semicolons',1,0,0,1),
+   (2,'biblio_secondary_authors','Secondary Authors',0,'textfield',60,255,'',0,0,0,21),
+   (3,'biblio_tertiary_authors','Tertiary Authors',0,'textfield',60,255,'',0,0,0,26),
+   (4,'biblio_corp_author','Corporate Author',0,'textfield',60,255,'',0,0,1,25),
+   (5,'biblio_secondary_title','Secondary Title',0,'textfield',60,255,'',0,0,1,12),
+   (6,'biblio_tertiary_title','Tertiary Title',0,'textfield',60,255,'',0,0,1,13),
+   (7,'biblio_accession_number','Accession Number',1,'textfield',24,24,'',0,0,0,151),
+   (8,'biblio_isbn','ISBN Number',1,'textfield',24,24,'',0,0,0,150),
+   (9,'biblio_call_number','Call Number',1,'textfield',24,24,'',0,0,0,152),
+   (10,'biblio_other_number','Other Numbers',1,'textfield',10,24,'',0,0,0,153),
+   (11,'biblio_other_author_affiliations','Other Author Affiliations',0,'textfield',60,255,'',0,0,0,24),
+   (12,'biblio_publisher','Publisher',0,'textfield',60,255,'',0,0,1,19);");
 
-     // some default types...
-/*      $result[] = db_query("INSERT INTO {biblio_types} (`tid`,`name`,`description`) VALUES 
-       (-1,'Select Type...',NULL),
-       (1,'Journal Paper',NULL),
-       (2,'Refereed Conference Paper',NULL),
-       (3,'Non-Refereed Conference Paper',NULL),
-       (4,'Conference Poster Presentation',NULL),
-       (5,'Report',NULL),
-       (6,'Book or Book Chapter',NULL),
-       (7,'Thesis',NULL),
-       (8,'Patent',NULL),
-       (9,'Other Publication',NULL);");
- */
-      $result[] = db_query("INSERT INTO {biblio_types} (`tid`,`name`,`description`,weight) VALUES 
-       (-1,'Select Type...',NULL,-10),
-        (100,'Book',NULL,1),
-				(101,'Book Chapter',NULL,2),
-				(102,'Journal Article',NULL,3),
-				(103,'Conference Paper',NULL,4),
-				(104,'Conference Proceedings',NULL,5),
-				(105,'Newspaper Article',NULL,6),
-				(106,'Magazine Article',NULL,7),
-				(107,'Web Article',NULL,8),
-				(108,'Thesis',NULL,9),
-				(109,'Report',NULL,10),
-				(110,'Film',NULL,11),
-				(111,'Broadcast',NULL,12),
-				(112,'Artwork',NULL,13),
-				(113,'Software',NULL,14),
-				(114,'Audiovisual',NULL,15),
-				(115,'Hearing',NULL,16),
-				(116,'Case',NULL,17),
-				(117,'Bill',NULL,18),
-				(118,'Statute',NULL,19),
-				(119,'Patent',NULL,20),
-				(120,'Personal',NULL,21),
-				(121,'Manuscript',NULL,22),
-				(122,'Map',NULL,23),
-				(123,'Chart',NULL,24),
-				(124,'Unpublished',NULL,25),
-				(125,'Database',NULL,26),
-				(126,'Government Report',NULL,27),
-				(127,'Classical'	,NULL,28),
-				(128,'Legal Ruling'	,NULL,29),
-				(129,'Miscellaneous'	,NULL,30),
-				(130,'Miscellaneous Section'	,NULL,31);");
+  $result[] = db_query("INSERT INTO {biblio_fields} (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`autocomplete`,`weight`) VALUES 
+   (13,'biblio_place_published','Place Published',0,'textfield',60,255,'',0,0,1,20),
+   (14,'biblio_year','Year of Publication',1,'textfield',4,4,'(yyyy)',1,0,0,-45),
+   (15,'biblio_edition','Edition',0,'textfield',60,255,'',0,0,0,15),
+   (16,'biblio_volume','Volume',0,'textfield',10,10,'',0,0,0,14),
+   (17,'biblio_number','Number',0,'textfield',10,10,'',0,0,0,16),
+   (18,'biblio_pages','Pagination',0,'textfield',24,128,'',0,0,0,17),
+   (19,'biblio_date','Date Published',0,'textfield',16,16,'(mm/yyyy)',0,0,0,18),
+   (20,'biblio_lang','Publication Language',0,'textfield',24,24,'',0,0,0,23),
+   (21,'biblio_abst_e','Abstract',1,'textarea',60,65535 ,'',0,0,0,155),
+   (22,'biblio_abst_f','French Abstract',0,'textarea',60,65535 ,'',0,0,0,156),
+   (23,'biblio_keywords','Key Words',1,'textfield',60,255,'',0,0,0,154),
+   (24,'biblio_type_of_work','Type of Work',0,'textfield',60,255,'Masters Thesis, PhD Thesis, etc.',0,0,0,22),
+   (25,'biblio_url','URL',1,'textfield',60,255,'',0,0,0,158);");
+
+  $result[] = db_query("INSERT INTO {biblio_fields} (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`autocomplete`,`weight`) VALUES 
+   (26,'biblio_notes','Notes',1,'textarea',60,65535 ,'',0,0,0,157),
+   (27,'biblio_issue','Issue',0,'textfield',10,10,'',0,0,0,15),
+   (28,'biblio_research_notes','Reseach Notes',0,'textarea',60,65535 ,'',0,0,0,160),
+   (29,'biblio_custom1','Custom 1',0,'textarea',60,65535,'',0,0,0,161),
+   (30,'biblio_custom2','Custom 2',0,'textarea',60,65535,'',0,0,0,162),
+   (31,'biblio_custom3','Custom 3',0,'textarea',60,65535,'',0,0,0,163),
+   (32,'biblio_custom4','Custom 4',0,'textarea',60,65535,'',0,0,0,164),
+   (33,'biblio_custom5','Custom 5',0,'textarea',60,65535,'',0,0,0,165),
+   (34,'biblio_custom6','Custom 6',0,'textarea',60,65535,'',0,0,0,167),
+   (35,'biblio_custom7','Custom 7',0,'textarea',60,65535,'',0,0,0,168),
+   (36,'biblio_number_of_volumes','Number of Volumes',0,'textfield',10,10,'',0,0,0,15),
+   (37,'biblio_short_title','Short Title',0,'textfield',60,255,'',0,0,0,169),
+   (38,'biblio_alternate_title','Alternate Title',0,'textfield',60,255,'',0,0,0,170),
+   (39,'biblio_translated_title','Translated Title',0,'textfield',60,255,'',0,0,0,170),
+   (40,'biblio_original_publication','Original Publication',0,'textfield',60,255,'',0,0,0,171),
+   (41,'biblio_reprint_edition','Reprint Edition',0,'textfield',120,255,'',0,0,0,172),
+   (42,'biblio_section','Section',0,'textfield',10,10,'',0,0,0,15),
+   (43,'biblio_citekey','Citation Key',0,'textfield',16,16,'',0,0,1,175),
+   (44,'biblio_coins','COinS Data',1,'textarea',60,65535 ,'This will be automatically generated, only edit if you know what you are doing.',0,0,0,176),
+   (45,'biblio_issn','ISSN Number',1,'textfield',24,24,'',0,0,0,150),
+   (46,'biblio_doi','DOI',1,'textfield',60,255,'',0,0,0,159),
+   (47,'biblio_auth_address','Author Address',0,'textarea',60,65535,'',0,0,0,178),
+   (48,'biblio_remote_db_name','Remote Database Name',0,'textfield',60,255,'',0,0,0,176),
+   (49,'biblio_remote_db_provider','Remote Database Provider',0,'textfield',60,255,'',0,0,0,177),
+   (50,'biblio_label','Label',0,'textfield',60,255,'',0,0,0,178),
+   (51,'biblio_access_date','Access Date',0,'textfield',60,255,'',0,0,0,179)
+   ;");
+
+
+  $result[] = db_query("INSERT INTO {biblio_types} (`tid`,`name`,`description`,weight) VALUES 
+   (-1,'Select Type...',NULL,-10),
+    (100,'Book',NULL,1),
+		(101,'Book Chapter',NULL,2),
+		(102,'Journal Article',NULL,3),
+		(103,'Conference Paper',NULL,4),
+		(104,'Conference Proceedings',NULL,5),
+		(105,'Newspaper Article',NULL,6),
+		(106,'Magazine Article',NULL,7),
+		(107,'Web Article',NULL,8),
+		(108,'Thesis',NULL,9),
+		(109,'Report',NULL,10),
+		(110,'Film',NULL,11),
+		(111,'Broadcast',NULL,12),
+		(112,'Artwork',NULL,13),
+		(113,'Software',NULL,14),
+		(114,'Audiovisual',NULL,15),
+		(115,'Hearing',NULL,16),
+		(116,'Case',NULL,17),
+		(117,'Bill',NULL,18),
+		(118,'Statute',NULL,19),
+		(119,'Patent',NULL,20),
+		(120,'Personal',NULL,21),
+		(121,'Manuscript',NULL,22),
+		(122,'Map',NULL,23),
+		(123,'Chart',NULL,24),
+		(124,'Unpublished',NULL,25),
+		(125,'Database',NULL,26),
+		(126,'Government Report',NULL,27),
+		(127,'Classical'	,NULL,28),
+		(128,'Legal Ruling'	,NULL,29),
+		(129,'Miscellaneous'	,NULL,30),
+		(130,'Miscellaneous Section'	,NULL,31);");
 
 
 
-      // some customizations of the default types 
-      _add_types($result);
+  // some customizations of the default types 
+  _add_types($result);
         
-      break;
-   
-    case 'pgsql':
-      break;
-  }
   
   if (count($result) == count(array_filter($result))) {
   	drupal_set_message(t('The biblio module has successfully added its tables to the database.'));
@@ -246,17 +123,6 @@ function biblio_reset_types(){
 
 function _add_types(&$result){
 
-      $result[] = db_query("CREATE TABLE {biblio_type_details} (
-        `tid` int(11) NOT NULL default '0',
-        `fid` int(11) NOT NULL default '0',
-        `title` varchar(100) NOT NULL default '',
-        `hint` varchar(100) default '',
-        `required` tinyint(1) NOT NULL default '0',
-        `weight` int(11) NOT NULL default '0',
-        PRIMARY KEY  (`tid`,`fid`),
-        KEY `tid` (`tid`)
-      ) /*!40100 ENGINE=MyISAM DEFAULT CHARACTER SET utf8 */;");
-      $result[] = db_query("/*!40000 ALTER TABLE {biblio_type_details} DISABLE KEYS */;");
       $result[] = db_query("INSERT INTO {biblio_type_details} (`tid`,`fid`,`title`,`hint`,`required`,`weight`) VALUES 
        (100,5,'Series Title','',0,3),
        (100,15,'Edition','',0,10),
@@ -375,7 +241,7 @@ function biblio_update_1() {
 function biblio_update_2() {
 $result = array();
 
-  $result = update_sql("alter table {biblio_types} modify tid int(11) auto_increment;");
+  $result = update_sql("alter table {biblio_types} modify tid int(11) `auto_increment;");
   return $result;
   
 }
