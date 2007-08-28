@@ -1,6 +1,7 @@
 <?php
+function biblio_schema(){
 
-$schema['biblio'] = array (
+  $schema['biblio'] = array (
         'fields' => array(
           'nid'                     => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
           'vid'                     => array('type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE),
@@ -100,3 +101,31 @@ $schema['biblio'] = array (
       'primary key' => array('fid')
       );
 
+  $schema['biblio_types'] = array(
+    'fields' => array(    
+        'tid'         => array('type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE),
+        'name'        => array('type' => 'varchar', 'length' => 64, 'default' => NULL),
+        'description' => array('type' => 'varchar', 'length' => 255, 'default' => NULL),
+        'weight'      => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
+        'visible'     => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0)
+      ), 
+      'primary key' => array('tid')
+     );  
+
+  $schema['biblio_type_details'] = array(
+    'fields' => array(    
+        'tid'       => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+        'fid'       => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+        'title'     => array('type' => 'varchar', 'length' => 100, 'default' => NULL),
+        'hint'      => array('type' => 'varchar', 'length' => 100, 'default' => NULL),
+        'required'  => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+        'weight'    => array('type' => 'int', 'not null' => TRUE, 'default' => 0)
+      ),
+      'primary key' => array('tid','fid'),
+      'indexes' => array(
+         'tid' => array('tid')
+      )
+    );
+
+  return $schema;
+)  
