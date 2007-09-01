@@ -315,12 +315,17 @@ global  $node_array,$node_id, $element, $contributors,   $dates, $urls;
         case 'year':
           $node_array[$node_id]['biblio_year'] .= $data;
           break;
+       }
+       break;
+    case 'date':
+      switch($dates){    
         case 'pub-dates':
           $node_array[$node_id]['biblio_date'] .= $data;
           break;
         case 'copyright-dates':
-       }
-       break;
+          break;
+        }
+      break;    
     case 'pub-location': 
       $node_array[$node_id]['biblio_place_published'] .= $data;
       break;   
