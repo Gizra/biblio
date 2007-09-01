@@ -2182,14 +2182,10 @@ function _endnote_tagged_export($result) {
       } 
       $doc .= "%D " . trim($pub->biblio_year) . "\r\n";
       $doc .= "%T " . trim($pub->title) . "\r\n";
-      if (variable_get('biblio_normalize', 0)) {
-        $pub_authors = _biblio_parse_authors($pub->biblio_authors);
-      } else {
-        $pub_authors = $pub->biblio_authors;
-      } 
-      $author_array = explode(";", $pub_authors);
+      
+      $author_array = _parse_author_array(explode(';', $pub->biblio_authors));
       foreach($author_array as $auth) {
-        $doc .= "%A " . trim($auth) . "\r\n";
+        $doc .= "%A " . $auth['last_name'] . ($auth['first_name'] ? (', ' . $auth['first_name']) : ($auth['initials'] ? (', ' . $auth['initials']) : '')) . "\r\n";
       } 
 
       if ($pub->biblio_place_published) $doc .= "%C " . trim($pub->biblio_place_published) . "\r\n";
