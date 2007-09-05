@@ -115,6 +115,7 @@ function _ris_tagged_import(&$data,$node) {
               } 
               break;
             case 'A1': 
+            case 'AU': 
               // $columns .= ", author";
               if ($node_array[$node_id]['biblio_authors']) $node_array[$node_id]['biblio_authors'] .= "; ";
               $node_array[$node_id]['biblio_authors'] .= $value;
@@ -127,13 +128,12 @@ function _ris_tagged_import(&$data,$node) {
               break;
             case 'Y1':
               $node_array[$node_id]['biblio_year'] = ($end = strpos($value,"/"))?substr($value,0,$end):$value;
+              $node_array[$node_id]['biblio_date'] = $value;
               break;
             case 'A2':
+            case 'ED': 
               if ($node_array[$node_id]['biblio_secondary_authors']) $node_array[$node_id]['biblio_secondary_authors'] .= "; ";
               $node_array[$node_id]['biblio_secondary_authors'] .= $value;
-              break;
-            case '%F':
-              $node_array[$node_id]['label'] = $value;
               break;
             case 'PB':
               $node_array[$node_id]['biblio_publisher'] = $value;
@@ -144,13 +144,8 @@ function _ris_tagged_import(&$data,$node) {
             case 'KW':
               $node_array[$node_id]['biblio_keywords'] .= ($node_array[$node_id]['biblio_keywords'])?", $value":$value;
               break;
-            case '%L':
-              $node_array[$node_id]['biblio_call_number'] = $value;
-              break;
-            case '%M': // accession_number
-              $node_array[$node_id]['biblio_accession_number'] = $value;
-              break;
             case 'IS':
+            case 'CP':
               $node_array[$node_id]['biblio_issue'] = $value;
               break;
             case 'SP':
@@ -194,36 +189,8 @@ function _ris_tagged_import(&$data,$node) {
             case 'U5':// CUSTOM 5
               $node_array[$node_id]['biblio_custom5'] = $value;
               break;
-            case '%$':// CUSTOM 6
-              $node_array[$node_id]['biblio_custom6'] = $value;
-              break;
-            case '%6':
-              break;
-            case '%7':
-              $node_array[$node_id]['biblio_edition'] = $value;
-              break;
-            case '%8':
-              $node_array[$node_id]['biblio_date'] = $value;
-              break;
-            case '%9':
-              $node_array[$node_id]['biblio_type_of_work'] = $value;
-              break;
-            case '%?':
-              break;
             case 'SN':
               $node_array[$node_id]['biblio_isbn'] = $value;
-              break;
-            case '%!':
-              break;
-            case '%&':
-              break;
-            case '%(':
-              break;
-            case '%)':
-              break;
-            case '%*':
-              break;
-            case '%+':
               break;
             default:
               break;
