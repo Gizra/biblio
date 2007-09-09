@@ -33,7 +33,7 @@ function biblio_style_ieee($node, $base='biblio', $inline=false){
   } else {
     $authors = $node->biblio_authors;
   } 
-  $output .= '<span class="biblio-authors">' . str_replace(";", ",", _biblio_author_links($authors,$base,$inline)) . ", </span> \n";
+  $output .= '<span class="biblio-authors">' . str_replace("; ", ", ", _biblio_author_links($authors,$base,$inline)) . ", </span> \n";
 
       switch ($node->biblio_type) {
         default:

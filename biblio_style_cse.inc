@@ -32,7 +32,7 @@ function biblio_style_cse($node, $base='biblio', $inline=false){
   } else {
     $authors = $node->biblio_authors;
   } 
-  $output .= '<span class="biblio-authors">' . str_replace(";", ",", str_replace(array(".",","),"",_biblio_author_links($authors,$base,$inline))) . "</span>.&nbsp; \n";
+  $output .= '<span class="biblio-authors">' . str_replace("; ", ", ", str_replace(array(".",","),"",_biblio_author_links($authors,$base,$inline))) . "</span>.&nbsp; \n";
 //  $output .= (strrpos($authors, '.' ) == strlen($authors))? ".&nbsp;&nbsp;":" ";
 
       switch ($node->biblio_type) {
