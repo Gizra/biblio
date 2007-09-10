@@ -1515,6 +1515,7 @@ function biblio_view(&$node, $teaser = false, $page = false) {
   $base =  variable_get('biblio_base', 'biblio'); 
   switch (variable_get('biblio_node_layout', '0')){
   case 'orig':
+  case 'ft':
     $node->content['body']['#value'] = theme('biblio_long', $node,$base,$style);
     break;
   case 'tabular':
