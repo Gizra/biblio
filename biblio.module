@@ -801,7 +801,7 @@ function biblio_show_node($node,$base){
         $data = "";
         break;
       default:
-        $data = check_plain($node->$row['name']);
+        $data = check_markup($node->$row['name'],FILTER_HTML_ESCAPE,FALSE);
       }
       $rows[] = array(array('data' => $row['title'],'align'=>'right','valign'=>'top','width'=>'20%'),
                       array('data' => $data));
