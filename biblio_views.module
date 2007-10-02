@@ -69,6 +69,32 @@ function biblio_views_views_tables() {
   return $tables;
 }
 
+function biblio_views_views_arguments()
+{
+  $arguments = array(
+    'bibliotype' => array(
+      'name' => t('Biblio: Type'),
+      'handler' => 'biblio_views_handler_arg_type',
+      'help' => t('The biblio type argument allows users to filter a view by specifying the type of node.'),
+    ),
+  );
+
+  return $arguments;
+}
+
+function biblio_views_handler_arg_type($op, &$query, $argtype, $arg2=NULL){
+
+  switch($op) {
+    case 'summary':
+      break;
+    case 'sort':
+      break;
+    case 'filter':
+      break;
+    case 'link':
+    case 'title':
+  }
+}
 function biblio_views_sort_handler($fielddata, $fieldinfo) {
   print_r ($fieldinfo);
   exit;
@@ -84,14 +110,11 @@ function _biblio_views_sortable_field(&$field) {
     case 'biblio_year':
        $field['help'] = t('Sort by the year of publication');
        return TRUE;
-       break;
     case 'biblio_type':
        $field['help'] = t('Sort by the publication type, i.e. Book, Journal, etc.');
        return TRUE;
-      break;
     default:
       return FALSE;
-      break;
   }
 }
 
@@ -102,11 +125,9 @@ function biblio_views_handler_field($fieldinfo, $fielddata, $value, $data){
   switch ($fielddata['field']) {
     case 'biblio_authors':
       return _biblio_views_author_links(_biblio_parse_authors($value));
-      break;
     default:
       return $value;
-      break;
-  }
+ }
 
 }
 
