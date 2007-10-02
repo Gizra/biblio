@@ -3,29 +3,253 @@
 
 function biblio_views_info() {
   return array('biblio_views' => array(
-                    'name' => t('Biblio Views'), 
-                    'module' => 'biblio_views',
-                    'description' => t('Provides the Views module with information from the Biblio module.')));
+    'name' => t('Biblio Views'), 
+    'module' => 'biblio_views',
+    'description' => t('Provides the Views module with information from the Biblio module.')
+  ));
 }
+
 function biblio_views_views_tables() {
-  
   $table = views_new_table('biblio', 'internal', 'node', 'vid', 'vid');
-  $result = db_query('SELECT name,title FROM {biblio_fields} ');
+  $fields[] = array('name' => 'title','title' => t('Title'));
+  $fields[] = array('name' => 'biblio_type','title' => t('Type of Publication'));
+  $result = db_query('SELECT name,title FROM {biblio_fields}');
   while ($field = db_fetch_array($result)){
+    $fields[] = $field;
+  }
+  
+  foreach($fields as $field){
+    // Add Views fields
     views_table_add_field($table, $field['name'], "Biblio: ".$field['title'], "test", array(
-      'sortable' => true,
-      'handler' => 'views_handler_biblio_field',
+      'handler' => 'biblio_views_handler_field',
+      'sortable' => _biblio_views_sortable_field($field),
       'notafield' => false,
     ));
+
+    // Add Views sorts
+    if (_biblio_views_sortable_field($field)) {
+      views_table_add_sort($table, $field['name'], "Biblio: ".$field['title'], $field['help'], array());
+    }
   }
+  // Add Views filter by Biblio Author
+  views_table_add_filter($table, 'biblio_author', "Biblio: Author", "test", array(
+    'list-type' => 'list',
+    'list' => 'biblio_views_handler_filter_author',
+    'operator' => 'views_handler_operator_andor',
+    'value-type' => 'array',
+  ));
+
+  // Add Views filter by Biblio Type
+  views_table_add_filter($table, 'type', "Biblio: Type", "test", array(
+    'list-type' => 'list',
+    'list' => 'biblio_views_handler_filter_type',
+    'operator' => 'views_handler_operator_andor',
+    'value-type' => 'array',
+  ));
+
+  // Add Views filter by Biblio Term (how is this different from Keyword?)
+  //  views_table_add_filter($table, 'term', "Biblio: Author", "test", array(
+  //    'list-type' => 'list',
+  //    'list' => 'biblio_views_handler_filter_term',
+  //    'operator' => 'views_handler_operator_andor',
+  //    'value-type' => 'array',
+  //  ));
+
+  // Add Views filter by Biblio Year
+  views_table_add_filter($table, 'biblio_year', "Biblio: Year", "test", array(
+    'list-type' => 'list',
+    'list' => 'biblio_views_handler_filter_year',
+    'operator' => 'views_handler_operator_andor',
+    'value-type' => 'array',
+  ));
 
   $tables['biblio'] = $table;
   $table = views_new_table('biblio_types', 'internal', 'biblio', 'tid', 'tid');
   $tables['biblio_types'] = $table;
   return $tables;
 }
-function views_handler_biblio_field($fieldinfo, $fielddata, $value, $data){
 
-print_r($fieldinfo, $fielddata, $value, $data);die;
+function biblio_views_sort_handler($fielddata, $fieldinfo) {
+  print_r ($fieldinfo);
+  exit;
+}
+
+/**
+* Determine whether or not a user can sort by the given field
+* Some fields are excluded because they contain multiple items (i.e. authors, keywords)
+*/
+function _biblio_views_sortable_field(&$field) {
+  switch ($field['name']) {
+    // This list is by no means exhaustive. There are more cases that are not added yet.
+    case 'biblio_year':
+       $field['help'] = t('Sort by the year of publication');
+       return TRUE;
+       break;
+    case 'biblio_type':
+       $field['help'] = t('Sort by the publication type, i.e. Book, Journal, etc.');
+       return TRUE;
+      break;
+    default:
+      return FALSE;
+      break;
+  }
+}
+
+/**
+* Theme data for particular fields
+*/
+function biblio_views_handler_field($fieldinfo, $fielddata, $value, $data){
+  switch ($fielddata['field']) {
+    case 'biblio_authors':
+      return _biblio_views_author_links(_biblio_parse_authors($value));
+      break;
+    default:
+      return $value;
+      break;
+  }
 
 }
+
+/**
+* Rewrite of _biblio_author_links for biblio_views
+*/
+function _biblio_views_author_links($author) {
+  $query = null;
+  $attrib = null;
+  $base = $_GET['q'];
+
+  if (isset($_GET['sort'])) {
+    $query  .= "sort=" . $_GET['sort'];
+  } 
+  if (isset($_GET['order'])) {
+    $query  .= $query ?"&":"";
+    $query  .= "order=" . $_GET['order'];
+  } 
+  
+  $html = "";
+  $author_array = explode(";", $author);
+  
+  foreach($author_array as $auth) {
+    $html .= (empty($html))? "" : "; ";
+    if (strstr($auth, ",")) {
+      $parts = split(",", $auth);
+      $lastname = $parts[0];
+    } else {
+      $parts = split(" ", $auth);
+      $lastname = end($parts);
+    } 
+    // list($lastname, $init) = split(",", $auth);
+
+    $html .= l(trim($auth), "$base/author/" . trim($lastname) . $inline,$attrib, $query );
+  } 
+  return $html;
+}
+
+
+function biblio_views_handler_filter_author() {
+  $filters = _get_biblio_filters();
+  return $filters['author']['options'];
+}
+
+function biblio_views_handler_filter_type() {
+  $filters = _get_biblio_filters();
+  return $filters['type']['options'];
+}
+
+function biblio_views_handler_filter_year() {
+  $filters = _get_biblio_filters();
+  return $filters['year']['options'];
+}
+
+
+/**
+ *  Implementation of hook_views_style_plugins()
+ */
+function biblio_views_views_style_plugins() {
+  $plugins = array(
+    'classic' => array(
+      'name' => t('Biblio: Classic'),
+      'theme' => 'biblio_views_plugin',
+      //'validate' => 'biblio_views_classic_validate',
+      'needs_fields' => FALSE,
+      'needs_table_header' => FALSE,
+    ),
+    'apa' => array(
+      'name' => t('Biblio: APA'),
+      'theme' => 'biblio_views_plugin',
+      //'validate' => 'biblio_views_apa_validate',
+      'needs_fields' => FALSE,
+      'needs_table_header' => FALSE,
+    ),
+    'cse' => array(
+      'name' => t('Biblio: CSE'),
+      'theme' => 'biblio_views_plugin',
+      //'validate' => 'biblio_views_cse_validate',
+      'needs_fields' => FALSE,
+      'needs_table_header' => FALSE,
+    ),
+    'ieee' => array(
+      'name' => t('Biblio: IEEE'),
+      'theme' => 'biblio_views_plugin',
+      //'validate' => 'biblio_views_ieee_validate',
+      'needs_fields' => FALSE,
+      'needs_table_header' => FALSE,
+    ),
+  );
+
+  return $plugins;
+}
+
+function theme_biblio_views_plugin($view, $nodes, $type) {
+  theme('biblio_add_css');
+  switch ($view->type) {
+    case 'biblio_classic':
+      break;
+    case 'biblio_apa':
+      break;
+    case 'biblio_cse':
+      break;
+    case 'biblio_ieee':
+      break;
+  }
+
+  foreach ($nodes as $node) {
+    $node = node_load(array('nid' => $node->nid));
+    $attrib['sort'] = 'year';
+
+    switch ($view->sort[0]['field']) {
+      case 'node.title':
+        if ( drupal_substr(drupal_ucfirst(ltrim($node->title)), 0, 1)  != $_char) {
+          $_char =  drupal_substr(drupal_ucfirst(ltrim($node->title)), 0, 1) ;
+          $content .= '<div class="biblio-year">' . $_char . "</div>\n";
+        } 
+        break;
+      case 'biblio.biblio_type':
+        if ($node->biblio_type != $_type) {
+          $_type = $node->biblio_type;
+          $name = db_result(db_query("SELECT name FROM {biblio_types} as t where t.tid=%d", $node->biblio_type)) ;
+          $content .= '<div class="biblio-year">' . $name . "</div>\n";
+        } 
+        break;
+      case 'biblio.biblio_year':
+      default:
+        if ($node->biblio_year != $_year) {
+          $_year = $node->biblio_year;
+          $content .= '<div class="biblio-year">'. ((isset($_year) and ($_year == 0)) ? t("In Press") : $_year) ."</div>\n";
+        }
+    } //end switch
+    $content .= '<div class="biblio-entry">' . "\n";
+    $content .= theme('biblio_list', $node,'biblio',$view->type);
+    $content .= "</div>\n";
+  } //end while
+
+
+  // magic theming work
+  return $content;
+}
+
+
+
+
+
+
