@@ -3,7 +3,7 @@
 
 function biblio_views_info() {
   return array('biblio_views' => array(
-    'name' => t('Biblio Views'), 
+    'name' => t('Biblio Views'),
     'module' => 'biblio_views',
     'description' => t('Provides the Views module with information from the Biblio module.')
   ));
@@ -17,10 +17,10 @@ function biblio_views_views_tables() {
   while ($field = db_fetch_array($result)){
     $fields[] = $field;
   }
-  
+
   foreach($fields as $field){
     // Add Views fields
-    views_table_add_field($table, $field['name'], "Biblio: ".$field['title'], "test", array(
+    views_table_add_field($table, $field['name'], "Biblio: ".$field['title'], "Display the ". $field['title'], array(
       'handler' => 'biblio_views_handler_field',
       'sortable' => _biblio_views_sortable_field($field),
       'notafield' => false,
@@ -32,7 +32,7 @@ function biblio_views_views_tables() {
     }
   }
   // Add Views filter by Biblio Author
-  views_table_add_filter($table, 'biblio_author', "Biblio: Author", "test", array(
+  views_table_add_filter($table, 'biblio_authors', "Biblio: Author", t("Filter this view by biblio author"), array(
     'list-type' => 'list',
     'list' => 'biblio_views_handler_filter_author',
     'operator' => 'views_handler_operator_andor',
@@ -40,7 +40,7 @@ function biblio_views_views_tables() {
   ));
 
   // Add Views filter by Biblio Type
-  views_table_add_filter($table, 'type', "Biblio: Type", "test", array(
+  views_table_add_filter($table, 'type', "Biblio: Type", t("Filter this view by biblio type"), array(
     'list-type' => 'list',
     'list' => 'biblio_views_handler_filter_type',
     'operator' => 'views_handler_operator_andor',
@@ -56,7 +56,7 @@ function biblio_views_views_tables() {
   //  ));
 
   // Add Views filter by Biblio Year
-  views_table_add_filter($table, 'biblio_year', "Biblio: Year", "test", array(
+  views_table_add_filter($table, 'biblio_year', "Biblio: Year", t("Filter this view by biblio year"), array(
     'list-type' => 'list',
     'list' => 'biblio_views_handler_filter_year',
     'operator' => 'views_handler_operator_andor',
@@ -141,15 +141,15 @@ function _biblio_views_author_links($author) {
 
   if (isset($_GET['sort'])) {
     $query  .= "sort=" . $_GET['sort'];
-  } 
+  }
   if (isset($_GET['order'])) {
     $query  .= $query ?"&":"";
     $query  .= "order=" . $_GET['order'];
-  } 
-  
+  }
+
   $html = "";
   $author_array = explode(";", $author);
-  
+
   foreach($author_array as $auth) {
     $html .= (empty($html))? "" : "; ";
     if (strstr($auth, ",")) {
@@ -158,11 +158,11 @@ function _biblio_views_author_links($author) {
     } else {
       $parts = split(" ", $auth);
       $lastname = end($parts);
-    } 
+    }
     // list($lastname, $init) = split(",", $auth);
 
     $html .= l(trim($auth), "$base/author/" . trim($lastname) . $inline,$attrib, $query );
-  } 
+  }
   return $html;
 }
 
@@ -192,29 +192,29 @@ function biblio_views_views_style_plugins() {
       'name' => t('Biblio: Classic'),
       'theme' => 'biblio_views_plugin',
       //'validate' => 'biblio_views_classic_validate',
-      'needs_fields' => FALSE,
-      'needs_table_header' => FALSE,
+      'needs_fields' => TRUE,
+      'needs_table_header' => TRUE,
     ),
     'apa' => array(
       'name' => t('Biblio: APA'),
       'theme' => 'biblio_views_plugin',
       //'validate' => 'biblio_views_apa_validate',
-      'needs_fields' => FALSE,
-      'needs_table_header' => FALSE,
+      'needs_fields' => TRUE,
+      'needs_table_header' => TRUE,
     ),
     'cse' => array(
       'name' => t('Biblio: CSE'),
       'theme' => 'biblio_views_plugin',
       //'validate' => 'biblio_views_cse_validate',
-      'needs_fields' => FALSE,
-      'needs_table_header' => FALSE,
+      'needs_fields' => TRUE,
+      'needs_table_header' => TRUE,
     ),
     'ieee' => array(
       'name' => t('Biblio: IEEE'),
       'theme' => 'biblio_views_plugin',
       //'validate' => 'biblio_views_ieee_validate',
-      'needs_fields' => FALSE,
-      'needs_table_header' => FALSE,
+      'needs_fields' => TRUE,
+      'needs_table_header' => TRUE,
     ),
   );
 
@@ -234,23 +234,30 @@ function theme_biblio_views_plugin($view, $nodes, $type) {
       break;
   }
 
+  $sorts = array();
+  $ts = tablesort_init($view->table_header);
+  foreach($view->table_header as $cell) {
+    $th = tablesort_header($cell, $view->table_header, $ts);
+    $sorts[] = $th['data'];
+  }
+
+  $content .= theme('sortlinks', $sorts);
+
   foreach ($nodes as $node) {
     $node = node_load(array('nid' => $node->nid));
-    $attrib['sort'] = 'year';
-
     switch ($view->sort[0]['field']) {
       case 'node.title':
         if ( drupal_substr(drupal_ucfirst(ltrim($node->title)), 0, 1)  != $_char) {
           $_char =  drupal_substr(drupal_ucfirst(ltrim($node->title)), 0, 1) ;
           $content .= '<div class="biblio-year">' . $_char . "</div>\n";
-        } 
+        }
         break;
       case 'biblio.biblio_type':
         if ($node->biblio_type != $_type) {
           $_type = $node->biblio_type;
           $name = db_result(db_query("SELECT name FROM {biblio_types} as t where t.tid=%d", $node->biblio_type)) ;
           $content .= '<div class="biblio-year">' . $name . "</div>\n";
-        } 
+        }
         break;
       case 'biblio.biblio_year':
       default:
@@ -269,8 +276,13 @@ function theme_biblio_views_plugin($view, $nodes, $type) {
   return $content;
 }
 
-
-
-
-
-
+function theme_sortlinks($items = array()) {
+  if (!empty($items)) {
+    $output .= "<ul class=\"sortable_teasers_links\">";
+    foreach ($items as $item) {
+      $output .= '<li>'. $item .'</li>';
+    }
+    $output .= "</ul>";
+  }
+  return $output;
+}
