@@ -12,7 +12,7 @@ function biblio_views_info() {
 function biblio_views_views_tables() {
   $table = views_new_table('biblio', 'internal', 'node', 'vid', 'vid');
   $fields[] = array('name' => 'title','title' => t('Title'));
-  $fields[] = array('name' => 'biblio_type','title' => t('Type of Publication'));
+  $fields[] = array('name' => 'biblio_type','title' => t('Type'));
   $result = db_query('SELECT name,title FROM {biblio_fields}');
   while ($field = db_fetch_array($result)){
     $fields[] = $field;
@@ -41,7 +41,7 @@ function biblio_views_views_tables() {
   ));
 
   // Add Views filter by Biblio Type
-  views_table_add_filter($table, 'type', "Biblio: Type", t("Filter this view by biblio type"), array(
+  views_table_add_filter($table, 'biblio_type', "Biblio: Type", t("Filter this view by biblio type"), array(
     'list-type' => 'list',
     'list' => 'biblio_views_handler_filter_type',
     'operator' => 'views_handler_operator_andor',
@@ -84,6 +84,20 @@ function biblio_views_views_arguments()
 }
 
 function biblio_views_handler_arg_type($op, &$query, $argtype, $arg2=NULL){
+//unset($query->where);
+
+print '<pre>';
+print_r ($op);
+print '<hr>';
+print_r ($query);
+print '<hr>';
+print_r ($argtype);
+print '<hr>';
+print_r ($arg2);
+print '<hr>';
+print '<hr>';
+print '<hr>';
+
   switch($op) {
     case 'summary':
       return 'test';
@@ -135,42 +149,6 @@ function biblio_views_handler_field($fieldinfo, $fielddata, $value, $data){
  }
 
 }
-
-/**
-* Rewrite of _biblio_author_links for biblio_views
-*/
-function _biblio_views_author_links($author) {
-  $query = null;
-  $attrib = null;
-  $base = $_GET['q'];
-
-  if (isset($_GET['sort'])) {
-    $query  .= "sort=" . $_GET['sort'];
-  }
-  if (isset($_GET['order'])) {
-    $query  .= $query ?"&":"";
-    $query  .= "order=" . $_GET['order'];
-  }
-
-  $html = "";
-  $author_array = explode(";", $author);
-
-  foreach($author_array as $auth) {
-    $html .= (empty($html))? "" : "; ";
-    if (strstr($auth, ",")) {
-      $parts = split(",", $auth);
-      $lastname = $parts[0];
-    } else {
-      $parts = split(" ", $auth);
-      $lastname = end($parts);
-    }
-    // list($lastname, $init) = split(",", $auth);
-
-    $html .= l(trim($auth), "$base/author/" . trim($lastname) . $inline,$attrib, $query );
-  }
-  return $html;
-}
-
 
 function biblio_views_handler_filter_author() {
   $filters = _get_biblio_filters();
@@ -240,21 +218,22 @@ function theme_biblio_views_plugin($view, $nodes, $type) {
 
   foreach ($nodes as $node) {
     $node = node_load(array('nid' => $node->nid));
-    switch ($view->sort[0]['field']) {
-      case 'node.title':
+
+    switch ($_GET['order']) {
+      case 'Title':
         if ( drupal_substr(drupal_ucfirst(ltrim($node->title)), 0, 1)  != $_char) {
           $_char =  drupal_substr(drupal_ucfirst(ltrim($node->title)), 0, 1) ;
           $content .= '<div class="biblio-year">' . $_char . "</div>\n";
         }
         break;
-      case 'biblio.biblio_type':
+      case 'Type':
         if ($node->biblio_type != $_type) {
           $_type = $node->biblio_type;
           $name = db_result(db_query("SELECT name FROM {biblio_types} as t where t.tid=%d", $node->biblio_type)) ;
           $content .= '<div class="biblio-year">' . $name . "</div>\n";
         }
         break;
-      case 'biblio.biblio_year':
+      case 'Year':
       default:
         if ($node->biblio_year != $_year) {
           $_year = $node->biblio_year;
@@ -262,7 +241,7 @@ function theme_biblio_views_plugin($view, $nodes, $type) {
         }
     } //end switch
     $content .= '<div class="biblio-entry">' . "\n";
-    $content .= theme('biblio_list', $node,'biblio',$view->type);
+    $content .= theme('biblio_views_list', $node,'biblio',$view->type);
     $content .= "</div>\n";
   } //end while
 
@@ -320,4 +299,124 @@ function biblio_views_handler_filter_like($op, $filter, $filterinfo, &$query) {
  */
 function biblio_views_handler_operator_like() {
   return array('word' => t('authored by'), 'not' => t('not authored by'));
+}
+
+/**
+* THE FUNCTIONS BELOW ARE DUPLICATED FROM BIBLIO.MODULE AND REWRITTEN IN ORDER TO GENERATE THE PROPER LINKS
+* AT THE MOMENT ONLY THE STYLE FUNCTION HAS BEEN REWRITTEN
+* OBVIOUSLY THIS IS LESS THAN OPTIMAL AND A BETTER SOLUTION SHOULD BE WORKED OUT
+*/
+
+/**
+* Rewrite of _biblio_author_links for biblio_views
+*/
+function _biblio_views_author_links($author) {
+  $query = null;
+  $attrib = null;
+  $base = $_GET['q'];
+
+  if (isset($_GET['sort'])) {
+    $query  .= "sort=" . $_GET['sort'];
+  }
+  if (isset($_GET['order'])) {
+    $query  .= $query ?"&":"";
+    $query  .= "order=" . $_GET['order'];
+  }
+
+  $html = "";
+  $author_array = explode(";", $author);
+
+  foreach($author_array as $auth) {
+    $html .= (empty($html))? "" : "; ";
+    if (strstr($auth, ",")) {
+      $parts = split(",", $auth);
+      $lastname = $parts[0];
+    } else {
+      $parts = split(" ", $auth);
+      $lastname = end($parts);
+    }
+    // list($lastname, $init) = split(",", $auth);
+
+    $newquery = $query . "&filter0[]=".trim($lastname);
+    $html .= l(trim($auth), 'biblioview', $attrib, $newquery);
+
+  }
+  return $html;
+}
+
+
+/**
+* Rewrite of theme_biblio_list for biblio_views
+*/
+function theme_biblio_views_list($node, $base='biblio', $style='classic', $inline=false) {
+
+  $output .= theme('biblio_views_short', $node, $base, $style, $inline);
+  if ($node->biblio_abst_e) {
+    $output .= '<span class="biblio_abstract_link">';
+    $output .= l(" Abstract", "node/$node->nid") . "\n";
+    $output .= '</span>';
+  }
+
+  $annotation_field = variable_get('biblio_annotations','none');
+  if ($annotation_field != 'none' && $node->$annotation_field){
+    $output .= '<div class="biblio_annotation">';
+    $output .= check_markup($node->$annotation_field,FILTER_HTML_ESCAPE,FALSE);
+    $output .= '</div>';
+  }
+
+  $openurl_base = variable_get('biblio_baseopenurl','');
+  if($openurl_base) $output .= theme('biblio_openurl',biblio_openurl($node));
+
+  if ( biblio_access('export',$node)) {
+    $base =  variable_get('biblio_base', 'biblio');
+    $output .= '<span class="biblio_export_links">';
+    $output .= l("Tagged","$base/export/tagged/$node->nid") . '&nbsp;';
+    $output .= l("XML","$base/export/xml/$node->nid") . '&nbsp;';
+    $output .= l("BibTex","$base/export/bib/$node->nid") ;
+    $output .= '</span>';
+  }
+  return $output;
+}
+
+/**
+* Rewrite of theme_biblio_short for biblio_views
+*/
+function theme_biblio_views_short($node, $base='biblio', $style_name='classic', $inline=false) {
+ // $style_name = $style ? $style : variable_get('biblio_style', 'classic');
+  require_once( drupal_get_path('module', 'biblio') . "/biblio_style_$style_name.inc");
+  $style_function = "biblio_views_style_$style_name";
+  $styled_node = $style_function($node, $base, $inline);
+  if(empty($node->biblio_coins)) biblio_coins_generate($node);
+  return($styled_node.$node->biblio_coins);
+}
+
+/**
+* Rewrite of biblio_style_classic (from biblio_style_classic.inc) for biblio_views
+*/
+function biblio_views_style_classic($node, $base='biblio', $inline=false){
+  if (variable_get('biblio_normalize', 0)) {
+    $authors = _biblio_parse_authors($node->biblio_authors);
+  } else {
+    $authors = $node->biblio_authors;
+  }
+  $output .=  '<span class="biblio-title">';
+  $output .= $inline ? l("$node->title", "$base/viewinline/$node->nid") : l("$node->title", "node/$node->nid");
+  $output .= "</span>, \n";
+  $output .=  '<span class="biblio-authors">' . _biblio_views_author_links($authors,$base,$inline) . "</span> \n";
+  if ($node->biblio_secondary_title) {
+    $output .= ', ' . check_plain($node->biblio_secondary_title);
+  }
+  if ($node->biblio_date) $output .= ', ' . check_plain($node->biblio_date);
+  if ($node->biblio_volume) $output .= ', Volume ' . check_plain($node->biblio_volume);
+  if ($node->biblio_issue) $output .= ', Issue ' . check_plain($node->biblio_issue);
+  if ($node->biblio_number) $output .= ', Number ' . check_plain($node->biblio_number);
+
+  if ($node->biblio_place_published) $output .= ', ' . check_plain($node->biblio_place_published);
+  if ($node->biblio_pages) $output .= ', p.' . check_plain($node->biblio_pages);
+  if (isset($node->biblio_year)) {
+    if ($node->biblio_year == 0) { $node->biblio_year = t("In Press"); }
+    $output .= ', (' . check_plain($node->biblio_year) . ")\n";
+  }
+
+  return $output;
 }
