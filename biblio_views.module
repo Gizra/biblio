@@ -35,8 +35,9 @@ function biblio_views_views_tables() {
   views_table_add_filter($table, 'biblio_authors', "Biblio: Author", t("Filter this view by biblio author"), array(
     'list-type' => 'list',
     'list' => 'biblio_views_handler_filter_author',
-    'operator' => 'views_handler_operator_andor',
-    'value-type' => 'array',
+    'operator' => 'biblio_views_handler_operator_like',
+    'handler' => 'biblio_views_handler_filter_like',
+    'value-type' => 'string',
   ));
 
   // Add Views filter by Biblio Type
@@ -83,16 +84,20 @@ function biblio_views_views_arguments()
 }
 
 function biblio_views_handler_arg_type($op, &$query, $argtype, $arg2=NULL){
-
   switch($op) {
     case 'summary':
+      return 'test';
       break;
     case 'sort':
+      return 'test';
       break;
     case 'filter':
+      $query->orderby[] = 'biblio.year';
+      return 'test';
       break;
     case 'link':
     case 'title':
+      return 'test';
   }
 }
 function biblio_views_sort_handler($fielddata, $fieldinfo) {
@@ -223,16 +228,6 @@ function biblio_views_views_style_plugins() {
 
 function theme_biblio_views_plugin($view, $nodes, $type) {
   theme('biblio_add_css');
-  switch ($view->type) {
-    case 'biblio_classic':
-      break;
-    case 'biblio_apa':
-      break;
-    case 'biblio_cse':
-      break;
-    case 'biblio_ieee':
-      break;
-  }
 
   $sorts = array();
   $ts = tablesort_init($view->table_header);
@@ -271,8 +266,6 @@ function theme_biblio_views_plugin($view, $nodes, $type) {
     $content .= "</div>\n";
   } //end while
 
-
-  // magic theming work
   return $content;
 }
 
@@ -285,4 +278,46 @@ function theme_sortlinks($items = array()) {
     $output .= "</ul>";
   }
   return $output;
+}
+
+/**
+ * Custom filter for LIKE operations
+ */
+function biblio_views_handler_filter_like($op, $filter, $filterinfo, &$query) {
+  switch (trim($filter['value'])) {
+    case (''):
+      return;
+      break;
+  }
+  switch ($op) {
+    case 'handler':
+      $table = $filterinfo['table'];
+      $column = $filterinfo['field'];
+      $field = "$table.$column";
+      $query->ensure_table($table);
+      switch ($filter['operator']) {
+        case 'word':
+        case 'not':
+          foreach ($filter['value'] as $word) {
+            if ($filter['operator'] == 'not'){
+              $where[] = "UPPER(%s) NOT LIKE UPPER('%%%s%%')";
+            } else {
+              $where[] = "UPPER(%s) LIKE UPPER('%%%s%%')";
+            }
+              $values[] = $field;
+              $values[] = trim($word, " ,!?");
+          }
+          $where = '('. implode(' OR ', $where) .')';
+          $query->add_where($where, $values);
+          break;
+      }
+    break;
+  }
+}
+
+/**
+ * A list of options to be used in LIKE queries
+ */
+function biblio_views_handler_operator_like() {
+  return array('word' => t('authored by'), 'not' => t('not authored by'));
 }
