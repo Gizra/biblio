@@ -1,11 +1,136 @@
 <?PHP
 // $Id$
+function biblio_schema() {
+  $schema['biblio'] = array(
+      'fields' => array(
+           'nid' => array('type' => 'int', 'not null' => 1, 'default' => 0, 'disp-width' => '10'),
+           'biblio_type' => array('type' => 'int', 'not null' => 1, 'default' => 0, 'disp-width' => '11'),
+           'biblio_number' => array('type' => 'varchar', 'length' => '10'),
+           'biblio_other_number' => array('type' => 'varchar', 'length' => '24'),
+           'biblio_secondary_title' => array('type' => 'varchar', 'length' => '255'),
+           'biblio_tertiary_title' => array('type' => 'varchar', 'length' => '255'),
+           'biblio_authors' => array('type' => 'varchar', 'length' => '255'),
+           'biblio_secondary_authors' => array('type' => 'varchar', 'length' => '255'),
+           'biblio_tertiary_authors' => array('type' => 'varchar', 'length' => '255'),
+           'biblio_corp_author' => array('type' => 'varchar', 'length' => '255'),
+           'biblio_other_author_affiliations' => array('type' => 'varchar', 'length' => '255'),
+           'biblio_edition' => array('type' => 'varchar', 'length' => '255'),
+           'biblio_publisher' => array('type' => 'varchar', 'length' => '255'),
+           'biblio_place_published' => array('type' => 'varchar', 'length' => '255'),
+           'biblio_year' => array('type' => 'int', 'not null' => 1, 'default' => 0, 'disp-width' => '11'),
+           'biblio_volume' => array('type' => 'varchar', 'length' => '10'),
+           'biblio_pages' => array('type' => 'varchar', 'length' => '128'),
+           'biblio_date' => array('type' => 'varchar', 'length' => '16'),
+           'biblio_isbn' => array('type' => 'varchar', 'length' => '24'),
+           'biblio_lang' => array('type' => 'varchar', 'length' => '24', 'not null' => 0 , 'default' => 'eng'),
+           'biblio_abst_e' => array('type' => 'text'),
+           'biblio_abst_f' => array('type' => 'text'),
+           'biblio_full_text' => array('type' => 'int', 'size' => 'tiny', 'default' => 0, 'disp-width' => '4'),
+           'biblio_keywords' => array('type' => 'varchar', 'length' => '255'),
+           'biblio_url' => array('type' => 'varchar', 'length' => '255'),
+           'biblio_issue' => array('type' => 'varchar', 'length' => '10'),
+           'biblio_type_of_work' => array('type' => 'varchar', 'length' => '100'),
+           'biblio_accession_number' => array('type' => 'varchar', 'length' => '30'),
+           'biblio_call_number' => array('type' => 'varchar', 'length' => '30'),
+           'biblio_notes' => array('type' => 'text'),
+           'biblio_custom1' => array('type' => 'text'),
+           'biblio_custom2' => array('type' => 'text'),
+           'biblio_custom3' => array('type' => 'text'),
+           'biblio_custom4' => array('type' => 'text'),
+           'biblio_custom5' => array('type' => 'text'),
+           'biblio_custom6' => array('type' => 'text'),
+           'biblio_custom7' => array('type' => 'text'),
+           'biblio_research_notes' => array('type' => 'text'),
+           'biblio_number_of_volumes' => array('type' => 'varchar', 'length' => '10'),
+           'biblio_short_title' => array('type' => 'varchar', 'length' => '255'),
+           'biblio_alternate_title' => array('type' => 'varchar', 'length' => '255'),
+           'biblio_original_publication' => array('type' => 'varchar', 'length' => '255'),
+           'biblio_reprint_edition' => array('type' => 'varchar', 'length' => '255'),
+           'biblio_translated_title' => array('type' => 'varchar', 'length' => '255'),
+           'biblio_section' => array('type' => 'varchar', 'length' => '10'),
+           'vid' => array('type' => 'int', 'not null' => 1, 'default' => 0, 'disp-width' => '10'),
+           'biblio_citekey' => array('type' => 'varchar', 'length' => '16'),
+           'biblio_coins' => array('type' => 'text' ),
+           'biblio_doi' => array('type' => 'varchar', 'length' => '100'),
+           'biblio_issn' => array('type' => 'varchar', 'length' => '24'),
+           'biblio_auth_address' => array('type' => 'text'),
+           'biblio_remote_db_name' => array('type' => 'varchar', 'length' => '255'),
+           'biblio_remote_db_provider' => array('type' => 'varchar', 'length' => '255'),
+           'biblio_label' => array('type' => 'varchar', 'length' => '255'),
+           'biblio_access_date' => array('type' => 'varchar', 'length' => '255')),
+      'primary key' => array('vid'),
+      'indexes' => array(
+           'authors' => array('biblio_authors'),
+           'keywords' => array('biblio_keywords'),
+           'nid' => array('nid'),
+           'publisher' => array('biblio_publisher'),
+           'year' => array('biblio_year')),
+  );
+
+  $schema['biblio_fields'] = array(
+      'fields' => array(
+           'fid' => array('type' => 'int', 'not null' => 1, 'default' => 0, 'disp-width' => '11'),
+           'name' => array('type' => 'varchar', 'length' => '100', 'not null' => 1, 'default' => ''),
+           'title' => array('type' => 'varchar', 'length' => '100', 'not null' => 1, 'default' => ''),
+           'common' => array('type' => 'int', 'size' => 'tiny', 'not null' => 1, 'default' => 0, 'disp-width' => '1'),
+           'type' => array('type' => 'varchar', 'length' => '100', 'not null' => 1, 'default' => ''),
+           'size' => array('type' => 'int', 'not null' => 1, 'default' => 0, 'disp-width' => '11'),
+           'maxsize' => array('type' => 'int', 'not null' => 1, 'default' => 0, 'disp-width' => '11'),
+           'hint' => array('type' => 'varchar', 'length' => '100'),
+           'required' => array('type' => 'int', 'size' => 'tiny', 'not null' => 1, 'default' => 0, 'disp-width' => '1'),
+           'autocomplete' => array('type' => 'int', 'size' => 'tiny', 'not null' => 1, 'default' => 0, 'disp-width' => '1'),
+           'visible' => array('type' => 'int', 'size' => 'tiny', 'not null' => 1, 'default' => 0, 'disp-width' => '4'),
+           'weight' => array('type' => 'int', 'not null' => 1, 'default' => 0, 'disp-width' => '11')),
+      'primary key' => array('fid'),
+  );
+
+  $schema['biblio_types'] = array(
+      'fields' => array(
+           'tid' => array('type' => 'int', 'not null' => 1, 'default' => 0, 'disp-width' => '11'),
+           'name' => array('type' => 'varchar', 'length' => '64', 'not null' => 1, 'default' => ''),
+           'description' => array('type' => 'varchar', 'length' => '255'),
+           'weight' => array('type' => 'int', 'not null' => 1, 'default' => 0, 'disp-width' => '11'),
+           'visible' => array('type' => 'int', 'size' => 'tiny', 'not null' => 1, 'default' => 1, 'disp-width' => '1')),
+      'primary key' => array('tid'),
+  );
+
+  $schema['biblio_type_details'] = array(
+      'fields' => array(
+           'tid' => array('type' => 'int', 'not null' => 1, 'default' => 0, 'disp-width' => '11'),
+           'fid' => array('type' => 'int', 'not null' => 1, 'default' => 0, 'disp-width' => '11'),
+           'title' => array('type' => 'varchar', 'length' => '100', 'not null' => 1, 'default' => ''),
+           'hint' => array('type' => 'varchar', 'length' => '100'),
+           'required' => array('type' => 'int', 'size' => 'tiny', 'not null' => 1, 'default' => 0, 'disp-width' => '1'),
+           'weight' => array('type' => 'int', 'not null' => 1, 'default' => 0, 'disp-width' => '11')),
+      'primary key' => array('tid', 'fid'),
+      'indexes' => array(
+           'tid' => array('tid')),
+  );
+
+
+  $schema['biblio_has_author'] = array(
+      'fields' => array(
+           'nid' => array('type' => 'int', 'not null' => 1, 'default' => 0, 'disp-width' => '11'),
+           'aid' => array('type' => 'int', 'not null' => 1, 'default' => 0, 'disp-width' => '11'),
+           'rank' => array('type' => 'int', 'not null' => 1, 'default' => 0, 'disp-width' => '11')),
+      'primary key' => array('nid', 'aid', 'rank'),
+  );
+  
+  $schema['biblio_author_index'] = array(
+      'fields' => array(
+           'aid' => array('type' => 'int', 'not null' => 1, 'default' => 0, 'disp-width' => '11'),
+           'author' => array('type' => 'varchar', 'length' => '100', 'not null' => 1, 'default' => '')),
+      'primary key' => array('aid'),
+  );
+  
+  return ($schema);
+
+}
+
 function biblio_install() {
   $result = array();
   
- 
-  $result[] = db_query("alter table {node} modify title varchar(255);");
-  $result[] = db_query("alter table {node_revisions} modify title varchar(255);");
+ drupal_install_schema('biblio');
 
 
   $result[] = db_query("INSERT INTO {biblio_fields} (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`autocomplete`,`weight`) VALUES 
@@ -116,14 +241,17 @@ function biblio_install() {
 }
 function biblio_reset_types(){
   $result = array();
-  $result[] = db_query("DROP TABLE {biblio_type_details} ");
- 
+  
+  db_drop_table($result, 'biblio_type_details');
+  $schema = drupal_get_schema('biblio');
+  drupal_install_schema($schema['biblio_type_details']);
+
   _add_types($result);
 }
 
 function _add_types(&$result){
 
-      $result[] = db_query("INSERT INTO {biblio_type_details} (`tid`,`fid`,`title`,`hint`,`required`,`weight`) VALUES 
+      db_query("INSERT INTO {biblio_type_details} (`tid`,`fid`,`title`,`hint`,`required`,`weight`) VALUES 
        (100,5,'Series Title','',0,3),
        (100,15,'Edition','',0,10),
        (100,18,'Number of Pages','',0,9),
@@ -151,7 +279,7 @@ function _add_types(&$result){
        (101,5,'Book Title','',0,3),
        (101,2,'Editor','',0,2),
        (101,13,'City','',0,4);"); 
-      $result[] = db_query("INSERT INTO {biblio_type_details} (`tid`,`fid`,`title`,`hint`,`required`,`weight`) VALUES 
+      db_query("INSERT INTO {biblio_type_details} (`tid`,`fid`,`title`,`hint`,`required`,`weight`) VALUES 
        (102,42,'Start Page','',0,6),
        (102,37,'Short Title','',0,15),
        (102,41,'Reprint Edition','',0,172),
@@ -179,7 +307,7 @@ function _add_types(&$result){
        (104,12,'Publisher','',0,19),
        (104,13,'Conference Location','',0,20),
        (104,2,'Editor','',0,21);");
-      $result[] = db_query("INSERT INTO {biblio_type_details} (`tid`,`fid`,`title`,`hint`,`required`,`weight`) VALUES 
+      db_query("INSERT INTO {biblio_type_details} (`tid`,`fid`,`title`,`hint`,`required`,`weight`) VALUES 
        (108,5,'Academic Department','',0,12),
        (108,18,'Number of Pages','',0,17),
        (108,12,'University','',0,19),
@@ -198,7 +326,7 @@ function _add_types(&$result){
        (119,13,'Country','',0,13),
        (119,16,'Volume','',0,14),
        (129,5,'Prepared for','',0,12);");
-      $result[] = db_query("/*!40000 ALTER TABLE {biblio_type_details} ENABLE KEYS */;");
+      db_query("/*!40000 ALTER TABLE {biblio_type_details} ENABLE KEYS */;");
 
 }
 function biblio_uninstall(){
@@ -206,13 +334,8 @@ function biblio_uninstall(){
     while ($row = db_fetch_object($result)){
       node_delete($row->nid);
     }
+  drupal_uninstall_schema('biblio');
 
-  db_query("DROP TABLE {biblio} ");
-  db_query("DROP TABLE {biblio_types} ");
-  db_query("DROP TABLE {biblio_fields} ");
-  db_query("DROP TABLE {biblio_type_details} ");
-  db_query("DROP TABLE {biblio_author_index} ");
-  db_query("DROP TABLE {biblio_has_author} ");
   variable_del('biblio_base');                    
   variable_del('biblio_baseopenurl');             
   variable_del('biblio_footnotes_integration');   
