@@ -1162,14 +1162,14 @@ function biblio_submit(&$node) {
 }
 //function biblio_pre_render($form_id, &$form, $next_page = TRUE) {
 function biblio_form_alter(&$form, $form_state, $form_id) {
-print_r($form_state);
   global $form_values;
   if ($form_id == "biblio_node_form") {
     if (!empty($form['#node']->biblio_type)) $type = $form['#node']->biblio_type;
-    if (!empty($form['#post']['biblio_type'])) $type = $form['#post']['biblio_type'];
+    if (!empty($form_state['values']['biblio_type'])) $type = $form_state['values']['biblio_type'];
     //$type = $form['#post']['biblio_type'] ? $form['#post']['biblio_type']:;
     
     if ( $type >0 ) {
+    $form['biblio_type']['#default_value'] = $type;
 
     $form['title']['#type'] = 'textfield';
 
@@ -1234,6 +1234,7 @@ function biblio_form(&$node, &$param) {
   while ($option = db_fetch_object($result)) {
     $options["$option->tid"] = $option->name;
   } 
+  $form['#validate'][] = 'biblio_form_validate';
 
   $form['biblio_type'] = array(
     '#type' => 'select', 
@@ -1318,9 +1319,14 @@ function biblio_form(&$node, &$param) {
 * 
 * Errors should be signaled with form_set_error().
 */
-function biblio_validate(&$node) {
-print 'in vailidate';
-  if ($node->biblio_type == 0) {
+function biblio_form_validate($form, &$form_state) {
+
+  if (!$form_state['submitted']) {
+    $form_state['rebuild'] = true;
+    return;
+ //   $form_state['storage'] = array('biblio_type' => $form_state['values']['biblio_type']);
+  }  
+  if ($form_state['values']['biblio_type'] == 0) {
     form_set_error('biblio_type', t('You must select the type of publication'));
     return;
   } 
@@ -2138,12 +2144,11 @@ function biblio_form_import() {
     print theme('page', '');
   } 
 } 
-function biblio_form_import_validate($form_id, $form_values) {
+function biblio_form_import_validate($form, &$form_state) {
 
-    $op = $form_values['op'];
-    $filetype = $form_values['filetype'];
-    $edit = $_POST;
-    if (!file_check_upload('file_upload')) {
+    $op = $form_state['values']['op'];
+    $filetype = $form_state['values']['filetype'];
+    if (!file_save_upload('file_upload')) {
         form_set_error('',t("You must provide a file name")); 
     }
     if ($op == t('Import') && $filetype == '') {
@@ -2151,25 +2156,24 @@ function biblio_form_import_validate($form_id, $form_values) {
     }
 
 }
-function biblio_form_import_submit($form_id, $form_values) {
-  $op = $form_values['op'];
-    if ($form_values['op'] == t('Import') && isset($form_values['filetype'])) {
-      $import = file_check_upload('file_upload');
-      if ($import) {
-        $import = file_save_upload($import);
+function biblio_form_import_submit($form, &$form_state) {
+
+    if ($form_state['values']['op'] == t('Import') && isset($form_state['values']['filetype'])) {
+      
+      if ($import = file_save_upload('file_upload')) {
         drupal_set_message(t("@file was uploaded", array('@file' => $import->filename)), 'status');
 
         // Concatenate all the terms of the different vocabularies
         // in a single array to be sent to _biblio_import
         $terms = array();
-        foreach (array_keys($form_values) as $key) {
+        foreach (array_keys($form_state['values']) as $key) {
           if (preg_match('/(vocabulary[0-9]+)/', $key)) {
-            if ($form_values[$key] > 0) $terms[] = $form_values[$key];
+            if ($form_state['values'][$key] > 0) $terms[] = $form_state['values'][$key];
           }
         }
         // Added the $terms argument
         // the array of terms to be attached to the node(s)
-        $content = _biblio_import($import->filepath,$form_values['filetype'], $terms);
+        $content = _biblio_import($import->filepath,$form_state['values']['filetype'], $terms);
         file_delete($import->filepath);
 
       } else {
