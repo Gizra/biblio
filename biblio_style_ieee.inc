@@ -70,7 +70,6 @@ function biblio_style_ieee($node, $base='biblio', $inline=false){
           if ($node->biblio_date) {
             $output .= ', ' . check_plain($node->biblio_date);
           } elseif (isset($node->biblio_year)) {
-            if ($node->biblio_year == 0) { $node->biblio_year = t("(In Press)"); }
             $output .= ', ' . check_plain($node->biblio_year) . '&nbsp;&nbsp;' ;
           }
 

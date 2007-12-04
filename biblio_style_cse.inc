@@ -47,9 +47,7 @@ function biblio_style_cse($node, $base='biblio', $inline=false){
         case 9:
         default:
           if (isset($node->biblio_year)) {
-            if ($node->biblio_year == 0) { $node->biblio_year = t("In Press"); }
             $output .= check_plain($node->biblio_year).".&nbsp;&nbsp;" ;
-            
           }
           $output .= '<span class="biblio-title">' ;
           $output .= $inline ? l("$node->title", "$base/viewinline/$node->nid") : l("$node->title", "node/$node->nid"); 

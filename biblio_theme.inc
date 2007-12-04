@@ -1,5 +1,4 @@
 <?php
-// $Id$ 
 
 function theme_biblio_add_css() {
   drupal_add_css(drupal_get_path('module', 'biblio').'/biblio.css');
@@ -104,6 +103,7 @@ function theme_biblio_long($node,$base='biblio',$style='classic') {
   } 
   if (isset($node->biblio_year)) {
     if ($node->biblio_year == 9999) { $node->biblio_year = t("In Press"); }
+    if ($node->biblio_year == 9998) { $node->biblio_year = t("Submitted"); }
     $source .= ' (' . check_plain($node->biblio_year) . ')';
   } 
   $output .= "$source</div>\n";
@@ -113,8 +113,8 @@ function theme_biblio_long($node,$base='biblio',$style='classic') {
   if ($node->biblio_accession_number) $output .= '<h3>'.t("Accession Number").':</h3> ' . check_plain($node->biblio_accession_number) . "\n";
   if ($node->biblio_other_number) $output .= '<h3>'.t("Other Number").':</h3> ' . check_plain($node->biblio_other_number) . "\n";
   if ($node->biblio_url) {
-      $attrib = (variable_get('biblio_links_target_new_window',null)) ? array('target'=>'_blank') : null;
-      $output .= '<h3>'.t("URL").':</h3>'.l("$node->biblio_url",$node->biblio_url,$attrib) . "\n";
+      $attrib = (variable_get('biblio_links_target_new_window',null)) ? array('target'=>'_blank') : array();
+      $output .= '<h3>'.t("URL").':</h3>'.l($node->biblio_url,$node->biblio_url,$attrib) . "\n";
   }
   if ($node->biblio_keywords) $output .= '<h3>'.t("Keywords").':</h3> ' . _biblio_keyword_links($node->biblio_keywords,$base) . "\n";
   if ($node->biblio_abst_e) $output .= '<h3>'.t("Abstract").':</h3> ' . check_markup($node->biblio_abst_e,FILTER_HTML_ESCAPE,FALSE) . "\n";

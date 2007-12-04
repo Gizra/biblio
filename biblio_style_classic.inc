@@ -46,7 +46,6 @@ function biblio_style_classic($node, $base='biblio', $inline=false){
   if ($node->biblio_place_published) $output .= ', ' . check_plain($node->biblio_place_published);
   if ($node->biblio_pages) $output .= ', p.' . check_plain($node->biblio_pages);
   if (isset($node->biblio_year)) {
-    if ($node->biblio_year == 0) { $node->biblio_year = t("In Press"); }
     $output .= ', (' . check_plain($node->biblio_year) . ")\n";
   }
 

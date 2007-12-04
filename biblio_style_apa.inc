@@ -47,7 +47,6 @@ function biblio_style_apa($node, $base='biblio', $inline=false){
         case 9:
         default:
           if (isset($node->biblio_year)) {
-            if ($node->biblio_year == 0) { $node->biblio_year = t("In Press"); }
             $output .= "(" . check_plain($node->biblio_year) . ").&nbsp;&nbsp;" ;
           }
           $output .=  '<span class="biblio-title-apa">' ;
