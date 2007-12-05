@@ -161,7 +161,7 @@ class Structures_BibTex
             'wordWrapWidth'     => false,
             'wordWrapBreak'     => "\n",
             'wordWrapCut'       => 0,
-            'removeCurlyBraces' => false,
+            'removeCurlyBraces' => true,
         );
         foreach ($options as $option => $value) {
             $test = $this->setOption($option, $value);
@@ -1188,10 +1188,11 @@ class Structures_BibTex
            $node_array[$node_id]['biblio_type'] = 124;
            break; 
         }
-        
-        foreach ($entry['author'] as $auth){
-          $node_array[$node_id]['biblio_authors'] .= (empty($node_array[$node_id]['biblio_authors'])) ? $auth["von"]." ".$auth["last"].", ".$auth["first"]." ".$auth["jr"]: "; ".$auth["von"]." ".$auth["last"].", ".$auth["first"]." ".$auth["jr"];
-        }          
+        if (!empty($entry['author'])){
+          foreach ($entry['author'] as $auth){
+            $node_array[$node_id]['biblio_authors'] .= (empty($node_array[$node_id]['biblio_authors'])) ? $auth["von"]." ".$auth["last"].", ".$auth["first"]." ".$auth["jr"]: "; ".$auth["von"]." ".$auth["last"].", ".$auth["first"]." ".$auth["jr"];
+          }          
+        }
         if (!empty($entry['cite'])) $node_array[$node_id]['biblio_citekey'] = $entry['cite'];          
         if (!empty($entry['editor'])) $node_array[$node_id]['biblio_secondary_authors'] = $entry['editor'];          
         
