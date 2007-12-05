@@ -23,7 +23,7 @@ function _ris_tagged_import(&$data,$node) {
   $incite = false;
   $node_array = array();
 
-      foreach (explode("\n",$data) as $line){
+      foreach (explode("\n",$data) as $line) {
         //$line = fgets($handle);
         $line_len = strlen($line);
         if ($line_len > 3){
@@ -39,6 +39,7 @@ function _ris_tagged_import(&$data,$node) {
 
           switch ($tag) {
             case 'ER':
+               if (empty($node_array[$node_id]['title']))  $node_array[$node_id]['title'] = t("Untitled");
                $incite = false;
                break;                           
             case 'TY':              
@@ -127,6 +128,7 @@ function _ris_tagged_import(&$data,$node) {
               $node_array[$node_id]['biblio_place_published'] = $value;
               break;
             case 'Y1':
+            case 'PY':
               $node_array[$node_id]['biblio_year'] = ($end = strpos($value,"/"))?substr($value,0,$end):$value;
               $node_array[$node_id]['biblio_date'] = $value;
               break;
@@ -155,7 +157,10 @@ function _ris_tagged_import(&$data,$node) {
             case 'T3':
               $node_array[$node_id]['biblio_tertiary_title'] = $value;
               break;
+            case 'TI':
             case 'T1':
+            case 'CT':
+            case 'BT':
               $node_array[$node_id]['title'] = $value;
               break;
             case 'UR':
