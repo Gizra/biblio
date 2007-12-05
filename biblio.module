@@ -891,10 +891,11 @@ function biblio_show_node($node, $base, $teaser = false) {
   
   return $output;
 }  
-function biblio_form_types_edit($form_state = NULL) {
+function biblio_form_types_edit() {
   if ($arg_list = func_get_args()) {// show an existing type  
-    $tid = $arg_list[0];
+    $tid = $arg_list[1];
   }  
+
   // first get all of the field info
   $result = db_query('SELECT * FROM {biblio_fields} as b  ORDER BY b.weight ASC');
   while ($row = db_fetch_array($result)) {
@@ -970,6 +971,7 @@ function biblio_form_types_edit($form_state = NULL) {
 
 
 function biblio_type_add($tid=0,$fid=0) {
+ 
    $result = db_query("SELECT fid,title,weight,required,hint FROM {biblio_fields} WHERE fid=%d",$fid);
    if ($fld = db_fetch_object($result)) {
      db_query("INSERT INTO {biblio_type_details} (tid, fid, title, weight, required, hint)
@@ -985,7 +987,7 @@ function biblio_type_remove($tid=0,$fid=0) {
 }
 function biblio_form_types_edit_submit($form, &$form_state) {
   $tid = $edit['tid']?$edit['tid']:false;
-
+echo $tid; die;
   if ($tid) {
     $type_query = "UPDATE {biblio_type_details} SET 
                       title = '%s' , weight = %d ,
