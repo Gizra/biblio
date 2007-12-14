@@ -419,6 +419,9 @@ class Structures_BibTex
                     $value = $this->_removeCurlyBraces($value);
                 }
                 $position    = strrpos($entry, ',');
+                if ($position === false) {
+                  $position    = strrpos($entry, '{');
+                }
                 $field       = strtolower(trim(substr($entry, $position+1)));
                 $ret[$field] = $value;
                 $entry       = substr($entry, 0, $position);

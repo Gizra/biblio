@@ -102,8 +102,8 @@ function theme_biblio_long($node,$base='biblio',$style='classic') {
     $source .= 'p.' . check_plain($node->biblio_pages);
   } 
   if (isset($node->biblio_year)) {
-    if ($node->biblio_year == 9999) { $node->biblio_year = t("In Press"); }
-    if ($node->biblio_year == 9998) { $node->biblio_year = t("Submitted"); }
+    if ($node->biblio_year == 9998) { $node->biblio_year = t("In Press"); }
+    if ($node->biblio_year == 9999) { $node->biblio_year = t("Submitted"); }
     $source .= ' (' . check_plain($node->biblio_year) . ')';
   } 
   $output .= "$source</div>\n";

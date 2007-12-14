@@ -26,7 +26,7 @@ function _endnote_tagged_import(&$data,$node) {
       foreach (explode("\n",$data) as $line){
         //$line = fgets($handle);
         $line_len = strlen($line);
-        if ($line_len > 3){
+        if ($line_len ){
           $start = strpos($line, "%"); // There could be some unprintables at the beginning of the line so fine the location of the %
           if ($start !== false) {
             $tag = drupal_substr($line, $start, 2);
@@ -35,7 +35,7 @@ function _endnote_tagged_import(&$data,$node) {
             $value = $line;
           }          
         }       
-        if ( $line_len > 3) {      // if this is not a blank line
+        if ( $line_len ) {      // if this is not a blank line
           if (!$incite){
             $node_id = array_push($node_array, $node) - 1;
             $incite = true;

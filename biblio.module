@@ -1050,8 +1050,8 @@ function _get_biblio_filters() {
   $taxoresult = db_query("SELECT $taxo_fields FROM $table $taxo_joins ORDER BY $taxo_order");
 
   while ($option = db_fetch_object($result)) {
-    if ($option->biblio_year == 9999) { $option->biblio_year = t("In Press"); }
-    if ($option->biblio_year == 9998) { $option->biblio_year = t("Submitted"); }
+    if ($option->biblio_year == 9998) { $option->biblio_year = t("In Press"); }
+    if ($option->biblio_year == 9999) { $option->biblio_year = t("Submitted"); }
 
     $pub_years["$option->biblio_year"] = $option->biblio_year;
     $pub_type["$option->tid"] = $option->name;
@@ -1175,10 +1175,10 @@ echo "in node form";die;
 function biblio_submit(&$node) {
   if (!is_numeric($node->biblio_year)) {
     if ( drupal_strtoupper($node->biblio_year) == drupal_strtoupper(t("In Press")) )  {
-        $node->biblio_year = 9999;
+        $node->biblio_year = 9998;
     }
     if (drupal_strtoupper($node->biblio_year) == drupal_strtoupper(t("Submitted")) ) {
-       $node->biblio_year = 9998;
+       $node->biblio_year = 9999;
     }
   }
   if (variable_get('biblio_keyword_freetagging',0) && variable_get('biblio_freetagging_vocab',0)) {
@@ -1417,10 +1417,10 @@ function biblio_update($node) {
   $node->biblio_coins = biblio_coins($node);
   if (!is_numeric($node->biblio_year)) {
     if ( drupal_strtoupper($node->biblio_year) == drupal_strtoupper(t("In Press")) )  {
-        $node->biblio_year = 9999;
+        $node->biblio_year = 9998;
     }
     if (drupal_strtoupper($node->biblio_year) == drupal_strtoupper(t("Submitted")) ) {
-       $node->biblio_year = 9998;
+       $node->biblio_year = 9999;
     }
   }
 
@@ -1458,10 +1458,10 @@ function biblio_delete($node) {
 */
 function biblio_load($node) {
   $additions = db_fetch_object(db_query('SELECT * FROM {biblio} WHERE vid = %d', $node->vid));
-  if ( $additions->biblio_year == 9999)  {
+  if ( $additions->biblio_year == 9998)  {
         $additions->biblio_year = t("In Press");
   }
-  if ($additions->biblio_year == 9998) {
+  if ($additions->biblio_year == 9999) {
        $additions->biblio_year = t("Submitted");
   }
   return $additions;
@@ -1664,8 +1664,8 @@ function biblio_show_results($result, $count = 0, $attrib = array("sort" => 'yea
   }
   if ($inline) print '<div class="biblio-inline">';
   while ($node = db_fetch_object($result)) {
-    if (isset($node->biblio_year) && ($node->biblio_year == 9999))  $node->biblio_year = t("In Press") ;
-    if (isset($node->biblio_year) && ($node->biblio_year == 9998))  $node->biblio_year = t("Submitted") ;
+    if (isset($node->biblio_year) && ($node->biblio_year == 9998))  $node->biblio_year = t("In Press") ;
+    if (isset($node->biblio_year) && ($node->biblio_year == 9999))  $node->biblio_year = t("Submitted") ;
     switch ($attrib['sort']) {
       case 'title':
         if ( drupal_substr(drupal_ucfirst(ltrim($node->title)), 0, 1)  != $_char) {
@@ -1706,7 +1706,7 @@ function biblio_show_results($result, $count = 0, $attrib = array("sort" => 'yea
        } 
     } //end switch
     $content .= '<div class="biblio-entry">' . "\n";
-    $inline_links = ($inline && biblio_variable_get('inlinemode_in_links',0)) ? true : false;
+    $inline_links = ($inline && variable_get('inlinemode_in_links',0)) ? true : false;
     $content .= theme('biblio_list', $node,$base,$style,$inline_links);
     $content .= "</div>\n";
   } //end while
@@ -1727,7 +1727,6 @@ function biblio_show_results($result, $count = 0, $attrib = array("sort" => 'yea
 
 function biblio_db_search() {
 global $user;
-
 $inline = false;
 $join = array();
   $join[] = "left join {biblio} b  on n.vid=b.vid";
@@ -1915,6 +1914,7 @@ $join = array();
   $count = db_result(db_query($count_query,$terms));
 
   $result = pager_query($query, variable_get('biblio_rowsperpage', 25),0,$count_query,$terms);
+
   biblio_show_results($result, $count, $pager_attrib, $args,$inline);
 } 
 function _biblio_export($format="tagged", $nid = null, $version = 7) {
@@ -2251,7 +2251,9 @@ function _biblio_import($filename = null,$type='tagged',$terms = null) {
     } else {
 
       $options = variable_get('node_options_biblio',array('status'));
-      
+      if (module_exists('i18n') && variable_get('i18n_node_biblio',0)){
+        $node['language'] = module_invoke('i18n','default_language');
+      }
       $node['type']     = "biblio";
       $node['created']  = time();
       $node['changed']  = time();
