@@ -1,5 +1,5 @@
 <?php
-// $Id
+// $Id$
 /** 
  *   biblio.admin.inc
  *    
