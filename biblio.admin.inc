@@ -332,7 +332,7 @@ function biblio_admin_settings() {
     '#type' => 'radios',
     '#title' => t('Style'),
     '#default_value' => variable_get('biblio_style', 'classic'),
-    '#options' => _biblio_get_styles(),
+    '#options' => _biblio_admin_get_styles(),
     '#description' => t('This alters the layout of the "list" (short) view.'),
   );
   $form['syndication'] = array(
@@ -811,4 +811,27 @@ function _biblio_get_user_profile_form(&$form, $user=null){
       '#options' => array('uid' => t('Drupal User ID'), 'lastname' => ($user)?t('My last name'):t('Last name'), 'uid_lastname' => t('Both')),
       '#description' => t('This defines the criteria used to select which publications will be listed on the users profile page'),    
     );
+}
+/*  This function parses the module directory for 'style' files, loads them and
+ *  calls the info fuction to get some basic information like the short and long
+ *  names of the style
+*/   
+function _biblio_admin_get_styles() {
+  $styles = array();
+  $dir    = drupal_get_path('module', 'biblio');
+  $files  = array();
+  if ($dh = opendir($dir)) {
+    while (($files[] = readdir($dh)) !== false) {
+    }
+    closedir($dh);
+    foreach ($files as $file) {
+      if (strstr ( $file, 'biblio_style_')) { //find the style files
+        include_once $dir ."/". $file;          
+        if (function_exists(basename($file, ".inc") .'_info')) {
+          $styles = array_merge($styles, call_user_func(basename($file, ".inc") .'_info')); //build and array of the short and long names
+        }
+      }
+    }
+  }
+  return ($styles);
 }

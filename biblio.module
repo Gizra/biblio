@@ -248,29 +248,6 @@ function biblio_user($type, &$edit, &$user, $category = NULL) {
   }
 }
 
-/*  This function parses the module directory for 'style' files, loads them and
- *  calls the info fuction to get some basic information like the short and long
- *  names of the style
-*/   
-function _biblio_get_styles() {
-  $styles = array();
-  $dir    = drupal_get_path('module', 'biblio');
-  $files  = array();
-  if ($dh = opendir($dir)) {
-    while (($files[] = readdir($dh)) !== false) {
-    }
-    closedir($dh);
-    foreach ($files as $file) {
-      if (strstr ( $file, 'biblio_style_')) { //find the style files
-        include_once $dir ."/". $file;          
-        if (function_exists(basename($file, ".inc") .'_info')) {
-          $styles = array_merge($styles, call_user_func(basename($file, ".inc") .'_info')); //build and array of the short and long names
-        }
-      }
-    }
-  }
-  return ($styles);
-}
 /**
 * Implementation of hook_menu().
 * 
