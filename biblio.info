@@ -2,4 +2,4 @@
 name = Biblio
 description = Maintains biblographic lists.
 core = 6.x
-package = 
+package = Biblio

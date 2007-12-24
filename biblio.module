@@ -230,7 +230,7 @@ function biblio_user($type, &$edit, &$user, $category = NULL) {
   
   if ($type == 'form' && $category == 'account') {
     $form = array();
-    include_once  drupal_get_path('module','biblio') . 'biblio.admin.inc';
+    include_once  drupal_get_path('module','biblio') . '/biblio.admin.inc';
      _biblio_get_user_profile_form($form, $user);
     return $form;
   }

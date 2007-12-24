@@ -20,9 +20,24 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  */  
+function _biblio_admin_build_user_select($my_uid) {
+  $sql = 'SELECT DISTINCT u.uid, u.name, u.status, u.mail FROM {users} u  WHERE u.uid != 0 ';
+  $result = db_query($sql);
+  while ($user = db_fetch_object($result)) {
+      $users[$user->uid] = $user->name ." ($user->mail)";   
+  }
+  asort($users);
+  $select = array(
+    '#type' => 'select',
+    '#title' => t("Set user ID of entries in this file to"),
+    '#options' => $users,
+    '#value' => $my_uid
+  );
+  return $select;
+}
 
 function biblio_admin_import_form() {
-
+global $user;
   if (biblio_access('import', $node)) { // && !user_access('administer nodes')) {
 
       $form['#attributes']['enctype'] = 'multipart/form-data';
@@ -38,9 +53,12 @@ function biblio_admin_import_form() {
         '#default_value' => $edit['filetype'],
         '#options' => array('tagged' => t('EndNote Tagged'),'ris' => t('RIS') , 'xml'=>t('EndNote 7 XML'), 'xml8'=>t('EndNote 8+ XML'), 'bib'=>t('BibTex')),
       );
+      if ($user->uid) {
+        $form{'userid'} =  _biblio_admin_build_user_select($user->uid);
+      }  
+
    // Get the vocabularies  attached to the biblio node type ...
       $vocabularies = module_invoke('taxonomy', 'get_vocabularies', 'biblio');
-
       // ... and print a form to select the terms in each of them
       $form['import_taxonomy'] = array(
         '#type' => 'fieldset',
@@ -115,7 +133,9 @@ function biblio_admin_import_form_submit($form, &$form_state) {
         }
         // Added the $terms argument
         // the array of terms to be attached to the node(s)
-        $content = _biblio_import($import->filepath,$form_state['values']['filetype'], $terms);
+        $userid = (isset($form_state['values']['userid'])? $form_state['values']['userid'] : 1;
+        $filetype = $form_state['values']['filetype'];
+        $content = _biblio_import($userid, $import->filepath,$filetype, $terms);
         file_delete($import->filepath);
 
       } else {
@@ -632,7 +652,7 @@ function _biblio_form_sort($a, $b) {
   }
   return ($a_weight < $b_weight) ? -1 : 1;
 }
-function _biblio_import($filename = null,$type='tagged',$terms = null) {
+function _biblio_import($userid = 1, $filename = null,$type='tagged',$terms = null) {
   global $user;
   $node = array();
   if (file_exists($filename)) {
@@ -653,7 +673,7 @@ function _biblio_import($filename = null,$type='tagged',$terms = null) {
       $node['sticky']   = in_array('sticky',$options);
       $node['format']   = 0;
       $node['status']   = in_array('status',$options);
-      $node['uid']      = $user->uid;
+      $node['uid']      = $userid;
 
       switch($type) {
       case 'tagged': // EndNote Tagged 
