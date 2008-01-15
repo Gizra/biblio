@@ -1,7 +1,7 @@
 
                            biblio.module
 
-Author:  Ron Jerome (ron.jerome@nrc.ca)
+Author:  Ron Jerome (ron dot jerome at nrc dot ca)
 Released under the GPL
 
 
@@ -11,8 +11,7 @@ This module extends the node data type with additional fields to manage lists
 of scholarly publications.
 
 It closely follows the EndNote model, thus both importing from and exporting 
-to Endote are supported. Other formats could be added if there was sufficient 
-demand.
+to Endote are supported. Other formats such as bibtex and RIS are also supported.
 
 Bibliographic information is displayed in lists with links to detailed 
 information on each publication.
@@ -24,18 +23,17 @@ The lists can be sorted, filtered and ordered in many different ways.
 
 Requirements:
 =============
-Drupal 4.7.x.  (There is a separate version for Drupal 4.6.x available).
+Drupal 6.x
 
 
 
 Installation:
 =============
-Create a directory called biblio in the modules directory, then place all of the
+Create a directory called biblio in the sites/all/modules directory, then place all of the
 files packaged with this module in that directory.
 
 This module will auto-install the required database tables the first time you 
-enable it on the admin/modules page. (A biblio.mysql file is supplied if you wish
-to manualy install the tables.)  This will also setup a number of pre-defined 
+enable it on the admin/modules page.   This will also setup a number of pre-defined 
 publication types.  These types can be changed or deleted on the 
 admin/settings/biblio/types page.
 
