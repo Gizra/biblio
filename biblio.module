@@ -300,8 +300,8 @@ function biblio_menu() {
   $items['admin/settings/biblio/import'] = array(
     'title' => 'File Import',
     'page callback' => 'drupal_get_form', 
-    'page arguments' => array('biblio_admin_import_form'),
-    'file' => 'biblio.admin.inc',
+    'page arguments' => array('biblio_import_form'),
+    'file' => 'biblio.import.export.inc',
     'type' => MENU_LOCAL_TASK, 
     'weight' => -7
   );  
@@ -406,17 +406,18 @@ function biblio_menu() {
   $items["$base/import/form"] = array(
     'title' => '',
     'page callback' => 'drupal_get_form', 
-    'page arguments' => array('biblio_admin_import_form'),
-    'file' => 'biblio.admin.inc',
+    'page arguments' => array('biblio_import_form'),
+    'file' => 'biblio.import.export.inc',
     'access callback' => 'user_access',
     'access arguments' => array('import from file'),
     'type' => MENU_CALLBACK
   );
   $items["$base/export"] = array(
     'title' => '',
-    'page callback' => '_biblio_export',
+    'page callback' => 'biblio_export',
     'access callback' => 'user_access',
     'access arguments' => array('show export links'),
+    'file' => 'biblio.import.export.inc',
     'type' => MENU_CALLBACK
   );
   $items["$base/type/add"] = array(
@@ -1443,229 +1444,6 @@ $join = array();
   $result = pager_query($query, variable_get('biblio_rowsperpage', 25),0,$count_query,$terms);
 
   return biblio_show_results($result, $count, $pager_attrib, $args,$inline);
-} 
-function _biblio_export($format="tagged", $nid = null, $version = 7) {
-$params=array();
-  if ($nid === null && isset($_SESSION['last_biblio_query']) && !empty($_SESSION['last_biblio_query']) ) {
-    $query = $_SESSION['last_biblio_query'];
-    $params = $_SESSION['last_biblio_query_terms'];    
-  } elseif (!empty($nid)) {
-    $query = db_rewrite_sql("SELECT * FROM {node} n left join {biblio} b  on n.vid=b.vid 
-                WHERE n.nid=%d ");
-    $params[] = $nid;
-  }else{
-    return;
-  } 
-
-  $result = db_query($query,$params);
-
-  if (db_num_rows($result)) {
-     switch($format) {
-     case "tagged":
-       _endnote_tagged_export($result);
-       break;
-     case "xml":
-       _endnote_XML_export($result, $version );
-       break;
-     case "bib":
-       _bibtex_export($result);
-       break;
-     }
-  }
-}
-function _bibtex_export($result) {
-
-$bibtex = '';
-    while ($pub = db_fetch_object($result)) {
-    $type = "article";
-    $journal = $series = $booktitle = $school = $organization = null;
-    switch ($pub->biblio_type) {
-      case 102:
-        $type = "article";
-        $journal = $pub->biblio_secondary_title;
-       break; 
-      case 100:
-        $type = "book";
-        $series = $pub->biblio_secondary_title;
-         break; 
-      case 101:
-        $type = "inbook";
-        $booktitle = $pub->biblio_secondary_title;
-         break; 
-      case 103:
-        $type = "conference";
-         break; 
-      case 100:
-        $type = "incollection";
-         break; 
-      case 103:
-        $type = "inproceedings";
-         break; 
-      case 129:
-        $type = "misc";
-         break; 
-      case 108:
-        $type = "phdthesis";
-        $school = $pub->biblio_publisher;
-        $pub->biblio_publisher = null;
-         break; 
-      case 104:
-        $type = "proceedings";
-         break; 
-      case 109:
-        $type = "techreport";
-        $organization = $pub->biblio_publisher;
-        $pub->biblio_publisher = null;
-         break; 
-      case 124:
-        $type = "unpublished";
-         break; 
-    }
-    
-    $bibtex .= '@'.$type.' { ';
-    $bibtex .= ($pub->biblio_citekey)? $pub->biblio_citekey.",\n":",\n";
-    if ($pub->title) $bibtex .= "\ttitle = {".$pub->title."},\n";
-    if ($journal) $bibtex .= "\tjournal = {".$journal."},\n";
-    if ($booktitle) $bibtex .= "\tbooktitle = {".$booktitle."},\n";
-    if ($series) $bibtex .= "\tseries = {".$series."},\n";
-    if ($pub->biblio_secondary_authors) $bibtex .= "\teditor = {".$pub->biblio_secondary_authors."},\n";
-    if ($pub->biblio_volume) $bibtex .= "\tvolume = {".$pub->biblio_volume."},\n";
-    if ($pub->biblio_number) $bibtex .= "\tnumber = {".$pub->biblio_number."},\n";
-    if ($pub->biblio_year) $bibtex .= "\tyear = {".$pub->biblio_year."},\n";
-    if ($pub->biblio_notes) $bibtex .= "\tnote = {".$pub->biblio_notes."},\n";
-    if ($pub->biblio_date) $bibtex .= "\tmonth = {".$pub->biblio_date."},\n";
-    if ($pub->biblio_pages) $bibtex .= "\tpages = {".$pub->biblio_pages."},\n";
-    if ($pub->biblio_publisher) $bibtex .= "\tpublisher = {".$pub->biblio_publisher."},\n";
-    if ($school) $bibtex .= "\tschool = {".$school."},\n";
-    if ($organization) $bibtex .= "\torganization = {".$organization."},\n";
-    if ($institution) $bibtex .= "\tinstitution = {".$institution."},\n";
-    if ($pub->biblio_type_of_work) $bibtex .= "\ttype = {".$pub->biblio_type_of_work."},\n";
-    if ($pub->biblio_edition) $bibtex .= "\tedition = {".$pub->biblio_edition."},\n";
-    if ($pub->biblio_section) $bibtex .= "\tchapter = {".$pub->biblio_section."},\n";
-    if ($pub->biblio_place_published) $bibtex .= "\taddress = {".$pub->biblio_place_published."},\n";
-    if ($pub->biblio_abst_e) $bibtex .= "\tabstract = {".$pub->biblio_abst_e."},\n";
-    if ($pub->biblio_keywords) $bibtex .= "\tkeywords = {".$pub->biblio_keywords."},\n";
-    if ($pub->biblio_isbn) $bibtex .= "\tISBN = {".$pub->biblio_isbn."},\n";
-    if ($pub->biblio_url) $bibtex .= "\tURL = {".$pub->biblio_url."},\n";
-    $author =  str_replace("; ", " and ", $pub->biblio_authors);
-    $bibtex .= "\tauthor = {".$author."}\n";
-    
-    $bibtex.="}\n\n";
-
-  }
-
-  header('Content-type: 	application/text');
-  header('Content-Disposition:  filename="bibtex.bib"');
-  print utf8_decode($bibtex);
-
-
-}
-function _endnote_XML_export($result, $version = 7) {
-
-   if ($version == 8) {
-      require_once(drupal_get_path('module', 'biblio') . '/endnote8_export.inc');
-     $xml = _endnote8_XML_export($result);
-    }elseif ($version == 7) {
-      require_once(drupal_get_path('module', 'biblio') . '/endnote7_export.inc');
-     $xml = _endnote7_XML_export($result);
-    }
-    header('Content-type: application/xml; charset=utf-8');
-    header('Content-Disposition: attachment; filename="endnote'.$version.'.xml"');
-    echo $xml;
-}
-
-function _endnote_tagged_export($result) {
-
-    $doc = "";
-    while ($pub = db_fetch_object($result)) {
-      switch ($pub->biblio_type) {
-        case 1:
-        case 102: $doc .= "%0 Journal Article\r\n";
-          if ($pub->biblio_secondary_title) $doc .= "%J " . trim($pub->biblio_secondary_title) . "\r\n";
-          break; // journal
-        case 2:  
-        case 103: $doc .= "%0 Conference Paper\r\n";
-          if ($pub->biblio_secondary_title) $doc .= "%B " . trim($pub->biblio_secondary_title) . "\r\n";
-          break;
-        case 3: // are all
-        case 4: $doc .= "%0 Conference Proceedings\r\n";
-          if ($pub->biblio_secondary_title) $doc .= "%B " . trim($pub->biblio_secondary_title) . "\r\n";
-          break; // conference proceedings 
-        case 5: 
-        case 109:
-          $doc .= "%0 Report\r\n";
-          break; // report
-        case 6: 
-        case 101:
-          $doc .= "%0 Book Section\r\n";
-          if ($pub->biblio_secondary_title) $doc .= "%B " . trim($pub->biblio_secondary_title) . "\r\n";
-          break; // book section
-        case 7: 
-        case 108:
-          $doc .= "%0 Thesis\r\n";
-          if ($pub->biblio_secondary_title) $doc .= "%B " . trim($pub->biblio_secondary_title) . "\r\n";
-          break; // thesis
-        case 8: 
-        case 119:
-          $doc .= "%0 Patent\r\n";
-          if ($pub->biblio_secondary_title) $doc .= "%B " . trim($pub->biblio_secondary_title) . "\r\n";
-          break; // patent
-        case 9:
-        default:
-          $doc .= "%0 Generic\r\n";
-          break; // generic
-      } 
-      $doc .= "%D " . trim($pub->biblio_year) . "\r\n";
-      $doc .= "%T " . trim($pub->title) . "\r\n";
-      
-      $author_array = _parse_author_array(explode(';', $pub->biblio_authors));
-      foreach($author_array as $auth) {
-        $doc .= "%A " . $auth['last_name'] . ($auth['first_name'] ? (', ' . $auth['first_name']) : ($auth['initials'] ? (', ' . $auth['initials']) : '')) . "\r\n";
-      } 
-
-      if ($pub->biblio_place_published) $doc .= "%C " . trim($pub->biblio_place_published) . "\r\n";
-      if ($pub->biblio_secondary_authors) {
-        $author_array = explode(";", $pub->biblio_secondary_authors);
-        foreach($author_array as $auth) {
-          $doc .= "%E " . trim($auth) . "\r\n";
-        } 
-      } 
-      if ($pub->biblio_publisher) $doc .= "%I " . trim($pub->biblio_publisher) . "\r\n";
-      if (trim($pub->biblio_keywords)) $doc .= "%K " . trim($pub->biblio_keywords) . "\r\n";
-      if ($pub->biblio_call_number) $doc .= "%L " . trim($pub->biblio_call_number) . "\r\n";
-      if ($pub->biblio_accession_number) $doc .= "%M " . trim($pub->biblio_accession_number) . "\r\n";
-      if ($pub->biblio_issue) $doc .= "%N " . trim($pub->biblio_issue) . "\r\n";
-      if ($pub->biblio_pages) $doc .= "%P " . trim($pub->biblio_pages) . "\r\n";
-      if ($pub->biblio_tertiary_title) $doc .= "%S " . trim($pub->biblio_tertiary_title) . "\r\n";
-      if ($pub->biblio_url) $doc .= "%U " . trim($pub->biblio_url) . "\r\n";
-      if ($pub->biblio_volume) $doc .= "%V " . trim($pub->biblio_volume) . "\r\n";
-      $abst = "";
-      if ($pub->biblio_abst_e) $abst .= trim($pub->biblio_abst_e);
-      if ($pub->biblio_abst_f) $abst .= trim($pub->biblio_abst_f);
-      if ($abst) {
-        $search = array("/\r/", "/\n/");
-        $replace = " ";
-        $abst = preg_replace($search, $replace, $abst);
-        $doc .= "%X " . $abst . "\r\n";
-      } 
-      if ($pub->biblio_tertiary_authors) {
-        $author_array = explode(";", $pub->biblio_tertiary_authors);
-        foreach($author_array as $auth) {
-          $doc .= "%Y " . trim($auth) . "\r\n";
-        } 
-      } 
-      if ($pub->biblio_notes) $doc .= "%Z " . trim($pub->biblio_notes) . "\r\n";
-      if ($pub->biblio_edition) $doc .= "%7 " . trim($pub->biblio_edition) . "\r\n";
-      if ($pub->biblio_date) $doc .= "%8 " . trim($pub->biblio_date) . "\r\n";
-      if ($pub->biblio_type_of_work) $doc .= "%9 " . trim($pub->biblio_type_of_work) . "\r\n";
-      if ($pub->biblio_isbn) $doc .= "%@ " . trim($pub->biblio_isbn) . "\r\n";
-
-      $doc .= "\r\n";
-    } 
-   
-  header('Content-type: 	application/x-endnote-refer');
-  header('Content-Disposition:  filename="endnote.enw"');
-  print utf8_decode($doc);
 } 
 
  
