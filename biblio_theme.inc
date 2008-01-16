@@ -130,6 +130,92 @@ function theme_biblio_long($node,$base='biblio',$style='classic') {
   return $output;
 } 
 
+function theme_biblio_tabular($node, $base, $teaser = false) {
+  $tid=$node->biblio_type;
+  $result = db_query('SELECT * FROM {biblio_fields} as b  ORDER BY b.weight ASC');
+  while ($row = db_fetch_array($result)) {
+    if ($row['common']) {
+      $fields[$row['fid']] = $row;
+    }
+  }
+  $result = db_query('SELECT t.* FROM {biblio_types} as t WHERE t.tid = %d', $tid);
+  $row = db_fetch_array($result);
+  $type_name=$row['name'];
+  $result = db_query('SELECT d.*, f.name FROM {biblio_type_details} as d INNER JOIN {biblio_fields} as f on d.fid=f.fid where d.tid=%d  ORDER BY d.weight ASC', $tid);
+  while ($row = db_fetch_array($result)) {
+    $fields[$row['fid']] = (isset($fields[$row['fid']])) ? array_merge($fields[$row['fid']], $row) : $row;
+  }
+  uasort($fields, "biblio_form_sort"); // resort the fields since the weight may have changed
+  if ($teaser) {
+//    $rows[] =array(array('data' =>  '<hr>', 'colspan'=>'3'));
+//    $rows[] =array(array('data' =>  '<span class="biblio-row-title">'.t('Title').'</span>','align'=>'right'),
+//                   array('data' => '&nbsp;&nbsp;'),
+//                   array('data' => l($node->title, 'node/'.$node->nid)));
+   unset($fields[21]); 
+  }
+  $rows[] = array(array('data' =>  '<span class="biblio-row-title">'. t('Publication Type') .'</span>', 'align' => 'right'),
+                 array('data' => '&nbsp;&nbsp;'),
+                 array('data' => $type_name));
+
+  if ($node->biblio_authors) {
+    if (variable_get('biblio_normalize', 0)) {
+      $node->biblio_authors = _biblio_parse_authors($node->biblio_authors);
+    }
+    $node->biblio_authors = _biblio_author_links($node->biblio_authors, $base);
+  }
+  if ($node->biblio_keywords) {
+   $node->biblio_keywords = _biblio_keyword_links($node->biblio_keywords, $base);
+  }
+  if ($node->biblio_url) {
+   $node->biblio_url = l(t("Click Here"), $node->biblio_url, $attrib);
+  }
+  
+  foreach ($fields as $key => $row) {
+    if (!empty($node->$row['name'])) {
+      switch ($key) {
+      case 1:
+      case 23:
+      case 25:
+        // check_plain is not need on these since they have gone through
+        // the l() function which does a check_plain
+        $data = $node->$row['name'];
+        break;
+      case 44:
+        $row['title']=""; 
+        $data = "";
+        break;
+      default:
+        $data = check_markup($node->$row['name'], FILTER_HTML_ESCAPE, FALSE);
+      }
+      $rows[] = array(array('data' => '<span class="biblio-row-title">'. $row['title'] .'</span>', 'align' => 'right', 'valign' => 'top', 'width' => '20%'),
+                      array('data' => '&nbsp;&nbsp;'),
+                      array('data' => $data));
+    }
+  }
+  if ( strlen(trim($node->body)) && $teaser == false && user_access('view full text') ) {
+    $rows[] = array(array('data' => '<span class="biblio-row-title">'. t('Full Text') .'</span>', 'align' => 'right', 'valign' => 'center', 'width' => '20%'),
+                      array('data' => '&nbsp;&nbsp;'),
+                      array('data' => check_markup($node->body,FILTER_HTML_ESCAPE, FALSE))
+                            );
+  }    
+  if ( biblio_access('export', $node) && $teaser == false ) {
+    $rows[] = array(array('data' => '<span class="biblio-row-title">'. t('Export') .'</span>', 'align' => 'right', 'valign' => 'center', 'width' => '20%'),
+                    array('data' => '&nbsp;&nbsp;'),
+                    array('data' => l(t("Tagged"),"$base/export/tagged/$node->nid").' '.
+                      l(t("XML"),"$base/export/xml/$node->nid").' '.
+                      l(t("BibTex"),"$base/export/bib/$node->nid")
+                    ));
+
+  } 
+
+  $output = '<div id="biblio-node">';
+  $output .= $node->biblio_coins;
+  $output .= theme('table', $header, $rows);
+  $output .= '</div>';
+  
+  return $output;
+}  
+
 function theme_biblio_list($node, $base='biblio', $style='classic', $inline=false) {
   
   $output .= theme('biblio_short', $node, $base, $style, $inline);
