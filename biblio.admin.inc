@@ -342,7 +342,7 @@ function biblio_admin_types_edit_form() {
     $form['tid'] =array('#type'=>'value','#value'=>$tid);
   } 
 
-  uasort($fields, "_biblio_form_sort"); // resort the fields since the weight may have changed
+  uasort($fields, "biblio_form_sort"); // resort the fields since the weight may have changed
 
   $vis_comm = $tid?'visible':'common';
   if (!$tid) $options["$vis_comm"] = '';
@@ -522,14 +522,6 @@ function biblio_admin_types_reset_form_submit($form, &$form_state) {
 
 }
 
-function _biblio_form_sort($a, $b) {
-  $a_weight = (is_array($a) && isset($a['weight'])) ? $a['weight'] : 0;
-  $b_weight = (is_array($b) && isset($b['weight'])) ? $b['weight'] : 0;
-  if ($a_weight == $b_weight) {
-    return 0;
-  }
-  return ($a_weight < $b_weight) ? -1 : 1;
-}
 
  
 
