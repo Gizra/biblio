@@ -182,7 +182,7 @@ function biblio_import_form_submit($form, &$form_state) {
  * @return
  *   An array the node id's of the items imported
  */
-function biblio_import($userid = 1, $filename = null,$type='tagged',$terms = null) {
+function biblio_import($userid = 1, $filename = null, $type='tagged', $terms = null) {
   global $user;
   $node = array();
   if (file_exists($filename)) {
@@ -190,25 +190,25 @@ function biblio_import($userid = 1, $filename = null,$type='tagged',$terms = nul
         return false;
     } else {
 
-      $options = variable_get('node_options_biblio',array('status'));
-      if (module_exists('i18n') && variable_get('i18n_node_biblio',0)){
-        $node['language'] = module_invoke('i18n','default_language');
+      $options = variable_get('node_options_biblio', array('status'));
+      if (module_exists('i18n') && variable_get('i18n_node_biblio', 0)){
+        $node['language'] = module_invoke('i18n', 'default_language');
       }
       $node['type']     = "biblio";
       $node['created']  = time();
       $node['changed']  = time();
-      $node['comment']  = variable_get('comment_biblio',0); 
-      $node['promote']  = in_array('promote',$options);
-      $node['moderate'] = in_array('moderate',$options);
-      $node['sticky']   = in_array('sticky',$options);
+      $node['comment']  = variable_get('comment_biblio', 0); 
+      $node['promote']  = in_array('promote', $options);
+      $node['moderate'] = in_array('moderate', $options);
+      $node['sticky']   = in_array('sticky', $options);
       $node['format']   = 0;
-      $node['status']   = in_array('status',$options);
+      $node['status']   = in_array('status', $options);
       $node['uid']      = $userid;
 
       switch($type) {
       case 'tagged': // EndNote Tagged 
         require_once(drupal_get_path('module', 'biblio') . '/tagged_parser.inc');
-        $node_ids  = _endnote_tagged_import($file_content,$node);
+        $node_ids  = _endnote_tagged_import($file_content, $node);
         break;
       case 'xml': // EndNote 7 XML
        $node_ids  = biblio_endnote_XML_import($file_content ,$node, 7 ); 
@@ -221,7 +221,7 @@ function biblio_import($userid = 1, $filename = null,$type='tagged',$terms = nul
         break;
       case 'ris': // RIS
         require_once(drupal_get_path('module', 'biblio') . '/ris_parser.inc');
-        $node_ids  = _ris_tagged_import($file_content,$node);
+        $node_ids  = _ris_tagged_import($file_content, $node);
         break;
      }  
      if ($terms) {
@@ -264,7 +264,7 @@ $params=array();
     return;
   } 
 
-  $result = db_query($query,$params);
+  $result = db_query($query, $params);
 
   if ($result) {
      switch($format) {
@@ -280,7 +280,17 @@ $params=array();
      }
   }
 }
-
+/**
+ * Import bibtex data.
+ *
+ * @param $data
+ *   the contents of a bibtex file passed as one big string 
+ * @param $node
+ *   an array (populated in biblio_import() ), containing the boiler plate 
+ *   information common to all nodes 
+ * @return
+ *   an array of node ids
+ */
 function biblio_bibtex_import(&$data, $node) {
 require_once(drupal_get_path('module', 'biblio') . '/bibtex.php');
 
@@ -297,8 +307,16 @@ require_once(drupal_get_path('module', 'biblio') . '/bibtex.php');
   }
   return $node_ids;
 } 
-function biblio_bibtex_export($result) {
 
+/**
+ * Export data in bibtex format.
+ *
+ * @param $result
+ *   a database result set pointer
+ * @return
+ *   none
+ */
+function biblio_bibtex_export($result) {
 $bibtex = '';
     while ($pub = db_fetch_object($result)) {
     $type = "article";
@@ -385,13 +403,21 @@ $bibtex = '';
 
 }
 
+/**
+ * Save node imported from a file.
+ *
+ * @param $node_array
+ *   a 2 dimensional array containing all the node information
+ * @return
+ *   The node ids of the saved nodes
+ */
 function biblio_save_imported_nodes(&$node_array) {
 
   if (function_exists('node_save')) {
     foreach ($node_array as $node) {
       $node = (object)$node;
-      if (variable_get('biblio_keyword_freetagging',0) && variable_get('biblio_freetagging_vocab',0)) {
-        $vid = variable_get('biblio_freetagging_vocab',0);
+      if (variable_get('biblio_keyword_freetagging', 0) && variable_get('biblio_freetagging_vocab', 0)) {
+        $vid = variable_get('biblio_freetagging_vocab', 0);
         $node->taxonomy['tags'][$vid] = $node->biblio_keywords;
       }
       node_save($node);
@@ -405,10 +431,22 @@ function biblio_save_imported_nodes(&$node_array) {
   return $node_ids;
 }
 
-function biblio_endnote_XML_import(&$data ,$nodedata, $version = 8) {
-global $user,$records, $rec_count,$node_array,$node,$node_id;
+/**
+ * Import EndNote XML data.
+ *
+ * @param $data
+ *   the contents of an EndNote XML file passed as one big string 
+ * @param $node
+ *   boiler plate information common to all nodes
+ * @param $version
+ *   the EndNote version of the XML file.  EndNote uses one format up to version
+ *   7 then change to another format in version 8 and greater. 
+ * @return
+ *   The node ids of the saved nodes
+ */
+function biblio_endnote_XML_import(&$data, $node, $version = 8) {
+global $user,$records, $rec_count, $node_array, $node, $node_id;
   $node_array = array();
-  $node = $nodedata;
   $xml_parser = drupal_xml_parser_create($data);
 
 // use case-folding so we are sure to find the tag in 
@@ -424,7 +462,7 @@ global $user,$records, $rec_count,$node_array,$node,$node_id;
 
     xml_parse_into_struct($xml_parser, $data, $values);
 
-    en7_parse($values,$node_array,$node) ;
+    en7_parse($values, $node_array, $node) ;
 
   }
 
@@ -435,6 +473,17 @@ global $user,$records, $rec_count,$node_array,$node,$node_id;
   return ($node_ids);
 }
 
+/**
+ * Export data in EndNote XML format.
+ *
+ * @param $result
+ *   a database pointer to a result set
+ * @param $version
+ *   the EndNote version of the XML file.  EndNote uses one format up to version
+ *   7 then change to another format in version 8 and greater. 
+ * @return
+ *   none
+ */
 function biblio_endnote_XML_export($result, $version = 7) {
 
    if ($version == 8) {
@@ -445,11 +494,19 @@ function biblio_endnote_XML_export($result, $version = 7) {
      $xml = _endnote7_XML_export($result);
     }
     header('Content-type: application/xml; charset=utf-8');
-    header('Content-Disposition: attachment; filename="endnote'.$version.'.xml"');
-    echo $xml;
+    header('Content-Disposition: attachment; filename="endnote'. $version. '.xml"');
+    print $xml;
 }
 
 
+/**
+ * Export data in EndNote tagged format.
+ *
+ * @param $result
+ *   a database pointer to a result set
+* @return
+ *   none
+ */
 function biblio_endnote_tagged_export($result) {
 
     $doc = "";
