@@ -1,7 +1,12 @@
 <?PHP
 // $Id$
-/** 
- *   biblio.import.export.inc
+/**
+ * @file
+ * Functions that are used to import and export biblio data.
+ *
+ */
+ 
+ /*   biblio.import.export.inc
  *    
  *   Copyright (C) 2006-2008  Ron Jerome
  *
@@ -21,6 +26,15 @@
  *
  */  
 
+/**
+ * Return a form select box populated with all the users of the site.
+ *
+ * @param $my_uid
+ *   The user id of the person accessing the form so the select box defaults 
+ *   to their userid 
+ * @return
+ *   An array which will be used by the form builder to add a select box to a form
+ */
 function _biblio_admin_build_user_select($my_uid) {
   $sql = 'SELECT DISTINCT u.uid, u.name, u.status, u.mail FROM {users} u  WHERE u.uid != 0 ';
   $result = db_query($sql);
@@ -37,6 +51,12 @@ function _biblio_admin_build_user_select($my_uid) {
   return $select;
 }
 
+/**
+ * Return a form used to import files into biblio.
+ *
+ * @return
+ *   An array which will be used by the form builder to build the import form
+ */
 function biblio_import_form() {
 global $user;
   if (biblio_access('import', $node)) { // && !user_access('administer nodes')) {
@@ -103,7 +123,9 @@ global $user;
     print theme('page', '');
   } 
 } 
-
+/**
+ * Implementation of hook_validate() for the biblio_import_form.
+ */
 function biblio_import_form_validate($form, &$form_state) {
 
     $op = $form_state['values']['op'];
@@ -116,7 +138,9 @@ function biblio_import_form_validate($form, &$form_state) {
     }
 
 }
-
+/**
+ * Implementation of hook_submit() for the biblio_import_form.
+ */
 function biblio_import_form_submit($form, &$form_state) {
 
     if ($form_state['values']['op'] == t('Import') && isset($form_state['values']['filetype'])) {
@@ -144,6 +168,20 @@ function biblio_import_form_submit($form, &$form_state) {
       } 
   }
 }
+/**
+ * Import data from a file and return the node ids created.
+ *
+ * @param $userid
+ *   The user id of that will be assigned to each node imported
+ * @param $filename
+ *   The name of the file containing the data to import 
+ * @param $type
+ *   The format of the file to be imported (tagged, XML, RIS, bibTEX) 
+ * @param $terms
+ *   the vocabulary that the imported nodes will be associated with
+ * @return
+ *   An array the node id's of the items imported
+ */
 function biblio_import($userid = 1, $filename = null,$type='tagged',$terms = null) {
   global $user;
   $node = array();
@@ -198,6 +236,21 @@ function biblio_import($userid = 1, $filename = null,$type='tagged',$terms = nul
     return false;
   }
 }
+/**
+ * Export nodes in a given file format.
+ *
+ * @param $format
+ *   The file format to export the nodes in (tagged, XML, bibTEX)
+ * @param $nid
+ *   If not NULL, then export only the given nodeid, else we will 
+ *   use the session variable which holds the most recent query. If neither
+ *   $nid or the session variable are set, then nothing is exported   
+ * @param $version
+ *   The version of EndNote XML to use.  There is one format for ver. 1-7 and
+ *   a different format for versions 8 and greater.  
+ * @return
+ *   none
+ */
 function biblio_export($format="tagged", $nid = null, $version = 7) {
 $params=array();
   if ($nid === null && isset($_SESSION['last_biblio_query']) && !empty($_SESSION['last_biblio_query']) ) {
