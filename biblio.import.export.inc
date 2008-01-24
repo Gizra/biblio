@@ -96,7 +96,7 @@ global $user;
           $form['import_taxonomy']['vocabulary'.$i++]['#description'] = t("Select taxonomy term to assigned to imported entries");
         }
       }else{
-        $vocab_msg = t('There are currently no vocabularies assigned to the biblio node type, please go the the !url page to fix this', array('!url'=> l(t('admin/taxonomy'),'admin/taxonomy')));
+        $vocab_msg = t('There are currently no vocabularies assigned to the biblio node type, please go the the !url page to fix this', array('!url'=> l(t('admin/content/taxonomy'),'admin/content/taxonomy')));
         $form['import_taxonomy']['vocabulary_message'] = array('#value' => '<p><div>'.$vocab_msg.'</div></p>');
       }      
         
