@@ -545,7 +545,7 @@ function biblio_admin_type_remove($tid=0,$fid=0) {
  * This functin is used by both the admin/settings/biblio page and user profile page
  *   - if $user is set, then it is being called from the user profile page
  */   
-function _biblio_get_user_profile_form(&$form, $user=null){
+function _biblio_get_user_profile_form(&$form, $user = false){
     $form['profile'] = array(
       '#type' => 'fieldset',
       '#collapsible' => TRUE,
@@ -557,16 +557,24 @@ function _biblio_get_user_profile_form(&$form, $user=null){
       '#type' => 'checkbox',
       '#title' => ($user) ? t('Show my publications on my profile page') : t('Show publications on users profile pages'),
       '#return_value' => 1,
-      '#default_value' => ( isset($user->biblio_show_profile) ) ? $user->biblio_show_profile : variable_get('biblio_show_profile', '0') ,
       '#description' => ($user) ? t('Selecting this will create a listing of your publications on your profile page') : t('This sets the site wide default, users may change this in their profile')
     );
+    if($user){
+        $form['profile']['biblio_show_profile']['#default_value'] = ( (isset($user->biblio_show_profile) ) ? $user->biblio_show_profile : 0) ;
+    }else{
+        $form['profile']['biblio_show_profile']['#default_value'] = variable_get('biblio_show_profile', '0') ;  
+   }  
     $form['profile']['biblio_my_pubs_menu'] = array(
       '#type' => 'checkbox',
       '#title' => t('Show "My publications" item in the navigation menu'),
       '#return_value' => 1,
-      '#default_value' => ( isset($user->biblio_my_pubs_menu) ) ? $user->biblio_my_pubs_menu : variable_get('biblio_my_pubs_menu', '0'),
       '#description' => ''
     );
+    if($user){
+        $form['profile']['biblio_my_pubs_menu']['#default_value'] = ( (isset($user->biblio_my_pubs_menu) ) ? $user->biblio_my_pubs_menu : 0) ;
+    }else{
+        $form['profile']['biblio_my_pubs_menu']['#default_value'] = variable_get('biblio_my_pubs_menu', '0') ;  
+   }  
     if ($user) {
       $form['profile']['biblio_lastname'] = array(
         '#type' => 'textfield',

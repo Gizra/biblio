@@ -218,7 +218,7 @@ function biblio_link($type, $node = NULL, $teaser = FALSE) {
  * Implementation of hook_user().
  */
 function biblio_user($type, &$edit, &$user, $category = NULL) {
-  if ($type == 'view' && (( isset($user->biblio_show_profile) ) ? $user->biblio_show_profile : variable_get('biblio_show_profile', '0'))) {
+  if ($type == 'view' &&  isset($user->biblio_show_profile)  && $user->biblio_show_profile == 1 &&  variable_get('biblio_show_profile', '0') == 1) {
     $user->content['biblio'] = array(
       '#title' => t('My publications'),
       '#type' => 'user_profile_category',
@@ -232,7 +232,7 @@ function biblio_user($type, &$edit, &$user, $category = NULL) {
     );
   }
   
-  if ($type == 'form' && $category == 'account') {
+  if ($type == 'form' && $category == 'account' && (variable_get('biblio_show_profile', '0') || variable_get('biblio_my_pubs_menu', '0') )) {
     $form = array();
     include_once  drupal_get_path('module','biblio') . '/biblio.admin.inc';
      _biblio_get_user_profile_form($form, $user);
@@ -280,7 +280,7 @@ function biblio_menu() {
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK
   );
-  if ($user->uid  && ( (isset($user->biblio_my_pubs_menu) ) ? $user->biblio_my_pubs_menu : variable_get('biblio_my_pubs_menu', '0')) ) {
+  if ($user->uid  && variable_get('biblio_my_pubs_menu', '0') && ( (isset($user->biblio_my_pubs_menu) ) ? $user->biblio_my_pubs_menu : 0))  {
     $items["$base/user"] = array(
       'title' => 'My publications',
       'page callback' => '_biblio_get_user_pubs',
