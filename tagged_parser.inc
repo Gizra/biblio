@@ -24,7 +24,7 @@ function _endnote_tagged_import(&$data,$node) {
   $node_array = array();
 
       foreach (explode("\n",$data) as $line){
-        //$line = fgets($handle);
+        $line = trim($line);
         $line_len = strlen($line);
         if ($line_len ){
           $start = strpos($line, "%"); // There could be some unprintables at the beginning of the line so fine the location of the %
@@ -116,6 +116,9 @@ function _endnote_tagged_import(&$data,$node) {
               break;
             case '%P':
               $node_array[$node_id]['biblio_pages'] = $value;
+              break;
+            case '%R':
+              $node_array[$node_id]['biblio_doi'] = $value;
               break;
             case '%S':
               $node_array[$node_id]['biblio_tertiary_title'] = $value;
