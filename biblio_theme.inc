@@ -71,7 +71,7 @@ function theme_biblio_long($node,$base='biblio',$style='classic') {
   
   if ($openurl_base) $output .= theme('biblio_openurl',biblio_openurl($node, $openurl_base));
   
-
+  $output .= '<div class="biblio_type"><h3>'.t("Publication Type").":</h3> $node->biblio_type_name</div>\n";
   $output .= '<div class="biblio_authors"><h3>'.t("Authors").':</h3> ' . _biblio_author_links($authors,$base) . "</div>\n";
   $output .= '<div class="biblio_source"><h3>'.t("Source").': </h3> ';
   $source = null;
@@ -138,9 +138,9 @@ function theme_biblio_tabular($node, $base, $teaser = false) {
       $fields[$row['fid']] = $row;
     }
   }
-  $result = db_query('SELECT t.* FROM {biblio_types} as t WHERE t.tid = %d', $tid);
-  $row = db_fetch_array($result);
-  $type_name=$row['name'];
+//  $result = db_query('SELECT t.* FROM {biblio_types} as t WHERE t.tid = %d', $tid);
+//  $row = db_fetch_array($result);
+//  $type_name=$row['name'];
   $result = db_query('SELECT d.*, f.name FROM {biblio_type_details} as d INNER JOIN {biblio_fields} as f on d.fid=f.fid where d.tid=%d  ORDER BY d.weight ASC', $tid);
   while ($row = db_fetch_array($result)) {
     $fields[$row['fid']] = (isset($fields[$row['fid']])) ? array_merge($fields[$row['fid']], $row) : $row;
@@ -155,7 +155,7 @@ function theme_biblio_tabular($node, $base, $teaser = false) {
   }
   $rows[] = array(array('data' =>  '<span class="biblio-row-title">'. t('Publication Type') .'</span>', 'align' => 'right'),
                  array('data' => '&nbsp;&nbsp;'),
-                 array('data' => $type_name));
+                 array('data' => $node->biblio_type_name));
 
   if ($node->biblio_authors) {
     if (variable_get('biblio_normalize', 0)) {

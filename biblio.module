@@ -899,7 +899,7 @@ function biblio_delete($node) {
 * 
 */
 function biblio_load($node) {
-  $additions = db_fetch_object(db_query('SELECT * FROM {biblio} WHERE vid = %d', $node->vid));
+  $additions = db_fetch_object(db_query('SELECT b.*, bt.name as biblio_type_name FROM {biblio} b left join {biblio_types} bt on b.biblio_type = bt.tid WHERE b.vid = %d', $node->vid));
   if ( $additions->biblio_year == 9998)  {
         $additions->biblio_year = t("In Press");
   }
@@ -1123,9 +1123,9 @@ function biblio_show_results($result, $count = 0, $attrib = array("sort" => 'yea
         break;
       case 'type':
         if ($node->biblio_type != $_type) {
-          $_type = $node->biblio_type;
-          $name = db_result(db_query("SELECT name FROM {biblio_types} as t where t.tid=%d", $node->biblio_type)) ;
-          $content .= '<div class="biblio-year">' . $name . "</div>\n";
+          $_type = $node->biblio_type_name;
+    //      $name = db_result(db_query("SELECT name FROM {biblio_types} as t where t.tid=%d", $node->biblio_type)) ;
+          $content .= '<div class="biblio-year">' . $_type . "</div>\n";
         } 
         break;
       case 'keyword': 	// added msh 08 aug 07
@@ -1173,7 +1173,9 @@ function biblio_db_search() {
 global $user;
 $inline = false;
 $join = array();
-  $join[] = "left join {biblio} b  on n.vid=b.vid";
+  $join[] = "left join {biblio} b  on n.vid=b.vid ";
+  $join[] = "left join {biblio_types} bt  on b.biblio_type=bt.tid ";
+
    if (variable_get('biblio_view_only_own', 0) ) {
       $limit .= " AND n.uid=$user->uid ";
    }
@@ -1353,7 +1355,7 @@ $join = array();
 
   $where_clause = count($where) > 1 ? '('. implode(') AND (', $where) .')': $where[0];
 
-  $query = db_rewrite_sql("SELECT DISTINCT n.*, b.* FROM {node} n $joins  WHERE $where_clause $published $limit $sortby ");
+  $query = db_rewrite_sql("SELECT DISTINCT n.*, b.*, bt.name as biblio_type_name FROM {node} n $joins  WHERE $where_clause $published $limit $sortby ");
   $count_query = db_rewrite_sql("SELECT DISTINCT COUNT(*) FROM {node} n $joins  WHERE $where_clause $published $limit ");
   $_SESSION['last_biblio_query'] = $query;
   $terms[] = $pager_attrib['order'];
