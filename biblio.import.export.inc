@@ -257,8 +257,7 @@ $params=array();
     $query = $_SESSION['last_biblio_query'];
     $params = $_SESSION['last_biblio_query_terms'];    
   } elseif (!empty($nid)) {
-    $query = db_rewrite_sql("SELECT * FROM {node} n left join {biblio} b  on n.vid=b.vid 
-                WHERE n.nid=%d ");
+    $query = db_rewrite_sql("SELECT * FROM {node} n left join {biblio} b  on n.vid=b.vid WHERE n.nid=%d ");
     $params[] = $nid;
   }else{
     return;
@@ -276,6 +275,9 @@ $params=array();
        break;
      case "bib":
        biblio_bibtex_export($result);
+       break;
+     case "csv":
+       biblio_csv_export($result,$biblio_fields);
        break;
      }
   }
@@ -298,7 +300,6 @@ require_once(drupal_get_path('module', 'biblio') . '/bibtex.php');
   
   $bibtex = new Structures_BibTex();
   $bibtex->loadString($data);
-  
   
   $bibtex->parse();
   if ($bibtex->amount()) {
@@ -366,31 +367,31 @@ $bibtex = '';
     
     $bibtex .= '@'.$type.' { ';
     $bibtex .= ($pub->biblio_citekey)? $pub->biblio_citekey.",\n":",\n";
-    if ($pub->title) $bibtex .= "\ttitle = {".$pub->title."},\n";
-    if ($journal) $bibtex .= "\tjournal = {".$journal."},\n";
-    if ($booktitle) $bibtex .= "\tbooktitle = {".$booktitle."},\n";
-    if ($series) $bibtex .= "\tseries = {".$series."},\n";
-    if ($pub->biblio_secondary_authors) $bibtex .= "\teditor = {".$pub->biblio_secondary_authors."},\n";
-    if ($pub->biblio_volume) $bibtex .= "\tvolume = {".$pub->biblio_volume."},\n";
-    if ($pub->biblio_number) $bibtex .= "\tnumber = {".$pub->biblio_number."},\n";
-    if ($pub->biblio_year) $bibtex .= "\tyear = {".$pub->biblio_year."},\n";
-    if ($pub->biblio_notes) $bibtex .= "\tnote = {".$pub->biblio_notes."},\n";
-    if ($pub->biblio_date) $bibtex .= "\tmonth = {".$pub->biblio_date."},\n";
-    if ($pub->biblio_pages) $bibtex .= "\tpages = {".$pub->biblio_pages."},\n";
-    if ($pub->biblio_publisher) $bibtex .= "\tpublisher = {".$pub->biblio_publisher."},\n";
-    if ($school) $bibtex .= "\tschool = {".$school."},\n";
-    if ($organization) $bibtex .= "\torganization = {".$organization."},\n";
-    if ($institution) $bibtex .= "\tinstitution = {".$institution."},\n";
-    if ($pub->biblio_type_of_work) $bibtex .= "\ttype = {".$pub->biblio_type_of_work."},\n";
-    if ($pub->biblio_edition) $bibtex .= "\tedition = {".$pub->biblio_edition."},\n";
-    if ($pub->biblio_section) $bibtex .= "\tchapter = {".$pub->biblio_section."},\n";
-    if ($pub->biblio_place_published) $bibtex .= "\taddress = {".$pub->biblio_place_published."},\n";
-    if ($pub->biblio_abst_e) $bibtex .= "\tabstract = {".$pub->biblio_abst_e."},\n";
-    if ($pub->biblio_keywords) $bibtex .= "\tkeywords = {".$pub->biblio_keywords."},\n";
-    if ($pub->biblio_isbn) $bibtex .= "\tISBN = {".$pub->biblio_isbn."},\n";
-    if ($pub->biblio_url) $bibtex .= "\tURL = {".$pub->biblio_url."},\n";
+    if ($pub->title) $bibtex .= "\ttitle = {". $pub->title. "},\n";
+    if ($journal) $bibtex .= "\tjournal = {". $journal. "},\n";
+    if ($booktitle) $bibtex .= "\tbooktitle = {". $booktitle. "},\n";
+    if ($series) $bibtex .= "\tseries = {". $series. "},\n";
+    if ($pub->biblio_secondary_authors) $bibtex .= "\teditor = {". $pub->biblio_secondary_authors. "},\n";
+    if ($pub->biblio_volume) $bibtex .= "\tvolume = {". $pub->biblio_volume. "},\n";
+    if ($pub->biblio_number) $bibtex .= "\tnumber = {". $pub->biblio_number. "},\n";
+    if ($pub->biblio_year) $bibtex .= "\tyear = {". $pub->biblio_year. "},\n";
+    if ($pub->biblio_notes) $bibtex .= "\tnote = {". $pub->biblio_notes. "},\n";
+    if ($pub->biblio_date) $bibtex .= "\tmonth = {". $pub->biblio_date. "},\n";
+    if ($pub->biblio_pages) $bibtex .= "\tpages = {". $pub->biblio_pages. "},\n";
+    if ($pub->biblio_publisher) $bibtex .= "\tpublisher = {". $pub->biblio_publisher. "},\n";
+    if ($school) $bibtex .= "\tschool = {". $school. "},\n";
+    if ($organization) $bibtex .= "\torganization = {". $organization. "},\n";
+    if ($institution) $bibtex .= "\tinstitution = {". $institution. "},\n";
+    if ($pub->biblio_type_of_work) $bibtex .= "\ttype = {". $pub->biblio_type_of_work. "},\n";
+    if ($pub->biblio_edition) $bibtex .= "\tedition = {". $pub->biblio_edition. "},\n";
+    if ($pub->biblio_section) $bibtex .= "\tchapter = {". $pub->biblio_section. "},\n";
+    if ($pub->biblio_place_published) $bibtex .= "\taddress = {". $pub->biblio_place_published. "},\n";
+    if ($pub->biblio_abst_e) $bibtex .= "\tabstract = {". $pub->biblio_abst_e. "},\n";
+    if ($pub->biblio_keywords) $bibtex .= "\tkeywords = {". $pub->biblio_keywords. "},\n";
+    if ($pub->biblio_isbn) $bibtex .= "\tISBN = {". $pub->biblio_isbn. "},\n";
+    if ($pub->biblio_url) $bibtex .= "\tURL = {". $pub->biblio_url. "},\n";
     $author =  str_replace("; ", " and ", $pub->biblio_authors);
-    $bibtex .= "\tauthor = {".$author."}\n";
+    $bibtex .= "\tauthor = {". $author. "}\n";
     
     $bibtex.="}\n\n";
 
@@ -459,11 +460,8 @@ global $user,$records, $rec_count, $node_array, $node, $node_id;
     xml_parse($xml_parser, $data,1);
   }elseif ($version == 7) {
     require_once(drupal_get_path('module', 'biblio') . '/endnote7_parser.inc');
-
     xml_parse_into_struct($xml_parser, $data, $values);
-
     en7_parse($values, $node_array, $node) ;
-
   }
 
   xml_parser_free($xml_parser);
@@ -569,6 +567,7 @@ function biblio_endnote_tagged_export($result) {
       if ($pub->biblio_accession_number) $doc .= "%M " . trim($pub->biblio_accession_number) . "\r\n";
       if ($pub->biblio_issue) $doc .= "%N " . trim($pub->biblio_issue) . "\r\n";
       if ($pub->biblio_pages) $doc .= "%P " . trim($pub->biblio_pages) . "\r\n";
+      if ($pub->biblio_doi) $doc .= "%R " . trim($pub->biblio_doi) . "\r\n";
       if ($pub->biblio_tertiary_title) $doc .= "%S " . trim($pub->biblio_tertiary_title) . "\r\n";
       if ($pub->biblio_url) $doc .= "%U " . trim($pub->biblio_url) . "\r\n";
       if ($pub->biblio_volume) $doc .= "%V " . trim($pub->biblio_volume) . "\r\n";
@@ -601,21 +600,109 @@ function biblio_endnote_tagged_export($result) {
   print utf8_decode($doc);
 } 
 
-function biblio_csv_export($result,$btypes,$bfields){
+function biblio_csv_export($result){
+ 
+ $fieldnames = biblio_get_db_fields();
+ print_r ($fieldnames);
+ $delimiter  = ',';
+ $enclosure  = '"';
+ $csv        = '';
+ 
+ while ($rec = db_fetch_object($result)){
+    $str = '';
+    $escape_char = '\\';
+    foreach ($fieldnames as $field) { 
+      if ($rec->$field !== "biblio_coins"){
+      if (strlen($csv)) {
+        $value = $rec->$field ;
+      }else{ 
+        $value = $field;
+      }
+      if (strpos($value, $delimiter) !== false ||
+          strpos($value, $enclosure) !== false ||
+          strpos($value, "\n") !== false ||
+          strpos($value, "\r") !== false ||
+          strpos($value, "\t") !== false ||
+          strpos($value, ' ') !== false) {
+        $str2 = $enclosure;
+        $escaped = 0;
+        $len = strlen($value);
+        for ($i=0;$i<$len;$i++) {
+          if ($value[$i] == $escape_char) {
+            $escaped = 1;
+          } else if (!$escaped && $value[$i] == $enclosure) {
+            $str2 .= $enclosure;
+          } else {
+            $escaped = 0;
+          }
+          $str2 .= $value[$i];
+        }
+        $str2 .= $enclosure;
+        $str .= $str2.$delimiter;
+      } else {
+        $str .= $value.$delimiter;
+      }
+    }
+    }
+    $str = substr($str,0,-1);
+    $str .= "\n";
+    $csv .= $str;
+    
+  }
+ 
+//}
+  drupal_set_header('Content-Type: text/plain; charset=utf-8');
+  drupal_set_header('Content-Disposition: attachment; filename=biblio_export.csv');
+  print $csv;
+}
+function biblio_csv_export_2($result,$bfields){
+
+//  $query_biblio_fields = 'SELECT name, title FROM {biblio_fields}';
+//  $res_biblio_fields = db_query($query_biblio_fields);
+//  while ($rec = db_fetch_object($res_biblio_fields)){
+//    $bfields[$rec->name] = $rec->title;
+//  }
+  $bfields = biblio_get_db_fields('all');
+  
+  $query_biblio_types = 'SELECT tid, name FROM {biblio_types}';
+  $res_biblio_types = db_query($query_biblio_types);
+  while ($rec = db_fetch_object($res_biblio_types)){
+    $btypes[$rec->tid] = $rec->name;
+  }
+
+  switch ( variable_get('biblio_csv_field_sep', 'tab') ) {
+    case 'tab':    $filedsep = "\t";	break;
+    case 'comma':  $filedsep = ',';	break;
+  }
+  switch ( variable_get('biblio_csv_text_sep', 'dquote') ) {
+    case 'dquote':  $textsep = '"';	break;
+    case 'quote':   $textsep = '\'';	break;
+  }
+  $label = ( variable_get('biblio_csv_col_head', 'label') == 'label' ? 1 : 0 );		// or 'col_name'
+  $linebreak = variable_get('biblio_linebreak_exp',1);
+
   while ($rec = db_fetch_object($result)){
-
     $node_id = $rec->nid;
-    $node_array[$node_id]['Type'] = $btypes[$rec->biblio_type];
-    $col_array['Type'] += 1;
+    $node_array[$node_id]['type'] = $btypes[$rec->biblio_type];	// there is no "label" for "type"
+    $col_array['type'] = 'Type';
 
-	foreach( array_keys($bfields) as $fieldname ) {
-		if (!empty($rec->$fieldname) && !in_array($fieldname,array('biblio_citekey','biblio_coins'))) {
-			$col_array[$bfields[$fieldname]] +=1;	// mark field as in use
-			$node_array[$node_id][$bfields[$fieldname]] = trim(strtr(strtr($rec->$fieldname,'"','""'),';',"\n"));
-		}
-	}
+    foreach( array_keys($bfields) as $fieldname ) {
+      if (!empty($rec->$fieldname) && !in_array($fieldname,array('biblio_citekey','biblio_coins'))) {
+	$col_array[$fieldname] = $bfields[$fieldname];	// mark field as in use
+	$text = strtr($rec->$fieldname,$textsep, "$textsep$textsep");
+        if ($linebreak) {
+          $text = strtr($text,';',"\n");
+        }
+        $node_array[$node_id][$fieldname] = trim($text);
+      }
+    }
   } //end while
    
+  if ($label) {		// head line containing column names
+    $csv = $textsep . join("$textsep$filedsep$textsep", array_values($col_array)) . "$textsep\n";
+  } else {		// original DB field names
+    $csv = $textsep . join("$textsep$filedsep$textsep", array_keys($col_array)) . "$textsep\n";
+  }
 
   // Enclosing text in "<text>" is neccessary to enshure 
   // multi line fields (like author) are handled correctly.
@@ -624,15 +711,28 @@ function biblio_csv_export($result,$btypes,$bfields){
   foreach($node_array as $line_array) {
     $csv_line = '';
     foreach(array_keys($col_array) as $col) {
-      $csv_line .= "\t\"" . $line_array[$col] . '"';
+      $csv_line .= "$filedsep$textsep" . $line_array[$col] . $textsep;
     }
-    $csv .= substr($csv_line,1) . "\n";
-    // $csv .= '"' . join("\"\t\"", $line_array) . '"' . "\n";
+    $csv .= substr($csv_line,1) . "\n";		// cut off leading fieldsep and append EOL
   }
 
-  header('Content-type: 	application/text');
-  header('Content-Disposition:  filename="biblio_export.csv"');
+  drupal_set_header('Content-Type: text/plain; charset=utf-8');
+  drupal_set_header('Content-Disposition: attachment; filename=biblio_export.csv');
 
-  // return utf8_decode($csv);
   return $csv;
+}
+
+//function _biblio_cck_join($biblio_fields = array()) {		// works not with php4
+function _biblio_cck_join(&$biblio_fields) {
+  $cck_join = '';
+  $biblio_fields['nid'] = 'Node-ID';	// identify records for update operations
+  $query_cck_fields = "SELECT field_name, label from {node_field_instance} where type_name='biblio' and not (widget_type='image')";
+  $res_cck_fields = db_query($query_cck_fields);
+  while ($rec = db_fetch_object($res_cck_fields)){
+    $cck_table = 'content_' . $rec->field_name;
+    $cck_field = $rec->field_name . '_value';
+    $biblio_fields[$cck_field] = $rec->label;
+    $cck_join .= ' left join {' . $cck_table . '} on b.vid=' . $cck_table . '.vid';
+  }
+  return $cck_join;
 }
