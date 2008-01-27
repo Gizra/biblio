@@ -147,7 +147,10 @@ function biblio_import_form_submit($form, &$form_state) {
       
       if ($import = file_save_upload('file_upload')) {
         drupal_set_message(t("@file was uploaded", array('@file' => $import->filename)), 'status');
-
+        if (($file_content = @file_get_contents($import->filepath)) === false) {
+          drupal_set_message(t("Could not read contents of @file ", array('@file' => $import->filename)), 'error');
+          return;
+        } else {
         // Concatenate all the terms of the different vocabularies
         // in a single array to be sent to biblio_import
         $terms = array();
@@ -160,9 +163,9 @@ function biblio_import_form_submit($form, &$form_state) {
         // the array of terms to be attached to the node(s)
         $userid = (isset($form_state['values']['userid']))? $form_state['values']['userid'] : 1;
         $filetype = $form_state['values']['filetype'];
-        $content = biblio_import($userid, $import->filepath,$filetype, $terms);
+        $content = biblio_import($userid, $file_content, $filetype, $terms);
         file_delete($import->filepath);
-
+        }
       } else {
         drupal_set_message(t("File was NOT successfully uploaded"), 'error');
       } 
@@ -182,56 +185,58 @@ function biblio_import_form_submit($form, &$form_state) {
  * @return
  *   An array the node id's of the items imported
  */
-function biblio_import($userid = 1, $filename = null, $type='tagged', $terms = null) {
+function biblio_import($userid = 1, &$file_content, $type='tagged', $terms = null) {
   global $user;
-  $node = array();
-  if (file_exists($filename)) {
-    if (($file_content = @file_get_contents($filename)) === false) {
-        return false;
-    } else {
-
+  $node_template = array();
+  $node_array = array();
+  $parsed = null;
+  
+  if (strlen($file_content)) {
       $options = variable_get('node_options_biblio', array('status'));
       if (module_exists('i18n') && variable_get('i18n_node_biblio', 0)){
         $node['language'] = module_invoke('i18n', 'default_language');
       }
-      $node['type']     = "biblio";
-      $node['created']  = time();
-      $node['changed']  = time();
-      $node['comment']  = variable_get('comment_biblio', 0); 
-      $node['promote']  = in_array('promote', $options);
-      $node['moderate'] = in_array('moderate', $options);
-      $node['sticky']   = in_array('sticky', $options);
-      $node['format']   = 0;
-      $node['status']   = in_array('status', $options);
-      $node['uid']      = $userid;
+      $node_template['type']     = "biblio";
+      $node_template['created']  = time();
+      $node_template['changed']  = time();
+      $node_template['comment']  = variable_get('comment_biblio', 0); 
+      $node_template['promote']  = in_array('promote', $options);
+      $node_template['moderate'] = in_array('moderate', $options);
+      $node_template['sticky']   = in_array('sticky', $options);
+      $node_template['format']   = 0;
+      $node_template['status']   = in_array('status', $options);
+      $node_template['uid']      = $userid;
 
       switch($type) {
       case 'tagged': // EndNote Tagged 
         require_once(drupal_get_path('module', 'biblio') . '/tagged_parser.inc');
-        $node_ids  = _endnote_tagged_import($file_content, $node);
+        $parsed  = _endnote_tagged_import($file_content, $node_template, $node_array);
         break;
       case 'xml': // EndNote 7 XML
-       $node_ids  = biblio_endnote_XML_import($file_content ,$node, 7 ); 
+       $parsed  = biblio_endnote_XML_import($file_content, $node_template, $node_array, 7 ); 
       break;
       case 'xml8': // EndNote 8+ XML
-       $node_ids  = biblio_endnote_XML_import($file_content ,$node, 8 ); 
+       $parsed  = biblio_endnote_XML_import($file_content, $node_template, $node_array, 8 ); 
         break;
       case 'bib': // BibTex
-       $node_ids  = biblio_bibtex_import($file_content ,$node ); 
+       $parsed  = biblio_bibtex_import($file_content, $node_template, $node_array ); 
         break;
       case 'ris': // RIS
         require_once(drupal_get_path('module', 'biblio') . '/ris_parser.inc');
-        $node_ids  = _ris_tagged_import($file_content, $node);
+        $parsed  = _ris_tagged_import($file_content, $node_template, $node_array);
         break;
-     }  
-     if ($terms) {
-    	  // set the vocabulary for the returned nodes 
-    	  foreach ($node_ids as $node_id) {
-    		  module_invoke('taxonomy', 'node_save', $node_id,  $terms);
-    	  }
+     }
+     if ($parsed){
+       $node_ids = biblio_save_imported_nodes($node_array);       
+       if ($terms) {
+      	  // set the vocabulary for the returned nodes 
+      	  foreach ($node_ids as $node_id) {
+      		  module_invoke('taxonomy', 'node_save', $node_id,  $terms);
+      	  }
+       }
      }
       return $node_ids;
-    }
+    
   } else {
     return false;
   }
@@ -293,20 +298,18 @@ $params=array();
  * @return
  *   an array of node ids
  */
-function biblio_bibtex_import(&$data, $node) {
+function biblio_bibtex_import(&$data, $node_template, &$node_array) {
 require_once(drupal_get_path('module', 'biblio') . '/bibtex.php');
 
-  $node_array = array();
   
   $bibtex = new Structures_BibTex();
   $bibtex->loadString($data);
   
   $bibtex->parse();
   if ($bibtex->amount()) {
-    $bibtex->bib2node($node_array, $node);
-    $node_ids = biblio_save_imported_nodes($node_array);
+    $bibtex->bib2node($node_array, $node_template);
   }
-  return $node_ids;
+  return count($node_array);
 } 
 
 /**
@@ -445,9 +448,8 @@ function biblio_save_imported_nodes(&$node_array) {
  * @return
  *   The node ids of the saved nodes
  */
-function biblio_endnote_XML_import(&$data, $node, $version = 8) {
-global $user,$records, $rec_count, $node_array, $node, $node_id;
-  $node_array = array();
+function biblio_endnote_XML_import(&$data, $node_template, &$node_array, $version = 8) {
+global $user,$records, $rec_count, $node_array, $node_template, $node_id;
   $xml_parser = drupal_xml_parser_create($data);
 
 // use case-folding so we are sure to find the tag in 
@@ -457,18 +459,17 @@ global $user,$records, $rec_count, $node_array, $node, $node_id;
     require_once(drupal_get_path('module', 'biblio') . '/endnote8_parser.inc');
     xml_set_element_handler($xml_parser, "en8_startElement", "en8_endElement");
     xml_set_character_data_handler($xml_parser, "en8_characterData");
-    xml_parse($xml_parser, $data,1);
+    xml_parse($xml_parser, $data, 1);
   }elseif ($version == 7) {
     require_once(drupal_get_path('module', 'biblio') . '/endnote7_parser.inc');
     xml_parse_into_struct($xml_parser, $data, $values);
-    en7_parse($values, $node_array, $node) ;
+    en7_parse($values, $node_array, $node_template) ;
   }
 
   xml_parser_free($xml_parser);
 
-  $node_ids = biblio_save_imported_nodes($node_array);
 
-  return ($node_ids);
+  return count($node_array);
 }
 
 /**
