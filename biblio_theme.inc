@@ -51,10 +51,10 @@ function theme_biblio_long($node,$base='biblio',$style='classic') {
     $annotation_field = variable_get('biblio_annotations','none');
     if ($annotation_field != 'none' && $node->$annotation_field) {
       $output .= '<div class="biblio_annotation">';
-      $output .= check_markup($node->$annotation_field,FILTER_HTML_ESCAPE,FALSE);
+      $output .= check_markup($node->$annotation_field, $node->format, FALSE);
       $output .= '</div>';
     }
-    $output .= check_markup($node->body,FILTER_HTML_ESCAPE,FALSE) ;
+    $output .= check_markup($node->body, $node->format, FALSE) ;
     if ( biblio_access('export',$node)) {
       $output .= theme('biblio_export_links',$node->nid);
     } 
@@ -117,11 +117,11 @@ function theme_biblio_long($node,$base='biblio',$style='classic') {
       $output .= '<h3>'.t("URL").':</h3>'.l($node->biblio_url,$node->biblio_url,$attrib) . "\n";
   }
   if ($node->biblio_keywords) $output .= '<h3>'.t("Keywords").':</h3> ' . _biblio_keyword_links($node->biblio_keywords,$base) . "\n";
-  if ($node->biblio_abst_e) $output .= '<h3>'.t("Abstract").':</h3> ' . check_markup($node->biblio_abst_e,FILTER_HTML_ESCAPE,FALSE) . "\n";
-  if ($node->biblio_abst_f) $output .= '<p>' . check_markup($node->biblio_abst_f,FILTER_HTML_ESCAPE,FALSE) . "\n";
-  if ($node->biblio_notes) $output .= '<h3>'.t("Notes").': </h3>' . check_markup($node->biblio_notes,FILTER_HTML_ESCAPE,FALSE) . "\n";
+  if ($node->biblio_abst_e) $output .= '<h3>'.t("Abstract").':</h3> ' . check_markup($node->biblio_abst_e, $node->format, FALSE) . "\n";
+  if ($node->biblio_abst_f) $output .= '<p>' . check_markup($node->biblio_abst_f, $node->format, FALSE) . "\n";
+  if ($node->biblio_notes) $output .= '<h3>'.t("Notes").': </h3>' . check_markup($node->biblio_notes, $node->format, FALSE) . "\n";
   if ( strlen(trim($node->body)) && user_access('view full text') ) {
-     $output .= '<h3>'.t('Full Text').':</h3>'.check_markup($node->body,FILTER_HTML_ESCAPE,FALSE);
+     $output .= '<h3>'.t('Full Text').':</h3>'.check_markup($node->body, $node->format, FALSE);
   }    
   if ( biblio_access('export',$node)) {
     $output .= theme('biblio_export_links',$node->nid);
@@ -141,7 +141,7 @@ function theme_biblio_tabular($node, $base, $teaser = false) {
 //  $result = db_query('SELECT t.* FROM {biblio_types} as t WHERE t.tid = %d', $tid);
 //  $row = db_fetch_array($result);
 //  $type_name=$row['name'];
-  $result = db_query('SELECT d.*, f.name FROM {biblio_type_details} as d INNER JOIN {biblio_fields} as f on d.fid=f.fid where d.tid=%d  ORDER BY d.weight ASC', $tid);
+  $result = db_query('SELECT d.*, f.name, f.type FROM {biblio_type_details} as d INNER JOIN {biblio_fields} as f on d.fid=f.fid where d.tid=%d  ORDER BY d.weight ASC', $tid);
   while ($row = db_fetch_array($result)) {
     $fields[$row['fid']] = (isset($fields[$row['fid']])) ? array_merge($fields[$row['fid']], $row) : $row;
   }
@@ -171,21 +171,21 @@ function theme_biblio_tabular($node, $base, $teaser = false) {
   }
   
   foreach ($fields as $key => $row) {
-    if (!empty($node->$row['name'])) {
-      switch ($key) {
-      case 1:
-      case 23:
-      case 25:
+    if (!empty($node->$row['name']) && ($row['name'] != 'biblio_coins') ) {
+      switch ($row['name']) {
+      case 'biblio_authors':
+      case 'biblio_keywords':
+      case 'biblio_url':
         // check_plain is not need on these since they have gone through
         // the l() function which does a check_plain
         $data = $node->$row['name'];
         break;
-      case 44:
-        $row['title']=""; 
-        $data = "";
-        break;
       default:
-        $data = check_markup($node->$row['name'], FILTER_HTML_ESCAPE, FALSE);
+        if ( $row['type'] == 'textarea' ) {
+          $data = check_markup($node->$row['name'], $node->format, FALSE);
+        }else{
+          $data = check_plain($node->$row['name']);          
+        }
       }
       $rows[] = array(array('data' => '<span class="biblio-row-title">'. $row['title'] .'</span>', 'align' => 'right', 'valign' => 'top', 'width' => '20%'),
                       array('data' => '&nbsp;&nbsp;'),
