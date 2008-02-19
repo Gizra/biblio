@@ -338,14 +338,13 @@ $bibtex = '';
         $type = "inbook";
         $booktitle = $pub->biblio_secondary_title;
          break; 
-      case 103:
-        $type = "conference";
-         break; 
       case 100:
         $type = "incollection";
          break; 
       case 103:
         $type = "inproceedings";
+        $journal = $pub->biblio_secondary_title;
+        $organization = $pub->biblio_publisher;
          break; 
       case 129:
         $type = "misc";
