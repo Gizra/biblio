@@ -350,9 +350,10 @@ function biblio_admin_types_edit_form() {
   if (!$tid) $options['autocomplete'] = '';
 
   foreach($fields as $key=>$fld) {
-    if ($fld['common']) $def_values[$fld['name']][] = 'common';
-    if ($fld['required']) $def_values[$fld['name']][] = 'required';
-    if ($fld['autocomplete']) $def_values[$fld['name']][] = 'autocomplete';
+    $def_values[$fld['name']] = array(); 
+    if ($fld['common']) array_push($def_values[$fld['name']], 'common');
+    if ($fld['required']) array_push($def_values[$fld['name']], 'required');
+    if ($fld['autocomplete']) array_push($def_values[$fld['name']], 'autocomplete');
 
     $form['configured_flds'][$key]['name'] = array('#type'=>'markup', '#value'=>$fld['name'],'#weight'=>$fld['weight']);
     $form['configured_flds'][$key]['title'] = array('#type'=>'textfield','#default_value' => $fld['title'],'#size'=>15,'#weight'=>$fld['weight']);

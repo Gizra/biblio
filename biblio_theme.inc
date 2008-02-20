@@ -285,9 +285,9 @@ function theme_biblio_form_filter(&$form) {
   return $output;
 }
 
-function theme_biblio_form_types_edit($form) {
+function theme_biblio_admin_types_edit_form($form) {
   $base =  variable_get('biblio_base', 'biblio');
-print_r($form);die;
+
   $tid = (!empty($form['#parameters'][2])) ? $form['#parameters'][2] : FALSE;
 
   drupal_set_title($form['type_name']?$form['type_name']['#value']:"Default");

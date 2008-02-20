@@ -24,7 +24,7 @@
 function biblio_theme() {
 
   return array(
-    'biblio_form_types_edit' => array(
+    'biblio_admin_types_edit_form' => array(
       'file' => 'biblio_theme.inc',
       'arguments' => array('form'),
     ),
