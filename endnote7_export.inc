@@ -52,9 +52,9 @@ function _endnote7_XML_export($result){
         } 
       $xml .= "\t</SECONDARY_AUTHORS>\n";
     }
-    $xml .= (!empty($rec->biblio_secondary_title))?"\t<SECONDARY_TITLE>$rec->biblio_secondary_title</SECONDARY_TITLE>\n":"";
-    $xml .= (!empty($rec->biblio_place_published))?"\t<PLACE_PUBLISHED>$rec->biblio_place_published</PLACE_PUBLISHED>\n":"";
-    $xml .= (!empty($rec->biblio_publisher))?"\t<PUBLISHER>$rec->biblio_publisher</PUBLISHER>\n":"";
+    $xml .= (!empty($rec->biblio_secondary_title))?"\t<SECONDARY_TITLE>". htmlentities($rec->biblio_secondary_title) ."</SECONDARY_TITLE>\n":"";
+    $xml .= (!empty($rec->biblio_place_published))?"\t<PLACE_PUBLISHED>". htmlentities($rec->biblio_place_published) ."</PLACE_PUBLISHED>\n":"";
+    $xml .= (!empty($rec->biblio_publisher))?"\t<PUBLISHER>". htmlentities($rec->biblio_publisher) ."</PUBLISHER>\n":"";
     $xml .= (!empty($rec->biblio_volume))?"\t<VOLUME>$rec->biblio_volume</VOLUME>\n":"";
 //        <NUMBER_OF_VOLUMES>number of volumes</NUMBER_OF_VOLUMES>
     $xml .= (!empty($rec->biblio_issue))?"\t<NUMBER>$rec->biblio_issue</NUMBER>\n":"";
@@ -101,9 +101,9 @@ function _endnote7_XML_export($result){
       } 
       $xml .="\t</KEYWORDS>\n";
     } 
-    $xml .= (!empty($rec->biblio_abst_e))?"\t<ABSTRACT>".htmlentities($rec->biblio_abst_e)."</ABSTRACT>\n":"";
+    $xml .= (!empty($rec->biblio_abst_e))?"\t<ABSTRACT>". htmlentities($rec->biblio_abst_e) ."</ABSTRACT>\n":"";
     $xml .= (!empty($rec->biblio_notes))?"\t<NOTES>$rec->biblio_notes</NOTES>\n":"";
-    $xml .= (!empty($rec->biblio_url))?"\t<URL>".htmlentities($rec->biblio_url)."</URL>\n":"";
+    $xml .= (!empty($rec->biblio_url))?"\t<URL>". htmlentities($rec->biblio_url) ."</URL>\n":"";
     //    <AUTHOR_ADDRESS>author address</AUTHOR_ADDRESS>
     //    <CAPTION>caption</CAPTION>
     $xml .= "</RECORD>\n";
