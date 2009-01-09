@@ -1585,14 +1585,21 @@ function _move_field_data(&$result)
 
   // update default settings in biblio_field_type from old biblio_fields
   $result[] = update_sql("UPDATE {biblio_field_type} ft, {biblio_field_type_data} ftd
+		/* augment by old biblio_fields matching fields based on title instead of fid due to shift in fids */
 		INNER JOIN {biblio_fields_old} fo ON fo.title=ftd.title
 		SET ftd.hint=fo.hint, ft.common=fo.common, ft.autocomplete=fo.autocomplete, ft.required=fo.required, ft.weight=fo.weight, ft.visible=fo.visible
 		WHERE ft.ftdid=ftd.ftdid AND ft.ftdid<>1");
   
   // add new field types from old biblio_type_details
-  $db_result = db_query("SELECT old.*,f.fid as fidnew FROM (SELECT otd.*,fo.name FROM {biblio_type_details} otd INNER JOIN {biblio_fields_old} fo ON otd.fid=fo.fid) old 
+  $db_result = db_query("SELECT old.*,f.fid as fidnew FROM 
+		/* biblio_type_details augmented by field name (biblio_*) */
+		(SELECT otd.*,fo.name FROM {biblio_type_details} otd 
+		 INNER JOIN {biblio_fields_old} fo ON otd.fid=fo.fid) old 
+		/* left join: all entries from biblio_type_details are matched to existing entries in biblio_field_type_data */
 		LEFT JOIN {biblio_field_type_data} ftd ON old.title=ftd.title 
+		/* add matching fids (fidnew) from new biblio_fields based on field name */
 		INNER JOIN {biblio_fields} f ON f.name=old.name
+		/* consider only those entries in biblio_type_details which have no match in biblio_field_type_data */
 		WHERE ftd.title IS NULL");
   while ($row = db_fetch_array($db_result))
   {
@@ -1612,13 +1619,17 @@ function _move_field_data(&$result)
   // update biblio_field_type (linking table) with overrides from old biblio_type_details
   $result[] = update_sql("UPDATE {biblio_field_type} ft 
 		INNER JOIN {biblio_field_type_data} ftd ON ft.ftdid=ftd.ftdid 
+		/* link to old biblio_type_details based on field title and publication type */
 		INNER JOIN {biblio_type_details} otd ON otd.title=ftd.title AND otd.tid=ft.tid
 		SET ft.required=otd.required, ft.weight=otd.weight");
-  // update auth_type from old biblio_type_details
+  // update auth_type associated to (auth_catagory,biblio_type) from old biblio_type_details
   $result[] = update_sql("UPDATE {biblio_contributor_type} ct
-		INNER JOIN (SELECT tid,IF(fid=4,5,fid) AS auth_catagory,ctd.auth_type FROM {biblio_type_details} b 
- 							  INNER JOIN {biblio_contributor_type_data} ctd ON b.title=ctd.title WHERE b.fid < 5) otd 
-		ON otd.tid=ct.biblio_type AND otd.auth_catagory=ct.auth_catagory
+		INNER JOIN 
+			/* select contributor fields from biblio_type_details (fid <= 4) and augment with new ctd.auth_type */
+			(SELECT tid,IF(fid=4,5,fid) AS auth_catagory,ctd.auth_type FROM {biblio_type_details} b 
+ 			 INNER JOIN {biblio_contributor_type_data} ctd ON b.title=ctd.title WHERE b.fid <= 4) otd 
+			/* match on publication type and auth_catagory, fid=4 (corp. author) changed to catagory 5 */
+			ON otd.tid=ct.biblio_type AND otd.auth_catagory=ct.auth_catagory
 		SET ct.auth_type=otd.auth_type");
 
   return $result;
@@ -1691,12 +1702,21 @@ function _move_authors(&$result)
   }
   // change auth_type to match overrides set in old biblio_type_details
   update_sql("UPDATE {biblio_contributor} c 
+		/* augment by biblio_type from biblio */
 		INNER JOIN {biblio} b ON c.nid=b.nid AND c.vid=b.vid
-		INNER JOIN (SELECT tid,if(fid=4,5,fid) as auth_type,title FROM
-		  (SELECT tid,fid,title FROM {biblio_type_details} WHERE fid<=4
- 			 UNION SELECT tid,fid,title FROM {biblio_fields_old}, {biblio_types} WHERE fid<=4 AND tid>=100) t
-	    GROUP BY tid,fid) otd ON otd.tid=b.biblio_type AND otd.auth_type=c.auth_type
+		/* augment by old config settings */ 
+		INNER JOIN 
+			(SELECT tid,if(fid=4,5,fid) as auth_type,title FROM
+				/* select (tid,fid) specific titles from 5.x: biblio_fields_old contains the defaults, biblio_type_details the overrides */
+				(SELECT tid,fid,title FROM {biblio_type_details} WHERE fid<=4
+				 UNION SELECT tid,fid,title FROM {biblio_fields_old}, {biblio_types} WHERE fid<=4 AND tid>=100) t
+			 /* grouping by tid,fid removes the duplicate default title if an override is available */
+			 GROUP BY tid,fid) otd 
+		/* match old config (otd) and newly imported (with type 1,2,3,5 see above) on biblio_type and auth_type */
+		ON otd.tid=b.biblio_type AND otd.auth_type=c.auth_type
+		/* augment with new auth_type based on title */
 		INNER JOIN {biblio_contributor_type_data} ctd ON ctd.title=otd.title
+		/* update auth_type in biblio_contributor table */
 		SET c.auth_type=ctd.auth_type");
 
   $result[] = array('success' => ($count_success == $count), 
