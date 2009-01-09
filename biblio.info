@@ -2,4 +2,5 @@
 name = Biblio
 description = Maintains biblographic lists.
 core = 6.x
+dependencies[] = taxonomy
 package = Biblio

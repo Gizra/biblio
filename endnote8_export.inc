@@ -1,11 +1,14 @@
 <?PHP
 // $Id$
 function en8_XMLout($result){
-  
-  $sml = '<?xml version="1.0" encoding="UTF-8"?>';
-  $xml .= '<records'>;
+  $xml = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?>');
+  $records = $xml->addChild('records');
+
   while ($rec = db_fetch_object($result)){
-    $xml .= '<record>';
+    $record = $records->addChild('record');
+    $sa = $record->addChild('source-app');
+    $sa->addAttribute('name','Drupal-Biblio');
+    $sa->addAttribute('version','6.0');
 //<!ELEMENT record (database?, source-app?, rec-number?, ref-type?, contributors?, auth-address?, auth-affiliaton?, titles?, periodical?, pages?, volume?, number?, issue?, secondary-volume?, secondary-issue?, num-vols?, edition?, section?, reprint-edition?, reprint-status?, keywords?, dates?, pub-location?, publisher?, orig-pub?, isbn?, accession-num?, call-num?, report-id?, coden?, electronic-resource-num?, abstract?, label?, image?, caption?, notes?, research-notes?, work-type?, reviewed-item?, availability?, remote-source?, meeting-place?, work-location?, work-extent?, pack-method?, size?, repro-ratio?, remote-database-name?, remote-database-provider?, language?, urls?, access-date?, modified-date?, custom1?, custom2?, custom3?, custom4?, custom5?, custom6?, custom7?, misc1?, misc2?, misc3?)>
 
 /*
@@ -26,17 +29,17 @@ function en8_XMLout($result){
 //      case 11:
 //      case 15:
 //      case 16:
-//      case 17: 
+//      case 17:
 //      case 18:
 //      case 22:
 //      case 24:
 //      case 29:
-//      case 30: 
+//      case 30:
       case 102:
         $type = 8;
         $node_array[$node_id]['biblio_type'] = 102;
         break;
-      case 100: // Book 
+      case 100: // Book
         $type = 6;
        // $node_array[$node_id]['biblio_type'] = 100;
         break;
@@ -153,12 +156,13 @@ function en8_XMLout($result){
  //       break;
       default:
         $type = 13;
-         break;     
+         break;
 
-    } 
+    }
 
+    $rt = $record->addChild('ref-type',$type);
+    $rt->addAttribute('name',' ');
 
-  $xml .= '<ref-type name=" ">'.$type.'</ref-type>';
 //<!-- Author information -->
   $xml .= '<contributors>';
   $xml .= '<authors>';
@@ -166,76 +170,76 @@ function en8_XMLout($result){
     foreach($author_array as $auth) {
       $xml .= '<author><style face="normal" font="default" size="100%">';
       $xml .= trim($auth); // insert author here.
-      $xml .= '</style></author> '; 
-    } 
+      $xml .= '</style></author> ';
+    }
   $xml .= '</authors>';
   $author_array = explode(";", $rec->biblio_secondary_authors);
   $xml .= '<secondary-authors>';
     foreach($author_array as $auth) {
       $xml .= '<author><style face="normal" font="default" size="100%">';
       $xml .= trim($auth); // insert author here.
-      $xml .= '</style></author> '; 
-    } 
+      $xml .= '</style></author> ';
+    }
   $xml .= '</secondary-authors>';
   $author_array = explode(";", $rec->biblio_tertiary_authors);
   $xml .= '<tertiary-authors>';
     foreach($author_array as $auth) {
       $xml .= '<author><style face="normal" font="default" size="100%">';
       $xml .= trim($auth); // insert author here.
-      $xml .= '</style></author> '; 
-    } 
+      $xml .= '</style></author> ';
+    }
   $xml .= '</tertiary-authors>';
   $xml .= '<subsidiary-authors>';
   $xml .= '<author><style face="normal" font="default" size="100%">';
   $xml .= ; // insert author here.
-  $xml .= '</style></author> ';    
+  $xml .= '</style></author> ';
   $xml .= '</subsidiary-authors>';
   $xml .= '<translated-authors>';
   $xml .= '<author><style face="normal" font="default" size="100%">';
   $xml .= ; // insert author here.
-  $xml .= '</style></author> ';    
+  $xml .= '</style></author> ';
   $xml .= '</translated-authors>';
   $xml .= '</contributors>';
 
   $xml .= '<auth-address><style face="normal" font="default" size="100%">';
   // todo auth address here
-  $xml .= '</style></auth-address>';    
+  $xml .= '</style></auth-address>';
   $xml .= '<auth-affiliaton><style face="normal" font="default" size="100%">';
   // todo auth affiliation here
-  $xml .= '</style></auth-affiliaton>';    
-  
-  
+  $xml .= '</style></auth-affiliaton>';
+
+
 //<!-- Title information -->
   $xml .= '<titles>';
   $xml .= '  <title><style face="normal" font="default" size="100%">';
-  // todo 
-  $xml .= '  </style></title>';    
+  // todo
+  $xml .= '  </style></title>';
   $xml .= '  <secondary-title><style face="normal" font="default" size="100%">';
-  // todo 
-  $xml .= '  </style></secondary-title>';    
+  // todo
+  $xml .= '  </style></secondary-title>';
   $xml .= '  <tertiary-title><style face="normal" font="default" size="100%">';
-  // todo 
-  $xml .= '  </style></tertiary-title>';    
+  // todo
+  $xml .= '  </style></tertiary-title>';
   $xml .= '  <alt-title><style face="normal" font="default" size="100%">';
-  // todo 
-  $xml .= '  </style></alt-title>';    
+  // todo
+  $xml .= '  </style></alt-title>';
   $xml .= '  <short-title><style face="normal" font="default" size="100%">';
-  // todo 
-  $xml .= '  </style></short-title>';    
+  // todo
+  $xml .= '  </style></short-title>';
   $xml .= '  <translated-title><style face="normal" font="default" size="100%">';
-  // todo 
-  $xml .= '  </style></translated-title>';    
+  // todo
+  $xml .= '  </style></translated-title>';
   $xml .= '</titles>';
 //<!-- Periodical information -->
   $xml .= '<periodical>';
   $xml .=   '<full-title><style face="normal" font="default" size="100%">';
-  $xml .= '  </style></full-title>';      
+  $xml .= '  </style></full-title>';
   $xml .=   '<abbr-1><style face="normal" font="default" size="100%">';
-  $xml .= '  </style></abbr-1>';      
+  $xml .= '  </style></abbr-1>';
   $xml .=   '<abbr-2><style face="normal" font="default" size="100%">';
-  $xml .= '  </style></abbr-2>';      
+  $xml .= '  </style></abbr-2>';
   $xml .=   '<abbr-3><style face="normal" font="default" size="100%">';
-  $xml .= '  </style></abbr-3>';      
+  $xml .= '  </style></abbr-3>';
   $xml .= '</periodical>';
 
 //<!-- Page range information -->

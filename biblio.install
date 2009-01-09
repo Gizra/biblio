@@ -1,372 +1,1264 @@
 <?PHP
 // $Id$
-function biblio_schema() {
-  $schema['biblio'] = array(
-      'fields' => array(
-           'nid' => array('type' => 'int', 'not null' => 1, 'default' => 0, 'disp-width' => '10'),
-           'biblio_type' => array('type' => 'int', 'not null' => 1, 'default' => 0, 'disp-width' => '11'),
-           'biblio_number' => array('type' => 'varchar', 'length' => '10'),
-           'biblio_other_number' => array('type' => 'varchar', 'length' => '24'),
-           'biblio_secondary_title' => array('type' => 'varchar', 'length' => '255'),
-           'biblio_tertiary_title' => array('type' => 'varchar', 'length' => '255'),
-           'biblio_authors' => array('type' => 'varchar', 'length' => '255'),
-           'biblio_secondary_authors' => array('type' => 'varchar', 'length' => '255'),
-           'biblio_tertiary_authors' => array('type' => 'varchar', 'length' => '255'),
-           'biblio_corp_author' => array('type' => 'varchar', 'length' => '255'),
-           'biblio_other_author_affiliations' => array('type' => 'varchar', 'length' => '255'),
-           'biblio_edition' => array('type' => 'varchar', 'length' => '255'),
-           'biblio_publisher' => array('type' => 'varchar', 'length' => '255'),
-           'biblio_place_published' => array('type' => 'varchar', 'length' => '255'),
-           'biblio_year' => array('type' => 'int', 'not null' => 1, 'default' => 0, 'disp-width' => '11'),
-           'biblio_volume' => array('type' => 'varchar', 'length' => '10'),
-           'biblio_pages' => array('type' => 'varchar', 'length' => '128'),
-           'biblio_date' => array('type' => 'varchar', 'length' => '16'),
-           'biblio_isbn' => array('type' => 'varchar', 'length' => '24'),
-           'biblio_lang' => array('type' => 'varchar', 'length' => '24', 'not null' => 0 , 'default' => 'eng'),
-           'biblio_abst_e' => array('type' => 'text'),
-           'biblio_abst_f' => array('type' => 'text'),
-           'biblio_full_text' => array('type' => 'int', 'size' => 'tiny', 'default' => 0, 'disp-width' => '4'),
-           'biblio_keywords' => array('type' => 'varchar', 'length' => '255'),
-           'biblio_url' => array('type' => 'varchar', 'length' => '255'),
-           'biblio_issue' => array('type' => 'varchar', 'length' => '10'),
-           'biblio_type_of_work' => array('type' => 'varchar', 'length' => '100'),
-           'biblio_accession_number' => array('type' => 'varchar', 'length' => '30'),
-           'biblio_call_number' => array('type' => 'varchar', 'length' => '30'),
-           'biblio_notes' => array('type' => 'text'),
-           'biblio_custom1' => array('type' => 'text'),
-           'biblio_custom2' => array('type' => 'text'),
-           'biblio_custom3' => array('type' => 'text'),
-           'biblio_custom4' => array('type' => 'text'),
-           'biblio_custom5' => array('type' => 'text'),
-           'biblio_custom6' => array('type' => 'text'),
-           'biblio_custom7' => array('type' => 'text'),
-           'biblio_research_notes' => array('type' => 'text'),
-           'biblio_number_of_volumes' => array('type' => 'varchar', 'length' => '10'),
-           'biblio_short_title' => array('type' => 'varchar', 'length' => '255'),
-           'biblio_alternate_title' => array('type' => 'varchar', 'length' => '255'),
-           'biblio_original_publication' => array('type' => 'varchar', 'length' => '255'),
-           'biblio_reprint_edition' => array('type' => 'varchar', 'length' => '255'),
-           'biblio_translated_title' => array('type' => 'varchar', 'length' => '255'),
-           'biblio_section' => array('type' => 'varchar', 'length' => '10'),
-           'vid' => array('type' => 'int', 'not null' => 1, 'default' => 0, 'disp-width' => '10'),
-           'biblio_citekey' => array('type' => 'varchar', 'length' => '16'),
-           'biblio_coins' => array('type' => 'text' ),
-           'biblio_doi' => array('type' => 'varchar', 'length' => '100'),
-           'biblio_issn' => array('type' => 'varchar', 'length' => '24'),
-           'biblio_auth_address' => array('type' => 'text'),
-           'biblio_remote_db_name' => array('type' => 'varchar', 'length' => '255'),
-           'biblio_remote_db_provider' => array('type' => 'varchar', 'length' => '255'),
-           'biblio_label' => array('type' => 'varchar', 'length' => '255'),
-           'biblio_access_date' => array('type' => 'varchar', 'length' => '255')),
-      'primary key' => array('vid'),
-      'indexes' => array(
-           'authors' => array('biblio_authors'),
-           'keywords' => array('biblio_keywords'),
-           'nid' => array('nid'),
-           'publisher' => array('biblio_publisher'),
-           'year' => array('biblio_year')),
-  );
-
-  $schema['biblio_fields'] = array(
-      'fields' => array(
-           'fid' => array('type' => 'int', 'not null' => 1, 'default' => 0, 'disp-width' => '11'),
-           'name' => array('type' => 'varchar', 'length' => '100', 'not null' => 1, 'default' => ''),
-           'title' => array('type' => 'varchar', 'length' => '100', 'not null' => 1, 'default' => ''),
-           'common' => array('type' => 'int', 'size' => 'tiny', 'not null' => 1, 'default' => 0, 'disp-width' => '1'),
-           'type' => array('type' => 'varchar', 'length' => '100', 'not null' => 1, 'default' => ''),
-           'size' => array('type' => 'int', 'not null' => 1, 'default' => 0, 'disp-width' => '11'),
-           'maxsize' => array('type' => 'int', 'not null' => 1, 'default' => 0, 'disp-width' => '11'),
-           'hint' => array('type' => 'varchar', 'length' => '100'),
-           'required' => array('type' => 'int', 'size' => 'tiny', 'not null' => 1, 'default' => 0, 'disp-width' => '1'),
-           'autocomplete' => array('type' => 'int', 'size' => 'tiny', 'not null' => 1, 'default' => 0, 'disp-width' => '1'),
-           'visible' => array('type' => 'int', 'size' => 'tiny', 'not null' => 1, 'default' => 0, 'disp-width' => '4'),
-           'weight' => array('type' => 'int', 'not null' => 1, 'default' => 0, 'disp-width' => '11')),
-      'primary key' => array('fid'),
-  );
-
-  $schema['biblio_types'] = array(
-      'fields' => array(
-           'tid' => array('type' => 'int', 'not null' => 1, 'default' => 0, 'disp-width' => '11'),
-           'name' => array('type' => 'varchar', 'length' => '64', 'not null' => 1, 'default' => ''),
-           'description' => array('type' => 'varchar', 'length' => '255'),
-           'weight' => array('type' => 'int', 'not null' => 1, 'default' => 0, 'disp-width' => '11'),
-           'visible' => array('type' => 'int', 'size' => 'tiny', 'not null' => 1, 'default' => 1, 'disp-width' => '1')),
-      'primary key' => array('tid'),
-  );
-
-  $schema['biblio_type_details'] = array(
-      'fields' => array(
-           'tid' => array('type' => 'int', 'not null' => 1, 'default' => 0, 'disp-width' => '11'),
-           'fid' => array('type' => 'int', 'not null' => 1, 'default' => 0, 'disp-width' => '11'),
-           'title' => array('type' => 'varchar', 'length' => '100', 'not null' => 1, 'default' => ''),
-           'hint' => array('type' => 'varchar', 'length' => '100'),
-           'required' => array('type' => 'int', 'size' => 'tiny', 'not null' => 1, 'default' => 0, 'disp-width' => '1'),
-           'weight' => array('type' => 'int', 'not null' => 1, 'default' => 0, 'disp-width' => '11')),
-      'primary key' => array('tid', 'fid'),
-      'indexes' => array(
-           'tid' => array('tid')),
-  );
-
-
-  $schema['biblio_has_author'] = array(
-      'fields' => array(
-           'nid' => array('type' => 'int', 'not null' => 1, 'default' => 0, 'disp-width' => '11'),
-           'aid' => array('type' => 'int', 'not null' => 1, 'default' => 0, 'disp-width' => '11'),
-           'rank' => array('type' => 'int', 'not null' => 1, 'default' => 0, 'disp-width' => '11')),
-      'primary key' => array('nid', 'aid', 'rank'),
-  );
-  
-  $schema['biblio_author_index'] = array(
-      'fields' => array(
-           'aid' => array('type' => 'int', 'not null' => 1, 'default' => 0, 'disp-width' => '11'),
-           'author' => array('type' => 'varchar', 'length' => '100', 'not null' => 1, 'default' => '')),
-      'primary key' => array('aid'),
-  );
-  
-  return ($schema);
-
-}
-
 function biblio_install() {
   $result = array();
+
+  drupal_install_schema('biblio');
+
+  $result[] = _add_db_field_data();
+
+  $result[] = _add_publication_types();
+
+  $result[] = _add_custom_field_data();
+
+  _enable_biblio_keyword_vocabulary();
   
- drupal_install_schema('biblio');
-
-
-  $result[] = db_query("INSERT INTO {biblio_fields} (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`autocomplete`,`weight`) VALUES 
-   (1,'biblio_authors','Authors',1,'textfield',60,255,'Author names must be separated by semicolons',1,0,0,1),
-   (2,'biblio_secondary_authors','Secondary Authors',0,'textfield',60,255,'',0,0,0,21),
-   (3,'biblio_tertiary_authors','Tertiary Authors',0,'textfield',60,255,'',0,0,0,26),
-   (4,'biblio_corp_author','Corporate Author',0,'textfield',60,255,'',0,0,1,25),
-   (5,'biblio_secondary_title','Secondary Title',0,'textfield',60,255,'',0,0,1,12),
-   (6,'biblio_tertiary_title','Tertiary Title',0,'textfield',60,255,'',0,0,1,13),
-   (7,'biblio_accession_number','Accession Number',1,'textfield',24,24,'',0,0,0,151),
-   (8,'biblio_isbn','ISBN Number',1,'textfield',24,24,'',0,0,0,150),
-   (9,'biblio_call_number','Call Number',1,'textfield',24,24,'',0,0,0,152),
-   (10,'biblio_other_number','Other Numbers',1,'textfield',10,24,'',0,0,0,153),
-   (11,'biblio_other_author_affiliations','Other Author Affiliations',0,'textfield',60,255,'',0,0,0,24),
-   (12,'biblio_publisher','Publisher',0,'textfield',60,255,'',0,0,1,19);");
-
-  $result[] = db_query("INSERT INTO {biblio_fields} (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`autocomplete`,`weight`) VALUES 
-   (13,'biblio_place_published','Place Published',0,'textfield',60,255,'',0,0,1,20),
-   (14,'biblio_year','Year of Publication',1,'textfield',4,4,'(yyyy)',1,0,0,-45),
-   (15,'biblio_edition','Edition',0,'textfield',60,255,'',0,0,0,15),
-   (16,'biblio_volume','Volume',0,'textfield',10,10,'',0,0,0,14),
-   (17,'biblio_number','Number',0,'textfield',10,10,'',0,0,0,16),
-   (18,'biblio_pages','Pagination',0,'textfield',24,128,'',0,0,0,17),
-   (19,'biblio_date','Date Published',0,'textfield',16,16,'(mm/yyyy)',0,0,0,18),
-   (20,'biblio_lang','Publication Language',0,'textfield',24,24,'',0,0,0,23),
-   (21,'biblio_abst_e','Abstract',1,'textarea',60,65535 ,'',0,0,0,155),
-   (22,'biblio_abst_f','French Abstract',0,'textarea',60,65535 ,'',0,0,0,156),
-   (23,'biblio_keywords','Key Words',1,'textfield',60,255,'',0,0,0,154),
-   (24,'biblio_type_of_work','Type of Work',0,'textfield',60,255,'Masters Thesis, PhD Thesis, etc.',0,0,0,22),
-   (25,'biblio_url','URL',1,'textfield',60,255,'',0,0,0,158);");
-
-  $result[] = db_query("INSERT INTO {biblio_fields} (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`autocomplete`,`weight`) VALUES 
-   (26,'biblio_notes','Notes',1,'textarea',60,65535 ,'',0,0,0,157),
-   (27,'biblio_issue','Issue',0,'textfield',10,10,'',0,0,0,15),
-   (28,'biblio_research_notes','Reseach Notes',0,'textarea',60,65535 ,'',0,0,0,160),
-   (29,'biblio_custom1','Custom 1',0,'textarea',60,65535,'',0,0,0,161),
-   (30,'biblio_custom2','Custom 2',0,'textarea',60,65535,'',0,0,0,162),
-   (31,'biblio_custom3','Custom 3',0,'textarea',60,65535,'',0,0,0,163),
-   (32,'biblio_custom4','Custom 4',0,'textarea',60,65535,'',0,0,0,164),
-   (33,'biblio_custom5','Custom 5',0,'textarea',60,65535,'',0,0,0,165),
-   (34,'biblio_custom6','Custom 6',0,'textarea',60,65535,'',0,0,0,167),
-   (35,'biblio_custom7','Custom 7',0,'textarea',60,65535,'',0,0,0,168),
-   (36,'biblio_number_of_volumes','Number of Volumes',0,'textfield',10,10,'',0,0,0,15),
-   (37,'biblio_short_title','Short Title',0,'textfield',60,255,'',0,0,0,169),
-   (38,'biblio_alternate_title','Alternate Title',0,'textfield',60,255,'',0,0,0,170),
-   (39,'biblio_translated_title','Translated Title',0,'textfield',60,255,'',0,0,0,170),
-   (40,'biblio_original_publication','Original Publication',0,'textfield',60,255,'',0,0,0,171),
-   (41,'biblio_reprint_edition','Reprint Edition',0,'textfield',120,255,'',0,0,0,172),
-   (42,'biblio_section','Section',0,'textfield',10,10,'',0,0,0,15),
-   (43,'biblio_citekey','Citation Key',0,'textfield',16,16,'',0,0,1,175),
-   (44,'biblio_coins','COinS Data',1,'textarea',60,65535 ,'This will be automatically generated, only edit if you know what you are doing.',0,0,0,176),
-   (45,'biblio_issn','ISSN Number',1,'textfield',24,24,'',0,0,0,150),
-   (46,'biblio_doi','DOI',1,'textfield',60,255,'',0,0,0,159),
-   (47,'biblio_auth_address','Author Address',0,'textarea',60,65535,'',0,0,0,178),
-   (48,'biblio_remote_db_name','Remote Database Name',0,'textfield',60,255,'',0,0,0,176),
-   (49,'biblio_remote_db_provider','Remote Database Provider',0,'textfield',60,255,'',0,0,0,177),
-   (50,'biblio_label','Label',0,'textfield',60,255,'',0,0,0,178),
-   (51,'biblio_access_date','Access Date',0,'textfield',60,255,'',0,0,0,179)
-   ;");
-
-
-  $result[] = db_query("INSERT INTO {biblio_types} (`tid`,`name`,`description`,weight) VALUES 
-   (-1,'Select Type...',NULL,-10),
-    (100,'Book',NULL,1),
-		(101,'Book Chapter',NULL,2),
-		(102,'Journal Article',NULL,3),
-		(103,'Conference Paper',NULL,4),
-		(104,'Conference Proceedings',NULL,5),
-		(105,'Newspaper Article',NULL,6),
-		(106,'Magazine Article',NULL,7),
-		(107,'Web Article',NULL,8),
-		(108,'Thesis',NULL,9),
-		(109,'Report',NULL,10),
-		(110,'Film',NULL,11),
-		(111,'Broadcast',NULL,12),
-		(112,'Artwork',NULL,13),
-		(113,'Software',NULL,14),
-		(114,'Audiovisual',NULL,15),
-		(115,'Hearing',NULL,16),
-		(116,'Case',NULL,17),
-		(117,'Bill',NULL,18),
-		(118,'Statute',NULL,19),
-		(119,'Patent',NULL,20),
-		(120,'Personal',NULL,21),
-		(121,'Manuscript',NULL,22),
-		(122,'Map',NULL,23),
-		(123,'Chart',NULL,24),
-		(124,'Unpublished',NULL,25),
-		(125,'Database',NULL,26),
-		(126,'Government Report',NULL,27),
-		(127,'Classical'	,NULL,28),
-		(128,'Legal Ruling'	,NULL,29),
-		(129,'Miscellaneous'	,NULL,30),
-		(130,'Miscellaneous Section'	,NULL,31);");
-
-
-
-  // some customizations of the default types 
-  _add_types($result);
-        
+  $result[] = _set_system_weight();
   
   if (count($result) == count(array_filter($result))) {
-  	drupal_set_message(t('The biblio module has successfully added its tables to the database.'));
+    drupal_set_message(t('The biblio module has successfully added its tables to the database.'));
   }
   else {
-  	drupal_set_message(t('Drupal was unable to install the database tables for the biblio module.'), 'error');
+    drupal_set_message(t('Drupal encountered some errors while attempting to install the database tables for the biblio module.'), 'error');
   }
 }
-function biblio_reset_types(){
-  $result = array();
-  
-  db_drop_table($result, 'biblio_type_details');
-  $schema = drupal_get_schema('biblio');
-  drupal_install_schema($schema['biblio_type_details']);
 
-  _add_types($result);
+function biblio_enable() {
+  _enable_biblio_keyword_vocabulary();
+  _set_system_weight();
+  //_enable_biblio_collection_vocabulary();
+ // _add_biblio_keywords();
 }
 
-function _add_types(&$result){
-
-      db_query("INSERT INTO {biblio_type_details} (`tid`,`fid`,`title`,`hint`,`required`,`weight`) VALUES 
-       (100,5,'Series Title','',0,3),
-       (100,15,'Edition','',0,10),
-       (100,18,'Number of Pages','',0,9),
-       (100,12,'Publisher','',0,5),
-       (100,13,'City','',0,4),
-       (100,2,'Series Editor','',0,2),
-       (100,16,'Volume','',0,6),
-       (100,36,'Number of Volumes','',0,7),
-       (100,17,'Series Volume','',0,8),
-       (100,37,'Short Title','',0,11),
-       (100,41,'Reprint Edition','',0,12),
-       (101,36,'Number of Volumes','',0,7),
-       (101,16,'Volume','',0,6),
-       (101,17,'Series Volume','',0,8),
-       (101,18,'Pages','',0,9),
-       (101,42,'Chapter','',0,10),
-       (101,3,'Series Editor','',0,11),
-       (101,6,'Series Title','',0,12),
-       (101,15,'Edition','',0,13),
-       (101,37,'Short Title','',0,14),
-       (101,40,'Original Publication','',0,171),
-       (101,41,'Reprint Edition','',0,172),
-       (101,20,'Language','',0,23),
-       (101,12,'Publisher','',0,5),
-       (101,5,'Book Title','',0,3),
-       (101,2,'Editor','',0,2),
-       (101,13,'City','',0,4);"); 
-      db_query("INSERT INTO {biblio_type_details} (`tid`,`fid`,`title`,`hint`,`required`,`weight`) VALUES 
-       (102,42,'Start Page','',0,6),
-       (102,37,'Short Title','',0,15),
-       (102,41,'Reprint Edition','',0,172),
-       (102,12,'Publisher','',0,19),
-       (102,16,'Volume','',0,3),
-       (102,19,'Journal Date','(mm/yyyy)',0,14),
-       (102,5,'Journal Title','',1,2),
-       (102,27,'Issue','',0,4),
-       (102,18,'Pages','',0,5),
-       (103,5,'Conference Name','',0,12),
-       (103,6,'Series Title','',0,13),
-       (103,16,'Volume','',0,14),
-       (103,15,'Edition','',0,15),
-       (103,18,'Pagination','',0,17),
-       (103,19,'Conference Start Date','(dd/mm/yyyy)',0,18),
-       (103,12,'Publisher','',0,19),
-       (103,13,'Conference Location','',0,20),
-       (103,2,'Editor','',0,21),
-       (104,5,'Conference Name','',0,12),
-       (104,6,'Series Title','',0,13),
-       (104,16,'Volume','',0,14),
-       (104,15,'Edition','',0,15),
-       (104,18,'Pagination','',0,17),
-       (104,19,'Conference Start Date','(dd/mm/yyyy)',0,18),
-       (104,12,'Publisher','',0,19),
-       (104,13,'Conference Location','',0,20),
-       (104,2,'Editor','',0,21);");
-      db_query("INSERT INTO {biblio_type_details} (`tid`,`fid`,`title`,`hint`,`required`,`weight`) VALUES 
-       (108,5,'Academic Department','',0,12),
-       (108,18,'Number of Pages','',0,17),
-       (108,12,'University','',0,19),
-       (108,13,'City','',0,20),
-       (108,24,'Degree','Masters Thesis, PhD Thesis, etc.',0,22),
-       (109,19,'Date','(mm/yyyy)',0,18),
-       (109,18,'Pages','',0,17),
-       (109,5,'Prepared for','',0,12),
-       (109,12,'Institution','',0,19),
-       (109,13,'City','',0,20),
-       (119,12,'Assignee','',0,19),
-       (119,19,'Date','(mm/yyyy)',0,18),
-       (119,18,'Pages','',0,17),
-       (119,27,'Issue','',0,15),
-       (119,5,'Published Source','',0,12),
-       (119,13,'Country','',0,13),
-       (119,16,'Volume','',0,14),
-       (129,5,'Prepared for','',0,12);");
-      db_query("/*!40000 ALTER TABLE {biblio_type_details} ENABLE KEYS */;");
-
-}
 function biblio_uninstall(){
-    $result = db_query("SELECT * FROM {node} where type='biblio' ");
-    while ($row = db_fetch_object($result)){
-      node_delete($row->nid);
+  $voc = taxonomy_get_vocabularies();
+  foreach ($voc as $vid => $vocabulary) {
+    if ($vocabulary->module == 'biblio')  taxonomy_del_vocabulary($vid);
+  }
+  
+  $result = db_query("SELECT * FROM {node} WHERE type='biblio' ");
+  while ($node = db_fetch_object($result)){
+    db_query('DELETE FROM {node} WHERE nid = %d', $node->nid);
+    db_query('DELETE FROM {node_revisions} WHERE nid = %d', $node->nid);
+ 
+    // Remove this node from the search index if needed.
+    if (function_exists('search_wipe')) {
+      search_wipe($node->nid, 'node');
     }
+  }
+
   drupal_uninstall_schema('biblio');
 
-  variable_del('biblio_base');                    
-  variable_del('biblio_baseopenurl');             
-  variable_del('biblio_footnotes_integration');   
-  variable_del('biblio_freetagging_vocab');       
-  variable_del('biblio_keyword_freetagging');     
-  variable_del('biblio_links_target_new_window'); 
-  variable_del('biblio_max_user_tid');            
-  variable_del('biblio_node_layout');             
-  variable_del('biblio_normalize');               
-  variable_del('biblio_openurlimage');            
-  variable_del('biblio_order');                   
-  variable_del('biblio_rowsperpage');             
-  variable_del('biblio_rss');                     
-  variable_del('biblio_rss_number_of_entries');   
-  variable_del('biblio_sort');                    
-  variable_del('biblio_sort_tabs');                    
-  variable_del('biblio_style');                   
-  variable_del('biblio_view_only_own');           
-  variable_del('biblio_annotations');           
+  variable_del('biblio_collection_vocabulary');
+  variable_del('biblio_keyword_vocabulary');
+  variable_del('biblio_annotations');
+  variable_del('biblio_base');
+  variable_del('biblio_base_title');
+  variable_del('biblio_baseopenurl');
+  variable_del('biblio_block_order');
+  variable_del('biblio_block_title');
+  variable_del('biblio_footnotes_integration');
+  variable_del('biblio_freetagging_vocab');
+  variable_del('biblio_inlinemode_in_links');
+  variable_del('biblio_keyword_freetagging');
+  variable_del('biblio_keyword_sep');
+  variable_del('biblio_last_ftdid');
+  variable_del('biblio_links_target_new_window');
+  variable_del('biblio_link_title_url');
+  variable_del('biblio_max_user_tid');
+  variable_del('biblio_my_pubs_menu');
+  variable_del('biblio_node_layout');
+  variable_del('biblio_normalize');
+  variable_del('biblio_openurlimage');
+  variable_del('biblio_order');
+  variable_del('biblio_profile_uid');
+  variable_del('biblio_rowsperpage');
+  variable_del('biblio_rss');
+  variable_del('biblio_rss_number_of_entries');
+  variable_del('biblio_rowsperblock');
+  variable_del('biblio_show_profile');
+  variable_del('biblio_show_profile_tab');
+  variable_del('biblio_search');
+  variable_del('biblio_index');
+  variable_del('biblio_search_button_text');
+  variable_del('biblio_sort');
+  variable_del('biblio_sort_tabs');
+  variable_del('biblio_style');
+  variable_del('biblio_view_only_own');
+  variable_del('biblio_auto_citekey');
+  variable_del('biblio_citekey_field1');
+  variable_del('biblio_citekey_field2');
+  variable_del('biblio_citekey_prefix');
+  variable_del('biblio_citekey_phpcode');
+  
+  
+  cache_clear_all();
+  
 }
 
+function _set_system_weight() {
+  return update_sql("UPDATE {system} SET weight = 9 WHERE name = 'biblio'");
+}
+
+function _enable_biblio_keyword_vocabulary(){
+    
+  if ($vocabulary = taxonomy_vocabulary_load(variable_get('biblio_freetagging_vocab', 0))) {
+    variable_set('biblio_keyword_vocabulary', $vocabulary->vid);
+    $vocabulary->name = 'Biblio Keywords';
+    $vocabulary->description = t('This is a free tag vocabulary which contains the key words from all nodes created by the biblio module');
+    $vocabulary->help = t('Enter a comma separated list of words. Phrases containing commas should be enclosed in double quotes');
+    $vocabulary->nodes = array('biblio' => 1);
+    $vocabulary->hierarchy = 0;
+    $vocabulary->relations = 1;
+    $vocabulary->tags = 1;
+    $vocabulary->multiple = 0;
+    $vocabulary->required = 0;
+    $vocabulary->weight = 0;
+    $vocabulary->module = 'biblio';
+    
+    $vocabulary = (array) $vocabulary;
+    taxonomy_save_vocabulary($vocabulary);    
+    variable_del('biblio_freetagging_vocab');
+  }
+  
+  if ($vocabulary = taxonomy_vocabulary_load(variable_get('biblio_keyword_vocabulary', 0))) {
+      // Existing install. Add back forum node type, if the biblio
+    // vocabulary still exists. Keep all other node types intact there.
+    $vocabulary = (array) $vocabulary;
+    $vocabulary['nodes']['biblio'] = 1;
+    taxonomy_save_vocabulary($vocabulary);
+  }
+  else {
+    // Create the biblio vocabulary if it does not exist.
+    $vocabulary = array(
+      'name' => 'Biblio Keywords',
+      'description' => 'This is a free tag vocabulary which contains the key words from all nodes created by the biblio module',
+      'help' => 'Enter a comma separated list of words. Phrases containing commas should be enclosed in double quotes',
+      'nodes' => array('biblio' => 1),
+      'hierarchy' => 0,
+      'relations' => 1,
+      'tags' => 1,
+      'multiple' => 0,
+      'required' => 0,
+      'weight' => 0,
+      'module' => 'biblio',
+    );
+    taxonomy_save_vocabulary($vocabulary);
+    variable_set('biblio_keyword_vocabulary', $vocabulary['vid']);
+  }
+  return $vocabulary['vid'];
+}
+function _enable_biblio_collection_vocabulary(){  
+  if ($vocabulary = taxonomy_vocabulary_load(variable_get('biblio_collection_vocabulary', 0))) {
+    // Existing install. Add back forum node type, if the biblio
+    // vocabulary still exists. Keep all other node types intact there.
+    $vocabulary = (array) $vocabulary;
+    $vocabulary['nodes']['biblio'] = 1;
+    taxonomy_save_vocabulary($vocabulary);
+  }
+  else {
+    // Create the forum vocabulary if it does not exist. Assign the vocabulary
+    // a low weight so it will appear first in forum topic create and edit
+    // forms.
+    $vocabulary = array(
+      'name' => 'Biblio Collections',
+      'description' => 'You may organize your publications into collections by adding a collection names to this vocabulary',
+      'help' => '',
+      'nodes' => array('biblio' => 1),
+      'hierarchy' => 0,
+      'relations' => 1,
+      'tags' => 0,
+      'multiple' => 1,
+      'required' => 0,
+      'weight' => 0,
+      'module' => 'biblio',
+    );
+    taxonomy_save_vocabulary($vocabulary);
+    variable_set('biblio_collection_vocabulary', $vocabulary['vid']);
+    $default_collection = array(
+      'name' => t('Default'),
+      'description' => t("This is the collection that all biblio entries will be a part of if no other collection is selected. Deleting this term will render all your biblio entries inaccessable. (You've been warned!)" ),
+      'parent' => array(),
+      'relations' => array(),
+      'synonyms' => '',
+      'weight' => 0,
+      'vid' => variable_get('biblio_collection_vocabulary', 0),
+    );
+    taxonomy_save_term($default_collection);
+  }
+  return $vocabulary['vid'];
+  
+}
+
+/**
+ * Copies keywords from the biblio_keyword column of the biblio table 
+ * to a taxonomy vocabulary
+ * 
+ * @return none
+ */
+function _add_biblio_keywords() {
+  set_time_limit(300);
+  $kw_sep = variable_get('biblio_keyword_sep', ',');
+  $vid = ($vid = variable_get('biblio_keyword_vocabulary', 0))? $vid:_enable_biblio_keyword_vocabulary();
+  if ($vid ){
+    $db_result  = db_query("SELECT b.biblio_keywords, b.nid, b.vid FROM {biblio} b");
+    $result = array();
+    while ($row = db_fetch_object($db_result)) {
+      foreach(explode($kw_sep, $row->biblio_keywords) as $keyword) {
+        $result[] = array('value' => trim($keyword), 'nid' => $row->nid, 'vid' =>$row->vid);
+      }
+      db_query('DELETE FROM {term_node} WHERE nid = %d', $row->nid);
+    }
+    $inserted = array();
+    $count = 0;
+    foreach ($result as $keywords) {
+      // See if the term exists in the chosen vocabulary
+      // and return the tid; otherwise, add a new record.
+      $possibilities = taxonomy_get_term_by_name($keywords['value']);
+      $term_tid = NULL; // tid match, if any.
+      foreach ($possibilities as $possibility) {
+        if ($possibility->vid == $vid) {
+          $term_tid = $possibility->tid;
+        }
+      }
+
+      if (!$term_tid) {
+        $term = array('vid' => $vid, 'name' => $keywords['value']);
+        $status = taxonomy_save_term($term);
+        $term_tid = $term['tid'];
+      }
+
+      // Defend against duplicate, differently cased tags
+      if (!isset($inserted[$keywords['vid']][$term_tid])) {
+        db_query('INSERT INTO {term_node} (nid, vid, tid) VALUES (%d, %d, %d)', $keywords['nid'], $keywords['vid'], $term_tid);
+        $inserted[$keywords['vid']][$term_tid] = TRUE;
+        $count++;
+      }
+    }
+    return array('success' => TRUE, 'query' => 'Added '.$count. ' key words to the taxonomy key word list');
+  }
+  return array('success' => FALSE, 'query' => 'Biblio key word vocabulary not available');
+}
+
+
+ 
+function biblio_schema() {
+  $schema['biblio'] = array (
+    'fields' => array (
+      'nid' => array (
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' =>'',
+  ),
+      'vid' => array (
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' =>'',
+  ),
+      'biblio_type' => array (
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' =>'',
+  ),
+      'biblio_number' => array (
+        'type' => 'varchar',
+        'length' => '10',
+        'description' =>'',
+  ),
+      'biblio_other_number' => array (
+        'type' => 'varchar',
+        'length' => '24',
+        'description' =>'',
+  ),
+      'biblio_secondary_title' => array (
+        'type' => 'varchar',
+        'length' => '255',
+        'description' =>'',
+  ),
+      'biblio_tertiary_title' => array (
+        'type' => 'varchar',
+        'length' => '255',
+        'description' =>'',
+  ),
+      'biblio_edition' => array (
+        'type' => 'varchar',
+        'length' => '255',
+        'description' =>'',
+  ),
+      'biblio_publisher' => array (
+        'type' => 'varchar',
+        'length' => '255',
+        'description' =>'',
+  ),
+      'biblio_place_published' => array (
+        'type' => 'varchar',
+        'length' => '255',
+        'description' =>'',
+  ),
+      'biblio_year' => array (
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 9999,
+        'description' =>'',
+  ),
+      'biblio_volume' => array (
+        'type' => 'varchar',
+        'length' => '10',
+        'description' =>'',
+  ),
+      'biblio_pages' => array (
+        'type' => 'varchar',
+        'length' => '128',
+        'description' =>'',
+  ),
+      'biblio_date' => array (
+        'type' => 'varchar',
+        'length' => '16',
+        'description' =>'',
+  ),
+      'biblio_isbn' => array (
+        'type' => 'varchar',
+        'length' => '24',
+        'description' =>'',
+  ),
+      'biblio_lang' => array (
+        'type' => 'varchar',
+        'length' => '24',
+        'default' => 'eng',
+        'description' =>'',
+  ),
+      'biblio_abst_e' => array (
+        'type' => 'text',
+        'description' =>'',
+  ),
+      'biblio_abst_f' => array (
+        'type' => 'text',
+        'description' =>'',
+  ),
+      'biblio_full_text' => array (
+        'type' => 'int',
+        'default' => 0,
+        'description' =>'',
+  ),
+      'biblio_keywords' => array (
+        'type' => 'varchar',
+        'length' => '255',
+        'description' =>'',
+  ),
+      'biblio_url' => array (
+        'type' => 'varchar',
+        'length' => '255',
+        'description' =>'',
+  ),
+      'biblio_issue' => array (
+        'type' => 'varchar',
+        'length' => '10',
+        'description' =>'',
+  ),
+      'biblio_type_of_work' => array (
+        'type' => 'varchar',
+        'length' => '100',
+        'description' =>'',
+  ),
+      'biblio_accession_number' => array (
+        'type' => 'varchar',
+        'length' => '30',
+        'description' =>'',
+  ),
+      'biblio_call_number' => array (
+        'type' => 'varchar',
+        'length' => '30',
+        'description' =>'',
+  ),
+      'biblio_notes' => array (
+        'type' => 'text',
+        'description' =>'',
+  ),
+      'biblio_custom1' => array (
+        'type' => 'text',
+        'description' =>'',
+  ),
+      'biblio_custom2' => array (
+        'type' => 'text',
+        'description' =>'',
+  ),
+      'biblio_custom3' => array (
+        'type' => 'text',
+        'description' =>'',
+  ),
+      'biblio_custom4' => array (
+        'type' => 'text',
+        'description' =>'',
+  ),
+      'biblio_custom5' => array (
+        'type' => 'text',
+        'description' =>'',
+  ),
+      'biblio_custom6' => array (
+        'type' => 'text',
+        'description' =>'',
+  ),
+      'biblio_custom7' => array (
+        'type' => 'text',
+        'description' =>'',
+  ),
+      'biblio_research_notes' => array (
+        'type' => 'text',
+        'description' =>'',
+  ),
+      'biblio_number_of_volumes' => array (
+        'type' => 'varchar',
+        'length' => '10',
+        'description' =>'',
+  ),
+      'biblio_short_title' => array (
+        'type' => 'varchar',
+        'length' => '255',
+        'description' =>'',
+  ),
+      'biblio_alternate_title' => array (
+        'type' => 'varchar',
+        'length' => '255',
+        'description' =>'',
+  ),
+      'biblio_original_publication' => array (
+        'type' => 'varchar',
+        'length' => '255',
+        'description' =>'',
+  ),
+      'biblio_reprint_edition' => array (
+        'type' => 'varchar',
+        'length' => '255',
+        'description' =>'',
+  ),
+      'biblio_translated_title' => array (
+        'type' => 'varchar',
+        'length' => '255',
+        'description' =>'',
+  ),
+      'biblio_section' => array (
+        'type' => 'varchar',
+        'length' => '10',
+        'description' =>'',
+  ),
+      'biblio_citekey' => array (
+        'type' => 'varchar',
+        'length' => '255',
+        'description' =>'',
+  ),
+      'biblio_coins' => array (
+        'type' => 'text',
+        'description' =>'',
+  ),
+      'biblio_doi' => array (
+        'type' => 'varchar',
+        'length' => '100',
+        'description' =>'',
+  ),
+      'biblio_issn' => array (
+        'type' => 'varchar',
+        'length' => '24',
+        'description' =>'',
+  ),
+      'biblio_auth_address' => array (
+        'type' => 'text',
+        'description' =>'',
+  ),
+      'biblio_remote_db_name' => array (
+        'type' => 'varchar',
+        'length' => '255',
+        'description' =>'',
+  ),
+      'biblio_remote_db_provider' => array (
+        'type' => 'varchar',
+        'length' => '255',
+        'description' =>'',
+  ),
+      'biblio_label' => array (
+        'type' => 'varchar',
+        'length' => '255',
+        'description' =>'',
+  ),
+      'biblio_access_date' => array (
+        'type' => 'varchar',
+        'length' => '255',
+        'description' =>'',
+  ),
+      'biblio_md5' => array (
+        'type' => 'varchar',
+        'length' => '32',
+        'description' =>'',
+  )
+  ),
+    'primary key' => array (
+      'vid'
+      ),
+    'indexes' => array (
+      'keywords' => array (
+        'biblio_keywords'
+        ),
+      'nid' => array (
+        'nid'
+        ),
+      'md5' => array (
+        'biblio_md5'
+        ),
+      'year' => array (
+        'biblio_year'
+        )
+        ),
+
+        );
+
+   $schema['biblio_fields'] = array(
+    'fields' => array(
+      'fid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+          'unsigned' => TRUE,
+        'default' => 0,
+        'description' =>'{biblio_fields}.fid of the node',
+        ),
+      'name' => array(
+        'type' => 'varchar',
+        'length' => '128',
+        'not null' => TRUE,
+        'default' => ''
+        ),
+      'type' => array(
+        'type' => 'varchar',
+        'length' => '128',
+        'not null' => TRUE,
+        'default' => 'textfield'
+        ),
+      'size' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'default' => 60,
+        ),
+      'maxsize' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'default' => 255,
+        ),
+        ),
+      'primary key' => array('fid'),
+        );
+
+   $schema['biblio_field_type'] = array(
+    'description' => 'Relational table linking {biblio_fields} with {biblio_field_type_data}',
+    'fields' => array(
+      'tid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'default' => 0,
+        'description' =>'{biblio_types}.tid of the node',
+        ),
+      'fid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'default' => 0,
+        'description' =>'{biblio_fields}.fid of the node',
+        ),
+      'ftdid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'default' => 0,
+        'description' =>'{biblio_field_type_data}.ftdid of the node, points to the current data, default or custom',
+        ),
+      'cust_tdid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'default' => 0,
+        'description' =>'This always points to the custom data for this field. Stored so we can switch back an forth between default and custom',
+        ),
+      'common' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'default' => 0,
+        ),
+      'autocomplete' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'default' => 0,
+        ),
+      'required' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'default' => 0,
+        'description' => 'Is input required for this field'
+        ),
+      'weight' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => FALSE,
+        'default' => 0,
+        'description' => 'The weight (location) of the field on the input form'
+        ),
+      'visible' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'default' => 0,
+        'description' => 'Determines if the field is visible on the input form'
+        ),
+
+        ),
+    'primary key' => array('tid', 'fid'),
+    'indexes' => array(
+      'tid' => array('tid')
+        ),
+        );
+
+   $schema['biblio_field_type_data'] = array(
+    'description' => 'Data used to build the form elements on the input form',
+    'fields' => array(
+      'ftdid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+          'unsigned' => TRUE,
+        'default' => 0,
+        'description' =>'{biblio_field_type_data}.ftdid of the node',
+        ),
+      'title' => array(
+        'type' => 'varchar',
+        'length' => '128',
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The title, which will be displayed on the form, for a given field'
+        ),
+      'hint' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'description' => 'The hint text printed below the input widget'
+        ),
+        ),
+    'primary key' => array('ftdid'),
+        );
+
+   $schema['biblio_types'] = array(
+    'fields' => array(
+        'tid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => FALSE,
+        'default' => 0,
+        'description' =>'{biblio_types}.tid of the publication type',
+        ),
+      'name' => array(
+        'type' => 'varchar',
+        'length' => '64',
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The name of the publication type'
+        ),
+      'description' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'description' => 'Description of the publication type'
+        ),
+      'weight' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+          'unsigned' => FALSE,
+        'default' => 0,
+        'description' => 'Controls the order the types are listed in'
+        ),
+      'visible' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'default' => 1,
+        'description' => 'Determines if the publication type is visible in the list'
+        ),
+        ),
+      'primary key' => array('tid'),
+
+        );
+
+
+
+ $schema['biblio_contributor'] = array(
+  'description' => 'Relational table linking authors to biblio entries',
+  'fields' => array(
+      'nid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'default' => 0,
+        'description' =>'{node}.nid of the node',
+        ),
+      'vid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'default' => 0,
+        'description' =>'{node}.vid of the node',
+        ),
+        'cid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'default' => 0,
+        'description' =>'{biblio_contributor_data}.cid of the node',
+        ),
+        'auth_type' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'default' => 1,
+        'description' =>'{biblio_contributor_type}.auth_type of the node',
+        ),
+        'rank' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'default' => 0,
+        'description' =>'Position of the author name on the publication (first,second,third...)',
+        )
+        ),
+      'primary key' => array('vid', 'cid', 'auth_type', 'rank'),
+        );
+
+  $schema['biblio_contributor_data'] = array(
+    'description' =>'Contains Author information for each publication',
+    'fields' => array(
+      'cid' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'description' =>'Primary Key: Author ID',
+        ),
+      'drupal_uid' => array(
+        'type' => 'int',
+        'not null' => FALSE,
+        'unsigned' => TRUE,
+        'description' =>'Drupal User ID',
+        ),
+        'name' => array(
+        'type' => 'varchar',
+        'length' => '128',
+        'not null' => TRUE,
+        'default' => '',
+        'description' =>'Author last name',
+        ),
+      'lastname' => array(
+        'type' => 'varchar',
+        'length' => '128',
+        'not null' => TRUE,
+        'default' => '',
+        'description' =>'Author last name',
+        ),
+      'firstname' => array(
+        'type' => 'varchar',
+        'length' => '128',
+        'not null' => FALSE,
+        'default' => '',
+        'description' =>'Author first name',
+        ),
+      'prefix' => array(
+        'type' => 'varchar',
+        'length' => '128',
+        'not null' => FALSE,
+        'default' => '',
+        'description' =>'Author name prefix',
+        ),
+      'suffix' => array(
+        'type' => 'varchar',
+        'length' => '128',
+        'not null' => FALSE,
+        'default' => '',
+        'description' =>'Author name suffix',
+        ),
+      'initials' => array(
+        'type' => 'varchar',
+        'length' => '10',
+        'not null' => FALSE,
+        'default' => '',
+        'description' =>'Author initials (including first name initial)',
+        ),
+      'affiliation' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => FALSE,
+        'default' => '',
+        'description' =>'Author affiliation or address',
+        ),
+      'md5' => array (
+        'type' => 'varchar',
+        'length' => '32',
+        'description' =>'',
+        )
+
+        ),
+      'primary key' => array('cid'),
+      'indexes' => array(
+          'lastname' => array('lastname'),
+          'firstname' => array('firstname'),
+          'initials' => array('initials')
+
+        )
+        );
+    $schema['biblio_contributor_type'] = array(
+      'description' =>'Contains definitions of the contributor types',
+      'fields' => array(
+        'auth_catagory' => array(
+          'type' => 'int',
+          'not null' => TRUE,
+          'unsigned' => TRUE,
+          'default' => 0,
+          'description' =>'There are 5 catagoies of author: Primary, Secondary, Tertiery, Subsidary and Corporate  ',
+        ),
+        'biblio_type' => array(
+          'type' => 'int',
+          'not null' => TRUE,
+          'unsigned' => TRUE,
+          'default' => 0,
+          'description' =>'',
+        ),
+        'auth_type' => array(
+          'type' => 'int',
+          'not null' => TRUE,
+          'unsigned' => TRUE,
+          'default' => 0,
+          'description' =>'This is the pulication type specific verion of a particular catagory',
+        ),
+        ),
+    'primary key' => array('auth_catagory','biblio_type', 'auth_type'),
+
+        );
+
+  $schema['biblio_contributor_type_data'] = array(
+    'description' => 'Data used to build the form elements on the input form',
+    'fields' => array(
+      'auth_type' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'description' =>'{biblio_contributor_type_data} ctdid of the node',
+        ),
+      'title' => array(
+        'type' => 'varchar',
+        'length' => '128',
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The title, which will be displayed on the form, for a given field'
+        ),
+      'hint' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'description' => 'The hint text printed below the input widget'
+        ),
+        ),
+    'primary key' => array('auth_type'),
+        );
+
+    $schema['biblio_keyword'] = array(
+      'description' => t('Relational table linking keywords to biblio nodes'),
+      'fields' => array(
+        'kid' => array(
+          'type' => 'int',
+          'not null' => TRUE,
+          'unsigned' => TRUE,
+          'default' => 0,
+          'description' => t('Primary Key: The {biblio_keyword_data}.kid of the keyword of the node ')
+        ),
+        'nid' => array(
+          'type' => 'int',
+          'not null' => TRUE,
+          'unsigned' => TRUE,
+          'default' => 0,
+          'description' => t('The {node}.nid of the node.'),
+        ),
+        'vid' => array(
+          'type' => 'int',
+          'not null' => TRUE,
+          'unsigned' => TRUE,
+          'default' => 0,
+          'description' => t('Primary Key: The {node}.vid of the node.'),
+        ),
+        ),
+      'primary key' => array('kid', 'vid'),
+      'indexes' => array(
+           'vid' => array('vid'),
+           'nid' => array('nid'),
+        ),
+        );
+
+     $schema['biblio_keyword_data'] = array(
+      'description' => t('Stores the keywords related to nodes.'),
+      'fields' => array(
+        'kid' => array(
+          'type' => 'int',
+          'not null' => TRUE,
+          'unsigned' => TRUE,
+          'default' => 0,
+          'description' => t('Primary Key: The id of the keyword assigned to the node ')
+        ),
+        'word' => array(
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => TRUE,
+          'default' => '',
+          'description' => t('The keyword'),
+        ),
+        ),
+      'primary key' => array('kid'),
+      'indexes' => array(
+           'kword' => array('word'),
+        ),
+        );
+     $schema['biblio_collection'] = array(
+      'description' => t('Relational table grouping biblio nodes into collections'),
+      'fields' => array(
+        'cid' => array(
+          'type' => 'int',
+          'not null' => TRUE,
+          'unsigned' => TRUE,
+          'default' => 0,
+          'description' => t('Primary Key: The {biblio_collection_data}.cid of the collection')
+        ),
+        'vid' => array(
+          'type' => 'int',
+          'not null' => TRUE,
+          'unsigned' => TRUE,
+          'default' => 0,
+          'description' => t('Primary Key: The {node}.vid of the node.'),
+        ),
+        'pid' => array(
+          'type' => 'int',
+          'not null' => TRUE,
+          'unsigned' => TRUE,
+          'default' => 0,
+          'description' => t('The parent id of the collection')
+        ),
+        'nid' => array(
+          'type' => 'int',
+          'not null' => TRUE,
+          'unsigned' => TRUE,
+          'default' => 0,
+          'description' => t('The {node}.nid of the node.'),
+        ),
+        ),
+      'primary key' => array('cid','vid'),
+      'indexes' => array(
+           'pid' => array('pid'),
+           'nid' => array('nid'),
+        ),
+        );
+     $schema['biblio_collection_type'] = array(
+      'description' => t('Descriptions of the collections.'),
+      'fields' => array(
+        'cid' => array(
+          'type' => 'int',
+          'not null' => TRUE,
+          'unsigned' => TRUE,
+          'default' => 0,
+          'description' => t('Primary Key: The id of the collection ')
+        ),
+        'name' => array(
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => TRUE,
+          'default' => '',
+          'description' => t('The name of the collection'),
+        ),
+        'description' => array(
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => TRUE,
+          'default' => '',
+          'description' => t('The description of the collection'),
+        ),
+        ),
+      'primary key' => array('cid'),
+      'indexes' => array(
+           'name' => array('name'),
+        ),
+        );
+    $schema['biblio_duplicates'] = array(
+      'description' => t('Relational table linking possible duplicate biblio nodes'),
+      'fields' => array(
+        'vid' => array(
+          'type' => 'int',
+          'not null' => TRUE,
+          'unsigned' => TRUE,
+          'default' => 0,
+          'description' => t('Primary Key: The {biblio}.nid of the original node ')
+        ),
+        'did' => array(
+          'type' => 'int',
+          'not null' => TRUE,
+          'unsigned' => TRUE,
+          'default' => 0,
+          'description' => t('The {biblio}.nid of the newly imported node which may be a duplicate.'),
+        ),
+        'type' => array(
+          'type' => 'int',
+          'not null' => TRUE,
+          'unsigned' => TRUE,
+          'default' => 0,
+          'description' => t('The type of duplicate 0=biblio, 1=author.'),
+        ),
+        ),
+      'primary key' => array('vid,did'),
+        'indexes' => array(
+           'did' => array('vid'),
+        ),
+        );
+
+      $schema['biblio_import_cache'] = array(
+        'description' => 'tables used for caching data imported from file and then batch processed',
+        'fields' => array(
+          'id' => array(
+            'type'=>'serial',
+            'not null' => TRUE,
+            'unsigned' => TRUE),
+          'session_id' => array(
+            'type' => 'varchar',
+            'length' => 45,
+            'not null' => TRUE),
+          'data' => array(
+            'description' => t('A collection of data to cache.'),
+            'type' => 'blob',
+            'not null' => FALSE,
+            'size' => 'big'),
+        ),
+        'primary key' => array('id'));
+      
+   return ($schema);
+
+}
+
+function biblio_reset_types(){
+  $result = array();
+
+  db_drop_table($result, 'biblio_field_type_data');
+  $schema = drupal_get_schema('biblio_field_type_data');
+  db_create_table($result, 'biblio_field_type_data', $schema);
+  db_drop_table($result, 'biblio_field_type');
+  $schema = drupal_get_schema('biblio_field_type');
+  db_create_table($result, 'biblio_field_type', $schema);
+
+  _add_db_field_data();
+  _add_custom_field_data();
+}
+
+function _add_publication_types()
+{
+  $types[] = array(-1,'Select Type...',NULL,-10);
+  $types[] = array(100,'Book',NULL,1);
+  $types[] = array(101,'Book Chapter',NULL,2);
+  $types[] = array(102,'Journal Article',NULL,3);
+  $types[] = array(103,'Conference Paper',NULL,4);
+  $types[] = array(104,'Conference Proceedings',NULL,5);
+  $types[] = array(105,'Newspaper Article',NULL,6);
+  $types[] = array(106,'Magazine Article',NULL,7);
+  $types[] = array(107,'Web Article',NULL,8);
+  $types[] = array(108,'Thesis',NULL,9);
+  $types[] = array(109,'Report',NULL,10);
+  $types[] = array(110,'Film',NULL,11);
+  $types[] = array(111,'Broadcast',NULL,12);
+  $types[] = array(112,'Artwork',NULL,13);
+  $types[] = array(113,'Software',NULL,14);
+  $types[] = array(114,'Audiovisual',NULL,15);
+  $types[] = array(115,'Hearing',NULL,16);
+  $types[] = array(116,'Case',NULL,17);
+  $types[] = array(117,'Bill',NULL,18);
+  $types[] = array(118,'Statute',NULL,19);
+  $types[] = array(119,'Patent',NULL,20);
+  $types[] = array(120,'Personal',NULL,21);
+  $types[] = array(121,'Manuscript',NULL,22);
+  $types[] = array(122,'Map',NULL,23);
+  $types[] = array(123,'Chart',NULL,24);
+  $types[] = array(124,'Unpublished',NULL,25);
+  $types[] = array(125,'Database',NULL,26);
+  $types[] = array(126,'Government Report',NULL,27);
+  $types[] = array(127,'Classical'	,NULL,28);
+  $types[] = array(128,'Legal Ruling'	,NULL,29);
+  $types[] = array(129,'Miscellaneous'	,NULL,30);
+  $types[] = array(130,'Miscellaneous Section'	,NULL,31);
+
+  foreach($types as $record)
+  {
+    $result[] = update_sql("INSERT INTO {biblio_types} (tid, name, description, weight) VALUES ('" . implode("', '", $record) . "')");
+  }
+ return $result;
+}
+
+
+function _add_db_field_data() {
+  $schema = biblio_schema();
+  $fieldnames = array_keys($schema['biblio_fields']['fields']);
+  $field_type_fieldnames = array_keys($schema['biblio_field_type']['fields']);
+  $field_type_data_fieldnames = array_keys($schema['biblio_field_type_data']['fields']);
+  db_query("/*!40000 ALTER TABLE {biblio_field_type_data} DISABLE KEYS */;");
+  db_query("/*!40000 ALTER TABLE {biblio_fields} DISABLE KEYS */;");
+
+  $csv_file = drupal_get_path('module', 'biblio') .'/biblio.field.link.data.csv';
+
+  if ($handle = fopen($csv_file, "r")){
+    $header = fgetcsv($handle, 10000, ","); // the first line has the field names
+    while (($row = fgetcsv($handle, 10000, ",")) !== FALSE) {
+      $column = 0;
+      $link_data = array(0,$row[0],$row[0],$row[0],$row[3],$row[4],$row[5],$row[6],$row[7]);
+      db_query("INSERT INTO {biblio_field_type} (". implode(", ", $field_type_fieldnames) . ")
+                VALUES (%d, %d, %d, %d, %d, %d, %d, %d, %d)", $link_data);
+      for ($t = 100; $t <= 130; $t++)
+      {
+        $values = array($t, $row[0],$row[0],$row[0],$row[3],$row[4],$row[5],$row[6],$row[7]);
+        db_query("INSERT INTO {biblio_field_type} (". implode(", ", $field_type_fieldnames) . ")
+                    VALUES('" . implode("', '", $values) . "')");
+      }
+      $ftd = array($row[0],$row[1],$row[2]);
+      db_query("INSERT INTO {biblio_field_type_data} (" . implode(", ", $field_type_data_fieldnames) . ")
+                  VALUES('" . implode("', '", $ftd) . "')");
+      $field_data = array($row[0],$row[8],$row[9],$row[10],$row[11]);
+      db_query("INSERT INTO {biblio_fields} (" . implode(", ", $fieldnames) . ")
+                  VALUES('" . implode("', '", $field_data) . "')");
+    }
+    fclose($handle);
+    $result = array('success' => TRUE, 'query' => 'Added field titles and default values');
+
+  } else {
+    $result = array('success' => FALSE, 'query' => 'Could not open '.$csv_file);
+  }
+
+
+  db_query("/*!40000 ALTER TABLE {biblio_field_type_data} ENABLE KEYS */;");
+  db_query("/*!40000 ALTER TABLE {biblio_fields} ENABLE KEYS */;");
+  
+  return $result;
+}
+
+function _add_custom_field_data() {
+
+  $next_ctdid=10; //first contributor_type_data id
+  $schema = biblio_schema();
+  $fieldnames = array_keys($schema['biblio_field_type_data']['fields']);
+
+  $query = "SELECT fid, name FROM {biblio_fields} ";
+  $res = db_query($query);
+  while ($row = db_fetch_object($res)){
+    $fieldmap[$row->name] =  $row->fid;
+  }
+
+  $csv_file = drupal_get_path('module', 'biblio') .'/biblio.field.type.data.csv';
+  for ($type = 1; $type <= 4; $type++) {
+    for ($biblio_type = 100; $biblio_type <= 130; $biblio_type++) {
+      db_query("INSERT INTO {biblio_contributor_type} (auth_catagory, biblio_type, auth_type) VALUES (%d, %d, %d)",  $type, $biblio_type, $type);
+    }
+  }
+  db_query("INSERT INTO {biblio_contributor_type_data} (auth_type, title) VALUES (%d, '%s' )", 1, "Author");
+  db_query("INSERT INTO {biblio_contributor_type_data} (auth_type, title) VALUES (%d, '%s' )", 2, "Secondary Author");
+  db_query("INSERT INTO {biblio_contributor_type_data} (auth_type, title) VALUES (%d, '%s' )", 3, "Tertiary Author ");
+  db_query("INSERT INTO {biblio_contributor_type_data} (auth_type, title) VALUES (%d, '%s' )", 4, "Subsidiary Author ");
+  db_query("INSERT INTO {biblio_contributor_type_data} (auth_type, title) VALUES (%d, '%s' )", 5, "Corporate Author ");
+  
+  if ($handle = fopen($csv_file, "r")){
+    $header = fgetcsv($handle, 10000, ","); // the first line has the field names
+    $generic = fgetcsv($handle, 10000, ","); // the second line has the default titles if none given
+    $table = array('tablename' => 'biblio_field_type_data', 'name_column' => 'title', 'id_column' => 'ftdid');
+    _id_by_name(NULL, NULL, $table);
+    while (($row = fgetcsv($handle, 10000, ",")) !== FALSE) {
+      $column = 0;
+      foreach ($header as $key => $field_name) {
+        if (!empty($field_name) && $field_name != 'tid') {
+          if (!empty($row[$column]) && $row[$column] != "~" && !empty($row[1]) && isset($fieldmap[$field_name])) {
+       	    $ftd[0] = ($existing_id = _id_by_name($row[$column])) ? $existing_id : variable_get('biblio_last_ftdid', 100); // ftdid
+       	    $ftd[1] = trim($row[$column]);                          // title
+       	    $ftd[2] = "";                                     // hint
+       	    db_query("UPDATE {biblio_field_type}
+                      SET ftdid = %d, cust_tdid = %d, visible = %d
+                      WHERE tid = %d AND fid = %d ", $ftd[0], $ftd[0], 1, $row[1], $fieldmap[$field_name] );
+       	    if (!$existing_id){
+       	      // if this title doesn't alreay exist, then insert it into the table
+       	      db_query("INSERT INTO {biblio_field_type_data} (" . implode(", ", $fieldnames) . ")
+                        VALUES (%d, '%s', '%s')", $ftd);
+              _id_by_name($row[$column], $ftd[0]);  // cache the new id value for future use
+              variable_set('biblio_last_ftdid', $ftd[0] +1); //increment the field type data id by one.
+       	    }
+          } elseif ($row[$column] == "~" && !empty($row[1]) && isset($fieldmap[$field_name])) {
+            // turn the visibility off for this (~) type
+            db_query("UPDATE {biblio_field_type}
+                      SET visible = 0
+                      WHERE tid = %d AND fid = %d ", $row[1], $fieldmap[$field_name] );
+          } elseif (strstr($field_name, 'contributors') && !empty($row[1]) && $row[$column] != '~' ) {
+            switch ($field_name){
+              case 'biblio_contributors2':
+                $type = 2;
+                break;
+              case 'biblio_contributors3':
+                $type = 3;
+                break;
+              case 'biblio_contributors4':
+                $type = 4;
+                break;
+            }
+            $title = trim($row[$column]);
+            $biblio_type = $row[1];
+            $ctdid = ($eid = _id_by_name($title)) ? $eid :  $next_ctdid;
+            db_query("UPDATE {biblio_contributor_type} SET auth_type=%d where auth_catagory=%d and biblio_type=%d", $ctdid, $type, $biblio_type);
+            if(!$eid) {
+              db_query("INSERT INTO {biblio_contributor_type_data} (auth_type, title) VALUES (%d, '%s')", $ctdid, $title);
+              _id_by_name($title, $ctdid);  // cache the new id value for future use
+              $next_ctdid++;
+            }
+          } elseif (empty($row[$column]) && !empty($row[1]) && isset($fieldmap[$field_name])) {
+            // use the default field title when the title is blank
+            db_query("UPDATE {biblio_field_type}
+                      SET visible = 1
+                      WHERE tid = %d AND fid = %d ", $row[1], $fieldmap[$field_name] );
+          }
+        }
+        $column++;
+      }
+    }
+    fclose($handle);
+    $result = array('success' => TRUE, 'query' => 'Added type specific field titles');
+  } else {
+    $result = array('success' => FALSE, 'query' => 'Could not open '.$csv_file);
+  }
+
+  return $result;
+}
+function _id_by_name($name, $id = NULL, $table = NULL) {
+  static $result = NULL;
+  if (!empty($table)) { //refresh cache from table
+    $result = NULL;
+    $res = db_query("SELECT ".$table['name_column'].", ".$table['id_column']." FROM ".$table['tablename']);
+    while ($row = db_fetch_array($res)){
+      $result[$row[$table['name_column']]] = $row[$table['id_column']];
+    }
+    return;
+  }
+  $name = trim($name);
+  if (isset($result[$name])) return $result[$name];
+  if ($id) $result[$name] = $id;
+  return FALSE;
+}
 function biblio_update_1() {
   return _system_update_utf8(array('biblio','biblio_fields','biblio_types','biblio_type_details'));
 }
 
 function biblio_update_2() {
-$result = array();
+  $result = array();
 
   $result = update_sql("alter table {biblio_types} modify tid int(11) `auto_increment;");
   return $result;
-  
+
 }
 function biblio_update_3() {
   $result = update_sql("alter table {node} modify title varchar(255);");
@@ -375,11 +1267,11 @@ function biblio_update_3() {
 }
 
 function biblio_update_4() {
-$result = array();
-  
+  $result = array();
+
   $result[] = update_sql("ALTER TABLE {biblio_type_details} DROP COLUMN visible;");
-  
-  $result[] = update_sql("ALTER TABLE {biblio} 
+
+  $result[] = update_sql("ALTER TABLE {biblio}
                 ADD  `biblio_custom1` varchar(255) default NULL,
                 ADD  `biblio_custom2` varchar(255) default NULL,
                 ADD  `biblio_custom3` varchar(255) default NULL,
@@ -395,7 +1287,8 @@ $result = array();
                 ADD  `biblio_reprint_edition` varchar(255) default NULL,
                 ADD  `biblio_translated_title` varchar(255) default NULL;");
 
-  $result[] = update_sql("INSERT INTO {biblio_fields} (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`weight`) VALUES 
+  $result[] = update_sql("INSERT INTO {biblio_fields} (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`weight`) VALUES
+
        (28,'biblio_research_notes','Reseach Notes',0,'textarea',60,15,'',0,0,160),
        (29,'biblio_custom1','Custom 1',0,'textfield',120,255,'',0,0,161),
        (30,'biblio_custom2','Custom 2',0,'textfield',120,255,'',0,0,162),
@@ -410,48 +1303,48 @@ $result = array();
        (39,'biblio_translated_title','Translated Title',0,'textfield',120,255,'',0,0,170),
        (40,'biblio_original_publication','Original Publication',0,'textfield',120,255,'',0,0,171),
        (41,'biblio_reprint_edition','Reprint Edition',0,'textfield',120,255,'',0,0,172);");
- return($result);
+  return($result);
 }
 
 function biblio_update_5() {
-$result = array();
+  $result = array();
 
-  $result[] = update_sql("ALTER TABLE {biblio_types} 
+  $result[] = update_sql("ALTER TABLE {biblio_types}
                 ADD  `weight` int(11) NOT NULL default '0';");
-                
- $result[] = update_sql("INSERT INTO {biblio_types} (`tid`,`name`,`description`,weight) VALUES 
+
+  $result[] = update_sql("INSERT INTO {biblio_types} (`tid`,`name`,`description`,weight) VALUES
         (100,'Book',NULL,1),
-				(101,'Book Article',NULL,2),
-				(102,'Journal Article',NULL,3),
-				(103,'Conference Paper',NULL,4),
-				(104,'Proceedings Article',NULL,5),
-				(105,'Newspaper Article',NULL,6),
-				(106,'Magazine Article',NULL,7),
-				(107,'Web Article',NULL,8),
-				(108,'Thesis',NULL,9),
-				(109,'Report',NULL,10),
-				(110,'Film',NULL,11),
-				(111,'Broadcast',NULL,12),
-				(112,'Artwork',NULL,13),
-				(113,'Software',NULL,14),
-				(114,'Audiovisual',NULL,15),
-				(115,'Hearing',NULL,16),
-				(116,'Case',NULL,17),
-				(117,'Bill',NULL,18),
-				(118,'Statute',NULL,19),
-				(119,'Patent',NULL,20),
-				(120,'Personal',NULL,21),
-				(121,'Manuscript',NULL,22),
-				(122,'Map',NULL,23),
-				(123,'Chart',NULL,24),
-				(124,'Unpublished',NULL,25),
-				(125,'Database',NULL,26),
-				(126,'Government Report',NULL,27),
-				(127,'Classical'	,NULL,28),
-				(128,'Legal Ruling'	,NULL,29),
-				(129,'Miscellaneous'	,NULL,30),
-				(130,'Miscellaneous Section'	,NULL,31);");
-              
+        (101,'Book Article',NULL,2),
+        (102,'Journal Article',NULL,3),
+        (103,'Conference Paper',NULL,4),
+        (104,'Proceedings Article',NULL,5),
+        (105,'Newspaper Article',NULL,6),
+        (106,'Magazine Article',NULL,7),
+        (107,'Web Article',NULL,8),
+        (108,'Thesis',NULL,9),
+        (109,'Report',NULL,10),
+        (110,'Film',NULL,11),
+        (111,'Broadcast',NULL,12),
+        (112,'Artwork',NULL,13),
+        (113,'Software',NULL,14),
+        (114,'Audiovisual',NULL,15),
+        (115,'Hearing',NULL,16),
+        (116,'Case',NULL,17),
+        (117,'Bill',NULL,18),
+        (118,'Statute',NULL,19),
+        (119,'Patent',NULL,20),
+        (120,'Personal',NULL,21),
+        (121,'Manuscript',NULL,22),
+        (122,'Map',NULL,23),
+        (123,'Chart',NULL,24),
+        (124,'Unpublished',NULL,25),
+        (125,'Database',NULL,26),
+        (126,'Government Report',NULL,27),
+        (127,'Classical'	,NULL,28),
+        (128,'Legal Ruling'	,NULL,29),
+        (129,'Miscellaneous'	,NULL,30),
+        (130,'Miscellaneous Section'	,NULL,31);");
+
   $result[] = update_sql("UPDATE {biblio} SET biblio_type = 102 WHERE biblio_type = 1 ");
   $result[] = update_sql("UPDATE {biblio} SET biblio_type = 103 WHERE biblio_type = 2 ");
   $result[] = update_sql("UPDATE {biblio} SET biblio_type = 104 WHERE biblio_type = 3 ");
@@ -461,11 +1354,11 @@ $result = array();
   $result[] = update_sql("UPDATE {biblio} SET biblio_type = 108 WHERE biblio_type = 7 ");
   $result[] = update_sql("UPDATE {biblio} SET biblio_type = 119 WHERE biblio_type = 8 ");
   $result[] = update_sql("UPDATE {biblio} SET biblio_type = 129 WHERE biblio_type = 9 ");
- return $result;  
+  return $result;
 }
 
 function biblio_update_6() {
-$result = array();
+  $result = array();
 
   $result[] = update_sql("UPDATE {biblio_types} SET tid = -11 WHERE tid = 1 ");
   $result[] = update_sql("UPDATE {biblio_types} SET tid = -12 WHERE tid = 2 ");
@@ -476,13 +1369,13 @@ $result = array();
   $result[] = update_sql("UPDATE {biblio_types} SET tid = -17 WHERE tid = 7 ");
   $result[] = update_sql("UPDATE {biblio_types} SET tid = -18 WHERE tid = 8 ");
   $result[] = update_sql("UPDATE {biblio_types} SET tid = -19 WHERE tid = 9 ");
-         
+
   return $result;
-              
+
 }
 
 function biblio_update_7() {
-$result = array();
+  $result = array();
 
   $result[] = update_sql("UPDATE {biblio_type_details} SET tid = 102 WHERE tid = 1 ");
   $result[] = update_sql("UPDATE {biblio_type_details} SET tid = 103 WHERE tid = 2 ");
@@ -493,68 +1386,68 @@ $result = array();
   $result[] = update_sql("UPDATE {biblio_type_details} SET tid = 108 WHERE tid = 7 ");
   $result[] = update_sql("UPDATE {biblio_type_details} SET tid = 119 WHERE tid = 8 ");
   $result[] = update_sql("UPDATE {biblio_type_details} SET tid = 129 WHERE tid = 9 ");
-         
+
   return $result;
-              
+
 }
 
 function biblio_update_8() {
-$result = array();
+  $result = array();
 
-  $result[] = update_sql("ALTER TABLE {biblio} 
+  $result[] = update_sql("ALTER TABLE {biblio}
                 ADD  `biblio_section` varchar(10) default NULL ;");
- 
-  $result[] = update_sql("INSERT INTO {biblio_fields} (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`weight`) VALUES 
+
+  $result[] = update_sql("INSERT INTO {biblio_fields} (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`weight`) VALUES
        (42,'biblio_section','Section',0,'textfield',10,10,'',0,0,15);");
   return $result;
 }
 
 function biblio_update_9() {
-$result = array();
+  $result = array();
 
   $result[] = update_sql("alter table {node} modify title varchar(255);");
   $result[] = update_sql("alter table {node_revisions} modify title varchar(255);");
   return $result;
-  
+
 }
 function biblio_update_10(){
-$result = array();
+  $result = array();
   $result[] = update_sql("UPDATE {biblio_fields} SET maxsize = 65535 WHERE type = 'textarea' ");
   $result[] = update_sql("ALTER TABLE {biblio} ADD `vid` int(10) NOT NULL default '0';");
 
   return $result;
 }
 function biblio_update_11(){
-$result = array();
-      $nodes = db_query("SELECT * FROM {node} as n WHERE n.type='biblio' ");
-      while ($node = db_fetch_object($nodes)) {
-         $node->vid = db_next_id('{node_revisions}_vid');
-         $result[] = update_sql("UPDATE {node} SET vid = $node->vid WHERE nid = $node->nid;");
-         $result[] = update_sql("UPDATE {node_revisions} SET vid = $node->vid WHERE nid = $node->nid;");
-         $result[] = update_sql("UPDATE {biblio} SET vid = $node->vid WHERE nid = $node->nid;");
-      }
+  $result = array();
+  $nodes = db_query("SELECT * FROM {node} as n WHERE n.type='biblio' ");
+  while ($node = db_fetch_object($nodes)) {
+    $node->vid = db_next_id('{node_revisions}_vid');
+    $result[] = update_sql("UPDATE {node} SET vid = $node->vid WHERE nid = $node->nid;");
+    $result[] = update_sql("UPDATE {node_revisions} SET vid = $node->vid WHERE nid = $node->nid;");
+    $result[] = update_sql("UPDATE {biblio} SET vid = $node->vid WHERE nid = $node->nid;");
+  }
   return $result;
 }
 
 function biblio_update_12(){
-$result = array();
+  $result = array();
   $result[] = update_sql("ALTER TABLE {biblio_types} ADD  `visible` tinyint(1) NOT NULL default '1' ;");
   return $result;
 }
 function biblio_update_13(){
-$result = array();
+  $result = array();
   $result[] = update_sql("ALTER TABLE {biblio} ADD  `biblio_citekey` varchar(16)  ;");
-  $result[] = update_sql("INSERT INTO {biblio_fields} (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`weight`) VALUES 
+  $result[] = update_sql("INSERT INTO {biblio_fields} (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`weight`) VALUES
        (43,'biblio_citekey','Citation Key',0,'textfield',16,16,'',0,0,175);");
   return $result;
 }
 function biblio_update_14(){
-$result = array();
-      $result[] = update_sql("CREATE TABLE {biblio_author_index} (
+  $result = array();
+  $result[] = update_sql("CREATE TABLE {biblio_author_index} (
                   `aid` int(11) NOT NULL default '0',
                   `author` varchar(100) NOT NULL default '',
                   PRIMARY KEY  (`aid`) )  /*!40100 DEFAULT CHARACTER SET utf8 */;");
-      $result[] = update_sql("CREATE TABLE {biblio_has_author} (
+  $result[] = update_sql("CREATE TABLE {biblio_has_author} (
                   `nid` int(11) NOT NULL default '0',
                   `aid` int(11) NOT NULL default '0',
                   `rank` int(11) NOT NULL default '0',
@@ -564,14 +1457,14 @@ $result = array();
   return $result;
 }
 function biblio_update_15(){
-$result = array();
+  $result = array();
   $result[] = update_sql("ALTER TABLE {biblio}  DROP PRIMARY KEY ;");
   $result[] = update_sql("ALTER TABLE {biblio}  ADD PRIMARY KEY (`nid`,`vid`) ;");
   return $result;
 }
 
 function biblio_update_16(){
-$result = array();
+  $result = array();
   $result[] = update_sql("ALTER TABLE {biblio}  DROP PRIMARY KEY ;");
   $result[] = update_sql("ALTER TABLE {biblio}  ADD PRIMARY KEY (`vid`) ;");
   $result[] = update_sql("ALTER TABLE {biblio}  ADD KEY nid (`nid`) ;");
@@ -581,29 +1474,29 @@ $result = array();
 }
 
 function biblio_update_17(){
-$result = array();
+  $result = array();
   $result[] = update_sql("ALTER TABLE {biblio}  MODIFY biblio_pages varchar(128);");
   $result[] = update_sql("UPDATE {biblio_fields} SET maxsize = 128 WHERE name = 'biblio_pages';");
   return $result;
 }
 function biblio_update_18(){
-$result = array();
+  $result = array();
   $result[] = update_sql("ALTER TABLE {biblio_fields}  ADD  `autocomplete` tinyint(1) NOT NULL default '0' ;");
   return $result;
 }
 function biblio_update_20(){
-$result = array();
+  $result = array();
   $result[] = update_sql("ALTER TABLE {biblio}  ADD  `biblio_coins` text   ;");
-  $result[] = update_sql("INSERT INTO {biblio_fields} (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`autocomplete`,`weight`) VALUES 
+  $result[] = update_sql("INSERT INTO {biblio_fields} (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`autocomplete`,`weight`) VALUES
        (44,'biblio_coins','COinS Data',1,'textarea',60,65535 ,'This will be automatically generated, only edit if you know what you are doing.',0,0,0,176);");
   return $result;
 }
 function biblio_update_21(){
-$result = array(); 
+  $result = array();
 
   $result[] = update_sql("ALTER TABLE {biblio}  ADD  `biblio_doi` varchar(100) default NULL;");
   $result[] = update_sql("ALTER TABLE {biblio}  ADD  `biblio_issn` varchar(24) default NULL;");
-  $result[] = update_sql("INSERT INTO {biblio_fields} (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`autocomplete`,`weight`) VALUES 
+  $result[] = update_sql("INSERT INTO {biblio_fields} (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`autocomplete`,`weight`) VALUES
                         (45,'biblio_issn','ISSN Number',1,'textfield',24,24,'',0,0,0,150),
                         (46,'biblio_doi','DOI',1,'textfield',60,255,'',0,0,0,159);");
   $result[] = update_sql("UPDATE {biblio_fields}  SET  title = 'ISBN Number' WHERE name = 'biblio_isbn';");
@@ -611,7 +1504,7 @@ $result = array();
 }
 
 function biblio_update_22() {
-$result = array();
+  $result = array();
 
   $result[] = update_sql("alter table {biblio} modify `biblio_custom1` text ;");
   $result[] = update_sql("alter table {biblio} modify `biblio_custom2` text ;");
@@ -626,7 +1519,7 @@ $result = array();
   $result[] = update_sql("ALTER TABLE {biblio}  ADD  `biblio_remote_db_provider` varchar(255) default NULL;");
   $result[] = update_sql("ALTER TABLE {biblio}  ADD  `biblio_label` varchar(255) default NULL;");
   $result[] = update_sql("ALTER TABLE {biblio}  ADD  `biblio_access_date` varchar(255) default NULL;");
-  $result[] = update_sql("INSERT INTO {biblio_fields} (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`autocomplete`,`weight`) VALUES 
+  $result[] = update_sql("INSERT INTO {biblio_fields} (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`autocomplete`,`weight`) VALUES
                         (47,'biblio_auth_address','Author Address',0,'textarea',60,65535,'',0,0,0,178),
                         (48,'biblio_remote_db_name','Remote Database Name',0,'textfield',60,255,'',0,0,0,176),
                         (49,'biblio_remote_db_provider','Remote Database Provider',0,'textfield',60,255,'',0,0,0,177),
@@ -635,7 +1528,294 @@ $result = array();
                         ;");
 
   return $result;
-  
-}
-       
 
+}
+
+function biblio_update_23() {
+  $result = array();
+
+  $result[] = update_sql("UPDATE {biblio}  SET  biblio_year = 9999 WHERE biblio_year = 0 ;");
+
+  return $result;
+
+}
+
+function biblio_update_24() {
+  $result = array();
+
+  $result[] = update_sql("UPDATE {biblio}  SET  biblio_year = 9998 WHERE biblio_year = 1 ;");
+  $result[] = update_sql("UPDATE {biblio_fields} SET size = 9 WHERE name = 'biblio_year';");
+  $result[] = update_sql("UPDATE {biblio_fields} SET maxsize = 9 WHERE name = 'biblio_year';");
+
+  return $result;
+
+}
+
+function biblio_update_25() {
+  $result = array();
+
+  $result[] = update_sql("UPDATE {biblio_fields} SET hint = '(YYYY, In Press or Submitted)' WHERE name = 'biblio_year';");
+
+  return $result;
+}
+
+function biblio_update_26() {
+  $result = array();
+
+  $result[] = update_sql("UPDATE {biblio}  SET  biblio_year = 9997 WHERE biblio_year = 9999 ;");
+  $result[] = update_sql("UPDATE {biblio}  SET  biblio_year = 9999 WHERE biblio_year = 9998 ;");
+  $result[] = update_sql("UPDATE {biblio}  SET  biblio_year = 9998 WHERE biblio_year = 9997 ;");
+  $result[] = update_sql("UPDATE {biblio_fields} SET hint = '(Submitted, In Press or YYYY)' WHERE name = 'biblio_year';");
+
+  return $result;
+}
+
+function biblio_update_27(){
+  $result = array();
+
+  $result[] = update_sql("ALTER TABLE {biblio_fields}  MODIFY hint varchar(255);");
+
+  return $result;
+}
+
+function biblio_update_6000()
+{
+  $result = array();
+  $schema = biblio_schema();
+  db_create_table($result, 'biblio_field_type',$schema['biblio_field_type']);
+  db_create_table($result, 'biblio_field_type_data',$schema['biblio_field_type_data']);
+  // now move info from biblio_fields to biblio_field_type_data
+  $db_result = db_query("SELECT * FROM {biblio_fields} ");
+  while ($row = db_fetch_array($db_result))
+  {
+    $row['ftdid']= $row['fid'];
+    drupal_write_record('biblio_field_type_data',$row,'ftdid');
+  }
+  // now move info from biblio_type_details to biblio_field_type_data
+  $db_result = db_query("SELECT * FROM {biblio_type_details} ");
+  while ($row = db_fetch_array($db_result))
+  {
+    $link = array();
+    $links = db_fetch_array(db_query("SELECT * FROM {biblio_field_type} WHERE tid= ".$row['tid']." AND fid= ".$row['fid']));
+    if ($links['cust_tdid'] < 100 )
+    {
+      $new_ftdid = variable_get('biblio_last_ftdid',101);
+      variable_set('biblio_last_ftdid',$new_ftdid + 1);
+      //print_r($row);
+      $row['ftdid'] = $new_ftdid;
+      $link['tid'] = $row['tid'];
+      $link['fid'] = $row['fid'];
+      $link['ftdid'] = $new_ftdid;
+      $link['cust_tdid'] = $new_ftdid;
+      drupal_write_record('biblio_field_type_data',$row);
+      drupal_write_record('biblio_field_type', $link, array('tid','fid'));
+    }
+    else
+    {
+      $row['ftdid'] = $links['cust_tdid'];
+      drupal_write_record('biblio_field_type_data', $row, 'ftdid');
+    }
+  }
+  db_drop_field($result, 'biblio_fields', 'title');
+  db_drop_field($result, 'biblio_fields', 'hint');
+  db_drop_field($result, 'biblio_fields', 'required');
+  db_drop_field($result, 'biblio_fields', 'visible');
+  db_drop_field($result, 'biblio_fields', 'weight');
+
+  db_drop_table($result, 'biblio_type_details');
+
+  return $result;
+}
+/**
+ * This function generates md5 hashes for all the biblio entries in the
+ * database. These hashes are used to detect potential duplicate entries 
+ * when adding or importing. 
+ * 
+ * @return a result array for the update process
+ */
+function biblio_md5_generate()
+{
+  $res = db_query("SELECT n.nid,n.vid, n.title, b.biblio_year, cd.lastname
+ 									 FROM {node} n, {biblio} b, {biblio_contributor_data} cd, {biblio_contributor} c
+ 									 WHERE n.vid = b.vid AND c.vid = b.vid AND cd.cid = c.cid AND c.rank = 0 AND c.auth_type = 1 AND n.type = 'biblio' ");
+  $count=0;
+  while ($node = db_fetch_object($res)) {
+    $hash_string = str_replace(' ', '', drupal_strtolower($node->title));
+    $hash_string .= str_replace(' ', '', drupal_strtolower($node->lastname));
+    $hash_string .= $node->biblio_year;
+
+    $md5 = md5($hash_string);
+
+    db_query("UPDATE {biblio} SET biblio_md5 = '$md5' WHERE vid = $node->vid");
+    $count++;
+  }
+  return array('success' => TRUE, 'query' => "Generated checksums for $count nodes");
+}
+
+function biblio_update_6001()
+{
+  $result = array();
+
+  db_add_field($result, 'biblio', 'biblio_md5', array('type' => 'varchar', 'length' => '32') );
+  db_add_index($result, 'biblio', 'md5', array('biblio_md5'));
+
+
+  return $result;
+
+}
+
+function biblio_update_6002()
+{
+  $result = array();
+  $schema = biblio_schema();
+
+  db_drop_table($result, 'biblio_author_index');
+  db_drop_table($result, 'biblio_has_author');
+  db_create_table($result, 'biblio_contributor',$schema['biblio_contributor']);
+  db_create_table($result, 'biblio_contributor_data',$schema['biblio_contributor_data']);
+  db_create_table($result, 'biblio_contributor_type',$schema['biblio_contributor_type']);
+  db_create_table($result, 'biblio_keyword',$schema['biblio_keyword']);
+  db_create_table($result, 'biblio_keyword_data',$schema['biblio_keyword_data']);
+  db_create_table($result, 'biblio_collection',$schema['biblio_collection']);
+  db_create_table($result, 'biblio_collection_type',$schema['biblio_collection_type']);
+  db_create_table($result, 'biblio_duplicates',$schema['biblio_duplicates']);
+
+  return $result;
+}
+
+/**
+ * This parses the old (pre 6.x) format author entry, splits in on 
+ * the semicolons and adds new elements to the biblio_contributors array
+ * @param $biblio_contributors an array passed in by reference 
+ * @param $authors    The old author string
+ * @param $type   The type of author (Primary, Secondary, Tertiary, Corporate)
+ * @return none ($biblio_contributors is passed in by reference) 
+ */
+function _parse_authors(&$biblio_contributors, $authors, $type = 1)
+{
+  $authors = str_ireplace(" and ", "; ", $authors); 
+  $author_array = explode(';', $authors);
+  foreach($author_array as $author)
+  {
+    // insert spaces after firstname initials if neccessary
+    $author = preg_replace("/\.([^\s-])/", ". \\1", trim($author));
+    $biblio_contributors[] = array('name' => $author, 'ct_id' => $type);
+  }
+}
+
+function biblio_update_6004()
+{
+  drupal_get_schema('biblio_contributor_data', TRUE);
+  // this update will move author information from existing biblio table to the new
+  // biblio_contributor_data table and make the appropriate links in the biblio_contributor table
+  require_once(drupal_get_path('module', 'biblio') . '/biblio.contributors.inc');
+  $res = db_query("SELECT nid,vid,biblio_authors, biblio_secondary_authors,biblio_tertiary_authors,biblio_corp_author FROM {biblio}  ");
+  $count=0; $count_success=0;
+  while ($biblio = db_fetch_array($res)) {
+    $biblio_contributors = array();
+    if (!empty($biblio['biblio_authors'])) _parse_authors($biblio_contributors, $biblio['biblio_authors'], 1);
+    if (!empty($biblio['biblio_secondary_authors'])) _parse_authors($biblio_contributors, $biblio['biblio_secondary_authors'], 2);
+    if (!empty($biblio['biblio_tertiary_authors'])) _parse_authors($biblio_contributors, $biblio['biblio_tertiary_authors'], 3);
+    if (!empty($biblio['biblio_corp_author'])) _parse_authors($biblio_contributors, $biblio['biblio_corp_author'], 5);
+    $biblio_contributors = biblio_parse_contributors($biblio_contributors);
+    if (_save_contributors($biblio_contributors, $biblio['nid'], $biblio['vid'])) $count_success++;
+    $count++;
+  }
+  $result[] = array('success' => ($count_success == $count), 
+                    'query' => 'Moved authors from '.$count_success.' / '.$count.' publications to the new database stucture');
+
+  return $result;
+}
+function biblio_update_6005()
+{
+  $result[] = update_sql("UPDATE {biblio_fields} SET name='biblio_contributors',type='contrib_widget' where fid=1");
+  $result[] = update_sql("DELETE FROM {biblio_fields} WHERE fid>1 AND fid<5");
+  $result[] = update_sql("ALTER TABLE {biblio} MODIFY biblio_year int NOT NULL DEFAULT '9999' ");
+
+  return $result;
+}
+
+function biblio_update_6006() {
+  $result[] = update_sql(" ALTER TABLE {biblio_contributor} DROP PRIMARY KEY, ADD PRIMARY KEY (vid, cid, auth_type, rank) ");
+  return $result;
+}
+
+function biblio_update_6007() {
+  $result = array();
+
+  $res = db_query("SELECT fid, common, autocomplete FROM {biblio_fields}");
+  while ($data = db_fetch_array($res)) {
+    db_query("UPDATE {biblio_field_type} SET common = ".$data['common'].", autocomplete = ".$data['autocomplete']." WHERE fid=".$data['fid'] );
+  }
+  $result[] = array('success' => TRUE, 'query' => 'Moved data from table biblio_fields to biblio_field_type ');
+
+  $result[] = array('success' => TRUE, 'query' => 'Moved data from table biblio_field_type_data to biblio_field_type ');
+
+  db_drop_field($result, 'biblio_fields', 'common');
+  db_drop_field($result, 'biblio_fields', 'autocomplete');
+
+  return $result;
+}
+
+function biblio_update_6008() {
+  $result = array();
+  $schema = biblio_schema();
+  db_drop_table($result, 'biblio_fields');
+  db_create_table($result, 'biblio_fields',$schema['biblio_fields']);
+  db_create_table($result, 'biblio_contributor_type_data',$schema['biblio_contributor_type_data']);
+
+  $result[] = _add_db_field_data();
+  _add_custom_field_data($result);
+  return $result;
+}
+function biblio_update_6009() {
+  $result = array();
+  $result[] = update_sql("ALTER TABLE {biblio}  MODIFY biblio_citekey varchar(255) ");
+  
+  return $result;
+}
+function biblio_update_6010() {
+  $result = array();
+  if (db_column_exists('biblio_contributor','ct_id')) { // this only needs to be done if we are updating a beta version, upgrades from 5.x do not require this.
+    $result[] = update_sql("ALTER TABLE {biblio_contributor_type} DROP PRIMARY KEY, ADD PRIMARY KEY  USING BTREE(`type`, `tid`, `ctdid`)");
+    $result[] = update_sql(" UPDATE {biblio_contributor}
+  												SET ct_id = (SELECT bct.ctdid
+  																		 FROM   {biblio_contributor_type} bct
+  																		 WHERE  {biblio_contributor}.ct_id = bct.ct_id )");
+    $result[] = update_sql("ALTER TABLE {biblio_contributor}
+                          CHANGE COLUMN `ct_id` `auth_type` INTEGER UNSIGNED NOT NULL DEFAULT 1,
+                          DROP PRIMARY KEY,
+                          ADD PRIMARY KEY (`vid`, `cid`, `auth_type`, `rank`)");
+    $result[] = update_sql("ALTER TABLE {biblio_contributor_type} DROP COLUMN `ct_id`");
+    $result[] = update_sql("ALTER TABLE {biblio_contributor_type}
+ 													  CHANGE COLUMN `type` `auth_catagory` INTEGER UNSIGNED NOT NULL DEFAULT 0,
+ 													  CHANGE COLUMN `ctdid` `auth_type` INTEGER UNSIGNED NOT NULL DEFAULT 0,
+ 														CHANGE COLUMN `tid` `biblio_type` INTEGER UNSIGNED NOT NULL DEFAULT 0,
+ 														DROP PRIMARY KEY,
+ 														ADD PRIMARY KEY  USING BTREE(`auth_catagory`, `biblio_type`, `auth_type`) ");
+    $result[] = update_sql("ALTER TABLE {biblio_contributor_type_data}
+                            CHANGE COLUMN `ctdid` `auth_type` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
+ 														DROP PRIMARY KEY,
+ 														ADD PRIMARY KEY  USING BTREE(`auth_type`) ");
+    $result[] = update_sql("ALTER TABLE {biblio_contributor_data} ADD COLUMN `drupal_uid` INTEGER UNSIGNED ");
+    $result[] = update_sql("ALTER TABLE {biblio_duplicates} ADD COLUMN `type` INTEGER UNSIGNED NOT NULL DEFAULT 0 ");
+    $result[] = update_sql("ALTER TABLE {biblio_duplicates} DROP PRIMARY KEY, ADD PRIMARY KEY  USING BTREE(`vid`, `did`)");
+  }
+  $result[] = biblio_md5_generate();
+
+  return $result;
+
+}
+function biblio_update_6011(){
+  $result = array();
+  $schema = biblio_schema();
+  if (!db_table_exists('biblio_import_cache')){
+    db_create_table($result, 'biblio_import_cache',$schema['biblio_import_cache']);
+  }
+  return $result;
+}
+function biblio_update_6012(){
+  $result = array();
+  $result[] = _add_biblio_keywords();
+  return $result;
+}

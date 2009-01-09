@@ -1,37 +1,36 @@
 <?PHP
+
 // $Id$
 /**
  * @file
  * Functions that are used to import and export biblio data.
  *
  */
- 
- /*   biblio.import.export.inc
- *    
- *   Copyright (C) 2006-2008  Ron Jerome
- *
- *   This program is free software; you can redistribute it and/or modify
- *   it under the terms of the GNU General Public License as published by
- *   the Free Software Foundation; either version 2 of the License, or
- *   (at your option) any later version.
- *
- *   This program is distributed in the hope that it will be useful,
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *   GNU General Public License for more details.
- *
- *   You should have received a copy of the GNU General Public License along
- *   with this program; if not, write to the Free Software Foundation, Inc.,
- *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- */  
-
+/*   biblio.import.export.inc
+*
+*   Copyright (C) 2006-2008  Ron Jerome
+*
+*   This program is free software; you can redistribute it and/or modify
+*   it under the terms of the GNU General Public License as published by
+*   the Free Software Foundation; either version 2 of the License, or
+*   (at your option) any later version.
+*
+*   This program is distributed in the hope that it will be useful,
+*   but WITHOUT ANY WARRANTY; without even the implied warranty of
+*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*   GNU General Public License for more details.
+*
+*   You should have received a copy of the GNU General Public License along
+*   with this program; if not, write to the Free Software Foundation, Inc.,
+*   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+*
+*/
 /**
  * Return a form select box populated with all the users of the site.
  *
  * @param $my_uid
- *   The user id of the person accessing the form so the select box defaults 
- *   to their userid 
+ *   The user id of the person accessing the form so the select box defaults
+ *   to their userid
  * @return
  *   An array which will be used by the form builder to add a select box to a form
  */
@@ -39,18 +38,18 @@ function _biblio_admin_build_user_select($my_uid) {
   $sql = 'SELECT DISTINCT u.uid, u.name, u.status, u.mail FROM {users} u  WHERE u.uid != 0 ';
   $result = db_query($sql);
   while ($user = db_fetch_object($result)) {
-      $users[$user->uid] = $user->name ." ($user->mail)";   
+    $users[$user->uid] = $user->name ." ($user->mail)";
   }
   asort($users);
-  $select = array(
+  $select = array (
     '#type' => 'select',
     '#title' => t("Set user ID of entries in this file to"),
     '#options' => $users,
-    '#value' => $my_uid
+    '#default_value' => $my_uid,
+    '#disabled' => (user_access('administer biblio')) ?  FALSE : TRUE
   );
   return $select;
 }
-
 /**
  * Return a form used to import files into biblio.
  *
@@ -58,188 +57,281 @@ function _biblio_admin_build_user_select($my_uid) {
  *   An array which will be used by the form builder to build the import form
  */
 function biblio_import_form() {
-global $user;
-  if (biblio_access('import', $node)) { // && !user_access('administer nodes')) {
-
-      $form['#attributes']['enctype'] = 'multipart/form-data';
-      $form["file_upload"] = array(
-        '#type' => 'file',
-        '#title' => t('Import file'),
-        '#default_value' => $edit['file_upload'],
-        '#size' => 60,
+  global $user;
+  if (biblio_access('import')) { // && !user_access('administer nodes')) {
+    $form['#attributes']['enctype'] = 'multipart/form-data';
+    $form['biblio_import_file'] = array (
+      '#type' => 'file',
+      '#title' => t('Import file'),
+      '#default_value' => '',
+      '#size' => 60
+    );
+    $form['filetype'] = array (
+      '#type' => 'radios',
+      '#title' => t('File Type'),
+      '#default_value' => '',
+      '#options' => array (
+        'tagged' => t('EndNote Tagged'),
+        'ris'    => t('RIS'),
+        'xml'    => t('EndNote 7 XML'),
+        'xml8'   => t('EndNote 8+ XML'),
+        'bib'    => t('BibTex')
+      )
+    );
+    $form ['userid'] = _biblio_admin_build_user_select($user->uid);
+    // Get the vocabularies  attached to the biblio node type ...
+    $vocabularies = module_invoke('taxonomy', 'get_vocabularies', 'biblio');
+    // ... and print a form to select the terms in each of them
+    $form['import_taxonomy'] = array (
+      '#type' => 'fieldset',
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+      '#title' => t('Taxonomy Settings'),
+      '#description' => t('Typically you don\'t have to do anything here, however if you wish, you may select terms to be assigned to imported records, this effectively adds a key word to all entries being imported. By default, all incoming key words are added to the Biblio Keywords vcabulary, you may either relate incoming entires to an existing key word OR select a term(s) from another vocabulary to relate all incoming entires to.')
+    );
+    if (count($vocabularies)) {
+      $i = 0;
+      foreach ($vocabularies as $vocabulary) {
+        $form['import_taxonomy']['vocabulary'. $i] = module_invoke('taxonomy', 'form', $vocabulary->vid, 0);
+        $form['import_taxonomy']['vocabulary'. $i++]['#description'] = t("Select taxonomy term to assigned to imported entries");
+      }
+    } else {
+      $vocab_msg = t('There are currently no vocabularies assigned to the biblio node type, please go the the !url page to fix this', array ('!url' => l(t('admin/content/taxonomy'), 'admin/content/taxonomy')));
+      $form['import_taxonomy']['vocabulary_message'] = array (
+        '#value' => '<p><div>'. $vocab_msg .'</div></p>'
       );
-      $form['filetype'] = array(
-        '#type' => 'radios',
-        '#title' => t('File Type'),
-        '#default_value' => $edit['filetype'],
-        '#options' => array('tagged' => t('EndNote Tagged'),'ris' => t('RIS') , 'xml'=>t('EndNote 7 XML'), 'xml8'=>t('EndNote 8+ XML'), 'bib'=>t('BibTex')),
-      );
-      if ($user->uid) {
-        $form{'userid'} =  _biblio_admin_build_user_select($user->uid);
-      }  
-
-   // Get the vocabularies  attached to the biblio node type ...
-      $vocabularies = module_invoke('taxonomy', 'get_vocabularies', 'biblio');
-      // ... and print a form to select the terms in each of them
-      $form['import_taxonomy'] = array(
-        '#type' => 'fieldset',
-        '#collapsible' => TRUE,
-        '#collapsed' => TRUE,
-        '#title' => t('Taxonomy Settings'),
-        '#description' => t('Here you may select terms to be assigned to imported records (if any vocabularies are assigned to the biblio node type)'),
-      );
-
-      if (count($vocabularies)) {
-        $i=0;
-        foreach ($vocabularies as $vocabulary) {
-          $form['import_taxonomy']['vocabulary'.$i] = module_invoke('taxonomy', 'form', $vocabulary->vid, 0);     
-          $form['import_taxonomy']['vocabulary'.$i++]['#description'] = t("Select taxonomy term to assigned to imported entries");
-        }
-      }else{
-        $vocab_msg = t('There are currently no vocabularies assigned to the biblio node type, please go the the !url page to fix this', array('!url'=> l(t('admin/content/taxonomy'),'admin/content/taxonomy')));
-        $form['import_taxonomy']['vocabulary_message'] = array('#value' => '<p><div>'.$vocab_msg.'</div></p>');
-      }      
-        
-      if (variable_get('biblio_keyword_freetagging', 0)) {
-        $freetag_vocab = module_invoke('taxonomy', 'get_vocabulary', variable_get('biblio_freetagging_vocab', 0));
-        $msg = t('Keywords will be added to the <b>@name</b> vocabulary as specified in the Taxonomy section of the !url page.', array('@name'=> $freetag_vocab->name, '!url' => l(t('admin/settings/biblio'),'admin/settings/biblio')));
-      }else{
-        $msg = t('Keywords will <b>NOT</b> be added to the vocabulary as specified in the Taxonomy section of the !url page.', array('!url' => l(t('admin/settings/biblio'),'admin/settings/biblio')));
-      } 
-      $form['import_taxonomy']['freetagging_information'] = array('#value' => '<p><div>'.$msg.'</div></p>');
-        
-      
-      $form['button'] = array(
-        '#type' => 'submit',
-        '#value' => t('Import')
-      );
-
-      return $form;
-      //print theme('page', form($form, 'post', null, $attributes));
-     
+    }
+// TODO: remove this, key words are automatically stored in a taxonomy vocabulary    
+//    if (variable_get('biblio_keyword_freetagging', 0)) {
+//      $freetag_vocab = module_invoke('taxonomy', 'get_vocabulary', variable_get('biblio_freetagging_vocab', 0));
+//      $msg = t('Keywords will be added to the <b>@name</b> vocabulary as specified in the Taxonomy section of the !url page.', array ('@name' => $freetag_vocab->name, '!url' => l(t('admin/settings/biblio'), 'admin/settings/biblio')));
+//    } else {
+//      $msg = t('Keywords will <b>NOT</b> be added to the vocabulary as specified in the Taxonomy section of the !url page.', array ('!url' => l(t('admin/settings/biblio'), 'admin/settings/biblio')));
+//    }
+//    $form['import_taxonomy']['freetagging_information'] = array (
+//      '#value' => '<p><div>'. $msg .'</div></p>'
+//    );
+    $form['button'] = array ('#type' => 'submit', '#value' => t('Import'));
+    return $form;
+    //print theme('page', form($form, 'post', null, $attributes));
   } else {
     drupal_set_message("You are not authorized to access the biblio import page", 'error');
-
     print theme('page', '');
-  } 
-} 
+  }
+}
+
 /**
  * Implementation of hook_validate() for the biblio_import_form.
  */
-function biblio_import_form_validate($form, &$form_state) {
-
-    $op = $form_state['values']['op'];
-    $filetype = $form_state['values']['filetype'];
-    if (!file_save_upload('file_upload')) {
-        form_set_error('',t("You must provide a file name")); 
+function biblio_import_form_validate($form, & $form_state) {
+  $op = $form_state['values']['op'];
+  $filetype = $form_state['values']['filetype'];
+  if ($error = $_FILES['files']['error']['biblio_import_file']) {
+    switch ($error){
+      case 1: form_set_error('', t("The uploaded file exceeds the upload_max_filesize directive in php.ini."));
+      break;
+      case 2: form_set_error('', t("The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form."));
+      break;
+      case 3: form_set_error('', t("The uploaded file was only partially uploaded."));
+      break;
+      case 4: form_set_error('', t("No file was uploaded."));
+      break;
+      case 6: form_set_error('', t("Missing a temporary folder."));
+      break;
+      case 7: form_set_error('', t("Failed to write file to disk."));
+      break;
+      case 8: form_set_error('', t("File upload stopped by extension."));
     }
-    if ($op == t('Import') && $filetype == '') {
-       form_set_error('',t("You must select a file type"));
-    }
-
+  }
+  if ($op == t('Import') && $filetype == '') {
+    form_set_error('', t("You must select a file type"));
+  }
 }
 /**
  * Implementation of hook_submit() for the biblio_import_form.
  */
-function biblio_import_form_submit($form, &$form_state) {
+function biblio_import_form_submit($form, & $form_state) {
+global  $batch_proc;
+global  $session_id;
+  if ($form_state['values']['op'] == t('Import') && isset ($form_state['values']['filetype'])) {
+    if ($import_file = file_save_upload('biblio_import_file')) {
+      if($import_file->filesize > 50000) $batch_proc = 1;  // we will use batch import for larger files.
+      drupal_set_message(t("@file was uploaded", array ('@file' => $import_file->filename)), 'status');
+      // Concatenate all the terms of the different vocabularies
+      // in a single array to be sent to biblio_import
+      $terms = array ();
+      foreach (array_keys($form_state['values']) as $key) {
+        if (preg_match('/(vocabulary[0-9]+)/', $key)) {
+          if (!empty($form_state['values'][$key])){
+            if (is_array($form_state['values'][$key])) {
+              $terms[] = $form_state['values'][$key];
+            }
+            else {
+              $terms[] = array($form_state['values'][$key]);
+            }
+          } 
+        }
+      }
+      // Added the $terms argument
+      // the array of terms to be attached to the node(s)
+      $userid = (isset ($form_state['values']['userid'])) ? $form_state['values']['userid'] : 1;
+      $filetype = $form_state['values']['filetype'];
+      if ($batch_proc) {
+        $session_id = microtime();
+        $batch_op = array(
+          'title' => t('Importing '.$import_file->filename),
+          'operations' => array(
+            array('biblio_import', array($import_file, $filetype, $userid, $terms, $batch_proc, $session_id)),
+            array('biblio_import_batch_operations', array($session_id, $userid, $terms)),
+           ),
+          'progressive' => TRUE, 
+          'finished' => 'biblio_import_batch_finished',
+          'init_message' => t('Parsing file...'),
+          'progress_message' => t('Saving nodes...'),
+          'file' => './'. drupal_get_path('module', 'biblio') .'/biblio.import.export.inc'
+        );
+        batch_set($batch_op);
+        // only needed if not inside a form _submit handler :
+        batch_process('biblio');
 
-    if ($form_state['values']['op'] == t('Import') && isset($form_state['values']['filetype'])) {
-      
-      if ($import = file_save_upload('file_upload')) {
-        drupal_set_message(t("@file was uploaded", array('@file' => $import->filename)), 'status');
-        if (($file_content = @file_get_contents($import->filepath)) === false) {
-          drupal_set_message(t("Could not read contents of @file ", array('@file' => $import->filename)), 'error');
-          return;
-        } else {
-        // Concatenate all the terms of the different vocabularies
-        // in a single array to be sent to biblio_import
-        $terms = array();
-        foreach (array_keys($form_state['values']) as $key) {
-          if (preg_match('/(vocabulary[0-9]+)/', $key)) {
-            if ($form_state['values'][$key] > 0) $terms[] = $form_state['values'][$key];
-          }
-        }
-        // Added the $terms argument
-        // the array of terms to be attached to the node(s)
-        $userid = (isset($form_state['values']['userid']))? $form_state['values']['userid'] : 1;
-        $filetype = $form_state['values']['filetype'];
-        $content = biblio_import($userid, $file_content, $filetype, $terms);
-        file_delete($import->filepath);
-        }
-      } else {
-        drupal_set_message(t("File was NOT successfully uploaded"), 'error');
-      } 
+      }else{
+        $session_id = microtime();
+        $content = biblio_import($import_file, $filetype, $userid, $terms, $batch_proc, $session_id);
+      }
+      file_delete($import_file->filepath);
+    } else {
+      drupal_set_message(t("File was NOT successfully uploaded"), 'error');
+    }
   }
 }
+function biblio_import_batch_operations($session_id, $userid, $terms, &$context) {
+  if (empty($context['sandbox'])) {
+    // Initiate multistep processing.
+    $context['results']['session_id'] = $session_id;
+    $context['results']['userid'] = $userid;
+    $context['results']['terms'] = $terms;
+    $context['sandbox']['progress'] = 0;
+    $context['sandbox']['current_id'] = 0;
+    $context['sandbox']['max'] = db_result(db_query('SELECT COUNT(DISTINCT id) FROM {biblio_import_cache} WHERE session_id = "%s"', $session_id));
+  }
+
+  // Process the next 20 nodes.
+  $limit = 5;
+  $result = db_query_range("SELECT id, data FROM {biblio_import_cache} WHERE id > %d AND session_id = '%s' ORDER BY id ASC", $context['sandbox']['current_id'], $session_id, 0, $limit);
+  while ($row = db_fetch_array($result)) {
+    $node = unserialize($row['data']);
+    node_save($node);    
+    $context['results']['nids'][] = $node->nid;
+    $context['sandbox']['progress']++;
+    $context['sandbox']['current_id'] = $row['id'];
+  }
+  
+  // Multistep processing : report progress.
+  if ($context['sandbox']['progress'] != $context['sandbox']['max']) {
+    $context['finished'] = $context['sandbox']['progress'] / $context['sandbox']['max'];
+  }
+}
+function biblio_import_batch_finished($success, $results, $operations) {
+  if ($success) {
+    $message = format_plural(count($results['nids']), 'One node saved.', '@count nodes saved.');
+  }
+  else {
+    $message = t('Import finished with an error.');
+  }
+  drupal_set_message($message);
+  foreach ($results['nids'] as $node_id) {
+    if (count($results['terms'])) module_invoke('taxonomy', 'node_save', $node_id, $results['terms']);
+    db_query('UPDATE {node} SET uid = %d WHERE nid = %d', $results['userid'], $node_id);
+    db_query('UPDATE {node_revisions} SET uid = %d WHERE nid = %d', $results['userid'], $node_id);
+  }
+  //clean up import cache...
+  db_query("DELETE FROM {biblio_import_cache} WHERE session_id = '%s'",$results['session_id']);
+
+}
+function biblio_export_form() {
+  $form['pot'] = array (
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#title' => t('POT Export'),
+    '#description' => t('Here you may export a ".pot" file which contains the titles and hints from the database which are not normally captured by traslation extrators)')
+  );
+  $form['pot']['button'] = array (
+    '#type' => 'submit',
+    '#value' => t('Export translation data')
+  );
+
+  return $form;
+}
+function biblio_export_form_submit($form, & $form_state) {
+  if ($form_state['values']['op'] == t('Export translation data')) {
+    biblio_dump_db_data_for_pot();
+  }
+
+}
+
 /**
  * Import data from a file and return the node ids created.
  *
  * @param $userid
  *   The user id of that will be assigned to each node imported
  * @param $filename
- *   The name of the file containing the data to import 
+ *   The name of the file containing the data to import
  * @param $type
- *   The format of the file to be imported (tagged, XML, RIS, bibTEX) 
+ *   The format of the file to be imported (tagged, XML, RIS, bibTEX)
  * @param $terms
  *   the vocabulary that the imported nodes will be associated with
  * @return
  *   An array the node id's of the items imported
  */
-function biblio_import($userid = 1, &$file_content, $type='tagged', $terms = null) {
-  global $user;
-  $node_template = array();
-  $node_array = array();
-  $parsed = null;
-  
-  if (strlen($file_content)) {
-      $options = variable_get('node_options_biblio', array('status'));
-      if (module_exists('i18n') && variable_get('i18n_node_biblio', 0)){
-        $node['language'] = module_invoke('i18n', 'default_language');
-      }
-      $node_template['type']     = "biblio";
-      $node_template['created']  = time();
-      $node_template['changed']  = time();
-      $node_template['comment']  = variable_get('comment_biblio', 0); 
-      $node_template['promote']  = in_array('promote', $options);
-      $node_template['moderate'] = in_array('moderate', $options);
-      $node_template['sticky']   = in_array('sticky', $options);
-      $node_template['format']   = 0;
-      $node_template['status']   = in_array('status', $options);
-      $node_template['uid']      = $userid;
+function biblio_import($import_file, $type, $userid = 1, $terms = NULL, $batch = FALSE, $id = NULL, &$context = NULL) {
 
-      switch($type) {
-      case 'tagged': // EndNote Tagged 
-        require_once(drupal_get_path('module', 'biblio') . '/tagged_parser.inc');
-        $parsed  = _endnote_tagged_import($file_content, $node_template, $node_array);
-        break;
-      case 'xml': // EndNote 7 XML
-       $parsed  = biblio_endnote_XML_import($file_content, $node_template, $node_array, 7 ); 
+  global $user, $batch_proc, $session_id, $biblio_uid;
+  $batch_proc = $batch;
+  $session_id = $id;
+  $biblio_uid = $userid;
+  $parsed = 0;
+  if(isset($context['message']))  $context['message'] = t('Parsing file');
+  switch ($type) {
+    case 'tagged' : // EndNote Tagged
+      module_load_include('inc', 'biblio', 'tagged_parser');
+      $node_ids = _endnote_tagged_import($import_file, $terms, $batch_proc, $session_id);
       break;
-      case 'xml8': // EndNote 8+ XML
-       $parsed  = biblio_endnote_XML_import($file_content, $node_template, $node_array, 8 ); 
-        break;
-      case 'bib': // BibTex
-       $parsed  = biblio_bibtex_import($file_content, $node_template, $node_array ); 
-        break;
-      case 'ris': // RIS
-        require_once(drupal_get_path('module', 'biblio') . '/ris_parser.inc');
-        $parsed  = _ris_tagged_import($file_content, $node_template, $node_array);
-        break;
-     }
-     if ($parsed){
-       $node_ids = biblio_save_imported_nodes($node_array);       
-       if ($terms) {
-      	  // set the vocabulary for the returned nodes 
-      	  foreach ($node_ids as $node_id) {
-      		  module_invoke('taxonomy', 'node_save', $node_id,  $terms);
-      	  }
-       }
-     }
-      return $node_ids;
-    
-  } else {
-    return false;
+    case 'ris' : // RIS
+      module_load_include('inc', 'biblio', 'ris_parser');
+      $node_ids = _ris_tagged_import($import_file, $terms, $batch_proc, $session_id);
+      break;
+    case 'xml' : // EndNote 7 XML
+      $node_ids = biblio_endnote_XML_import($import_file, $terms, $batch_proc, $session_id, 7);
+      break;
+    case 'xml8' : // EndNote 8+ XML
+      $node_ids = biblio_endnote_XML_import($import_file, $terms, $batch_proc, $session_id, 8);
+      break;
+    case 'bib' : // BibTex
+      $node_ids = biblio_bibtex_import($import_file, $terms, $batch_proc, $session_id);
+      break;
+    case 'csv' : // comma separated variable file
+      //        $file_content = @ file_get_contents($import_file->filepath);
+      //        $parsed = biblio_csv_import($file_content, $node_template, $node_array);
+      break;
+    case 'biblio_backup' : // a complete backup of all biblio information
+      $file_content = @ file_get_contents($import_file->filepath);
+      $parsed = biblio_restore($file_content, $node_template, $node_array);
+      break;
   }
+  if (!empty($node_ids) && !$batch ) {
+    if (count($node_ids)) {
+      db_query('UPDATE {node} SET uid = %d WHERE nid IN(%s)', $userid, implode(',', $node_ids));
+      db_query('UPDATE {node_revisions} SET uid = %d WHERE nid IN(%s)', $userid, implode(',', $node_ids));
+    }
+
+    return $node_ids;
+  }
+  elseif ($parsed && !$save) {
+    return $node;
+  }
+
+
 }
 /**
  * Export nodes in a given file format.
@@ -247,71 +339,104 @@ function biblio_import($userid = 1, &$file_content, $type='tagged', $terms = nul
  * @param $format
  *   The file format to export the nodes in (tagged, XML, bibTEX)
  * @param $nid
- *   If not NULL, then export only the given nodeid, else we will 
+ *   If not NULL, then export only the given nodeid, else we will
  *   use the session variable which holds the most recent query. If neither
- *   $nid or the session variable are set, then nothing is exported   
+ *   $nid or the session variable are set, then nothing is exported
  * @param $version
  *   The version of EndNote XML to use.  There is one format for ver. 1-7 and
- *   a different format for versions 8 and greater.  
+ *   a different format for versions 8 and greater.
  * @return
  *   none
  */
-function biblio_export($format="tagged", $nid = null, $version = 7) {
-$params=array();
-  if ($nid === null && isset($_SESSION['last_biblio_query']) && !empty($_SESSION['last_biblio_query']) ) {
+function biblio_export($format = "tagged", $nid = null, $popup = false, $version = 7) {
+  module_load_include('inc', 'biblio', 'biblio.contributors');
+  $params = array ();
+  if ($nid === null && isset ($_SESSION['last_biblio_query']) && !empty ($_SESSION['last_biblio_query'])) {
     $query = $_SESSION['last_biblio_query'];
-    $params = $_SESSION['last_biblio_query_terms'];    
-  } elseif (!empty($nid)) {
-    $query = db_rewrite_sql("SELECT * FROM {node} n left join {biblio} b  on n.vid=b.vid WHERE n.nid=%d ");
-    $params[] = $nid;
-  }else{
-    return;
-  } 
-
-  $result = db_query($query, $params);
-
-  if ($result) {
-     switch($format) {
-     case "tagged":
-       biblio_endnote_tagged_export($result);
-       break;
-     case "xml":
-       biblio_endnote_XML_export($result, $version );
-       break;
-     case "bib":
-       biblio_bibtex_export($result);
-       break;
-     case "csv":
-       biblio_csv_export($result,$biblio_fields);
-       break;
-     }
+    $params = $_SESSION['last_biblio_query_terms'];
   }
+  elseif (!empty ($nid)) {
+    $query = db_rewrite_sql("SELECT * FROM {node} n left join {biblio} b  on n.vid=b.vid WHERE n.nid=%d GROUP by n.nid");
+    $params[] = $nid;
+  } else {
+    return;
+  }
+  $result = db_query($query, $params);
+  while ($node = db_fetch_object($result)) {
+    $node->biblio_contributors = biblio_load_contributors($node->vid, $node->biblio_type);
+      if ($vid = variable_get('biblio_keyword_vocabulary', 0)){
+          $node->terms = taxonomy_node_get_terms_by_vocabulary($node, $vid);
+                 
+      }  
+    $results[] = $node;
+  }
+
+  if (count($results)) {
+    switch ($format) {
+      case "tagged" :
+        if (!$popup) {
+          drupal_set_header('Content-type: 	application/x-endnote-refer');
+          drupal_set_header('Content-Disposition:  filename="Drupal-Biblio.enw"');
+          print biblio_endnote_tagged_export($results);
+        } 
+        else {
+          return '<pre>' . biblio_endnote_tagged_export($results) . '</pre>';
+        }
+        break;
+      case "xml" :
+        if (!$popup) {
+          drupal_set_header('Content-type: application/xml; charset=utf-8');
+          drupal_set_header('Content-Disposition: attachment; filename="Biblio-EndNote'. $version .'.xml"');
+          print biblio_endnote_XML_export($results, $version);
+        } 
+        else {
+          drupal_set_header('Content-type: application/xml; charset=utf-8');
+          return '<pre>'. htmlspecialchars(biblio_endnote_XML_export($results, $version)) . '</pre>';
+        }
+        break;
+      case "bibtex" :
+        if (!$popup) {
+          drupal_set_header('Content-type: 	application/text; charset=utf-8');
+          drupal_set_header('Content-Disposition:  filename="Biblio-Bibtex.bib"');
+          print biblio_bibtex_export($results);
+        }
+        else{
+          return '<pre>'. biblio_bibtex_export($results) . '</pre>';
+        }
+        break;
+      case "csv" :
+        drupal_set_header('Content-Type: application/text; charset=utf-8');
+        drupal_set_header('Content-Disposition: attachment; filename=Biblio-export.csv');
+        print biblio_csv_export($results);
+        break;
+    }
+  }
+
 }
 /**
  * Import bibtex data.
  *
  * @param $data
- *   the contents of a bibtex file passed as one big string 
+ *   the contents of a bibtex file passed as one big string
  * @param $node
- *   an array (populated in biblio_import() ), containing the boiler plate 
- *   information common to all nodes 
+ *   an array (populated in biblio_import() ), containing the boiler plate
+ *   information common to all nodes
  * @return
  *   an array of node ids
  */
-function biblio_bibtex_import(&$data, $node_template, &$node_array) {
-require_once(drupal_get_path('module', 'biblio') . '/bibtex.php');
-
-  
-  $bibtex = new Structures_BibTex();
-  $bibtex->loadString($data);
-  
-  $bibtex->parse();
-  if ($bibtex->amount()) {
-    $bibtex->bib2node($node_array, $node_template);
+function biblio_bibtex_import($file, $terms, $batch, $session_id) {
+  $nids = array();
+  module_load_include('php', 'biblio', 'bibtexParse/PARSEENTRIES');
+  //require_once (drupal_get_path('module', 'biblio') .'/bibtexParse/PARSEENTRIES.php');
+  $bibtex = new PARSEENTRIES();
+  //$bibtex->loadBibtexString($data);
+  $bibtex->openBib($file->filepath);
+  $bibtex->extractEntries();
+  if ($bibtex->count) {
+    $nids = $bibtex->bib2node($terms, $batch, $session_id);
   }
-  return count($node_array);
-} 
-
+  return $nids;
+}
 /**
  * Export data in bibtex format.
  *
@@ -320,92 +445,134 @@ require_once(drupal_get_path('module', 'biblio') . '/bibtex.php');
  * @return
  *   none
  */
-function biblio_bibtex_export($result) {
-$bibtex = '';
-    while ($pub = db_fetch_object($result)) {
+function biblio_bibtex_export($results) {
+  if (!is_array($results)) {
+    $result_array[] = $results;
+  } else {
+    $result_array = $results;
+  }
+  $bibtex = '';
+  foreach ($result_array as $pub) {
     $type = "article";
-    $journal = $series = $booktitle = $school = $organization = null;
+    $journal = $series = $booktitle = $school = $organization = $institution = null;
     switch ($pub->biblio_type) {
-      case 102:
+      case 102 :
         $type = "article";
         $journal = $pub->biblio_secondary_title;
-       break; 
-      case 100:
+        break;
+      case 100 :
         $type = "book";
         $series = $pub->biblio_secondary_title;
-         break; 
-      case 101:
+        break;
+      case 101 :
         $type = "inbook";
         $booktitle = $pub->biblio_secondary_title;
-         break; 
-      case 100:
+        break;
+      case 100 :
         $type = "incollection";
-         break; 
-      case 103:
+        break;
+      case 103 :
         $type = "inproceedings";
-        $journal = $pub->biblio_secondary_title;
+        $booktitle = $pub->biblio_secondary_title;
         $organization = $pub->biblio_publisher;
-         break; 
-      case 129:
+        $series = $pub->biblio_tertiary_title;
+        break;
+      case 129 :
         $type = "misc";
-         break; 
-      case 108:
+        break;
+      case 108 :
         $type = "phdthesis";
         $school = $pub->biblio_publisher;
         $pub->biblio_publisher = null;
-         break; 
-      case 104:
+        break;
+      case 104 :
         $type = "proceedings";
-         break; 
-      case 109:
+        break;
+      case 109 :
         $type = "techreport";
-        $organization = $pub->biblio_publisher;
+        $institution  = $pub->biblio_publisher;
         $pub->biblio_publisher = null;
-         break; 
-      case 124:
+        break;
+      case 124 :
         $type = "unpublished";
-         break; 
+        break;
     }
-    
-    $bibtex .= '@'.$type.' { ';
-    $bibtex .= ($pub->biblio_citekey)? $pub->biblio_citekey.",\n":",\n";
-    if ($pub->title) $bibtex .= "\ttitle = {". $pub->title. "},\n";
-    if ($journal) $bibtex .= "\tjournal = {". $journal. "},\n";
-    if ($booktitle) $bibtex .= "\tbooktitle = {". $booktitle. "},\n";
-    if ($series) $bibtex .= "\tseries = {". $series. "},\n";
-    if ($pub->biblio_secondary_authors) $bibtex .= "\teditor = {". $pub->biblio_secondary_authors. "},\n";
-    if ($pub->biblio_volume) $bibtex .= "\tvolume = {". $pub->biblio_volume. "},\n";
-    if ($pub->biblio_number) $bibtex .= "\tnumber = {". $pub->biblio_number. "},\n";
-    if ($pub->biblio_year) $bibtex .= "\tyear = {". $pub->biblio_year. "},\n";
-    if ($pub->biblio_notes) $bibtex .= "\tnote = {". $pub->biblio_notes. "},\n";
-    if ($pub->biblio_date) $bibtex .= "\tmonth = {". $pub->biblio_date. "},\n";
-    if ($pub->biblio_pages) $bibtex .= "\tpages = {". $pub->biblio_pages. "},\n";
-    if ($pub->biblio_publisher) $bibtex .= "\tpublisher = {". $pub->biblio_publisher. "},\n";
-    if ($school) $bibtex .= "\tschool = {". $school. "},\n";
-    if ($organization) $bibtex .= "\torganization = {". $organization. "},\n";
-    if ($institution) $bibtex .= "\tinstitution = {". $institution. "},\n";
-    if ($pub->biblio_type_of_work) $bibtex .= "\ttype = {". $pub->biblio_type_of_work. "},\n";
-    if ($pub->biblio_edition) $bibtex .= "\tedition = {". $pub->biblio_edition. "},\n";
-    if ($pub->biblio_section) $bibtex .= "\tchapter = {". $pub->biblio_section. "},\n";
-    if ($pub->biblio_place_published) $bibtex .= "\taddress = {". $pub->biblio_place_published. "},\n";
-    if ($pub->biblio_abst_e) $bibtex .= "\tabstract = {". $pub->biblio_abst_e. "},\n";
-    if ($pub->biblio_keywords) $bibtex .= "\tkeywords = {". $pub->biblio_keywords. "},\n";
-    if ($pub->biblio_isbn) $bibtex .= "\tISBN = {". $pub->biblio_isbn. "},\n";
-    if ($pub->biblio_url) $bibtex .= "\tURL = {". $pub->biblio_url. "},\n";
-    $author =  str_replace("; ", " and ", $pub->biblio_authors);
-    $bibtex .= "\tauthor = {". $author. "}\n";
-    
-    $bibtex.="}\n\n";
-
+    $bibtex .= '@'. $type .' { ';
+    $bibtex .= ($pub->biblio_citekey) ? $pub->biblio_citekey .",\n" : ",\n";
+    if (!empty($pub->title))
+      $bibtex .= "\ttitle = {". $pub->title ."},\n";
+    if (!empty($journal))
+      $bibtex .= "\tjournal = {". $journal ."},\n";
+    if (!empty($booktitle))
+      $bibtex .= "\tbooktitle = {". $booktitle ."},\n";
+    if (!empty($series))
+      $bibtex .= "\tseries = {". $series ."},\n";
+    if (!empty($pub->biblio_volume))
+      $bibtex .= "\tvolume = {". $pub->biblio_volume ."},\n";
+    if (!empty($pub->biblio_number))
+      $bibtex .= "\tnumber = {". $pub->biblio_number ."},\n";
+    if (!empty($pub->biblio_year))
+      $bibtex .= "\tyear = {". $pub->biblio_year ."},\n";
+    if (!empty($pub->biblio_notes))
+      $bibtex .= "\tnote = {". $pub->biblio_notes ."},\n";
+    if (!empty($pub->biblio_date))
+      $bibtex .= "\tmonth = {". $pub->biblio_date ."},\n";
+    if (!empty($pub->biblio_pages))
+      $bibtex .= "\tpages = {". $pub->biblio_pages ."},\n";
+    if (!empty($pub->biblio_publisher))
+      $bibtex .= "\tpublisher = {". $pub->biblio_publisher ."},\n";
+    if (!empty($school))
+      $bibtex .= "\tschool = {". $school ."},\n";
+    if (!empty($organization))
+      $bibtex .= "\torganization = {". $organization ."},\n";
+    if (!empty($institution))
+      $bibtex .= "\tinstitution = {". $institution ."},\n";
+    if (!empty($pub->biblio_type_of_work))
+      $bibtex .= "\ttype = {". $pub->biblio_type_of_work ."},\n";
+    if (!empty($pub->biblio_edition))
+      $bibtex .= "\tedition = {". $pub->biblio_edition ."},\n";
+    if (!empty($pub->biblio_section))
+      $bibtex .= "\tchapter = {". $pub->biblio_section ."},\n";
+    if (!empty($pub->biblio_place_published))
+      $bibtex .= "\taddress = {". $pub->biblio_place_published ."},\n";
+    if (!empty($pub->biblio_abst_e))
+      $bibtex .= "\tabstract = {". $pub->biblio_abst_e ."},\n";
+    if (!empty($pub->terms)){
+      $kw='';
+      foreach($pub->terms as $term){
+        $kw .= (!empty($kw))? ', '.$term->name : $term->name;
+      }
+      $bibtex .= "\tkeywords = {". $kw ."},\n";
+      if (!empty($pub->biblio_keywords)) unset($pub->biblio_keywords);
+    }
+    if (!empty($pub->biblio_keywords))
+      $bibtex .= "\tkeywords = {". $pub->biblio_keywords ."},\n";
+    if (!empty($pub->biblio_isbn))
+      $bibtex .= "\tISBN = {". $pub->biblio_isbn ."},\n";
+    if (!empty($pub->biblio_url))
+      $bibtex .= "\tURL = {". $pub->biblio_url ."},\n";
+    $a = $e = NULL;
+    foreach ($pub->biblio_contributors as $auth) {
+      switch ($auth['auth_type']) {
+        case 1 :
+          $a .= (!empty ($a)) ? ' and '. trim($auth['name']) : trim($auth['name']);
+          break;
+        case 2 :
+        case 10 :
+        case 14 :
+          $e .= (!empty ($e)) ? ' and '. trim($auth['name']) : trim($auth['name']);
+          break;
+      }
+    }
+    if (!empty ($a))
+      $bibtex .= "\tauthor = {". $a ."}". (($e) ? ",\n" : "\n");
+    if (!empty ($e))
+      $bibtex .= "\teditor = {". $e ."}\n";
+    $bibtex .= "}\n\n";
   }
 
-  header('Content-type: 	application/text');
-  header('Content-Disposition:  filename="bibtex.bib"');
-  print utf8_decode($bibtex);
-
-
+  return $bibtex;
 }
-
 /**
  * Save node imported from a file.
  *
@@ -414,63 +581,94 @@ $bibtex = '';
  * @return
  *   The node ids of the saved nodes
  */
-function biblio_save_imported_nodes(&$node_array) {
-
+function biblio_save_imported_nodes(& $node_array) {
+  $dup_count = 0;
   if (function_exists('node_save')) {
-    foreach ($node_array as $node) {
-      $node = (object)$node;
-      if (variable_get('biblio_keyword_freetagging', 0) && variable_get('biblio_freetagging_vocab', 0)) {
-        $vid = variable_get('biblio_freetagging_vocab', 0);
-        $node->taxonomy['tags'][$vid] = $node->biblio_keywords;
-      }
-      node_save($node);
-      if ($node->nid) { 
-         $node_ids[] = $node->nid;
-      }
-    } 
+    foreach ($node_array as $imp_node) {
+      $node_ids[] = biblio_save_node($imp_node);
+    }
   }
-  drupal_set_message(t("Succesfully imported @count entries.", array('@count' => count($node_ids))), 'status');
+/*  if ($dup_count)
+    drupal_set_message(t("Detected @dupcount duplicate node(s) when importing", array ('@dupcount' => $dup_count)), 'error');
 
+  drupal_set_message(t("Succesfully imported @count entries.", array ('@count' => count($node_ids))), 'status');
+*/
   return $node_ids;
 }
+function biblio_save_node($node, $batch = FALSE, $session_id = NULL) {
+  $options = variable_get('node_options_biblio', array ('status'));
+  if (module_exists('i18n') && variable_get('i18n_node_biblio', 0)) {
+    $node['language'] = module_invoke('i18n', 'default_language');
+  }
+  $account = user_load($userid);
+  $node_template = array (
+      'type' => 'biblio',
+      'comment' => variable_get('comment_biblio', 0),
+      'promote' => in_array('promote', $options),
+      'moderate' => in_array('moderate', $options),
+      'sticky' => in_array('sticky', $options),
+      'format' => 0,
+      'status' => in_array('status', $options),
+      'uid' => user_access('administer nodes') ? $account->uid : $user->uid,
+      'name' => user_access('administer nodes') ? $account->name : $user->name
+  );
+  
+  $node = (object) array_merge($node, $node_template);
+  if ($batch && $session_id){
+    $node = serialize($node);
+    db_query("INSERT INTO {biblio_import_cache} (session_id, data) VALUES ('%s', %b)", $session_id, $node);
+  }else{
+    node_save($node);
+  }
 
+  return (isset($node->nid)) ? $node->nid : 0;
+}
 /**
  * Import EndNote XML data.
  *
  * @param $data
- *   the contents of an EndNote XML file passed as one big string 
+ *   the contents of an EndNote XML file passed as one big string
  * @param $node
  *   boiler plate information common to all nodes
  * @param $version
  *   the EndNote version of the XML file.  EndNote uses one format up to version
- *   7 then change to another format in version 8 and greater. 
+ *   7 then change to another format in version 8 and greater.
  * @return
  *   The node ids of the saved nodes
  */
-function biblio_endnote_XML_import(&$data, $node_template, &$node_array, $version = 8) {
-global $user,$records, $rec_count, $node_array, $node_template, $node_id;
+function biblio_endnote_XML_import($xml_file, $taxo_terms = array(), $batch_proc = FALSE, $session_id = NULL, $ver = 8) {
+global $user, $records, $rec_count, $node,  $terms, $batch_proc, $nids, $session_id;
+  $terms = $taxo_terms;
+  $nids = array();
+  if (!($fp = fopen($xml_file->filepath, "r"))) {
+    drupal_set_message("could not open XML input",'error');
+    return;
+  }
+  $data = fread($fp, 2048);
   $xml_parser = drupal_xml_parser_create($data);
-
-// use case-folding so we are sure to find the tag in 
+  // use case-folding so we are sure to find the tag in
   xml_parser_set_option($xml_parser, XML_OPTION_CASE_FOLDING, false);
   xml_parser_set_option($xml_parser, XML_OPTION_SKIP_WHITE, true);
-  if ($version == 8) {
-    require_once(drupal_get_path('module', 'biblio') . '/endnote8_parser.inc');
-    xml_set_element_handler($xml_parser, "en8_startElement", "en8_endElement");
-    xml_set_character_data_handler($xml_parser, "en8_characterData");
-    xml_parse($xml_parser, $data, 1);
-  }elseif ($version == 7) {
-    require_once(drupal_get_path('module', 'biblio') . '/endnote7_parser.inc');
-    xml_parse_into_struct($xml_parser, $data, $values);
-    en7_parse($values, $node_array, $node_template) ;
+  
+  module_load_include('inc', 'biblio', 'endnote'.$ver.'_parser');
+  xml_set_element_handler($xml_parser, 'en'.$ver.'_startElement', 'en'.$ver.'_endElement');
+  xml_set_character_data_handler($xml_parser, 'en'.$ver.'_characterData'); 
+  
+  xml_parse($xml_parser, $data, feof($fp));
+  while ($data = fread($fp, 2048)){
+   // $data = fread($fp, 2048);
+    set_time_limit(30);
+    if(!xml_parse($xml_parser, $data, feof($fp))){
+      drupal_set_message(sprintf("XML error: %s at line %d",
+      xml_error_string(xml_get_error_code($xml_parser)),
+      xml_get_current_line_number($xml_parser)),'error');
+
+    }
   }
-
   xml_parser_free($xml_parser);
-
-
-  return count($node_array);
+  fclose($fp);
+  return (!empty($nids)) ? $nids : array();
 }
-
 /**
  * Export data in EndNote XML format.
  *
@@ -478,25 +676,21 @@ global $user,$records, $rec_count, $node_array, $node_template, $node_id;
  *   a database pointer to a result set
  * @param $version
  *   the EndNote version of the XML file.  EndNote uses one format up to version
- *   7 then change to another format in version 8 and greater. 
+ *   7 then change to another format in version 8 and greater.
  * @return
  *   none
  */
 function biblio_endnote_XML_export($result, $version = 7) {
-
-   if ($version == 8) {
-      require_once(drupal_get_path('module', 'biblio') . '/endnote8_export.inc');
-     $xml = _endnote8_XML_export($result);
-    }elseif ($version == 7) {
-      require_once(drupal_get_path('module', 'biblio') . '/endnote7_export.inc');
-     $xml = _endnote7_XML_export($result);
-    }
-    header('Content-type: application/xml; charset=utf-8');
-    header('Content-Disposition: attachment; filename="endnote'. $version. '.xml"');
-    print $xml;
+  if ($version == 8) {
+    module_load_include('inc', 'biblio', 'endnote8_export');
+    $xml = _endnote8_XML_export($result);
+  }
+  elseif ($version == 7) {
+    module_load_include('inc', 'biblio', 'endnote7_export');
+    $xml = _endnote7_XML_export($result);
+  }
+  return $xml;
 }
-
-
 /**
  * Export data in EndNote tagged format.
  *
@@ -505,234 +699,376 @@ function biblio_endnote_XML_export($result, $version = 7) {
 * @return
  *   none
  */
-function biblio_endnote_tagged_export($result) {
-
-    $doc = "";
-    while ($pub = db_fetch_object($result)) {
-      switch ($pub->biblio_type) {
-        case 1:
-        case 102: $doc .= "%0 Journal Article\r\n";
-          if ($pub->biblio_secondary_title) $doc .= "%J " . trim($pub->biblio_secondary_title) . "\r\n";
-          break; // journal
-        case 2:  
-        case 103: $doc .= "%0 Conference Paper\r\n";
-          if ($pub->biblio_secondary_title) $doc .= "%B " . trim($pub->biblio_secondary_title) . "\r\n";
-          break;
-        case 3: // are all
-        case 4: $doc .= "%0 Conference Proceedings\r\n";
-          if ($pub->biblio_secondary_title) $doc .= "%B " . trim($pub->biblio_secondary_title) . "\r\n";
-          break; // conference proceedings 
-        case 5: 
-        case 109:
-          $doc .= "%0 Report\r\n";
-          break; // report
-        case 6: 
-        case 101:
-          $doc .= "%0 Book Section\r\n";
-          if ($pub->biblio_secondary_title) $doc .= "%B " . trim($pub->biblio_secondary_title) . "\r\n";
-          break; // book section
-        case 7: 
-        case 108:
-          $doc .= "%0 Thesis\r\n";
-          if ($pub->biblio_secondary_title) $doc .= "%B " . trim($pub->biblio_secondary_title) . "\r\n";
-          break; // thesis
-        case 8: 
-        case 119:
-          $doc .= "%0 Patent\r\n";
-          if ($pub->biblio_secondary_title) $doc .= "%B " . trim($pub->biblio_secondary_title) . "\r\n";
-          break; // patent
-        case 9:
-        default:
-          $doc .= "%0 Generic\r\n";
-          break; // generic
-      } 
-      $doc .= "%D " . trim($pub->biblio_year) . "\r\n";
-      $doc .= "%T " . trim($pub->title) . "\r\n";
-      
-      $author_array = _parse_author_array(explode(';', $pub->biblio_authors));
-      foreach($author_array as $auth) {
-        $doc .= "%A " . $auth['last_name'] . ($auth['first_name'] ? (', ' . $auth['first_name']) : ($auth['initials'] ? (', ' . $auth['initials']) : '')) . "\r\n";
-      } 
-
-      if ($pub->biblio_place_published) $doc .= "%C " . trim($pub->biblio_place_published) . "\r\n";
-      if ($pub->biblio_secondary_authors) {
-        $author_array = explode(";", $pub->biblio_secondary_authors);
-        foreach($author_array as $auth) {
-          $doc .= "%E " . trim($auth) . "\r\n";
-        } 
-      } 
-      if ($pub->biblio_publisher) $doc .= "%I " . trim($pub->biblio_publisher) . "\r\n";
-      if (trim($pub->biblio_keywords)) $doc .= "%K " . trim($pub->biblio_keywords) . "\r\n";
-      if ($pub->biblio_call_number) $doc .= "%L " . trim($pub->biblio_call_number) . "\r\n";
-      if ($pub->biblio_accession_number) $doc .= "%M " . trim($pub->biblio_accession_number) . "\r\n";
-      if ($pub->biblio_issue) $doc .= "%N " . trim($pub->biblio_issue) . "\r\n";
-      if ($pub->biblio_pages) $doc .= "%P " . trim($pub->biblio_pages) . "\r\n";
-      if ($pub->biblio_doi) $doc .= "%R " . trim($pub->biblio_doi) . "\r\n";
-      if ($pub->biblio_tertiary_title) $doc .= "%S " . trim($pub->biblio_tertiary_title) . "\r\n";
-      if ($pub->biblio_url) $doc .= "%U " . trim($pub->biblio_url) . "\r\n";
-      if ($pub->biblio_volume) $doc .= "%V " . trim($pub->biblio_volume) . "\r\n";
-      $abst = "";
-      if ($pub->biblio_abst_e) $abst .= trim($pub->biblio_abst_e);
-      if ($pub->biblio_abst_f) $abst .= trim($pub->biblio_abst_f);
-      if ($abst) {
-        $search = array("/\r/", "/\n/");
-        $replace = " ";
-        $abst = preg_replace($search, $replace, $abst);
-        $doc .= "%X " . $abst . "\r\n";
-      } 
-      if ($pub->biblio_tertiary_authors) {
-        $author_array = explode(";", $pub->biblio_tertiary_authors);
-        foreach($author_array as $auth) {
-          $doc .= "%Y " . trim($auth) . "\r\n";
-        } 
-      } 
-      if ($pub->biblio_notes) $doc .= "%Z " . trim($pub->biblio_notes) . "\r\n";
-      if ($pub->biblio_edition) $doc .= "%7 " . trim($pub->biblio_edition) . "\r\n";
-      if ($pub->biblio_date) $doc .= "%8 " . trim($pub->biblio_date) . "\r\n";
-      if ($pub->biblio_type_of_work) $doc .= "%9 " . trim($pub->biblio_type_of_work) . "\r\n";
-      if ($pub->biblio_isbn) $doc .= "%@ " . trim($pub->biblio_isbn) . "\r\n";
-
-      $doc .= "\r\n";
-    } 
-   
-  header('Content-type: 	application/x-endnote-refer');
-  header('Content-Disposition:  filename="endnote.enw"');
-  print utf8_decode($doc);
-} 
-
-function biblio_csv_export($result){
- 
- $fieldnames = biblio_get_db_fields();
- print_r ($fieldnames);
- $delimiter  = ',';
- $enclosure  = '"';
- $csv        = '';
- 
- while ($rec = db_fetch_object($result)){
-    $str = '';
-    $escape_char = '\\';
-    foreach ($fieldnames as $field) { 
-      if ($rec->$field !== "biblio_coins"){
-      if (strlen($csv)) {
-        $value = $rec->$field ;
-      }else{ 
-        $value = $field;
-      }
-      if (strpos($value, $delimiter) !== false ||
-          strpos($value, $enclosure) !== false ||
-          strpos($value, "\n") !== false ||
-          strpos($value, "\r") !== false ||
-          strpos($value, "\t") !== false ||
-          strpos($value, ' ') !== false) {
-        $str2 = $enclosure;
-        $escaped = 0;
-        $len = strlen($value);
-        for ($i=0;$i<$len;$i++) {
-          if ($value[$i] == $escape_char) {
-            $escaped = 1;
-          } else if (!$escaped && $value[$i] == $enclosure) {
-            $str2 .= $enclosure;
-          } else {
-            $escaped = 0;
-          }
-          $str2 .= $value[$i];
-        }
-        $str2 .= $enclosure;
-        $str .= $str2.$delimiter;
-      } else {
-        $str .= $value.$delimiter;
-      }
-    }
-    }
-    $str = substr($str,0,-1);
-    $str .= "\n";
-    $csv .= $str;
-    
+function biblio_endnote_tagged_export($results) {
+  if (!is_array($results)) {
+    $result_array[] = $results;
+  } else {
+    $result_array = $results;
   }
- 
-//}
-  drupal_set_header('Content-Type: text/plain; charset=utf-8');
-  drupal_set_header('Content-Disposition: attachment; filename=biblio_export.csv');
-  print $csv;
-}
-function biblio_csv_export_2($result,$bfields){
+  $doc = "";
+  foreach ($result_array as $pub) {
+    switch ($pub->biblio_type) {
+      case 100 :
+        $doc .= "%0 Book\r\n";
+        if (!empty($pub->biblio_secondary_title))
+          $doc .= "%B ". trim($pub->biblio_secondary_title) ."\r\n";
+        break; // book section
+      case 101 :
+        $doc .= "%0 Book Section\r\n";
+        if (!empty($pub->biblio_secondary_title))
+          $doc .= "%B ". trim($pub->biblio_secondary_title) ."\r\n";
+        break; // book section
+      case 102 :
+        $doc .= "%0 Journal Article\r\n";
+        if (!empty($pub->biblio_secondary_title))
+          $doc .= "%J ". trim($pub->biblio_secondary_title) ."\r\n";
+        break; // journal
+      case 103 :
+        $doc .= "%0 Conference Paper\r\n";
+        if (!empty($pub->biblio_secondary_title))
+          $doc .= "%B ". trim($pub->biblio_secondary_title) ."\r\n";
+        break;
+      case 104 :
+        $doc .= "%0 Conference Proceedings\r\n";
+        if (!empty($pub->biblio_secondary_title))
+          $doc .= "%B ". trim($pub->biblio_secondary_title) ."\r\n";
+        break; // conference proceedings
+      case 105 :
+        $doc .= "%0  Newspaper Article\r\n";
+        if (!empty($pub->biblio_secondary_title))
+          $doc .= "%B ". trim($pub->biblio_secondary_title) ."\r\n";
+        break;
+      case 107 :
+        $doc .= "%0  Web Page\r\n";
+        break;
+      case 108 :
+        $doc .= "%0 Thesis\r\n";
+        if (!empty($pub->biblio_secondary_title))
+          $doc .= "%B ". trim($pub->biblio_secondary_title) ."\r\n";
+        break; // thesis
+      case 109 :
+        $doc .= "%0 Report\r\n";
+        break; // report
+      case 110 :
+      case 111 :
+        $doc .= "%0  Film or Broadcast\r\n";
+        break;
+      case 112 :
+        $doc .= "%0  Artwork\r\n";
+        break;
+      case 114 :
+        $doc .= "%0  Audiovisual Material\r\n";
+        break;
+      case 115 :
+        $doc .= "%0  Hearing\r\n";
+        break;
+      case 116 :
+        $doc .= "%0  Case\r\n";
+        break;
+      case 117 :
+        $doc .= "%0  Bill\r\n";
+        break;
+      case 118 :
+        $doc .= "%0  Statute\r\n";
+        break;
+      case 119 :
+        $doc .= "%0  Patent\r\n";
+        break;
+      case 120 :
+        $doc .= "%0  Personal Communication\r\n";
+        break;
+      case 121 :
+        $doc .= "%0  Manuscript\r\n";
+        break;
+      case 122 :
+        $doc .= "%0  Map\r\n";
+        break;
+      case 123 :
+        $doc .= "%0  Chart or Table\r\n";
+        break;
+      case 124 :
+        $doc .= "%0  Unpublished Work\r\n";
+        break;
+      case 125 :
+        $doc .= "%0  Online Database\r\n";
+        break;
+      case 126 :
+        $doc .= "%0  Government Document\r\n";
+        break;
+      case 127 :
+        $doc .= "%0  Classical Work\r\n";
+        break;
+      case 128 :
+        $doc .= "%0  Legal Rule or Regulation\r\n";
+        break;
+      case 119 :
+        $doc .= "%0 Patent\r\n";
+        if (!empty($pub->biblio_secondary_title))
+          $doc .= "%B ". trim($pub->biblio_secondary_title) ."\r\n";
+        break; // patent
+      default :
+        $doc .= "%0 Generic\r\n";
+        break; // generic
+    }
+    if (isset($pub->biblio_year) && $pub->biblio_year < 9998)
+      $doc .= "%D ". trim($pub->biblio_year) ."\r\n";
+    if (!empty($pub->title))
+      $doc .= "%T ". trim($pub->title) ."\r\n";
+    if (count($pub->biblio_contributors)) {
+      foreach ($pub->biblio_contributors as $auth) {
+        switch ($auth['auth_catagory']) {
+          case 1 :
+            $doc .= "%A ". trim($auth['name']) ."\r\n";
+            break;
+          case 2 :
+            $doc .= "%E ". trim($auth['name']) ."\r\n";
+            break;
+          case 3 :
+            $doc .= "%Y ". trim($auth['name']) ."\r\n";
+            break;
+        }
+      }
+    }
+    if (!empty($pub->biblio_place_published))
+      $doc .= "%C ". trim($pub->biblio_place_published) ."\r\n";
+    if (!empty($pub->biblio_publisher))
+      $doc .= "%I ". trim($pub->biblio_publisher) ."\r\n";
+    if (!empty($pub->terms)){
+      $kw='';
+      foreach($pub->terms as $term){
+        $doc .= "%K ". trim($term->name) ."\r\n";
+      }
+      if (!empty($pub->biblio_keywords)) unset($pub->biblio_keywords);
+    }
+      
+    if (trim($pub->biblio_keywords))
+      $doc .= "%K ". trim($pub->biblio_keywords) ."\r\n";
+    if (!empty($pub->biblio_call_number))
+      $doc .= "%L ". trim($pub->biblio_call_number) ."\r\n";
+    if (!empty($pub->biblio_accession_number))
+      $doc .= "%M ". trim($pub->biblio_accession_number) ."\r\n";
+    if (!empty($pub->biblio_issue))
+      $doc .= "%N ". trim($pub->biblio_issue) ."\r\n";
+    if (!empty($pub->biblio_pages))
+      $doc .= "%P ". trim($pub->biblio_pages) ."\r\n";
+    if (!empty($pub->biblio_tertiary_title))
+      $doc .= "%S ". trim($pub->biblio_tertiary_title) ."\r\n";
+    if (!empty($pub->biblio_url))
+      $doc .= "%U ". trim($pub->biblio_url) ."\r\n";
+    if (!empty($pub->biblio_volume))
+      $doc .= "%V ". trim($pub->biblio_volume) ."\r\n";
+    $abst = "";
+    if (!empty($pub->biblio_abst_e))
+      $abst .= trim($pub->biblio_abst_e);
+    if (!empty($pub->biblio_abst_f))
+      $abst .= trim($pub->biblio_abst_f);
+    if ($abst) {
+      $search = array("/\r/", "/\n/");
+      $replace = " ";
+      $abst = preg_replace($search, $replace, $abst);
+      $doc .= "%X ". $abst ."\r\n";
+    }
+    if (!empty($pub->biblio_notes))
+      $doc .= "%Z ". trim($pub->biblio_notes) ."\r\n";
+    if (!empty($pub->biblio_edition))
+      $doc .= "%7 ". trim($pub->biblio_edition) ."\r\n";
+    if (!empty($pub->biblio_date))
+      $doc .= "%8 ". trim($pub->biblio_date) ."\r\n";
+    if (!empty($pub->biblio_type_of_work))
+      $doc .= "%9 ". trim($pub->biblio_type_of_work) ."\r\n";
+    if (!empty($pub->biblio_isbn))
+      $doc .= "%@ ". trim($pub->biblio_isbn) ."\r\n";
 
-//  $query_biblio_fields = 'SELECT name, title FROM {biblio_fields}';
-//  $res_biblio_fields = db_query($query_biblio_fields);
-//  while ($rec = db_fetch_object($res_biblio_fields)){
-//    $bfields[$rec->name] = $rec->title;
-//  }
+    $doc .= "\r\n";
+  }
+
+  return $doc;
+}
+function biblio_csv_export_2($result, $bfields) {
+  //  $query_biblio_fields = 'SELECT name, title FROM {biblio_fields}';
+  //  $res_biblio_fields = db_query($query_biblio_fields);
+  //  while ($rec = db_fetch_object($res_biblio_fields)){
+  //    $bfields[$rec->name] = $rec->title;
+  //  }
   $bfields = biblio_get_db_fields('all');
-  
   $query_biblio_types = 'SELECT tid, name FROM {biblio_types}';
   $res_biblio_types = db_query($query_biblio_types);
-  while ($rec = db_fetch_object($res_biblio_types)){
+  while ($rec = db_fetch_object($res_biblio_types)) {
     $btypes[$rec->tid] = $rec->name;
   }
-
-  switch ( variable_get('biblio_csv_field_sep', 'tab') ) {
-    case 'tab':    $filedsep = "\t";	break;
-    case 'comma':  $filedsep = ',';	break;
+  switch (variable_get('biblio_csv_field_sep', 'tab')) {
+    case 'tab' :
+      $filedsep = "\t";
+      break;
+    case 'comma' :
+      $filedsep = ',';
+      break;
   }
-  switch ( variable_get('biblio_csv_text_sep', 'dquote') ) {
-    case 'dquote':  $textsep = '"';	break;
-    case 'quote':   $textsep = '\'';	break;
+  switch (variable_get('biblio_csv_text_sep', 'dquote')) {
+    case 'dquote' :
+      $textsep = '"';
+      break;
+    case 'quote' :
+      $textsep = '\'';
+      break;
   }
-  $label = ( variable_get('biblio_csv_col_head', 'label') == 'label' ? 1 : 0 );		// or 'col_name'
-  $linebreak = variable_get('biblio_linebreak_exp',1);
-
-  while ($rec = db_fetch_object($result)){
+  $label = (variable_get('biblio_csv_col_head', 'label') == 'label' ? 1 : 0); // or 'col_name'
+  $linebreak = variable_get('biblio_linebreak_exp', 1);
+  while ($rec = db_fetch_object($result)) {
     $node_id = $rec->nid;
-    $node_array[$node_id]['type'] = $btypes[$rec->biblio_type];	// there is no "label" for "type"
+    $node_array[$node_id]['type'] = $btypes[$rec->biblio_type]; // there is no "label" for "type"
     $col_array['type'] = 'Type';
-
-    foreach( array_keys($bfields) as $fieldname ) {
-      if (!empty($rec->$fieldname) && !in_array($fieldname,array('biblio_citekey','biblio_coins'))) {
-	$col_array[$fieldname] = $bfields[$fieldname];	// mark field as in use
-	$text = strtr($rec->$fieldname,$textsep, "$textsep$textsep");
+    foreach (array_keys($bfields) as $fieldname) {
+      if (!empty ($rec-> $fieldname) && !in_array($fieldname, array (
+          'biblio_citekey',
+          'biblio_coins'
+        ))) {
+        $col_array[$fieldname] = $bfields[$fieldname]; // mark field as in use
+        $text = strtr($rec-> $fieldname, $textsep, "$textsep$textsep");
         if ($linebreak) {
-          $text = strtr($text,';',"\n");
+          $text = strtr($text, ';', "\n");
         }
         $node_array[$node_id][$fieldname] = trim($text);
       }
     }
   } //end while
-   
-  if ($label) {		// head line containing column names
-    $csv = $textsep . join("$textsep$filedsep$textsep", array_values($col_array)) . "$textsep\n";
-  } else {		// original DB field names
-    $csv = $textsep . join("$textsep$filedsep$textsep", array_keys($col_array)) . "$textsep\n";
+  if ($label) { // head line containing column names
+    $csv = $textsep . join("$textsep$filedsep$textsep", array_values($col_array)) ."$textsep\n";
+  } else { // original DB field names
+    $csv = $textsep . join("$textsep$filedsep$textsep", array_keys($col_array)) ."$textsep\n";
   }
-
-  // Enclosing text in "<text>" is neccessary to enshure 
+  // Enclosing text in "<text>" is neccessary to enshure
   // multi line fields (like author) are handled correctly.
   // Therefore existing " must be excaped before.
-  $csv = '"' . join("\"\t\"", array_keys($col_array)) . "\"\n";
-  foreach($node_array as $line_array) {
+  $csv = '"'. join("\"\t\"", array_keys($col_array)) ."\"\n";
+  foreach ($node_array as $line_array) {
     $csv_line = '';
-    foreach(array_keys($col_array) as $col) {
-      $csv_line .= "$filedsep$textsep" . $line_array[$col] . $textsep;
+    foreach (array_keys($col_array) as $col) {
+      $csv_line .= "$filedsep$textsep". $line_array[$col] . $textsep;
     }
-    $csv .= substr($csv_line,1) . "\n";		// cut off leading fieldsep and append EOL
+    $csv .= substr($csv_line, 1) ."\n"; // cut off leading fieldsep and append EOL
   }
-
   drupal_set_header('Content-Type: text/plain; charset=utf-8');
   drupal_set_header('Content-Disposition: attachment; filename=biblio_export.csv');
-
   return $csv;
 }
-
 //function _biblio_cck_join($biblio_fields = array()) {		// works not with php4
-function _biblio_cck_join(&$biblio_fields) {
+function _biblio_cck_join(& $biblio_fields) {
   $cck_join = '';
-  $biblio_fields['nid'] = 'Node-ID';	// identify records for update operations
+  $biblio_fields['nid'] = 'Node-ID'; // identify records for update operations
   $query_cck_fields = "SELECT field_name, label from {node_field_instance} where type_name='biblio' and not (widget_type='image')";
   $res_cck_fields = db_query($query_cck_fields);
-  while ($rec = db_fetch_object($res_cck_fields)){
-    $cck_table = 'content_' . $rec->field_name;
-    $cck_field = $rec->field_name . '_value';
+  while ($rec = db_fetch_object($res_cck_fields)) {
+    $cck_table = 'content_'. $rec->field_name;
+    $cck_field = $rec->field_name .'_value';
     $biblio_fields[$cck_field] = $rec->label;
-    $cck_join .= ' left join {' . $cck_table . '} on b.vid=' . $cck_table . '.vid';
+    $cck_join .= ' left join {'. $cck_table .'} on b.vid='. $cck_table .'.vid';
   }
   return $cck_join;
+}
+
+function biblio_backup() {
+
+  $csv_function = (!function_exists('fputcsv')) ? 'biblio_fputcsv' : 'fputcsv';
+  $count_sql = "SELECT COUNT(*)
+                FROM {biblio} b, {node} n, {node_revisions} nr
+                WHERE b.vid = n.vid and nr.vid = n.vid;";
+  $field_type_sql = "SELECT *  FROM {biblio_field_type} ";
+  $field_type_data_sql = "SELECT *  FROM {biblio_field_type_data} ";
+  $field_fields_sql = "SELECT *  FROM {biblio_fields} ";
+  $types_sql = "SELECT *  FROM {biblio_types} ";
+  $sql = "SELECT b.*,
+          n.type, n.language, n.title, n.uid, n.status, n.created,
+          n.changed, n.comment, n.promote, n.moderate, n.sticky,
+          n.tnid, n.translate,
+          nr.title, nr.body, nr.teaser, nr.log, nr.timestamp, nr.format
+          FROM {biblio} b, {node} n, {node_revisions} nr
+          WHERE b.vid = n.vid and nr.vid = n.vid;";
+
+  $biblio_count = db_result(db_query($count_sql));
+  if ($biblio_count) {
+    drupal_set_header('Content-Type: text/plain; charset=utf-8');
+    drupal_set_header('Content-Disposition: attachment; filename=Biblio-export.csv');
+    $biblio_nodes = db_query($sql);
+    while ($node = db_fetch_array($biblio_nodes)) {
+      $results[] = $node;
+    }
+    print biblio_csv_export($results);
+    unset($results);
+    $result = db_query($field_type_data_sql, 'biblio_field_type_data.csv');
+    while ($data = db_fetch_array($result)) {
+      $results[] = $data;
+    }
+    print biblio_csv_export($results);
+    unset($results);
+    $result = db_query($field_fields_sql, 'biblio_fields.csv');
+    while ($data = db_fetch_array($result)) {
+      $results[] = $data;
+    }
+    print biblio_csv_export($results);
+    unset($results);
+    $result = db_query($types_sql, 'biblio_types.csv');
+    while ($data = db_fetch_array($result)) {
+      $results[] = $data;
+    }
+    print biblio_csv_export($results);
+    unset($results);
+    $result = db_query($field_type_sql, 'biblio_field_type.csv');
+    while ($data = db_fetch_array($result)) {
+      $results[] = $data;
+    }
+    print biblio_csv_export($results);
+  }
+}
+
+function biblio_restore(& $csv_content, $mode = 'create') {
+
+}
+
+function biblio_csv_export($results) {
+  $csv = '';
+  if (!is_array($results)) {
+    $result_array[] = (array) $results;
+  } else {
+    $result_array = $results;
+  }
+  $fieldnames = null;
+  foreach ((array)$result_array as $rec) {
+    if (empty($fieldnames)) {
+      $fieldnames = array_keys($rec);
+      $csv .= biblio_strcsv($fieldnames);
+    }
+    $csv .= biblio_strcsv($rec);
+  }
+  return($csv);
+}
+
+function biblio_strcsv($fields = array(), $delimiter = ',', $enclosure = '"') {
+  $str = '';
+  $escape_char = '\\';
+  foreach ($fields as $value) {
+    if (strpos($value, $delimiter) !== false || strpos($value, $enclosure) !== false || strpos($value, "\n") !== false || strpos($value, "\r") !== false || strpos($value, "\t") !== false || strpos($value, ' ') !== false) {
+      $str2 = $enclosure;
+      $escaped = 0;
+      $len = strlen($value);
+      for ($i = 0; $i < $len; $i++) {
+        if ($value[$i] == $escape_char) {
+          $escaped = 1;
+        } else
+          if (!$escaped && $value[$i] == $enclosure) {
+            $str2 .= $enclosure;
+          } else {
+            $escaped = 0;
+          }
+        $str2 .= $value[$i];
+      }
+      $str2 .= $enclosure;
+      $str .= $str2 . $delimiter;
+    } else {
+      $str .= $value . $delimiter;
+    }
+  }
+  $str = substr($str, 0, -1);
+  $str .= "\n";
+  return $str;
 }
