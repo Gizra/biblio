@@ -200,3 +200,9 @@ ul.biblio-export-buttons,ul.biblio-export-buttons li {
 	text-decoration: none;
 	float: right;
 }
+
+.biblio-left-td {
+  text-align: right;
+  vertical-align: top;
+  width: 20%;
+}

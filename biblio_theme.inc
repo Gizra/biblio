@@ -272,9 +272,7 @@ function theme_biblio_tabular($node, $base = 'biblio', $teaser = false) {
       $rows[] = array(
         array(
           'data' => '<span class="biblio-row-title">'. $row['title'] .'</span>',
-          'align' => 'right',
-          'valign' => 'top',
-          'width' => '20%'
+	      'class' => 'biblio-left-td'
         ),
         array(
           'data' => '&nbsp;&nbsp;'
@@ -297,9 +295,7 @@ function theme_biblio_tabular($node, $base = 'biblio', $teaser = false) {
       array(
         'data' => '<span class="biblio-row-title">'. t('Export'
       ) .'</span>',
-      'align' => 'right',
-      'valign' => 'center',
-      'width' => '20%'
+      'class' => 'biblio-left-td'
     ), array(
       'data' => '&nbsp;&nbsp;'
     ), array(
