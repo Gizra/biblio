@@ -69,6 +69,7 @@ function biblio_db_search() {
 
   $inline = in_array('inline', $arg_list);
   $inline = in_array('profile',$arg_list)?'profile':$inline;
+
   $query_info = biblio_build_query($arg_list);
   if ($query_info['rss']['feed']){
   	 biblio_filter_feed($query_info['query'], $query_info['query_terms'], $query_info['rss']);
@@ -370,7 +371,7 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
   
   $base =  variable_get('biblio_base', 'biblio');
   $style = variable_get('biblio_style', 'cse');
-  if ($inline = 'profile') {
+  if ($inline == 'profile') {
     $profile = true;
     $inline  = false;
   }
