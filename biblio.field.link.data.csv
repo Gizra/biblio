@@ -18,7 +18,7 @@ fid,title,hint, common, autocomplete, required, weight, visible,field name,type,
 17,Publication Language,,0,0,0,23,0,biblio_lang,textfield,24,24
 18,Abstract,,1,0,0,155,1,biblio_abst_e,textarea,60,65535
 19,French Abstract,,0,0,0,156,0,biblio_abst_f,textarea,60,65535
-20,Key Words,,0,0,0,154,0,biblio_keywords,textfield,60,255
+20,Keywords,,0,0,0,154,0,biblio_keywords,textfield,60,255
 21,Type of Work,Masters Thesis,0,0,0,22,0,biblio_type_of_work,textfield,60,255
 22,URL,,1,0,0,158,1,biblio_url,textfield,60,255
 23,Notes,,0,0,0,157,0,biblio_notes,textarea,60,65535

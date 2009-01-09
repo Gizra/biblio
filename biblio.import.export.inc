@@ -87,7 +87,7 @@ function biblio_import_form() {
       '#collapsible' => TRUE,
       '#collapsed' => TRUE,
       '#title' => t('Taxonomy Settings'),
-      '#description' => t('Typically you don\'t have to do anything here, however if you wish, you may select terms to be assigned to imported records, this effectively adds a key word to all entries being imported. By default, all incoming key words are added to the Biblio Keywords vcabulary, you may either relate incoming entires to an existing key word OR select a term(s) from another vocabulary to relate all incoming entires to.')
+      '#description' => t('Typically you don\'t have to do anything here, however if you wish, you may select terms to be assigned to imported records, this effectively adds a keyword to all entries being imported. By default, all incoming keywords are added to the Biblio Keywords vcabulary, you may either relate incoming entires to an existing keyword OR select a term(s) from another vocabulary to relate all incoming entires to.')
     );
     if (count($vocabularies)) {
       $i = 0;
@@ -101,7 +101,7 @@ function biblio_import_form() {
         '#value' => '<p><div>'. $vocab_msg .'</div></p>'
       );
     }
-// TODO: remove this, key words are automatically stored in a taxonomy vocabulary    
+// TODO: remove this, keywords are automatically stored in a taxonomy vocabulary    
 //    if (variable_get('biblio_keyword_freetagging', 0)) {
 //      $freetag_vocab = module_invoke('taxonomy', 'get_vocabulary', variable_get('biblio_freetagging_vocab', 0));
 //      $msg = t('Keywords will be added to the <b>@name</b> vocabulary as specified in the Taxonomy section of the !url page.', array ('@name' => $freetag_vocab->name, '!url' => l(t('admin/settings/biblio'), 'admin/settings/biblio')));

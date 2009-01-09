@@ -132,7 +132,7 @@ function _enable_biblio_keyword_vocabulary(){
     // Create the biblio vocabulary if it does not exist.
     $vocabulary = array(
       'name' => 'Biblio Keywords',
-      'description' => 'This is a free tag vocabulary which contains the key words from all nodes created by the biblio module',
+      'description' => 'This is a free tag vocabulary which contains the keywords from all nodes created by the biblio module',
       'help' => 'Enter a comma separated list of words. Phrases containing commas should be enclosed in double quotes',
       'nodes' => array('biblio' => 1),
       'hierarchy' => 0,
@@ -235,9 +235,9 @@ function _add_biblio_keywords() {
         $count++;
       }
     }
-    return array('success' => TRUE, 'query' => 'Added '.$count. ' key words to the taxonomy key word list');
+    return array('success' => TRUE, 'query' => 'Added '.$count. ' keywords to the biblio/taxonomy keyword vocabulary');
   }
-  return array('success' => FALSE, 'query' => 'Biblio key word vocabulary not available');
+  return array('success' => FALSE, 'query' => 'Biblio keyword vocabulary not available');
 }
 
 
@@ -648,7 +648,7 @@ function biblio_schema() {
     'primary key' => array('ftdid'),
         );
 
-   $schema['biblio_types'] = array(
+        $schema['biblio_types'] = array(
     'fields' => array(
         'tid' => array(
         'type' => 'int',

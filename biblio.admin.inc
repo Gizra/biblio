@@ -410,7 +410,7 @@ function biblio_admin_settings() {
     '#description' => t('Limits the number of items in the /biblio/rss.xml feed to this number.')
   );
 // TODO: remove this later...  
-// This taxonomy field set is no longer needed since a key word vocabulary is created and used by default now.
+// This taxonomy field set is no longer needed since a keyword vocabulary is created and used by default now.
 //
 //  $form['taxo'] = array(
 //    '#type' => 'fieldset',
@@ -653,7 +653,7 @@ function biblio_admin_types_edit_form_submit($form, & $form_state) {
     }
     if ($update == $fid && $link['tid']) { // we just changed a default value, so create a new entry in biblio_field_type_data
       $new_ftdid = variable_get('biblio_last_ftdid', 100);
-      variable_set('biblio_last_ftdid', $new_ftdid +1);
+      variable_set('biblio_last_ftdid', $new_ftdid + 1);
       $val['ftdid'] = $new_ftdid;
       $link['ftdid'] = $new_ftdid;
       $link['cust_tdid'] = $new_ftdid;
@@ -1047,7 +1047,7 @@ function biblio_admin_author_types_form_submit($form, $form_state){
 }
 function biblio_admin_author_edit_form($form_state, $author_id){
   $author = db_fetch_object(db_query('SELECT * FROM {biblio_contributor_data} b WHERE b.cid = %d ', $author_id));
-  
+
   $base = variable_get('biblio_base', 'biblio');
   $form['#redirect'] = "$base/authors";
 
