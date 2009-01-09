@@ -476,7 +476,7 @@ function biblio_menu() {
       'type' => MENU_CALLBACK
   );
 
-  $items['user/%user/biblio'] = array(
+  $items["user/%user/$base"] = array(
     'title' => t('Publications'),
     'page callback' => 'biblio_get_user_pubs',
     'page arguments' => array(1, 'profile'),

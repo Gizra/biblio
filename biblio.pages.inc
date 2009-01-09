@@ -370,6 +370,10 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
   
   $base =  variable_get('biblio_base', 'biblio');
   $style = variable_get('biblio_style', 'cse');
+  if ($inline = 'profile') {
+    $profile = true;
+    $inline  = false;
+  }
   if (module_exists('popups')){
      popups_add_popups();
   }
@@ -380,7 +384,7 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
   while ($option = db_fetch_object($pub_types)) {
     $pub_type["$option->tid"] = $option->name;
   }
-  if (!$inline) {
+  if (!$inline && !$profile) {
     // Search box. Has same permissions as the filter tab.
     if (variable_get('biblio_search',0) && user_access('show filter tab')) {
       $content .= drupal_get_form('biblio_search_form');
@@ -568,10 +572,9 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
       $content .= t('!modify_link or !remove_link your filters and try again.', array('!modify_link' => l(t('Modify'),"$base/filter"), '!remove_link' => l(t('remove'),"$base/filter/clear")));
     }
   }
-
+  if ($profile === true)  return $content;
   if ($inline === true)       print $content . "</div>";
   if ($inline === false)      print theme('page', $content);
-  if ($inline === "profile")  return $content;
 
 }
 

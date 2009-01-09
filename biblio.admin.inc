@@ -652,14 +652,14 @@ function biblio_admin_types_edit_form_submit($form, & $form_state) {
       }
     }
     if ($update == $fid && $link['tid']) { // we just changed a default value, so create a new entry in biblio_field_type_data
-      $new_ftdid = variable_get('biblio_last_ftdid', 101);
+      $new_ftdid = variable_get('biblio_last_ftdid', 100);
       variable_set('biblio_last_ftdid', $new_ftdid +1);
       $val['ftdid'] = $new_ftdid;
       $link['ftdid'] = $new_ftdid;
       $link['cust_tdid'] = $new_ftdid;
       drupal_write_record('biblio_field_type_data', $val);
 
-    } elseif ($update > 100 && $link['tid']) { // we are updating an existing entry
+    } elseif ($update >= 100 && $link['tid']) { // we are updating an existing entry
         $val['ftdid'] = $form['configured_flds'][$fid]['ftdid']['#value'];
         drupal_write_record('biblio_field_type_data', $val, 'ftdid');
 
@@ -1048,7 +1048,8 @@ function biblio_admin_author_types_form_submit($form, $form_state){
 function biblio_admin_author_edit_form($form_state, $author_id){
   $author = db_fetch_object(db_query('SELECT * FROM {biblio_contributor_data} b WHERE b.cid = %d ', $author_id));
   
-  $form['#redirect'] = 'biblio/authors';
+  $base = variable_get('biblio_base', 'biblio');
+  $form['#redirect'] = "$base/authors";
 
   $form['cid'] = array(
     '#type' => 'value',
