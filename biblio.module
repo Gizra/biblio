@@ -933,10 +933,8 @@ function _biblio_contributor_widget(& $form, $node, $fld, $biblio_type = NULL, $
 
   while ($ctype = db_fetch_object($ctypes)) {
     $choice = new stdClass();
-    $choice->option = array(
-    $ctype->auth_type => $ctype->title
-    );
-    $options[] = $choice;
+    $choice->option = array($ctype->auth_type => $ctype->title);
+	$options[] = $choice;
   }
   $type_name = drupal_ucfirst(str_replace('_', ' ', $fld['type']));
   // Add a wrapper for the choices and more button.
@@ -955,7 +953,6 @@ function _biblio_contributor_widget(& $form, $node, $fld, $biblio_type = NULL, $
     '#prefix' => '<div id="'. $type .'">',
     '#suffix' => '</div>',
     '#theme' => 'biblio_contributors',
-
     );
     // Add the current choices to the form.
     $fldname = $fld['name'];
@@ -998,12 +995,19 @@ function _biblio_contributor_form($delta, $fld_name, $name = null, $cid = null, 
     '#autocomplete_path' => $autocomplete ? 'biblio/autocomplete/contributor' : '',
     '#default_value' => $name,
     '#parents' => array(
-  $fld_name,
-  $delta,
+      $fld_name,
+      $delta,
       'name'
       )
-      );
-      $form['auth_type'] = array(
+    );
+    $ctypes = db_query('SELECT ctd.auth_type, ctd.title
+                    		FROM {biblio_contributor_type_data} ctd WHERE ctd.auth_type = %d', $ctid);
+    while ($ctype = db_fetch_object($ctypes)) {
+      $choice = new stdClass();
+      $choice->option = array($ctype->auth_type => $ctype->title);
+      if (array_search($choice, $types) === FALSE) $types[] = $choice;
+    }
+    $form['auth_type'] = array(
     '#type' => 'select',
     '#title' => t('Type'),
     '#default_value' => $ctid,
