@@ -101,10 +101,10 @@ function biblio_admin_settings() {
       'b.biblio_year' => t('Year Published')
      )
   );
-  $result = db_query("SELECT b.name, bftd.title FROM {biblio_fields} b, {biblio_field_type} bt, {biblio_field_type_data} bftd
-                      WHERE bt.fid=b.fid AND bftd.ftdid=bt.ftdid
-                      AND bt.tid=0
-                      ORDER by bftd.title ASC ");
+  $result = db_query("SELECT b.name, bftd.title FROM {biblio_fields} b
+                      INNER JOIN {biblio_field_type} bt ON bt.fid=b.fid
+                      INNER JOIN {biblio_field_type_data} bftd ON bftd.ftdid=bt.ftdid
+                      WHERE bt.tid=0 ORDER by bftd.title ASC ");
   $schema = drupal_get_schema('biblio');
   $keys = array_keys($schema['fields']);
   $choice = new stdClass();
@@ -520,17 +520,18 @@ function biblio_admin_types_edit_form() {
 */      }
     }   
     $result = db_query("SELECT bf.*, bftd.*, bft.common, bft.visible, bft.autocomplete, bft.weight, bft.required, bt.name AS type_name
-                        FROM {biblio_fields} AS bf, {biblio_field_type} AS bft, {biblio_field_type_data} AS bftd, {biblio_types} AS bt
-                        WHERE bft.fid=bf.fid
-                          AND bftd.ftdid=bft.ftdid
-                          AND bt.tid=bft.tid
-                          AND bft.tid=$tid");
+                        FROM {biblio_fields} AS bf
+                        INNER JOIN {biblio_field_type} AS bft ON bft.fid=bf.fid
+                        INNER JOIN {biblio_field_type_data} AS bftd ON bftd.ftdid=bft.ftdid
+                        INNER JOIN {biblio_types} AS bt ON bt.tid=bft.tid
+                        WHERE bft.tid=$tid");
   }
   else {
     $result = db_query("SELECT bf.*, bftd.*, bft.common, bft.visible, bft.autocomplete, bft.weight, bft.required
-                        FROM {biblio_fields} AS bf, {biblio_field_type} AS bft, {biblio_field_type_data} AS bftd
-                        WHERE bft.fid=bf.fid AND bftd.ftdid=bft.ftdid
-                        AND bft.tid=$tid");
+                        FROM {biblio_fields} AS bf
+                        INNER JOIN {biblio_field_type} AS bft ON bft.fid=bf.fid
+                        INNER JOIN {biblio_field_type_data} AS bftd ON bftd.ftdid=bft.ftdid
+                        WHERE bft.tid=$tid");
   }
   while ($row = db_fetch_array($result)) {
     $fields[$row['fid']] = $row;
@@ -757,10 +758,8 @@ function biblio_admin_types_add_form_submit($form, & $form_state) {
     drupal_write_record('biblio_field_type', $ft_vals);
   }
   // Fill contributor types. Use the first 4 defaults.
-//  $ct_id = array_shift(db_fetch_array(db_query('SELECT max(ct_id) from {biblio_contributor_type}')));
   for ($type = 1; $type <= 4; $type++) {
     $ct_vals = array (
-//      'ct_id' => $ct_id + $type,
       'auth_catagory' => $type,
       'biblio_type' => $values['tid'],
       'auth_type' => $type,

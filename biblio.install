@@ -1614,7 +1614,7 @@ function _move_field_data(&$result)
     // update ftdid in linking table to new field type
     $ftdid=$fieldtype['ftdid'];
     $result[] = update_sql("UPDATE {biblio_field_type} SET ftdid=$ftdid, cust_tdid=$ftdid WHERE tid={$row['tid']} AND fid={$row['fidnew']}");
-    }
+  }
 
   // update biblio_field_type (linking table) with overrides from old biblio_type_details
   $result[] = update_sql("UPDATE {biblio_field_type} ft 

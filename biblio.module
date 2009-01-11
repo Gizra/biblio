@@ -32,16 +32,12 @@ function _biblio_get_auth_type($auth_catagory, $biblio_type){
   return (isset($auth_type[$auth_catagory][$biblio_type]))? $auth_type[$auth_catagory][$biblio_type] : null;
 }
 function _biblio_get_field_information($biblio_type){
-    $result = db_query("SELECT b.*, btd.*, btt.name AS type_name
-                      FROM {biblio_fields} AS b, 
-                           {biblio_field_type} AS bt, 
-                           {biblio_field_type_data} AS btd, 
-                           {biblio_types} as btt
-  					          WHERE bt.fid = b.fid
-  					  	        AND btd.ftdid = bt.ftdid
-  					  	        AND btt.tid = bt.tid
-  						          AND bt.tid = %d
-  					          ORDER BY bt.weight ASC", $biblio_type);
+  $result = db_query("SELECT b.*, btd.*, btt.name AS type_name
+                      FROM {biblio_fields} AS b
+                      INNER JOIN {biblio_field_type} AS bt ON bt.fid = b.fid
+                      INNER JOIN {biblio_field_type_data} AS btd ON btd.ftdid = bt.ftdid
+                      INNER JOIN {biblio_types} as btt ON btt.tid = bt.tid
+                      WHERE bt.tid = %d ORDER BY bt.weight ASC", $biblio_type);
   while ($row = db_fetch_array($result)) {
     $fields[$row['fid']] = $row;
   }
@@ -842,15 +838,15 @@ function biblio_form($node, $form_state) {
       '#maxlength' => 255,
       '#weight' => -4
         );
-        // Build the field array used to make the form
-        $result = db_query("SELECT * FROM {biblio_fields} b, {biblio_field_type} bt, {biblio_field_type_data} btd
-                        WHERE bt.fid=b.fid AND btd.ftdid=bt.ftdid
-                        AND bt.tid=$tid
-                        ORDER by bt.weight ASC ");
-        while ($row = db_fetch_array($result)) {
-          $fields[$row['name']] = $row;
-        }
-        $form['other_fields'] = array(
+    // Build the field array used to make the form
+    $result = db_query("SELECT * FROM {biblio_fields} b 
+    					INNER JOIN {biblio_field_type} bt ON b.fid = bt.fid 
+    					INNER JOIN {biblio_field_type_data} btd ON btd.ftdid=bt.ftdid 
+    					WHERE bt.tid=%d ORDER BY bt.weight ASC", $tid);
+    while ($row = db_fetch_array($result)) {
+      $fields[$row['name']] = $row;
+    }
+    $form['other_fields'] = array(
       '#type' => 'fieldset',
       '#collapsible' => TRUE,
       '#collapsed' => TRUE,
@@ -968,8 +964,9 @@ function _biblio_contributor_widget(& $form, $node, $fld, $biblio_type = NULL, $
   }
 
   $ctypes = db_query('SELECT ctd.auth_type, ctd.title
-                      FROM {biblio_contributor_type} ct, {biblio_contributor_type_data} ctd
-                      WHERE ct.auth_type = ctd.auth_type AND ct.biblio_type = %d
+                      FROM {biblio_contributor_type} ct 
+                      INNER JOIN {biblio_contributor_type_data} ctd ON ct.auth_type = ctd.auth_type
+                      WHERE ct.biblio_type = %d
                       ORDER BY auth_catagory ASC', $biblio_type);
 
   while ($ctype = db_fetch_object($ctypes)) {
@@ -1071,8 +1068,9 @@ function biblio_contributors_js($fld_name, $tid, $other_fields = FALSE) {
   $delta = count($_POST[$fld_name]);
   // Build our new form element.
   $ctypes = db_query('SELECT ctd.auth_type, ctd.title
-                      FROM {biblio_contributor_type} ct, {biblio_contributor_type_data} ctd
-                      WHERE ct.auth_type = ctd.auth_type AND ct.biblio_type = %d
+                      FROM {biblio_contributor_type} ct 
+                      INNER JOIN {biblio_contributor_type_data} ctd ON ct.auth_type = ctd.auth_type 
+                      WHERE ct.biblio_type = %d
                       ORDER BY auth_type ASC', $tid);
   while ($ctype = db_fetch_object($ctypes)) {
     $choice = new stdClass();
@@ -1264,7 +1262,7 @@ function biblio_citekey_generate($node) {
   }
 }
 
-  /**
+/**
  * Implementation of hook_view().
  *
  */
@@ -1915,10 +1913,11 @@ function biblio_diff(&$old_node, &$new_node) {
   )
   );
 
-  $db_result = db_query('SELECT b.`name`, btd.`title`, bt.`weight`
-                      FROM {biblio_fields} b, {biblio_field_type} bt, {biblio_field_type_data} btd
-                      WHERE bt.fid=b.fid AND btd.ftdid=bt.ftdid
-                      AND bt.`tid`=%d order by weight',$old_node->biblio_type );
+  $db_result = db_query('SELECT b.name, btd.title, bt.weight
+                      FROM {biblio_fields} b
+                      INNER JOIN {biblio_field_type} bt ON bt.fid=b.fid
+                      INNER JOIN {biblio_field_type_data} btd ON btd.ftdid=bt.ftdid
+                      WHERE bt.tid=%d ORDER BY weight',$old_node->biblio_type );
   while ($field = db_fetch_object($db_result)) {
     $name = $field->name;
     $old = $new = '';

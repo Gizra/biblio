@@ -272,7 +272,7 @@ function theme_biblio_tabular($node, $base = 'biblio', $teaser = false) {
       $rows[] = array(
         array(
           'data' => '<span class="biblio-row-title">'. $row['title'] .'</span>',
-	      'class' => 'biblio-left-td'
+          'class' => 'biblio-left-td'
         ),
         array(
           'data' => '&nbsp;&nbsp;'
