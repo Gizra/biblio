@@ -9,7 +9,7 @@ fid,title,hint, common, autocomplete, required, weight, visible,field name,type,
 8,Other Author Affiliations,,0,0,0,24,0,biblio_other_author_affiliations,textfield,60,255
 9,Publisher,,0,0,0,19,0,biblio_publisher,textfield,60,255
 10,Place Published,,0,0,0,20,0,biblio_place_published,textfield,60,255
-11,Year of Publication,(yyyy)  [Enter 9999 for Submitted; 9998 for In Press] ,1,0,1,-45,1,biblio_year,textfield,4,4
+11,Year of Publication,(yyyy)  [Enter 9999 for Submitted; 9998 for In Press] ,1,0,1,-45,1,biblio_year,textfield,4,20
 12,Edition,,0,0,0,15,0,biblio_edition,textfield,60,255
 13,Volume,,0,0,0,14,0,biblio_volume,textfield,10,10
 14,Number,,0,0,0,16,0,biblio_number,textfield,10,10
