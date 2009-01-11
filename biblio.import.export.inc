@@ -196,7 +196,8 @@ global  $session_id;
 
       }else{
         $session_id = microtime();
-        $content = biblio_import($import_file, $filetype, $userid, $terms, $batch_proc, $session_id);
+        $dummy = array();
+        $content = biblio_import($import_file, $filetype, $userid, $terms, $batch_proc, $session_id, $dummy);
       }
       file_delete($import_file->filepath);
     } else {
@@ -284,7 +285,7 @@ function biblio_export_form_submit($form, & $form_state) {
  * @return
  *   An array the node id's of the items imported
  */
-function biblio_import($import_file, $type, $userid = 1, $terms = NULL, $batch = FALSE, $id = NULL, &$context = NULL) {
+function biblio_import($import_file, $type, $userid = 1, $terms = NULL, $batch = FALSE, $id = NULL, &$context ) {
 
   global $user, $batch_proc, $session_id, $biblio_uid;
   $batch_proc = $batch;
@@ -600,7 +601,6 @@ function biblio_save_node($node, $batch = FALSE, $session_id = NULL) {
   if (module_exists('i18n') && variable_get('i18n_node_biblio', 0)) {
     $node['language'] = module_invoke('i18n', 'default_language');
   }
-  $account = user_load($userid);
   $node_template = array (
       'type' => 'biblio',
       'comment' => variable_get('comment_biblio', 0),
@@ -609,8 +609,6 @@ function biblio_save_node($node, $batch = FALSE, $session_id = NULL) {
       'sticky' => in_array('sticky', $options),
       'format' => 0,
       'status' => in_array('status', $options),
-      'uid' => user_access('administer nodes') ? $account->uid : $user->uid,
-      'name' => user_access('administer nodes') ? $account->name : $user->name
   );
   
   $node = (object) array_merge($node, $node_template);
