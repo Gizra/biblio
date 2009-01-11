@@ -1,5 +1,7 @@
  todo list (no particular order)
 
+* add the option to change subsorts (i.e. sort by year then within year sort by...)
+* fix display when sorting by author 
 * bibtex handeling of curly braces  http://drupal.org/node/314488
 * add image field http://drupal.org/node/314249
 * check assignment of taxonomy terms  http://drupal.org/node/336344
