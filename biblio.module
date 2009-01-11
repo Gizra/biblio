@@ -749,20 +749,6 @@ function biblio_nodeapi(& $node, $op, $teaser, $page) {
 
   }
 }
-function biblio_node_form_submit(& $node) {
-  if (!is_numeric($node->biblio_year)) {
-    if (drupal_strtoupper($node->biblio_year) == drupal_strtoupper(t("In Press"))) {
-      $node->biblio_year = 9998;
-    }
-    if (drupal_strtoupper($node->biblio_year) == drupal_strtoupper(t("Submitted"))) {
-      $node->biblio_year = 9999;
-    }
-  }
-//  if (variable_get('biblio_keyword_freetagging', 0) && variable_get('biblio_freetagging_vocab', 0)) {
-//    $vid = variable_get('biblio_freetagging_vocab', 0);
-//    $node->taxonomy['tags'][$vid] .= $node->biblio_keywords;
-//  }
-}
 function biblio_form_alter(& $form, $form_state, $form_id) {
   
   if ($form_id == "biblio_node_form") { // this next bit is to remove all the form elements execpt the pub type select box the first time through
@@ -796,26 +782,24 @@ function biblio_form_alter(& $form, $form_state, $form_id) {
  * that will be later placed inside the form.
  */
 function biblio_form($node, $form_state) {
-  //  print_r($node);print_r($form_state);
-  $output = '';
-  $node_tid = $node->biblio_type;
-  $form_state_tid = $form_state['post']['biblio_type'] ? $form_state['post']['biblio_type'] : $form_state['values']['biblio_type'];
+  $tid = $form_state['post']['biblio_type'] ? $form_state['post']['biblio_type'] : $form_state['values']['biblio_type'];
+  if (empty($tid)) $tid = $node->biblio_type;
+
   $show_fields = FALSE;
-  $tid = FALSE;
-  $tid = (!empty($form_state_tid)) ? $form_state_tid : $node_tid;
-  if (!empty($node->nid) || $tid)
-  $show_fields = TRUE;
+  if (!empty($node->nid) || $tid) $show_fields = TRUE;
+
+  $form['#validate'][] = 'biblio_form_validate';
+  $form['#cache'] = TRUE;
+
+  /* publication type */
   $param['options'] = array(
     "enctype" => "multipart/form-data"
     );
-    $result = db_query('SELECT t.* FROM {biblio_types} as t WHERE tid > -2 AND visible = 1');
-    while ($option = db_fetch_object($result)) {
-      $options["$option->tid"] = $option->name;
-    }
-    $form['#validate'][] = 'biblio_form_validate';
-    //  $form['#submit'][] = 'biblio_form_submit';
-    $form['#cache'] = TRUE;
-    $form['biblio_type'] = array(
+  $result = db_query('SELECT t.* FROM {biblio_types} as t WHERE tid > -2 AND visible = 1');
+  while ($option = db_fetch_object($result)) {
+    $options["$option->tid"] = $option->name;
+  }
+  $form['biblio_type'] = array(
     '#type' => 'select',
     '#title' => t('Publication Type'),
     '#default_value' => $tid,
@@ -828,8 +812,8 @@ function biblio_form($node, $form_state) {
     '#multiple' => false,
     '#required' => true
       );
-      if ($show_fields) {
-        $form['title'] = array(
+  if ($show_fields) {
+    $form['title'] = array(
       '#type' => 'textfield',
       '#title' => t('Title'),
       '#required' => TRUE,
@@ -854,85 +838,62 @@ function biblio_form($node, $form_state) {
       '#description' => '',
       '#weight' => 19.5
         );
-        foreach ($fields as $key => $fld) {
-          if ($fld['common'] || $fld['visible']) {
-            if ($fld['type'] == 'textarea') { /* wrap all textarea fields in collapsed field sets to save
-              * space on the page
-              */
-              $colapse_field = $fld['name'] .'_field';
-              $form[$colapse_field] = array(
+    foreach ($fields as $key => $fld) {
+      $main_area = $fld['common'] || $fld['visible'];
+      if ($fld['type'] == 'contrib_widget') {
+        if ($main_area)
+          _biblio_contributor_widget($form, $node, $fld, $tid);
+        else
+          _biblio_contributor_widget($form['other_fields'], $node, $fld, $tid,TRUE);
+      } else {
+        $field_widget = array(
+            '#default_value' => $node->$key,
+            '#type' => $fld['type'],
+            '#title' => $fld['title'],
+            '#size' => $fld['size'],
+            '#required' => $fld['required'],
+            '#maxlength' => $fld['maxsize'],
+            '#weight' => $fld['weight'] / 10,
+            '#autocomplete_path' => ($fld['autocomplete']) ? 'biblio/autocomplete/'. $fld['name'] : '',
+            '#description' => $fld['hint']
+              );
+        // increase length of year field to allow "In Press" and "Submitted" input
+        if ($key == 'biblio_year') $field_widget['#maxlength'] = 20;
+        
+        if ($main_area && $fld['type'] == 'textarea') { 
+          /* wrap all textarea fields in collapsed field sets to save space on the page */
+          $field_widget = array(
             '#type' => 'fieldset',
             '#collapsible' => TRUE,
             '#collapsed' => TRUE,
             '#title' => $fld['title'],
             '#description' => '',
-            '#weight' => $fld['weight'] / 10
-              );
-              $form[$colapse_field][$key] = array(
-            '#default_value' => $node->$key,
-            '#type' => $fld['type'],
-            '#title' => $fld['title'],
-            '#size' => $fld['size'],
-            '#required' => $fld['required'],
-            '#maxlength' => $fld['maxsize'],
             '#weight' => $fld['weight'] / 10,
-            '#autocomplete_path' => ($fld['autocomplete']) ? 'biblio/autocomplete/'. $fld['name'] : '',
-            '#description' => $fld['hint']
+            $key => $field_widget
               );
-            }
-            elseif ($fld['type'] == 'textfield') { // this is a regular textfield
-              $form[$key] = array(
-            '#default_value' => $node->$key,
-            '#type' => $fld['type'],
-            '#title' => $fld['title'],
-            '#size' => $fld['size'],
-            '#required' => $fld['required'],
-            '#maxlength' => $fld['maxsize'],
-            '#weight' => $fld['weight'] / 10,
-            '#autocomplete_path' => ($fld['autocomplete']) ? 'biblio/autocomplete/'. $fld['name'] : '',
-            '#description' => $fld['hint']
-              );
-            }
-            elseif ($fld['type'] == 'contrib_widget') {
-              _biblio_contributor_widget($form, $node, $fld, $form_state_tid);
-            }
-          }
-          else { /* add remaining which have not been specifcally associated with
-            * this type to the "Other Biblio Fields" fieldset
-            */
-            if ($fld['type'] == 'contrib_widget') {
-              _biblio_contributor_widget($form['other_fields'], $node, $fld, $form_state_tid,TRUE);
-            }
-            else {
-              $form['other_fields'][$key] = array(
-            '#default_value' => $node-> $key,
-            '#type' => $fld['type'],
-            '#title' => $fld['title'],
-            '#size' => $fld['size'],
-            '#required' => $fld['required'],
-            '#maxlength' => $fld['maxsize'],
-            '#weight' => $fld['weight'] / 10,
-            '#autocomplete_path' => ($fld['autocomplete']) ? 'biblio/autocomplete/'. $fld['name'] : '',
-            '#description' => $fld['hint']
-              );
-            }
-          }
+          $key = $fld['name'] .'_field';
         }
-        if (isset($form_state['contributor_count'])) {
-          $contributor_count = $form_state['contributor_count'];
-        }
-        else {
-          $contributor_count = max(4, empty($node->contributors) ? 2 : count($node->contributors));
-        }
-        $form['body_field'] = array(
+        // embed field directly or in "Other Fields" fieldset
+        if ($main_area) $form[$key] = $field_widget;
+        else $form['other_fields'][$key] = $field_widget;
+      }
+    }
+    if (isset($form_state['contributor_count'])) {
+      $contributor_count = $form_state['contributor_count'];
+    }
+    else {
+      $contributor_count = max(4, empty($node->contributors) ? 2 : count($node->contributors));
+    }
+
+    $form['body_field'] = array(
       '#type' => 'fieldset',
       '#collapsible' => TRUE,
       '#collapsed' => TRUE,
       '#title' => t('Full Text'),
       '#description' => '',
       '#weight' => 19
-        );
-        $form['body_field']['body'] = array(
+    );
+    $form['body_field']['body'] = array(
       '#type' => 'textarea',
       '#title' => t('Full Text'),
       '#default_value' => $node->body,
@@ -940,10 +901,11 @@ function biblio_form($node, $form_state) {
       '#required' => FALSE,
       '#description' => t('You may enter a full text or HTML version of the publication here.'),
       '#weight' => 19
-        );
-        $form['format'] = filter_form($node->format, 20);
-      }
-      return $form;
+    );
+    // embed filter form in "Full Text" fieldset, because it applies to the full text only
+    $form['body_field']['format'] = filter_form($node->format, 20);
+  }
+  return $form;
 }
 // $biblio_type must be passed when we authors are not visible and we got $form['other_fields']
 // passed as $form, because we don't have $form['biblio_type'] available then.
