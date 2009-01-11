@@ -138,7 +138,7 @@ function biblio_build_query($arg_list) {
       break;
     case 'year':
     default:
-      $sortby = "ORDER BY b.biblio_year %s,  SUBSTRING(n.title,1,3) ASC ";
+      $sortby = "ORDER BY b.biblio_year %s, b.biblio_date %s, SUBSTRING(n.title,1,3) ASC ";
   } //end switch
   if (!isset($_SESSION['biblio_filter']) || !is_array($_SESSION['biblio_filter'])) {
     $_SESSION['biblio_filter'] = array();
@@ -299,7 +299,7 @@ function biblio_build_query($arg_list) {
               break;
             case 'year':
             default:
-              $sortby = "ORDER BY b.biblio_year %s, SUBSTRING(n.title,1,1) ASC, b.biblio_type ASC ";
+              $sortby = "ORDER BY b.biblio_year %s, b.biblio_date %s,SUBSTRING(n.title,1,1) ASC, b.biblio_type ASC ";
           } //end switch
           break;
             case 'search':
@@ -341,6 +341,7 @@ function biblio_build_query($arg_list) {
   $count_query = db_rewrite_sql("SELECT COUNT(DISTINCT(n.nid)) FROM {node} n $joins  WHERE $where_clause $published $limit ");
   $_SESSION['last_biblio_query'] = $query;
   $terms[] = $sort_attrib['order']; // this is either asc or desc to be inserted into the first term of the ORDER clause
+  if($sort_attrib['sort'] == 'year') $terms[] = $sort_attrib['order']; // we need any extra order term when sorting by year since there are to date terms biblio_year and biblio_date
   $_SESSION['last_biblio_query_terms'] = $terms;
 
   return (array('query'      => $query,
