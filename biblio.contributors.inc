@@ -79,14 +79,14 @@ function biblio_authors_add_etal (&$authors, $type) {
 function biblio_parse_contributors($contributors) {
   $authors = array(); $etal = array();
   foreach ($contributors as $author) {
+    // remove any form of "et al" from name field, because it confuses biblio_parse_author
+    $author_cleaned = preg_replace("/et\.?\s+al\.?/",'',$author['name'],-1);
+    if ($author_cleaned != $author['name']) { // if "et al" was present:
+      $author['name'] = $author_cleaned;  // store cleaned name 
+      $etal[$author['auth_type']] = true; // mark it as "to be added" in $etal array 
+    }
     $author['name'] = trim($author['name']); 
     if (strlen($author['name'])) {
-      $count=0;
-      // remove any form of "et al" from name field, because it confuses biblio_parse_author
-      $author['name'] = preg_replace("/et\.?\s+al\.?/",'',$author['name'],-1,$count);
-      // if "et al" was present, mark it as "to be added" in $etal array
-      if ($count && $author['auth_type'] != 1) $etal[$author['auth_type']] = true;
-
       biblio_parse_author($author);
       $authors[] = (array) $author;
     }
@@ -296,20 +296,6 @@ function _grabSurname($input) {
   $surname,
   FALSE
   );
-}
-/**
- * @param $type
- * @return unknown_type
- */
-function _typeMap($type) {
-  static $typeMap = array();
-  if (empty ($typeMap)) {
-    $result = db_query("SELECT * FROM {biblio_contributor_type} ;");
-    while ($type = db_fetch_object($result)) {
-      $typeMap[$type->type] = $type->ct_id;
-    }
-  }
-  return $typeMap[$type];
 }
 /**
  * @return unknown_type
