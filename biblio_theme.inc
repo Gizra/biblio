@@ -196,12 +196,6 @@ function theme_biblio_tabular($node, $base = 'biblio', $teaser = false) {
   $style_name = variable_get('biblio_style', 'cse');
   module_load_include('inc','biblio',"biblio_style_$style_name");
   $author_style_function = "_$style_name"."_format_authors";
-  if (function_exists("_$style_name"."_format_authors")) {
-    $author_style_function = "_$style_name"."_format_authors";
-  }
-  else {
-    $author_style_function = biblio_get_contributor_strings;
-  }
   $fields = _biblio_get_field_information($node->biblio_type);
   $fields[] = array(
     'type' => 'textarea',
