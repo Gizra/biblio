@@ -440,8 +440,8 @@ function biblio_menu() {
       'title' => t('My publications'),
       'page callback' => 'biblio_get_user_pubs',
       'page arguments' => array(2),
-      'access callback' => 'user_view_access',
-      'access arguments' => array(2),
+      'access callback' => '_biblio_profile_access',
+      'access arguments' => array(2, 'menu'),
       'parent' => '',
       'file' => 'biblio.pages.inc',
   );
@@ -471,12 +471,11 @@ function biblio_menu() {
       'file' => 'biblio.admin.inc',
       'type' => MENU_CALLBACK
   );
-
   $items["user/%user/$base"] = array(
     'title' => t('Publications'),
     'page callback' => 'biblio_get_user_pubs',
     'page arguments' => array(1, 'profile'),
-    'access callback' => 'user_view_access',
+    'access callback' => '_biblio_profile_access',
     'access arguments' => array(1),
     'file' => 'biblio.pages.inc',
     'type' => MENU_LOCAL_TASK
@@ -1942,3 +1941,7 @@ function biblio_token_values($type, $object = NULL) {
   return $values;
 }
 
+function _biblio_profile_access($user, $type = 'profile') {
+  if ($type == 'profile') return $user->biblio_show_profile;
+  if ($type == 'menu')    return $user->biblio_my_pubs_menu;
+}
