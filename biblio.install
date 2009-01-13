@@ -48,49 +48,11 @@ function biblio_uninstall(){
   }
 
   drupal_uninstall_schema('biblio');
-
-  variable_del('biblio_collection_vocabulary');
-  variable_del('biblio_keyword_vocabulary');
-  variable_del('biblio_annotations');
-  variable_del('biblio_base');
-  variable_del('biblio_base_title');
-  variable_del('biblio_baseopenurl');
-  variable_del('biblio_block_order');
-  variable_del('biblio_block_title');
-  variable_del('biblio_footnotes_integration');
-  variable_del('biblio_freetagging_vocab');
-  variable_del('biblio_inlinemode_in_links');
-  variable_del('biblio_keyword_freetagging');
-  variable_del('biblio_keyword_sep');
-  variable_del('biblio_last_ftdid');
-  variable_del('biblio_links_target_new_window');
-  variable_del('biblio_link_title_url');
-  variable_del('biblio_max_user_tid');
-  variable_del('biblio_my_pubs_menu');
-  variable_del('biblio_node_layout');
-  variable_del('biblio_normalize');
-  variable_del('biblio_openurlimage');
-  variable_del('biblio_order');
-  variable_del('biblio_profile_uid');
-  variable_del('biblio_rowsperpage');
-  variable_del('biblio_rss');
-  variable_del('biblio_rss_number_of_entries');
-  variable_del('biblio_rowsperblock');
-  variable_del('biblio_show_profile');
-  variable_del('biblio_show_profile_tab');
-  variable_del('biblio_search');
-  variable_del('biblio_index');
-  variable_del('biblio_search_button_text');
-  variable_del('biblio_sort');
-  variable_del('biblio_sort_tabs');
-  variable_del('biblio_style');
-  variable_del('biblio_view_only_own');
-  variable_del('biblio_auto_citekey');
-  variable_del('biblio_citekey_field1');
-  variable_del('biblio_citekey_field2');
-  variable_del('biblio_citekey_prefix');
-  variable_del('biblio_citekey_phpcode');
   
+  $vars = db_query("SELECT * FROM {variable} WHERE name LIKE 'biblio_%'");
+  while ($var = db_fetch_object($vars)) {
+    variable_del($var->name);
+  }
   
   cache_clear_all();
   
@@ -720,6 +682,13 @@ function biblio_schema() {
         'unsigned' => TRUE,
         'default' => 1,
         'description' =>'{biblio_contributor_type}.auth_type of the node',
+        ),
+        'auth_catagory' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'default' => 1,
+        'description' =>'',
         ),
         'rank' => array(
         'type' => 'int',

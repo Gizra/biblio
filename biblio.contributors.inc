@@ -40,14 +40,16 @@ function biblio_get_contributor($aid) {
  */
 function biblio_load_contributors($vid, $biblio_type) {
   $contributors = array();
-  $query = "SELECT bcd.*, bct.auth_catagory,  bc.auth_type, bc.rank
-						FROM {biblio_contributor} bc
-						INNER JOIN {biblio_contributor_data} bcd ON bc.cid=bcd.cid
-						LEFT JOIN {biblio_contributor_type} bct ON bc.auth_type=bct.auth_type AND bct.biblio_type=$biblio_type
-						WHERE bc.vid=$vid
-						ORDER BY bc.auth_type ASC, bc.rank ASC";
-
-  $result = db_query($query);
+//  $query = "SELECT bcd.*, bct.auth_catagory,  bc.auth_type, bc.rank
+//						FROM {biblio_contributor} bc
+//						INNER JOIN {biblio_contributor_data} bcd ON bc.cid=bcd.cid
+//						LEFT JOIN {biblio_contributor_type} bct ON bc.auth_type=bct.auth_type AND bct.biblio_type=$biblio_type
+//						WHERE bc.vid=$vid
+//						ORDER BY bc.auth_type ASC, bc.rank ASC";
+  $query = "SELECT * FROM {biblio_contributor} bc
+  					INNER JOIN {biblio_contributor_data} bcd ON bc.cid=bcd.cid
+  					WHERE bc.vid=%d";
+  $result = db_query($query, array($vid));
   while ($creator = db_fetch_array($result)) {
     $contributors[] = $creator;
   }
@@ -114,6 +116,7 @@ function biblio_save_contributors($node, $update = FALSE) {
  * @return success of database operations
  */
 function _save_contributors($authors, $nid, $vid, $update = FALSE) {
+
   $rank = 0;
   $md5 = _loadMD5();
   db_query('DELETE FROM {biblio_contributor} WHERE nid = %d AND vid = %d', array($nid, $vid));
@@ -128,13 +131,16 @@ function _save_contributors($authors, $nid, $vid, $update = FALSE) {
       $cid = $author['cid'];
     }
     $author = (array) $author;
+    list($auth_type,$auth_cat) = explode(":", $author['auth_type']); 
     $link_array = array(
       'nid' => $nid,
       'vid' => $vid,
       'cid' => $cid,
       'rank' => $rank++,
-      'auth_type' => $author['auth_type']
+      'auth_type' => $auth_type,
+      'auth_catagory' => $auth_cat
     );
+
     if (!drupal_write_record('biblio_contributor', $link_array)) return false;
   }
   return true; // successfully saved all contributors
