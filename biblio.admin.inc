@@ -1054,14 +1054,18 @@ function biblio_admin_author_edit_form($form_state, $author_id){
     '#type' => 'value',
     '#value' => $author_id
   );
+  $users = db_query('SELECT uid,name FROM {users} WHERE uid>0 ORDER BY name');
+  $options[0] = 'Please choose';
+  while($user=db_fetch_array($users)) {
+    $options[$user['uid']] = $user['name'];
+  }
   $form['drupal_uid'] = array(
-    '#type' => 'textfield',
+    '#type' => 'select',
     '#title' => t('Drupal User ID'),
+		'#options' => $options,
     '#default_value' => $author->drupal_uid,
-    '#size' => 10,
     '#weight' => 12,
     '#required' => false,
-    '#maxlength' => 128
     );
   $form['name'] = array(
     '#type' => 'textfield',
@@ -1134,19 +1138,10 @@ function biblio_admin_author_edit_form($form_state, $author_id){
   return $form;
 }
 function biblio_admin_author_edit_form_validate($form, &$form_state) {
-  if (!empty($form_state['values']['drupal_uid']) && (!is_numeric($form_state['values']['drupal_uid']))  )  {
-    form_set_error('', t('The Drupal User ID must be an integer value'));
-  }
-  if (!empty($form_state['values']['drupal_uid']) && (is_numeric($form_state['values']['drupal_uid']))
-       && !user_load($form_state['values']['drupal_uid'])  )  {
-    form_set_error('', t('The Drupal User ID (@uid) does not exist',array('@uid' => $form_state['values']['drupal_uid'])));
-  }
   foreach($form_state['values'] as $key => $value){
         $form_state['values'][$key] = trim($value);
-  }
-  
+  }  
 }
 function biblio_admin_author_edit_form_submit($form, &$form_state) {
    drupal_write_record('biblio_contributor_data', $form_state['values'], 'cid');
-
 }
