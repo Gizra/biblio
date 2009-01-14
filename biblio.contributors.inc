@@ -40,16 +40,12 @@ function biblio_get_contributor($aid) {
  */
 function biblio_load_contributors($vid, $biblio_type) {
   $contributors = array();
-//  $query = "SELECT bcd.*, bct.auth_category,  bc.auth_type, bc.rank
-//						FROM {biblio_contributor} bc
-//						INNER JOIN {biblio_contributor_data} bcd ON bc.cid=bcd.cid
-//						LEFT JOIN {biblio_contributor_type} bct ON bc.auth_type=bct.auth_type AND bct.biblio_type=$biblio_type
-//						WHERE bc.vid=$vid
-//						ORDER BY bc.auth_type ASC, bc.rank ASC";
   $query = "SELECT * FROM {biblio_contributor} bc
-  					INNER JOIN {biblio_contributor_data} bcd ON bc.cid=bcd.cid
-  					WHERE bc.vid=%d";
-  $result = db_query($query, array($vid));
+			INNER JOIN {biblio_contributor_data} bcd ON bc.cid=bcd.cid
+			WHERE bc.vid=$vid
+			ORDER BY bc.rank ASC"; // do not change order of presentation
+
+  $result = db_query($query);
   while ($creator = db_fetch_array($result)) {
     $contributors[] = $creator;
   }

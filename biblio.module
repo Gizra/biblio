@@ -856,8 +856,6 @@ function biblio_form($node, $form_state) {
             '#autocomplete_path' => ($fld['autocomplete']) ? 'biblio/autocomplete/'. $fld['name'] : '',
             '#description' => $fld['hint']
               );
-        // increase length of year field to allow "In Press" and "Submitted" input
-        if ($key == 'biblio_year') $field_widget['#maxlength'] = 20;
         
         if ($main_area && $fld['type'] == 'textarea') { 
           /* wrap all textarea fields in collapsed field sets to save space on the page */
@@ -931,9 +929,7 @@ function _biblio_contributor_widget(& $form, $node, $fld, $biblio_type = NULL, $
                       ORDER BY auth_category ASC', $biblio_type);
 
   while ($ctype = db_fetch_object($ctypes)) {
-    $choice = new stdClass();
-    $choice->option = array("$ctype->auth_type:$ctype->auth_category" => $ctype->title);
-	$options[] = $choice;
+    $options["$ctype->auth_type:$ctype->auth_category"] = $ctype->title;
   }
   $type_name = drupal_ucfirst(str_replace('_', ' ', $fld['type']));
   // Add a wrapper for the choices and more button.
@@ -1000,15 +996,13 @@ function _biblio_contributor_form($delta, $fld_name, $name = null, $cid = null, 
       )
     );
     
-    list($type, $category) = explode(':',$auth_type);
+	list($type, $category) = explode(':',$auth_type);
     $ctypes = db_query('SELECT ctd.auth_type, ctd.title
-                    		FROM {biblio_contributor_type_data} ctd WHERE ctd.auth_type = %d', $type);
+                    	FROM {biblio_contributor_type_data} ctd WHERE ctd.auth_type = %d', $type);
     while ($ctype = db_fetch_object($ctypes)) {
-      $choice = new stdClass();
-      $choice->option = array($ctype->auth_type.":$category" => $ctype->title);
-      if (array_search($choice, $types) === FALSE) $types[] = $choice;
+      $types["$ctype->auth_type:$category"] = $ctype->title;
     }
-    $form['auth_type'] = array(
+  $form['auth_type'] = array(
     '#type' => 'select',
     '#title' => t('Type'),
     '#default_value' => $auth_type,
@@ -1020,7 +1014,7 @@ function _biblio_contributor_form($delta, $fld_name, $name = null, $cid = null, 
       'auth_type'
       )
       );
-      $form['cid'] = array(
+  $form['cid'] = array(
     '#type' => 'hidden',
     '#value' => $cid,
     '#parents' => array(

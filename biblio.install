@@ -1753,13 +1753,17 @@ function biblio_update_6012(){
 function biblio_update_6013() {
   $result = array();
 
-  $result[] = update_sql("ALTER TABLE {biblio_contributor}  ADD `auth_category` INTEGER UNSIGNED DEFAULT 1;");
-  $result[] = update_sql("UPDATE   {biblio} b
+  db_add_field($result, 'biblio_contributor', 'auth_category', 
+    array('type' => 'int', 'not null' => TRUE, 'unsigned' => TRUE, 'default' => 1));
+  $result[] = update_sql("UPDATE {biblio} b
                           INNER JOIN {biblio_contributor} bc on b.vid = bc.vid
                           LEFT JOIN  {biblio_contributor_type} bct on b.biblio_type = bct.biblio_type and bct.auth_type = bc.auth_type
                           SET bc.auth_category=bct.auth_catagory");
-  $result[] = update_sql("ALTER TABLE `test`.`biblio_contributor_type` CHANGE COLUMN `auth_catagory` `auth_category` INTEGER UNSIGNED NOT NULL DEFAULT 0,
+  $result[] = update_sql("ALTER TABLE {biblio_contributor_type} CHANGE COLUMN auth_catagory auth_category INTEGER UNSIGNED NOT NULL DEFAULT 0,
                           DROP PRIMARY KEY,
-                          ADD PRIMARY KEY  USING BTREE(`auth_category`, `biblio_type`, `auth_type`);");
+                          ADD PRIMARY KEY USING BTREE(auth_category, biblio_type, auth_type)");
+
+  $result[] = update_sql("UPDATE {biblio_fields} SET maxsize=20 WHERE name='biblio_year'");
+                          
   return $result;
 }
