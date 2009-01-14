@@ -683,7 +683,7 @@ function biblio_schema() {
         'default' => 1,
         'description' =>'{biblio_contributor_type}.auth_type of the node',
         ),
-        'auth_catagory' => array(
+        'auth_category' => array(
         'type' => 'int',
         'not null' => TRUE,
         'unsigned' => TRUE,
@@ -783,7 +783,7 @@ function biblio_schema() {
     $schema['biblio_contributor_type'] = array(
       'description' =>'Contains definitions of the contributor types',
       'fields' => array(
-        'auth_catagory' => array(
+        'auth_category' => array(
           'type' => 'int',
           'not null' => TRUE,
           'unsigned' => TRUE,
@@ -805,7 +805,7 @@ function biblio_schema() {
           'description' =>'This is the pulication type specific verion of a particular catagory',
         ),
         ),
-    'primary key' => array('auth_catagory','biblio_type', 'auth_type'),
+    'primary key' => array('auth_category','biblio_type', 'auth_type'),
 
         );
 
@@ -1127,7 +1127,7 @@ function _add_custom_field_data() {
   $csv_file = drupal_get_path('module', 'biblio') .'/biblio.field.type.data.csv';
   for ($type = 1; $type <= 4; $type++) {
     for ($biblio_type = 100; $biblio_type <= 130; $biblio_type++) {
-      db_query("INSERT INTO {biblio_contributor_type} (auth_catagory, biblio_type, auth_type) VALUES (%d, %d, %d)",  $type, $biblio_type, $type);
+      db_query("INSERT INTO {biblio_contributor_type} (auth_category, biblio_type, auth_type) VALUES (%d, %d, %d)",  $type, $biblio_type, $type);
     }
   }
   db_query("INSERT INTO {biblio_contributor_type_data} (auth_type, title) VALUES (%d, '%s' )", 1, "Author");
@@ -1179,7 +1179,7 @@ function _add_custom_field_data() {
             $title = trim($row[$column]);
             $biblio_type = $row[1];
             $ctdid = ($eid = _id_by_name($title)) ? $eid :  $next_ctdid;
-            db_query("UPDATE {biblio_contributor_type} SET auth_type=%d where auth_catagory=%d and biblio_type=%d", $ctdid, $type, $biblio_type);
+            db_query("UPDATE {biblio_contributor_type} SET auth_type=%d where auth_category=%d and biblio_type=%d", $ctdid, $type, $biblio_type);
             if(!$eid) {
               db_query("INSERT INTO {biblio_contributor_type_data} (auth_type, title) VALUES (%d, '%s')", $ctdid, $title);
               _id_by_name($title, $ctdid);  // cache the new id value for future use
@@ -1591,14 +1591,14 @@ function _move_field_data(&$result)
 		/* link to old biblio_type_details based on field title and publication type */
 		INNER JOIN {biblio_type_details} otd ON otd.title=ftd.title AND otd.tid=ft.tid
 		SET ft.required=otd.required, ft.weight=otd.weight");
-  // update auth_type associated to (auth_catagory,biblio_type) from old biblio_type_details
+  // update auth_type associated to (auth_category,biblio_type) from old biblio_type_details
   $result[] = update_sql("UPDATE {biblio_contributor_type} ct
 		INNER JOIN 
 			/* select contributor fields from biblio_type_details (fid <= 4) and augment with new ctd.auth_type */
-			(SELECT tid,IF(fid=4,5,fid) AS auth_catagory,ctd.auth_type FROM {biblio_type_details} b 
+			(SELECT tid,IF(fid=4,5,fid) AS auth_category,ctd.auth_type FROM {biblio_type_details} b 
  			 INNER JOIN {biblio_contributor_type_data} ctd ON b.title=ctd.title WHERE b.fid <= 4) otd 
-			/* match on publication type and auth_catagory, fid=4 (corp. author) changed to catagory 5 */
-			ON otd.tid=ct.biblio_type AND otd.auth_catagory=ct.auth_catagory
+			/* match on publication type and auth_category, fid=4 (corp. author) changed to catagory 5 */
+			ON otd.tid=ct.biblio_type AND otd.auth_category=ct.auth_category
 		SET ct.auth_type=otd.auth_type");
 
   return $result;
@@ -1747,5 +1747,19 @@ function biblio_update_6011(){
 function biblio_update_6012(){
   $result = array();
   $result[] = _add_biblio_keywords();
+  return $result;
+}
+
+function biblio_update_6013() {
+  $result = array();
+
+  $result[] = update_sql("ALTER TABLE {biblio_contributor}  ADD `auth_category` INTEGER UNSIGNED DEFAULT 1;");
+  $result[] = update_sql("UPDATE   {biblio} b
+                          INNER JOIN {biblio_contributor} bc on b.vid = bc.vid
+                          LEFT JOIN  {biblio_contributor_type} bct on b.biblio_type = bct.biblio_type and bct.auth_type = bc.auth_type
+                          SET bc.auth_category=bct.auth_catagory");
+  $result[] = update_sql("ALTER TABLE `test`.`biblio_contributor_type` CHANGE COLUMN `auth_catagory` `auth_category` INTEGER UNSIGNED NOT NULL DEFAULT 0,
+                          DROP PRIMARY KEY,
+                          ADD PRIMARY KEY  USING BTREE(`auth_category`, `biblio_type`, `auth_type`);");
   return $result;
 }

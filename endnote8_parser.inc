@@ -86,19 +86,19 @@ function en8_characterData($parser, $data) {
         $node['biblio_contributors'][$contrib_count]['name'] .= $data;
         switch ($contributors) {
           case 'authors' :
-            $node['biblio_contributors'][$contrib_count]['auth_type'] = _biblio_get_auth_type(1, $node['biblio_type']);
+            $node['biblio_contributors'][$contrib_count]['auth_type'] = _biblio_get_auth_type(1, $node['biblio_type']).':1';
             break;
           case 'secondary-authors' :
-            $node['biblio_contributors'][$contrib_count]['auth_type'] = _biblio_get_auth_type(2, $node['biblio_type']);
+            $node['biblio_contributors'][$contrib_count]['auth_type'] = _biblio_get_auth_type(2, $node['biblio_type']).':2';
             break;
           case 'tertiary-authors' :
-            $node['biblio_contributors'][$contrib_count]['auth_type'] = _biblio_get_auth_type(3, $node['biblio_type']);
+            $node['biblio_contributors'][$contrib_count]['auth_type'] = _biblio_get_auth_type(3, $node['biblio_type']).':3';
             break;
           case 'subsidiary-authors' :
-            $node['biblio_contributors'][$contrib_count]['auth_type'] = _biblio_get_auth_type(4, $node['biblio_type']);
+            $node['biblio_contributors'][$contrib_count]['auth_type'] = _biblio_get_auth_type(4, $node['biblio_type']).':4';
             break;
           case 'translated-authors' :
-            $node['biblio_contributors'][$contrib_count]['auth_type'] = _biblio_get_auth_type(5, $node['biblio_type']);
+            $node['biblio_contributors'][$contrib_count]['auth_type'] = _biblio_get_auth_type(5, $node['biblio_type']).':5';
             break;
         }
         break;

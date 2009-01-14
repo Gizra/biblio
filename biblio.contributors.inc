@@ -40,7 +40,7 @@ function biblio_get_contributor($aid) {
  */
 function biblio_load_contributors($vid, $biblio_type) {
   $contributors = array();
-//  $query = "SELECT bcd.*, bct.auth_catagory,  bc.auth_type, bc.rank
+//  $query = "SELECT bcd.*, bct.auth_category,  bc.auth_type, bc.rank
 //						FROM {biblio_contributor} bc
 //						INNER JOIN {biblio_contributor_data} bcd ON bc.cid=bcd.cid
 //						LEFT JOIN {biblio_contributor_type} bct ON bc.auth_type=bct.auth_type AND bct.biblio_type=$biblio_type
@@ -138,7 +138,7 @@ function _save_contributors($authors, $nid, $vid, $update = FALSE) {
       'cid' => $cid,
       'rank' => $rank++,
       'auth_type' => $auth_type,
-      'auth_catagory' => $auth_cat
+      'auth_category' => $auth_cat
     );
 
     if (!drupal_write_record('biblio_contributor', $link_array)) return false;

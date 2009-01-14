@@ -1,5 +1,6 @@
  todo list (no particular order)
 
+* add descriptions to publication types (http://drupal.org/node/358158)
 * add the option to change subsorts (i.e. sort by year then within year sort by...)
 * fix display when sorting by author 
 * bibtex handeling of curly braces  http://drupal.org/node/314488
@@ -11,7 +12,7 @@
 * fix Biblio user warning: empty (sub)expression' from regexp query http://drupal.org/node/349777
 * ubercart integration...  http://drupal.org/node/354373
 * Footnote repetition handling http://drupal.org/comment/reply/134748
-*(DONE) add pathAuto support http://drupal.org/node/89038
-*(DONE) fix author handeling (in contributor widget) http://drupal.org/node/313264
-*(DONE) make citekey database field longer (varchar 255) http://drupal.org/node/282896
-*(DONE) display attachment description rather than file name http://drupal.org/node/314395
+(DONE) add pathAuto support http://drupal.org/node/89038
+(DONE) fix author handeling (in contributor widget) http://drupal.org/node/313264
+(DONE) make citekey database field longer (varchar 255) http://drupal.org/node/282896
+(DONE) display attachment description rather than file name http://drupal.org/node/314395

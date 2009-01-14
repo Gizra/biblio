@@ -81,7 +81,7 @@ function _endnote_tagged_import($file, $terms = array(), $batch = FALSE, $sessio
             case '%A' :
               $node['biblio_contributors'][] = array(
             'name' => $value,
-            'auth_type' => _biblio_get_auth_type(1, $node['biblio_type'])
+            'auth_type' => _biblio_get_auth_type(1, $node['biblio_type']).':1'
               );
               break;
             case '%B' :
@@ -96,7 +96,7 @@ function _endnote_tagged_import($file, $terms = array(), $batch = FALSE, $sessio
             case '%E' :
               $node['biblio_contributors'][] = array(
             'name' => $value,
-            'auth_type' => _biblio_get_auth_type(2, $node['biblio_type'])
+            'auth_type' => _biblio_get_auth_type(2, $node['biblio_type']).':2'
               );
               break;
             case '%F' :
@@ -149,7 +149,7 @@ function _endnote_tagged_import($file, $terms = array(), $batch = FALSE, $sessio
             case '%Y' :
               $node['biblio_contributors'][] = array(
             'name' => $value,
-            'auth_type' => _biblio_get_auth_type(3, $node['biblio_type'])
+            'auth_type' => _biblio_get_auth_type(3, $node['biblio_type']).':3'
               );
               break;
             case '%Z' :

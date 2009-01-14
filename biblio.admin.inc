@@ -620,9 +620,9 @@ function biblio_admin_types_edit_form_submit($form, & $form_state) {
   if ($tid = ($form_state['values']['type_id'])){
   $link['biblio_type'] = $form_state['values']['type_id'];
   for($i=1; $i<6; $i++){
-    $link['auth_catagory'] = $i;
+    $link['auth_category'] = $i;
     $link['auth_type'] = (isset($form_state['values']['contributor_type_'.$i])) ? $form_state['values']['contributor_type_'.$i] : $i;
-    $update = (isset($form_state['values']['contributor_type_'.$i])) ? array('auth_catagory','biblio_type') :array();
+    $update = (isset($form_state['values']['contributor_type_'.$i])) ? array('auth_category','biblio_type') :array();
     drupal_write_record('biblio_contributor_type', $link, $update);
   }
   }
@@ -760,7 +760,7 @@ function biblio_admin_types_add_form_submit($form, & $form_state) {
   // Fill contributor types. Use the first 4 defaults.
   for ($type = 1; $type <= 4; $type++) {
     $ct_vals = array (
-      'auth_catagory' => $type,
+      'auth_category' => $type,
       'biblio_type' => $values['tid'],
       'auth_type' => $type,
       );

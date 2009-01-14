@@ -21,15 +21,15 @@
  *
  */
 
-function _biblio_get_auth_type($auth_catagory, $biblio_type){
+function _biblio_get_auth_type($auth_category, $biblio_type){
   static $auth_type = array();
   if (empty($auth_type)){
     $db_res = db_query("SELECT * FROM {biblio_contributor_type");
     while ($row = db_fetch_object($db_res)){
-      $auth_type[$row->auth_catagory][$row->biblio_type]=$row->auth_type;
+      $auth_type[$row->auth_category][$row->biblio_type]=$row->auth_type;
     }
   }
-  return (isset($auth_type[$auth_catagory][$biblio_type]))? $auth_type[$auth_catagory][$biblio_type] : null;
+  return (isset($auth_type[$auth_category][$biblio_type]))? $auth_type[$auth_category][$biblio_type] : null;
 }
 function _biblio_get_field_information($biblio_type){
   $result = db_query("SELECT b.*, btd.*, btt.name AS type_name
@@ -924,15 +924,15 @@ function _biblio_contributor_widget(& $form, $node, $fld, $biblio_type = NULL, $
     $biblio_type = (isset($node['biblio_type']))?$node['biblio_type']:$form['biblio_type']['#default_value'];
   }
 
-  $ctypes = db_query('SELECT auth_catagory, ctd.auth_type, ctd.title
+  $ctypes = db_query('SELECT auth_category, ctd.auth_type, ctd.title
                       FROM {biblio_contributor_type} ct 
                       INNER JOIN {biblio_contributor_type_data} ctd ON ct.auth_type = ctd.auth_type
                       WHERE ct.biblio_type = %d
-                      ORDER BY auth_catagory ASC', $biblio_type);
+                      ORDER BY auth_category ASC', $biblio_type);
 
   while ($ctype = db_fetch_object($ctypes)) {
     $choice = new stdClass();
-    $choice->option = array("$ctype->auth_type:$ctype->auth_catagory" => $ctype->title);
+    $choice->option = array("$ctype->auth_type:$ctype->auth_category" => $ctype->title);
 	$options[] = $choice;
   }
   $type_name = drupal_ucfirst(str_replace('_', ' ', $fld['type']));
@@ -958,7 +958,7 @@ function _biblio_contributor_widget(& $form, $node, $fld, $biblio_type = NULL, $
     for ($delta = 0; $delta < $contributor_count; $delta++) {
       $name = isset($node[$fld['name']][$delta]) ? $node[$fld['name']][$delta]['name'] : '';
       $creator_id  = isset($node[$fld['name']][$delta]) ? $node[$fld['name']][$delta]['cid'] : '';
-      $auth_type = isset($node[$fld['name']][$delta]) ? $node[$fld['name']][$delta]['auth_type'].':'.$node[$fld['name']][$delta]['auth_catagory'] : '';
+      $auth_type = isset($node[$fld['name']][$delta]) ? $node[$fld['name']][$delta]['auth_type'].':'.$node[$fld['name']][$delta]['auth_category'] : '';
       //  $type = isset($node->$fld['name'][$delta]['type']) ? $node->$fld['name'][$delta]['type'] : $type;
       $form[$fld['name'] .'_wrapper'][$fld['name']][$delta] = _biblio_contributor_form($delta, $fld['name'], $name, $creator_id, $auth_type, $options, $fld['autocomplete']);
     }
@@ -999,12 +999,13 @@ function _biblio_contributor_form($delta, $fld_name, $name = null, $cid = null, 
       'name'
       )
     );
-    list($auth_type, $auth_cat) = explode(':',$auth_type);
+    
+    list($type, $category) = explode(':',$auth_type);
     $ctypes = db_query('SELECT ctd.auth_type, ctd.title
-                    		FROM {biblio_contributor_type_data} ctd WHERE ctd.auth_type = %d', $auth_type);
+                    		FROM {biblio_contributor_type_data} ctd WHERE ctd.auth_type = %d', $type);
     while ($ctype = db_fetch_object($ctypes)) {
       $choice = new stdClass();
-      $choice->option = array($ctype->auth_type => $ctype->title);
+      $choice->option = array($ctype->auth_type.":$category" => $ctype->title);
       if (array_search($choice, $types) === FALSE) $types[] = $choice;
     }
     $form['auth_type'] = array(

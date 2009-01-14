@@ -59,24 +59,24 @@ function en7_characterData($parser, $data) {
       case 'AUTHOR':
         $node['biblio_contributors'][] = array(
             'name' => $data,
-            'auth_type' => _biblio_get_auth_type(1, $node['biblio_type'])
+            'auth_type' => _biblio_get_auth_type(1, $node['biblio_type']).':1'
         );
         break;
       case 'SECONDARY_AUTHOR':
         $node['biblio_contributors'][] = array(
             'name' => $data,
-            'auth_type' => _biblio_get_auth_type(2, $node['biblio_type'])
+            'auth_type' => _biblio_get_auth_type(2, $node['biblio_type']).':2'
         );
       case 'TERTIARY_AUTHOR':
         $node['biblio_contributors'][] = array(
             'name' => $data,
-            'auth_type' => _biblio_get_auth_type(3, $node['biblio_type'])
+            'auth_type' => _biblio_get_auth_type(3, $node['biblio_type']).':3'
         );
         break;
       case 'SUBSIDIARY_AUTHOR':
         $node['biblio_contributors'][] = array(
             'name' => $data,
-            'auth_type' => _biblio_get_auth_type(4, $node['biblio_type'])
+            'auth_type' => _biblio_get_auth_type(4, $node['biblio_type']).':4'
         );
         break;
       case 'KEYWORD':

@@ -104,7 +104,7 @@ function theme_biblio_long($node, $base = 'biblio', $style = 'classic') {
     return $output;
   }
   foreach ($node->biblio_contributors as $auth) {
-    if ($auth['auth_catagory'] == 1)
+    if ($auth['auth_category'] == 1)
       $authors .= (!empty ($authors)) ? '; '. _biblio_author_link($auth['name'], $auth['cid']) : _biblio_author_link($auth['name'], $auth['cid']);
   }
   $openurl_base = variable_get('biblio_baseopenurl', '');
@@ -225,12 +225,12 @@ function theme_biblio_tabular($node, $base = 'biblio', $teaser = false) {
     $node->biblio_url = l($node->biblio_url, $node->biblio_url, $attrib);
   }
   $contrib_array = $author_style_function ($node->biblio_contributors);
-  $ctypes = db_query('SELECT auth_catagory,title
+  $ctypes = db_query('SELECT auth_category,title
                       FROM {biblio_contributor_type} ct, {biblio_contributor_type_data} ctd
                       WHERE ct.auth_type = ctd.auth_type AND ct.biblio_type = %d
-                      ORDER BY auth_catagory ASC', $tid);
+                      ORDER BY auth_category ASC', $tid);
   while ($ctype = db_fetch_object($ctypes)) {
-    if (!empty ($contrib_array[$ctype->auth_catagory])) {
+    if (!empty ($contrib_array[$ctype->auth_category])) {
       $rows[] = array(
         array(
           'data' => '<span class="biblio-row-title">'. t('!typename',
@@ -242,7 +242,7 @@ function theme_biblio_tabular($node, $base = 'biblio', $teaser = false) {
       ), array(
         'data' => '&nbsp;&nbsp;'
       ), array(
-        'data' => $contrib_array[$ctype->auth_catagory]
+        'data' => $contrib_array[$ctype->auth_category]
       ));
     }
   }

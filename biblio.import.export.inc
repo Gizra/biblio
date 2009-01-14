@@ -814,7 +814,7 @@ function biblio_endnote_tagged_export($results) {
       $doc .= "%T ". trim($pub->title) ."\r\n";
     if (count($pub->biblio_contributors)) {
       foreach ($pub->biblio_contributors as $auth) {
-        switch ($auth['auth_catagory']) {
+        switch ($auth['auth_category']) {
           case 1 :
             $doc .= "%A ". trim($auth['name']) ."\r\n";
             break;

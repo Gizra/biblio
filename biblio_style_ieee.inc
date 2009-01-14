@@ -89,7 +89,7 @@ function _ieee_format_authors($contributors, $inline = FALSE) {
         $base = variable_get('biblio_base', 'biblio');
         $format = _biblio_author_link($format, $author['cid'], $base, $inline);
       }
-      $author_array[$author['auth_catagory']] .= (!empty ($author_array[$author['auth_catagory']])) ? ', ' . $format : $format;
+      $author_array[$author['auth_category']] .= (!empty ($author_array[$author['auth_category']])) ? ', ' . $format : $format;
     }
   }
   if (count($author_array)) {
