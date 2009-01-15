@@ -351,18 +351,17 @@ function biblio_user($type, & $edit, & $user, $category = NULL) {
     _biblio_get_user_profile_form($form, $user);
     return $form;
   }
-/*  if ($type == 'validate' && $category == 'account') {
-    if (($edit['biblio_profile_uid'] == 'lastname' || $edit['biblio_profile_uid'] == 'uid_lastname') && $edit['biblio_lastname'] == '') {
-      $message = t('You did not supply a value in the "My last name" field of the "My publications" section.');
-      form_set_error('category', $message);
+  if ($type == 'validate' && $category == 'account') { // TODO: this is not reached at all
+    if (($edit['biblio_my_pubs_menu'] || $edit['biblio_show_profile']) && $edit['biblio_contributor_id'] == 0) {
+      $message = t('You did not supply an associated biblio author.');
+      form_set_error('biblio_contributor_id', $message);
     }
   }
-*/
   if ($type == 'after_update' && $category == 'account') {
     menu_rebuild();
   }
   if ($type == 'update' && $category == 'account') {
-    if (!empty($edit['biblio_contributor_id'])) {
+    if ($edit['biblio_contributor_id'] > 0) {
       db_query('UPDATE {biblio_contributor_data} set drupal_uid = %d WHERE cid = %d ', $user->uid, $edit['biblio_contributor_id']);
     }
   }
@@ -476,7 +475,7 @@ function biblio_menu() {
     'page callback' => 'biblio_get_user_pubs',
     'page arguments' => array(1, 'profile'),
     'access callback' => '_biblio_profile_access',
-    'access arguments' => array(1),
+    'access arguments' => array(1, 'profile'),
     'file' => 'biblio.pages.inc',
     'type' => MENU_LOCAL_TASK
   );
@@ -488,7 +487,6 @@ function biblio_menu() {
     'page arguments' => array('biblio_admin_settings'),
     'access arguments' => array('administer biblio'),
     'file' => 'biblio.admin.inc',
-
   );
   $items['admin/settings/biblio/ahah'] = array(
       'title' => '',
