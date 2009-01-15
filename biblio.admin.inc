@@ -1115,12 +1115,12 @@ function biblio_admin_author_edit_form($form_state, $author_id){
   $authors = db_query("SELECT * FROM {biblio_contributor_data} cd WHERE LOCATE('$author->lastname', name) AND cid!=$author_id");
   unset($options);
   while($author=db_fetch_array($authors)) {
-    $options[$author['cid']] = $author['name'];
+    $options[$author['cid']] = l($author['name'],'biblio/author/'.$author['cid'].'/edit/');
     if ($author['affiliation']) $options[$author['cid']] .= ' (' . $author['affiliation'] . ')';
   }
   if ($options) {
     $form['merge_authors'] = array(
-    '#type' => 'select',
+    '#type' => 'checkboxes',
     '#title' => t('Merge similar authors'),
 	'#options' => $options,
     '#weight' => 12,
