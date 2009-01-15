@@ -1015,12 +1015,18 @@ function biblio_reset_types(){
   $result = array();
 
   db_drop_table($result, 'biblio_field_type_data');
-  $schema = drupal_get_schema('biblio_field_type_data');
-  db_create_table($result, 'biblio_field_type_data', $schema);
   db_drop_table($result, 'biblio_field_type');
-  $schema = drupal_get_schema('biblio_field_type');
-  db_create_table($result, 'biblio_field_type', $schema);
-
+  db_drop_table($result, 'biblio_fields');
+  db_drop_table($result, 'biblio_contributor_type');
+  db_drop_table($result, 'biblio_contributor_type_data');
+  
+  $schema = biblio_schema();
+  db_create_table($result, 'biblio_field_type_data', $schema['biblio_field_type_data']);
+  db_create_table($result, 'biblio_field_type', $schema['biblio_field_type']);
+  db_create_table($result, 'biblio_fields', $schema['biblio_fields']);
+  db_create_table($result, 'biblio_contributor_type', $schema['biblio_contributor_type']);
+  db_create_table($result, 'biblio_contributor_type_data', $schema['biblio_contributor_type_data']);
+  
   _add_db_field_data();
   _add_custom_field_data();
 }
@@ -1218,248 +1224,10 @@ function _id_by_name($name, $id = NULL, $table = NULL) {
   if ($id) $result[$name] = $id;
   return FALSE;
 }
-function biblio_update_1() {
-  return _system_update_utf8(array('biblio','biblio_fields','biblio_types','biblio_type_details'));
-}
+/*
+ * Removed updates 1 - 20 since they dated back to ver. 5-1.2
+ */
 
-function biblio_update_2() {
-  $result = array();
-
-  $result = update_sql("alter table {biblio_types} modify tid int(11) `auto_increment;");
-  return $result;
-
-}
-function biblio_update_3() {
-  $result = update_sql("alter table {node} modify title varchar(255);");
-  $result = update_sql("alter table {node_revisions} modify title varchar(255);");
-  return $result;
-}
-
-function biblio_update_4() {
-  $result = array();
-
-  $result[] = update_sql("ALTER TABLE {biblio_type_details} DROP COLUMN visible;");
-
-  $result[] = update_sql("ALTER TABLE {biblio}
-                ADD  `biblio_custom1` varchar(255) default NULL,
-                ADD  `biblio_custom2` varchar(255) default NULL,
-                ADD  `biblio_custom3` varchar(255) default NULL,
-                ADD  `biblio_custom4` varchar(255) default NULL,
-                ADD  `biblio_custom5` varchar(255) default NULL,
-                ADD  `biblio_custom6` varchar(255) default NULL,
-                ADD  `biblio_custom7` varchar(255) default NULL,
-                ADD  `biblio_research_notes` text,
-                ADD  `biblio_number_of_volumes` varchar(10) default NULL,
-                ADD  `biblio_short_title` varchar(255) default NULL,
-                ADD  `biblio_alternate_title` varchar(255) default NULL,
-                ADD  `biblio_original_publication` varchar(255) default NULL,
-                ADD  `biblio_reprint_edition` varchar(255) default NULL,
-                ADD  `biblio_translated_title` varchar(255) default NULL;");
-
-  $result[] = update_sql("INSERT INTO {biblio_fields} (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`weight`) VALUES
-
-       (28,'biblio_research_notes','Reseach Notes',0,'textarea',60,15,'',0,0,160),
-       (29,'biblio_custom1','Custom 1',0,'textfield',120,255,'',0,0,161),
-       (30,'biblio_custom2','Custom 2',0,'textfield',120,255,'',0,0,162),
-       (31,'biblio_custom3','Custom 3',0,'textfield',120,255,'',0,0,163),
-       (32,'biblio_custom4','Custom 4',0,'textfield',120,255,'',0,0,164),
-       (33,'biblio_custom5','Custom 5',0,'textfield',120,255,'',0,0,165),
-       (34,'biblio_custom6','Custom 6',0,'textfield',120,255,'',0,0,167),
-       (35,'biblio_custom7','Custom 7',0,'textfield',120,255,'',0,0,168),
-       (36,'biblio_number_of_volumes','Number of Volumes',0,'textfield',10,10,'',0,0,15),
-       (37,'biblio_short_title','Short Title',0,'textfield',120,255,'',0,0,169),
-       (38,'biblio_alternate_title','Alternate Title',0,'textfield',120,255,'',0,0,170),
-       (39,'biblio_translated_title','Translated Title',0,'textfield',120,255,'',0,0,170),
-       (40,'biblio_original_publication','Original Publication',0,'textfield',120,255,'',0,0,171),
-       (41,'biblio_reprint_edition','Reprint Edition',0,'textfield',120,255,'',0,0,172);");
-  return($result);
-}
-
-function biblio_update_5() {
-  $result = array();
-
-  $result[] = update_sql("ALTER TABLE {biblio_types}
-                ADD  `weight` int(11) NOT NULL default '0';");
-
-  $result[] = update_sql("INSERT INTO {biblio_types} (`tid`,`name`,`description`,weight) VALUES
-        (100,'Book',NULL,1),
-        (101,'Book Article',NULL,2),
-        (102,'Journal Article',NULL,3),
-        (103,'Conference Paper',NULL,4),
-        (104,'Proceedings Article',NULL,5),
-        (105,'Newspaper Article',NULL,6),
-        (106,'Magazine Article',NULL,7),
-        (107,'Web Article',NULL,8),
-        (108,'Thesis',NULL,9),
-        (109,'Report',NULL,10),
-        (110,'Film',NULL,11),
-        (111,'Broadcast',NULL,12),
-        (112,'Artwork',NULL,13),
-        (113,'Software',NULL,14),
-        (114,'Audiovisual',NULL,15),
-        (115,'Hearing',NULL,16),
-        (116,'Case',NULL,17),
-        (117,'Bill',NULL,18),
-        (118,'Statute',NULL,19),
-        (119,'Patent',NULL,20),
-        (120,'Personal',NULL,21),
-        (121,'Manuscript',NULL,22),
-        (122,'Map',NULL,23),
-        (123,'Chart',NULL,24),
-        (124,'Unpublished',NULL,25),
-        (125,'Database',NULL,26),
-        (126,'Government Report',NULL,27),
-        (127,'Classical'	,NULL,28),
-        (128,'Legal Ruling'	,NULL,29),
-        (129,'Miscellaneous'	,NULL,30),
-        (130,'Miscellaneous Section'	,NULL,31);");
-
-  $result[] = update_sql("UPDATE {biblio} SET biblio_type = 102 WHERE biblio_type = 1 ");
-  $result[] = update_sql("UPDATE {biblio} SET biblio_type = 103 WHERE biblio_type = 2 ");
-  $result[] = update_sql("UPDATE {biblio} SET biblio_type = 104 WHERE biblio_type = 3 ");
-  $result[] = update_sql("UPDATE {biblio} SET biblio_type = 104 WHERE biblio_type = 4 ");
-  $result[] = update_sql("UPDATE {biblio} SET biblio_type = 109 WHERE biblio_type = 5 ");
-  $result[] = update_sql("UPDATE {biblio} SET biblio_type = 100 WHERE biblio_type = 6 ");
-  $result[] = update_sql("UPDATE {biblio} SET biblio_type = 108 WHERE biblio_type = 7 ");
-  $result[] = update_sql("UPDATE {biblio} SET biblio_type = 119 WHERE biblio_type = 8 ");
-  $result[] = update_sql("UPDATE {biblio} SET biblio_type = 129 WHERE biblio_type = 9 ");
-  return $result;
-}
-
-function biblio_update_6() {
-  $result = array();
-
-  $result[] = update_sql("UPDATE {biblio_types} SET tid = -11 WHERE tid = 1 ");
-  $result[] = update_sql("UPDATE {biblio_types} SET tid = -12 WHERE tid = 2 ");
-  $result[] = update_sql("UPDATE {biblio_types} SET tid = -13 WHERE tid = 3 ");
-  $result[] = update_sql("UPDATE {biblio_types} SET tid = -14 WHERE tid = 4 ");
-  $result[] = update_sql("UPDATE {biblio_types} SET tid = -15 WHERE tid = 5 ");
-  $result[] = update_sql("UPDATE {biblio_types} SET tid = -16 WHERE tid = 6 ");
-  $result[] = update_sql("UPDATE {biblio_types} SET tid = -17 WHERE tid = 7 ");
-  $result[] = update_sql("UPDATE {biblio_types} SET tid = -18 WHERE tid = 8 ");
-  $result[] = update_sql("UPDATE {biblio_types} SET tid = -19 WHERE tid = 9 ");
-
-  return $result;
-
-}
-
-function biblio_update_7() {
-  $result = array();
-
-  $result[] = update_sql("UPDATE {biblio_type_details} SET tid = 102 WHERE tid = 1 ");
-  $result[] = update_sql("UPDATE {biblio_type_details} SET tid = 103 WHERE tid = 2 ");
-  $result[] = update_sql("UPDATE {biblio_type_details} SET tid = 104 WHERE tid = 3 ");
-  $result[] = update_sql("UPDATE {biblio_type_details} SET tid = 104 WHERE tid = 4 ");
-  $result[] = update_sql("UPDATE {biblio_type_details} SET tid = 109 WHERE tid = 5 ");
-  $result[] = update_sql("UPDATE {biblio_type_details} SET tid = 100 WHERE tid = 6 ");
-  $result[] = update_sql("UPDATE {biblio_type_details} SET tid = 108 WHERE tid = 7 ");
-  $result[] = update_sql("UPDATE {biblio_type_details} SET tid = 119 WHERE tid = 8 ");
-  $result[] = update_sql("UPDATE {biblio_type_details} SET tid = 129 WHERE tid = 9 ");
-
-  return $result;
-
-}
-
-function biblio_update_8() {
-  $result = array();
-
-  $result[] = update_sql("ALTER TABLE {biblio}
-                ADD  `biblio_section` varchar(10) default NULL ;");
-
-  $result[] = update_sql("INSERT INTO {biblio_fields} (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`weight`) VALUES
-       (42,'biblio_section','Section',0,'textfield',10,10,'',0,0,15);");
-  return $result;
-}
-
-function biblio_update_9() {
-  $result = array();
-
-  $result[] = update_sql("alter table {node} modify title varchar(255);");
-  $result[] = update_sql("alter table {node_revisions} modify title varchar(255);");
-  return $result;
-
-}
-function biblio_update_10(){
-  $result = array();
-  $result[] = update_sql("UPDATE {biblio_fields} SET maxsize = 65535 WHERE type = 'textarea' ");
-  $result[] = update_sql("ALTER TABLE {biblio} ADD `vid` int(10) NOT NULL default '0';");
-
-  return $result;
-}
-function biblio_update_11(){
-  $result = array();
-  $nodes = db_query("SELECT * FROM {node} as n WHERE n.type='biblio' ");
-  while ($node = db_fetch_object($nodes)) {
-    $node->vid = db_next_id('{node_revisions}_vid');
-    $result[] = update_sql("UPDATE {node} SET vid = $node->vid WHERE nid = $node->nid;");
-    $result[] = update_sql("UPDATE {node_revisions} SET vid = $node->vid WHERE nid = $node->nid;");
-    $result[] = update_sql("UPDATE {biblio} SET vid = $node->vid WHERE nid = $node->nid;");
-  }
-  return $result;
-}
-
-function biblio_update_12(){
-  $result = array();
-  $result[] = update_sql("ALTER TABLE {biblio_types} ADD  `visible` tinyint(1) NOT NULL default '1' ;");
-  return $result;
-}
-function biblio_update_13(){
-  $result = array();
-  $result[] = update_sql("ALTER TABLE {biblio} ADD  `biblio_citekey` varchar(16)  ;");
-  $result[] = update_sql("INSERT INTO {biblio_fields} (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`weight`) VALUES
-       (43,'biblio_citekey','Citation Key',0,'textfield',16,16,'',0,0,175);");
-  return $result;
-}
-function biblio_update_14(){
-  $result = array();
-  $result[] = update_sql("CREATE TABLE {biblio_author_index} (
-                  `aid` int(11) NOT NULL default '0',
-                  `author` varchar(100) NOT NULL default '',
-                  PRIMARY KEY  (`aid`) )  /*!40100 DEFAULT CHARACTER SET utf8 */;");
-  $result[] = update_sql("CREATE TABLE {biblio_has_author} (
-                  `nid` int(11) NOT NULL default '0',
-                  `aid` int(11) NOT NULL default '0',
-                  `rank` int(11) NOT NULL default '0',
-                  PRIMARY KEY  (`nid`,`aid`,`rank`) ) /*!40100 DEFAULT CHARACTER SET utf8 */;");
-
-
-  return $result;
-}
-function biblio_update_15(){
-  $result = array();
-  $result[] = update_sql("ALTER TABLE {biblio}  DROP PRIMARY KEY ;");
-  $result[] = update_sql("ALTER TABLE {biblio}  ADD PRIMARY KEY (`nid`,`vid`) ;");
-  return $result;
-}
-
-function biblio_update_16(){
-  $result = array();
-  $result[] = update_sql("ALTER TABLE {biblio}  DROP PRIMARY KEY ;");
-  $result[] = update_sql("ALTER TABLE {biblio}  ADD PRIMARY KEY (`vid`) ;");
-  $result[] = update_sql("ALTER TABLE {biblio}  ADD KEY nid (`nid`) ;");
-  $result[] = update_sql("ALTER TABLE {biblio}  ADD FULLTEXT KEY `keywords` (`biblio_keywords`) ;");
-  $result[] = update_sql("ALTER TABLE {biblio}  ADD FULLTEXT KEY `publisher` (`biblio_publisher`) ;");
-  return $result;
-}
-
-function biblio_update_17(){
-  $result = array();
-  $result[] = update_sql("ALTER TABLE {biblio}  MODIFY biblio_pages varchar(128);");
-  $result[] = update_sql("UPDATE {biblio_fields} SET maxsize = 128 WHERE name = 'biblio_pages';");
-  return $result;
-}
-function biblio_update_18(){
-  $result = array();
-  $result[] = update_sql("ALTER TABLE {biblio_fields}  ADD  `autocomplete` tinyint(1) NOT NULL default '0' ;");
-  return $result;
-}
-function biblio_update_20(){
-  $result = array();
-  $result[] = update_sql("ALTER TABLE {biblio}  ADD  `biblio_coins` text   ;");
-  $result[] = update_sql("INSERT INTO {biblio_fields} (`fid`,`name`,`title`,`common`,`type`,`size`,`maxsize`,`hint`,`required`,`visible`,`autocomplete`,`weight`) VALUES
-       (44,'biblio_coins','COinS Data',1,'textarea',60,65535 ,'This will be automatically generated, only edit if you know what you are doing.',0,0,0,176);");
-  return $result;
-}
 function biblio_update_21(){
   $result = array();
 
