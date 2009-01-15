@@ -855,9 +855,10 @@ function biblio_get_user_pubs($user, $profile=''){
 function biblio_view_inline(&$node) {
   $style = variable_get('biblio_style', 'classic');
   $base =  variable_get('biblio_base', 'biblio');
-
+  $layout = variable_get('biblio_node_layout', 'tabular');
+  $theme = ($layout == 'tabular') ? 'biblio_tabular' : 'biblio_long';
   $output  = '<div class="biblio-inline">';
-  $output .= theme('biblio_long', $node, $base, $style);
+  $output .= theme($theme, $node, $base, $style);
   $output .= '</div>';
   return $output;
 }
