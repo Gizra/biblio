@@ -832,7 +832,8 @@ function biblio_admin_types_reset_form_submit($form, & $form_state) {
 function _biblio_get_user_profile_form(& $form, $profile_user = false) {
   global $user;
   $allow_edit = variable_get('biblio_show_user_profile_form', '1');
-
+  $allow_edit = $allow_edit || user_access('administer biblio');
+  
   $form['profile'] = array(
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
@@ -852,7 +853,7 @@ function _biblio_get_user_profile_form(& $form, $profile_user = false) {
     '#type' => 'checkbox',
     '#title' => ($profile_user) ? t('Show my publications on my profile page') : t('Show publications on users profile pages'),
     '#return_value' => 1,
-    '#disabled' => $allow_edit ? 0 : (($user->uid == 1) ? 0: 1),
+    '#disabled' => !$allow_edit,
     '#description' => ($profile_user) ? t('Selecting this will create a listing of your publications on your profile page') : t('This sets the site wide default, users may change this in their profile')
   );
   if ($profile_user) {
@@ -864,7 +865,7 @@ function _biblio_get_user_profile_form(& $form, $profile_user = false) {
   $form['profile']['biblio_my_pubs_menu'] = array(
     '#type' => 'checkbox',
     '#title' => t('Show "My publications" item in the navigation menu'),
-    '#disabled' => $allow_edit ? 0 : (($user->uid == 1) ? 0: 1),
+    '#disabled' => !$allow_edit,
     '#return_value' => 1,
     '#description' => ''
   );
@@ -890,28 +891,8 @@ function _biblio_get_user_profile_form(& $form, $profile_user = false) {
     '#options' => $options,
     '#description' => t('This will link your profile to the selected author from the biblio database, then all publications containing this author to be displayed on your "Publications" tab.'),
     );
-    
-/*    $form['profile']['biblio_lastname'] = array(
-      '#type' => 'textfield',
-      '#title' => t('My last name'),
-      '#default_value' => $profile_user->biblio_lastname,
-      '#disabled' => $allow_edit ? 0 : (($user->uid == 1) ? 0: 1),
-      '#description' => t('This may be ueed to determine which publications are mine')
-    );
-*/  }
-/*  $form['profile']['biblio_profile_uid'] = array(
-    '#type' => 'radios',
-    '#title' => t('Select publications by'),
-    '#default_value' => (isset($profile_user->biblio_profile_uid)) ? $profile_user->biblio_profile_uid : variable_get('biblio_profile_uid', 'lastname'),
-    '#disabled' => $allow_edit ? 0 : (($user->uid == 1) ? 0: 1),
-    '#options' => array(
-      'uid' => t('User ID'),
-      'lastname' => ($profile_user) ? t('My last name') : t('Last name'),
-      'uid_lastname' => t('Both (Last name & User ID)')
-    ),
-    '#description' => t('This defines the criteria used to select which publications will be listed on the users profile page')
-  );
-*/}
+  }
+}
 /*  This function parses the module directory for 'style' files, loads them and
  *  calls the info fuction to get some basic information like the short and long
  *  names of the style
@@ -1130,18 +1111,42 @@ function biblio_admin_author_edit_form($form_state, $author_id){
     '#required' => false,
     '#maxlength' => 256
   );
+
+  $authors = db_query("SELECT * FROM {biblio_contributor_data} cd WHERE LOCATE('$author->lastname', name) AND cid!=$author_id");
+  unset($options);
+  while($author=db_fetch_array($authors)) {
+    $options[$author['cid']] = $author['name'];
+    if ($author['affiliation']) $options[$author['cid']] .= ' (' . $author['affiliation'] . ')';
+  }
+  if ($options) {
+    $form['merge_authors'] = array(
+    '#type' => 'select',
+    '#title' => t('Merge similar authors'),
+	'#options' => $options,
+    '#weight' => 12,
+    '#required' => false,
+    '#multiple' => true,
+    '#size' => min(count($options), 6),
+    );
+  }
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save')
   );
-
+  
   return $form;
 }
 function biblio_admin_author_edit_form_validate($form, &$form_state) {
   foreach($form_state['values'] as $key => $value){
-        $form_state['values'][$key] = trim($value);
-  }  
+    if (is_string($value)) $form_state['values'][$key] = trim($value);
+  }
 }
 function biblio_admin_author_edit_form_submit($form, &$form_state) {
    drupal_write_record('biblio_contributor_data', $form_state['values'], 'cid');
+   // merge authors
+   if (count($form_state['values']['merge_authors'])) {
+     $authors = implode(',', $form_state['values']['merge_authors']);
+     update_sql("UPDATE {biblio_contributor} SET cid={$form_state['values']['cid']} WHERE cid IN ($authors)");
+     update_sql("DELETE FROM {biblio_contributor_data} WHERE cid IN ($authors)");
+   }
 }
