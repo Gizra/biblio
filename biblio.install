@@ -1410,6 +1410,7 @@ function biblio_md5_generate()
 function _parse_authors(&$biblio_contributors, $authors, $type = 1)
 {
   $authors = str_ireplace(" and ", "; ", $authors); 
+  $authors = str_ireplace(" & ", "; ", $authors); 
   $author_array = explode(';', $authors);
   foreach($author_array as $author)
   {
