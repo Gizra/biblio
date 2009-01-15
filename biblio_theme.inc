@@ -672,6 +672,7 @@ function theme_biblio_admin_author_edit_form($form){
   $rows[] = array(array('data' => drupal_render($form['drupal_uid']), 'colspan' => 5));
   
   $output = theme('table', $header, $rows);
+  $output .= drupal_render($form['merge']);
   $output .= drupal_render($form);
   
   return $output;

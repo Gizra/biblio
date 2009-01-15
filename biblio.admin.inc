@@ -1119,13 +1119,21 @@ function biblio_admin_author_edit_form($form_state, $author_id){
     if ($author['affiliation']) $options[$author['cid']] .= ' (' . $author['affiliation'] . ')';
   }
   if ($options) {
-    $form['merge_authors'] = array(
-    '#type' => 'checkboxes',
-    '#title' => t('Merge similar authors'),
-	'#options' => $options,
-    '#weight' => 12,
-    '#required' => false,
-    '#multiple' => true,
+    $form['merge'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Author Merge'),
+      '#description' => t('Select other author names which will be merged with this one.  You should only do this if you are sure the other authors represent the same author as the one being edited.'),
+      '#weight' => 5,
+      '#collapsible' => TRUE,
+      '#collapsed' => FALSE,
+    );
+    $form['merge']['merge_authors'] = array(
+      '#type' => 'checkboxes',
+      '#title' => t('Similar authors'),
+	    '#options' => $options,
+      '#weight' => 12,
+      '#required' => false,
+      '#multiple' => true,
     '#size' => min(count($options), 6),
     );
   }
