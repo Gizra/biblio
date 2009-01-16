@@ -372,7 +372,7 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
   
   $base =  variable_get('biblio_base', 'biblio');
   $style = variable_get('biblio_style', 'cse');
-  if ($inline == 'profile') {
+  if ($inline === 'profile') {
     $profile = true;
     $inline  = false;
   }
