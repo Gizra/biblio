@@ -1131,7 +1131,7 @@ function _add_custom_field_data() {
   }
 
   $csv_file = drupal_get_path('module', 'biblio') .'/biblio.field.type.data.csv';
-  for ($type = 1; $type <= 4; $type++) {
+  for ($type = 1; $type <= 5; $type++) {
     for ($biblio_type = 100; $biblio_type <= 130; $biblio_type++) {
       db_query("INSERT INTO {biblio_contributor_type} (auth_category, biblio_type, auth_type) VALUES (%d, %d, %d)",  $type, $biblio_type, $type);
     }
@@ -1149,9 +1149,11 @@ function _add_custom_field_data() {
     _id_by_name(NULL, NULL, $table);
     while (($row = fgetcsv($handle, 10000, ",")) !== FALSE) {
       $column = 0;
+      if (empty($row[1])) continue;
+      
       foreach ($header as $key => $field_name) {
         if (!empty($field_name) && $field_name != 'tid') {
-          if (!empty($row[$column]) && $row[$column] != "~" && !empty($row[1]) && isset($fieldmap[$field_name])) {
+          if (!empty($row[$column]) && $row[$column] != "~" && isset($fieldmap[$field_name]) && !strstr($field_name, 'contributors')) {
        	    $ftd[0] = ($existing_id = _id_by_name($row[$column])) ? $existing_id : variable_get('biblio_last_ftdid', 100); // ftdid
        	    $ftd[1] = trim($row[$column]);                          // title
        	    $ftd[2] = "";                                     // hint
@@ -1165,12 +1167,12 @@ function _add_custom_field_data() {
               _id_by_name($row[$column], $ftd[0]);  // cache the new id value for future use
               variable_set('biblio_last_ftdid', $ftd[0] +1); //increment the field type data id by one.
        	    }
-          } elseif ($row[$column] == "~" && !empty($row[1]) && isset($fieldmap[$field_name])) {
+          } elseif ($row[$column] == "~" && isset($fieldmap[$field_name])) {
             // turn the visibility off for this (~) type
             db_query("UPDATE {biblio_field_type}
                       SET visible = 0
                       WHERE tid = %d AND fid = %d ", $row[1], $fieldmap[$field_name] );
-          } elseif (strstr($field_name, 'contributors') && !empty($row[1]) && $row[$column] != '~' ) {
+          } elseif (strstr($field_name, 'contributors') && $row[$column] != '~' ) {
             switch ($field_name){
               case 'biblio_contributors2':
                 $type = 2;
@@ -1191,7 +1193,7 @@ function _add_custom_field_data() {
               _id_by_name($title, $ctdid);  // cache the new id value for future use
               $next_ctdid++;
             }
-          } elseif (empty($row[$column]) && !empty($row[1]) && isset($fieldmap[$field_name])) {
+          } elseif (empty($row[$column]) && isset($fieldmap[$field_name])) {
             // use the default field title when the title is blank
             db_query("UPDATE {biblio_field_type}
                       SET visible = 1
