@@ -3,7 +3,7 @@ fid,title,hint, common, autocomplete, required, weight, visible,field name,type,
 2,Secondary Authors,,1,1,1,2,1,biblio_contributors2,contrib_widget,60,255
 3,Tertiary Authors,,1,1,1,3,1,biblio_contributors3,contrib_widget,60,255
 4,Subsidiary Authors,,1,1,1,4,1,biblio_contributors4,contrib_widget,60,255
-5,Organization,,1,1,1,5,1,biblio_contributors5,contrib_widget,60,255
+5,Corporate Authors,,1,1,1,5,1,biblio_contributors5,contrib_widget,60,255
 6,Secondary Title,,0,0,0,12,0,biblio_secondary_title,textfield,60,255
 7,Tertiary Title,,0,0,0,13,0,biblio_tertiary_title,textfield,60,255
 8,Accession Number,,1,0,0,151,1,biblio_accession_number,textfield,24,24
