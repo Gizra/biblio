@@ -1159,3 +1159,35 @@ function biblio_admin_author_edit_form_submit($form, &$form_state) {
      update_sql("DELETE FROM {biblio_contributor_data} WHERE cid IN ($authors)");
    }
 }
+
+function biblio_admin_orphans_form($form_state) {
+  $form['submit'] = array(
+  	'#type' => 'submit',
+    '#value' => t('Delete'),
+    '#submit' => array('biblio_admin_orphans_form_submit'),
+  );
+
+  $result = pager_query(db_rewrite_sql('SELECT * FROM {biblio_contributor_data} WHERE cid NOT IN (SELECT cid FROM {biblio_contributor} GROUP BY cid)'), 50);
+  $authors = array();
+  while ($author = db_fetch_object($result)) {
+    $authors[$author->cid] = '';
+    $form['name'][$author->cid] = array('#value' => l($author->name, $base.'/author/'.$author->cid.'/edit'));
+    $form['affiliation'][$author->cid] = array('#value' => check_plain($author->affiliation));
+  }
+  $form['authors'] = array('#type' => 'checkboxes', '#options' => $authors);
+  $form['pager']   = array('#value' => theme('pager', NULL, 50, 0));
+  $form['#theme'] = 'biblio_admin_orphans_form';
+  return $form;
+}
+function biblio_admin_orphans_form_validate($form, &$form_state) {
+  $authors = array_filter($form_state['values']['authors']);
+  if (count($authors) == 0) {
+    form_set_error('', t('No items selected.'));
+  }
+}
+function biblio_admin_orphans_form_submit($form, &$form_state) {
+  // Filter out unchecked authors
+  $authors = array_filter($form_state['values']['authors']);
+  update_sql('DELETE FROM {biblio_contributor_data} WHERE cid IN ('.implode(',',$authors).')');
+  drupal_set_message(t('The orphaned authors ('.implode(',',$authors).') have been deleted.'));
+}

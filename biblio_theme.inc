@@ -678,3 +678,34 @@ function theme_biblio_admin_author_edit_form($form){
   return $output;
   
 }
+
+function theme_biblio_admin_orphans_form($form) {
+  // If there are any orphans, then $form['name'] contains a list of the author names
+  $has_items = isset($form['name']) && is_array($form['name']);
+  $select_header = $has_items ? theme('table_select_header_cell') : '';
+  $header = array($select_header, t('Author Name'), t('Affiliation'));
+
+  $output = '';
+  $output .= drupal_render($form['submit']);
+  if ($has_items) {
+    foreach (element_children($form['name']) as $key) {
+      $row = array();
+      $row[] = drupal_render($form['authors'][$key]);
+      $row[] = drupal_render($form['name'][$key]);
+      $row[] = drupal_render($form['affiliation'][$key]);
+      $rows[] = $row;
+    }
+  }
+  else {
+    $rows[] = array(array('data' => t('No orphaned authors available.'), 'colspan' => '3'));
+  }
+  $output .= theme('table', $header, $rows);
+
+  if ($form['pager']['#value']) {
+    $output .= drupal_render($form['pager']);
+  }
+
+  $output .= drupal_render($form);
+
+  return $output;
+}

@@ -68,7 +68,11 @@ function biblio_theme() {
       'file' => 'biblio_theme.inc',
       'arguments' => array('form'),
   ),
-
+    'biblio_admin_orphans_form' => array(
+      'file' => 'biblio_theme.inc',
+      'arguments' => array('form'),
+  ),
+  
     'biblio_coin_button' => array(
       'file' => 'biblio_theme.inc',
       'arguments' => array('element'),
@@ -508,27 +512,37 @@ function biblio_menu() {
     'access arguments' => array('administer biblio'),
     'file' => 'biblio.import.export.inc',
     'type' => MENU_LOCAL_TASK,
-    'weight' => -7
+    'weight' => 1
   );
-  $items['admin/settings/biblio/translate'] = array(
+  $items['admin/settings/biblio/export'] = array(
     'title' => t('Export'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('biblio_export_form'),
     'access arguments' => array('administer biblio'),
     'file' => 'biblio.import.export.inc',
     'type' => MENU_LOCAL_TASK,
-    'weight' => -6
+    'weight' => 2
   );
   $items['admin/settings/biblio/authors'] = array(
     'title' => t('Author Types'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('biblio_admin_author_types_form',4,5),
-          'access arguments' => array('administer biblio'),
+		'access arguments' => array('administer biblio'),
     'file' => 'biblio.admin.inc',
     'type' => MENU_LOCAL_TASK,
     'weight' => -7
   );
-
+  $items['admin/settings/biblio/orphans'] = array(
+    'title' => t('Orphaned Authors'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('biblio_admin_orphans_form'),
+    'access arguments' => array('administer biblio'),
+    'description' => t('Delete orphaned biblio authors.'),
+    'file' => 'biblio.admin.inc',
+  	'type' => MENU_LOCAL_TASK,
+    'weight' => -6
+  );
+  
   $items['admin/settings/biblio/authors/new'] = array(
     'title' => t('Add New Author Type'),
     'page callback' => 'drupal_get_form',
@@ -1182,10 +1196,6 @@ function biblio_delete($node) {
   db_query('DELETE FROM {biblio} WHERE nid = %d', $node->nid);
   //now remove the entries from the contributor linking table
   db_query('DELETE FROM {biblio_contributor} WHERE nid = %d', $node->nid);
-  //now remove any orphaned contributors
-  db_query('DELETE FROM {biblio_contributor_data}
-            WHERE NOT EXISTS (SELECT * FROM {biblio_contributor}
-            WHERE {biblio_contributor}.cid = {biblio_contributor_data}.cid)');
 }
 /**
  * Implementation of hook_load().
