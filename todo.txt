@@ -1,5 +1,9 @@
  todo list (no particular order)
 
+* add sorting to the argument list you can pass to biblio_db_search() http://drupal.org/node/360624
+* put titles in body text to avoid long title problems http://drupal.org/node/358286
+* check author parsing on names containing UTF-8 chars.
+* look at validating the DOI input http://drupal.org/node/359318
 * add descriptions to publication types (http://drupal.org/node/358158)
 * add the option to change subsorts (i.e. sort by year then within year sort by...)
 * fix display when sorting by author 
