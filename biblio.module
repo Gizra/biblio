@@ -696,8 +696,8 @@ function biblio_menu() {
     'title' => '',
     'page callback' => 'biblio_view_inline',
     'page arguments' => array(2),
-    'access callback' => 'node_access',
-    'access arguments' => array('view', 1),
+    'access callback' => 'user_access',
+    'access arguments' => array('access content'),
     'file' => 'biblio.pages.inc',
     'type' => MENU_CALLBACK
   );
