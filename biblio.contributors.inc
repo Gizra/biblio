@@ -38,14 +38,14 @@ function biblio_get_contributor($aid) {
  * @param $vid
  * @return unknown_type
  */
-function biblio_load_contributors($vid, $biblio_type) {
+function biblio_load_contributors($vid, $biblio_type = 0) {
   $contributors = array();
   $query = "SELECT * FROM {biblio_contributor} bc
 			INNER JOIN {biblio_contributor_data} bcd ON bc.cid=bcd.cid
-			WHERE bc.vid=$vid
+			WHERE bc.vid=%d
 			ORDER BY bc.rank ASC"; // do not change order of presentation
 
-  $result = db_query($query);
+  $result = db_query($query, $vid);
   while ($creator = db_fetch_array($result)) {
     $contributors[] = $creator;
   }
