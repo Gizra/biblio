@@ -1074,8 +1074,96 @@ function _add_publication_types()
  return $result;
 }
 
+function _add_db_field_data_XML() {
+  $schema = biblio_schema();
+  $fieldnames = array_keys($schema['biblio_fields']['fields']);
+  $field_type_fieldnames = array_keys($schema['biblio_field_type']['fields']);
+  $field_type_data_fieldnames = array_keys($schema['biblio_field_type_data']['fields']);
+  db_query("/*!40000 ALTER TABLE {biblio_field_type_data} DISABLE KEYS */;");
+  db_query("/*!40000 ALTER TABLE {biblio_fields} DISABLE KEYS */;");
+  for ($type = 1; $type <= 4; $type++) {
+    for ($biblio_type = 100; $biblio_type <= 130; $biblio_type++) {
+      db_query("INSERT INTO {biblio_contributor_type} (auth_category, biblio_type, auth_type) VALUES (%d, %d, %d)",  $type, $biblio_type, $type);
+    }
+  }
+  db_query("INSERT INTO {biblio_contributor_type_data} (auth_type, title) VALUES (%d, '%s' )", 1, "Author");
+  db_query("INSERT INTO {biblio_contributor_type_data} (auth_type, title) VALUES (%d, '%s' )", 2, "Secondary Author");
+  db_query("INSERT INTO {biblio_contributor_type_data} (auth_type, title) VALUES (%d, '%s' )", 3, "Tertiary Author ");
+  db_query("INSERT INTO {biblio_contributor_type_data} (auth_type, title) VALUES (%d, '%s' )", 4, "Subsidiary Author ");
+  db_query("INSERT INTO {biblio_contributor_type_data} (auth_type, title) VALUES (%d, '%s' )", 5, "Corporate Author ");
+  _id_by_name(NULL, NULL, NULL, array('tablename' => 'biblio_field_type_data', 'name_column' => 'title', 'id_column' => 'ftdid'));
+  _id_by_name(NULL, NULL, NULL, array('tablename' => 'biblio_contributor_type_data', 'name_column' => 'title', 'id_column' => 'auth_type'));
 
-function _add_db_field_data() {
+  $xml_file = drupal_get_path('module', 'biblio') .'/field_data.xml';
+  $xml = simplexml_load_file($xml_file);
+  foreach($xml->field as $field){
+    $link_data = array(0, $field['fid'], $field['fid'], $field['fid'], $field->common, $field->autocomplete, $field->required, $field->weight, $field->visible);
+    db_query("INSERT INTO {biblio_field_type} (". implode(", ", $field_type_fieldnames) . ")
+                  VALUES (%d, %d, %d, %d, %d, %d, %d, %d, %d)", $link_data);
+    for ($t = 100; $t <= 130; $t++)
+    {
+      $values = array($t, $field['fid'], $field['fid'], $field['fid'], $field->common, $field->autocomplete, $field->required, $field->weight, $field->visible);
+      db_query("INSERT INTO {biblio_field_type} (". implode(", ", $field_type_fieldnames) . ")
+                      VALUES('" . implode("', '", $values) . "')");
+    }
+    $ftd = array($field['fid'], $field->default_name, $field->hint);
+    db_query("INSERT INTO {biblio_field_type_data} (" . implode(", ", $field_type_data_fieldnames) . ")
+                    VALUES('" . implode("', '", $ftd) . "')");
+    $field_data = array($field['fid'], $field->field_name, $field->type, $field->width, $field->maxlength);
+    db_query("INSERT INTO {biblio_fields} (" . implode(", ", $fieldnames) . ")
+                    VALUES('" . implode("', '", $field_data) . "')");
+    foreach ($field->name as $name){
+      if (!empty($name) && $name != "~" && $field->name != 'contrib_widget') {
+        $ftd[0] = ($existing_id = _id_by_name('biblio_field_type_data',$name)) ? $existing_id : variable_get('biblio_last_ftdid', 100); // ftdid
+        $ftd[1] = trim($name);                          // title
+        $ftd[2] = "";                                     // hint
+        db_query("UPDATE {biblio_field_type}
+                      SET ftdid = %d, cust_tdid = %d, visible = %d
+                      WHERE tid = %d AND fid = %d ", $ftd[0], $ftd[0], 1, $name['tid'], $field['fid'] );
+        if (!$existing_id){
+          // if this title doesn't alreay exist, then insert it into the table
+          db_query("INSERT INTO {biblio_field_type_data} (" . implode(", ", $field_type_data_fieldnames) . ")
+                        VALUES (%d, '%s', '%s')", $ftd);
+          _id_by_name('biblio_field_type_data',$name, $ftd[0]);  // cache the new id value for future use
+          variable_set('biblio_last_ftdid', $ftd[0] +1); //increment the field type data id by one.
+        }
+
+      } elseif ($row[$column] == "~" ) {
+        // turn the visibility off for this (~) type
+        db_query("UPDATE {biblio_field_type}
+                      SET visible = 0
+                      WHERE tid = %d AND fid = %d ", $name['tid'], $field['fid'] );
+      } elseif (empty($row[$column]) ) {
+        // use the default field title when the title is blank
+        db_query("UPDATE {biblio_field_type}
+                      SET visible = 1
+                      WHERE tid = %d AND fid = %d ", $name['tid'], $field['fid'] );
+      } elseif ($field->type == 'contrib_widget') {
+        // also populate biblio_contributor_type tables
+        $title = trim($name);
+        $ctdid = ($eid = _id_by_name('biblio_contributor_type_data',$title)) ? $eid :  $next_ctdid;
+        db_query("UPDATE {biblio_contributor_type} SET auth_type=%d where auth_category=%d and biblio_type=%d", $ctdid, $field->contrib_type, $name['tid']);
+        if(!$eid) {
+          db_query("INSERT INTO {biblio_contributor_type_data} (auth_type, title) VALUES (%d, '%s')", $ctdid, $title);
+          _id_by_name('biblio_contributor_type_data',$title, $ctdid);  // cache the new id value for future use
+          $next_ctdid++;
+        }
+
+
+
+      }
+    }
+  }
+  die;
+
+
+  db_query("/*!40000 ALTER TABLE {biblio_field_type_data} ENABLE KEYS */;");
+  db_query("/*!40000 ALTER TABLE {biblio_fields} ENABLE KEYS */;");
+
+  return $result;
+}
+
+  function _add_db_field_data() {
   $schema = biblio_schema();
   $fieldnames = array_keys($schema['biblio_fields']['fields']);
   $field_type_fieldnames = array_keys($schema['biblio_field_type']['fields']);
