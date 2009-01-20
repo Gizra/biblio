@@ -20,7 +20,7 @@
 		<common>1</common>
 		<autocomplete>1</autocomplete>
 		<required>1</required>
-		<weight>1</weight>
+		<weight>2</weight>
 		<visible>1</visible>
 		<field_name>biblio_contributors</field_name>
 		<type>contrib_widget</type>
@@ -63,7 +63,7 @@
 		<common>1</common>
 		<autocomplete>1</autocomplete>
 		<required>1</required>
-		<weight>1</weight>
+		<weight>3</weight>
 		<visible>1</visible>
 		<field_name>biblio_contributors</field_name>
 		<type>contrib_widget</type>
@@ -106,7 +106,7 @@
 		<common>1</common>
 		<autocomplete>1</autocomplete>
 		<required>1</required>
-		<weight>1</weight>
+		<weight>4</weight>
 		<visible>1</visible>
 		<field_name>biblio_contributors</field_name>
 		<type>contrib_widget</type>
@@ -148,7 +148,7 @@
 		<common>1</common>
 		<autocomplete>1</autocomplete>
 		<required>1</required>
-		<weight>1</weight>
+		<weight>5</weight>
 		<visible>1</visible>
 		<field_name>biblio_contributors</field_name>
 		<type>contrib_widget</type>
