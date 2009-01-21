@@ -428,17 +428,17 @@ function theme_biblio_admin_types_edit_form($form) {
     $conf_row[] = array(
       'data' => drupal_render($form['configured_flds'][$fld]['name']
     ));
-    if ($form['configured_flds'][$fld]['name']['#value'] == 'biblio_contributors'){
-     unset($form['configured_flds'][$fld]['hint']);
-     unset($form['configured_flds'][$fld]['title']);
-      $conf_row[] = array(
-      'data' => $contribs
-      , 'align' => 'center');
-    }else{
+//    if ($form['configured_flds'][$fld]['name']['#value'] == 'biblio_contributors'){
+//     unset($form['configured_flds'][$fld]['hint']);
+//     unset($form['configured_flds'][$fld]['title']);
+//      $conf_row[] = array(
+//      'data' => $contribs
+//      , 'align' => 'center');
+//    }else{
       $conf_row[] = array(
       'data' => drupal_render($form['configured_flds'][$fld]['title']
       ), 'align' => 'center');
-    }
+//    }
     $conf_row[] = array(
       'data' => drupal_render($form['configured_flds'][$fld]['hint']
     ), 'align' => 'center');

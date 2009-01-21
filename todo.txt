@@ -1,5 +1,6 @@
  todo list (no particular order)
 
+* check if upgrade from 5.x is clobbering other biblio related taxonomy http://drupal.org/node/361589
 * add sorting to the argument list you can pass to biblio_db_search() http://drupal.org/node/360624
 * put titles in body text to avoid long title problems http://drupal.org/node/358286
 * check author parsing on names containing UTF-8 chars.

@@ -1028,7 +1028,8 @@ function biblio_reset_types(){
   db_create_table($result, 'biblio_contributor_type_data', $schema['biblio_contributor_type_data']);
 
   variable_set('biblio_last_ftdid', 100); // reset custom field type id too
-  _add_db_field_data();
+//  _add_db_field_data_XML();
+  _add_db_field_data_XML();
   _add_custom_field_data();
 }
 
@@ -1087,13 +1088,13 @@ function _add_db_field_data_XML() {
       db_query("INSERT INTO {biblio_contributor_type} (auth_category, biblio_type, auth_type) VALUES (%d, %d, %d)",  $type, $biblio_type, $type);
     }
   }
-  db_query("INSERT INTO {biblio_contributor_type_data} (auth_type, title) VALUES (%d, '%s' )", 1, "Author");
-  db_query("INSERT INTO {biblio_contributor_type_data} (auth_type, title) VALUES (%d, '%s' )", 2, "Secondary Author");
-  db_query("INSERT INTO {biblio_contributor_type_data} (auth_type, title) VALUES (%d, '%s' )", 3, "Tertiary Author ");
-  db_query("INSERT INTO {biblio_contributor_type_data} (auth_type, title) VALUES (%d, '%s' )", 4, "Subsidiary Author ");
-  db_query("INSERT INTO {biblio_contributor_type_data} (auth_type, title) VALUES (%d, '%s' )", 5, "Corporate Author ");
+//  db_query("INSERT INTO {biblio_contributor_type_data} (auth_type, title) VALUES (%d, '%s' )", 1, "Author");
+//  db_query("INSERT INTO {biblio_contributor_type_data} (auth_type, title) VALUES (%d, '%s' )", 2, "Secondary Author");
+//  db_query("INSERT INTO {biblio_contributor_type_data} (auth_type, title) VALUES (%d, '%s' )", 3, "Tertiary Author ");
+//  db_query("INSERT INTO {biblio_contributor_type_data} (auth_type, title) VALUES (%d, '%s' )", 4, "Subsidiary Author ");
+//  db_query("INSERT INTO {biblio_contributor_type_data} (auth_type, title) VALUES (%d, '%s' )", 5, "Corporate Author ");
   _id_by_name(NULL, NULL, NULL, array('tablename' => 'biblio_field_type_data', 'name_column' => 'title', 'id_column' => 'ftdid'));
-  _id_by_name(NULL, NULL, NULL, array('tablename' => 'biblio_contributor_type_data', 'name_column' => 'title', 'id_column' => 'auth_type'));
+//  _id_by_name(NULL, NULL, NULL, array('tablename' => 'biblio_contributor_type_data', 'name_column' => 'title', 'id_column' => 'auth_type'));
 
   $xml_file = drupal_get_path('module', 'biblio') .'/field_data.xml';
   $xml = simplexml_load_file($xml_file);
@@ -1114,7 +1115,7 @@ function _add_db_field_data_XML() {
     db_query("INSERT INTO {biblio_fields} (" . implode(", ", $fieldnames) . ")
                     VALUES('" . implode("', '", $field_data) . "')");
     foreach ($field->name as $name){
-      if ($name != "~" && $field->type != 'contrib_widget') {
+      if ($name != "~" ) { //&& $field->type != 'contrib_widget') {
         $ftd[0] = ($existing_id = _id_by_name('biblio_field_type_data',$name)) ? $existing_id : variable_get('biblio_last_ftdid', 100); // ftdid
         $ftd[1] = trim($name);                          // title
         $ftd[2] = "";                                     // hint
@@ -1135,23 +1136,23 @@ function _add_db_field_data_XML() {
                       SET visible = 0
                       WHERE tid = %d AND fid = %d ", $name['tid'], $field['fid'] );
       }
-      if ($field->type == 'contrib_widget') {
-        // also populate biblio_contributor_type tables
-        $title = trim($name);
-        if ($title == "~" ) {
-          // turn the visibility off for this (~) type
-          db_query("UPDATE {biblio_field_type}
-                      SET visible = 0
-                      WHERE tid = %d AND fid = %d ", $name['tid'], $field['fid'] );
-        }else {
-          $ctdid = ($eid = _id_by_name('biblio_contributor_type_data',$title)) ? $eid :  $next_ctdid;
-          db_query("UPDATE {biblio_contributor_type} SET auth_type=%d where auth_category=%d and biblio_type=%d", $ctdid, $field->contrib_type, $name['tid']);
-          if(!$eid) {
-            db_query("INSERT INTO {biblio_contributor_type_data} (auth_type, title) VALUES (%d, '%s')", $ctdid, $title);
-            _id_by_name('biblio_contributor_type_data',$title, $ctdid);  // cache the new id value for future use
-            $next_ctdid++;
-          }
-        }
+      if ($field->type == 'contrib_widget' && $name != "~" ) {
+//        // also populate biblio_contributor_type tables
+//        $title = trim($name);
+//        if ($name != "~" ) {
+//          // turn the visibility off for this (~) type
+//          db_query("UPDATE {biblio_field_type}
+//                      SET visible = 0
+//                      WHERE tid = %d AND fid = %d ", $name['tid'], $field['fid'] );
+//        }else {
+//          $ctdid = ($eid = _id_by_name('biblio_field_type_data',$title)) ? $eid :  $next_ctdid;
+          db_query("UPDATE {biblio_contributor_type} SET auth_type=%d where auth_category=%d and biblio_type=%d", $ftd[0], $field->contrib_type, $name['tid']);
+//          if(!$eid) {
+//            db_query("INSERT INTO {biblio_contributor_type_data} (auth_type, title) VALUES (%d, '%s')", $ctdid, $title);
+//            _id_by_name('biblio_contributor_type_data',$title, $ctdid);  // cache the new id value for future use
+//            $next_ctdid++;
+//        }
+//        }
       }
     }
   }
