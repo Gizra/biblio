@@ -38,7 +38,7 @@ function biblio_get_contributor($aid) {
  * @param $vid
  * @return unknown_type
  */
-function biblio_load_contributors($vid, $biblio_type = 0) {
+function biblio_load_contributors($vid, $additions) {
   $contributors = array();
   $query = "SELECT * FROM {biblio_contributor} bc
 			INNER JOIN {biblio_contributor_data} bcd ON bc.cid=bcd.cid
@@ -47,6 +47,23 @@ function biblio_load_contributors($vid, $biblio_type = 0) {
 
   $result = db_query($query, $vid);
   while ($creator = db_fetch_array($result)) {
+    switch($creator['auth_category']){
+      case 1:
+        $additions->biblio_contributors_1[] = $creator;
+        break;
+      case 2:
+        $additions->biblio_contributors_2[] = $creator;
+        break;
+      case 3:
+        $additions->biblio_contributors_3[] = $creator;
+        break;
+      case 4:
+        $additions->biblio_contributors_4[] = $creator;
+        break;
+      case 5:
+        $additions->biblio_contributors_5[] = $creator;
+        break;
+    }
     $contributors[] = $creator;
   }
   return $contributors;

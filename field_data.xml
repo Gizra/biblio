@@ -8,7 +8,7 @@
 		<required>1</required>
 		<weight>1</weight>
 		<visible>1</visible>
-		<field_name>biblio_contributors</field_name>
+		<field_name>biblio_contributors_1</field_name>
 		<type>contrib_widget</type>
 		<width>60</width>
 		<maxlength>255</maxlength>
@@ -22,7 +22,7 @@
 		<required>1</required>
 		<weight>2</weight>
 		<visible>1</visible>
-		<field_name>biblio_contributors</field_name>
+		<field_name>biblio_contributors_2</field_name>
 		<type>contrib_widget</type>
 		<contrib_type>2</contrib_type>
 		<width>60</width>
@@ -65,7 +65,7 @@
 		<required>1</required>
 		<weight>3</weight>
 		<visible>1</visible>
-		<field_name>biblio_contributors</field_name>
+		<field_name>biblio_contributors_3</field_name>
 		<type>contrib_widget</type>
 		<contrib_type>3</contrib_type>
 		<width>60</width>
@@ -108,7 +108,7 @@
 		<required>1</required>
 		<weight>4</weight>
 		<visible>1</visible>
-		<field_name>biblio_contributors</field_name>
+		<field_name>biblio_contributors_4</field_name>
 		<type>contrib_widget</type>
 		<contrib_type>4</contrib_type>
 		<width>60</width>
@@ -150,7 +150,7 @@
 		<required>1</required>
 		<weight>5</weight>
 		<visible>1</visible>
-		<field_name>biblio_contributors</field_name>
+		<field_name>biblio_contributors_5</field_name>
 		<type>contrib_widget</type>
 		<width>60</width>
 		<maxlength>255</maxlength>

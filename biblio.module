@@ -934,9 +934,9 @@ function _biblio_contributor_widget(& $form, $node, $fld, $biblio_type = NULL, $
     $biblio_type = (isset($node['biblio_type']))?$node['biblio_type']:$form['biblio_type']['#default_value'];
   }
 
-  $ctypes = db_query('SELECT auth_category, ctd.auth_type, ctd.title
+  $ctypes = db_query('SELECT auth_category, ct.auth_type, ctd.title
                       FROM {biblio_contributor_type} ct 
-                      INNER JOIN {biblio_contributor_type_data} ctd ON ct.auth_type = ctd.auth_type
+                      INNER JOIN {biblio_field_type_data} ctd ON ct.auth_type = ctd.ftdid
                       WHERE ct.biblio_type = %d
                       ORDER BY auth_category ASC', $biblio_type);
 
@@ -955,6 +955,11 @@ function _biblio_contributor_widget(& $form, $node, $fld, $biblio_type = NULL, $
     '#prefix' => '<div class="clear-block" id="'. $type .'-wrapper">',
     '#suffix' => '</div>'
     );
+    $form[$fld['name'] .'_wrapper']['auth_type'] = array(
+      '#type' => 'hidden',
+      '#value' => $fld['ftdid'].':'.$fld['fid'],
+    );
+    
     // Container for just the contributors.
     $form[$fld['name'] .'_wrapper'][$fld['name']] = array(
     '#prefix' => '<div id="'. $type .'">',
@@ -976,7 +981,7 @@ function _biblio_contributor_widget(& $form, $node, $fld, $biblio_type = NULL, $
     $form[$fld['name'] .'_wrapper'][$fld['name'] .'_more'] = array(
     '#type' => 'submit',
     '#value' => t('More @title', array('@title' => $fld['title'])),
-    '#description' => t("If the amount of boxes above isn't enough, click here to add more choices."),
+    '#description' => t("If there aren't enough boxes above, click here to add more."),
     '#weight' => 1,
     '#submit' => array('biblio_more_contributors_submit'), // If no javascript action.
     '#ahah' => array(
@@ -1001,41 +1006,40 @@ function _biblio_contributor_form($delta, $fld_name, $name = null, $cid = null, 
     '#title' => t('Name'), //
     '#autocomplete_path' => $autocomplete ? 'biblio/autocomplete/contributor' : '',
     '#default_value' => $name,
-    '#parents' => array(
-      $fld_name,
-      $delta,
-      'name'
-      )
-    );
+    '#disabled' => (!empty($name)) ? TRUE : FALSE,
+    '#parents' => array($fld_name, $delta, 'name')
+  );
     
-	list($type, $category) = explode(':',$auth_type);
-    $ctypes = db_query('SELECT ctd.auth_type, ctd.title
-                    	FROM {biblio_contributor_type_data} ctd WHERE ctd.auth_type = %d', $type);
-    while ($ctype = db_fetch_object($ctypes)) {
-      $types["$ctype->auth_type:$category"] = $ctype->title;
-    }
-  $form['auth_type'] = array(
-    '#type' => 'select',
-    '#title' => t('Type'),
-    '#default_value' => $auth_type,
-    '#options' => $types,
-    '#multiple' => FALSE,
-    '#parents' => array(
-      $fld_name,
-      $delta,
-      'auth_type'
-      )
-      );
+//	list($type, $category) = explode(':',$auth_type);
+//    $ctypes = db_query('SELECT ctd.auth_type, ctd.title
+//                    	FROM {biblio_contributor_type_data} ctd WHERE ctd.auth_type = %d', $type);
+//    while ($ctype = db_fetch_object($ctypes)) {
+//      $types["$ctype->auth_type:$category"] = $ctype->title;
+//    }
+//  $form['auth_type'] = array(
+//    '#type' => 'select',
+//    '#title' => t('Type'),
+//    '#default_value' => $auth_type,
+//    '#options' => $types,
+//    '#multiple' => FALSE,
+//    '#parents' => array($fld_name, $delta, 'auth_type')
+//  );
   $form['cid'] = array(
     '#type' => 'hidden',
     '#value' => $cid,
-    '#parents' => array(
-      $fld_name,
-      $delta,
-      'cid'
-      )
-      );
-      return $form;
+    '#parents' => array($fld_name, $delta, 'cid')
+  );
+  $form['edit'] = array(
+    '#type' => 'button',
+    '#value' => t('Edit'),
+    '#parents' => array($fld_name, $delta, 'edit')
+  );
+  $form['delete'] = array(
+    '#type' => 'button',
+    '#value' => t('Delete'),
+    '#parents' => array($fld_name, $delta, 'delete')
+  );
+  return $form;
 }
 function biblio_contributors_js($fld_name, $tid, $other_fields = FALSE) {
   $delta = count($_POST[$fld_name]);
@@ -1083,13 +1087,11 @@ function biblio_contributors_js($fld_name, $tid, $other_fields = FALSE) {
   }
   unset ($contributor_form['#prefix'], $contributor_form['#suffix']); // Prevent duplicate wrappers.
   $contributor_form[$delta]['#attributes']['class'] = empty($contributor_form[$delta]['#attributes']['class']) ? 'ahah-new-content' : $contributor_form[$delta]['#attributes']['class'] .' ahah-new-content';
-  //$contributor_form[$delta]['type']['#value'] = 0;
   $output = theme('status_messages') . drupal_render($contributor_form);
   print drupal_json(array(
     'status' => TRUE,
     'data' => $output
   ));
-  //print drupal_json(array('status' => TRUE, 'data' => '<pre>'.var_export($_POST[$fld_name], true).'</pre>'));
   exit();
 }
 
@@ -1211,7 +1213,8 @@ function biblio_load($node) {
                                          LEFT JOIN {biblio_types} bt on b.biblio_type = bt.tid
                                          WHERE b.vid = %d', $node->vid));
   $additions->biblio_year = _biblio_text_year($additions->biblio_year);
-  $additions->biblio_contributors = biblio_load_contributors($node->vid, $additions->biblio_type);
+  //$additions->biblio_contributors = 
+  biblio_load_contributors($node->vid, $additions);
   return $additions;
 }
 function biblio_citekey_generate($node) {

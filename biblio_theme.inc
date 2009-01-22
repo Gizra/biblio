@@ -562,25 +562,20 @@ function theme_biblio_contributors($form) {
   // Change the button title to reflect the behavior when using JavaScript.
   //drupal_add_js('if (Drupal.jsEnabled) { $(document).ready(function() { $("#edit-'.str_replace('_', '-', $form['#parents'][0]) .'-more").val("'. t('Add another contributor') .'"); }); }', 'inline');
   $rows = array();
-  $headers = array(
-    t('Name'
-  ), t('Type'),);
+  $headers = array(t('Name'), t('Actions'));
   foreach (element_children($form) as $key) {
     // No need to print the field title every time.
     unset ($form[$key]['name']['#title'], $form[$key]['auth_type']['#title']);
     // Build the table row.
     $row = array(
       'data' => array(
-        array(
-          'data' => drupal_render($form[$key]['name']
-        ),
-        'class' => 'biblio-contributor'
-      ),
-      array(
-        'data' => drupal_render($form[$key]['auth_type']
-      ),
-      'class' => 'biblio-contributor-type'
-    ),),);
+        array('data' => drupal_render($form[$key]['name']),
+              'class' => 'biblio-contributor'),
+        array('data' => drupal_render($form[$key]['edit']),
+              'class' => 'biblio-contributor-edit'),
+        array('data' => drupal_render($form[$key]['delete']),
+              'class' => 'biblio-contributor-delete'),
+        ),);
     // Add additional attributes to the row, such as a class for this row.
     if (isset ($form[$key]['#attributes'])) {
       $row = array_merge($row, $form[$key]['#attributes']);
