@@ -96,6 +96,7 @@ function biblio_build_query($arg_list) {
   $join[] = "left join {biblio} b  on n.vid=b.vid ";
   $join[] = "left join {biblio_types} bt  on b.biblio_type=bt.tid ";
 
+  $limit = '';
   if (variable_get('biblio_view_only_own', 0) ) {
     $limit .= " AND n.uid=$user->uid ";
   }
@@ -337,8 +338,8 @@ function biblio_build_query($arg_list) {
 
   $where_clause = count($where) > 1 ? '('. implode(') AND (', $where) .')': $where[0];
 
-  $query = db_rewrite_sql("SELECT DISTINCT n.*, b.*, bt.name as biblio_type_name FROM {node} n $joins  WHERE $where_clause $published $limit $sortby ");
-  $count_query = db_rewrite_sql("SELECT COUNT(DISTINCT(n.nid)) FROM {node} n $joins  WHERE $where_clause $published $limit ");
+  $query = db_rewrite_sql("SELECT DISTINCT n.*, b.*, bt.name as biblio_type_name FROM {node} n $joins  WHERE $where_clause $limit $sortby ");
+  $count_query = db_rewrite_sql("SELECT COUNT(DISTINCT(n.nid)) FROM {node} n $joins  WHERE $where_clause $limit ");
   $_SESSION['last_biblio_query'] = $query;
   $terms[] = $sort_attrib['order']; // this is either asc or desc to be inserted into the first term of the ORDER clause
   if($sort_attrib['sort'] == 'year') $terms[] = $sort_attrib['order']; // we need any extra order term when sorting by year since there are to date terms biblio_year and biblio_date
@@ -508,10 +509,10 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
     $content .= theme(biblio_alpha_line,$_GET['sort'],$value);
   }      
   
-  $_char = $_type = $_year = $name = "";
+  $_char = $_type = $_year = $name = ""; $count = 0;
   while ($node = db_fetch_object($result)) {
-   $count++;
-    $node->biblio_contributors = biblio_load_contributors($node->vid, $node->biblio_type);
+    $count++;
+    $node->biblio_contributors = biblio_load_contributors($node->vid);
 
     if ( module_exists("upload") ) {
       $node->files = upload_load($node);
@@ -533,8 +534,8 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
         }
         break;
       case 'author':
-        if ( drupal_substr(drupal_ucfirst(ltrim($node->biblio_contributors[0]['lastname'])), 0, 1) != $_char) {
-          $_char = drupal_substr(drupal_ucfirst(ltrim($node->biblio_contributors[0]['lastname'])), 0, 1) ;
+        if ( drupal_substr(drupal_ucfirst(ltrim($node->biblio_contributors[1][0]['lastname'])), 0, 1) != $_char) {
+          $_char = drupal_substr(drupal_ucfirst(ltrim($node->biblio_contributors[1][0]['lastname'])), 0, 1) ;
           $content .= '<div class="biblio-year">' . $_char . "</div>\n";
         }
         break;

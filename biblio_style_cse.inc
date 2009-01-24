@@ -27,8 +27,7 @@ function biblio_style_cse_info() {
  *   The styled biblio entry
  */
 function biblio_style_cse($node, $base = 'biblio', $inline = false) {
-  $contrib_array = _cse_format_authors($node->biblio_contributors, $inline);
-  $authors = $contrib_array[1];
+  $authors = biblio_format_authors($node->biblio_contributors[1], 'cse', $inline);
   $output .= '<span class="biblio-authors">' . $authors . "</span>.&nbsp; \n";
   switch ($node->biblio_type) {
 
@@ -52,24 +51,9 @@ function biblio_style_cse($node, $base = 'biblio', $inline = false) {
   */
   return $output;
 }
-function _cse_format_authors($contributors, $inline = FALSE) {
-  if (count($contributors)) {
-    foreach ($contributors as $key => $author) {
-      $format = $author['prefix'] . ' ' . $author['lastname'] . ' ';
-      $format .= !empty ($author['firstname']) ? ' ' . drupal_substr($author['firstname'], 0, 1) : '';
-      $format .= !empty ($author['initials']) ? str_replace(' ', '', $author['initials']) : '';
-      if (variable_get('biblio_author_links', 1)) {
-        $base = variable_get('biblio_base', 'biblio');
-        $format = _biblio_author_link($format, $author['cid'], $base, $inline);
-      }
-      $author_array[$author['auth_category']] .= (!empty ($author_array[$author['auth_category']])) ? ', ' . $format : $format;
-    }
-  }
-  if (count($author_array)) {
-    return $author_array;
-  } else {
-    return array (
-      1 => t('No author information available')
-    );
-  }
+function _cse_format_author($author) {
+  $format = $author['prefix'] . ' ' . $author['lastname'] . ' ';
+  $format .= !empty ($author['firstname']) ? ' ' . drupal_substr($author['firstname'], 0, 1) : '';
+  $format .= !empty ($author['initials']) ? str_replace(' ', '', $author['initials']) : '';
+  return $format;
 }

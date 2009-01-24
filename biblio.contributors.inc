@@ -1,27 +1,6 @@
 <?php
 //$Id$
 /**
- * @param $authors
- * @param $withLinks
- * @return unknown_type
- */
-function biblio_get_contributor_strings($authors, $withLinks = TRUE) {
-  if (count($authors)) {
-    foreach ($authors as $key => $author) {
-      $author_array[$author['ct_id']] .= (!empty ($author_array[$author['ct_id']])) ? '; ' . $author['name'] : $author['name']; // $author['firstname'] .' '. $author['initials'].' '.$author['lastname'];
-    }
-  }
-  if (count($author_array)) {
-    //ksort($author_array);
-    return $author_array;
-  }
-  else {
-    return array(
-    1 => t('No author information available'
-    ));
-  }
-}
-/**
  * @param $aid
  * @return unknown_type
  */
@@ -38,7 +17,7 @@ function biblio_get_contributor($aid) {
  * @param $vid
  * @return unknown_type
  */
-function biblio_load_contributors($vid, $additions) {
+function biblio_load_contributors($vid) {
   $contributors = array();
   $query = "SELECT * FROM {biblio_contributor} bc
 			INNER JOIN {biblio_contributor_data} bcd ON bc.cid=bcd.cid
@@ -47,24 +26,7 @@ function biblio_load_contributors($vid, $additions) {
 
   $result = db_query($query, $vid);
   while ($creator = db_fetch_array($result)) {
-    switch($creator['auth_category']){
-      case 1:
-        $additions->biblio_contributors_1[] = $creator;
-        break;
-      case 2:
-        $additions->biblio_contributors_2[] = $creator;
-        break;
-      case 3:
-        $additions->biblio_contributors_3[] = $creator;
-        break;
-      case 4:
-        $additions->biblio_contributors_4[] = $creator;
-        break;
-      case 5:
-        $additions->biblio_contributors_5[] = $creator;
-        break;
-    }
-    $contributors[] = $creator;
+    $contributors[$creator['auth_category']][] = $creator;
   }
   return $contributors;
 }
@@ -90,17 +52,22 @@ function biblio_authors_add_etal (&$authors, $type) {
  */
 function biblio_parse_contributors($contributors) {
   $authors = array(); $etal = array();
-  foreach ($contributors as $author) {
-    // remove any form of "et al" from name field, because it confuses biblio_parse_author
-    $author_cleaned = preg_replace("/et\.?\s+al\.?/",'',$author['name'],-1);
-    if ($author_cleaned != $author['name']) { // if "et al" was present:
-      $author['name'] = $author_cleaned;  // store cleaned name 
-      $etal[$author['auth_type']] = true; // mark it as "to be added" in $etal array 
-    }
-    $author['name'] = trim($author['name']); 
-    if (strlen($author['name'])) {
-      biblio_parse_author($author);
-      $authors[] = (array) $author;
+  // TODO: $contributors is an array of categories containing an array of authors each
+  // The following quick hack makes a flat author array from it
+  foreach ($contributors as $cat => $values) {   
+    foreach ($values as $author) {
+      // remove any form of "et al" from name field, because it confuses biblio_parse_author
+      $author_cleaned = preg_replace("/et\.?\s+al\.?/",'',$author['name'],-1);
+      if ($author_cleaned != $author['name']) { // if "et al" was present:
+        $author['name'] = $author_cleaned;  // store cleaned name 
+        $etal[$author['auth_type']] = true; // mark it as "to be added" in $etal array 
+      }
+      $author['name'] = trim($author['name']);
+      $author['auth_category'] = $cat;
+      if (strlen($author['name'])) {
+        biblio_parse_author($author);
+        $authors[] = (array) $author;
+      }
     }
   }
   // add "et al" authors for all neccessary author types
@@ -129,7 +96,6 @@ function biblio_save_contributors($node, $update = FALSE) {
  * @return success of database operations
  */
 function _save_contributors($authors, $nid, $vid, $update = FALSE) {
-
   $rank = 0;
   $md5 = _loadMD5();
   db_query('DELETE FROM {biblio_contributor} WHERE nid = %d AND vid = %d', array($nid, $vid));
@@ -143,15 +109,13 @@ function _save_contributors($authors, $nid, $vid, $update = FALSE) {
     } else {
       $cid = $author['cid'];
     }
-    $author = (array) $author;
-    list($auth_type,$auth_cat) = explode(":", $author['auth_type']); 
     $link_array = array(
       'nid' => $nid,
       'vid' => $vid,
       'cid' => $cid,
       'rank' => $rank++,
-      'auth_type' => $auth_type,
-      'auth_category' => $auth_cat
+      'auth_type' => $author['auth_type'],
+      'auth_category' => $author['auth_category'],
     );
 
     if (!drupal_write_record('biblio_contributor', $link_array)) return false;

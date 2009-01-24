@@ -364,11 +364,10 @@ function biblio_export($format = "tagged", $nid = null, $popup = false, $version
   }
   $result = db_query($query, $params);
   while ($node = db_fetch_object($result)) {
-    $node->biblio_contributors = biblio_load_contributors($node->vid, $node->biblio_type);
-      if ($vid = variable_get('biblio_keyword_vocabulary', 0)){
-          $node->terms = taxonomy_node_get_terms_by_vocabulary($node, $vid);
-                 
-      }  
+    $node->biblio_contributors = biblio_load_contributors($node->vid);
+    if ($vid = variable_get('biblio_keyword_vocabulary', 0)){
+        $node->terms = taxonomy_node_get_terms_by_vocabulary($node, $vid);
+    }  
     $results[] = $node;
   }
 
@@ -552,19 +551,14 @@ function biblio_bibtex_export($results) {
       $bibtex .= "\tISBN = {". $pub->biblio_isbn ."},\n";
     if (!empty($pub->biblio_url))
       $bibtex .= "\tURL = {". $pub->biblio_url ."},\n";
-    $a = $e = NULL;
-    foreach ($pub->biblio_contributors as $auth) {
-      switch ($auth['auth_type']) {
-        case 1 :
-          $a .= (!empty ($a)) ? ' and '. trim($auth['name']) : trim($auth['name']);
-          break;
-        case 2 :
-        case 10 :
-        case 14 :
-          $e .= (!empty ($e)) ? ' and '. trim($auth['name']) : trim($auth['name']);
-          break;
-      }
+    $a = $e = array();
+    // TODO rhaschke: Are the autor types 2,10,14 really editors?
+    foreach ($pub->biblio_contributors[1] as $auth) $a[] = trim($auth['name']);
+    foreach ($pub->biblio_contributors[2] as $auth) {
+      if (in_array($auth['auth_type'], array(2,10,14))) $e[] = trim($auth['name']);
     }
+    $a = implode(' and ', $a);
+    $e = implode(' and ', $e);
     if (!empty ($a))
       $bibtex .= "\tauthor = {". $a ."}". (($e) ? ",\n" : "\n");
     if (!empty ($e))
@@ -812,21 +806,17 @@ function biblio_endnote_tagged_export($results) {
       $doc .= "%D ". trim($pub->biblio_year) ."\r\n";
     if (!empty($pub->title))
       $doc .= "%T ". trim($pub->title) ."\r\n";
-    if (count($pub->biblio_contributors)) {
-      foreach ($pub->biblio_contributors as $auth) {
-        switch ($auth['auth_category']) {
-          case 1 :
-            $doc .= "%A ". trim($auth['name']) ."\r\n";
-            break;
-          case 2 :
-            $doc .= "%E ". trim($auth['name']) ."\r\n";
-            break;
-          case 3 :
-            $doc .= "%Y ". trim($auth['name']) ."\r\n";
-            break;
-        }
-      }
+
+    foreach ($pub->biblio_contributors[1] as $auth) {
+      $doc .= "%A " . trim($auth['name']) ."\r\n";
     }
+    foreach ($pub->biblio_contributors[2] as $auth) {
+      $doc .= "%E " . trim($auth['name']) ."\r\n";
+    }
+    foreach ($pub->biblio_contributors[3] as $auth) {
+      $doc .= "%Y " . trim($auth['name']) ."\r\n";
+    }
+
     if (!empty($pub->biblio_place_published))
       $doc .= "%C ". trim($pub->biblio_place_published) ."\r\n";
     if (!empty($pub->biblio_publisher))
