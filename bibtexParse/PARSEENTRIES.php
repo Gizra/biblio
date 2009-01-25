@@ -609,7 +609,7 @@ class PARSEENTRIES
         $authorArray = preg_split("/\s(and|&)\s/i", trim($entry['author']));
         foreach ($authorArray as $key => $author)
         {
-          $node['biblio_contributors'][]= array('name' => $author, 'auth_type' => _biblio_get_auth_type(1, $node['biblio_type']).':1');
+          $node['biblio_contributors'][1][]= array('name' => $author, 'auth_type' => _biblio_get_auth_type(1, $node['biblio_type']));
         }
       }
 
@@ -619,7 +619,7 @@ class PARSEENTRIES
         $authorArray = preg_split("/\s(and|&)\s/i", trim($entry['editor']));
         foreach ($authorArray as $key => $author)
         {
-          $node['biblio_contributors'][]= array('name' => $author, 'auth_type' => _biblio_get_auth_type(2, $node['biblio_type']).':2');
+          $node['biblio_contributors'][2][]= array('name' => $author, 'auth_type' => _biblio_get_auth_type(2, $node['biblio_type']));
         }
       }
 

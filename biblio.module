@@ -942,7 +942,7 @@ function _biblio_contributor_widget($node, $fld, $auth_category, $biblio_type, $
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
     '#title' => $fld['title'],
-    '#weight' => $fld['weight'],
+    '#weight' => $fld['weight'] / 10,
     '#description' => t('Enter a single name per line using a format such as "Smith, John K" or "John K Smith" or "J.K. Smith"'),
     '#prefix' => '<div class="clear-block" id="'. $type .'-wrapper">',
     '#suffix' => '</div>'

@@ -83,22 +83,26 @@ function en8_characterData($parser, $data) {
         break;
         //Author information
       case 'author' :
-        $node['biblio_contributors'][$contrib_count]['name'] .= $data;
+        
         switch ($contributors) {
           case 'authors' :
-            $node['biblio_contributors'][$contrib_count]['auth_type'] = _biblio_get_auth_type(1, $node['biblio_type']).':1';
+            $node['biblio_contributors'][1][$contrib_count]['name'] .= $data;
+            $node['biblio_contributors'][1][$contrib_count]['auth_type'] = _biblio_get_auth_type(1, $node['biblio_type']);
             break;
           case 'secondary-authors' :
-            $node['biblio_contributors'][$contrib_count]['auth_type'] = _biblio_get_auth_type(2, $node['biblio_type']).':2';
+            $node['biblio_contributors'][2][$contrib_count]['name'] .= $data;
+            $node['biblio_contributors'][2][$contrib_count]['auth_type'] = _biblio_get_auth_type(2, $node['biblio_type']);
             break;
           case 'tertiary-authors' :
-            $node['biblio_contributors'][$contrib_count]['auth_type'] = _biblio_get_auth_type(3, $node['biblio_type']).':3';
+            $node['biblio_contributors'][3][$contrib_count]['name'] .= $data;
+            $node['biblio_contributors'][3][$contrib_count]['auth_type'] = _biblio_get_auth_type(3, $node['biblio_type']);
             break;
           case 'subsidiary-authors' :
-            $node['biblio_contributors'][$contrib_count]['auth_type'] = _biblio_get_auth_type(4, $node['biblio_type']).':4';
+            $node['biblio_contributors'][4][$contrib_count]['name'] .= $data;
+            $node['biblio_contributors'][4][$contrib_count]['auth_type'] = _biblio_get_auth_type(4, $node['biblio_type']);
             break;
           case 'translated-authors' :
-            $node['biblio_contributors'][$contrib_count]['auth_type'] = _biblio_get_auth_type(5, $node['biblio_type']).':5';
+            $node['biblio_contributors'][$contrib_count]['auth_type'] = _biblio_get_auth_type(5, $node['biblio_type']);
             break;
         }
         break;

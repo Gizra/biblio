@@ -126,9 +126,9 @@ function _ris_tagged_import($file, $terms = array(), $batch = FALSE, $session_id
           break;
             case 'A1' :
             case 'AU' :
-              $node['biblio_contributors'][] = array(
+              $node['biblio_contributors'][1][] = array(
                 'name' => $value,
-                'auth_type' => _biblio_get_auth_type(1, $node['biblio_type']).':1');
+                'auth_type' => _biblio_get_auth_type(1, $node['biblio_type']));
               break;
             case 'JF' :
               $node['biblio_secondary_title'] = $value;
@@ -143,9 +143,9 @@ function _ris_tagged_import($file, $terms = array(), $batch = FALSE, $session_id
               break;
             case 'A2' :
             case 'ED' :
-              $node['biblio_contributors'][] = array(
+              $node['biblio_contributors'][2][] = array(
                 'name' => $value,
-                'auth_type' => _biblio_get_auth_type(2, $node['biblio_type']).':2');
+                'auth_type' => _biblio_get_auth_type(2, $node['biblio_type']));
               break;
             case 'PB' :
               $node['biblio_publisher'] = $value;
@@ -189,9 +189,9 @@ function _ris_tagged_import($file, $terms = array(), $batch = FALSE, $session_id
               $node['biblio_abst_e'] .= $value;
               break;
             case 'A3' :
-              $node['biblio_contributors'][] = array(
+              $node['biblio_contributors'][5][] = array(
                 'name' => $value,
-                'auth_type' => _biblio_get_auth_type(5, $node['biblio_type']).':5');
+                'auth_type' => _biblio_get_auth_type(5, $node['biblio_type']));
               break;
             case 'N1' :
               $node['biblio_notes'] .= $value;
