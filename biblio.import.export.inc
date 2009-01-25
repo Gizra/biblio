@@ -553,8 +553,8 @@ function biblio_bibtex_export($results) {
       $bibtex .= "\tURL = {". $pub->biblio_url ."},\n";
     $a = $e = array();
     // TODO rhaschke: Are the autor types 2,10,14 really editors?
-    foreach ($pub->biblio_contributors[1] as $auth) $a[] = trim($auth['name']);
-    foreach ($pub->biblio_contributors[2] as $auth) {
+    foreach ((array)$pub->biblio_contributors[1] as $auth) $a[] = trim($auth['name']);
+    foreach ((array)$pub->biblio_contributors[2] as $auth) {
       if (in_array($auth['auth_type'], array(2,10,14))) $e[] = trim($auth['name']);
     }
     $a = implode(' and ', $a);
@@ -807,13 +807,13 @@ function biblio_endnote_tagged_export($results) {
     if (!empty($pub->title))
       $doc .= "%T ". trim($pub->title) ."\r\n";
 
-    foreach ($pub->biblio_contributors[1] as $auth) {
+    foreach ((array)$pub->biblio_contributors[1] as $auth) {
       $doc .= "%A " . trim($auth['name']) ."\r\n";
     }
-    foreach ($pub->biblio_contributors[2] as $auth) {
+    foreach ((array)$pub->biblio_contributors[2] as $auth) {
       $doc .= "%E " . trim($auth['name']) ."\r\n";
     }
-    foreach ($pub->biblio_contributors[3] as $auth) {
+    foreach ((array)$pub->biblio_contributors[3] as $auth) {
       $doc .= "%Y " . trim($auth['name']) ."\r\n";
     }
 

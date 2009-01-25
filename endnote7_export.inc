@@ -47,13 +47,13 @@ function _endnote7_XML_export($results) {
     }
     $xml .= "\t<REFERENCE_TYPE>$reftype</REFERENCE_TYPE>\n";
     $a = $e = $t = '';
-    foreach ($pub->biblio_contributors[1] as $auth) {
+    foreach ((array)$pub->biblio_contributors[1] as $auth) {
       $a .= "\t\t<AUTHOR>". trim($auth['name']) ."</AUTHOR>\n";
     }
-    foreach ($pub->biblio_contributors[2] as $auth) {
+    foreach ((array)$pub->biblio_contributors[2] as $auth) {
       $e .= "\t\t<SECONDARY_AUTHOR>". (trim($auth['name'])) ."</SECONDARY_AUTHOR>\n";
     }
-    foreach ($pub->biblio_contributors[2] as $auth) {
+    foreach ((array)$pub->biblio_contributors[2] as $auth) {
       $t .= "\t\t<TERTIARY_AUTHOR>". (trim($auth['name'])) ."</TERTIARY_AUTHOR>\n";
     }
     if (!empty ($a))
