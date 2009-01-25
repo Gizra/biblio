@@ -646,7 +646,6 @@ function biblio_menu() {
     'page callback' => 'biblio_contributors_js',
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,
-
   );
   $items["$base/list"] = array(
     'title' => t('List'),
@@ -851,7 +850,7 @@ function biblio_form($node, $form_state) {
     foreach ($fields as $key => $fld) {
       $main_area = $fld['common'] || $fld['visible'];
       if ($fld['type'] == 'contrib_widget') {
-        $auth_category = $fld['ftdid'];
+        $auth_category = $fld['fid'];
         if ($main_area)
           $form += _biblio_contributor_widget($node, $fld, $auth_category, $tid);
         else
@@ -886,12 +885,6 @@ function biblio_form($node, $form_state) {
         if ($main_area) $form[$key] = $field_widget;
         else $form['other_fields'][$key] = $field_widget;
       }
-    }
-    if (isset($form_state['contributor_count'])) {
-      $contributor_count = $form_state['contributor_count'];
-    }
-    else {
-      $contributor_count = max(4, empty($node->contributors) ? 2 : count($node->contributors));
     }
 
     $form['body_field'] = array(
@@ -932,7 +925,7 @@ function _biblio_contributor_widget($node, $fld, $auth_category, $biblio_type, $
   $contributors = (array) $node->biblio_contributors[$auth_category];
   $contributor_count = max(4, count($contributors));
 
-  $ctypes = db_query('SELECT auth_category, ctd.auth_type, ctd.title
+  $ctypes = db_query('SELECT ctd.auth_type, ctd.title
                       FROM {biblio_contributor_type} ct 
                       INNER JOIN {biblio_contributor_type_data} ctd ON ct.auth_type = ctd.auth_type
                       WHERE ct.biblio_type = %d AND auth_category = %d',  $biblio_type, $auth_category);
@@ -940,9 +933,11 @@ function _biblio_contributor_widget($node, $fld, $auth_category, $biblio_type, $
   while ($ctype = db_fetch_object($ctypes)) {
     $options[$ctype->auth_type] = $ctype->title;
   }
+  // if no author types are available skip this widget
+  if (!isset($options)) return array();
 
   // Add a wrapper for the choices and more button.
-  $form[$fldname .'_wrapper'] = array(
+  $wrapper = array(
     '#tree' => true,
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
@@ -953,7 +948,7 @@ function _biblio_contributor_widget($node, $fld, $auth_category, $biblio_type, $
     '#suffix' => '</div>'
     );
   // Container for just the contributors.
-  $form[$fldname .'_wrapper']['biblio_contributors'][$auth_category] = array(
+  $wrapper['biblio_contributors'][$auth_category] = array(
   	'#prefix' => '<div id="'. $type .'">',
     '#suffix' => '</div>',
     '#theme' => 'biblio_contributors',
@@ -969,13 +964,14 @@ function _biblio_contributor_widget($node, $fld, $auth_category, $biblio_type, $
       $cid = '';
       $auth_type = '';
     }
-    $form[$fldname .'_wrapper']['biblio_contributors'][$auth_category][$delta] 
+    $wrapper['biblio_contributors'][$auth_category][$delta] 
       = _biblio_contributor_form($delta, $auth_category, $name, $cid, $auth_type, $options, $fld['autocomplete']);
   }
   // We name our button 'contrib_more' to avoid conflicts with other modules using
   // AHAH-enabled buttons with the id 'more'.
-  $path = ($other_fieldset)?'biblio/js/'. $fldname.'/'.$biblio_type.'/1':'biblio/js/'. $fldname.'/'.$biblio_type;
-  $form[$fldname .'_wrapper'][$fldname .'_more'] = array(
+  $path = 'biblio/js/'.$biblio_type.'/'.$auth_category;
+  if ($other_fieldset) $path .= '/1';
+  $wrapper[$fldname .'_more'] = array(
     '#type' => 'submit',
     '#value' => t('More @title', array('@title' => $fld['title'])),
     '#description' => t("If there aren't enough boxes above, click here to add more."),
@@ -988,6 +984,8 @@ function _biblio_contributor_widget($node, $fld, $auth_category, $biblio_type, $
       'effect' => 'fade'
       )
     );
+
+  $form['contributors'.$auth_category.'_wrapper'] = $wrapper;  
   return $form;
 }
 
@@ -1019,37 +1017,30 @@ function _biblio_contributor_form($delta, $auth_category, $name = null, $cid = n
   );
   return $form;
 }
-// TODO: fix and check the ahah button (reduce auth_type selection)
-function biblio_contributors_js($fld_name, $tid, $other_fields = FALSE) {
-  $delta = count($_POST[$fld_name]);
+function biblio_contributors_js($tid, $auth_category, $other_fields = FALSE) {
+  $delta = count($_POST['biblio_contributors'][$auth_category]);
   // Build our new form element.
   $ctypes = db_query('SELECT ctd.auth_type, ctd.title
                       FROM {biblio_contributor_type} ct 
-                      INNER JOIN {biblio_contributor_type_data} ctd ON ct.auth_type = ctd.auth_type 
-                      WHERE ct.biblio_type = %d
-                      ORDER BY auth_type ASC', $tid);
+                      INNER JOIN {biblio_contributor_type_data} ctd ON ct.auth_type = ctd.auth_type
+                      WHERE ct.biblio_type = %d AND auth_category = %d',  $tid, $auth_category);
+  $options = array();
   while ($ctype = db_fetch_object($ctypes)) {
-    $choice = new stdClass();
-    $choice->option = array(
-    $ctype->auth_type => $ctype->title
-    );
-    $options[] = $choice;
+    $options[$ctype->auth_type] = $ctype->title;
   }
-  $form_element = _biblio_contributor_form($delta, $fld_name, '', '', '', $options);
+  $form_element = _biblio_contributor_form($delta, $auth_category, '', '', '', $options);
   drupal_alter('form', $form_element, array(), 'biblio_contributors_js');
   // Build the new form.
-  $form_state = array(
-    'submitted' => FALSE
-  );
+  $form_state = array('submitted' => FALSE);
   $form_build_id = $_POST['form_build_id'];
   // Add the new element to the stored form. Without adding the element to the
   // form, Drupal is not aware of this new elements existence and will not
   // process it. We retreive the cached form, add the element, and resave.
   $form = form_get_cache($form_build_id, $form_state);
   if ($other_fields){
-    $form['other_fields'][$fld_name .'_wrapper'][$fld_name][$delta] = $form_element;
+    $form['other_fields']['contributors'.$auth_category.'_wrapper']['biblio_contributors'][$auth_category][$delta] = $form_element;
   }else{
-    $form[$fld_name .'_wrapper'][$fld_name][$delta] = $form_element;
+    $form['contributors'.$auth_category.'_wrapper']['biblio_contributors'][$auth_category][$delta] = $form_element;
   }
   form_set_cache($form_build_id, $form, $form_state);
   $form += array(
@@ -1060,9 +1051,9 @@ function biblio_contributors_js($fld_name, $tid, $other_fields = FALSE) {
   $form = form_builder('biblio_node_form', $form, $form_state);
   // Render the new output.
   if ($other_fields){
-    $contributor_form = $form['other_fields'][$fld_name .'_wrapper'][$fld_name];
-  }else{
-    $contributor_form = $form[$fld_name .'_wrapper'][$fld_name];
+    $contributor_form = $form['other_fields']['contributors'.$auth_category.'_wrapper']['biblio_contributors'][$auth_category];
+  } else {
+    $contributor_form = $form['contributors'.$auth_category.'_wrapper']['biblio_contributors'][$auth_category];
   }
   unset ($contributor_form['#prefix'], $contributor_form['#suffix']); // Prevent duplicate wrappers.
   $contributor_form[$delta]['#attributes']['class'] = empty($contributor_form[$delta]['#attributes']['class']) ? 'ahah-new-content' : $contributor_form[$delta]['#attributes']['class'] .' ahah-new-content';

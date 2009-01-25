@@ -42,7 +42,7 @@ function biblio_authors_add_etal (&$authors, $type) {
   foreach ($authors as $author) {
     if ($author['auth_type'] == $type && $author['name'] == $etal) return false;
   }
-  $authors[] = array('name' => $etal, 'auth_type' => $type, 'lastname' => $etal);
+  $authors[] = biblio_parse_author(array('name' => $etal, 'auth_type' => $type, 'lastname' => $etal));
   return true;
 }
 /**
@@ -51,31 +51,29 @@ function biblio_authors_add_etal (&$authors, $type) {
  * @return augmented contributor array
  */
 function biblio_parse_contributors($contributors) {
-  $authors = array(); $etal = array();
-  // TODO: $contributors is an array of categories containing an array of authors each
-  // The following quick hack makes a flat author array from it
-  foreach ($contributors as $cat => $values) {   
-    foreach ($values as $author) {
+  $result = array();
+  foreach ($contributors as $cat => $authors) {
+    $etal = array();   
+    foreach ($authors as $author) {
       // remove any form of "et al" from name field, because it confuses biblio_parse_author
-      $author_cleaned = preg_replace("/et\.?\s+al\.?/",'',$author['name'],-1);
+      $author_cleaned = preg_replace("/et\.?\s+al\.?/",'',$author['name']);
       if ($author_cleaned != $author['name']) { // if "et al" was present:
         $author['name'] = $author_cleaned;  // store cleaned name 
         $etal[$author['auth_type']] = true; // mark it as "to be added" in $etal array 
       }
       $author['name'] = trim($author['name']);
-      $author['auth_category'] = $cat;
       if (strlen($author['name'])) {
-        biblio_parse_author($author);
-        $authors[] = (array) $author;
+        $result[$cat][] = biblio_parse_author($author);
+      }
+    }
+    // add "et al" authors for all neccessary author types
+    foreach ($etal as $type => $dummy) {
+      if (isset($result[$cat])) { // add "et al" only if plain authors exists
+        biblio_authors_add_etal ($result[$cat], $type);
       }
     }
   }
-  // add "et al" authors for all neccessary author types
-  foreach ($etal as $type => $dummy) {
-    if (biblio_authors_add_etal ($authors, $type))
-      biblio_parse_author($authors[sizeof($authors)-1]);
-  }
-  return $authors;
+  return $result;
 }
 /**
  * Save $node->biblio_contributors to database
@@ -95,30 +93,32 @@ function biblio_save_contributors($node, $update = FALSE) {
  * @param $update
  * @return success of database operations
  */
-function _save_contributors($authors, $nid, $vid, $update = FALSE) {
-  $rank = 0;
+function _save_contributors($contributors, $nid, $vid, $update = FALSE) {
   $md5 = _loadMD5();
   db_query('DELETE FROM {biblio_contributor} WHERE nid = %d AND vid = %d', array($nid, $vid));
-  foreach ($authors as $key => $author) {
-    if ($update && !empty($author['cid']))  $author['cid'] = null; // null out the cid so we don't do a global change
-    if (empty ($author['cid']) && !empty ($md5))
-    $author['cid'] = array_search($author['md5'], $md5);
-    if (empty ($author['cid'])) {
-      if (!drupal_write_record('biblio_contributor_data', $author)) return false;
-      $cid = db_last_insert_id('biblio_contributor_data', 'cid');
-    } else {
-      $cid = $author['cid'];
+  foreach ($contributors as $cat => $authors) { 
+    $rank = 0;
+    foreach ($authors as $key => $author) {
+      if ($update && !empty($author['cid']))  $author['cid'] = null; // null out the cid so we don't do a global change
+      if (empty ($author['cid']) && !empty ($md5))
+      $author['cid'] = array_search($author['md5'], $md5);
+      if (empty ($author['cid'])) {
+        if (!drupal_write_record('biblio_contributor_data', $author)) return false;
+        $cid = db_last_insert_id('biblio_contributor_data', 'cid');
+      } else {
+        $cid = $author['cid'];
+      }
+      $link_array = array(
+        'nid' => $nid,
+        'vid' => $vid,
+        'cid' => $cid,
+        'rank' => $rank++,
+        'auth_type' => $author['auth_type'],
+        'auth_category' => $cat,
+      );
+  
+      if (!drupal_write_record('biblio_contributor', $link_array)) return false;
     }
-    $link_array = array(
-      'nid' => $nid,
-      'vid' => $vid,
-      'cid' => $cid,
-      'rank' => $rank++,
-      'auth_type' => $author['auth_type'],
-      'auth_category' => $author['auth_category'],
-    );
-
-    if (!drupal_write_record('biblio_contributor', $link_array)) return false;
   }
   return true; // successfully saved all contributors
 }
@@ -156,7 +156,7 @@ function _save_contributors($authors, $nid, $vid, $update = FALSE) {
  * @param $author_array
  * @return unknown_type
  */
-function biblio_parse_author(& $author_array) {
+function biblio_parse_author($author_array) {
   $value = trim($author_array['name']);
   $appellation = $prefix = $surname = $firstname = $initials = '';
   $prefix = "";
@@ -204,7 +204,7 @@ function biblio_parse_author(& $author_array) {
   $author_array['lastname'] = trim($surname);
   $author_array['prefix'] = trim($prefix);
   $author_array['md5'] =  _md5sum($author_array);
-  return;
+  return $author_array;
 }
 /**
  * @param $creator
