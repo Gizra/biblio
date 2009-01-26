@@ -544,25 +544,28 @@ function theme_biblio_contributors($form) {
   // Change the button title to reflect the behavior when using JavaScript.
   //drupal_add_js('if (Drupal.jsEnabled) { $(document).ready(function() { $("#edit-'.str_replace('_', '-', $form['#parents'][0]) .'-more").val("'. t('Add another contributor') .'"); }); }', 'inline');
   $rows = array();
-  $headers = array(t('Name'), t('Role'));
+  if ($form['#hideRole']) $headers = array('', t('Name'), t('Weight'));
+  else $headers = array('', t('Name'), t('Role'), t('Weight'));
+  drupal_add_tabledrag($form['#id'], 'order', 'sibling', 'rank');
+  
   foreach (element_children($form) as $key) {
     // No need to print the field title every time.
     unset ($form[$key]['name']['#title'], $form[$key]['auth_type']['#title']);
+    // Add class to group weight fields for drag and drop.
+    $form[$key]['rank']['#attributes']['class'] = 'rank';
+    
     // Build the table row.
-    $row = array(
-      'data' => array(
-        array('data' => drupal_render($form[$key]['name']),
-              'class' => 'biblio-contributor'),
-        array('data' => drupal_render($form[$key]['auth_type']),
-        	  'class' => 'biblio-contributor-type'),
-        ),);
-    // Add additional attributes to the row, such as a class for this row.
-    if (isset ($form[$key]['#attributes'])) {
-      $row = array_merge($row, $form[$key]['#attributes']);
+    $row = array('');
+    $row[] = array('data' => drupal_render($form[$key]['name']),
+              		 'class' => 'biblio-contributor');
+    if (!$form['#hideRole']) {
+      $row[] = array('data' => drupal_render($form[$key]['auth_type']),
+      							 'class' => 'biblio-contributor-type');
     }
-    $rows[] = $row;
+    $row[] = drupal_render($form[$key]['rank']);
+    $rows[] = array('data' => $row, 'class' => 'draggable');
   }
-  $output = theme('table', $headers, $rows);
+  $output = theme('table', $headers, $rows, array('id' => $form['#id']));
   $output .= drupal_render($form);
   return $output;
 }

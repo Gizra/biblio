@@ -952,20 +952,20 @@ function _biblio_contributor_widget($node, $fld, $auth_category, $biblio_type, $
   	'#prefix' => '<div id="'. $type .'">',
     '#suffix' => '</div>',
     '#theme' => 'biblio_contributors',
+    '#id' => $fldname,
+    '#hideRole' => count($options) <= 1,
     );
   // Add the current choices to the form.
+  $default_values = array('name' => '', 'cid' => '', 'auth_type' => current($options));
   for ($delta = 0; $delta < $contributor_count; $delta++) {
     if (isset($contributors[$delta])) { // contributor already exists
-      $name = $contributors[$delta]['name'];
-      $cid  = $contributors[$delta]['cid'];
-      $auth_type = $contributors[$delta]['auth_type'];
+      $values = $contributors[$delta];
     } else { // contributor is new
-      $name = '';
-      $cid = '';
-      $auth_type = '';
+      $values = $default_values;
     }
+    $values['rank'] = $delta;
     $wrapper['biblio_contributors'][$auth_category][$delta] 
-      = _biblio_contributor_form($delta, $auth_category, $name, $cid, $auth_type, $options, $fld['autocomplete']);
+      = _biblio_contributor_form($delta, $auth_category, $values, $options, $fld['autocomplete']);
   }
   // We name our button 'contrib_more' to avoid conflicts with other modules using
   // AHAH-enabled buttons with the id 'more'.
@@ -989,7 +989,7 @@ function _biblio_contributor_widget($node, $fld, $auth_category, $biblio_type, $
   return $form;
 }
 
-function _biblio_contributor_form($delta, $auth_category, $name = null, $cid = null, $auth_type = 0, $types = null, $autocomplete = TRUE) {
+function _biblio_contributor_form($delta, $auth_category, $values, $types = null, $autocomplete = TRUE) {
   $form = array(
     '#tree' => TRUE
   );
@@ -997,23 +997,37 @@ function _biblio_contributor_form($delta, $auth_category, $name = null, $cid = n
   // their values appear in the $form_state['values']['choice'] array.
   $form['name'] = array(
     '#type' => 'textfield',
-    '#title' => t('Name'), //
+    '#title' => t('Name'),
     '#autocomplete_path' => $autocomplete ? 'biblio/autocomplete/contributor' : '',
-    '#default_value' => $name,
+    '#default_value' => $values['name'],
     '#parents' => array('biblio_contributors', $auth_category, $delta, 'name')
   );
-  $form['auth_type'] = array(
-    '#type' => 'select',
-    '#title' => t('Type'),
-    '#default_value' => $auth_type,
-    '#options' => $types,
-    '#multiple' => FALSE,
-    '#parents' => array('biblio_contributors', $auth_category, $delta, 'auth_type')
-    );
+  if (count($types) > 1) {
+    $form['auth_type'] = array(
+      '#type' => 'select',
+      '#title' => t('Type'),
+      '#default_value' => $values['auth_type'],
+      '#options' => $types,
+      '#multiple' => FALSE,
+      '#parents' => array('biblio_contributors', $auth_category, $delta, 'auth_type')
+      );
+  } else {
+    $form['auth_type'] = array(
+      '#type' => 'hidden',
+      '#value' => $values['auth_type'],
+      '#parents' => array('biblio_contributors', $auth_category, $delta, 'auth_type')
+      );
+  }
   $form['cid'] = array(
     '#type' => 'hidden',
-    '#default_value' => $cid,
+    '#default_value' => $values['cid'],
     '#parents' => array('biblio_contributors', $auth_category, $delta, 'cid')
+  );
+  $form['rank'] = array(
+    '#type' => 'textfield',
+    '#size' => 6,
+    '#default_value' => $values['rank'],
+    '#parents' => array('biblio_contributors', $auth_category, $delta, 'rank')
   );
   return $form;
 }
@@ -1028,7 +1042,8 @@ function biblio_contributors_js($tid, $auth_category, $other_fields = FALSE) {
   while ($ctype = db_fetch_object($ctypes)) {
     $options[$ctype->auth_type] = $ctype->title;
   }
-  $form_element = _biblio_contributor_form($delta, $auth_category, '', '', '', $options);
+  $default_values = array('name' => '', 'cid' => '', 'auth_type' => '', 'rank' => $delta);
+  $form_element = _biblio_contributor_form($delta, $auth_category, $default_values, $options);
   drupal_alter('form', $form_element, array(), 'biblio_contributors_js');
   // Build the new form.
   $form_state = array('submitted' => FALSE);

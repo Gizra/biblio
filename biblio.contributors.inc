@@ -38,11 +38,13 @@ function biblio_load_contributors($vid) {
  * @return true if author was added, false if "etal" was already there
  */
 function biblio_authors_add_etal (&$authors, $type) {
-  $etal = "et al";
-  foreach ($authors as $author) {
-    if ($author['auth_type'] == $type && $author['name'] == $etal) return false;
+  $etal = "et al"; $max_rank = 0;
+  foreach ($authors as $author) { // et al author should be added only once per type
+    if ($author['auth_type'] != $type) continue;
+    if ($author['name'] == $etal) return false;
+    $max_rank = max($max_rank, $author['rank']);
   }
-  $authors[] = biblio_parse_author(array('name' => $etal, 'auth_type' => $type, 'lastname' => $etal));
+  $authors[] = biblio_parse_author(array('name' => $etal, 'auth_type' => $type, 'lastname' => $etal, 'rank' => $max_rank + 1));
   return true;
 }
 /**
@@ -97,7 +99,6 @@ function _save_contributors($contributors, $nid, $vid, $update = FALSE) {
   $md5 = _loadMD5();
   db_query('DELETE FROM {biblio_contributor} WHERE nid = %d AND vid = %d', array($nid, $vid));
   foreach ($contributors as $cat => $authors) { 
-    $rank = 0;
     foreach ($authors as $key => $author) {
       if ($update && !empty($author['cid']))  $author['cid'] = null; // null out the cid so we don't do a global change
       if (empty ($author['cid']) && !empty ($md5))
@@ -112,7 +113,7 @@ function _save_contributors($contributors, $nid, $vid, $update = FALSE) {
         'nid' => $nid,
         'vid' => $vid,
         'cid' => $cid,
-        'rank' => $rank++,
+        'rank' => $author['rank'],
         'auth_type' => $author['auth_type'],
         'auth_category' => $cat,
       );
