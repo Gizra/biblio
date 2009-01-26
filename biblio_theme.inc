@@ -221,9 +221,9 @@ function theme_biblio_tabular($node, $base = 'biblio', $teaser = false) {
   foreach ($fields as $key => $row) {
     // handling the contributor categories like any other field orders them correctly by weight
     if ($row['type'] == 'contrib_widget') {
-      $data = isset($node->biblio_contributors[$row['ftdid']]) ? biblio_format_authors($node->biblio_contributors[$row['ftdid']], $style_name) : '';
+      $data = isset($node->biblio_contributors[$row['fid']]) ? biblio_format_authors($node->biblio_contributors[$row['fid']], $style_name) : '';
       if (!$data) {
-        if ($row['ftdid'] == 1) $data = t('No author information available');
+        if ($row['fid'] == 1) $data = t('No author information available');
         else continue;
       }
     }
@@ -278,11 +278,14 @@ function biblio_format_authors($contributors, $style = 'classic', $inline = fals
   $author_links = variable_get('biblio_author_links', 1);
   $base  = variable_get('biblio_base', 'biblio');
   foreach ($contributors as $key => $author) {
-    $format = $author_style_function($author);
-    if ($author_links) $format = _biblio_author_link($format, $author['cid'], $base, $inline);
-    $author_array[] = $format;
+    $author = biblio_parse_author($author); // this is needed for form preview to fill in all fields
+    if (strlen($author['name'])) {
+      $format = $author_style_function($author);
+      if ($author_links) $format = _biblio_author_link($format, $author['cid'], $base, $inline);
+      $author_array[] = $format;
+    }
   }
-  return implode($glue, $author_array);
+  return implode($glue, (array)$author_array);
 }
 /**
  * Applies a "style" function to a single node.
