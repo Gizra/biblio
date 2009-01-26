@@ -613,18 +613,19 @@ function biblio_admin_types_edit_form() {
     '#type' => 'submit',
     '#value' => t('Save')
   );
+  
   return $form;
 }
 
 function biblio_admin_types_edit_form_submit($form, & $form_state) {
   if ($tid = ($form_state['values']['type_id'])){
-  $link['biblio_type'] = $form_state['values']['type_id'];
-  for($i=1; $i<6; $i++){
-    $link['auth_category'] = $i;
-    $link['auth_type'] = (isset($form_state['values']['contributor_type_'.$i])) ? $form_state['values']['contributor_type_'.$i] : $i;
-    $update = (isset($form_state['values']['contributor_type_'.$i])) ? array('auth_category','biblio_type') :array();
-    drupal_write_record('biblio_contributor_type', $link, $update);
-  }
+    $link['biblio_type'] = $form_state['values']['type_id'];
+    for($i=1; $i<6; $i++){
+      $link['auth_category'] = $i;
+      $link['auth_type'] = (isset($form_state['values']['contributor_type_'.$i])) ? $form_state['values']['contributor_type_'.$i] : $i;
+      $update = (isset($form_state['values']['contributor_type_'.$i])) ? array('auth_category','biblio_type') :array();
+      drupal_write_record('biblio_contributor_type', $link, $update);
+    }
   }
   foreach ($form_state['values']['configured_flds'] as $fid => $values) {
     $update = false;
@@ -638,8 +639,8 @@ function biblio_admin_types_edit_form_submit($form, & $form_state) {
         if ($name == 'checkboxes') {
           $link['visible']      = (!empty($value['visible'])) ? 1 : 0;
           $link['required']     = (!empty($value['required'])) ? 1 : 0;
-          $link['common']       = (!empty($value['common'])) ? 1 : 0;
           if ($tid == 0){
+            $link['common']       = (!empty($value['common'])) ? 1 : 0;
             $link['autocomplete'] = (!empty($value['autocomplete'])) ? 1 : 0;
           }
         }
@@ -647,8 +648,8 @@ function biblio_admin_types_edit_form_submit($form, & $form_state) {
           $link['weight'] = $value;
         } else {
           $val[$name] = $value;
-           if (!$update)
-            $update = ($default_value != $val[$name]) ? $form['configured_flds'][$fid]['ftdid']['#value'] : false;
+          if (!$update)
+          $update = ($default_value != $val[$name]) ? $form['configured_flds'][$fid]['ftdid']['#value'] : false;
         }
       }
     }
@@ -661,28 +662,29 @@ function biblio_admin_types_edit_form_submit($form, & $form_state) {
       drupal_write_record('biblio_field_type_data', $val);
 
     } elseif ($update >= 100 && $link['tid']) { // we are updating an existing entry
-        $val['ftdid'] = $form['configured_flds'][$fid]['ftdid']['#value'];
-        drupal_write_record('biblio_field_type_data', $val, 'ftdid');
+      $val['ftdid'] = $form['configured_flds'][$fid]['ftdid']['#value'];
+      drupal_write_record('biblio_field_type_data', $val, 'ftdid');
 
     } elseif ($update == $fid) { // changing the defaults
-        $val['ftdid'] = $fid;
-        drupal_write_record('biblio_field_type_data', $val, 'ftdid');
+      $val['ftdid'] = $fid;
+      drupal_write_record('biblio_field_type_data', $val, 'ftdid');
     }
-    drupal_write_record('biblio_field_type', $link, array('tid', 'fid'));
-    if ($link['common']) {
-      $query = "UPDATE {biblio_field_type} SET ftdid = %d, common = %d, visible = %d WHERE fid = %d";
-      db_query($query, array($fid, 1, 1, $fid));
-    }
-    else { // not common, so change pointer back to customizations if available
-      $query = "UPDATE {biblio_field_type} SET ftdid = cust_tdid, common = %d WHERE fid = %d";
-      db_query($query, array(0, $fid));
-    }
-    // set the autocomplete bit on this field for all the types
-    if($tid == 0){
+    
+    drupal_write_record('biblio_field_type', $link, array('fid','tid'));
+    
+    if($tid == 0){  
+      if ($link['common']) {
+        $query = "UPDATE {biblio_field_type} SET ftdid = %d, common = %d, visible = %d WHERE fid = %d";
+        db_query($query, array($fid, 1, 1, $fid));
+      }
+      else { // not common, so change pointer back to customizations if available
+        $query = "UPDATE {biblio_field_type} SET ftdid = cust_tdid, common = %d WHERE fid = %d";
+        db_query($query, array(0, $fid));
+      }
+      // set the autocomplete bit on this field for all the types
       $query = "UPDATE {biblio_field_type} SET autocomplete = %d WHERE fid = %d";
       db_query($query, array($link['autocomplete'], $fid));
     }
-
   }
   drupal_set_message(t("The changes have been saved."));
   // Clear the cached pages and menus:
@@ -984,7 +986,6 @@ function biblio_admin_author_types_form($form_state, $op = NULL, $id = NULL){
 }
 
 function theme_biblio_admin_author_types_form($form){
-  //  print_r($form);
   $db_result = db_query("SELECT * FROM {biblio_contributor_type_data");
   while ($row = db_fetch_object($db_result)) {
     $rows[] = array(
