@@ -398,6 +398,8 @@ function theme_biblio_form_filter(& $form) {
  */
 function theme_biblio_admin_types_edit_form($form) {
 
+  drupal_add_tabledrag('field-table', 'order', 'sibling', 'weight');
+
   $base = variable_get('biblio_base', 'biblio');
   $tid = (!empty ($form['#parameters'][2])) ? $form['#parameters'][2] : FALSE;
   drupal_set_title($form['type_name'] ? $form['type_name']['#value'] : "Default");
@@ -408,24 +410,16 @@ function theme_biblio_admin_types_edit_form($form) {
     $contribs .= drupal_render($form["contributor_type_$i"]);
   }
   foreach (element_children($form['configured_flds']) as $fld) {
+    $form['configured_flds'][$fld]['weight']['#attributes']['class'] = 'weight';
+    
     $conf_row = array();
+    $conf_row[] = array('data' => drupal_render($form['configured_flds'][$fld]['name']));
     $conf_row[] = array(
-      'data' => drupal_render($form['configured_flds'][$fld]['name']
-    ));
-//    if ($form['configured_flds'][$fld]['name']['#value'] == 'biblio_contributors'){
-//     unset($form['configured_flds'][$fld]['hint']);
-//     unset($form['configured_flds'][$fld]['title']);
-//      $conf_row[] = array(
-//      'data' => $contribs
-//      , 'align' => 'center');
-//    }else{
-      $conf_row[] = array(
-      'data' => drupal_render($form['configured_flds'][$fld]['title']
-      ), 'align' => 'center');
-//    }
+        'data' => drupal_render($form['configured_flds'][$fld]['title']), 
+        'align' => 'center');
     $conf_row[] = array(
-      'data' => drupal_render($form['configured_flds'][$fld]['hint']
-    ), 'align' => 'center');
+      'data' => drupal_render($form['configured_flds'][$fld]['hint']), 
+      'align' => 'center');
     foreach (element_children($form['configured_flds'][$fld]['checkboxes']) as $oid) {
       if (is_array($form['configured_flds'][$fld]['checkboxes'])) {
         $conf_row[] = array(
@@ -433,24 +427,18 @@ function theme_biblio_admin_types_edit_form($form) {
         ), 'align' => 'center', 'title' => $oid);
       }
     }
-    $conf_row[] = array(
-      'data' => drupal_render($form['configured_flds'][$fld]['weight']
-    ), 'align' => 'center');
-    $conf_table[] = $conf_row;
+    $conf_row[] = drupal_render($form['configured_flds'][$fld]['weight']);
+    $conf_table[] = array('data' => $conf_row, 'class' => 'draggable');
   }
   if ($tid) {
-    $header = array(
-      t('Field Name'
-    ), t('Title'), t('Hint'), t('Visible'), t('Required'), t('Weight'));
+    $header = array(t('Field Name'), t('Title'), t('Hint'), t('Visible'), t('Required'), t('Weight'));
   }
   else {
-    $header = array(
-      t('Field Name'
-    ), t('Default Title'), t('Hint'), t('Common'), t('Required'), t('Autocomplete'), t('Weight'));
+    $header = array(t('Field Name'), t('Default Title'), t('Hint'), t('Common'), t('Required'), t('Autocomplete'), t('Weight'));
   }
   $output .= '<p>';
   $output .= drupal_render($form['help']);
-  $output .= theme('table', $header, $conf_table);
+  $output .= theme('table', $header, $conf_table, array('id' => 'field-table'));
   $output .= '<p><center>'. drupal_render($form['submit']) .'</center></p>';
   $output .= drupal_render($form);
   return $output;
