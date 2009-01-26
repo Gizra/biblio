@@ -157,14 +157,14 @@
 		<contrib_type>5</contrib_type>
 	</field>
 	<field fid="6">
-		<default_name>Secondary name</default_name>
+		<default_name>Secondary title</default_name>
 		<hint />
 		<common>0</common>
 		<autocomplete>0</autocomplete>
 		<required>0</required>
 		<weight>12</weight>
 		<visible>0</visible>
-		<field_name>biblio_secondary_name</field_name>
+		<field_name>biblio_secondary_title</field_name>
 		<type>textfield</type>
 		<width>60</width>
 		<maxlength>255</maxlength>
@@ -198,14 +198,14 @@
 		<name tid="128">&#126;</name>
 	</field>
 	<field fid="7">
-		<default_name>Tertiary name</default_name>
+		<default_name>Tertiary title</default_name>
 		<hint />
 		<common>0</common>
 		<autocomplete>0</autocomplete>
 		<required>0</required>
 		<weight>13</weight>
 		<visible>0</visible>
-		<field_name>biblio_tertiary_name</field_name>
+		<field_name>biblio_tertiary_title</field_name>
 		<type>textfield</type>
 		<width>60</width>
 		<maxlength>255</maxlength>
@@ -1005,14 +1005,14 @@
 		<name tid="128">Session Number</name>
 	</field>
 	<field fid="38">
-		<default_name>Short name</default_name>
+		<default_name>Short title</default_name>
 		<hint />
 		<common>0</common>
 		<autocomplete>0</autocomplete>
 		<required>0</required>
 		<weight>169</weight>
 		<visible>0</visible>
-		<field_name>biblio_short_name</field_name>
+		<field_name>biblio_short_title</field_name>
 		<type>textfield</type>
 		<width>60</width>
 		<maxlength>255</maxlength>
@@ -1024,14 +1024,14 @@
 		<name tid="128">&#126;</name>
 	</field>
 	<field fid="39">
-		<default_name>Alternate name</default_name>
+		<default_name>Alternate title</default_name>
 		<hint />
 		<common>0</common>
 		<autocomplete>0</autocomplete>
 		<required>0</required>
 		<weight>170</weight>
 		<visible>0</visible>
-		<field_name>biblio_alternate_name</field_name>
+		<field_name>biblio_alternate_title</field_name>
 		<type>textfield</type>
 		<width>60</width>
 		<maxlength>255</maxlength>
@@ -1057,14 +1057,14 @@
 		<name tid="128">Abbreviation</name>
 	</field>
 	<field fid="40">
-		<default_name>Translated name</default_name>
+		<default_name>Translated title</default_name>
 		<hint />
 		<common>0</common>
 		<autocomplete>0</autocomplete>
 		<required>0</required>
 		<weight>170</weight>
 		<visible>0</visible>
-		<field_name>biblio_translated_name</field_name>
+		<field_name>biblio_translated_title</field_name>
 		<type>textfield</type>
 		<width>60</width>
 		<maxlength>255</maxlength>
