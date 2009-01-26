@@ -1028,9 +1028,9 @@ function biblio_reset_types(){
   db_create_table($result, 'biblio_contributor_type_data', $schema['biblio_contributor_type_data']);
 
   variable_set('biblio_last_ftdid', 100); // reset custom field type id too
-  _add_db_field_data_XML();
-  //_add_db_field_data();
-  //_add_custom_field_data();
+  //_add_db_field_data_XML();
+  _add_db_field_data();
+  _add_custom_field_data();
 }
 
 function _add_publication_types()
