@@ -46,7 +46,7 @@ function _endnote7_XML_export($results) {
         break; // generic
     }
     $xml .= "\t<REFERENCE_TYPE>$reftype</REFERENCE_TYPE>\n";
-    $a = $e = $t = '';
+    $a = $e = $t = $s = '';
     foreach ((array)$pub->biblio_contributors[1] as $auth) {
       $a .= "\t\t<AUTHOR>". trim($auth['name']) ."</AUTHOR>\n";
     }
@@ -56,12 +56,17 @@ function _endnote7_XML_export($results) {
     foreach ((array)$pub->biblio_contributors[3] as $auth) {
       $t .= "\t\t<TERTIARY_AUTHOR>". (trim($auth['name'])) ."</TERTIARY_AUTHOR>\n";
     }
+    foreach ((array)$pub->biblio_contributors[4] as $auth) {
+      $s .= "\t\t<SUBSIDIARY_AUTHOR>". (trim($auth['name'])) ."</SUBSIDIARY_AUTHOR>\n";
+    }
     if (!empty ($a))
       $xml .= "\t<AUTHORS>\n$a\t</AUTHORS>\n";
     if (!empty ($e))
       $xml .= "\t<SECONDARY_AUTHORS>\n$e\t</SECONDARY_AUTHORS>\n";
     if (!empty ($t))
       $xml .= "\t<TERTIARY_AUTHORS>\n$t\t</TERTIARY_AUTHORS>\n";
+    if (!empty ($s))
+      $xml .= "\t<SUBSIDIARY_AUTHORS>\n$s\t</SUBSIDIARY_AUTHORS>\n";
     $xml .= (!empty ($pub->biblio_year)) ? "\t<YEAR>$pub->biblio_year</YEAR>\n" : "";
     $xml .= (!empty ($pub->title)) ? "\t<TITLE>$pub->title</TITLE>\n" : "";
     $xml .= (!empty ($pub->biblio_secondary_title)) ? "\t<SECONDARY_TITLE>". htmlentities($pub->biblio_secondary_title) ."</SECONDARY_TITLE>\n" : "";

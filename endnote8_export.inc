@@ -166,38 +166,43 @@ function en8_XMLout($result){
 //<!-- Author information -->
   $xml .= '<contributors>';
   $xml .= '<authors>';
-  $author_array = explode(";", $rec->biblio_authors);
-    foreach($author_array as $auth) {
-      $xml .= '<author><style face="normal" font="default" size="100%">';
-      $xml .= trim($auth); // insert author here.
-      $xml .= '</style></author> ';
-    }
+  foreach((array)$rec->biblio_contributors[1] as $auth) {
+    $xml .= '<author><style face="normal" font="default" size="100%">';
+    $xml .= trim($auth['name']); // insert author here.
+    $xml .= '</style></author> ';
+  }
   $xml .= '</authors>';
-  $author_array = explode(";", $rec->biblio_secondary_authors);
+
   $xml .= '<secondary-authors>';
-    foreach($author_array as $auth) {
-      $xml .= '<author><style face="normal" font="default" size="100%">';
-      $xml .= trim($auth); // insert author here.
-      $xml .= '</style></author> ';
-    }
+  foreach((array)$rec->biblio_contributors[2] as $auth) {
+    $xml .= '<author><style face="normal" font="default" size="100%">';
+    $xml .= trim($auth['name']); // insert author here.
+    $xml .= '</style></author> ';
+  }
   $xml .= '</secondary-authors>';
-  $author_array = explode(";", $rec->biblio_tertiary_authors);
+
   $xml .= '<tertiary-authors>';
-    foreach($author_array as $auth) {
-      $xml .= '<author><style face="normal" font="default" size="100%">';
-      $xml .= trim($auth); // insert author here.
-      $xml .= '</style></author> ';
-    }
+  foreach((array)$rec->biblio_contributors[3] as $auth) {
+    $xml .= '<author><style face="normal" font="default" size="100%">';
+    $xml .= trim($auth['name']); // insert author here.
+    $xml .= '</style></author> ';
+  }
   $xml .= '</tertiary-authors>';
+
   $xml .= '<subsidiary-authors>';
-  $xml .= '<author><style face="normal" font="default" size="100%">';
-  $xml .= ; // insert author here.
-  $xml .= '</style></author> ';
+  foreach((array)$rec->biblio_contributors[4] as $auth) {
+    $xml .= '<author><style face="normal" font="default" size="100%">';
+    $xml .= trim($auth['name']); // insert author here.
+    $xml .= '</style></author> ';
+  }
   $xml .= '</subsidiary-authors>';
+  
   $xml .= '<translated-authors>';
-  $xml .= '<author><style face="normal" font="default" size="100%">';
-  $xml .= ; // insert author here.
-  $xml .= '</style></author> ';
+  foreach((array)$rec->biblio_contributors[5] as $auth) {
+    $xml .= '<author><style face="normal" font="default" size="100%">';
+    $xml .= trim($auth['name']); // insert author here.
+    $xml .= '</style></author> ';
+  }
   $xml .= '</translated-authors>';
   $xml .= '</contributors>';
 

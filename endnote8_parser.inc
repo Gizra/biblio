@@ -81,9 +81,9 @@ function en8_characterData($parser, $data) {
       case 'ref-type' :
         $node['biblio_type'] = en8_type_map((int)$data);
         break;
+
         //Author information
-      case 'author' :
-        
+      case 'author' :        
         switch ($contributors) {
           case 'authors' :
             $node['biblio_contributors'][1][$contrib_count]['name'] .= $data;
@@ -102,7 +102,8 @@ function en8_characterData($parser, $data) {
             $node['biblio_contributors'][4][$contrib_count]['auth_type'] = _biblio_get_auth_type(4, $node['biblio_type']);
             break;
           case 'translated-authors' :
-            $node['biblio_contributors'][$contrib_count]['auth_type'] = _biblio_get_auth_type(5, $node['biblio_type']);
+            $node['biblio_contributors'][5][$contrib_count]['name'] .= $data;
+            $node['biblio_contributors'][5][$contrib_count]['auth_type'] = _biblio_get_auth_type(5, $node['biblio_type']);
             break;
         }
         break;

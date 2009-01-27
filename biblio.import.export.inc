@@ -7,24 +7,24 @@
  *
  */
 /*   biblio.import.export.inc
-*
-*   Copyright (C) 2006-2008  Ron Jerome
-*
-*   This program is free software; you can redistribute it and/or modify
-*   it under the terms of the GNU General Public License as published by
-*   the Free Software Foundation; either version 2 of the License, or
-*   (at your option) any later version.
-*
-*   This program is distributed in the hope that it will be useful,
-*   but WITHOUT ANY WARRANTY; without even the implied warranty of
-*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*   GNU General Public License for more details.
-*
-*   You should have received a copy of the GNU General Public License along
-*   with this program; if not, write to the Free Software Foundation, Inc.,
-*   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-*
-*/
+ *
+ *   Copyright (C) 2006-2008  Ron Jerome
+ *
+ *   This program is free software; you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation; either version 2 of the License, or
+ *   (at your option) any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License along
+ *   with this program; if not, write to the Free Software Foundation, Inc.,
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ */
 /**
  * Return a form select box populated with all the users of the site.
  *
@@ -150,8 +150,8 @@ function biblio_import_form_validate($form, & $form_state) {
  * Implementation of hook_submit() for the biblio_import_form.
  */
 function biblio_import_form_submit($form, & $form_state) {
-global  $batch_proc;
-global  $session_id;
+  global  $batch_proc;
+  global  $session_id;
   if ($form_state['values']['op'] == t('Import') && isset ($form_state['values']['filetype'])) {
     if ($import_file = file_save_upload('biblio_import_file')) {
       if($import_file->filesize > 50000) $batch_proc = 1;  // we will use batch import for larger files.
@@ -551,11 +551,8 @@ function biblio_bibtex_export($results) {
     if (!empty($pub->biblio_url))
       $bibtex .= "\tURL = {". $pub->biblio_url ."},\n";
     $a = $e = array();
-    // TODO rhaschke: Are the autor types 2,10,14 really editors?
     foreach ((array)$pub->biblio_contributors[1] as $auth) $a[] = trim($auth['name']);
-    foreach ((array)$pub->biblio_contributors[2] as $auth) {
-      if (in_array($auth['auth_type'], array(2,10,14))) $e[] = trim($auth['name']);
-    }
+    foreach ((array)$pub->biblio_contributors[2] as $auth) $e[] = trim($auth['name']);
     $a = implode(' and ', $a);
     $e = implode(' and ', $e);
     if (!empty ($a))
@@ -628,7 +625,7 @@ function biblio_save_node($node, $batch = FALSE, $session_id = NULL) {
  *   The node ids of the saved nodes
  */
 function biblio_endnote_XML_import($xml_file, $taxo_terms = array(), $batch_proc = FALSE, $session_id = NULL, $ver = 8) {
-global $user, $records, $rec_count, $node,  $terms, $batch_proc, $nids, $session_id;
+  global $user, $records, $rec_count, $node,  $terms, $batch_proc, $nids, $session_id;
   $terms = $taxo_terms;
   $nids = array();
   if (!($fp = fopen($xml_file->filepath, "r"))) {
@@ -687,7 +684,7 @@ function biblio_endnote_XML_export($result, $version = 7) {
  *
  * @param $result
  *   a database pointer to a result set
-* @return
+ * @return
  *   none
  */
 function biblio_endnote_tagged_export($results) {
