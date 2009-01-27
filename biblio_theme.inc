@@ -400,7 +400,7 @@ function theme_biblio_form_filter(& $form) {
  * @return unknown_type
  */
 function theme_biblio_admin_types_edit_form($form) {
-  drupal_add_tabledrag('field-table', 'order', 'sibling', 'weight');
+  drupal_add_tabledrag('field-table', 'order', 'sibling', 'weight', array('hidden' => false));
 
   $base = variable_get('biblio_base', 'biblio');
   $tid = (!empty ($form['#parameters'][2])) ? $form['#parameters'][2] : FALSE;
@@ -420,11 +420,8 @@ function theme_biblio_admin_types_edit_form($form) {
       $conf_row[] = array('data' => drupal_render($form['configured_flds'][$fld]['hint']));
       $conf_row[] = array('data' => drupal_render($form['configured_flds'][$fld]['auth_type']));
     } else {
-      $form['configured_flds'][$fld]['hint']['#size'] = 36;
-      $conf_row[] = array(
-        'data' => drupal_render($form['configured_flds'][$fld]['hint']),
-        'colspan' => 2,
-      );
+      $form['configured_flds'][$fld]['hint']['#size'] = ($tid ? 38: 36);
+      $conf_row[] = array('data' => drupal_render($form['configured_flds'][$fld]['hint']), 'colspan' => 2);
     }
     foreach (element_children($form['configured_flds'][$fld]['checkboxes']) as $oid) {
       if (is_array($form['configured_flds'][$fld]['checkboxes'])) {
@@ -537,9 +534,6 @@ function theme_biblio_xml_link($base, $nid = NULL) {
  * @return unknown_type
  */
 function theme_biblio_contributors($form) {
-//  print_r($form);
-  // Change the button title to reflect the behavior when using JavaScript.
-  //drupal_add_js('if (Drupal.jsEnabled) { $(document).ready(function() { $("#edit-'.str_replace('_', '-', $form['#parents'][0]) .'-more").val("'. t('Add another contributor') .'"); }); }', 'inline');
   $rows = array();
   if ($form['#hideRole']) $headers = array('', t('Name'), t('Weight'));
   else $headers = array('', t('Name'), t('Role'), t('Weight'));

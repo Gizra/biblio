@@ -858,8 +858,9 @@ function biblio_form($node, $form_state) {
       '#collapsed' => TRUE,
       '#title' => t('Other Biblio Fields'),
       '#description' => '',
-      '#weight' => 19.5
+      '#weight' => 0
         );
+    $max_visible_weight = -5;
     foreach ($fields as $key => $fld) {
       $main_area = $fld['common'] || $fld['visible'];
       if ($fld['type'] == 'contrib_widget') {
@@ -895,18 +896,24 @@ function biblio_form($node, $form_state) {
           $key = $fld['name'] .'_field';
         }
         // embed field directly or in "Other Fields" fieldset
-        if ($main_area) $form[$key] = $field_widget;
-        else $form['other_fields'][$key] = $field_widget;
+        if ($main_area) {
+          $form[$key] = $field_widget;
+          $max_visible_weight = max($max_visible_weight, $field_widget['#weight']);
+        } else {
+          $form['other_fields'][$key] = $field_widget;
+        }
       }
     }
 
+    // place 'Other biblio fields' directly below visible fields
+    $form['other_fields']['#weight'] = $max_visible_weight + 0.1;
     $form['body_field'] = array(
       '#type' => 'fieldset',
       '#collapsible' => TRUE,
       '#collapsed' => TRUE,
       '#title' => t('Full Text'),
       '#description' => '',
-      '#weight' => 19
+      '#weight' => $max_visible_weight + 0.2
     );
     $form['body_field']['body'] = array(
       '#type' => 'textarea',
@@ -951,7 +958,7 @@ function _biblio_contributor_widget($node, $fld, $auth_category, $biblio_type, $
     '#tree' => true,
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
-    '#collapsed' => !$fld['required'],
+    '#collapsed' => !$fld['required'] && (count($contributors)==0),
     '#title' => $fld['title'],
     '#weight' => $fld['weight'] / 10,
     '#description' => t('Enter a single name per line using a format such as "Smith, John K" or "John K Smith" or "J.K. Smith"'),
