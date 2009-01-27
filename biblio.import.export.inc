@@ -87,7 +87,7 @@ function biblio_import_form() {
       '#collapsible' => TRUE,
       '#collapsed' => TRUE,
       '#title' => t('Taxonomy Settings'),
-      '#description' => t('Typically you don\'t have to do anything here, however if you wish, you may select terms to be assigned to imported records, this effectively adds a keyword to all entries being imported. By default, all incoming keywords are added to the Biblio Keywords vcabulary, you may either relate incoming entires to an existing keyword OR select a term(s) from another vocabulary to relate all incoming entires to.')
+      '#description' => t('Typically you don\'t have to do anything here, however if you wish, you may select terms to be assigned to imported records. This effectively adds a keyword to all entries being imported. By default, all incoming keywords are added to the Biblio Keywords vocabulary. You may either relate incoming entries to an existing keyword OR select a term(s) from another vocabulary to relate all incoming entries to.')
     );
     if (count($vocabularies)) {
       $i = 0;
@@ -113,7 +113,6 @@ function biblio_import_form() {
 //    );
     $form['button'] = array ('#type' => 'submit', '#value' => t('Import'));
     return $form;
-    //print theme('page', form($form, 'post', null, $attributes));
   } else {
     drupal_set_message("You are not authorized to access the biblio import page", 'error');
     print theme('page', '');
