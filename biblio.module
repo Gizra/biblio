@@ -21,15 +21,23 @@
  *
  */
 
-function _biblio_get_auth_type($auth_category, $biblio_type){
-  static $auth_type = array();
-  if (empty($auth_type)){
+function _biblio_get_auth_types($auth_category, $biblio_type){
+  static $auth_types = array();
+  if (empty($auth_types)){
     $db_res = db_query("SELECT * FROM {biblio_contributor_type");
     while ($row = db_fetch_object($db_res)){
-      $auth_type[$row->auth_category][$row->biblio_type]=$row->auth_type;
+      $auth_types[$row->auth_category][$row->biblio_type][] = $row->auth_type;
     }
   }
-  return (isset($auth_type[$auth_category][$biblio_type]))? $auth_type[$auth_category][$biblio_type] : null;
+  $result = $auth_types[$auth_category][$biblio_type];
+  // fall back to defaults, if no author types are defined for this biblio_type
+  if (empty($result)) $result = $auth_types[$auth_category][0];
+  return $result; 
+}
+function _biblio_get_auth_type($auth_category, $biblio_type){
+  $result = (array)_biblio_get_auth_types($auth_category, $biblio_type);
+  // return first element of the array
+  return empty($result) ? null : current($result);
 }
 function _biblio_get_field_information($biblio_type){
   $result = db_query("SELECT b.*, btd.*, btt.name AS type_name
@@ -925,16 +933,14 @@ function _biblio_contributor_widget($node, $fld, $auth_category, $biblio_type, $
   $contributors = (array) $node->biblio_contributors[$auth_category];
   $contributor_count = max(4, count($contributors));
 
-  $ctypes = db_query('SELECT ctd.auth_type, ctd.title
-                      FROM {biblio_contributor_type} ct 
-                      INNER JOIN {biblio_contributor_type_data} ctd ON ct.auth_type = ctd.auth_type
-                      WHERE ct.biblio_type = %d AND auth_category = %d',  $biblio_type, $auth_category);
-
+  $ctypes = _biblio_get_auth_types($auth_category, $biblio_type);
+  // if no author types are available skip this widget
+  if (!isset($ctypes)) return array();
+  $ctypes = db_query('SELECT * FROM {biblio_contributor_type_data}
+                      WHERE auth_type IN ('.implode(',',$ctypes).')');
   while ($ctype = db_fetch_object($ctypes)) {
     $options[$ctype->auth_type] = $ctype->title;
   }
-  // if no author types are available skip this widget
-  if (!isset($options)) return array();
 
   // Add a wrapper for the choices and more button.
   $wrapper = array(
@@ -1034,14 +1040,13 @@ function _biblio_contributor_form($delta, $auth_category, $values, $types = null
 function biblio_contributors_js($tid, $auth_category, $other_fields = FALSE) {
   $delta = count($_POST['biblio_contributors'][$auth_category]);
   // Build our new form element.
-  $ctypes = db_query('SELECT ctd.auth_type, ctd.title
-                      FROM {biblio_contributor_type} ct 
-                      INNER JOIN {biblio_contributor_type_data} ctd ON ct.auth_type = ctd.auth_type
-                      WHERE ct.biblio_type = %d AND auth_category = %d',  $tid, $auth_category);
-  $options = array();
+  $ctypes = _biblio_get_auth_types($auth_category, $biblio_type);
+  $ctypes = db_query('SELECT * FROM {biblio_contributor_type_data}
+                      WHERE auth_type IN ('.implode(',',$ctypes).')');
   while ($ctype = db_fetch_object($ctypes)) {
     $options[$ctype->auth_type] = $ctype->title;
   }
+
   $default_values = array('name' => '', 'cid' => '', 'auth_type' => '', 'rank' => $delta);
   $form_element = _biblio_contributor_form($delta, $auth_category, $default_values, $options);
   drupal_alter('form', $form_element, array(), 'biblio_contributors_js');

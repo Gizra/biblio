@@ -487,38 +487,16 @@ function biblio_admin_types_edit_form() {
     '#type' => 'markup',
     '#value' => $msg
   );
-  // first get all of the field info
+  // get author types
+  $result = db_query("SELECT * FROM {biblio_contributor_type_data} b");
+  $contrib_options = array();
+  while($contrib_type = db_fetch_object($result)){
+      $contrib_options[$contrib_type->auth_type] = $contrib_type->title;
+      $contrib_hints[$contrib_type->auth_type] = $contrib_type->hint;
+  }
   
+  // first get all of the field info  
   if ($tid) {
-    $contrib_result = db_query("SELECT * FROM {biblio_contributor_type_data} b");
-     $contrib_options = array();
-    while($contrib_type = db_fetch_object($contrib_result)){
-        $contrib_options[$contrib_type->auth_type] = $contrib_type->title;
-        $contrib_hints[$contrib_type->auth_type] = $contrib_type->hint;
-    }
-    for ($i=1; $i<6; $i++) {
-      if (_biblio_get_auth_type($i, $tid)){
-/*        $form["contributor_label_$i"] = array(
-    			'#title' => '',
-    			'#value' => $contrib_options[$i] ,
-         );
-*/
-        $form["contributor_type_$i"] = array(
-    			'#type' => 'select',
-    			'#title' => $contrib_options[$i],
-    			'#default_value' => _biblio_get_auth_type($i, $tid) ,
-    			'#options' => $contrib_options,
-    			'#description' => '',
-         );
-/*        $form['contributor_type_'.$i.'_hint'] = array(
-  //  			'#type' => 'select',
-    			'#title' => '',
-    			'#value' => $contrib_hints[_biblio_get_auth_type($i, $tid)] ,
- //   			'#options' => $contrib_options,
-    			'#description' => '',
-         );
-*/      }
-    }   
     $result = db_query("SELECT bf.*, bftd.*, bft.common, bft.visible, bft.autocomplete, bft.weight, bft.required, bt.name AS type_name
                         FROM {biblio_fields} AS bf
                         INNER JOIN {biblio_field_type} AS bft ON bft.fid=bf.fid
@@ -586,7 +564,7 @@ function biblio_admin_types_edit_form() {
     $form['configured_flds'][$key]['hint'] = array(
       '#type' => 'textfield',
       '#default_value' => $fld['hint'],
-      '#size' => 10,
+      '#size' => 20,
       '#weight' => $fld['weight'],
       '#disabled' => $tid ? ($fld['common'] ? 1 : 0) : 0
     );
@@ -608,6 +586,17 @@ function biblio_admin_types_edit_form() {
       '#type' => '#value',
       '#value' => $fld['ftdid']
     );
+    if ($fld['type'] == 'contrib_widget') {
+      $cur = _biblio_get_auth_types($fld['fid'], $tid ? $tid : $fld['fid']);
+      $form['configured_flds'][$key]['auth_type'] = array(
+        '#type' => 'select',
+  			'#options' => $contrib_options,
+        '#size' => min(count($contrib_options), 4),
+        '#multiple' => true,
+      	'#default_value' => _biblio_get_auth_types($fld['fid'], $tid),
+      	'#disabled' => $tid ? ($fld['common'] ? 1 : 0) : 0
+      );
+    }
   }
   $form['submit'] = array(
     '#type' => 'submit',
@@ -618,15 +607,23 @@ function biblio_admin_types_edit_form() {
 }
 
 function biblio_admin_types_edit_form_submit($form, & $form_state) {
-  if ($tid = ($form_state['values']['type_id'])){
-    $link['biblio_type'] = $form_state['values']['type_id'];
-    for($i=1; $i<6; $i++){
-      $link['auth_category'] = $i;
-      $link['auth_type'] = (isset($form_state['values']['contributor_type_'.$i])) ? $form_state['values']['contributor_type_'.$i] : $i;
-      $update = (isset($form_state['values']['contributor_type_'.$i])) ? array('auth_category','biblio_type') :array();
-      drupal_write_record('biblio_contributor_type', $link, $update);
+  $tid = $form_state['values']['type_id'];
+  if (empty($tid)) $tid = 0;
+  // save author types
+  $link['biblio_type'] = $tid;
+  db_query('DELETE FROM {biblio_contributor_type} WHERE biblio_type=%d', $link['biblio_type']);
+  for($i=1; $i<=5; $i++){
+    $link['auth_category'] = $i;
+    $auth_types = (array)$form_state['values']['configured_flds'][$i]['auth_type'];
+    // if default values have not changed, do not store to the database explicitly
+    if ($link['biblio_type'] && 
+        (array_values($auth_types) == array_values((array)$form['configured_flds'][$i]['auth_type']['#default_value']))) continue;
+    foreach ($auth_types as $type) {
+      $link['auth_type'] = $type;
+      drupal_write_record('biblio_contributor_type', $link);
     }
   }
+  // save other field data
   foreach ($form_state['values']['configured_flds'] as $fid => $values) {
     $update = false;
     $val = array();
@@ -687,8 +684,8 @@ function biblio_admin_types_edit_form_submit($form, & $form_state) {
     }
   }
   drupal_set_message(t("The changes have been saved."));
-  // Clear the cached pages and menus:
 
+  // Clear the cached pages and menus:
   menu_rebuild();
 }
 function biblio_admin_types_form() {
@@ -941,7 +938,6 @@ function biblio_admin_get_query($name) {
 
 
 function biblio_admin_author_types_form($form_state, $op = NULL, $id = NULL){
-  //  var_dump($form_state, $op, $id);
   switch ($op){
     case 'edit':
       $type = db_fetch_object(db_query("SELECT * FROM {biblio_contributor_type_data WHERE auth_type=%d",$id));
@@ -974,10 +970,12 @@ function biblio_admin_author_types_form($form_state, $op = NULL, $id = NULL){
       	'#submit' => array('biblio_admin_author_types_form_submit')
       );
       $form['#redirect'] = 'admin/settings/biblio/authors';
-
       return $form;
       break;
     case 'delete':
+      // TODO: add confirmation dialog
+      db_query("DELETE FROM {biblio_contributor_type_data} WHERE auth_type=$id");
+      db_query("DELETE FROM {biblio_contributor_type} WHERE auth_type=$id");
       break;
     case 'hide':
       break;
@@ -986,15 +984,21 @@ function biblio_admin_author_types_form($form_state, $op = NULL, $id = NULL){
 }
 
 function theme_biblio_admin_author_types_form($form){
-  $db_result = db_query("SELECT * FROM {biblio_contributor_type_data");
+  $db_result = db_query("SELECT ctd.*, cid FROM {biblio_contributor_type_data} ctd
+                         LEFT JOIN {biblio_contributor} c ON ctd.auth_type = c.auth_type 
+                         GROUP BY ctd.auth_type");
   while ($row = db_fetch_object($db_result)) {
+    $ops = l(t('edit'), 'admin/settings/biblio/authors/edit/'. $row->auth_type);
+    if (!isset($row->cid) && $row->auth_type >= 10) { // allow delete only if type not in use
+      $ops .= '&nbsp;&nbsp;';
+      $ops .= l(t('delete'), 'admin/settings/biblio/authors/delete/'. $row->auth_type);
+    }
     $rows[] = array(
       $row->auth_type,
       $row->title,
       $row->hint,
-      ($row->auth_type > 9) ? l(t('edit'), 'admin/settings/biblio/authors/edit/'. $row->auth_type) :'' ,
+      $ops,
     );
-
   }
   $header = array(
     t('Type Id'),

@@ -1165,7 +1165,7 @@ function _add_db_field_data_XML() {
   return $result;
 }
 
-  function _add_db_field_data() {
+function _add_db_field_data() {
   $schema = biblio_schema();
   $fieldnames = array_keys($schema['biblio_fields']['fields']);
   $field_type_fieldnames = array_keys($schema['biblio_field_type']['fields']);
@@ -1179,14 +1179,11 @@ function _add_db_field_data_XML() {
     $header = fgetcsv($handle, 10000, ","); // the first line has the field names
     while (($row = fgetcsv($handle, 10000, ",")) !== FALSE) {
       $column = 0;
-      $link_data = array(0,$row[0],$row[0],$row[0],$row[3],$row[4],$row[5],$row[6],$row[7]);
-      db_query("INSERT INTO {biblio_field_type} (". implode(", ", $field_type_fieldnames) . ")
-                VALUES (%d, %d, %d, %d, %d, %d, %d, %d, %d)", $link_data);
-      for ($t = 100; $t <= 130; $t++)
-      {
-        $values = array($t, $row[0],$row[0],$row[0],$row[3],$row[4],$row[5],$row[6],$row[7]);
+      // add link data for default biblio type (0) and all other defined types (100-130)
+      foreach (array_merge(array(0), range(100,130)) as $t) {
+        $link_data = array($t,$row[0],$row[0],$row[0],$row[3],$row[4],$row[5],$row[6],$row[7]);
         db_query("INSERT INTO {biblio_field_type} (". implode(", ", $field_type_fieldnames) . ")
-                    VALUES('" . implode("', '", $values) . "')");
+                  VALUES ('" . implode("', '", $link_data) . "')");
       }
       $ftd = array($row[0],$row[1],$row[2]);
       db_query("INSERT INTO {biblio_field_type_data} (" . implode(", ", $field_type_data_fieldnames) . ")
@@ -1194,6 +1191,14 @@ function _add_db_field_data_XML() {
       $field_data = array($row[0],$row[8],$row[9],$row[10],$row[11]);
       db_query("INSERT INTO {biblio_fields} (" . implode(", ", $fieldnames) . ")
                   VALUES('" . implode("', '", $field_data) . "')");
+
+      // add contributor type data
+      if ($row[9] == 'contrib_widget') {
+      	// use field name without trailing 's' as initial guess for author type
+        $auth_type = (substr($row[1],-1,1) == 's') ? substr($row[1],0,-1) : $row[1];
+        db_query("INSERT INTO {biblio_contributor_type_data} (auth_type, title) VALUES (%d, '%s' )", $row[0], $auth_type);
+        db_query("INSERT INTO {biblio_contributor_type} (auth_category, biblio_type, auth_type) VALUES (%d, %d, %d)", $row[0], 0, $row[0]);
+      }
     }
     fclose($handle);
     $result = array('success' => TRUE, 'query' => 'Added field titles and default values');
@@ -1222,16 +1227,6 @@ function _add_custom_field_data() {
   }
 
   $csv_file = drupal_get_path('module', 'biblio') .'/biblio.field.type.data.csv';
-  for ($type = 1; $type <= 4; $type++) {
-    for ($biblio_type = 100; $biblio_type <= 130; $biblio_type++) {
-      db_query("INSERT INTO {biblio_contributor_type} (auth_category, biblio_type, auth_type) VALUES (%d, %d, %d)",  $type, $biblio_type, $type);
-    }
-  }
-  db_query("INSERT INTO {biblio_contributor_type_data} (auth_type, title) VALUES (%d, '%s' )", 1, "Author");
-  db_query("INSERT INTO {biblio_contributor_type_data} (auth_type, title) VALUES (%d, '%s' )", 2, "Secondary Author");
-  db_query("INSERT INTO {biblio_contributor_type_data} (auth_type, title) VALUES (%d, '%s' )", 3, "Tertiary Author ");
-  db_query("INSERT INTO {biblio_contributor_type_data} (auth_type, title) VALUES (%d, '%s' )", 4, "Subsidiary Author ");
-  db_query("INSERT INTO {biblio_contributor_type_data} (auth_type, title) VALUES (%d, '%s' )", 5, "Corporate Author ");
   
   if ($handle = fopen($csv_file, "r")){
     $header = fgetcsv($handle, 10000, ","); // the first line has the field names

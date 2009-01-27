@@ -282,7 +282,8 @@ function biblio_format_authors($contributors, $style = 'classic', $inline = fals
     if (strlen($author['name'])) {
       $format = $author_style_function($author);
       if ($author_links) $format = _biblio_author_link($format, $author['cid'], $base, $inline);
-      $author_array[] = $format;
+      // add the auth_type as css id to allow later formatting
+      $author_array[] = '<span id='.$author['auth_type'].'>'.$format.'</span>';
     }
   }
   return implode($glue, (array)$author_array);
@@ -397,44 +398,47 @@ function theme_biblio_form_filter(& $form) {
  * @return unknown_type
  */
 function theme_biblio_admin_types_edit_form($form) {
-
   drupal_add_tabledrag('field-table', 'order', 'sibling', 'weight');
 
   $base = variable_get('biblio_base', 'biblio');
   $tid = (!empty ($form['#parameters'][2])) ? $form['#parameters'][2] : FALSE;
   drupal_set_title($form['type_name'] ? $form['type_name']['#value'] : "Default");
+
   // build the table with all the fields if no $tid is given, or only the common
   // and customized fields if $tid is given
   $conf_table = array();
-  for($i=1; $i<6; $i++){
-    $contribs .= drupal_render($form["contributor_type_$i"]);
-  }
   foreach (element_children($form['configured_flds']) as $fld) {
     $form['configured_flds'][$fld]['weight']['#attributes']['class'] = 'weight';
     
     $conf_row = array();
     $conf_row[] = array('data' => drupal_render($form['configured_flds'][$fld]['name']));
-    $conf_row[] = array(
-        'data' => drupal_render($form['configured_flds'][$fld]['title']), 
-        'align' => 'center');
-    $conf_row[] = array(
-      'data' => drupal_render($form['configured_flds'][$fld]['hint']), 
-      'align' => 'center');
+    $conf_row[] = array('data' => drupal_render($form['configured_flds'][$fld]['title']));
+    if (isset($form['configured_flds'][$fld]['auth_type'])) {
+      $form['configured_flds'][$fld]['hint']['#size'] = 15;
+      $conf_row[] = array('data' => drupal_render($form['configured_flds'][$fld]['hint']));
+      $conf_row[] = array('data' => drupal_render($form['configured_flds'][$fld]['auth_type']));
+    } else {
+      $form['configured_flds'][$fld]['hint']['#size'] = 36;
+      $conf_row[] = array(
+        'data' => drupal_render($form['configured_flds'][$fld]['hint']),
+        'colspan' => 2,
+      );
+    }
     foreach (element_children($form['configured_flds'][$fld]['checkboxes']) as $oid) {
       if (is_array($form['configured_flds'][$fld]['checkboxes'])) {
         $conf_row[] = array(
-          'data' => drupal_render($form['configured_flds'][$fld]['checkboxes'][$oid]
-        ), 'align' => 'center', 'title' => $oid);
+          'data' => drupal_render($form['configured_flds'][$fld]['checkboxes'][$oid]),
+          'title' => $oid);
       }
     }
-    $conf_row[] = drupal_render($form['configured_flds'][$fld]['weight']);
+    $conf_row[] = array('data' => drupal_render($form['configured_flds'][$fld]['weight']));
     $conf_table[] = array('data' => $conf_row, 'class' => 'draggable');
   }
   if ($tid) {
-    $header = array(t('Field Name'), t('Title'), t('Hint'), t('Visible'), t('Required'), t('Weight'));
+    $header = array(t('Field Name'), t('Title'), t('Hint'), '', t('Visible'), t('Required'), t('Weight'));
   }
   else {
-    $header = array(t('Field Name'), t('Default Title'), t('Hint'), t('Common'), t('Required'), t('Autocomplete'), t('Weight'));
+    $header = array(t('Field Name'), t('Default Title'), t('Hint'), '', t('Common'), t('Required'), t('Autocomplete'), t('Weight'));
   }
   $output .= '<p>';
   $output .= drupal_render($form['help']);
