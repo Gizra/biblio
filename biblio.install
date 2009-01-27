@@ -1508,7 +1508,7 @@ function _parse_authors(&$biblio_contributors, $authors, $type = 1)
   {
     // insert spaces after firstname initials if neccessary
     $author = preg_replace("/\.([^\s-])/", ". \\1", trim($author));
-    $biblio_contributors[] = array('name' => $author, 'auth_type' => $type);
+    $biblio_contributors[$type][] = array('name' => $author, 'auth_type' => $type);
   }
 }
 
@@ -1613,18 +1613,18 @@ function biblio_update_6012(){
 
 function biblio_update_6013() {
   $result = array();
-
-  db_add_field($result, 'biblio_contributor', 'auth_category', 
+  if (!db_column_exists('biblio_contributor', 'auth_category')) { // we don't need to do this if upgrading from 5.x
+    db_add_field($result, 'biblio_contributor', 'auth_category',
     array('type' => 'int', 'not null' => TRUE, 'unsigned' => TRUE, 'default' => 1));
-  $result[] = update_sql("UPDATE {biblio} b
+    $result[] = update_sql("UPDATE {biblio} b
                           INNER JOIN {biblio_contributor} bc on b.vid = bc.vid
                           LEFT JOIN  {biblio_contributor_type} bct on b.biblio_type = bct.biblio_type and bct.auth_type = bc.auth_type
                           SET bc.auth_category=bct.auth_catagory");
-  $result[] = update_sql("ALTER TABLE {biblio_contributor_type} CHANGE COLUMN auth_catagory auth_category INTEGER UNSIGNED NOT NULL DEFAULT 0,
+    $result[] = update_sql("ALTER TABLE {biblio_contributor_type} CHANGE COLUMN auth_catagory auth_category INTEGER UNSIGNED NOT NULL DEFAULT 0,
                           DROP PRIMARY KEY,
                           ADD PRIMARY KEY USING BTREE(auth_category, biblio_type, auth_type)");
-
+  }
   $result[] = update_sql("UPDATE {biblio_fields} SET maxsize=20 WHERE name='biblio_year'");
-                          
+
   return $result;
 }
