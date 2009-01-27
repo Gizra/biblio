@@ -97,8 +97,7 @@ function biblio_theme() {
         'node',
         'base' => 'biblio',
         'style_name' => 'classic',
-        'inline' => FALSE
-  ),
+        'inline' => FALSE),
   ),
 
     'biblio_long' => array(
@@ -106,8 +105,7 @@ function biblio_theme() {
       'arguments' => array(
         'node',
         'base' => 'biblio',
-        'style_name' => 'classic'
-        ),
+        'style_name' => 'classic'),
         ),
 
     'biblio_tabular' => array(
@@ -115,8 +113,7 @@ function biblio_theme() {
       'arguments' => array(
         'node',
         'base' => 'biblio',
-        'teaser' => FALSE
-        ),
+        'teaser' => FALSE),
         ),
 
     'biblio_entry' => array(
@@ -125,10 +122,18 @@ function biblio_theme() {
         'node',
         'base' => 'biblio',
         'style_name' => 'classic',
-        'inline' => FALSE
+        'inline' => FALSE),
         ),
+        
+    'biblio_authors' => array(
+      'file' => 'biblio_theme.inc',
+      'arguments' => array(
+        'contributors',
+        'style' => 'classic',
+        'inline' => FALSE,
+        'glue' => ', '),
         ),
-
+        
     'biblio_filters' => array(
       'file' => 'biblio_theme.inc',
       'arguments' => array('form'),
@@ -917,15 +922,14 @@ function biblio_form($node, $form_state) {
   }
   return $form;
 }
-// $biblio_type must be passed when we authors are not visible and we got $form['other_fields']
-// passed as $form, because we don't have $form['biblio_type'] available then.
 
 /**
- * @param $form
  * @param $node
  * @param $fld
+ * @param $auth_category
  * @param $biblio_type
- * @return unknown_type
+ * @param $other_fields
+ * @return contributor fieldset form
  */
 function _biblio_contributor_widget($node, $fld, $auth_category, $biblio_type, $other_fieldset = FALSE) {
   $fldname = $fld['name'];
@@ -947,6 +951,7 @@ function _biblio_contributor_widget($node, $fld, $auth_category, $biblio_type, $
     '#tree' => true,
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
+    '#collapsed' => !$fld['required'],
     '#title' => $fld['title'],
     '#weight' => $fld['weight'] / 10,
     '#description' => t('Enter a single name per line using a format such as "Smith, John K" or "John K Smith" or "J.K. Smith"'),
@@ -1771,18 +1776,17 @@ function biblio_contextObject($node) {
       $co["rft.aufirst"] = $node->biblio_contributors[0]['initials'];
     }
     // TODO: cleanup and put this function in include.inc.php?
-    $authorcount = count($node->biblio_contributors);
-    for ($i = 1; $i < $authorcount; $i++) {
-      if (!empty($node->biblio_contributors[$i]['lastname'])) {
-        $au = $node->biblio_contributors[$i]['lastname'];
-        if (!empty($node->biblio_contributors[$i]['firstname']) || !empty($node->biblio_contributors[$i]['initials']))
+    foreach((array)$node->biblio_contributors[1] as $author) {
+      if (!empty($author['lastname'])) {
+        $au = $author['lastname'];
+        if (!empty($author['firstname']) || !empty($author['initials']))
         $au .= ", ";
       }
-      if (!empty($node->biblio_contributors[$i]['firstname'])) {
-        $au .= $node->biblio_contributors[$i]['firstname'];
+      if (!empty($author['firstname'])) {
+        $au .= $author['firstname'];
       }
-      elseif (!empty($node->biblio_contributors[$i]['initials'])) {
-        $au .= $node->biblio_contributors[$i]['initials'];
+      elseif (!empty($author['initials'])) {
+        $au .= $author['initials'];
       }
       if (!empty($au))
       $co["rft.au". $i] = $au;
@@ -1809,7 +1813,7 @@ function biblio_hash($node) {
     }
   }
   $hash_string = str_replace(' ', '', drupal_strtolower($node->title));
-  $hash_string .= str_replace(' ', '', drupal_strtolower($node->biblio_contributors[0]['lastname']));
+  $hash_string .= str_replace(' ', '', drupal_strtolower($node->biblio_contributors[1][0]['lastname']));
   $hash_string .= $node->biblio_year;
   
   $sum = md5($hash_string);
@@ -1873,6 +1877,9 @@ function biblio_diff(&$old_node, &$new_node) {
   )
   );
 
+  $old_node->biblio_contributors = biblio_load_contributors($old_node->vid);
+  $new_node->biblio_contributors = biblio_load_contributors($new_node->vid);
+  
   $db_result = db_query('SELECT b.name, btd.title, bt.weight
                       FROM {biblio_fields} b
                       INNER JOIN {biblio_field_type} bt ON bt.fid=b.fid
@@ -1881,11 +1888,11 @@ function biblio_diff(&$old_node, &$new_node) {
   while ($field = db_fetch_object($db_result)) {
     $name = $field->name;
     $old = $new = '';
-    if ($field->name == 'biblio_contributors'){
-      foreach( biblio_load_contributors($old_node->vid, $old_node->biblio_type) as $auth){
+    if ($field->type == 'contrib_widget'){
+      foreach((array)$old_node->biblio_contributors[$field->fid] as $auth) {
         $old .= $auth['name'] . ' ';
       }
-      foreach( biblio_load_contributors($new_node->vid, $new_node->biblio_type) as $auth){
+      foreach((array)$old_node->biblio_contributors[$field->fid] as $auth) {
         $new .= $auth['name'] . ' ';
       }
     }else{
@@ -1903,9 +1910,9 @@ function biblio_diff(&$old_node, &$new_node) {
 }
 function biblio_token_list($type = 'all') {
   if ($type == 'node') {
-    $tokens['node']['biblio_year']          = t("Biblio: Publication year");
-    $tokens['node']['biblio_authors']      = t("Biblio: Authors");
-    $tokens['node']['biblio_type_id']      = t("Biblio: Type ID (e.g.: 100)");
+    $tokens['node']['biblio_year']      = t("Biblio: Publication year");
+    $tokens['node']['biblio_authors']   = t("Biblio: Authors");
+    $tokens['node']['biblio_type_id']   = t("Biblio: Type ID (e.g.: 100)");
     $tokens['node']['biblio_type']      = t("Biblio: Type Name (e.g.: book)");
     return $tokens;
   }
@@ -1921,7 +1928,7 @@ function biblio_token_values($type, $object = NULL) {
         $type = db_result(db_query('SELECT name FROM {biblio_types} as t WHERE t.tid = %d',$object -> biblio_type));
         #$title = db_result(db_query("SELECT title FROM {node} WHERE nid = %d", $gid));
         $values['biblio_year'] = check_plain($object->biblio_year);
-        $values['biblio_authors'] = check_plain($object->biblio_contributors[0][lastname]);
+        $values['biblio_authors'] = check_plain($object->biblio_contributors[1][0][lastname]);
         $values['biblio_type_id'] = check_plain($object->biblio_type);
         $values['biblio_type'] = check_plain($type);
         return $values;
@@ -1932,6 +1939,7 @@ function biblio_token_values($type, $object = NULL) {
   // No group info found. Return defaults.
   $values['biblio_year'] = '';
   $values['biblio_authors'] = '';
+  $values['biblio_type_id'] = '';
   $values['biblio_type'] = '';
   return $values;
 }

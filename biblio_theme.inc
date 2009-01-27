@@ -103,12 +103,10 @@ function theme_biblio_long($node, $base = 'biblio', $style = 'classic') {
     }
     return $output;
   }
-  if (isset($node->biblio_contributors[1])) {
-    foreach ($node->biblio_contributors[1] as $auth) {
-      $authors[] = _biblio_author_link($auth['name'], $auth['cid']);
-    }
-    $authors = implode('; ', $authors);
+  foreach ((array)$node->biblio_contributors[1] as $auth) {
+    $authors[] = _biblio_author_link($auth['name'], $auth['cid']);
   }
+  $authors = implode('; ', (array)$authors);
   $openurl_base = variable_get('biblio_baseopenurl', '');
   if ($openurl_base)
     $output .= theme('biblio_openurl', biblio_openurl($node, $openurl_base));
@@ -199,13 +197,12 @@ function theme_biblio_tabular($node, $base = 'biblio', $teaser = false) {
   module_load_include('inc','biblio',"biblio_style_$style_name");
   $fields = _biblio_get_field_information($node->biblio_type);
   $rows[] = array(
-    array(
-      'data' => t('Publication Type'),
-      'class' => 'biblio-row-title'
-    ),
-    array(
-      'data' => $node->biblio_type_name
-    )
+    array('data' => t('Title'), 'class' => 'biblio-row-title'),
+    array('data' => $node->title)
+  );
+  $rows[] = array(
+    array('data' => t('Publication Type'), 'class' => 'biblio-row-title'),
+    array('data' => $node->biblio_type_name)
   );
   
   if ($node->biblio_keywords &&  !variable_get('biblio_keyword_vocabulary', 0)) {
@@ -221,7 +218,7 @@ function theme_biblio_tabular($node, $base = 'biblio', $teaser = false) {
   foreach ($fields as $key => $row) {
     // handling the contributor categories like any other field orders them correctly by weight
     if ($row['type'] == 'contrib_widget') {
-      $data = isset($node->biblio_contributors[$row['fid']]) ? biblio_format_authors($node->biblio_contributors[$row['fid']], $style_name) : '';
+      $data = isset($node->biblio_contributors[$row['fid']]) ? theme('biblio_authors', $node->biblio_contributors[$row['fid']], $style_name) : '';
       if (!$data) {
         if ($row['fid'] == 1) $data = t('No author information available');
         else continue;
@@ -272,8 +269,8 @@ function theme_biblio_tabular($node, $base = 'biblio', $teaser = false) {
   return $output;
 }
 
-function biblio_format_authors($contributors, $style = 'classic', $inline = false, $glue = ', ') {
-  if (!count($contributors)) return t('No author information available');
+function theme_biblio_authors($contributors, $style = 'classic', $inline = false, $glue = ', ') {
+  if (empty($contributors)) return t('No author information available');
   $author_style_function = '_'.$style.'_format_author';
   $author_links = variable_get('biblio_author_links', 1);
   $base  = variable_get('biblio_base', 'biblio');
@@ -283,10 +280,15 @@ function biblio_format_authors($contributors, $style = 'classic', $inline = fals
       $format = $author_style_function($author);
       if ($author_links) $format = _biblio_author_link($format, $author['cid'], $base, $inline);
       // add the auth_type as css id to allow later formatting
-      $author_array[] = '<span id='.$author['auth_type'].'>'.$format.'</span>';
+      $author_array[] = '<span id="'.$author['auth_type'].'">'.$format.'</span>';
     }
   }
-  return implode($glue, (array)$author_array);
+  if (empty($author_array)) return '';
+
+  $output  = '<span class="biblio_authors">';
+  $output .= implode($glue, $author_array);
+  $output .= '</span>';
+  return $output;
 }
 /**
  * Applies a "style" function to a single node.

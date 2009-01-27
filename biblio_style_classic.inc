@@ -27,7 +27,7 @@ function biblio_style_classic_info() {
  *   The styled biblio entry
  */
 function biblio_style_classic($node, $base = 'biblio', $inline = false) {
-  $authors = biblio_format_authors($node->biblio_contributors[1], 'classic', $inline);
+  $authors = theme('biblio_authors', $node->biblio_contributors[1], 'classic', $inline);
   $output = '<span class="biblio-title">';
   $output .= $inline ? l("$node->title", "$base/viewinline/$node->nid") : l("$node->title", "node/$node->nid");
   $output .= "</span>, \n";

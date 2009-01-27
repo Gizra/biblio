@@ -27,7 +27,7 @@ function biblio_style_cse_info() {
  *   The styled biblio entry
  */
 function biblio_style_cse($node, $base = 'biblio', $inline = false) {
-  $authors = biblio_format_authors($node->biblio_contributors[1], 'cse', $inline);
+  $authors = theme('biblio_authors', $node->biblio_contributors[1], 'cse', $inline);
   $output .= '<span class="biblio-authors">' . $authors . "</span>.&nbsp; \n";
   switch ($node->biblio_type) {
 

@@ -28,7 +28,7 @@ function biblio_style_apa_info() {
  *   The styled biblio entry
  */
 function biblio_style_apa($node, $base = 'biblio', $inline = false) {
-  $authors = biblio_format_authors($node->biblio_contributors[1], 'apa', $inline);
+  $authors = theme('biblio_authors', $node->biblio_contributors[1], 'apa', $inline);
   $output .= '<span class="biblio-authors">' . $authors . "</span> \n";
   $output .= (strrpos($authors, '.') == strlen($authors)) ? ".&nbsp;&nbsp;" : " ";
   switch ($node->biblio_type) {
