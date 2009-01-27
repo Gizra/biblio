@@ -53,7 +53,7 @@ function _endnote7_XML_export($results) {
     foreach ((array)$pub->biblio_contributors[2] as $auth) {
       $e .= "\t\t<SECONDARY_AUTHOR>". (trim($auth['name'])) ."</SECONDARY_AUTHOR>\n";
     }
-    foreach ((array)$pub->biblio_contributors[2] as $auth) {
+    foreach ((array)$pub->biblio_contributors[3] as $auth) {
       $t .= "\t\t<TERTIARY_AUTHOR>". (trim($auth['name'])) ."</TERTIARY_AUTHOR>\n";
     }
     if (!empty ($a))
