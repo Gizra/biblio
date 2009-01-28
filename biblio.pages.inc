@@ -35,6 +35,13 @@ function biblio_db_search() {
   $search = array_search('search', $arg_list);
   if ($search !== FALSE) {
     $keys = $arg_list[$search+1];
+
+    // Special case: if search is activated via URL, i.e., biblio/search/...,
+    // we reset the search session filter. Two searches are not combinable.
+    $base =  variable_get('biblio_base', 'biblio');
+    if (preg_match('+'.$base.'/search/+', $_GET['q'])) {
+      $_SESSION['biblio_filter'] = array();
+    }
   }
   else {
     $keys = _get_biblio_search_filter();
@@ -305,14 +312,15 @@ function biblio_build_query($arg_list) {
           break;
             case 'search':
               $term = explode("?",array_shift($arg_list));
-              // Search filter has a third component, the keywords, here useless. Drop it.
-              array_shift($arg_list);
               $result_nids = split(',', $term[0]);
               $where[] = "n.nid in (".db_placeholders($result_nids).")";
               foreach ($result_nids as $result_nid) {
                 $terms[] = db_escape_string($result_nid);
                 array_push($args, $type, $result_nid);
               }
+	      // Save search keyword to show in the filter list.
+              $term = array_shift($arg_list);
+              array_push($args, $type, $term);
               $operator = NULL;
               break;
             default:
@@ -445,8 +453,7 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
         array_shift($args);
         $value = db_escape_string($args[0]);
         if ($type == 'search') {
-          $search_content = '<em>'._get_biblio_search_filter().'</em>';
-          array_shift($args);
+          $search_content = '<em>'. array_shift($args).'</em>';
           continue;
         }
         if ($type == 'term_id') {
