@@ -624,8 +624,8 @@ class PARSEENTRIES
       }
 
       $node['biblio_secondary_title'] = (!empty($entry['journal'])) ? $entry['journal'] : NULL;
-      $node['biblio_secondary_title'] = (!empty($entry['booktitle'])) ? $entry['booktitle'] : NULL;
-      $node['biblio_secondary_title'] = (!empty($entry['series'])) ? $entry['series'] : NULL;
+      if (!empty($entry['booktitle'])) $node['biblio_secondary_title'] =  $entry['booktitle'];
+      if (!empty($entry['series']))    $node['biblio_secondary_title'] =  $entry['series'];
       $node['biblio_volume']          = (!empty($entry['volume'])) ? $entry['volume'] : NULL;
       $node['biblio_number']          = (!empty($entry['number'])) ? $entry['number'] : NULL;
       $node['biblio_year']            = (!empty($entry['year'])) ? $entry['year'] : NULL;
@@ -633,9 +633,9 @@ class PARSEENTRIES
       $node['biblio_date']            = (!empty($entry['month'])) ? $entry['month'] : NULL;
       $node['biblio_pages']           = (!empty($entry['pages'])) ? $entry['pages'] : NULL;
       $node['biblio_publisher']       = (!empty($entry['publisher'])) ? $entry['publisher'] : NULL;
-      $node['biblio_publisher']       = (!empty($entry['organization'])) ? $entry['organization'] : NULL;
-      $node['biblio_publisher']       = (!empty($entry['school'])) ? $entry['school'] : NULL;
-      $node['biblio_publisher']       = (!empty($entry['institution'])) ? $entry['institution'] : NULL;
+      if (!empty($entry['organization'])) $node['biblio_publisher'] = $entry['organization'];
+      if (!empty($entry['school']))       $node['biblio_publisher']       = $entry['school'];
+      if (!empty($entry['institution']))  $node['biblio_publisher']       = $entry['institution'];
       $node['title']                  = (!empty($entry['title'])) ? $entry['title'] : NULL;
       $node['biblio_type_of_work']    = (!empty($entry['type'])) ? $entry['type'] : NULL;
       $node['biblio_edition']         = (!empty($entry['edition'])) ? $entry['edition'] : NULL;
