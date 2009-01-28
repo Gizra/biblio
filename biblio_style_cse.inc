@@ -27,7 +27,9 @@ function biblio_style_cse_info() {
  *   The styled biblio entry
  */
 function biblio_style_cse($node, $base = 'biblio', $inline = false) {
-  $authors = theme('biblio_authors', $node->biblio_contributors[1], 'cse', $inline);
+  $authors = theme('biblio_authors', $node->biblio_contributors[1], 'cse', 1, $inline);
+  if (empty($authors)) $authors = theme('biblio_authors', $node->biblio_contributors[5], 'cse', 5, $inline);  // if no authors substitute corp author if available
+  if (empty($authors)) $authors = '[' . t('Anonymous') . ']';  // use anonymous if we still have nothing.
   $output .= '<span class="biblio-authors">' . $authors . "</span>.&nbsp; \n";
   switch ($node->biblio_type) {
 
@@ -39,9 +41,9 @@ function biblio_style_cse($node, $base = 'biblio', $inline = false) {
       $output .= $inline ? l("$node->title", "$base/viewinline/$node->nid") : l("$node->title", "node/$node->nid");
       $output .= ". </span> \n";
       $output .= (!empty ($node->biblio_secondary_title)) ? check_plain($node->biblio_secondary_title) . '. ' : '';
-      $output .= (!empty ($node->biblio_volume)) ? check_plain($node->biblio_volume) : '';
-      $output .= (!empty ($node->biblio_issue)) ? '(' . check_plain($node->biblio_issue) . ')' : '';
-      $output .= (!empty ($node->biblio_pages)) ? ':' . str_replace(" ", "", check_plain($node->biblio_pages)) . '.' : '';
+      $output .= (!empty ($node->biblio_volume))          ? check_plain($node->biblio_volume) : '';
+      $output .= (!empty ($node->biblio_issue))           ? '(' . check_plain($node->biblio_issue) . ')' : '';
+      $output .= (!empty ($node->biblio_pages))           ? ':' . str_replace(" ", "", check_plain($node->biblio_pages)) . '.' : '';
       break; // generic
   }
   /*  if ($node->biblio_date) $output .= ', '. check_plain($node->biblio_date);

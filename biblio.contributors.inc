@@ -65,7 +65,7 @@ function biblio_parse_contributors($contributors) {
       }
       $author['name'] = trim($author['name']);
       if (strlen($author['name'])) {
-        $result[$cat][] = biblio_parse_author($author);
+        $result[$cat][] = biblio_parse_author($author, $cat);
       }
     }
     // add "et al" authors for all neccessary author types
@@ -157,53 +157,61 @@ function _save_contributors($contributors, $nid, $vid, $update = FALSE) {
  * @param $author_array
  * @return unknown_type
  */
-function biblio_parse_author($author_array) {
-  $value = trim($author_array['name']);
-  $appellation = $prefix = $surname = $firstname = $initials = '';
-  $prefix = "";
-  $value = preg_replace("/\s{2,}/", ' ', $value); // replace multiple white space by single space
-  $author = explode(",", $value);
-  $size = sizeof($author);
-  // No commas therefore something like Mark Grimshaw, Mark Nicholas Grimshaw, M N Grimshaw, Mark N. Grimshaw
-  if ($size == 1) {
-    // Is complete surname enclosed in {...}, unless the string starts with a backslash (\) because then it is
-    // probably a special latex-sign..
-    // 2006.02.11 DR: in the last case, any NESTED curly braces should also be taken into account! so second
-    // clause rules out things such as author="a{\"{o}}"
-    //
-    if (preg_match("/(.*){([^\\\].*)}/", $value, $matches) && !(preg_match("/(.*){\\\.{.*}.*}/", $value, $matches2))) {
-      $author = split(" ", $matches[1]);
-      $surname = $matches[2];
-    }
-    else {
-      $author = split(" ", $value);
-      // last of array is surname (no prefix if entered correctly)
-      $surname = array_pop($author);
-    }
+function biblio_parse_author($author_array, $cat = 0) {
+  if ($cat == 5){
+    $author_array['firstname'] = '';
+    $author_array['initials'] = '';
+    $author_array['lastname'] = trim($author_array['name']);
+    $author_array['prefix'] = '';
   }
-  // Something like Grimshaw, Mark or Grimshaw, Mark Nicholas  or Grimshaw, M N or Grimshaw, Mark N.
-  else
-  if ($size == 2) {
-    // first of array is surname (perhaps with prefix)
-    list ($surname, $prefix) = _grabSurname(array_shift($author));
-  }
-  // If $size is 3, we're looking at something like Bush, Jr. III, George W
   else {
-    // middle of array is 'Jr.', 'IV' etc.
-    $appellation = join(' ', array_splice($author, 1, 1));
-    // first of array is surname (perhaps with prefix)
-    list ($surname, $prefix) = _grabSurname(array_shift($author));
+    $value = trim($author_array['name']);
+    $appellation = $prefix = $surname = $firstname = $initials = '';
+    $prefix = "";
+    $value = preg_replace("/\s{2,}/", ' ', $value); // replace multiple white space by single space
+    $author = explode(",", $value);
+    $size = sizeof($author);
+    // No commas therefore something like Mark Grimshaw, Mark Nicholas Grimshaw, M N Grimshaw, Mark N. Grimshaw
+    if ($size == 1) {
+      // Is complete surname enclosed in {...}, unless the string starts with a backslash (\) because then it is
+      // probably a special latex-sign..
+      // 2006.02.11 DR: in the last case, any NESTED curly braces should also be taken into account! so second
+      // clause rules out things such as author="a{\"{o}}"
+      //
+      if (preg_match("/(.*){([^\\\].*)}/", $value, $matches) && !(preg_match("/(.*){\\\.{.*}.*}/", $value, $matches2))) {
+        $author = split(" ", $matches[1]);
+        $surname = $matches[2];
+      }
+      else {
+        $author = split(" ", $value);
+        // last of array is surname (no prefix if entered correctly)
+        $surname = array_pop($author);
+      }
+    }
+    // Something like Grimshaw, Mark or Grimshaw, Mark Nicholas  or Grimshaw, M N or Grimshaw, Mark N.
+    else
+    if ($size == 2) {
+      // first of array is surname (perhaps with prefix)
+      list ($surname, $prefix) = _grabSurname(array_shift($author));
+    }
+    // If $size is 3, we're looking at something like Bush, Jr. III, George W
+    else {
+      // middle of array is 'Jr.', 'IV' etc.
+      $appellation = join(' ', array_splice($author, 1, 1));
+      // first of array is surname (perhaps with prefix)
+      list ($surname, $prefix) = _grabSurname(array_shift($author));
+    }
+    $remainder = join(" ", $author);
+    list ($firstname, $initials, $prefix2) = _grabFirstnameInitials($remainder);
+    if (!empty ($prefix2))
+    $prefix .= $prefix2;
+    //var_dump($prefix);
+    $surname = $surname . ' ' . $appellation;
+    $author_array['firstname'] = trim($firstname);
+    $author_array['initials'] = trim($initials);
+    $author_array['lastname'] = trim($surname);
+    $author_array['prefix'] = trim($prefix);
   }
-  $remainder = join(" ", $author);
-  list ($firstname, $initials, $prefix2) = _grabFirstnameInitials($remainder);
-  if (!empty ($prefix2))
-  $prefix .= $prefix2;
-  //var_dump($prefix);
-  $surname = $surname . ' ' . $appellation;
-  $author_array['firstname'] = trim($firstname);
-  $author_array['initials'] = trim($initials);
-  $author_array['lastname'] = trim($surname);
-  $author_array['prefix'] = trim($prefix);
   $author_array['md5'] =  _md5sum($author_array);
   return $author_array;
 }

@@ -30,7 +30,7 @@ function biblio_style_ieee_info() {
  *   The styled biblio entry
  */
 function biblio_style_ieee($node, $base = 'biblio', $inline = false) {
-  $authors = theme('biblio_authors', $node->biblio_contributors[1], 'ieee', $inline);
+  $authors = theme('biblio_authors', $node->biblio_contributors[1], 'ieee', 1, $inline);
   $output .= '<span class="biblio-authors">' . $authors . ", </span> \n";
   switch ($node->biblio_type) {
     default :

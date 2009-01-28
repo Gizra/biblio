@@ -28,7 +28,9 @@ function biblio_style_apa_info() {
  *   The styled biblio entry
  */
 function biblio_style_apa($node, $base = 'biblio', $inline = false) {
-  $authors = theme('biblio_authors', $node->biblio_contributors[1], 'apa', $inline);
+  $authors = theme('biblio_authors', $node->biblio_contributors[1], 'apa', 1, $inline);
+  if (empty($authors)) $authors = theme('biblio_authors', $node->biblio_contributors[5], 'apa', 5, $inline);  // if no authors substitute corp author if available
+  if (empty($authors)) $authors = '[' . t('Anonymous') . ']';  // use anonymous if we still have nothing.
   $output .= '<span class="biblio-authors">' . $authors . "</span> \n";
   $output .= (strrpos($authors, '.') == strlen($authors)) ? ".&nbsp;&nbsp;" : " ";
   switch ($node->biblio_type) {
@@ -48,7 +50,7 @@ function biblio_style_apa($node, $base = 'biblio', $inline = false) {
       $output .= '<span class="biblio-title-apa">';
       $output .= $inline ? l("$node->title", "$base/viewinline/$node->nid") : l("$node->title", "node/$node->nid");
       $output .= ". </span> \n";
-      $output .= !empty ($contrib_array[2]) ? '(' . $contrib_array[2] . ', Ed.).' : "";
+      $output .= !empty ($node->biblio_contributors[2]) ? '(' . theme('biblio_authors', $node->biblio_contributors[2], 'apa', 2, $inline) . ', Ed.).' : "";
       $output .= ($node->biblio_secondary_title) ? '<u>' . check_plain($node->biblio_secondary_title) . '. ' : '<u>';
       $output .= ($node->biblio_volume) ? check_plain($node->biblio_volume) . ($node->biblio_issue ? '</u>(' . check_plain($node->biblio_issue) . '),&nbsp;' : ',</u> ') : '</u> ';
       //  $output .= ($node->biblio_issue) ? '('. check_plain($node->biblio_issue).')' :'';
