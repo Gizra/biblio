@@ -1499,7 +1499,7 @@ function biblio_md5_generate()
  * @param $type   The type of author (Primary, Secondary, Tertiary, Corporate)
  * @return none ($biblio_contributors is passed in by reference) 
  */
-function _parse_authors(&$biblio_contributors, $authors, $type = 1)
+function _parse_authors(&$biblio_contributors, $authors, $cat = 1)
 {
   $authors = str_ireplace(" and ", "; ", $authors); 
   $authors = str_ireplace(" & ", "; ", $authors); 
@@ -1508,7 +1508,7 @@ function _parse_authors(&$biblio_contributors, $authors, $type = 1)
   {
     // insert spaces after firstname initials if neccessary
     $author = preg_replace("/\.([^\s-])/", ". \\1", trim($author));
-    $biblio_contributors[$type][] = array('name' => $author, 'auth_type' => $type);
+    $biblio_contributors[$cat][] = array('name' => $author, 'auth_type' => $cat);
   }
 }
 
