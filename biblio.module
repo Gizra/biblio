@@ -1774,13 +1774,13 @@ function biblio_contextObject($node) {
   }
   // aulast, aufirst, author (author)
   if (!empty($node->biblio_contributors)) {
-    if (!empty($node->biblio_contributors[0]['lastname']))
-    $co["rft.aulast"] = $node->biblio_contributors[0]['lastname'];
-    if (!empty($node->biblio_contributors[0]['firstname'])) {
-      $co["rft.aufirst"] = $node->biblio_contributors[0]['firstname'];
+    if (!empty($node->biblio_contributors[1][0]['lastname']))
+    $co["rft.aulast"] = $node->biblio_contributors[1][0]['lastname'];
+    if (!empty($node->biblio_contributors[1][0]['firstname'])) {
+      $co["rft.aufirst"] = $node->biblio_contributors[1][0]['firstname'];
     }
-    elseif (!empty($node->biblio_contributors[0]['initials'])) {
-      $co["rft.aufirst"] = $node->biblio_contributors[0]['initials'];
+    elseif (!empty($node->biblio_contributors[1][0]['initials'])) {
+      $co["rft.aufirst"] = $node->biblio_contributors[1][0]['initials'];
     }
     // TODO: cleanup and put this function in include.inc.php?
     foreach((array)$node->biblio_contributors[1] as $author) {
