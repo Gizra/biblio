@@ -101,11 +101,11 @@ function biblio_build_query($arg_list) {
   $inline = $rss_info['feed'] = false;
   $join = array();
   $join[] = "left join {biblio} b  on n.vid=b.vid ";
-  $join[] = "left join {biblio_types} bt  on b.biblio_type=bt.tid ";
-
+  $join[] = "inner join {biblio_types} bt  on b.biblio_type=bt.tid ";
+  $select_additions ='';
   $limit = '';
   if (variable_get('biblio_view_only_own', 0) ) {
-    $limit .= " AND n.uid=$user->uid ";
+    $limit .= " AND n.uid = $user->uid ";
   }
 
   $sort_attrib = array("sort" => variable_get('biblio_sort', 'year'), 'order' => variable_get('biblio_order', 'DESC'));
@@ -120,7 +120,8 @@ function biblio_build_query($arg_list) {
 
   switch ($sort_attrib['sort']) {
     case 'type':
-      $sortby = "ORDER BY b.biblio_type %s, SUBSTRING(n.title,1,3) ASC ";
+      $select_additions = ', SUBSTR(n.title,1,3) ';
+      $sortby = "ORDER BY b.biblio_type %s, SUBSTR(n.title,1,3) ASC ";
       break;
     case 'title':
       //$sortby = "ORDER BY SUBSTRING(n.title,1,3) %s, b.biblio_year DESC ";
@@ -142,11 +143,13 @@ function biblio_build_query($arg_list) {
       $join['bcd'] = '  JOIN {biblio_contributor_data} as bcd on bc.cid = bcd.cid ';
       break;
     case 'keyword': // added msh 070808
-      $sortby = "ORDER BY SUBSTRING(LTRIM(b.biblio_keywords),1,4) %s ";
+      $select_additions = ', SUBSTR(LTRIM(b.biblio_keywords),1,4)';
+      $sortby = "ORDER BY SUBSTR(LTRIM(b.biblio_keywords),1,4) %s ";
       break;
     case 'year':
     default:
-      $sortby = "ORDER BY b.biblio_year %s, b.biblio_date %s, SUBSTRING(n.title,1,3) ASC ";
+      $select_additions = ', SUBSTR(n.title,1,3) ';
+      $sortby = "ORDER BY b.biblio_year %s, b.biblio_date %s, SUBSTR(n.title,1,3) ASC ";
   } //end switch
   if (!isset($_SESSION['biblio_filter']) || !is_array($_SESSION['biblio_filter'])) {
     $_SESSION['biblio_filter'] = array();
@@ -300,14 +303,17 @@ function biblio_build_query($arg_list) {
           array_push($args, $type, $term);
           switch ($term) {
             case 'type':
-              $sortby = "ORDER BY b.biblio_type %s, b.biblio_year DESC, SUBSTRING(n.title,1,1) ASC ";
+              $select_additions = ', SUBSTR(n.title,1,3) ';
+              $sortby = "ORDER BY b.biblio_type %s, b.biblio_year DESC, SUBSTR(n.title,1,3) ASC ";
               break;
             case 'title':
-              $sortby = "ORDER BY SUBSTRING(n.title,1,1) %s, b.biblio_year DESC ";
+              $select_additions = ', SUBSTR(n.title,1,3) ';
+              $sortby = "ORDER BY SUBSTRING(n.title,1,3) %s, b.biblio_year DESC ";
               break;
             case 'year':
             default:
-              $sortby = "ORDER BY b.biblio_year %s, b.biblio_date %s,SUBSTRING(n.title,1,1) ASC, b.biblio_type ASC ";
+              $select_additions = ', SUBSTR(n.title,1,3) ';
+              $sortby = "ORDER BY b.biblio_year %s, b.biblio_date %s,SUBSTR(n.title,1,3) ASC, b.biblio_type ASC ";
           } //end switch
           break;
             case 'search':
@@ -346,7 +352,7 @@ function biblio_build_query($arg_list) {
 
   $where_clause = count($where) > 1 ? '('. implode(') AND (', $where) .')': $where[0];
 
-  $query = db_rewrite_sql("SELECT DISTINCT n.*, b.*, bt.name as biblio_type_name FROM {node} n $joins  WHERE $where_clause $limit $sortby ");
+  $query = db_rewrite_sql("SELECT DISTINCT n.*, b.*, bt.name as biblio_type_name $select_additions FROM {node} n $joins  WHERE $where_clause $limit $sortby ");
   $count_query = db_rewrite_sql("SELECT COUNT(DISTINCT(n.nid)) FROM {node} n $joins  WHERE $where_clause $limit ");
   $_SESSION['last_biblio_query'] = $query;
   $terms[] = $sort_attrib['order']; // this is either asc or desc to be inserted into the first term of the ORDER clause
