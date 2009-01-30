@@ -816,7 +816,7 @@ function biblio_admin_types_reset_form() {
     '#type' => 'value',
     '#value' => 'reset'
   );
-  $output = confirm_form($form, t('Are you sure you want to reset ALL the field definitions to the defaults? '), $_GET['destination'] ? $_GET['destination'] : 'admin/settings/biblio/types', t('By doing this, you will loose all customizations you have made to the field titles, <b><u>this action cannot be undone</u></b>!'), t('Do it!'), t('Cancel'));
+  $output = confirm_form($form, t('Are you sure you want to reset ALL the field definitions to the defaults? '), $_GET['destination'] ? $_GET['destination'] : 'admin/settings/biblio/types', t('By doing this, you will loose all customizations you have made to the field titles, <b><u>this action cannot be undone</u></b>!'), t('Reset!'), t('Cancel'));
   return $output;
 }
 function biblio_admin_types_reset_form_submit($form, & $form_state) {
@@ -984,9 +984,7 @@ function biblio_admin_author_types_form($form_state, $op = NULL, $id = NULL){
 }
 
 function theme_biblio_admin_author_types_form($form){
-  $db_result = db_query("SELECT ctd.*, cid FROM {biblio_contributor_type_data} ctd
-                         LEFT JOIN {biblio_contributor} c ON ctd.auth_type = c.auth_type 
-                         GROUP BY ctd.auth_type");
+  $db_result = db_query("SELECT ctd.* FROM {biblio_contributor_type_data} ctd ");
   while ($row = db_fetch_object($db_result)) {
     $ops = l(t('edit'), 'admin/settings/biblio/authors/edit/'. $row->auth_type);
     if (!isset($row->cid) && $row->auth_type >= 10) { // allow delete only if type not in use

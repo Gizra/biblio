@@ -95,7 +95,7 @@ function biblio_db_search() {
  *
  */
 function biblio_build_query($arg_list) {
-  global $user;
+  global $user, $db_type;
   static $bcc; //biblio_contributor (bc) count , increase for every invocation
   if ( !isset( $bcc ) ) $bcc = 0;
   $inline = $rss_info['feed'] = false;
@@ -120,22 +120,33 @@ function biblio_build_query($arg_list) {
 
   switch ($sort_attrib['sort']) {
     case 'type':
-      $select_additions = ', SUBSTR(n.title,1,3) ';
+      if ($db_type == 'pgsql') $select_additions = ', SUBSTR(n.title,1,3) ';
       $sortby = "ORDER BY b.biblio_type %s, SUBSTR(n.title,1,3) ASC ";
       break;
     case 'title':
       //$sortby = "ORDER BY SUBSTRING(n.title,1,3) %s, b.biblio_year DESC ";
-      $sortby = 'ORDER BY
+      if ($db_type == 'pgsql') {
+        $select_additions = ", CASE
+              WHEN SUBSTR(n.title,1,1)='\"'   THEN SUBSTR(n.title,2)
+              WHEN SUBSTR(n.title,1,1)='\''   THEN SUBSTR(n.title,2)
+              WHEN SUBSTR(n.title,1,2)='A '   THEN SUBSTR(n.title,3)
+              WHEN SUBSTR(n.title,1,3)='An '  THEN SUBSTR(n.title,4)
+              WHEN SUBSTR(n.title,1,4)='The ' THEN SUBSTR(n.title,5)
+              ELSE title
+            END ";
+      }
+      $sortby = "ORDER BY
   					CASE
-    					WHEN LEFT(n.title,1)="\""   THEN MID(title,2)
-    					WHEN LEFT(n.title,1)="\'"   THEN MID(title,2)
-    					WHEN LEFT(n.title,2)="A "   THEN MID(title,3)
-    					WHEN LEFT(n.title,3)="An "  THEN MID(title,4)
-    					WHEN LEFT(n.title,4)="The " THEN MID(title,5)
+    					WHEN SUBSTR(n.title,1,1)='\"'   THEN SUBSTR(n.title,2)
+    					WHEN SUBSTR(n.title,1,1)='\''   THEN SUBSTR(n.title,2)
+    					WHEN SUBSTR(n.title,1,2)='A '   THEN SUBSTR(n.title,3)
+    					WHEN SUBSTR(n.title,1,3)='An '  THEN SUBSTR(n.title,4)
+    					WHEN SUBSTR(n.title,1,4)='The ' THEN SUBSTR(n.title,5)
     					ELSE title
-  					END  %s';
+  					END  %s";
       break;
     case 'author':
+      if ($db_type == 'pgsql') $select_additions = ', bcd.lastname ';
       $sortby = "ORDER BY bcd.lastname %s ";
       //$where['bc-rank'] = "bc.rank=0";
       //$where[] = "bc.ctid=1";
@@ -143,12 +154,12 @@ function biblio_build_query($arg_list) {
       $join['bcd'] = '  JOIN {biblio_contributor_data} as bcd on bc.cid = bcd.cid ';
       break;
     case 'keyword': // added msh 070808
-      $select_additions = ', SUBSTR(LTRIM(b.biblio_keywords),1,4)';
+      if ($db_type == 'pgsql') $select_additions = ', SUBSTR(LTRIM(b.biblio_keywords),1,4)';
       $sortby = "ORDER BY SUBSTR(LTRIM(b.biblio_keywords),1,4) %s ";
       break;
     case 'year':
     default:
-      $select_additions = ', SUBSTR(n.title,1,3) ';
+      if ($db_type == 'pgsql') $select_additions = ', SUBSTR(n.title,1,3) ';
       $sortby = "ORDER BY b.biblio_year %s, b.biblio_date %s, SUBSTR(n.title,1,3) ASC ";
   } //end switch
   if (!isset($_SESSION['biblio_filter']) || !is_array($_SESSION['biblio_filter'])) {
