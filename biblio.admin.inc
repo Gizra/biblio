@@ -984,7 +984,10 @@ function biblio_admin_author_types_form($form_state, $op = NULL, $id = NULL){
 }
 
 function theme_biblio_admin_author_types_form($form){
-  $db_result = db_query("SELECT ctd.* FROM {biblio_contributor_type_data} ctd ");
+  // We need this complex query to realize author_types which are not in use (cid is null)
+  $db_result = db_query("SELECT ctd.*, cid FROM {biblio_contributor_type_data} ctd
+                         LEFT JOIN {biblio_contributor} c ON ctd.auth_type = c.auth_type 
+                         GROUP BY ctd.auth_type");
   while ($row = db_fetch_object($db_result)) {
     $ops = l(t('edit'), 'admin/settings/biblio/authors/edit/'. $row->auth_type);
     if (!isset($row->cid) && $row->auth_type >= 10) { // allow delete only if type not in use
