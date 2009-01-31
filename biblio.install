@@ -1630,3 +1630,51 @@ function biblio_update_6013() {
 
   return $result;
 }
+function biblio_update_6014() {
+  $result = array();
+  $contributors = array(
+    2 => 'biblio_secondary_authors', 
+    3 => 'biblio_tertiary_authors',
+    4 => 'biblio_subsidiary_authors',
+    5 => 'biblio_corp_authors');
+  if (db_result(db_query('SELECT COUNT(*) FROM biblio_fields WHERE type="contrib_widget"')) == 1) {
+    // create space for new contributor fields
+    $result[] = update_sql("UPDATE {biblio_fields} f SET fid=fid + 4 WHERE fid>1 ORDER BY fid DESC");
+    update_sql("UPDATE {biblio_fields} f SET name='biblio_authors' WHERE fid=1");
+    // add new contributor fields
+    $row = array('fid' => 0, 'name' => '', 'type' => 'contrib_widget', 'size' => 60, 'maxsize' => 255);
+    foreach($contributors as $fid => $name) {
+      $row['fid'] = $fid;
+      $row['name'] = $name;
+      $values[] = "('".implode("', '",$row)."')";
+    }
+    $result[] = update_sql('INSERT INTO {biblio_fields} VALUES '.implode(', ', $values));
+
+    // create space for new fields in field_type_data
+    $result[] = update_sql("UPDATE {biblio_field_type_data} f SET ftdid=ftdid + 4 WHERE ftdid>1 AND ftdid<100 ORDER BY ftdid DESC");
+    // add new field titles from author type + appended 's'
+    $result[] = update_sql("INSERT INTO {biblio_field_type_data} 
+    												SELECT auth_type AS ftdid, CONCAT(TRIM(ctd.title),'s') AS title, NULL AS hint
+    												FROM biblio_contributor_type_data ctd WHERE auth_type>1 AND auth_type<6");
+    // create space for new fields in linking table
+    $result[] = update_sql("UPDATE {biblio_field_type} ft SET fid=fid+4 WHERE fid>1 ORDER BY fid DESC");
+    // shift ftdid and cust_tdid for non-custom ftids
+    $result[] = update_sql("UPDATE {biblio_field_type} ft SET ftdid=ftdid+4 WHERE ftdid>1 AND ftdid<100");
+    $result[] = update_sql("UPDATE {biblio_field_type} ft SET cust_tdid=cust_tdid+4 WHERE cust_tdid>1 AND ftdid<100");
+    // add linking data for new fields
+    $result[] = update_sql("INSERT INTO {biblio_field_type}
+    												SELECT tid,ftd.ftdid,ftd.ftdid,ftd.ftdid,1,1,1,2 AS weight,1 
+                            FROM {biblio_field_type} ft, {biblio_field_type_data} ftd
+                            WHERE ft.fid=1 AND ftd.ftdid > 1 AND ftd.ftdid < 6");
+    // add default linking for author categories => author types
+    $result[] = update_sql("INSERT INTO {biblio_contributor_type}
+														SELECT auth_type,0,auth_type FROM {biblio_contributor_type_data} ctd WHERE auth_type<10");
+  }
+  // remove obsolete D5 columns from biblio table (if they are present)
+  $contributors[1] = 'biblio_authors';
+  $contributors[5] = 'biblio_corp_author';
+  foreach($contributors as $column) {
+    if (db_column_exists('biblio', $column)) db_drop_field($result,'biblio', $column);
+  }
+  return $result;
+}
