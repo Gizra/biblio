@@ -549,6 +549,7 @@ function biblio_admin_types_edit_form() {
       if ($fld['autocomplete'])
         array_push($def_values[$fld['name']], 'autocomplete');
     }
+    $disabled = $tid ? ($fld['common'] ? 1 : 0) : 0;
     $form['configured_flds'][$key]['name'] = array(
       '#type' => 'markup',
       '#value' => $fld['name'],
@@ -559,28 +560,28 @@ function biblio_admin_types_edit_form() {
       '#default_value' => $fld['title'],
       '#size' => 15,
       '#weight' => $fld['weight'],
-      '#disabled' => $tid ? ($fld['common'] ? 1 : 0) : 0
+      '#disabled' => $disabled
     );
     $form['configured_flds'][$key]['hint'] = array(
       '#type' => 'textfield',
       '#default_value' => $fld['hint'],
       '#size' => 20,
       '#weight' => $fld['weight'],
-      '#disabled' => $tid ? ($fld['common'] ? 1 : 0) : 0
+      '#disabled' => $disabled
     );
     $form['configured_flds'][$key]['weight'] = array(
       '#type' => 'textfield',
       '#default_value' => $fld['weight'],
       '#size' => 2,
       '#weight' => $fld['weight'],
-      //'#disabled' => $tid ? ($fld['common'] ? 1 : 0) : 0
+      //'#disabled' => $disabled
     );
     $form['configured_flds'][$key]['checkboxes'] = array(
       '#type' => 'checkboxes',
       '#options' => $options,
       '#default_value' => $def_values[$fld['name']],
       '#weight' => $fld['weight'],
-      //'#disabled' => $tid ? ($fld['common'] ? 1 : 0) : 0
+      //'#disabled' => $disabled
     );
     $form['configured_flds'][$key]['ftdid'] = array(
       '#type' => '#value',
@@ -593,8 +594,8 @@ function biblio_admin_types_edit_form() {
   			'#options' => $contrib_options,
         '#size' => min(count($contrib_options), 4),
         '#multiple' => true,
-      	'#default_value' => _biblio_get_auth_types($fld['fid'], $tid),
-      	'#disabled' => $tid ? ($fld['common'] ? 1 : 0) : 0
+      	'#default_value' => _biblio_get_auth_types($fld['fid'], $disabled ? 0 : $tid),
+      	'#disabled' => $disabled
       );
     }
   }

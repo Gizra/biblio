@@ -974,7 +974,7 @@ function _biblio_contributor_widget($node, $fld, $auth_category, $biblio_type, $
     '#hideRole' => count($options) <= 1,
     );
   // Add the current choices to the form.
-  $default_values = array('name' => '', 'cid' => '', 'auth_type' => current($options));
+  $default_values = array('name' => '', 'cid' => '', 'auth_type' => key($options));
   for ($delta = 0; $delta < $contributor_count; $delta++) {
     if (isset($contributors[$delta])) { // contributor already exists
       $values = $contributors[$delta];
@@ -1052,14 +1052,14 @@ function _biblio_contributor_form($delta, $auth_category, $values, $types = null
 function biblio_contributors_js($tid, $auth_category, $other_fields = FALSE) {
   $delta = count($_POST['biblio_contributors'][$auth_category]);
   // Build our new form element.
-  $ctypes = _biblio_get_auth_types($auth_category, $biblio_type);
+  $ctypes = _biblio_get_auth_types($auth_category, $tid);
   $ctypes = db_query('SELECT * FROM {biblio_contributor_type_data}
                       WHERE auth_type IN ('.implode(',',$ctypes).')');
   while ($ctype = db_fetch_object($ctypes)) {
     $options[$ctype->auth_type] = $ctype->title;
   }
 
-  $default_values = array('name' => '', 'cid' => '', 'auth_type' => '', 'rank' => $delta);
+  $default_values = array('name' => '', 'cid' => '', 'auth_type' => key($options), 'rank' => $delta);
   $form_element = _biblio_contributor_form($delta, $auth_category, $default_values, $options);
   drupal_alter('form', $form_element, array(), 'biblio_contributors_js');
   // Build the new form.
