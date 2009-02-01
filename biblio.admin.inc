@@ -470,11 +470,12 @@ function biblio_admin_types_edit_form() {
     $msg .= t('Checking the "Visible" box will add the field to the input form, checking "Required" will force the user to supply a value for this field and the weight value changes the order which it is rendered on the form with smaller values floating to the top of the form. ');
     $msg .= '<p>'. t('Fields which are grayed out on this page have been set to "common" on the ');
     $msg .= l("admin/settings/biblio/defaults", "admin/settings/biblio/defaults");
-    $msg .= t(' page.');
+    $msg .= t(' page.').'</p>';
   }
   else {
-    $msg .= t('Checking the "Common" box will add the field to all the differnet publication types. Checking "Required" will force the user to supply a value for the field, checking "Autocomplete" will enable AJAX type auto complete look up for the field when the user is entering data and the weight value changes the order which it is rendered on the form with smaller values floating to the top of the form. ');
+    $msg .= t('Checking the "Common" box will add the field to all the different publication types. Checking "Required" will force the user to supply a value for the field, checking "Autocomplete" will enable AJAX type auto complete look up for the field when the user is entering data and the weight value changes the order which it is rendered on the form with smaller values floating to the top of the form. ');
   }
+  $msg .= t('Finally, for each author field you can choose a set of author roles. Assigning different roles to authors within the same field, e.g. primary and secondary authors within the authors field, allows to theme them differently.');
   $msg .= '</div>';
   $form['#redirect'] = 'admin/settings/biblio/types';
   $form['help'] = array(
