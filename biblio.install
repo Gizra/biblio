@@ -155,7 +155,7 @@ function _add_biblio_keywords() {
       foreach(explode($kw_sep, $row->biblio_keywords) as $keyword) {
         $result[] = array('value' => trim($keyword), 'nid' => $row->nid, 'vid' =>$row->vid);
       }
-      db_query('DELETE FROM {term_node} WHERE nid = %d', $row->nid);
+      db_query('DELETE tn.* FROM {term_node} tn INNER JOIN {term_data} td ON tn.tid = td.tid WHERE nid = %d AND td.vid = %d', $row->nid, $vid);
     }
     $inserted = array();
     $count = 0;
@@ -596,7 +596,7 @@ function biblio_schema() {
     'primary key' => array('ftdid'),
         );
 
-        $schema['biblio_types'] = array(
+  $schema['biblio_types'] = array(
     'fields' => array(
         'tid' => array(
         'type' => 'int',
@@ -856,10 +856,9 @@ function biblio_schema() {
       'description' => t('Stores the keywords related to nodes.'),
       'fields' => array(
         'kid' => array(
-          'type' => 'int',
+          'type' => 'serial',
           'not null' => TRUE,
           'unsigned' => TRUE,
-          'default' => 0,
           'description' => t('Primary Key: The id of the keyword assigned to the node ')
         ),
         'word' => array(
@@ -1657,5 +1656,11 @@ function biblio_update_6014() {
   foreach($contributors as $column) {
     if (db_column_exists('biblio', $column)) db_drop_field($result,'biblio', $column);
   }
+  return $result;
+}
+function biblio_update_6015() {
+  $result = array();
+  $result[] = update_sql("ALTER TABLE {biblio_keyword_data} MODIFY COLUMN kid INTEGER UNSIGNED NOT NULL AUTO_INCREMENT");
+  
   return $result;
 }

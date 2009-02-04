@@ -100,22 +100,23 @@ function _endnote7_XML_export($results) {
     $xml .= (!empty ($pub->biblio_accession_number)) ? "\t<ACCESSION_NUMBER>$pub->biblio_accession_number</ACCESSION_NUMBER>\n" : "";
     $xml .= (!empty ($pub->biblio_call_number)) ? "\t<CALL_NUMBER>$pub->biblio_call_number</CALL_NUMBER>\n" : "";
     //    <LABEL>label</LABEL>
+    $kw_xml = '';
+    $kw_array = array();
     if (!empty($pub->terms)){
-      $xml .= "\t<KEYWORDS>\n";
-      $kw='';
       foreach($pub->terms as $term){
-        $xml .= "\t\t<KEYWORD>". trim($term->name) ."</KEYWORD>\n";
+        $kw_array[] =  trim($term->name) ;
       }
-      $xml .= "\t</KEYWORDS>\n";
-      if (!empty($pub->biblio_keywords)) unset($pub->biblio_keywords);
     }
-      
-    if (!empty ($pub->biblio_keywords)) {
+    if (!empty($pub->biblio_keywords)){
+      foreach($pub->biblio_keywords as $term){
+        $kw_array[] = trim($term);
+      }
+    }
+    if (!empty($kw_array)){
+      $kw_array = array_unique($kw_array);
       $xml .= "\t<KEYWORDS>\n";
-      $splitchar = (strstr($pub->biblio_keywords, ";")) ? ";" : " ";
-      $kw_array = explode($splitchar, $pub->biblio_keywords);
-      foreach ($kw_array as $kw) {
-        $xml .= "\t\t<KEYWORD>". trim($kw) ."</KEYWORD>\n";
+      foreach($kw_array as $word){
+        $xml .= "\t\t<KEYWORD>". trim($word) ."</KEYWORD>\n";
       }
       $xml .= "\t</KEYWORDS>\n";
     }

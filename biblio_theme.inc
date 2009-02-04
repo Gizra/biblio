@@ -164,8 +164,9 @@ function theme_biblio_long($node, $base = 'biblio', $style = 'classic') {
     ) : array();
     $output .= '<h3>'. t("URL") .':</h3>'. l($node->biblio_url, $node->biblio_url, $attrib) ."\n";
   }
-  if ($node->biblio_keywords)
-    $output .= '<h3>'. t("Keywords") .':</h3> '. _biblio_keyword_links($node->biblio_keywords, $base) ."\n";
+  if (!empty($node->biblio_keywords)) {
+    $output .= '<h3>'. t("Keywords") .':</h3> '. _biblio_keyword_links( $node->biblio_keywords, $base) ."\n";
+  }
   if ($node->biblio_abst_e)
     $output .= '<h3>'. t("Abstract") .':</h3> '. check_markup($node->biblio_abst_e, $node->format, FALSE) ."\n";
   if ($node->biblio_abst_f)
@@ -205,9 +206,6 @@ function theme_biblio_tabular($node, $base = 'biblio', $teaser = false) {
     array('data' => $node->biblio_type_name)
   );
   
-  if ($node->biblio_keywords &&  !variable_get('biblio_keyword_vocabulary', 0)) {
-    $node->biblio_keywords = _biblio_keyword_links($node->biblio_keywords, $base);
-  }
   if ($node->biblio_url) {
     $attrib = (variable_get('biblio_links_target_new_window', null)) ? array(
       'target' => '_blank'
@@ -228,6 +226,8 @@ function theme_biblio_tabular($node, $base = 'biblio', $teaser = false) {
     else {
       switch ($row['name']) {
         case 'biblio_keywords' :
+          $data = _biblio_keyword_links($node->$row['name'], $base);
+          break;
         case 'biblio_url' :
           // check_plain is not need on these since they have gone through
           // the l() function which does a check_plain
@@ -255,11 +255,10 @@ function theme_biblio_tabular($node, $base = 'biblio', $teaser = false) {
 
   if (biblio_access('export', $node) && $teaser == false) {
     $rows[] = array(
-      array(
-        'data' => t('Export'),
-      'class' => 'biblio-row-title'
-    ), array(
-      'data' => theme('biblio_export_links', $node->nid) )); 
+      array('data' => t('Export'),
+      			'class' => 'biblio-row-title'), 
+      array('data' => theme('biblio_export_links', $node->nid) )
+    ); 
   }
   $output = '<div id="biblio-node">';
   $output .= $node->biblio_coins;
@@ -492,7 +491,7 @@ function theme_biblio_tagged_link($base, $nid = NULL) {
   if (module_exists('popups') && !empty($nid)) {
     $output = l(t("Tagged"), "$base/export/tagged/$nid/popup", array('attributes'=>array('class' => 'popups', 'title' => t("Click to get the EndNote Tagged output "))));
   } else {
-    $output = l(t("Tagged"), "$base/export/tagged/$nid", array('attributes'=>array('title' => t("Click to download the EndNote Tagged formated file"))));
+    $output = l(t("Tagged"), "$base/export/tagged/$nid", array('attributes'=>array('title' => t("Click to download the EndNote Tagged formatted file"))));
   }
   return $output;
 }
@@ -508,7 +507,7 @@ function theme_biblio_bibtex_link($base, $nid = NULL) {
   if (module_exists('popups') && !empty($nid)) {
     $output = l(t("BibTex"), "$base/export/bibtex/$nid/popup",array('attributes'=>array('class' => 'popups', 'title' => t("Click to get the BibTEX output "))));
   } else {
-    $output = l(t("BibTex"), "$base/export/bibtex/$nid", array('attributes'=>array('title' => t("Click to download the BibTEX formated file"))));
+    $output = l(t("BibTex"), "$base/export/bibtex/$nid", array('attributes'=>array('title' => t("Click to download the BibTEX formatted file"))));
   }
   return $output;
 }
@@ -524,7 +523,7 @@ function theme_biblio_xml_link($base, $nid = NULL) {
   if (module_exists('popups') && !empty($nid)) {
     $output = l(t("XML"), "$base/export/xml/$nid/popup",array('attributes'=>array('class' => 'popups', 'title' => t("Click to get the XML output "))));
   } else {
-    $output = l(t("XML"), "$base/export/xml/$nid", array('attributes'=>array('title' => t("Click to download the XML formated file"))));
+    $output = l(t("XML"), "$base/export/xml/$nid", array('attributes'=>array('title' => t("Click to download the XML formatted file"))));
   }
   return $output;
 }

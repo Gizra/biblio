@@ -1,12 +1,15 @@
 <?php
 // $Id$
 function en8_startElement($parser, $name, $attrs) {
-  global $node, $element, $contributors, $contrib_count, $titles, $periodical, $dates, $urls;
+  global $node, $element, $contributors, $contrib_count, $titles, $periodical, $dates, $urls, $keyword_count;
   switch ($name) {
     case 'record' :
       $node = array();
       break;
     case 'style' :
+      break;
+    case 'keywords' :
+      $keyword_count = 0;
       break;
     case 'authors' :
     case 'secondary-authors' :
@@ -34,7 +37,7 @@ function en8_startElement($parser, $name, $attrs) {
   }
 }
 function en8_endElement($parser, $name) {
-  global $node, $nids, $element, $terms, $batch_proc, $session_id, $contributors, $contrib_count, $dates, $urls;
+  global $node, $nids, $element, $terms, $batch_proc, $session_id, $contributors, $contrib_count, $dates, $urls, $keyword_count;
   switch ($name) {
     case 'record' :
       $element = $contributors = $contrib_count = $dates = $urls = '';
@@ -50,6 +53,9 @@ function en8_endElement($parser, $name) {
       break;
     case 'author' :
       $contrib_count++;
+      break;
+    case 'keyword' :
+      $keyword_count++;
       break;
     case 'year' :
     case 'pub-dates' :
@@ -71,7 +77,7 @@ function en8_endElement($parser, $name) {
   
 }
 function en8_characterData($parser, $data) {
-  global $node, $element, $contributors, $contrib_count, $dates, $urls;
+  global $node, $element, $contributors, $contrib_count, $dates, $urls, $keyword_count;
   if (trim($data)) {
     switch ($element) {
       case 'source-app' :
@@ -173,12 +179,11 @@ function en8_characterData($parser, $data) {
       case 'reprint-status' :
         break;
       case 'keyword' :
-        if ($vid = variable_get('biblio_keyword_vocabulary', 0)) {
+        if ($vid = variable_get('biblio_keyword_vocabulary', 0)) { 
+           //TODO: this will potentially cause problems exta commas in the tags string if all the data is not stored in one pass.
           $node['taxonomy']['tags'][$vid] .= (empty($node['taxonomy']['tags'][$vid])) ? "\"$data\"" : ",\"$data\"";
-          unset($node['biblio_keywords']);
-        }else{
-          $node['biblio_keywords'] .= (empty($node['biblio_keywords'])) ? "\"$data\"" : ",\"$data\"";
         }
+        $node['biblio_keywords'][$keyword_count] .= $data;
         break;
       case 'dates' :
         switch ($dates) {

@@ -27,12 +27,7 @@
  */
 function biblio_get_keyword_by_name($name) {
   $db_result = db_query("SELECT * FROM {biblio_keyword_data} k WHERE LOWER(k.word) = LOWER('%s')", trim($name));
-  $result = array();
-  while ($term = db_fetch_object($db_result)) {
-    $result[] = $term;
-  }
-
-  return $result;
+  return $term = db_fetch_object($db_result);
   
 }
 
@@ -55,17 +50,17 @@ function biblio_get_keyword_by_id($kid) {
  * @param $node
  * @return unknown_type
  */
-function biblio_get_node_keywords($node) {
+function biblio_load_keywords($vid) {
   static $keywords;
 
-  if (!isset($keywords[$node->vid])) {
-    $result = db_query('SELECT t.* FROM {biblio_keywords} bk INNER JOIN {biblio_keyword_data} bkd ON bk.kid = bkd.kid  WHERE bk.vid = %d', $node->vid);
-    $keywords[$node->vid] = array();
+  if (!isset($keywords[$vid])) {
+    $result = db_query('SELECT bkd.* FROM {biblio_keyword} bk INNER JOIN {biblio_keyword_data} bkd ON bk.kid = bkd.kid  WHERE bk.vid = %d', $vid);
+    $keywords[$vid] = array();
     while ($keyword = db_fetch_object($result)) {
-      $keywords[$node->vid][$keyword->kid] = $keyword;
+      $keywords[$vid][$keyword->kid] = $keyword->word;
     }
   }
-  return $keywords[$node->vid];
+  return $keywords[$vid];
   
 }
 
@@ -73,16 +68,40 @@ function biblio_get_node_keywords($node) {
  * @param $node
  * @return 
  */
-function biblio_save_node_keywords($node) {
-  
+function biblio_save_keywords($node) {
+  foreach ($node->biblio_keywords as $keyword) {
+    // See if the term exists 
+    if ($term = biblio_get_keyword_by_name($keyword)); 
+
+    if (!$term->kid) {
+      $term = array('word' => $keyword);
+      $status = biblio_save_keyword($term);
+      $kid = $term['kid'];
+    }
+
+    // Defend against duplicate, differently cased tags
+    if (!isset($inserted[$kid])) {
+      db_query('INSERT INTO {biblio_keyword} (kid, nid, vid) VALUES (%d, %d, %d)', $kid, $node->nid, $node->vid);
+      $inserted[$kid] = TRUE;
+    }
+  }
+
 }
 
 /**
  * @param $word
  * @return 
  */
-function biblio_save_keyword(&$word) {
+function biblio_save_keyword(&$form_values) {
+  if (!empty($form_values['kid']) && $form_values['word']) {
+    drupal_write_record('biblio_keyword_data', $form_values, 'kid');
+    $status = SAVED_UPDATED;
+  } else {
+    drupal_write_record('biblio_keyword_data', $form_values);
+    $status = SAVED_NEW;
+  }
   
+  return $status;  
 }
 
 /**

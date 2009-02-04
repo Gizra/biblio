@@ -1167,9 +1167,11 @@ function _biblio_prepare_submit($node) {
  * database inserts.
  */
 function biblio_insert($node) {
+  require_once(drupal_get_path('module', 'biblio') .'/biblio.keywords.inc');
   _biblio_prepare_submit($node);
   drupal_write_record('biblio', $node);
   biblio_save_contributors($node);
+  biblio_save_keywords($node);
 }
 /**
  * Implementation of hook_update().
@@ -1189,6 +1191,8 @@ function biblio_update($node) {
   }
 
   biblio_save_contributors($node, TRUE);
+  biblio_save_keywords($node);
+  
 }
 /**
  * Implementation of hook_delete().
@@ -1200,6 +1204,7 @@ function biblio_delete($node) {
   db_query('DELETE FROM {biblio} WHERE nid = %d', $node->nid);
   //now remove the entries from the contributor linking table
   db_query('DELETE FROM {biblio_contributor} WHERE nid = %d', $node->nid);
+  db_query('DELETE FROM {biblio_keyword} WHERE nid = %d', $node->nid);
 }
 /**
  * Implementation of hook_load().
@@ -1210,12 +1215,14 @@ function biblio_delete($node) {
  */
 function biblio_load($node) {
   require_once(drupal_get_path('module', 'biblio') .'/biblio.contributors.inc');
+  require_once(drupal_get_path('module', 'biblio') .'/biblio.keywords.inc');
   $additions = db_fetch_object(db_query('SELECT b.*, bt.name as biblio_type_name
                                          FROM {biblio} b
                                          LEFT JOIN {biblio_types} bt on b.biblio_type = bt.tid
                                          WHERE b.vid = %d', $node->vid));
   $additions->biblio_year = _biblio_text_year($additions->biblio_year);
   $additions->biblio_contributors = biblio_load_contributors($node->vid, $additions->biblio_type);
+  $additions->biblio_keywords = biblio_load_keywords($node->vid);
   return $additions;
 }
 function biblio_citekey_generate($node) {
@@ -1732,29 +1739,21 @@ function biblio_contextObject($node) {
     }
   }
   elseif (!empty($node->title)) $co["rft.title"] = $node->title;
-  if (($node->biblio_type == 100) && (!empty($node->title)))
-  $co["rft.btitle"] = $node->title;
+  if (($node->biblio_type == 100) && (!empty($node->title))) $co["rft.btitle"] = $node->title;
   // stitle (abbrev_journal)
-  if (!empty($node->biblio_short_title))
-  $co["rft.stitle"] = $node->biblio_short_title;
+  if (!empty($node->biblio_short_title)) $co["rft.stitle"] = $node->biblio_short_title;
   // series (series_title)
-  if (!empty($node->biblio_tertiary_title))
-  $co["rft.series"] = $node->biblio_tertiary_title;
+  if (!empty($node->biblio_tertiary_title)) $co["rft.series"] = $node->biblio_tertiary_title;
   // issn
-  if (!empty($node->biblio_issn))
-  $co["rft.issn"] = $node->biblio_issn;
+  if (!empty($node->biblio_issn)) $co["rft.issn"] = $node->biblio_issn;
   // isbn
-  if (!empty($node->biblio_isbn))
-  $co["rft.isbn"] = $node->biblio_isbn;
+  if (!empty($node->biblio_isbn)) $co["rft.isbn"] = $node->biblio_isbn;
   // date (year)
-  if (!empty($node->biblio_year))
-  $co["rft.date"] = $node->biblio_year;
+  if (!empty($node->biblio_year)) $co["rft.date"] = $node->biblio_year;
   // volume
-  if (!empty($node->biblio_volume))
-  $co["rft.volume"] = $node->biblio_volume;
+  if (!empty($node->biblio_volume)) $co["rft.volume"] = $node->biblio_volume;
   // issue
-  if (!empty($node->biblio_issue))
-  $co["rft.issue"] = $node->biblio_issue;
+  if (!empty($node->biblio_issue)) $co["rft.issue"] = $node->biblio_issue;
   // spage, epage, tpages (pages)
   // NOTE: lifted from modsxml.inc.php--should throw some into a new include file
   if (!empty($node->biblio_pages)) {
@@ -1800,14 +1799,11 @@ function biblio_contextObject($node) {
     }
   }
   // pub (publisher)
-  if (!empty($node->biblio_publisher))
-  $co["rft.pub"] = $node->biblio_publisher;
+  if (!empty($node->biblio_publisher)) $co["rft.pub"] = $node->biblio_publisher;
   // place
-  if (!empty($node->biblio_place_published))
-  $co["rft.place"] = $node->biblio_place_published;
+  if (!empty($node->biblio_place_published)) $co["rft.place"] = $node->biblio_place_published;
   // id (doi, url)
-  if (!empty($node->biblio_doi))
-  $co["rft_id"] = "info:doi/". $node->biblio_doi;
+  if (!empty($node->biblio_doi)) $co["rft_id"] = "info:doi/". $node->biblio_doi;
   elseif (!empty($node->biblio_url)) $co["rft_id"] = $node->biblio_url;
   return $co;
 }

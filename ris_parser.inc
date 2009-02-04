@@ -156,10 +156,8 @@ function _ris_tagged_import($file, $terms = array(), $batch = FALSE, $session_id
             case 'KW' :
               if ($vid = variable_get('biblio_keyword_vocabulary', 0)) {
                 $node['taxonomy']['tags'][$vid] .= (empty($node['taxonomy']['tags'][$vid])) ? "\"$value\"" : ",\"$value\"";
-                unset($node['biblio_keywords']);
-              }else{
-                $node['biblio_keywords'] .= (empty($node['biblio_keywords'])) ? "\"$value\"" : ",\"$value\"";
               }
+              $node['biblio_keywords'][] = $value;
               break;
             case 'IS' :
             case 'CP' :

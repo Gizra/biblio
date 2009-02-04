@@ -642,11 +642,11 @@ class PARSEENTRIES
       $node['biblio_section']         = (!empty($entry['chapter'])) ? $entry['chapter'] : NULL;
       $node['biblio_place_published'] = (!empty($entry['address'])) ? $entry['address'] : NULL;
       $node['biblio_abst_e']          = (!empty($entry['abstract'])) ? $entry['abstract'] : NULL;
-      if (!empty($entry['keywords']) && $vid = variable_get('biblio_keyword_vocabulary', 0)) {
+      if (!empty($entry['keywords'])){
+        if ($vid = variable_get('biblio_keyword_vocabulary', 0)) {
           $node['taxonomy']['tags'][$vid] .= $entry['keywords'];
-          unset($node['biblio_keywords']);
-      }elseif (!empty($entry['keywords'])){
-          $node['biblio_keywords'] .= $entry['keywords'];
+        }
+        $node['biblio_keywords'] = explode(',', $entry['keywords']);
       }
       $node['biblio_isbn']            = (!empty($entry['isbn'])) ? $entry['isbn'] : NULL;
       $node['biblio_url']             = (!empty($entry['url'])) ? $entry['url'] : NULL;

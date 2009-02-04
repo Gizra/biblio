@@ -154,7 +154,7 @@ function biblio_import_form_submit($form, & $form_state) {
   global  $session_id;
   if ($form_state['values']['op'] == t('Import') && isset ($form_state['values']['filetype'])) {
     if ($import_file = file_save_upload('biblio_import_file')) {
-      if($import_file->filesize > 50000) $batch_proc = 1;  // we will use batch import for larger files.
+      if($import_file->filesize > 500000) $batch_proc = 1;  // we will use batch import for larger files.
       drupal_set_message(t("@file was uploaded", array ('@file' => $import_file->filename)), 'status');
       // Concatenate all the terms of the different vocabularies
       // in a single array to be sent to biblio_import
@@ -536,16 +536,22 @@ function biblio_bibtex_export($results) {
       $bibtex .= "\taddress = {". $pub->biblio_place_published ."},\n";
     if (!empty($pub->biblio_abst_e))
       $bibtex .= "\tabstract = {". $pub->biblio_abst_e ."},\n";
+
+    $kw_array = array();
     if (!empty($pub->terms)){
-      $kw='';
       foreach($pub->terms as $term){
-        $kw .= (!empty($kw))? ', '.$term->name : $term->name;
+        $kw_array[] = $term->name;
       }
-      $bibtex .= "\tkeywords = {". $kw ."},\n";
-      if (!empty($pub->biblio_keywords)) unset($pub->biblio_keywords);
     }
-    if (!empty($pub->biblio_keywords))
-      $bibtex .= "\tkeywords = {". $pub->biblio_keywords ."},\n";
+    if (!empty($pub->biblio_keywords)) {
+      foreach($pub->biblio_keywords as $term){
+        $kw_array[] = $term;
+      }
+    }
+    if (!empty($kw_array)){
+      $kw_array = array_unique($kw_array);
+      $bibtex .= "\tkeywords = {". implode(', ', $kw_array) ."},\n";
+    }
     if (!empty($pub->biblio_isbn))
       $bibtex .= "\tISBN = {". $pub->biblio_isbn ."},\n";
     if (!empty($pub->biblio_url))
@@ -815,18 +821,25 @@ function biblio_endnote_tagged_export($results) {
 
     if (!empty($pub->biblio_place_published))
       $doc .= "%C ". trim($pub->biblio_place_published) ."\r\n";
-    if (!empty($pub->biblio_publisher))
-      $doc .= "%I ". trim($pub->biblio_publisher) ."\r\n";
+    if (!empty($pub->biblio_publisher)) { $doc .= "%I ". trim($pub->biblio_publisher) ."\r\n"; }
+
+    $kw_array = array();
     if (!empty($pub->terms)){
-      $kw='';
       foreach($pub->terms as $term){
-        $doc .= "%K ". trim($term->name) ."\r\n";
+        $kw_array[] = $term->name;
       }
-      if (!empty($pub->biblio_keywords)) unset($pub->biblio_keywords);
     }
-      
-    if (trim($pub->biblio_keywords))
-      $doc .= "%K ". trim($pub->biblio_keywords) ."\r\n";
+    if (!empty($pub->biblio_keywords)) {
+      foreach($pub->biblio_keywords as $term){
+        $kw_array[] = $term;
+      }
+    }   
+    if (!empty($kw_array)){
+      $kw_array = array_unique($kw_array);
+      foreach($kw_array as $term){
+        $doc .= "%K ". trim($term) ."\r\n";
+      }
+    }
     if (!empty($pub->biblio_call_number))
       $doc .= "%L ". trim($pub->biblio_call_number) ."\r\n";
     if (!empty($pub->biblio_accession_number))

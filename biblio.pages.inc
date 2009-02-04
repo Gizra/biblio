@@ -102,7 +102,7 @@ function biblio_build_query($arg_list) {
   $join = array();
   $join[] = "left join {biblio} b  on n.vid=b.vid ";
   $join[] = "inner join {biblio_types} bt  on b.biblio_type=bt.tid ";
-  $select_additions ='';
+  $pgsql_additions ='';
   $limit = '';
   if (variable_get('biblio_view_only_own', 0) ) {
     $limit .= " AND n.uid = $user->uid ";
@@ -120,13 +120,13 @@ function biblio_build_query($arg_list) {
 
   switch ($sort_attrib['sort']) {
     case 'type':
-      if ($db_type == 'pgsql') $select_additions = ', SUBSTR(n.title,1,3) ';
+      if ($db_type == 'pgsql') $pgsql_additions = ', SUBSTR(n.title,1,3) ';
       $sortby = "ORDER BY b.biblio_type %s, SUBSTR(n.title,1,3) ASC ";
       break;
     case 'title':
       //$sortby = "ORDER BY SUBSTRING(n.title,1,3) %s, b.biblio_year DESC ";
       if ($db_type == 'pgsql') {
-        $select_additions = ", CASE
+        $pgsql_additions = ", CASE
               WHEN SUBSTR(n.title,1,1)='\"'   THEN SUBSTR(n.title,2)
               WHEN SUBSTR(n.title,1,1)='\''   THEN SUBSTR(n.title,2)
               WHEN SUBSTR(n.title,1,2)='A '   THEN SUBSTR(n.title,3)
@@ -146,7 +146,7 @@ function biblio_build_query($arg_list) {
   					END  %s";
       break;
     case 'author':
-      if ($db_type == 'pgsql') $select_additions = ', bcd.lastname ';
+      if ($db_type == 'pgsql') $pgsql_additions = ', bcd.lastname ';
       $sortby = "ORDER BY bcd.lastname %s ";
       //$where['bc-rank'] = "bc.rank=0";
       //$where[] = "bc.ctid=1";
@@ -154,12 +154,12 @@ function biblio_build_query($arg_list) {
       $join['bcd'] = '  JOIN {biblio_contributor_data} as bcd on bc.cid = bcd.cid ';
       break;
     case 'keyword': // added msh 070808
-      if ($db_type == 'pgsql') $select_additions = ', SUBSTR(LTRIM(b.biblio_keywords),1,4)';
+      if ($db_type == 'pgsql') $pgsql_additions = ', SUBSTR(LTRIM(b.biblio_keywords),1,4)';
       $sortby = "ORDER BY SUBSTR(LTRIM(b.biblio_keywords),1,4) %s ";
       break;
     case 'year':
     default:
-      if ($db_type == 'pgsql') $select_additions = ', SUBSTR(n.title,1,3) ';
+      if ($db_type == 'pgsql') $pgsql_additions = ', SUBSTR(n.title,1,3) ';
       $sortby = "ORDER BY b.biblio_year %s, b.biblio_date %s, SUBSTR(n.title,1,3) ASC ";
   } //end switch
   if (!isset($_SESSION['biblio_filter']) || !is_array($_SESSION['biblio_filter'])) {
@@ -290,9 +290,9 @@ function biblio_build_query($arg_list) {
           $term = explode("?",array_shift($arg_list));
      //     $where[] = "b.biblio_keywords RLIKE '%s' ";
           $terms[] = db_escape_string($term[0]);
-          $join[] = "inner join {term_node} as tn on n.vid = tn.vid";
-          $join[] = "inner join  {term_data} as td on tn.tid= td.tid";
-          $where[] = "td.name = '%s' ";
+          $join[] = "inner join {biblio_keyword} as bk on n.vid = bk.vid";
+          //$join[] = "inner join {biblio_keyword_data} as bkd on bk.kid= bkd.kid";
+          $where[] = "bk.kid = %d ";
           array_push($args, $type, $term[0]);
           $operator = NULL;
           break;
@@ -314,16 +314,16 @@ function biblio_build_query($arg_list) {
           array_push($args, $type, $term);
           switch ($term) {
             case 'type':
-              $select_additions = ', SUBSTR(n.title,1,3) ';
+              if ($db_type == 'pgsql') $pgsql_additions = ', SUBSTR(n.title,1,3) ';
               $sortby = "ORDER BY b.biblio_type %s, b.biblio_year DESC, SUBSTR(n.title,1,3) ASC ";
               break;
             case 'title':
-              $select_additions = ', SUBSTR(n.title,1,3) ';
+              if ($db_type == 'pgsql') $pgsql_additions = ', SUBSTR(n.title,1,3) ';
               $sortby = "ORDER BY SUBSTRING(n.title,1,3) %s, b.biblio_year DESC ";
               break;
             case 'year':
             default:
-              $select_additions = ', SUBSTR(n.title,1,3) ';
+              if ($db_type == 'pgsql') $pgsql_additions = ', SUBSTR(n.title,1,3) ';
               $sortby = "ORDER BY b.biblio_year %s, b.biblio_date %s,SUBSTR(n.title,1,3) ASC, b.biblio_type ASC ";
           } //end switch
           break;
@@ -363,7 +363,7 @@ function biblio_build_query($arg_list) {
 
   $where_clause = count($where) > 1 ? '('. implode(') AND (', $where) .')': $where[0];
 
-  $query = db_rewrite_sql("SELECT DISTINCT n.*, b.*, bt.name as biblio_type_name $select_additions FROM {node} n $joins  WHERE $where_clause $limit $sortby ");
+  $query = db_rewrite_sql("SELECT DISTINCT n.*, b.*, bt.name as biblio_type_name $pgsql_additions FROM {node} n $joins  WHERE $where_clause $limit $sortby ");
   $count_query = db_rewrite_sql("SELECT COUNT(DISTINCT(n.nid)) FROM {node} n $joins  WHERE $where_clause $limit ");
   $_SESSION['last_biblio_query'] = $query;
   $terms[] = $sort_attrib['order']; // this is either asc or desc to be inserted into the first term of the ORDER clause
@@ -946,9 +946,9 @@ function _biblio_keyword_links($keywords,$base='biblio') {
   $sep = variable_get('biblio_keyword_sep', ',');
   $keyword_array = explode($sep, $keywords);
 
-  foreach($keyword_array as $kw) {
-    $html .= (empty($html))? "" : "; ";
-    $html .= l(trim($kw), "$base/keyword/" . trim($kw) , $options);
+  foreach($keywords as $kid => $word) {
+    $html .= (empty($html))? "" : "$sep ";
+    $html .= l(trim($word), "$base/keyword/$kid" , $options);
   }
   return $html;
 }

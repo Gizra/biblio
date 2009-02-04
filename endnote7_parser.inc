@@ -22,7 +22,7 @@
  */
 
 function en7_startElement($parser, $name, $attrs) {
-  global $node, $element, $auth_count;
+  global $node, $element, $auth_count, $keyword_count;
   switch ($name) {
     case 'RECORD' :
       $node = array();
@@ -35,7 +35,10 @@ function en7_startElement($parser, $name, $attrs) {
     case 'SECONDARY_AUTHORS':
     case 'TERTIARY_AUTHORS':
     case 'SUBSIDIARY_AUTHORS':
-      $auth_count=0;
+      $auth_count = 0;
+      break;
+    case 'KEYWORDS':
+      $keyword_count = 0;
       break;
     default:
       $element = $name;
@@ -43,7 +46,7 @@ function en7_startElement($parser, $name, $attrs) {
 }
 
 function en7_endElement($parser, $name) {
-  global $node, $element, $terms, $batch, $session_id, $nids, $auth_count;
+  global $node, $element, $terms, $batch, $session_id, $nids, $auth_count, $keyword_count;
   switch ($name) {
     case 'RECORD' :
       if (!empty($terms)) $node['taxonomy'] = array_merge($terms,$node['taxonomy']);
@@ -55,6 +58,9 @@ function en7_endElement($parser, $name) {
     case 'SUBSIDIARY_AUTHOR':
       $auth_count++;
       break;
+    case 'KEYWORD':
+      $keyword_count++;
+      break;
     default:
 
   }
@@ -62,7 +68,7 @@ function en7_endElement($parser, $name) {
 }
 
 function en7_characterData($parser, $data) {
-  global $node, $element, $auth_count;
+  global $node, $element, $auth_count, $keyword_count;
   if (trim($data)) {
     switch ($element) {
       case 'REFERENCE_TYPE':
@@ -85,12 +91,11 @@ function en7_characterData($parser, $data) {
         $node['biblio_contributors'][4][$auth_count]['auth_type'] = _biblio_get_auth_type(4, $node['biblio_type']);
         break;
       case 'KEYWORD':
-        if ($vid = variable_get('biblio_keyword_vocabulary', 0)) {
+        if ($vid = variable_get('biblio_keyword_vocabulary', 0)) { 
+           //TODO: this will potentially cause problems exta commas in the tags string if all the data is not stored in one pass.
           $node['taxonomy']['tags'][$vid] .= (empty($node['taxonomy']['tags'][$vid])) ? "\"$data\"" : ",\"$data\"";
-          unset($node['biblio_keywords']);
-        }else{
-          $node['biblio_keywords'] .= (empty($node['biblio_keywords'])) ? "\"$data\"" : ",\"$data\"";
         }
+        $node['biblio_keywords'][$keyword_count] .= $data;
         break;
       default:
         if ($field = en7_field_map(trim($element))){
