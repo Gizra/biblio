@@ -1655,9 +1655,16 @@ function biblio_update_6015() {
   variable_del('biblio_freetagging_vocab');
   
   $result[] = update_sql("ALTER TABLE {biblio_keyword_data} MODIFY COLUMN kid INTEGER UNSIGNED NOT NULL AUTO_INCREMENT");
+  $db_result = db_query('SELECT t.nid, t.vid, td.name as biblio_keywords FROM {term_node} t left join {term_data} td on t.tid=td.tid where td.vid=%d', variable_get('biblio_keyword_vocabulary', -1));
+  while ($node = db_fetch_object($db_result)){
+    $count += biblio_save_keywords($node, TRUE);
+  }
+  $result[] = array('success' => $count, 
+                    'query' => "Copied $count keywords to the new database stucture from taxonomy");
+  $count=0;
   $db_result = db_query('SELECT nid,vid,biblio_keywords FROM {biblio} where biblio_keywords != "" ');
   while ($node = db_fetch_object($db_result)){
-    $count += biblio_save_keywords($node);
+    $count += biblio_save_keywords($node, TRUE);
   }
   $result[] = array('success' => $count, 
                     'query' => "Moved $count keywords to the new database stucture");

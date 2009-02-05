@@ -79,7 +79,7 @@ function biblio_save_keywords($node, $update = FALSE) {
     $sep = variable_get('biblio_keyword_sep', ',');
     $node->biblio_keywords = explode($sep,$node->biblio_keywords );
   }
-  db_query('DELETE FROM {biblio_keyword} WHERE nid = %d AND vid = %d', array($node->nid, $node->vid));
+  if (!$update) db_query('DELETE FROM {biblio_keyword} WHERE nid = %d AND vid = %d', array($node->nid, $node->vid));
 
   foreach ($node->biblio_keywords as $keyword) {
     $word = (is_object($keyword)) ? $keyword->word : $keyword;
