@@ -478,6 +478,12 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
           $value = $term->name;
           $type = t("Taxonomy Term");
         }
+        if ($type == 'keyword') {
+          require_once(drupal_get_path('module', 'biblio') .'/biblio.keywords.inc');
+          $term = biblio_get_keyword_by_id($value);
+          $value = $term->word;
+          $type = t("Keyword");
+        }
         if ($type == 'uid' ) {
           $user = user_load($value);
           $value = $user->name;
@@ -991,4 +997,39 @@ function _biblio_format_author($author) {
 function _biblio_author_edit_links($author) {
     $base = variable_get('biblio_base', 'biblio');
     return l(' ['.t('edit').']', "$base/author/" . $author['cid'] ."/edit/" );
+}
+
+function biblio_keyword_page($filter = NULL) {
+    if ($filter) {
+      $filter = strtoupper($filter);
+      $query_ext =  ' AND UPPER(SUBSTRING(word,1,1)) = "%s" ';
+      $header_ext = t(' (which start with the letter "@letter") ',array('@letter' => $filter ));
+    }
+    else {
+      $query_ext =  NULL;
+      $header_ext = NULL;
+    }
+    
+    $db_result = db_query('SELECT bkd.*, COUNT(*) AS cnt FROM {biblio_keyword} bk, {biblio_keyword_data} bkd WHERE bkd.kid=bk.kid '. $query_ext.' GROUP BY bk.kid HAVING cnt > 0 ORDER BY  word ASC', $filter);
+    while ($keyword = db_fetch_object($db_result)){
+      $keywords[] = $keyword;
+    }
+    $rows[] = array(array('data' => theme(biblio_alpha_line, 'keywords', $filter), 'colspan' => 3));
+    for ($i=0; $i < count($keywords); $i+=3) {
+      $rows[] = array( array('data' => _biblio_format_keyword($keywords[$i]) ), 
+                       array('data' => isset($keywords[$i+1])?_biblio_format_keyword($keywords[$i+1]):'' ),
+                       array('data' => isset($keywords[$i+2])?_biblio_format_keyword($keywords[$i+2]):'' ));
+    }    
+  $header = array(array('data' => t('There are a total of @count keywords !header_ext in the database',array('@count' => count($keywords), '!header_ext' => $header_ext)), 'align' =>'center', 'colspan' => 3));
+  $output .= theme('table', $header, $rows);
+  return $output;
+}
+function _biblio_format_keyword($keyword) {
+  $base      = variable_get('biblio_base', 'biblio');
+  $format    = l(trim($keyword->word), "$base/keyword/$keyword->kid" );
+  $format   .= ' ('. $keyword->cnt . ') ' ;
+  $edit_link = ' ['.l(t('edit'), "$base/keyword/$keyword->kid/edit/" ).'] ';
+  $format   .= (user_access('administer biblio')) ? $edit_link: '';
+  
+  return $format;
 }

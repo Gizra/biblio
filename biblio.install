@@ -11,7 +11,7 @@ function biblio_install() {
 
   $result[] = _add_custom_field_data();
 
-  _enable_biblio_keyword_vocabulary();
+  //_enable_biblio_keyword_vocabulary();
   
   $result[] = _set_system_weight();
   
@@ -64,10 +64,6 @@ function _set_system_weight() {
 
 function _enable_biblio_keyword_vocabulary(){
     
-  if ($vocabulary = taxonomy_vocabulary_load(variable_get('biblio_freetagging_vocab', 0))) {
-    variable_set('biblio_keyword_vocabulary', $vocabulary->vid);
-    variable_del('biblio_freetagging_vocab');
-  }
   
   if ($vocabulary = taxonomy_vocabulary_load(variable_get('biblio_keyword_vocabulary', 0))) {
       // Existing install. Add back forum node type, if the biblio
@@ -76,24 +72,24 @@ function _enable_biblio_keyword_vocabulary(){
     $vocabulary['nodes']['biblio'] = 1;
     taxonomy_save_vocabulary($vocabulary);
   }
-  else {
-    // Create the biblio vocabulary if it does not exist.
-    $vocabulary = array(
-      'name' => 'Biblio Keywords',
-      'description' => t('This is a free tag vocabulary which contains the keywords from all nodes created by the biblio module'),
-      'help' => t('Enter a comma separated list of words. Phrases containing commas should be enclosed in double quotes'),
-      'nodes' => array('biblio' => 1),
-      'hierarchy' => 0,
-      'relations' => 1,
-      'tags' => 1,
-      'multiple' => 0,
-      'required' => 0,
-      'weight' => 0,
-      'module' => 'biblio',
-    );
-    taxonomy_save_vocabulary($vocabulary);
-    variable_set('biblio_keyword_vocabulary', $vocabulary['vid']);
-  }
+//  else {
+//    // Create the biblio vocabulary if it does not exist.
+//    $vocabulary = array(
+//      'name' => 'Biblio Keywords',
+//      'description' => t('This is a free tag vocabulary which contains the keywords from all nodes created by the biblio module'),
+//      'help' => t('Enter a comma separated list of words. Phrases containing commas should be enclosed in double quotes'),
+//      'nodes' => array('biblio' => 1),
+//      'hierarchy' => 0,
+//      'relations' => 1,
+//      'tags' => 1,
+//      'multiple' => 0,
+//      'required' => 0,
+//      'weight' => 0,
+//      'module' => 'biblio',
+//    );
+//    taxonomy_save_vocabulary($vocabulary);
+//    variable_set('biblio_keyword_vocabulary', $vocabulary['vid']);
+//  }
   return $vocabulary['vid'];
 }
 function _enable_biblio_collection_vocabulary(){  
@@ -440,9 +436,6 @@ function biblio_schema() {
       'vid'
       ),
     'indexes' => array (
-      'keywords' => array (
-        'biblio_keywords'
-        ),
       'nid' => array (
         'nid'
         ),
@@ -1656,6 +1649,11 @@ function biblio_update_6014() {
 function biblio_update_6015() {
   require_once(drupal_get_path('module', 'biblio') .'/biblio.keywords.inc');
   $result = array();
+  if ($vid = variable_get('biblio_freetagging_vocab', 0)) {
+    variable_set('biblio_keyword_vocabulary', $vid);
+  }
+  variable_del('biblio_freetagging_vocab');
+  
   $result[] = update_sql("ALTER TABLE {biblio_keyword_data} MODIFY COLUMN kid INTEGER UNSIGNED NOT NULL AUTO_INCREMENT");
   $db_result = db_query('SELECT nid,vid,biblio_keywords FROM {biblio} where biblio_keywords != "" ');
   while ($node = db_fetch_object($db_result)){

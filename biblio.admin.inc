@@ -107,18 +107,10 @@ function biblio_admin_settings() {
                       WHERE bt.tid=0 ORDER by bftd.title ASC ");
   $schema = drupal_get_schema('biblio');
   $keys = array_keys($schema['fields']);
-  $choice = new stdClass();
-  $choice->option = array(
-    'nid' => t('Node ID')
-  );
-  $options[0] = $choice;
+  $options = array();
+  $options['nid'] =  t('Node ID');
   while ($row = db_fetch_array($result)) {
-    $fields[$row['name']] = $row;
-    $choice = new stdClass();
-    $choice->option = array(
-      $row['name'] => $row['title']
-    );
-    $options[] = $choice;
+    $options[$row['name']] = $row['title'];
   }
   $form['citekey'] = array(
     '#type' => 'fieldset',
@@ -204,6 +196,34 @@ function biblio_admin_settings() {
     '#default_value' => variable_get('biblio_keyword_sep', ','),
     '#description' => t('Enter the character which will be used to separate multiple keywords in the keyword field')
   );
+  $form['keywords']['biblio_keyword_freetagging'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Use keywords from biblio entries as taxonomy "free tags"'),
+    '#return_value' => 1,
+    '#default_value' => variable_get('biblio_keyword_freetagging', 1),
+    '#description' => t('This option allows user to add keywords (free tags) to describe their documents. These keywords will be registered as taxonomy.')
+  );
+  $vocabularies = module_invoke('taxonomy', 'get_vocabularies');
+  // ... and print a form to select the terms in each of them
+  $taxo_options = array();
+  $taxo_options[0]= '<'. t('none') .'>';
+  if (count($vocabularies)) {
+    foreach ($vocabularies as $voc) {
+      $taxo_options[$voc->vid] =  $voc->name;
+    }
+    $form['keywords']['biblio_keyword_vocabulary'] = array(
+      '#type' => 'select',
+      '#title' => t('Vocabulary'),
+      '#default_value' => variable_get('biblio_keyword_vocabulary', 0),
+      '#options' => $taxo_options,
+      '#description' => t('Select vocabulary (category) to use for free tags.'),
+      '#multiple' => FALSE,
+  //    '#disabled' => (!variable_get('biblio_keyword_freetagging', 0)),
+  //    '#size' => $multiple ? min(9, count($taxo_options)) : 0,
+      '#weight' => 15
+    );
+  }
+  
   $form['links'] = array(
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
@@ -409,48 +429,7 @@ function biblio_admin_settings() {
     '#maxlength' => 6,
     '#description' => t('Limits the number of items in the /biblio/rss.xml feed to this number.')
   );
-// TODO: remove this later...  
-// This taxonomy field set is no longer needed since a keyword vocabulary is created and used by default now.
-//
-//  $form['taxo'] = array(
-//    '#type' => 'fieldset',
-//    '#collapsible' => TRUE,
-//    '#collapsed' => TRUE,
-//    '#title' => t('Taxonomy'),
-//    '#description' => t('You can set the Taxonomy defaults here.')
-//  );
-//  $form['taxo']['biblio_keyword_freetagging'] = array(
-//    '#type' => 'checkbox',
-//    '#title' => t('Use keywords from biblio entries as taxonomy "free tags"'),
-//    '#return_value' => 1,
-//    '#default_value' => variable_get('biblio_keyword_freetagging', 0),
-//    '#description' => t('This option allows user to add keywords (free tags) to describe their documents. These keywords will be registered as taxonomy.')
-//  );
-//  $vocabularies = module_invoke('taxonomy', 'get_vocabularies');
-//  // ... and print a form to select the terms in each of them
-//  $choice = new stdClass();
-//  $choice->option = array(0 => '<'. t('none') .'>');
-//  $taxo_options[0] = $choice;
-//  if (count($vocabularies)) {
-//    foreach ($vocabularies as $voc) {
-//      $choice = new stdClass();
-//      $choice->option = array(
-//        $voc->vid => $voc->name
-//      );
-//      $taxo_options[] = $choice;
-//    }
-//    $form['taxo']['biblio_freetagging_vocab'] = array(
-//      '#type' => 'select',
-//      '#title' => t('Vocabulary'),
-//      '#default_value' => variable_get('biblio_freetagging_vocab', 0),
-//      '#options' => $taxo_options,
-//      '#description' => t('Select vocabulary (category) to use for free tags.'),
-//      '#multiple' => FALSE,
-//      '#disabled' => (!variable_get('biblio_keyword_freetagging', 0)),
-//      '#size' => $multiple ? min(9, count($taxo_options)) : 0,
-//      '#weight' => 15
-//    );
-//  }
+
   $form = system_settings_form($form);
   $form['#submit'][] = 'biblio_admin_settings_form_submit';
   // our submit handler is added after the call to system settings form so that it gets
@@ -458,7 +437,15 @@ function biblio_admin_settings() {
   // and the menu will be rebuilt correctly.
   return ($form);
 }
-function biblio_admin_settings_form_submit() {
+function biblio_admin_settings_form_submit($form, $form_state) {
+  if ($form_state['values']['biblio_keyword_freetagging'] && $form_state['values']['biblio_keyword_vocabulary']) {
+    if ($vocabulary = taxonomy_vocabulary_load(variable_get('biblio_keyword_vocabulary', 0))) {
+      $vocabulary = (array) $vocabulary;
+      $vocabulary['nodes']['biblio'] = 1;
+      taxonomy_save_vocabulary($vocabulary);
+    }
+  }
+
   menu_rebuild();
 }
 function biblio_admin_types_edit_form() {
@@ -1198,4 +1185,96 @@ function biblio_admin_orphans_form_submit($form, &$form_state) {
   $authors = array_filter($form_state['values']['authors']);
   update_sql('DELETE FROM {biblio_contributor_data} WHERE cid IN ('.implode(',',$authors).')');
   drupal_set_message(t('The orphaned authors ('.implode(',',$authors).') have been deleted.'));
+}
+function biblio_admin_keyword_edit_form($form_state, $keyword_id) {
+  $base = variable_get('biblio_base', 'biblio');
+  
+  $keyword = db_fetch_object(db_query('SELECT * FROM {biblio_keyword_data} bkd WHERE bkd.kid = %d ', $keyword_id));
+
+  $base = variable_get('biblio_base', 'biblio');
+  $form['#redirect'] = "$base/keywords";
+
+  $form['kid'] = array(
+    '#type' => 'value',
+    '#value' => $keyword_id
+  );
+  $form['word'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Keyword'),
+    '#default_value' => $keyword->word,
+    '#size' => 100,
+    '#weight' => -10,
+    '#required' => true,
+    '#maxlength' => 255
+  );
+
+  $keywords = db_query("SELECT * FROM {biblio_keyword_data} kd WHERE LOCATE('%s', word) AND kid!=%d", drupal_substr($keyword->word,1,5), $keyword_id);
+  unset($options);
+  $base = variable_get('biblio_base', 'biblio');
+  while($kw=db_fetch_object($keywords)) {
+    $options[$kw->kid] = l($kw->word,$base.'/keyword/'.$kw->kid.'/edit/');
+  }
+  if ($options) {
+    $form['merge'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Keyword Merge'),
+      '#description' => t('Select other keywords which will be merged with the one above.  You should only do this if you are sure the other keywords represent the same keyword as the one being edited.'),
+      '#weight' => 5,
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+    );
+    $form['merge']['merge_keywords'] = array(
+      '#type' => 'checkboxes',
+      '#title' => t('Similar keywords'),
+	    '#options' => $options,
+      '#weight' => 12,
+      '#required' => false,
+      '#multiple' => true,
+    '#size' => min(count($options), 6),
+    );
+  }
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save')
+  );
+  $form['delete'] = array(
+    '#value' => l(t('Delete'), $base.'/keyword/'.$keyword_id.'/delete') 
+  );
+  
+  return $form;
+}
+function biblio_admin_keyword_delete_confirm(&$form_state, $keyword_id) {
+  $base = variable_get('biblio_base', 'biblio');
+  $keyword = db_fetch_object(db_query('SELECT * FROM {biblio_keyword_data} bkd WHERE bkd.kid = %d ', $keyword_id));
+  $form['kid'] = array(
+    '#type' => 'value',
+    '#value' => $keyword_id,
+  );
+
+  return confirm_form($form,
+    t('Are you sure you want to delete the keyord: %title from ALL publications?', array('%title' => $keyword->word)),
+    isset($_GET['destination']) ? $_GET['destination'] : $base.'/keywords',
+    t('This action cannot be undone.'),
+    t('Delete'),
+    t('Cancel')
+  );
+    
+}
+function biblio_admin_keyword_delete_confirm_submit($form, &$form_state) {
+  $base = variable_get('biblio_base', 'biblio');
+  module_load_include('inc','biblio','biblio.keywords');
+  biblio_delete_keyword($form_state['values']['kid']);  
+  drupal_goto($base.'/keywords');
+}
+
+function biblio_admin_keyword_edit_form_submit($form, &$form_state) {
+   if ($form_state['values']['op'] == 'Save') {
+     drupal_write_record('biblio_keyword_data', $form_state['values'], 'kid');
+   }
+   if (count($form_state['values']['merge_keywords'])) {
+     $kids = implode(',', $form_state['values']['merge_keywords']);
+     update_sql("UPDATE {biblio_keyword} SET kid={$form_state['values']['kid']} WHERE kid IN ($kids)");
+     update_sql("DELETE FROM {biblio_keyword_data} WHERE kid IN ($kids)");
+   }
+   
 }

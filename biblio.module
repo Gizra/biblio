@@ -405,7 +405,6 @@ function biblio_user_to_arg($arg) {
 }
 
 function biblio_user_load($uid) {
-  //print $uid;die;
   $user = user_load($uid);
   if ($user->uid == 0) return FALSE;
   if ($user->uid && variable_get('biblio_my_pubs_menu', '0') && 
@@ -437,11 +436,20 @@ function biblio_menu() {
   //'type' => MENU_CALLBACK
   );
   $items["$base/authors"] = array(
-      'title' => t('Authors'),
-      'page callback' => 'biblio_author_page',
-      'access callback' => 'user_access',
-      'access arguments' => array('access content'),
-      'file' => 'biblio.pages.inc',
+    'title' => t('Authors'),
+    'page callback' => 'biblio_author_page',
+    'access callback' => 'user_access',
+    'access arguments' => array('access content'),
+    'file' => 'biblio.pages.inc',
+    'weight' => 1,
+  );
+  $items["$base/keywords"] = array(
+    'title' => t('Keywords'),
+    'page callback' => 'biblio_keyword_page',
+    'access callback' => 'user_access',
+    'access arguments' => array('access content'),
+    'file' => 'biblio.pages.inc',
+    'weight' => 2,
   );
   $items["$base/import/form"] = array(
     'title' => t('Import'),
@@ -451,6 +459,7 @@ function biblio_menu() {
     'access callback' => 'user_access',
     'access arguments' => array('import from file'),
   //   'type' => MENU_CALLBACK
+    'weight' => 10,
   );
   $items[$base.'/user/%biblio_user'] = array(
       'title' => t('My publications'),
@@ -472,21 +481,36 @@ function biblio_menu() {
    );
    */
   $items["$base/pot"] = array(
-      'title' => '',
-      'page callback' => 'biblio_dump_db_data_for_pot',
-      'access callback' => 'user_access',
-      'access arguments' => array('access content'),
-      'type' => MENU_CALLBACK
-  );
+    'title' => '',
+    'page callback' => 'biblio_dump_db_data_for_pot',
+    'access callback' => 'user_access',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK);
   $items["$base/author/%/edit"] = array(
-      'title' => '',
-      'page callback' => 'drupal_get_form',
-      'page arguments' => array('biblio_admin_author_edit_form',2),
-      'access callback' => 'user_access',
-      'access arguments' => array('administer biblio'),
-      'file' => 'biblio.admin.inc',
-      'type' => MENU_CALLBACK
-  );
+    'title' => '',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('biblio_admin_author_edit_form',2),
+    'access callback' => 'user_access',
+    'access arguments' => array('administer biblio'),
+    'file' => 'biblio.admin.inc',
+    'type' => MENU_CALLBACK);
+  $items["$base/keyword/%/edit"] = array(
+    'title' => '',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('biblio_admin_keyword_edit_form',2),
+    'access callback' => 'user_access',
+    'access arguments' => array('administer biblio'),
+    'file' => 'biblio.admin.inc',
+    'type' => MENU_CALLBACK);
+  $items["$base/keyword/%/delete"] = array(
+    'title' => 'Delete',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('biblio_admin_keyword_delete_confirm', 2),
+    'access callback' => 'user_access',
+    'access arguments' => array('administer biblio'),
+    'file' => 'biblio.admin.inc',
+    'weight' => 1,
+    'type' => MENU_CALLBACK);
   $items["user/%user/$base"] = array(
     'title' => t('Publications'),
     'page callback' => 'biblio_get_user_pubs',
@@ -740,6 +764,7 @@ function biblio_nodeapi(& $node, $op, $teaser, $page) {
       case 'delete revision' :
         db_query('DELETE FROM {biblio} WHERE vid = %d', $node->vid);
         db_query('DELETE FROM {biblio_contributor} WHERE nid = %d AND vid = %d', array($node->nid, $node->vid));
+        db_query('DELETE FROM {biblio_keyword} WHERE nid = %d AND vid = %d', array($node->nid, $node->vid));
         break;
         /* 	case 'presave':
          if ($node->type == 'biblio')
@@ -1189,7 +1214,6 @@ function biblio_insert($node) {
 function biblio_update($node) {
   _biblio_prepare_submit($node);
   // Update the node in the database:
-  //print_r($node);die;
   if ($node->revision) {
     drupal_write_record('biblio', $node);
   }
@@ -1645,13 +1669,13 @@ function _biblio_filter_replace_callback($matches, $op = '') {
   return $text;
 }
 function biblio_taxonomy($op, $type, $array = NULL) {
-  if ($op == 'delete' && $term['vid'] == variable_get('biblio_freetagging_vocab', 0)) {
+  if ($op == 'delete' && $term['vid'] == variable_get('biblio_keyword_vocabulary', 0)) {
     switch ($type) {
       case 'term' :
         break;
       case 'vocabulary' :
         variable_del('biblio_keyword_freetagging');
-        variable_del('biblio_freetagging_vocab');
+        variable_del('biblio_keyword_vocabulary');
         break;
     }
   }
@@ -1663,7 +1687,7 @@ function biblio_term_path($term) {
     return ("$base/collection/$term->name");
   }
   elseif ($term->vid == variable_get('biblio_keyword_vocabulary',0) ) {
-    return ("$base/keyword/$term->name");
+    return ("$base/term_id/$term->tid");
   }
   else return;
 

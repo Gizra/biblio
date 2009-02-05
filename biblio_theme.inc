@@ -579,7 +579,11 @@ function theme_biblio_alpha_line($type = 'author',$current = NULL) {
       $group = 'authors/';
       $all = '['.l(t('Show ALL'), "$base/authors").']' ;
       break;
-    case 'author':
+    case 'keywords':
+      $group = 'keywords/';
+      $all = '['.l(t('Show ALL'), "$base/keywords").']' ;
+      break;
+      case 'author':
         $options['query'] .= 'sort=author';
         $group = 'ag/';
         $all_query['query'] = 'sort=author'. ($_GET['order']?'&order='.$_GET['order']:''); 

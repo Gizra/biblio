@@ -87,8 +87,7 @@ function biblio_import_form() {
       '#collapsible' => TRUE,
       '#collapsed' => TRUE,
       '#title' => t('Taxonomy Settings'),
-      '#description' => t('Typically you don\'t have to do anything here, however if you wish, you may select terms to be assigned to imported records. This effectively adds a keyword to all entries being imported. By default, all incoming keywords are added to the Biblio Keywords vocabulary. You may either relate incoming entries to an existing keyword OR select a term(s) from another vocabulary to relate all incoming entries to.')
-    );
+      '#description' => t('Typically you don\'t have to do anything here, however if you wish, you may select terms to be assigned to imported records. This effectively adds a keyword to all entries being imported.'));
     if (count($vocabularies)) {
       $i = 0;
       foreach ($vocabularies as $vocabulary) {
@@ -101,16 +100,16 @@ function biblio_import_form() {
         '#value' => '<p><div>'. $vocab_msg .'</div></p>'
       );
     }
-// TODO: remove this, keywords are automatically stored in a taxonomy vocabulary    
-//    if (variable_get('biblio_keyword_freetagging', 0)) {
-//      $freetag_vocab = module_invoke('taxonomy', 'get_vocabulary', variable_get('biblio_freetagging_vocab', 0));
-//      $msg = t('Keywords will be added to the <b>@name</b> vocabulary as specified in the Taxonomy section of the !url page.', array ('@name' => $freetag_vocab->name, '!url' => l(t('admin/settings/biblio'), 'admin/settings/biblio')));
-//    } else {
-//      $msg = t('Keywords will <b>NOT</b> be added to the vocabulary as specified in the Taxonomy section of the !url page.', array ('!url' => l(t('admin/settings/biblio'), 'admin/settings/biblio')));
-//    }
-//    $form['import_taxonomy']['freetagging_information'] = array (
-//      '#value' => '<p><div>'. $msg .'</div></p>'
-//    );
+    if (variable_get('biblio_keyword_freetagging', 0)) {
+      $vocabularies = module_invoke('taxonomy', 'get_vocabularies', 'biblio');
+      $freetag_vocab = $vocabularies[variable_get('biblio_keyword_vocabulary', 0)];
+      $msg = t('<b>NOTE:</b> Keyword "free tagging" is turned on, consequently all incomming keywords will be added to the <b>@name</b> vocabulary as specified in the "Keyword" section of the !url page.', array ('@name' => $freetag_vocab->name, '!url' => l(t('admin/settings/biblio'), 'admin/settings/biblio')));
+    } else {
+      $msg = t('<b>NOTE:</b> Keyword "free tagging" is turned off, consequently keywords will <b>NOT</b> be added to the vocabulary as specified in the Taxonomy section of the !url page.', array ('!url' => l(t('admin/settings/biblio'), 'admin/settings/biblio')));
+    }
+    $form['import_taxonomy']['freetagging_information'] = array (
+      '#value' => '<p><div>'. $msg .'</div></p>'
+    );
     $form['button'] = array ('#type' => 'submit', '#value' => t('Import'));
     return $form;
   } else {
@@ -154,7 +153,7 @@ function biblio_import_form_submit($form, & $form_state) {
   global  $session_id;
   if ($form_state['values']['op'] == t('Import') && isset ($form_state['values']['filetype'])) {
     if ($import_file = file_save_upload('biblio_import_file')) {
-      if($import_file->filesize > 500000) $batch_proc = 1;  // we will use batch import for larger files.
+      if($import_file->filesize > 50000) $batch_proc = 1;  // we will use batch import for larger files.
       drupal_set_message(t("@file was uploaded", array ('@file' => $import_file->filename)), 'status');
       // Concatenate all the terms of the different vocabularies
       // in a single array to be sent to biblio_import
@@ -350,6 +349,7 @@ function biblio_import($import_file, $type, $userid = 1, $terms = NULL, $batch =
  */
 function biblio_export($format = "tagged", $nid = null, $popup = false, $version = 7) {
   module_load_include('inc', 'biblio', 'biblio.contributors');
+  module_load_include('inc', 'biblio', 'biblio.keywords');
   $params = array ();
   if ($nid === null && isset ($_SESSION['last_biblio_query']) && !empty ($_SESSION['last_biblio_query'])) {
     $query = $_SESSION['last_biblio_query'];
@@ -364,6 +364,7 @@ function biblio_export($format = "tagged", $nid = null, $popup = false, $version
   $result = db_query($query, $params);
   while ($node = db_fetch_object($result)) {
     $node->biblio_contributors = biblio_load_contributors($node->vid);
+    $node->biblio_keywords = biblio_load_keywords($node->vid);
     if ($vid = variable_get('biblio_keyword_vocabulary', 0)){
         $node->terms = taxonomy_node_get_terms_by_vocabulary($node, $vid);
     }  

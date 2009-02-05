@@ -154,7 +154,7 @@ function _ris_tagged_import($file, $terms = array(), $batch = FALSE, $session_id
               $node['biblio_secondary_title'] = $value;
               break;
             case 'KW' :
-              if ($vid = variable_get('biblio_keyword_vocabulary', 0)) {
+              if ($vid = variable_get('biblio_keyword_vocabulary', 0) && variable_get('biblio_keyword_freetagging', 1)) {
                 $node['taxonomy']['tags'][$vid] .= (empty($node['taxonomy']['tags'][$vid])) ? "\"$value\"" : ",\"$value\"";
               }
               $node['biblio_keywords'][] = $value;

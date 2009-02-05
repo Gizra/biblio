@@ -26,10 +26,15 @@
  * @return array of keywords
  */
 function biblio_get_keyword_by_name($name) {
-
-  $db_result = db_query("SELECT * FROM {biblio_keyword_data} k WHERE LOWER(k.word) = LOWER('%s')", trim($name));
-  return $term = db_fetch_object($db_result);
+  static $keywords = array();
   
+  if (!$kid = array_search($name, $keywords)) {
+    $term = db_fetch_object(db_query("SELECT * FROM {biblio_keyword_data} k WHERE LOWER(k.word) = LOWER('%s')", trim($name)));
+    $keywords[$term->kid] = $term;
+    return $term;
+  }
+  
+  return $keywords[$kid];
 }
 
 /**
@@ -78,11 +83,12 @@ function biblio_save_keywords($node, $update = FALSE) {
 
   foreach ($node->biblio_keywords as $keyword) {
     $word = (is_object($keyword)) ? $keyword->word : $keyword;
+    if (!strlen(trim($word))) continue; //skip if we have a blank
     $kid = NULL;
     // See if the term exists 
     if ($term = biblio_get_keyword_by_name($word)) $kid = $term->kid;
     if (!$kid) {
-      $term = array('word' => $word);
+      $term = array('word' => trim($word));
       $status = biblio_save_keyword($term);
       $kid = $term['kid'];
     }
@@ -116,7 +122,7 @@ function biblio_save_keyword(&$form_values) {
  * @return none
  */
 function biblio_delete_node_keywords($node) {
-  db_query('DELETE FROM {biblio_keywords} WHERE nid = %d', $node->nid);
+  db_query('DELETE FROM {biblio_keyword} WHERE nid = %d', $node->nid);
 }
 
 /**
@@ -125,4 +131,9 @@ function biblio_delete_node_keywords($node) {
  */
 function biblio_delete_revision_keywords($node) {
   db_query('DELETE FROM {biblio_keywords} WHERE vid = %d', $node->vid);
+}
+
+function biblio_delete_keyword($keyword_id) {
+  db_query('DELETE FROM {biblio_keyword} WHERE kid = %d', $keyword_id);
+  db_query('DELETE FROM {biblio_keyword_data} WHERE kid = %d', $keyword_id);
 }

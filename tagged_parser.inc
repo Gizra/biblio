@@ -107,7 +107,7 @@ function _endnote_tagged_import($file, $terms = array(), $batch = FALSE, $sessio
               $node['biblio_secondary_title'] = $value;
               break;
             case '%K' :
-              if ($vid = variable_get('biblio_keyword_vocabulary', 0)) {
+              if ($vid = variable_get('biblio_keyword_vocabulary', 0) && variable_get('biblio_keyword_freetagging', 1)) {
                 $node['taxonomy']['tags'][$vid] .= (empty($node['taxonomy']['tags'][$vid])) ? "\"$value\"" : ",\"$value\"";
               }
               $node['biblio_keywords'][] = $value;
