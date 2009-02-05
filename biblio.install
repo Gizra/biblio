@@ -291,11 +291,6 @@ function biblio_schema() {
         'default' => 0,
         'description' =>'',
   ),
-      'biblio_keywords' => array (
-        'type' => 'varchar',
-        'length' => '255',
-        'description' =>'',
-  ),
       'biblio_url' => array (
         'type' => 'varchar',
         'length' => '255',
@@ -1659,8 +1654,15 @@ function biblio_update_6014() {
   return $result;
 }
 function biblio_update_6015() {
+  require_once(drupal_get_path('module', 'biblio') .'/biblio.keywords.inc');
   $result = array();
   $result[] = update_sql("ALTER TABLE {biblio_keyword_data} MODIFY COLUMN kid INTEGER UNSIGNED NOT NULL AUTO_INCREMENT");
-  
+  $db_result = db_query('SELECT nid,vid,biblio_keywords FROM {biblio} where biblio_keywords != "" ');
+  while ($node = db_fetch_object($db_result)){
+    $count += biblio_save_keywords($node);
+  }
+  $result[] = array('success' => $count, 
+                    'query' => "Moved $count keywords to the new database stucture");
+  db_drop_field($result,'biblio', 'biblio_keywords');
   return $result;
 }

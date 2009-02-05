@@ -870,6 +870,13 @@ function biblio_form($node, $form_state) {
         else
           $form['other_fields'] += _biblio_contributor_widget($node, $fld, $auth_category, $tid,TRUE);
       } else {
+        if ($key == 'biblio_keywords') {
+          $sep = variable_get('biblio_keyword_sep', ',');
+          foreach ($node->$key as $keyword){
+            $keywords .= (empty($keywords)?$keyword->word:"$sep " . $keyword->word);
+          }
+          $node->$key = $keywords;        
+        }
         $field_widget = array(
             '#default_value' => $node->$key,
             '#type' => $fld['type'],

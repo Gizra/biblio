@@ -26,6 +26,7 @@
  * @return array of keywords
  */
 function biblio_get_keyword_by_name($name) {
+
   $db_result = db_query("SELECT * FROM {biblio_keyword_data} k WHERE LOWER(k.word) = LOWER('%s')", trim($name));
   return $term = db_fetch_object($db_result);
   
@@ -57,7 +58,7 @@ function biblio_load_keywords($vid) {
     $result = db_query('SELECT bkd.* FROM {biblio_keyword} bk INNER JOIN {biblio_keyword_data} bkd ON bk.kid = bkd.kid  WHERE bk.vid = %d', $vid);
     $keywords[$vid] = array();
     while ($keyword = db_fetch_object($result)) {
-      $keywords[$vid][$keyword->kid] = $keyword->word;
+      $keywords[$vid][$keyword->kid] = $keyword;
     }
   }
   return $keywords[$vid];
@@ -68,24 +69,30 @@ function biblio_load_keywords($vid) {
  * @param $node
  * @return 
  */
-function biblio_save_keywords($node) {
-  foreach ($node->biblio_keywords as $keyword) {
-    // See if the term exists 
-    if ($term = biblio_get_keyword_by_name($keyword)); 
+function biblio_save_keywords($node, $update = FALSE) {
+  if (!is_array($node->biblio_keywords)) {
+    $sep = variable_get('biblio_keyword_sep', ',');
+    $node->biblio_keywords = explode($sep,$node->biblio_keywords );
+  }
+  db_query('DELETE FROM {biblio_keyword} WHERE nid = %d AND vid = %d', array($node->nid, $node->vid));
 
-    if (!$term->kid) {
-      $term = array('word' => $keyword);
+  foreach ($node->biblio_keywords as $keyword) {
+    $word = (is_object($keyword)) ? $keyword->word : $keyword;
+    $kid = NULL;
+    // See if the term exists 
+    if ($term = biblio_get_keyword_by_name($word)) $kid = $term->kid;
+    if (!$kid) {
+      $term = array('word' => $word);
       $status = biblio_save_keyword($term);
       $kid = $term['kid'];
     }
-
     // Defend against duplicate, differently cased tags
-    if (!isset($inserted[$kid])) {
+    if (!isset($inserted[$kid])) {    
       db_query('INSERT INTO {biblio_keyword} (kid, nid, vid) VALUES (%d, %d, %d)', $kid, $node->nid, $node->vid);
       $inserted[$kid] = TRUE;
     }
   }
-
+  return count($inserted);
 }
 
 /**

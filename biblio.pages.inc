@@ -946,9 +946,9 @@ function _biblio_keyword_links($keywords,$base='biblio') {
   $sep = variable_get('biblio_keyword_sep', ',');
   $keyword_array = explode($sep, $keywords);
 
-  foreach($keywords as $kid => $word) {
+  foreach($keywords as $keyword ) {
     $html .= (empty($html))? "" : "$sep ";
-    $html .= l(trim($word), "$base/keyword/$kid" , $options);
+    $html .= l(trim($keyword->word), "$base/keyword/$keyword->kid" , $options);
   }
   return $html;
 }
