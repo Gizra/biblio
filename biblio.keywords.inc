@@ -94,6 +94,7 @@ function biblio_save_keywords($node, $update = FALSE) {
     }
     // Defend against duplicate, differently cased tags
     if (!isset($inserted[$kid])) {    
+      if ($update) db_query('DELETE FROM {biblio_keyword} WHERE nid = %d AND vid = %d AND kid = %d', array($node->nid, $node->vid, $kid));
       db_query('INSERT INTO {biblio_keyword} (kid, nid, vid) VALUES (%d, %d, %d)', $kid, $node->nid, $node->vid);
       $inserted[$kid] = TRUE;
     }
