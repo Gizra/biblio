@@ -182,6 +182,18 @@ function biblio_autocomplete($field, $string = '') {
     while ($data = db_fetch_object($result)) {
       $matches[$data->name] = check_plain($data->name);
     }
+  }elseif ($field == 'biblio_keywords') {
+    $sep = variable_get('biblio_keyword_sep', ',');
+    $sep_pos = strrpos($string, $sep); //find the last separator
+    $start   = trim(drupal_substr($string, 0, $sep_pos)); // first part of the string upto the last separator
+    $end_sep = ($sep_pos) ? $sep_pos + 1 :$sep_pos;
+    $end     = trim(drupal_substr($string, $end_sep));  // part of the string after the last separator
+    $result = db_query_range("SELECT * FROM {biblio_keyword_data} WHERE LOWER(word) LIKE LOWER('%s%%') ORDER BY word ASC ", array($end), 0, 10);
+    while ($data = db_fetch_object($result)) {
+      // now glue the word found onto the end of the original string...
+      $keywords = ($sep_pos) ? $start . ', ' . check_plain($data->word) : check_plain($data->word);
+      $matches[$keywords] = $keywords;
+    }
   }else{
     $result = db_query_range("SELECT %s FROM {biblio} WHERE LOWER(%s) LIKE LOWER('%s%%') ORDER BY %s ASC", array($field, $field, $string, $field) , 0, 10);
     while ($data = db_fetch_object($result)) {
@@ -895,12 +907,15 @@ function biblio_form($node, $form_state) {
         else
           $form['other_fields'] += _biblio_contributor_widget($node, $fld, $auth_category, $tid,TRUE);
       } else {
-        if ($key == 'biblio_keywords') {
+        if ($key == 'biblio_keywords' ) {
           $sep = variable_get('biblio_keyword_sep', ',');
-          foreach ($node->$key as $keyword){
-            $keywords .= (empty($keywords)?$keyword->word:"$sep " . $keyword->word);
+          if (!empty($node->$key)) {
+            foreach ($node->$key as $keyword){
+              $keywords .= (empty($keywords)?$keyword->word:"$sep " . $keyword->word);
+            }
+            $node->$key = $keywords;
           }
-          $node->$key = $keywords;        
+          $fld['hint'] = t('Separate keywords using the " @sep " character',array('@sep' => $sep));
         }
         $field_widget = array(
             '#default_value' => $node->$key,
