@@ -73,8 +73,8 @@ function biblio_import_form() {
       '#options' => array (
         'tagged' => t('EndNote Tagged'),
         'ris'    => t('RIS'),
-        'xml'    => t('EndNote 7 XML'),
-        'xml8'   => t('EndNote 8+ XML'),
+        'xml'    => t('EndNote 7 XML (and previous versions)'),
+        'xml8'   => t('EndNote 8 XML (and versions upto X2)'),
         'bib'    => t('BibTex')
       )
     );
