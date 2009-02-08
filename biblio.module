@@ -1188,7 +1188,7 @@ function _biblio_text_year ($year) {
  * @param $node
  * @return none
  */
-function _biblio_prepare_submit($node) {
+function _biblio_prepare_submit(&$node) {
   require_once(drupal_get_path('module', 'biblio') .'/biblio.contributors.inc');
   $node->biblio_contributors = biblio_parse_contributors($node->biblio_contributors);
   
