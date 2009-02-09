@@ -724,7 +724,8 @@ function _get_biblio_filters() {
   $taxo_joins = implode(' ',$taxo_join);
 
   $result = db_query("SELECT $fields FROM $table $join ORDER BY $order");
-  $authors = db_query("SELECT firstname, lastname, cid FROM {biblio_contributor_data} ORDER BY lastname ASC");
+  $authors = db_query("SELECT firstname, initials, lastname, cid FROM {biblio_contributor_data} ORDER BY lastname ASC");
+  $keywords = db_query("SELECT word, kid FROM {biblio_keyword_data} ORDER BY word ASC");
   $taxoresult = db_query("SELECT $taxo_fields FROM $table $taxo_joins ORDER BY $taxo_order");
 
   while ($option = db_fetch_object($result)) {
@@ -736,7 +737,10 @@ function _get_biblio_filters() {
 
   }
   while($auth = db_fetch_object($authors)) {
-    $pub_authors[$auth->cid] = $auth->lastname .', '. $auth->firstname;
+    $pub_authors[$auth->cid] = $auth->lastname .((!empty($auth->firstname) || !empty($auth->initials))?', '.$auth->firstname.' '.$auth->initials :'');
+  }
+  while($keyword = db_fetch_object($keywords)) {
+    $pub_keywords[$keyword->kid] = $keyword->word;
   }
   while ($tax = db_fetch_object($taxoresult)) {
     $pub_taxo["$tax->taxid"] = "$tax->vocab_name - $tax->termname";
@@ -745,12 +749,14 @@ function _get_biblio_filters() {
   $years_select  = isset($pub_years) ? array('title' => t('Year'), 'options' => array_unique($pub_years)) : null;
   $type_select   = isset($pub_type)  ? array('title' => t('Type'), 'options' => array_unique($pub_type))  : null;
   $tax_select    = isset($pub_taxo)  ? array('title' => t('Term'),'options' => array_unique($pub_taxo))  : null;
-
+  $keyword_select = isset($pub_keywords) ? array('title' => t('Keyword'), 'options' => $pub_keywords) : null;
+  
   $filters = array(
     'author'     => $author_select,
     'type'    => $type_select,
     'term_id' => $tax_select,
-    'year'    => $years_select
+    'year'    => $years_select,
+    'keyword'     => $keyword_select,
   );
 
   return $filters;
@@ -781,8 +787,6 @@ function biblio_form_filter() {
       // Load term name from DB rather than search and parse options array.
       $value = module_invoke('taxonomy', 'get_term', $value);
       $value = $value->name;
-    }else if ($type == 'keyword') {
-      $filters[$type]['title'] = 'Keyword';
     }else {
       $value = $filters[$type]['options'][$value];
     }
@@ -796,8 +800,6 @@ function biblio_form_filter() {
       $form['filters']['status'][$key] = array('#type' => 'select', '#options' => $filter['options']);
     }
   }
-  $form['filters']['status']['keyword']=array('#type' => 'textfield','#size' => 25, '#maxlength' => 255);
-  $names['keyword'] = "Keyword";
 
   $form['filters']['filter'] = array('#type' => 'radios', '#options' => $names, '#default_value' => 'author');
   $form['filters']['buttons']['submit'] = array('#type' => 'submit', '#value' => (count($session) ? t('Refine') : t('Filter')));
@@ -832,7 +834,7 @@ function biblio_form_filter_submit($form, &$form_state) {
           $flat_options = form_options_flatten($filters[$filter]['options']);
         }
 
-        if (isset($flat_options[$form_state['values'][$filter]]) || $filter == 'keyword') {
+        if (isset($flat_options[$form_state['values'][$filter]]) ) {
           $_SESSION['biblio_filter'][] = array($filter, $form_state['values'][$filter]);
           $base =  variable_get('biblio_base', 'biblio');
           drupal_goto($base);
@@ -960,6 +962,10 @@ function _biblio_keyword_links($keywords,$base='biblio') {
 }
 
 function biblio_author_page($filter = NULL) {
+    $base = variable_get('biblio_base', 'biblio');  
+    $menu = menu_get_active_title();
+    if ($menu == 'Authors') $path = $base.'/authors/';
+    if ($menu == 'Biblio settings') $path = 'admin/settings/biblio/author/list/'; 
     if ($filter) {
       $filter = strtoupper($filter);
       $query_ext =  ' AND UPPER(SUBSTRING(lastname,1,1)) = "%s" ';
@@ -974,29 +980,30 @@ function biblio_author_page($filter = NULL) {
     while ($author = db_fetch_array($db_result)){
       $authors[] = $author;
     }
-    $rows[] = array(array('data' => theme(biblio_alpha_line, 'authors', $filter), 'colspan' => 3));
+    $rows[] = array(array('data' => theme(biblio_alpha_line, 'authors', $filter, $path), 'colspan' => 3));
     for ($i=0; $i < count($authors); $i+=3) {
-      $rows[] = array( array('data' => _biblio_format_author($authors[$i]) ), 
-                       array('data' => isset($authors[$i+1])?_biblio_format_author($authors[$i+1]):'' ),
-                       array('data' => isset($authors[$i+2])?_biblio_format_author($authors[$i+2]):'' ));
+      $rows[] = array( array('data' => _biblio_format_author($authors[$i], $path) ), 
+                       array('data' => isset($authors[$i+1])?_biblio_format_author($authors[$i+1], $path):'' ),
+                       array('data' => isset($authors[$i+2])?_biblio_format_author($authors[$i+2], $path):'' ));
     }    
   $header = array(array('data' => t('There are a total of @count authors !header_ext in the database',array('@count' => count($authors), '!header_ext' => $header_ext)), 'align' =>'center', 'colspan' => 3));
   $output .= theme('table', $header, $rows);
   return $output;
 }
 
-function _biblio_format_author($author) {
-  $format = $author['prefix'] . ' ' . $author['lastname'] . ', ';
-  $format .= !empty ($author['firstname']) ? ' ' . drupal_substr($author['firstname'], 0, 1) : '';
-  $format .= !empty ($author['initials']) ? str_replace(' ', '', $author['initials']) : '';
+function _biblio_format_author($author, $path) {
+  $format = $author['prefix'] . ' ' . $author['lastname'] ;
+  $firstname = !empty ($author['firstname']) ?  drupal_substr($author['firstname'], 0, 1) : '';
+  $initials = !empty ($author['initials']) ? str_replace(' ', '', $author['initials']) : '';
   $base = variable_get('biblio_base', 'biblio');
+  $format .= (!empty($firstname) || !empty($initials)) ? ', '.$firstname.' '.$initials : '';
   $format = _biblio_author_link($format, $author['cid'], $base, $inline);
-  $format .= ' ('. $author['cnt'] . ') '. ((user_access('administer biblio'))?_biblio_author_edit_links($author):'');
+  $format .= ' ('. $author['cnt'] . ') '. ((user_access('administer biblio'))?_biblio_author_edit_links($author, $path):'');
   return $format;
 }
-function _biblio_author_edit_links($author) {
+function _biblio_author_edit_links($author, $path) {
     $base = variable_get('biblio_base', 'biblio');
-    return l(' ['.t('edit').']', "$base/author/" . $author['cid'] ."/edit/" );
+    return l(' ['.t('edit').']', "$path" . $author['cid'] ."/edit/" );
 }
 
 function biblio_keyword_page($filter = NULL) {

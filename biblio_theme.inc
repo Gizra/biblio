@@ -403,7 +403,7 @@ function theme_biblio_admin_types_edit_form($form) {
 
   $base = variable_get('biblio_base', 'biblio');
   $tid = (!empty ($form['#parameters'][2])) ? $form['#parameters'][2] : FALSE;
-  drupal_set_title($form['type_name'] ? $form['type_name']['#value'] : "Default");
+//  drupal_set_title($form['type_name'] ? $form['type_name']['#value'] : t('Common'));
 
   // build the table with all the fields if no $tid is given, or only the common
   // and customized fields if $tid is given
@@ -439,6 +439,7 @@ function theme_biblio_admin_types_edit_form($form) {
     $header = array(t('Field Name'), t('Default Title'), t('Hint'), '', t('Common'), t('Required'), t('Autocomplete'), t('Weight'));
   }
   $output .= '<p>';
+  $output .= '<h2>'. drupal_render($form['top_message']) .'</h2>';
   $output .= drupal_render($form['help']);
   $output .= theme('table', $header, $conf_table, array('id' => 'field-table'));
   $output .= '<p><center>'. drupal_render($form['submit']) .'</center></p>';
@@ -570,28 +571,28 @@ function theme_biblio_contributors($form) {
  * @param $type either "author or title"
  * @return a chunk of HTML code as described above
  */
-function theme_biblio_alpha_line($type = 'author',$current = NULL) {
+function theme_biblio_alpha_line($type = 'author',$current = NULL, $path = NULL) {
   $options = array();
   $base = variable_get('biblio_base', 'biblio');
   $all = '';
   switch ($type){
     case 'authors':
-      $group = 'authors/';
-      $all = '['.l(t('Show ALL'), "$base/authors").']' ;
+      //$group = 'authors/';
+      $all = '['.l(t('Show ALL'), $path).']' ;
       break;
     case 'keywords':
-      $group = 'keywords/';
-      $all = '['.l(t('Show ALL'), "$base/keywords").']' ;
+      $path = "$base/keywords/";
+      $all = '['.l(t('Show ALL'), $path).']' ;
       break;
       case 'author':
         $options['query'] .= 'sort=author';
-        $group = 'ag/';
+        $path = "$base/ag/";
         $all_query['query'] = 'sort=author'. ($_GET['order']?'&order='.$_GET['order']:''); 
         $all = '['.l(t('Show ALL'), $base,$all_query).']' ;
         break;
     case 'title':
         $options['query'] .= 'sort=title';
-        $group = 'tg/';
+        $path = "$base/tg/";
       break;      
     default:
       if (!isset ($_GET['sort']) || $_GET['sort'] == 'year' || $_GET['sort'] == 'type')
@@ -600,9 +601,9 @@ function theme_biblio_alpha_line($type = 'author',$current = NULL) {
       if (isset ($_GET['sort'])) {
         $options['query'] .= "sort=". $_GET['sort'];
         if ($_GET['sort'] == 'author')
-        $group = 'ag/';
+        $path = "$base/ag/";
         if ($_GET['sort'] == 'title')
-        $group = 'tg/';
+        $path = "$base/tg/";
       }
       
   }
@@ -616,7 +617,7 @@ function theme_biblio_alpha_line($type = 'author',$current = NULL) {
       $output .= '<b>['.chr($i).']</b>&nbsp;';
     }
     else{
-      $output .= l(chr($i), "$base/$group". chr($i), $options) .'&nbsp;';
+      $output .= l(chr($i), $path. chr($i), $options) .'&nbsp;';
     }
   }
   if($current) $output .= '&nbsp;&nbsp;'.$all;
