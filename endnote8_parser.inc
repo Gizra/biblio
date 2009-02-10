@@ -69,6 +69,9 @@ function en8_endElement($parser, $name) {
     case 'image-urls' :
       $urls = '';
       break;
+    case 'ref-type':
+       $node['biblio_type'] = en8_type_map($node['biblio_type']);
+       break;
     case 'style' :
       break;
     default :
@@ -85,7 +88,7 @@ function en8_characterData($parser, $data) {
       case 'rec-number' :
         break;
       case 'ref-type' :
-        $node['biblio_type'] = en8_type_map((int)$data);
+        $node['biblio_type'] .= $data;
         break;
 
         //Author information

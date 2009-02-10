@@ -557,7 +557,7 @@ function biblio_bibtex_export($results) {
     }
     if (!empty($pub->biblio_keywords)) {
       foreach($pub->biblio_keywords as $term){
-        $kw_array[] = $term;
+        $kw_array[] = $term->word;
       }
     }
     if (!empty($kw_array)){
@@ -843,7 +843,7 @@ function biblio_endnote_tagged_export($results) {
     }
     if (!empty($pub->biblio_keywords)) {
       foreach($pub->biblio_keywords as $term){
-        $kw_array[] = $term;
+        $kw_array[] = $term->word;
       }
     }   
     if (!empty($kw_array)){

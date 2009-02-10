@@ -20,19 +20,19 @@
  */
 function _ris_tagged_import($file, $terms = array(), $batch = FALSE, $session_id = NULL) {
   if (!($fp = fopen($file->filepath, "r"))) {
-    drupal_set_message("could not open RIS input file",'error');
+    drupal_set_message("could not open RIS input file", 'error');
     return;
   }
-  $incite = false;
+  $incite = FALSE;
   $nids = array();
-  $contributors = null;
+  $contributors = NULL;
   $node=array();
   while (!feof($fp)) {
     $line = fgets($fp);
     $line_len = strlen($line);
      if ($line_len > 3) {
        $start = strpos($line, '  - '); // There could be some unprintables at the beginning of the line so fine the location of the %
-       if ($start !== false) {
+       if ($start !== FALSE) {
         $tag = drupal_substr($line, $start -2, 2);
         $value = trim(drupal_substr($line, $start +4));
      }
@@ -45,15 +45,15 @@ function _ris_tagged_import($file, $terms = array(), $batch = FALSE, $session_id
         case 'ER' :         
           if (!empty($node)) {
             if (empty ($node['title'])) $node['title'] = t("Untitled");
-            if (!empty($terms)) $node['taxonomy'] = array_merge($terms,$node['taxonomy']);
+            if (!empty($terms)) $node['taxonomy'] = array_merge($terms, $node['taxonomy']);
             $nids[] = biblio_save_node($node, $batch, $session_id);
           }
           $node = array();
-          $incite = false;
+          $incite = FALSE;
           break;
         case 'TY' :
           $node['biblio_contributors'] = array();
-          $incite = true;
+          $incite = TRUE;
           switch ($value) {
             case "ART" : // art work
               $node['biblio_type'] = 112;
@@ -217,8 +217,8 @@ function _ris_tagged_import($file, $terms = array(), $batch = FALSE, $session_id
       } //end switch
     }
     else {
-      //$incite=false;
-    } // end if ($start !== false)
+      //$incite=FALSE;
+    } // end if ($start !== FALSE)
   } // end while
   fclose($fp);
   return (!empty($nids)) ? $nids : array();

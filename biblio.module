@@ -21,11 +21,11 @@
  *
  */
 
-function _biblio_get_auth_types($auth_category, $biblio_type){
+function _biblio_get_auth_types($auth_category, $biblio_type) {
   static $auth_types = array();
-  if (empty($auth_types)){
+  if (empty($auth_types)) {
     $db_res = db_query("SELECT * FROM {biblio_contributor_type");
-    while ($row = db_fetch_object($db_res)){
+    while ($row = db_fetch_object($db_res)) {
       $auth_types[$row->auth_category][$row->biblio_type][] = $row->auth_type;
     }
   }
@@ -34,12 +34,12 @@ function _biblio_get_auth_types($auth_category, $biblio_type){
   if (empty($result)) $result = $auth_types[$auth_category][0];
   return $result; 
 }
-function _biblio_get_auth_type($auth_category, $biblio_type){
+function _biblio_get_auth_type($auth_category, $biblio_type) {
   $result = (array)_biblio_get_auth_types($auth_category, $biblio_type);
   // return first element of the array
-  return empty($result) ? null : current($result);
+  return empty($result) ? NULL : current($result);
 }
-function _biblio_get_field_information($biblio_type){
+function _biblio_get_field_information($biblio_type) {
   $result = db_query("SELECT b.*, btd.*, btt.name AS type_name
                       FROM {biblio_fields} AS b
                       INNER JOIN {biblio_field_type} AS bt ON bt.fid = b.fid
@@ -201,7 +201,7 @@ function biblio_autocomplete($field, $string = '') {
     }
   }
   print drupal_to_js($matches);
-  exit ();
+  exit();
 }
 function biblio_help_page() {
   $base = variable_get('biblio_base', 'biblio');
@@ -290,27 +290,27 @@ function biblio_access($op, $node = '') {
   // necessary permissions.
   if ($op == 'update' || $op == 'delete') {
     if (user_access('edit own biblio entries') && ($user->uid == $node->uid)) {
-      return true;
+      return TRUE;
     }
     else
     if (user_access('edit all biblio entries')) {
-      return true;
+      return TRUE;
     }
     else {
-      return false;
+      return FALSE;
     }
   }
   if ($op == 'view') {
     if (variable_get('biblio_view_only_own', 0)) {
       if ($user->uid == $node->uid) {
-        return true;
+        return TRUE;
       }
       else {
-        return false;
+        return FALSE;
       }
     }
     else {
-      return true;
+      return TRUE;
     }
   }
 }
@@ -362,7 +362,7 @@ function biblio_link($type, $node = NULL, $teaser = FALSE) {
  * @param $node
  * @return none
  */
-//function biblio_link_alter(&$links, $node){
+//function biblio_link_alter(&$links, $node) {
 //  foreach ($links AS $module => $link) {
 //    if (strstr($module, 'taxonomy_term')) {
 //      // Link back to the forum and not the taxonomy term page
@@ -374,7 +374,7 @@ function biblio_link($type, $node = NULL, $teaser = FALSE) {
  * Implementation of hook_user().
  */
 function biblio_user($type, & $edit, & $user, $category = NULL) {
-  if ($type == 'form' && $category == 'account' ){ //&& variable_get('biblio_show_user_profile_form', '1')) {
+  if ($type == 'form' && $category == 'account' ) { //&& variable_get('biblio_show_user_profile_form', '1')) {
     $form = array();
     include_once drupal_get_path('module', 'biblio') .'/biblio.admin.inc';
     _biblio_get_user_profile_form($form, $user);
@@ -398,7 +398,7 @@ function biblio_user($type, & $edit, & $user, $category = NULL) {
     //  return array(array('name' => 'account', 'title' => t('Account settings'), 'weight' => 1));
   }
 }
-function biblio_forms(){
+function biblio_forms() {
   $forms['biblio_admin_author_types_form_new'] = array(
     'callback' => 'biblio_admin_author_types_form',
   );
@@ -473,7 +473,7 @@ function biblio_menu() {
   //   'type' => MENU_CALLBACK
     'weight' => 10,
   );
-  $items[$base.'/user/%biblio_user'] = array(
+  $items["$base/user/%biblio_user"] = array(
       'title' => t('My publications'),
       'page callback' => 'biblio_get_user_pubs',
       'page arguments' => array(2),
@@ -501,7 +501,7 @@ function biblio_menu() {
   $items["$base/authors/%/edit"] = array(
     'title' => t('Edit author information'),
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('biblio_admin_author_edit_form',2),
+    'page arguments' => array('biblio_admin_author_edit_form', 2),
     'access callback' => 'user_access',
     'access arguments' => array('administer biblio'),
     'file' => 'biblio.admin.inc',
@@ -509,7 +509,7 @@ function biblio_menu() {
   $items["$base/keyword/%/edit"] = array(
     'title' => '',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('biblio_admin_keyword_edit_form',2),
+    'page arguments' => array('biblio_admin_keyword_edit_form', 2),
     'access callback' => 'user_access',
     'access arguments' => array('administer biblio'),
     'file' => 'biblio.admin.inc',
@@ -686,7 +686,7 @@ function biblio_menu() {
     $items['admin/settings/biblio/author/type'] = array(
     'title' => t('Author Types'),
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('biblio_admin_author_types_form',6,5),
+    'page arguments' => array('biblio_admin_author_types_form', 6, 5),
 		'access arguments' => array('administer biblio'),
     'file' => 'biblio.admin.inc',
     'type' => MENU_LOCAL_TASK,
@@ -696,7 +696,7 @@ function biblio_menu() {
   $items['admin/settings/biblio/author/type/new'] = array(
     'title' => t('Add New Author Type'),
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('biblio_admin_author_types_form_new','new'),
+    'page arguments' => array('biblio_admin_author_types_form_new', 'new'),
     'access arguments' => array('administer biblio'),
     'file' => 'biblio.admin.inc',
     'type' => MENU_LOCAL_TASK,
@@ -705,7 +705,7 @@ function biblio_menu() {
   $items['admin/settings/biblio/author/type/%/edit'] = array(
     'title' => t('Add New Author Type'),
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('biblio_admin_author_types_form_edit','edit',6),
+    'page arguments' => array('biblio_admin_author_types_form_edit', 'edit', 6),
     'access arguments' => array('administer biblio'),
     'file' => 'biblio.admin.inc',
     'type' => MENU_LOCAL_TASK,
@@ -837,13 +837,13 @@ function biblio_nodeapi(& $node, $op, $teaser, $page) {
          break;
          */
       case 'insert':
-        if (variable_get('biblio_index',0)) {
+        if (variable_get('biblio_index', 0)) {
           _node_index_node($node);
           search_update_totals();
         }
         break;
       case 'update':
-        if (variable_get('biblio_index',0)) {
+        if (variable_get('biblio_index', 0)) {
           // _node_index_node performs a node_load without resetting the node_load cache,
           // so it would index the old version. We reset the cache here.
           // Don't assign node_load to $node because node_load resets e.g. the menus mlid etc.
@@ -867,11 +867,12 @@ function biblio_form_alter(& $form, $form_state, $form_id) {
         if ($form[$form_element]['#type'] == 'fieldset' ||
             $form_element == 'buttons' ||
             $form_element == 'taxonomy') {
-          $form[$form_element] = null;
+          $form[$form_element] = NULL;
         }
       }
     
-    } else {
+    } 
+    else {
       if (isset($form['menu']['#weight']) && $form['menu']['#weight'] < 20) $form['menu']['#weight'] = 20;
       if (isset($form['book']['#weight']) && $form['book']['#weight'] < 20) $form['book']['#weight'] = 20;
       if (isset($form['taxonomy']['#title'])) {
@@ -910,13 +911,13 @@ function biblio_form($node, $form_state) {
     '#title' => t('Publication Type'),
     '#default_value' => $tid,
     '#options' => $options,
-    '#description' => null,
+    '#description' => NULL,
     '#weight' => -15,
     '#attributes' => array(
       'onchange' => 'document.getElementById(\'node-form\').submit()'
       ),
-    '#multiple' => false,
-    '#required' => true
+    '#multiple' => FALSE,
+    '#required' => TRUE
       );
   if ($show_fields) {
     $form['title'] = array(
@@ -952,17 +953,18 @@ function biblio_form($node, $form_state) {
         if ($main_area)
           $form += _biblio_contributor_widget($node, $fld, $auth_category, $tid);
         else
-          $form['other_fields'] += _biblio_contributor_widget($node, $fld, $auth_category, $tid,TRUE);
-      } else {
+          $form['other_fields'] += _biblio_contributor_widget($node, $fld, $auth_category, $tid, TRUE);
+      } 
+      else {
         if ($key == 'biblio_keywords' ) {
           $sep = variable_get('biblio_keyword_sep', ',');
           if (!empty($node->$key)) {
-            foreach ($node->$key as $keyword){
+            foreach ($node->$key as $keyword) {
               $keywords .= (empty($keywords)?$keyword->word:"$sep " . $keyword->word);
             }
             $node->$key = $keywords;
           }
-          $fld['hint'] = t('Separate keywords using the " @sep " character',array('@sep' => $sep));
+          $fld['hint'] = t('Separate keywords using the " @sep " character', array('@sep' => $sep));
         }
         $field_widget = array(
             '#default_value' => $node->$key,
@@ -993,7 +995,8 @@ function biblio_form($node, $form_state) {
         if ($main_area) {
           $form[$key] = $field_widget;
           $max_visible_weight = max($max_visible_weight, $field_widget['#weight']);
-        } else {
+        } 
+        else {
           $form['other_fields'][$key] = $field_widget;
         }
       }
@@ -1042,14 +1045,14 @@ function _biblio_contributor_widget($node, $fld, $auth_category, $biblio_type, $
   // if no author types are available skip this widget
   if (!isset($ctypes)) return array();
   $ctypes = db_query('SELECT * FROM {biblio_contributor_type_data}
-                      WHERE auth_type IN ('.implode(',',$ctypes).')');
+                      WHERE auth_type IN ('. implode(',', $ctypes) .')');
   while ($ctype = db_fetch_object($ctypes)) {
     $options[$ctype->auth_type] = $ctype->title;
   }
 
   // Add a wrapper for the choices and more button.
   $wrapper = array(
-    '#tree' => true,
+    '#tree' => TRUE,
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
     '#collapsed' => !$fld['required'] && (count($contributors)==0),
@@ -1072,7 +1075,8 @@ function _biblio_contributor_widget($node, $fld, $auth_category, $biblio_type, $
   for ($delta = 0; $delta < $contributor_count; $delta++) {
     if (isset($contributors[$delta])) { // contributor already exists
       $values = $contributors[$delta];
-    } else { // contributor is new
+    } 
+    else { // contributor is new
       $values = $default_values;
     }
     $values['rank'] = $delta;
@@ -1081,7 +1085,7 @@ function _biblio_contributor_widget($node, $fld, $auth_category, $biblio_type, $
   }
   // We name our button 'contrib_more' to avoid conflicts with other modules using
   // AHAH-enabled buttons with the id 'more'.
-  $path = 'biblio/js/'.$biblio_type.'/'.$auth_category;
+  $path = 'biblio/js/'. $biblio_type .'/'. $auth_category;
   if ($other_fieldset) $path .= '/1';
   $wrapper[$fldname .'_more'] = array(
     '#type' => 'submit',
@@ -1097,11 +1101,11 @@ function _biblio_contributor_widget($node, $fld, $auth_category, $biblio_type, $
       )
     );
 
-  $form['contributors'.$auth_category.'_wrapper'] = $wrapper;  
+  $form['contributors'. $auth_category .'_wrapper'] = $wrapper;  
   return $form;
 }
 
-function _biblio_contributor_form($delta, $auth_category, $values, $types = null, $autocomplete = TRUE) {
+function _biblio_contributor_form($delta, $auth_category, $values, $types = NULL, $autocomplete = TRUE) {
   $form = array(
     '#tree' => TRUE
   );
@@ -1123,7 +1127,8 @@ function _biblio_contributor_form($delta, $auth_category, $values, $types = null
       '#multiple' => FALSE,
       '#parents' => array('biblio_contributors', $auth_category, $delta, 'auth_type')
       );
-  } else {
+  } 
+  else {
     $form['auth_type'] = array(
       '#type' => 'hidden',
       '#value' => $values['auth_type'],
@@ -1148,7 +1153,7 @@ function biblio_contributors_js($tid, $auth_category, $other_fields = FALSE) {
   // Build our new form element.
   $ctypes = _biblio_get_auth_types($auth_category, $tid);
   $ctypes = db_query('SELECT * FROM {biblio_contributor_type_data}
-                      WHERE auth_type IN ('.implode(',',$ctypes).')');
+                      WHERE auth_type IN ('. implode(',', $ctypes) .')');
   while ($ctype = db_fetch_object($ctypes)) {
     $options[$ctype->auth_type] = $ctype->title;
   }
@@ -1163,10 +1168,11 @@ function biblio_contributors_js($tid, $auth_category, $other_fields = FALSE) {
   // form, Drupal is not aware of this new elements existence and will not
   // process it. We retreive the cached form, add the element, and resave.
   $form = form_get_cache($form_build_id, $form_state);
-  if ($other_fields){
-    $form['other_fields']['contributors'.$auth_category.'_wrapper']['biblio_contributors'][$auth_category][$delta] = $form_element;
-  }else{
-    $form['contributors'.$auth_category.'_wrapper']['biblio_contributors'][$auth_category][$delta] = $form_element;
+  if ($other_fields) {
+    $form['other_fields']['contributors'. $auth_category .'_wrapper']['biblio_contributors'][$auth_category][$delta] = $form_element;
+  }
+  else{
+    $form['contributors'. $auth_category .'_wrapper']['biblio_contributors'][$auth_category][$delta] = $form_element;
   }
   form_set_cache($form_build_id, $form, $form_state);
   $form += array(
@@ -1176,18 +1182,17 @@ function biblio_contributors_js($tid, $auth_category, $other_fields = FALSE) {
   // Rebuild the form.
   $form = form_builder('biblio_node_form', $form, $form_state);
   // Render the new output.
-  if ($other_fields){
-    $contributor_form = $form['other_fields']['contributors'.$auth_category.'_wrapper']['biblio_contributors'][$auth_category];
-  } else {
-    $contributor_form = $form['contributors'.$auth_category.'_wrapper']['biblio_contributors'][$auth_category];
+  if ($other_fields) {
+    $contributor_form = $form['other_fields']['contributors'. $auth_category .'_wrapper']['biblio_contributors'][$auth_category];
+  } 
+  else {
+    $contributor_form = $form['contributors'. $auth_category .'_wrapper']['biblio_contributors'][$auth_category];
   }
-  unset ($contributor_form['#prefix'], $contributor_form['#suffix']); // Prevent duplicate wrappers.
+  unset($contributor_form['#prefix'], $contributor_form['#suffix']); // Prevent duplicate wrappers.
   $contributor_form[$delta]['#attributes']['class'] = empty($contributor_form[$delta]['#attributes']['class']) ? 'ahah-new-content' : $contributor_form[$delta]['#attributes']['class'] .' ahah-new-content';
   $output = theme('status_messages') . drupal_render($contributor_form);
-  print drupal_json(array(
-    'status' => TRUE,
-    'data' => $output
-  ));
+
+  print drupal_json(array('status' => TRUE, 'data' => $output));
   exit();
 }
 
@@ -1202,11 +1207,11 @@ function biblio_contributors_js($tid, $auth_category, $other_fields = FALSE) {
 function biblio_form_validate($form, & $form_state) {
   if ($form_state['storage'] == $form_state['values']['biblio_type'] || (!empty($form['#node']->biblio_type) && $form['#node']->biblio_type == $form_state['values']['biblio_type'])) {
     $form_state['storage'] = "";
-    $form_state['rebuild'] = false;
+    $form_state['rebuild'] = FALSE;
   }
   else {
     $form_state['storage'] = $form_state['values']['biblio_type'];
-    $form_state['rebuild'] = true;
+    $form_state['rebuild'] = TRUE;
     return;
   }
   $today = getdate();
@@ -1216,7 +1221,7 @@ function biblio_form_validate($form, & $form_state) {
     )));
   }
 }
-function _biblio_numeric_year ($year) {
+function _biblio_numeric_year($year) {
   if (!is_numeric($year)) {
     if (drupal_strtoupper($year) == drupal_strtoupper(t("In Press")))  return 9998;
     if (drupal_strtoupper($year) == drupal_strtoupper(t("Submitted"))) return 9999;
@@ -1225,7 +1230,7 @@ function _biblio_numeric_year ($year) {
     return $year;
   }
 }
-function _biblio_text_year ($year) {
+function _biblio_text_year($year) {
   if ($year == 9998) return t("In Press");
   if ($year == 9999) return t("Submitted");
   return $year;
@@ -1239,7 +1244,7 @@ function _biblio_prepare_submit(&$node) {
   require_once(drupal_get_path('module', 'biblio') .'/biblio.contributors.inc');
   $node->biblio_contributors = biblio_parse_contributors($node->biblio_contributors);
   
-  $node->biblio_year = _biblio_numeric_year ($node->biblio_year);
+  $node->biblio_year = _biblio_numeric_year($node->biblio_year);
   
   $node->biblio_coins = biblio_coins($node);
   if (variable_get('biblio_auto_citekey', 1) && empty($node->biblio_citekey)) {
@@ -1247,10 +1252,7 @@ function _biblio_prepare_submit(&$node) {
   }
   $duplicate = biblio_hash($node);
   if (isset ($duplicate) && $duplicate != $node->nid) { // if this is a potential duplcate, write the nids of the pre-existing and new nodes
-    $dup_map = array (
-            'vid' => $duplicate,
-            'did' => $node->nid
-    );
+    $dup_map = array('vid' => $duplicate, 'did' => $node->nid);
     drupal_write_record('biblio_duplicates', $dup_map);
   }
 }
@@ -1326,12 +1328,13 @@ function biblio_citekey_generate($node) {
     $secondary_field = variable_get('biblio_citekey_field2', 'nid');
     $citekey = (!empty($node-> $primary_field)) ? $node-> $primary_field : (!empty($node-> $secondary_field)) ? $node-> $secondary_field : $node->nid;
     return $prefix . $citekey;
-  } else {
-      ob_start();
-      $return = eval($php);
-      ob_end_clean();
-      if (!is_string($return)) $return = '';
-      return check_plain($return);
+  }
+  else {
+    ob_start();
+    $return = eval($php);
+    ob_end_clean();
+    if (!is_string($return)) $return = '';
+    return check_plain($return);
   }
 }
 
@@ -1339,7 +1342,7 @@ function biblio_citekey_generate($node) {
  * Implementation of hook_view().
  *
  */
-function biblio_view(& $node, $teaser = false, $page = false) {
+function biblio_view(& $node, $teaser = FALSE, $page = FALSE) {
   if (strlen(trim($node->body))) $node = node_prepare($node, $teaser);
   $style = variable_get('biblio_style', 'classic');
   $base  = variable_get('biblio_base', 'biblio');
@@ -1512,8 +1515,8 @@ function _parse_author_array($authorArray) {
  $result = db_query('SELECT name,title FROM {biblio_fields} ');
  while ($field = db_fetch_array($result)) {
  views_table_add_field($table, $field['name'], "Biblio: ".$field['title'], "", array(
- 'sortable' => true,
- 'notafield' => false,
+ 'sortable' => TRUE,
+ 'notafield' => FALSE,
  ));
  }
 
@@ -1634,7 +1637,7 @@ function biblio_filter($op, $delta = 0, $format = -1, $text = '') {
     );
   }
   if ($op == 'no cache') {
-    return true;
+    return TRUE;
   }
   // All operations besides "list" provide a $delta argument so we know which
   // filter they refer to. We'll switch on that argument now so that we can
@@ -1902,7 +1905,7 @@ function biblio_contextObject($node) {
 }
 function biblio_hash($node) {
   static $sums = array();
-  if (empty($sums)){
+  if (empty($sums)) {
     $res = db_query("SELECT nid, biblio_md5 FROM {biblio} ");
     while ($md5 = db_fetch_object($res)) {
       $sums[$md5->biblio_md5] = $md5->nid;
@@ -1914,7 +1917,7 @@ function biblio_hash($node) {
   
   $sum = md5($hash_string);
   
-  if (isset ($sums[$sum])){
+  if (isset ($sums[$sum])) {
     $duplicate = $sums[$sum];
   }else{
     $sums[$sum] = $node->nid;
@@ -1984,7 +1987,7 @@ function biblio_diff(&$old_node, &$new_node) {
   while ($field = db_fetch_object($db_result)) {
     $name = $field->name;
     $old = $new = '';
-    if ($field->type == 'contrib_widget'){
+    if ($field->type == 'contrib_widget') {
       foreach((array)$old_node->biblio_contributors[$field->fid] as $auth) {
         $old .= $auth['name'] . ' ';
       }

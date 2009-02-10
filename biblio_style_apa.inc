@@ -9,7 +9,7 @@
  *   The name of the style
  */
 function biblio_style_apa_info() {
-  return array (
+  return array(
     'apa' => 'American Psychological Association (APA)'
   );
 }
@@ -23,11 +23,11 @@ function biblio_style_apa_info() {
  *   The base URL of the biblio module (defaults to /biblio)
  * @param $inline
  *   A logical value indicating if this is being rendered within the
- *   Drupal framwork (false) or we are just passing back the html (true)
+ *   Drupal framwork (FALSE) or we are just passing back the html (true)
  * @return
  *   The styled biblio entry
  */
-function biblio_style_apa($node, $base = 'biblio', $inline = false) {
+function biblio_style_apa($node, $base = 'biblio', $inline = FALSE) {
   $authors = theme('biblio_authors', $node->biblio_contributors[1], 'apa', 1, $inline);
   if (empty($authors)) $authors = theme('biblio_authors', $node->biblio_contributors[5], 'apa', 5, $inline);  // if no authors substitute corp author if available
   if (empty($authors)) $authors = '[' . t('Anonymous') . ']';  // use anonymous if we still have nothing.
