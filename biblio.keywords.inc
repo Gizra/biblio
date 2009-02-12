@@ -131,7 +131,7 @@ function biblio_delete_node_keywords($node) {
  * @return none
  */
 function biblio_delete_revision_keywords($node) {
-  db_query('DELETE FROM {biblio_keywords} WHERE vid = %d', $node->vid);
+  db_query('DELETE FROM {biblio_keyword} WHERE vid = %d', $node->vid);
 }
 
 function biblio_delete_keyword($keyword_id) {
