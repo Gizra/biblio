@@ -189,7 +189,7 @@ function theme_biblio_long($node, $base = 'biblio', $style = 'classic') {
  * @return unknown_type
  */
 function theme_biblio_tabular($node, $base = 'biblio', $teaser = false) {
-  
+
   if (module_exists('popups')){
      popups_add_popups();
   }
@@ -205,7 +205,7 @@ function theme_biblio_tabular($node, $base = 'biblio', $teaser = false) {
     array('data' => t('Publication Type'), 'class' => 'biblio-row-title'),
     array('data' => $node->biblio_type_name)
   );
-  
+
   if ($node->biblio_url) {
     $attrib = (variable_get('biblio_links_target_new_window', null)) ? array(
       'target' => '_blank'
@@ -256,9 +256,9 @@ function theme_biblio_tabular($node, $base = 'biblio', $teaser = false) {
   if (biblio_access('export', $node) && $teaser == false) {
     $rows[] = array(
       array('data' => t('Export'),
-      			'class' => 'biblio-row-title'), 
+      			'class' => 'biblio-row-title'),
       array('data' => theme('biblio_export_links', $node->nid) )
-    ); 
+    );
   }
   $output = '<div id="biblio-node">';
   $output .= $node->biblio_coins;
@@ -289,14 +289,179 @@ function theme_biblio_authors($contributors, $style = 'classic', $cat = 1, $inli
   $output .= '</span>';
   return $output;
 }
+function theme_biblio_authors2($contributors, $auth_category, $options)
+{
+  $options = array(
+  'familyNameFirst' => '',
+  'BetweenAuthorsDelimStandard' =>'',
+  'BetweenAuthorsDelimLastAuthor' => '',
+  'AuthorsInitialsDelimFirstAuthor' => '',
+  'AuthorsInitialsDelimStandard'=> '',
+  'betweenInitialsDelim' => '',
+  'initialsBeforeAuthorFirstAuthor' => '',
+  'initialsBeforeAuthorStandard' => '',
+  'shortenGivenNames' => '',
+  'numberOfAuthorsTriggeringEtAl' => '',
+  'includeNumberOfAuthors' => '',
+  'customStringAfterFirstAuthors' => '',
+  'encodeHTML' => ''
+  );
+  // Matches ISO-8859-1 letters & digits:
+  $alnum = "[:alnum:]��������������������������������������������������������";
+
+  // Matches ISO-8859-1 letters:
+  $alpha = "[:alpha:]��������������������������������������������������������";
+
+  // Matches ISO-8859-1 control characters:
+  $cntrl = "[:cntrl:]";
+
+  // Matches ISO-8859-1 dashes & hyphens:
+  $dash = "-�";
+
+  // Matches ISO-8859-1 digits:
+  $digit = "[:digit:]";
+
+  // Matches ISO-8859-1 printing characters (excluding space):
+  $graph = "[:graph:]��������������������������������������������������������";
+
+  // Matches ISO-8859-1 lower case letters:
+  $lower = "[:lower:]�����������������������������";
+
+  // Matches ISO-8859-1 printing characters (including space):
+  $print = "[:print:]��������������������������������������������������������";
+
+  // Matches ISO-8859-1 punctuation:
+  $punct = "[:punct:]";
+
+  // Matches ISO-8859-1 whitespace (separating characters with no visual representation):
+  $space = "[:space:]";
+
+  // Matches ISO-8859-1 upper case letters:
+  $upper = "[:upper:]���������������������������";
+
+  // Matches ISO-8859-1 "word" characters:
+  $word = "_[:alnum:]��������������������������������������������������������";
+
+  // Defines the PCRE pattern modifier(s) to be used in conjunction with the above variables:
+  // More info: <http://www.php.net/manual/en/reference.pcre.pattern.modifiers.php>
+  $patternModifiers = "";
+
+  $authorCount = count($contributors[$auth_category]); // check how many authors we have to deal with
+  $output = ""; // this variable will hold the final author string
+  $includeStringAfterFirstAuthor = false;
+
+  if (empty($options['numberOfAuthorsTriggeringEtAl']))
+  $numberOfAuthorsTriggeringEtAl = $authorCount;
+
+  if (empty($options['includeNumberOfAuthors']))
+  $includeNumberOfAuthors = $authorCount;
+
+  foreach($contributors[$auth_category] as $rank => $author)
+  {
+//    $singleAuthorArray = split($oldAuthorsInitialsDelim, $authorsArray[$i]); // for each author, extract author name & initials to separate list items
+
+//    if (!$options['familyNameFirst']) // if the family name comes *after* the given name (or initials) in the source string, put array elements in reverse order:
+//    $singleAuthorArray = array_reverse($singleAuthorArray); // (Note: this only works, if the array has only *two* elements, i.e., one containing the author's name and one holding the initials!)
+
+    if (isset($author['firstname'])) {
+      if ($options['shortenGivenNames']) // if we're supposed to abbreviate given names
+      {
+        // within initials, reduce all full first names (-> defined by a starting uppercase character, followed by one ore more lowercase characters)
+        // to initials, i.e., only retain their first character
+        $author['firstname'] = preg_replace("/([$upper])[$lower]+/$patternModifiers", "\\1", $author['firstname']);
+      }
+    }
+    if (isset($author['initials'])) {
+    // within initials, remove any dots:
+      $author['initials'] = preg_replace("/([$upper])\.+/$patternModifiers", "\\1", $author['initials']);
+
+      // within initials, remove any spaces *between* initials:
+      $author['initials'] = preg_replace("/(?<=[-$upper]) +(?=[-$upper])/$patternModifiers", "", $author['initials']);
+
+      // within initials, add a space after a hyphen, but only if ...
+      if (ereg(" $", $options['betweenInitialsDelim'])) // ... the delimiter that separates initials ends with a space
+      $author['initials'] = preg_replace("/-(?=[$upper])/$patternModifiers", "- ", $author['initials']);
+
+      // then, separate initials with the specified delimiter:
+      $delim = $options['betweenInitialsDelim'];
+      $author['initials'] = preg_replace("/([$upper])(?=[^$lower]+|$)/$patternModifiers", "\\1$delim", $author['initials']);
+      if ($options['shortenGivenNames'] && !empty($author['firstname'])) {
+        $author['firstname'] = $author['firstname'].$options['betweenInitialsDelim'].$author['initials'];
+      }
+      elseif(!empty($author['firstname'])) {
+        $author['firstname'] = $author['firstname'].' '.$author['initials'];
+      }
+    }
+
+
+    if ((($rank == 0) AND $optoins['initialsBeforeAuthorFirstAuthor']) OR (($rank > 0) AND $options['initialsBeforeAuthorStandard'])) // put array elements in reverse order:
+    $singleAuthorArray = array_reverse($singleAuthorArray); // (Note: this only works, if the array has only *two* elements, i.e., one containing the author's name and one holding the initials!)
+
+    // re-join author name & initials, using the specified delimiter, and copy the string to the end of an array:
+    if ($rank == 0) { // -> first author
+      if($options['initialsBeforeAuthorFirstAuthor']) {
+        $singleAuthorString = $author['firstname'].$options['AuthorsInitialsDelimFirstAuthor'].$author['lastname'];
+      }
+      else{
+        $singleAuthorString = $author['lastname'].$options['AuthorsInitialsDelimFirstAuthor'].$author['firstname'];
+      }
+    }
+    else { // $rank > 0 // -> all authors except the first one
+    $singleAuthorString = implode($newAuthorsInitialsDelimStandard, $singleAuthorArray);
+      if($options['initialsBeforeAuthorFirstAuthor']) {
+        $singleAuthorString = $author['firstname'].$options['AuthorsInitialsDelimStandard'].$author['lastname'];
+      }
+      else{
+        $singleAuthorString = $author['lastname'].$options['AuthorsInitialsDelimStandard'].$author['firstname'];
+      }
+
+    }
+    // append this author to the final author string:
+    if (($rank == 0) OR ($rank + 1) < $authorCount) // -> first author, or (for multiple authors) all authors except the last one
+    {
+      if ($rank == 0) // -> first author
+      $output .= $singleAuthorString;
+      else // -> for multiple authors, all authors except the first or the last one
+      $output .= $options['BetweenAuthorsDelimStandard'] . $singleAuthorString;
+
+      // we'll append the string in '$customStringAfterFirstAuthors' to the number of authors given in '$includeNumberOfAuthors' if the total number of authors is greater than the number given in '$numberOfAuthorsTriggeringEtAl':
+      if ((($rank + 1) == $includeNumberOfAuthors) AND ($authorCount > $numberOfAuthorsTriggeringEtAl))
+      {
+        if (ereg("__NUMBER_OF_AUTHORS__", $customStringAfterFirstAuthors))
+        $customStringAfterFirstAuthors = preg_replace("/__NUMBER_OF_AUTHORS__/", ($authorCount - $includeNumberOfAuthors), $customStringAfterFirstAuthors); // resolve placeholder
+
+        $includeStringAfterFirstAuthor = true;
+        break;
+      }
+    }
+    elseif (($authorCount > 1) AND (($rank + 1) == $authorCount)) // -> last author (if multiple authors)
+    {
+      $newAuthorContents .= $newBetweenAuthorsDelimLastAuthor . $singleAuthorString;
+    }
+  }
+
+  // do some final clean up:
+  if ($encodeHTML)
+  $newAuthorContents = encodeHTML($newAuthorContents); // HTML encode higher ASCII characters within the newly arranged author contents
+
+  if ($includeStringAfterFirstAuthor)
+  $newAuthorContents .= $customStringAfterFirstAuthors; // the custom string won't get HTML encoded so that it's possible to include HTML tags (such as '<i>') within the string
+
+  $newAuthorContents = preg_replace("/  +/", " ", $newAuthorContents); // remove double spaces (which occur e.g., when both, $betweenInitialsDelim & $newAuthorsInitialsDelim..., end with a space)
+  $newAuthorContents = preg_replace("/ +([,.;:?!()]|$)/", "\\1", $newAuthorContents); // remove excess spaces before [,.;:?!()] and from the end of the author string
+
+  return $newAuthorContents;
+}
+
+
 /**
  * Applies a "style" function to a single node.
- * 
+ *
  * @param $node A node
  * @param $base The base url for biblio (defaults to /biblio)
  * @param $style_name The name of the style to apply
  * @param $inline "inline" mode returns the raw HTML rather than letting drupal render the whole page.
- * @return A string containing the styled (HTML) node 
+ * @return A string containing the styled (HTML) node
  */
 function theme_biblio_style(& $node, $base = 'biblio', $style_name = 'classic', $inline = false) {
   module_load_include('inc','biblio',"biblio_style_$style_name");
@@ -317,11 +482,11 @@ function theme_biblio_style(& $node, $base = 'biblio', $style_name = 'classic', 
  */
 function theme_biblio_entry($node, $base = 'biblio', $style = 'classic', $inline = false) {
   $output  = '<div class="biblio-entry">' . "\n";
-  
+
 // first add the styled entry...
   $output .= theme('biblio_style', $node, $base, $style, $inline);
 
-// now add the various links   
+// now add the various links
   if ($node->biblio_abst_e) {
     $output .= '<span class="biblio-abstract-link">';
     $output .= l(" Abstract", "node/$node->nid") ."\n";
@@ -337,7 +502,7 @@ function theme_biblio_entry($node, $base = 'biblio', $style = 'classic', $inline
 
   if ($openurl_base){
     $output .= theme('biblio_openurl', biblio_openurl($node));
-  }    
+  }
 
   if (biblio_access('export', $node)) {
     $base = variable_get('biblio_base', 'biblio');
@@ -350,7 +515,7 @@ function theme_biblio_entry($node, $base = 'biblio', $style = 'classic', $inline
   }
 
   $output .= "</div>\n";
-  
+
   return $output;
 }
 
@@ -410,7 +575,7 @@ function theme_biblio_admin_types_edit_form($form) {
   $conf_table = array();
   foreach (element_children($form['configured_flds']) as $fld) {
     $form['configured_flds'][$fld]['weight']['#attributes']['class'] = 'weight';
-    
+
     $conf_row = array();
     $conf_row[] = array('data' => drupal_render($form['configured_flds'][$fld]['name']));
     $conf_row[] = array('data' => drupal_render($form['configured_flds'][$fld]['title']));
@@ -481,9 +646,9 @@ function theme_biblio_export_links($nid = NULL) {
   return $links;
 }
 
-/** 
+/**
  * Creates a link to export a node (or view) in EndNote Tagged format
- * 
+ *
  * @param $base this is the base url (defaults to /biblio)
  * @param $nid  the node id, if NULL then the current view is exported
  * @return  a link (<a href=...>Tagged</a>)
@@ -499,7 +664,7 @@ function theme_biblio_tagged_link($base, $nid = NULL) {
 
 /**
  * Creates a link to export a node (or view) in BibTEX format
- * 
+ *
  * @param $base this is the base url (defaults to /biblio)
  * @param $nid  the node id, if NULL then the current view is exported
  * @return  a link (<a href=...>BibTEX</a>)
@@ -515,7 +680,7 @@ function theme_biblio_bibtex_link($base, $nid = NULL) {
 
 /**
  * Creates a link to export a node (or view) in XML format
- * 
+ *
  * @param $base this is the base url (defaults to /biblio)
  * @param $nid  the node id, if NULL then the current view is exported
  * @return  a link (<a href=...>XML</a>)
@@ -538,13 +703,13 @@ function theme_biblio_contributors($form) {
   if ($form['#hideRole']) $headers = array('', t('Name'), t('Weight'));
   else $headers = array('', t('Name'), t('Role'), t('Weight'));
   drupal_add_tabledrag($form['#id'], 'order', 'sibling', 'rank');
-  
+
   foreach (element_children($form) as $key) {
     // No need to print the field title every time.
     unset ($form[$key]['name']['#title'], $form[$key]['auth_type']['#title']);
     // Add class to group weight fields for drag and drop.
     $form[$key]['rank']['#attributes']['class'] = 'rank';
-    
+
     // Build the table row.
     $row = array('');
     $row[] = array('data' => drupal_render($form[$key]['name']),
@@ -562,12 +727,12 @@ function theme_biblio_contributors($form) {
 }
 
 /**
- * This function creates a string of letters (A - Z), which 
- * depending on the sorting are either linked to author or title 
- * filters i.e. clicking on the A when in the listing is sorted by 
- * authors will bring up a list of all the entries where the first 
+ * This function creates a string of letters (A - Z), which
+ * depending on the sorting are either linked to author or title
+ * filters i.e. clicking on the A when in the listing is sorted by
+ * authors will bring up a list of all the entries where the first
  * character of the primary authors last name is "A"
- * 
+ *
  * @param $type either "author or title"
  * @return a chunk of HTML code as described above
  */
@@ -587,13 +752,13 @@ function theme_biblio_alpha_line($type = 'author',$current = NULL, $path = NULL)
       case 'author':
         $options['query'] .= 'sort=author';
         $path = "$base/ag/";
-        $all_query['query'] = 'sort=author'. ($_GET['order']?'&order='.$_GET['order']:''); 
+        $all_query['query'] = 'sort=author'. ($_GET['order']?'&order='.$_GET['order']:'');
         $all = '['.l(t('Show ALL'), $base,$all_query).']' ;
         break;
     case 'title':
         $options['query'] .= 'sort=title';
         $path = "$base/tg/";
-      break;      
+      break;
     default:
       if (!isset ($_GET['sort']) || $_GET['sort'] == 'year' || $_GET['sort'] == 'type')
       return;
@@ -605,7 +770,7 @@ function theme_biblio_alpha_line($type = 'author',$current = NULL, $path = NULL)
         if ($_GET['sort'] == 'title')
         $path = "$base/tg/";
       }
-      
+
   }
   if (isset ($_GET['order'])) {
     $options['query'] .= $options['query'] ? "&" : "";
@@ -627,11 +792,11 @@ function theme_biblio_alpha_line($type = 'author',$current = NULL, $path = NULL)
 
 /**
  * Themes the author editing form
- * 
+ *
  * @param $form
  * @return rendered form
  */
-function theme_biblio_admin_author_edit_form($form){ 
+function theme_biblio_admin_author_edit_form($form){
   $rows = array();
   $header = array();
   $rows[] = array(
@@ -643,13 +808,13 @@ function theme_biblio_admin_author_edit_form($form){
   $rows[] = array(array('data' => drupal_render($form['name']), 'colspan' => 5));
   $rows[] = array(array('data' => drupal_render($form['affiliation']), 'colspan' => 5));
   $rows[] = array(array('data' => drupal_render($form['drupal_uid']), 'colspan' => 5));
-  
+
   $output = theme('table', $header, $rows);
   $output .= drupal_render($form['merge']);
   $output .= drupal_render($form);
-  
+
   return $output;
-  
+
 }
 
 function theme_biblio_admin_orphans_form($form) {
