@@ -643,9 +643,11 @@ class PARSEENTRIES
       $node['biblio_place_published'] = (!empty($entry['address'])) ? $entry['address'] : NULL;
       $node['biblio_abst_e']          = (!empty($entry['abstract'])) ? $entry['abstract'] : NULL;
       if (!empty($entry['keywords'])){
-        if (($vid = variable_get('biblio_keyword_vocabulary', 0)) && variable_get('biblio_keyword_freetagging', 1)) {
+        if (strpos($entry['keywords'],';')) $entry['keywords'] = str_replace(';',',',$entry['keywords']);
+        $vid = variable_get('biblio_keyword_vocabulary', 0);
+        if ($vid  && variable_get('biblio_keyword_freetagging', 0)) {
           $node['taxonomy']['tags'][$vid] .= $entry['keywords'];
-        }
+        }  
         $node['biblio_keywords'] = explode(',', $entry['keywords']);
       }
       $node['biblio_isbn']            = (!empty($entry['isbn'])) ? $entry['isbn'] : NULL;

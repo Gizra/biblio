@@ -123,5 +123,5 @@ function _endnote7_type_map($bibliotype) {
     '31' => '129' // Generic
     );
   }
-  return ($en7_type = array_search($bibliotype, $map))?$en7_type:129; //return the biblio type or 129 (Misc) if type not found
+  return ($en7_type = array_search($bibliotype, $map)) ? $en7_type : 31; //return the biblio type or 129 (Misc) if type not found
 }

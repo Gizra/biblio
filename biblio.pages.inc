@@ -155,7 +155,9 @@ function biblio_build_query($arg_list) {
       break;
     case 'keyword': // added msh 070808
       if ($db_type == 'pgsql') $pgsql_additions = ', SUBSTR(LTRIM(b.biblio_keywords),1,4)';
-      $sortby = "ORDER BY SUBSTR(LTRIM(b.biblio_keywords),1,4) %s ";
+      $sortby = "ORDER BY bkd.word %s ";
+      $join['bk'] = '  JOIN {biblio_keyword} as bk on b.vid = bk.vid ';
+      $join['bkd'] = '  JOIN {biblio_keyword_data} as bkd on bk.kid = bkd.kid ';
       break;
     case 'year':
     default:
@@ -395,6 +397,7 @@ function biblio_build_query($arg_list) {
 function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' => 'DESC'), $args = null,$inline=false) {
   global $pager_total_items;
   module_load_include('inc','biblio','biblio.contributors');
+  module_load_include('inc','biblio','biblio.keywords');
   
   $base =  variable_get('biblio_base', 'biblio');
   $style = variable_get('biblio_style', 'cse');
@@ -543,7 +546,8 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
   while ($node = db_fetch_object($result)) {
     $count++;
     $node->biblio_contributors = biblio_load_contributors($node->vid);
-
+    $node->biblio_keywords = biblio_load_keywords($node->vid);
+    
     if ( module_exists("upload") ) {
       $node->files = upload_load($node);
     }
@@ -577,7 +581,8 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
         }
         break;
       case 'keyword': 	// added msh 08 aug 07
-        $tok = drupal_ucfirst(strtok($node->biblio_keywords, variable_get('biblio_keyword_sep', ',')));
+        $kw = array_shift($node->biblio_keywords);
+        $tok = drupal_ucfirst($kw->word);
         if (empty($tok)) {
           $tok = t("No Keywords");
         }

@@ -958,12 +958,13 @@ function biblio_form($node, $form_state) {
       else {
         if ($key == 'biblio_keywords' ) {
           $sep = variable_get('biblio_keyword_sep', ',');
+          $keywords = '';
           if (!empty($node->$key)) {
             foreach ($node->$key as $keyword) {
               $keywords .= (empty($keywords)?$keyword->word:"$sep " . $keyword->word);
             }
-            $node->$key = $keywords;
           }
+          $node->$key = $keywords;
           $fld['hint'] = t('Separate keywords using the " @sep " character', array('@sep' => $sep));
         }
         $field_widget = array(

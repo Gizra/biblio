@@ -89,7 +89,8 @@ function en7_characterData($parser, $data) {
         $node['biblio_contributors'][4][$auth_count]['name'] .= $data;
         break;
       case 'KEYWORD':
-        if ($vid = variable_get('biblio_keyword_vocabulary', 0) && variable_get('biblio_keyword_freetagging', 1)) { 
+        $vid = variable_get('biblio_keyword_vocabulary', 0);
+        if ($vid && variable_get('biblio_keyword_freetagging', 0)) { 
            //TODO: this will potentially cause problems exta commas in the tags string if all the data is not stored in one pass.
           $node['taxonomy']['tags'][$vid] .= (empty($node['taxonomy']['tags'][$vid])) ? "\"$data\"" : ",\"$data\"";
         }

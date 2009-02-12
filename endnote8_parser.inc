@@ -182,7 +182,8 @@ function en8_characterData($parser, $data) {
       case 'reprint-status' :
         break;
       case 'keyword' :
-        if ($vid = variable_get('biblio_keyword_vocabulary', 0) && variable_get('biblio_keyword_freetagging', 1)) { 
+        $vid = variable_get('biblio_keyword_vocabulary', 0);
+        if ($vid  && variable_get('biblio_keyword_freetagging', 0)) { 
            //TODO: this will potentially cause problems exta commas in the tags string if all the data is not stored in one pass.
           $node['taxonomy']['tags'][$vid] .= (empty($node['taxonomy']['tags'][$vid])) ? "\"$data\"" : ",\"$data\"";
         }
@@ -323,46 +324,49 @@ function en8_characterData($parser, $data) {
 }
 
 function en8_type_map($en8type){
-  $map = array(
-  2 => 112, // artwork
-  3 => 114, // Audio Visual
-  4 => 117, // bill
-  5 => 101, // Book Section
-  6 => 100, // Book
-  7 => 116, // case
-  9 => 113, // software
-  17 => 102, // Journal Article
-  10 => 104, // Conference Proceeding
-  12 => 107, // web page
-  13 => 129, // Generic
-  14 => 115, // hearing
-  19 => 106, // magazine_article
-  20 => 122, // map
-  21 => 110, // film
-  21 => 111, // broadcast
-  23 => 105, // newspaper_article
-  25 => 119, // patent
-  26 => 120, // personal communication
-  27 => 109, // Report
-  28 => 129, // Edited Book
-  31 => 118, // statute
-  32 => 108, // Thesis
-  34 => 124, // unpublished
-  36 => 121, // manuscript
-  37 => 129, // figure
-  38 => 123, // chart
-  39 => 129, // equation
-  43 => 129, // electronic article
-  44 => 129, // electronic book
-  45 => 125, // online database
-  46 => 126, // government_document
-  47 => 103, // conference_paper
-  48 => 129, // online multimedia
-  49 => 127, // Classical Work
-  50 => 128, // legal_ruling
-  52 => 129, // Dictionary
-  53 => 129, // Encyclopedia
-  54 => 129, // Grant
-  );
+  static $map = array();
+  if (empty($map)) {
+    $map = array(
+    2 => 112, // artwork
+    3 => 114, // Audio Visual
+    4 => 117, // bill
+    5 => 101, // Book Section
+    6 => 100, // Book
+    7 => 116, // case
+    9 => 113, // software
+    17 => 102, // Journal Article
+    10 => 104, // Conference Proceeding
+    12 => 107, // web page
+    13 => 129, // Generic
+    14 => 115, // hearing
+    19 => 106, // magazine_article
+    20 => 122, // map
+    21 => 110, // film
+    21 => 111, // broadcast
+    23 => 105, // newspaper_article
+    25 => 119, // patent
+    26 => 120, // personal communication
+    27 => 109, // Report
+    28 => 129, // Edited Book
+    31 => 118, // statute
+    32 => 108, // Thesis
+    34 => 124, // unpublished
+    36 => 121, // manuscript
+    37 => 129, // figure
+    38 => 123, // chart
+    39 => 129, // equation
+    43 => 129, // electronic article
+    44 => 129, // electronic book
+    45 => 125, // online database
+    46 => 126, // government_document
+    47 => 103, // conference_paper
+    48 => 129, // online multimedia
+    49 => 127, // Classical Work
+    50 => 128, // legal_ruling
+    52 => 129, // Dictionary
+    53 => 129, // Encyclopedia
+    54 => 129, // Grant
+    );
+  }
   return (isset($map[$en8type]))?$map[$en8type]:129; //return the biblio type or 129 (Misc) if type not found
 }
