@@ -1538,8 +1538,8 @@ function biblio_update_6000()
   $result[] = update_sql("ALTER TABLE {biblio}  MODIFY biblio_citekey varchar(255) ");
 
   // move biblio_fields to biblio_fields_old for later usage
-  update_sql("ALTER TABLE {biblio_fields} RENAME TO {biblio_fields_old}");
-  update_sql("UPDATE {biblio_fields_old} SET name='biblio_corp_authors' WHERE name='biblio_corp_author'");
+  $result[] = update_sql("ALTER TABLE {biblio_fields} RENAME TO {biblio_fields_old}");
+  $result[] = update_sql("UPDATE {biblio_fields_old} SET name='biblio_corp_authors' WHERE name='biblio_corp_author'");
   // drop obsolete tables
   db_drop_table($result, 'biblio_author_index');
   db_drop_table($result, 'biblio_has_author');
@@ -1608,7 +1608,7 @@ function biblio_update_6014() {
   if (db_result(db_query('SELECT COUNT(*) FROM {biblio_fields} WHERE type="contrib_widget"')) == 1) {
     // create space for new contributor fields
     $result[] = update_sql("UPDATE {biblio_fields} f SET fid=fid + 4 WHERE fid>1 ORDER BY fid DESC");
-    update_sql("UPDATE {biblio_fields} f SET name='biblio_authors' WHERE fid=1");
+    $result[] = update_sql("UPDATE {biblio_fields} f SET name='biblio_authors' WHERE fid=1");
     // add new contributor fields
     $row = array('fid' => 0, 'name' => '', 'type' => 'contrib_widget', 'size' => 60, 'maxsize' => 255);
     foreach($contributors as $fid => $name) {
