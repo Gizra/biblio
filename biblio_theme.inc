@@ -289,23 +289,10 @@ function theme_biblio_authors($contributors, $style = 'classic', $cat = 1, $inli
   $output .= '</span>';
   return $output;
 }
-function theme_biblio_authors2($contributors, $auth_category, $options)
+function theme_biblio_authors2($contributors, $options, $inline = false)
 {
-  $options = array(
-  'familyNameFirst' => '',
-  'BetweenAuthorsDelimStandard' =>'',
-  'BetweenAuthorsDelimLastAuthor' => '',
-  'AuthorsInitialsDelimFirstAuthor' => '',
-  'AuthorsInitialsDelimStandard'=> '',
-  'betweenInitialsDelim' => '',
-  'initialsBeforeAuthorFirstAuthor' => '',
-  'initialsBeforeAuthorStandard' => '',
-  'shortenGivenNames' => '',
-  'numberOfAuthorsTriggeringEtAl' => '',
-  'includeNumberOfAuthors' => '',
-  'customStringAfterFirstAuthors' => '',
-  'encodeHTML' => ''
-  );
+  $base  = variable_get('biblio_base', 'biblio');
+  $author_links = variable_get('biblio_author_links', 1);
   // Matches ISO-8859-1 letters & digits:
   $alnum = "[:alnum:]��������������������������������������������������������";
 
@@ -346,17 +333,15 @@ function theme_biblio_authors2($contributors, $auth_category, $options)
   // More info: <http://www.php.net/manual/en/reference.pcre.pattern.modifiers.php>
   $patternModifiers = "";
 
-  $authorCount = count($contributors[$auth_category]); // check how many authors we have to deal with
+  $authorCount = count($contributors); // check how many authors we have to deal with
   $output = ""; // this variable will hold the final author string
   $includeStringAfterFirstAuthor = false;
 
-  if (empty($options['numberOfAuthorsTriggeringEtAl']))
-  $numberOfAuthorsTriggeringEtAl = $authorCount;
+  if (empty($options['numberOfAuthorsTriggeringEtAl']))  $options['numberOfAuthorsTriggeringEtAl'] = $authorCount;
 
-  if (empty($options['includeNumberOfAuthors']))
-  $includeNumberOfAuthors = $authorCount;
+  if (empty($options['includeNumberOfAuthors']))  $options['includeNumberOfAuthors'] = $authorCount;
 
-  foreach($contributors[$auth_category] as $rank => $author)
+  foreach($contributors as $rank => $author)
   {
 //    $singleAuthorArray = split($oldAuthorsInitialsDelim, $authorsArray[$i]); // for each author, extract author name & initials to separate list items
 
@@ -394,10 +379,6 @@ function theme_biblio_authors2($contributors, $auth_category, $options)
     }
 
 
-    if ((($rank == 0) AND $optoins['initialsBeforeAuthorFirstAuthor']) OR (($rank > 0) AND $options['initialsBeforeAuthorStandard'])) // put array elements in reverse order:
-    $singleAuthorArray = array_reverse($singleAuthorArray); // (Note: this only works, if the array has only *two* elements, i.e., one containing the author's name and one holding the initials!)
-
-    // re-join author name & initials, using the specified delimiter, and copy the string to the end of an array:
     if ($rank == 0) { // -> first author
       if($options['initialsBeforeAuthorFirstAuthor']) {
         $singleAuthorString = $author['firstname'].$options['AuthorsInitialsDelimFirstAuthor'].$author['lastname'];
@@ -407,7 +388,6 @@ function theme_biblio_authors2($contributors, $auth_category, $options)
       }
     }
     else { // $rank > 0 // -> all authors except the first one
-    $singleAuthorString = implode($newAuthorsInitialsDelimStandard, $singleAuthorArray);
       if($options['initialsBeforeAuthorFirstAuthor']) {
         $singleAuthorString = $author['firstname'].$options['AuthorsInitialsDelimStandard'].$author['lastname'];
       }
@@ -416,6 +396,7 @@ function theme_biblio_authors2($contributors, $auth_category, $options)
       }
 
     }
+    if ($author_links) $singleAuthorString = _biblio_author_link($singleAuthorString, $author['cid'], $base, $inline);
     // append this author to the final author string:
     if (($rank == 0) OR ($rank + 1) < $authorCount) // -> first author, or (for multiple authors) all authors except the last one
     {
@@ -425,10 +406,10 @@ function theme_biblio_authors2($contributors, $auth_category, $options)
       $output .= $options['BetweenAuthorsDelimStandard'] . $singleAuthorString;
 
       // we'll append the string in '$customStringAfterFirstAuthors' to the number of authors given in '$includeNumberOfAuthors' if the total number of authors is greater than the number given in '$numberOfAuthorsTriggeringEtAl':
-      if ((($rank + 1) == $includeNumberOfAuthors) AND ($authorCount > $numberOfAuthorsTriggeringEtAl))
+      if ((($rank + 1) == $options['includeNumberOfAuthors']) AND ($authorCount > $options['numberOfAuthorsTriggeringEtAl']))
       {
-        if (ereg("__NUMBER_OF_AUTHORS__", $customStringAfterFirstAuthors))
-        $customStringAfterFirstAuthors = preg_replace("/__NUMBER_OF_AUTHORS__/", ($authorCount - $includeNumberOfAuthors), $customStringAfterFirstAuthors); // resolve placeholder
+        if (ereg("__NUMBER_OF_AUTHORS__", $options['customStringAfterFirstAuthors']))
+        $customStringAfterFirstAuthors = preg_replace("/__NUMBER_OF_AUTHORS__/", ($authorCount - $options['includeNumberOfAuthors']), $options['customStringAfterFirstAuthors']); // resolve placeholder
 
         $includeStringAfterFirstAuthor = true;
         break;
@@ -436,21 +417,21 @@ function theme_biblio_authors2($contributors, $auth_category, $options)
     }
     elseif (($authorCount > 1) AND (($rank + 1) == $authorCount)) // -> last author (if multiple authors)
     {
-      $newAuthorContents .= $newBetweenAuthorsDelimLastAuthor . $singleAuthorString;
+      $output .= $options['BetweenAuthorsDelimLastAuthor'] . $singleAuthorString;
     }
   }
 
   // do some final clean up:
-  if ($encodeHTML)
-  $newAuthorContents = encodeHTML($newAuthorContents); // HTML encode higher ASCII characters within the newly arranged author contents
+  if ($options['encodeHTML'])
+  //$output = encodeHTML($output); // HTML encode higher ASCII characters within the newly arranged author contents
 
   if ($includeStringAfterFirstAuthor)
-  $newAuthorContents .= $customStringAfterFirstAuthors; // the custom string won't get HTML encoded so that it's possible to include HTML tags (such as '<i>') within the string
+  $output .= $options['customStringAfterFirstAuthors']; // the custom string won't get HTML encoded so that it's possible to include HTML tags (such as '<i>') within the string
 
-  $newAuthorContents = preg_replace("/  +/", " ", $newAuthorContents); // remove double spaces (which occur e.g., when both, $betweenInitialsDelim & $newAuthorsInitialsDelim..., end with a space)
-  $newAuthorContents = preg_replace("/ +([,.;:?!()]|$)/", "\\1", $newAuthorContents); // remove excess spaces before [,.;:?!()] and from the end of the author string
+  $output = preg_replace("/  +/", " ", $output); // remove double spaces (which occur e.g., when both, $betweenInitialsDelim & $newAuthorsInitialsDelim..., end with a space)
+  $output = preg_replace("/ +([,.;:?!()]|$)/", "\\1", $output); // remove excess spaces before [,.;:?!()] and from the end of the author string
 
-  return $newAuthorContents;
+  return $output;
 }
 
 
