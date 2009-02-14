@@ -1,11 +1,11 @@
 <?php
-  // Original File:       ./cite/styles/cite_MLA.php
-  // Original Repository: https://refbase.svn.sourceforge.net/svnroot/refbase/trunk/cite/styles/cite_MLA.php $
-  // Original Author(s):  Richard Karnesky <mailto:karnesky@gmail.com> and
-  //                      Matthias Steffens <mailto:refbase@extracts.de>
-  //
-  // Modified for use in biblio by Ron Jerome
-  //
+// Original File:       ./cite/styles/cite_MLA.php
+// Original Repository: https://refbase.svn.sourceforge.net/svnroot/refbase/trunk/cite/styles/cite_MLA.php $
+// Original Author(s):  Richard Karnesky <mailto:karnesky@gmail.com> and
+//                      Matthias Steffens <mailto:refbase@extracts.de>
+//
+// Modified for use in biblio by Ron Jerome
+//
 // $Id$
 /**
  * Get the style information
@@ -33,6 +33,7 @@ function biblio_style_mla_info() {
  *   The styled biblio entry
  */
 function biblio_style_mla($node, $base = 'biblio', $inline = false) {
+
   $author_options = array(
     'BetweenAuthorsDelimStandard' =>', ',         //4
     'BetweenAuthorsDelimLastAuthor' => ', and ',  //5
@@ -41,32 +42,33 @@ function biblio_style_mla($node, $base = 'biblio', $inline = false) {
     'betweenInitialsDelim' => '. ',               //9
     'initialsBeforeAuthorFirstAuthor' => false,   //10
     'initialsBeforeAuthorStandard' => true,       //11
-    'shortenGivenNames' => false,                 //12
+    'shortenGivenNames' => FALSE,                 //12
     'numberOfAuthorsTriggeringEtAl' => 3,         //13
     'includeNumberOfAuthors' => 1,                //14
     'customStringAfterFirstAuthors' => ', et al.',//15
     'encodeHTML' => true
   );
- // $authors = theme('biblio_authors', $node->biblio_contributors[1], 'mla', 1, $inline);
+  // $authors = theme('biblio_authors', $node->biblio_contributors[1], 'mla', 1, $inline);
+
   $authors = theme('biblio_authors2', $node->biblio_contributors[1], $author_options, $inline);
-  if (empty($authors)) $authors = theme('biblio_authors', $node->biblio_contributors[5], 'mla', 5, $inline);  // if no authors substitute corp author if available
-  if (empty($authors)) $authors = '[' . t('Anonymous') . ']';  // use anonymous if we still have nothing.
-  $output .= '<span class="biblio-authors">' . $authors . "</span>.&nbsp; \n";
+  //if (empty($authors)) $authors = theme('biblio_authors', $node->biblio_contributors[5], 'mla', 5, $inline);  // if no authors substitute corp author if available
+  //if (empty($authors)) $authors = '[' . t('Anonymous') . ']';  // use anonymous if we still have nothing.
+  //$output .= '<span class="biblio-authors">' . $authors . "</span>.&nbsp; \n";
 
   switch ($node->biblio_type) {
-    case 102:
-    case 105:
-    case 106:
+    case 102: //Journal Article
+    case 105: //Newspaper Article
+    case 106: //Magazine Article
       if(!empty($authors)) {
-        if (!ereg("\. *$", $author))
-        $output .= $author . ".";
+        if (!ereg("\. *$", $authors))
+        $output .= $authors . ".";
         else
-        $output .= $inline ? l("$node->title", "$base/viewinline/$node->nid") : l("$node->title", "node/$node->nid");
-              }
+        $output .= $authors;
+      }
 
       if (!empty($node->title))      // title
       {
-        if (!empty($author)) $output .= " ";
+        if (!empty($authors)) $output .= " ";
         $output .= '"' ;
         $output .= $inline ? l("$node->title", "$base/viewinline/$node->nid") : l("$node->title", "node/$node->nid");
         if (!ereg("[?!.]$", $node->title)) $output .= ".";
@@ -147,6 +149,7 @@ function biblio_style_mla($node, $base = 'biblio', $inline = false) {
             $output .= ": ";
           }
           // TODO: FIXME $output .= formatPageInfo($node->biblio_pages, $markupPatternsArray["endash"]); // function 'formatPageInfo()' is defined in 'cite.inc.php'
+          $output .= theme_biblio_page_number($node->biblio_pages);
         }
       }
 
@@ -154,8 +157,8 @@ function biblio_style_mla($node, $base = 'biblio', $inline = false) {
       $output .= ".";
 
       break;
-    case 101:
-    case 103:
+    case 101: //Book Chapter
+    case 103: //Conference Paper
       if(!empty($authors)) {
         if (!ereg("\. *$", $authors)) {
           $output .= $authors . ".";
@@ -166,49 +169,44 @@ function biblio_style_mla($node, $base = 'biblio', $inline = false) {
 
         if (!empty($node->title))      // title
         {
-          if (!empty($authors))
-          $output .= " ";
+          if (!empty($authors))  $output .= " ";
 
-          $output .= '"' ;
-          $output .= '<i>';
+          $output .= '"<i>' ;
           $output .= $inline ? l("$node->title", "$base/viewinline/$node->nid") : l("$node->title", "node/$node->nid");
           $output .= '</i>';
-          if (!ereg("[?!.]$", $node->title))
-          $output .= ".";
-
+          if (!ereg("[?!.]$", $node->title)) $output .= ".";
           $output .= '"';
         }
 
         $publication = ereg_replace("[ \r\n]*\(Eds?:[^\)\r\n]*\)", "", $node->biblio_secondary_title);
         if (!empty($publication))      // publication
-        $output .= " " . '<i>' . $publication . '</i>';
+        $output .= " <i>$publication</i>";
 
 
         // From here on we'll assume that at least either the 'author' or the 'title' field did contain some contents
         // if this is not the case, the output string will begin with a space. However, any preceding/trailing whitespace will be removed at the cleanup stage (see below)
 
-        if (!empty($node->contributors[2]))      // editor
+        if (!empty($node->biblio_contributors[2]))      // editor
         {
-      $editor_options = array(
-        'BetweenAuthorsDelimStandard' =>', ',         //4
-        'BetweenAuthorsDelimLastAuthor' => ', and ',  //5
-        'AuthorsInitialsDelimFirstAuthor' => ' ',     //7
-        'AuthorsInitialsDelimStandard'=> ' ',         //8
-        'betweenInitialsDelim' => '. ',               //9
-        'initialsBeforeAuthorFirstAuthor' => true,   //10
-        'initialsBeforeAuthorStandard' => true,       //11
-        'shortenGivenNames' => false,                 //12
-        'numberOfAuthorsTriggeringEtAl' => 3,         //13
-        'includeNumberOfAuthors' => 1,                //14
-        'customStringAfterFirstAuthors' => ', et al.',//15
-        'encodeHTML' => true
-      );
-          $editor = reArrangeAuthorContents($node->contributors[2], $editor_options); // 1.
+          $editor_options = array(
+            'BetweenAuthorsDelimStandard' =>', ',         //4
+            'BetweenAuthorsDelimLastAuthor' => ', and ',  //5
+            'AuthorsInitialsDelimFirstAuthor' => ' ',     //7
+            'AuthorsInitialsDelimStandard'=> ' ',         //8
+            'betweenInitialsDelim' => '. ',               //9
+            'initialsBeforeAuthorFirstAuthor' => true,   //10
+            'initialsBeforeAuthorStandard' => true,       //11
+            'shortenGivenNames' => false,                 //12
+            'numberOfAuthorsTriggeringEtAl' => 3,         //13
+            'includeNumberOfAuthors' => 1,                //14
+            'customStringAfterFirstAuthors' => ', et al.',//15
+            'encodeHTML' => true
+          );
+          $editor = theme('biblio_authors2', $node->biblio_contributors[2], $editor_options, $inline);
 
-          if (!ereg("[?!.][ \"" . '</i>' . "]*$", $output))
-          $output .= ".";
+          if (!ereg("[?!.][ \"" . '</i>' . "]*$", $output)) $output .= ".";
 
-          if (count($node->contributors[2]) > 1) { // there are at least two editors (separated by ';')
+          if (count($node->biblio_contributors[2]) > 1) { // there are at least two editors (separated by ';')
             $output .= " Eds. " . $editor;
           }
           else { // there's only one editor (or the editor field is malformed with multiple editors but missing ';' separator[s])
@@ -218,108 +216,92 @@ function biblio_style_mla($node, $base = 'biblio', $inline = false) {
 
         if (!empty($node->biblio_edition) && !preg_match("/^(1|1st|first|one)( ed\.?| edition)?$/i", $node->biblio_edition))      // edition
         {
-          if (!ereg("[?!.][ \"" . '</i>' . "]*$", $output))
-          $output .= ".";
+          if (!ereg("[?!.][ \"" . '</i>' . "]*$", $output)) $output .= ".";
 
           if (preg_match("/^\d{1,3}$/", $node->biblio_edition)) // if the edition field contains a number of up to three digits, we assume it's an edition number (such as "2nd ed.")
           {
-            if ($node->biblio_edition == "2")
-            $editionSuffix = "nd";
-            elseif ($node->biblio_edition == "3")
-            $editionSuffix = "rd";
-            else
-            $editionSuffix = "th";
+            if ($node->biblio_edition == "2") {
+              $editionSuffix = "nd";
+            }
+            elseif ($node->biblio_edition == "3") {
+              $editionSuffix = "rd";
+            }
+            else {
+              $editionSuffix = "th";
+            }
           }
-          else
-          $editionSuffix = "";
+          else {
+            $editionSuffix = "";
+          }
 
-          if (preg_match("/^(Rev\.?|Revised)( ed\.?| edition)?$/i", $node->biblio_edition))
-          $node->biblio_edition = "Rev.";
-
-          elseif (preg_match("/^(Abr\.?|Abridged)( ed\.?| edition)?$/i", $node->biblio_edition))
-          $node->biblio_edition = "Abr.";
-
-          if (!preg_match("/( ed\.?| edition)$/i", $node->biblio_edition))
-          $editionSuffix .= " ed.";
-
+          if (preg_match("/^(Rev\.?|Revised)( ed\.?| edition)?$/i", $node->biblio_edition)) {
+            $node->biblio_edition = "Rev.";
+          }
+          elseif (preg_match("/^(Abr\.?|Abridged)( ed\.?| edition)?$/i", $node->biblio_edition)) {
+            $node->biblio_edition = "Abr.";
+          }
+          if (!preg_match("/( ed\.?| edition)$/i", $node->biblio_edition)) {
+            $editionSuffix .= " ed.";
+          }
           $output .= " " . $node->biblio_edition . $editionSuffix;
         }
 
         if (!empty($node->biblio_volume))      // volume
         {
-          if (!ereg("[?!.][ \"" . '</i>' . "]*$", $output))
-          $output .= ".";
-
+          if (!ereg("[?!.][ \"" . '</i>' . "]*$", $output)) $output .= ".";
           $output .= " Vol. " . $node->biblio_volume;
         }
 
         if (!empty($node->biblio_alternate_title) OR !empty($node->biblio_tertiary_title)) // if there's either a full or an abbreviated series title
         {
-          if (!ereg("[?!.][ \"" . '</i>' . "]*$", $output))
-          $output .= ".";
-
+          if (!ereg("[?!.][ \"" . '</i>' . "]*$", $output)) $output .= ".";
           $output .= " ";
 
-          if (!empty($node->biblio_alternate_title))
-          $output .= $node->biblio_alternate_title;      // abbreviated series title
-
+          if (!empty($node->biblio_alternate_title)) {
+            $output .= $node->biblio_alternate_title;      // abbreviated series title
+          }
           // if there's no abbreviated series title, we'll use the full series title instead:
-          elseif (!empty($node->biblio_tertiary_title))
-          $output .= $node->biblio_tertiary_title;      // full series title
-
-          if (!empty($node->biblio_volume)||!empty($node->biblio_issue))
-          $output .= ", ";
-
-          if (!empty($node->biblio_volume))      // series volume
-          $output .= $node->biblio_volume;
-
-          if (!empty($node->biblio_issue))      // series issue (I'm not really sure if -- for this cite style -- the series issue should be rather omitted here)
-          $output .= "." . $node->biblio_issue; // is it correct to format series issues similar to journal article issues?
+          elseif (!empty($node->biblio_tertiary_title)) {
+            $output .= $node->biblio_tertiary_title;      // full series title
+          }
+          if (!empty($node->biblio_volume)||!empty($node->biblio_issue)) {
+            $output .= ", ";
+          }
+          if (!empty($node->biblio_volume)) {      // series volume
+            $output .= $node->biblio_volume;
+          }
+          if (!empty($node->biblio_issue)) {      // series issue (I'm not really sure if -- for this cite style -- the series issue should be rather omitted here)
+            $output .= "." . $node->biblio_issue; // is it correct to format series issues similar to journal article issues?
+          }
         }
 
-        if (!ereg("[?!.][ \"" . '</i>' . "]*$", $output))
-        $output .= ".";
+        if (!ereg("[?!.][ \"" . '</i>' . "]*$", $output)) $output .= ".";
 
-        if (!empty($node->biblio_place_published))      // place
-        $output .= " " . $node->biblio_place_published;
-
+        if (!empty($node->biblio_place_published)) {     // place
+          $output .= " " . $node->biblio_place_published;
+        }
         if (!empty($node->biblio_publisher))      // publisher
         {
-          if (!empty($node->biblio_place_published))
-          $output .= ":";
-
+          if (!empty($node->biblio_place_published))  $output .= ":";
           $output .= " " . $node->biblio_publisher;
         }
-
-
 
         if (!empty($node->biblio_year))      // year
         {
           $output .= ", " . $node->biblio_year;
         }
 
-        if (!empty($node->biblio_pages))      // pages
-       //TODO FIXME $output .= ". " . formatPageInfo($node->biblio_pages, $markupPatternsArray["endash"]); // function 'formatPageInfo()' is defined in 'cite.inc.php'
-
-        if (!ereg("\. *$", $output))
-        $output .= ".";
+        if (!empty($node->biblio_pages)) {     // pages
+          $output .= theme_biblio_page_number($node->biblio_pages);
+        }
+        if (!ereg("\. *$", $output))  $output .= ".";
       }
-
       break;
 
-    default :
+    default : // all other types
+
       if (!empty($authors))      // author
       {
-        $authors = ereg_replace("[ \r\n]*\(eds?\)", "", $authors);
-
-        // if the author is actually the editor of the resource we'll append ', ed' (or ', eds') to the author string:
-        // [to distinguish editors from authors in the 'author' field, the 'modify.php' script does append ' (ed)' or ' (eds)' if appropriate,
-        //  so we're just checking for these identifier strings here. Alternatively, we could check whether the editor field matches the author field]
-//        if (ereg("[ \r\n]*\(ed\)", $node->author)) // single editor
-//        $author = $author . ", " . "ed";
-//        elseif (ereg("[ \r\n]*\(eds\)", $node->author)) // multiple editors
-//        $author = $author . ", " . "eds";
-
         if (!ereg("\. *$", $authors))
         $output .= $authors . ".";
         else
@@ -344,92 +326,93 @@ function biblio_style_mla($node, $base = 'biblio', $inline = false) {
         $output .= '</i>';
       }
 
-      if (count($node->contributors[2]))      // editor (if different from author, see note above regarding the check for ' (ed)' or ' (eds)')
+      if (count($node->biblio_contributors[2]))      // editor (if different from author, see note above regarding the check for ' (ed)' or ' (eds)')
       {
+
         $editor_options = array(
-        'BetweenAuthorsDelimStandard' =>', ',         //4
-        'BetweenAuthorsDelimLastAuthor' => ', and ',  //5
-        'AuthorsInitialsDelimFirstAuthor' => ' ',     //7
-        'AuthorsInitialsDelimStandard'=> ' ',         //8
-        'betweenInitialsDelim' => '. ',               //9
-        'initialsBeforeAuthorFirstAuthor' => true,   //10
-        'initialsBeforeAuthorStandard' => true,       //11
-        'shortenGivenNames' => false,                 //12
-        'numberOfAuthorsTriggeringEtAl' => 3,         //13
-        'includeNumberOfAuthors' => 1,                //14
-        'customStringAfterFirstAuthors' => ', et al.',//15
-        'encodeHTML' => true
+          'BetweenAuthorsDelimStandard' =>', ',         //4
+          'BetweenAuthorsDelimLastAuthor' => ', and ',  //5
+          'AuthorsInitialsDelimFirstAuthor' => ' ',     //7
+          'AuthorsInitialsDelimStandard'=> ' ',         //8
+          'betweenInitialsDelim' => '. ',               //9
+          'initialsBeforeAuthorFirstAuthor' => true,   //10
+          'initialsBeforeAuthorStandard' => true,       //11
+          'shortenGivenNames' => false,                 //12
+          'numberOfAuthorsTriggeringEtAl' => 3,         //13
+          'includeNumberOfAuthors' => 1,                //14
+          'customStringAfterFirstAuthors' => ', et al.',//15
+          'encodeHTML' => true
         );
-        $editor = reArrangeAuthorContents($node->contributors[2], $editor_options);
+        $editor = theme('biblio_authors2', $node->biblio_contributors[2], $editor_options, $inline);
+        if (!ereg("[?!.][ \"" . '</i>' . "]*$", $output)) $output .= ".";
 
-        if (!ereg("[?!.][ \"" . '</i>' . "]*$", $output))
-        $output .= ".";
-
-        if (count($node->contributors[2] > 1)) // there are at least two editors (separated by ';')
-        $output .= " Eds. " . $editor;
-        else // there's only one editor (or the editor field is malformed with multiple editors but missing ';' separator[s])
-        $output .= " Ed. " . $editor;
+        if (count($node->biblio_contributors[2] > 1)) {// there are at least two editors (separated by ';')
+          $output .= " Eds. " . $editor;
+        }
+        else {// there's only one editor (or the editor field is malformed with multiple editors but missing ';' separator[s])
+          $output .= " Ed. " . $editor;
+        }
       }
 
       if (!empty($node->biblio_edition) && !preg_match("/^(1|1st|first|one)( ed\.?| edition)?$/i", $node->biblio_edition))      // edition
       {
-        if (!ereg("[?!.][ \"" . '</i>' . "]*$", $output))
-        $output .= ".";
+        if (!ereg("[?!.][ \"" . '</i>' . "]*$", $output)) $output .= ".";
 
         if (preg_match("/^\d{1,3}$/", $node->biblio_edition)) // if the edition field contains a number of up to three digits, we assume it's an edition number (such as "2nd ed.")
         {
-          if ($node->biblio_edition == "2")
-          $editionSuffix = "nd";
-          elseif ($node->biblio_edition == "3")
-          $editionSuffix = "rd";
-          else
-          $editionSuffix = "th";
+          if ($node->biblio_edition == "2") {
+            $editionSuffix = "nd";
+          }
+          elseif ($node->biblio_edition == "3") {
+            $editionSuffix = "rd";
+          }
+          else {
+            $editionSuffix = "th";
+          }
         }
-        else
-        $editionSuffix = "";
+        else {
+          $editionSuffix = "";
+        }
 
-        if (preg_match("/^(Rev\.?|Revised)( ed\.?| edition)?$/i", $node->biblio_edition))
-        $node->biblio_edition = "Rev.";
-
-        elseif (preg_match("/^(Abr\.?|Abridged)( ed\.?| edition)?$/i", $node->biblio_edition))
-        $node->biblio_edition = "Abr.";
-
-        if (!preg_match("/( ed\.?| edition)$/i", $node->biblio_edition))
-        $editionSuffix .= " ed.";
-
+        if (preg_match("/^(Rev\.?|Revised)( ed\.?| edition)?$/i", $node->biblio_edition)) {
+          $node->biblio_edition = "Rev.";
+        }
+        elseif (preg_match("/^(Abr\.?|Abridged)( ed\.?| edition)?$/i", $node->biblio_edition)) {
+          $node->biblio_edition = "Abr.";
+        }
+        if (!preg_match("/( ed\.?| edition)$/i", $node->biblio_edition)) {
+          $editionSuffix .= " ed.";
+        }
         $output .= " " . $node->biblio_edition . $editionSuffix;
       }
 
       if (!empty($node->biblio_volume))      // volume
       {
-        if (!ereg("[?!.][ \"" . '</i>' . "]*$", $output))
-        $output .= ".";
-
+        if (!ereg("[?!.][ \"" . '</i>' . "]*$", $output)) $output .= ".";
         $output .= " Vol. " . $node->biblio_volume;
       }
 
       if (!empty($node->biblio_alternate_title) OR !empty($node->biblio_secondary_title)) // if there's either a full or an abbreviated series title
       {
-        if (!ereg("[?!.][ \"" . '</i>' . "]*$", $output))
-        $output .= ".";
-
+        if (!ereg("[?!.][ \"" . '</i>' . "]*$", $output))  $output .= ".";
         $output .= " ";
 
-        if (!empty($node->biblio_alternate_title))
-        $output .= $node->biblio_alternate_title;      // abbreviated series title
-
+        if (!empty($node->biblio_alternate_title)) {
+          $output .= $node->biblio_alternate_title;      // abbreviated series title
+        }
         // if there's no abbreviated series title, we'll use the full series title instead:
-        elseif (!empty($node->biblio_secondary_title))
-        $output .= $node->biblio_secondary_title;      // full series title
-
-        if (!empty($node->biblio_volume)||!empty($node->biblio_issue))
-        $output .= ", ";
-
-        if (!empty($node->biblio_volume))      // series volume
-        $output .= $node->biblio_volume;
-
-        if (!empty($node->biblio_issue))      // series issue (I'm not really sure if -- for this cite style -- the series issue should be rather omitted here)
-        $output .= "." . $node->biblio_issue; // is it correct to format series issues similar to journal article issues?
+        elseif (!empty($node->biblio_secondary_title)) {
+          $output .= $node->biblio_secondary_title;      // full series title
+        }
+        if (!empty($node->biblio_volume)||!empty($node->biblio_issue)) {
+          $output .= ", ";
+        }
+        if (!empty($node->biblio_volume)) {     // series volume
+          $output .= $node->biblio_volume;
+        }
+        if (!empty($node->biblio_issue)) {     // series issue (I'm not really sure if -- for this cite style -- the series issue should be rather omitted here)
+          $output .= "." . $node->biblio_issue; // is it correct to format series issues similar to journal article issues?
+        }
       }
 
       if (!empty($node->thesis))      // thesis (unpublished dissertation)
@@ -448,23 +431,21 @@ function biblio_style_mla($node, $base = 'biblio', $inline = false) {
       }
       else // not a thesis
       {
-        if (!ereg("[?!.][ \"" . '</i>' . "]*$", $output))
-        $output .= ".";
+        if (!ereg("[?!.][ \"" . '</i>' . "]*$", $output))  $output .= ".";
 
-        if (!empty($node->biblio_place_published))      // place
-        $output .= " " . $node->biblio_place_published;
-
+        if (!empty($node->biblio_place_published)) {     // place
+          $output .= " " . $node->biblio_place_published;
+        }
         if (!empty($node->biblio_publisher))      // publisher
         {
-          if (!empty($node->biblio_place_published))
-          $output .= ":";
-
+          if (!empty($node->biblio_place_published))  $output .= ":";
           $output .= " " . $node->biblio_publisher;
         }
       }
 
-      if (!empty($node->year))      // year
-      $output .= ", ".$node->year;
+      if (!empty($node->year)) {     // year
+        $output .= ", ".$node->year;
+      }
 
       if ($node->online_publication == "yes") // this record refers to an online article
       {
@@ -472,60 +453,37 @@ function biblio_style_mla($node, $base = 'biblio', $inline = false) {
 
         if (!empty($node->online_citation))      // online_citation
         {
-          if (!ereg("\. *$", $output))
-          $output .= ".";
+          if (!ereg("\. *$", $output)) $output .= ".";
 
           $output .= " " . $node->online_citation;
         }
 
         if (!empty($node->doi))      // doi
         {
-          if (!ereg("\. *$", $output))
-          $output .= ".";
+          if (!ereg("\. *$", $output)) $output .= ".";
 
-          if ($encodeHTML)
-          $output .= " " . $today . encodeHTML(" <http://dx.doi.org/" . $node->doi . ">");
-          else
-          $output .= " " . $today . " <http://dx.doi.org/" . $node->doi . ">";
+          if ($encodeHTML) {
+            $output .= " " . $today . encodeHTML(" <http://dx.doi.org/" . $node->doi . ">");
+          }
+          else {
+            $output .= " " . $today . " <http://dx.doi.org/" . $node->doi . ">";
+          }
         }
         elseif (!empty($node->url))      // url
         {
-          if (!ereg("\. *$", $output))
-          $output .= ".";
+          if (!ereg("\. *$", $output)) $output .= ".";
 
-          if ($encodeHTML)
-          $output .= " " . $today . encodeHTML(" <" . $node->url . ">");
-          else
-          $output .= " " . $today . " <" . $node->url . ">";
+          if ($encodeHTML) {
+            $output .= " " . $today . encodeHTML(" <" . $node->url . ">");
+          }
+          else {
+            $output .= " " . $today . " <" . $node->url . ">";
+          }
         }
-
       }
 
-      if (!ereg("\. *$", $output))
-      $output .= ".";
-
-      //      if (isset ($node->biblio_year)) {
-      //        $output .= check_plain($node->biblio_year) . ".&nbsp;&nbsp;";
-      //      }
-      //      $output .= '<span class="biblio-title">';
-      //      $output .= $inline ? l("$node->title", "$base/viewinline/$node->nid") : l("$node->title", "node/$node->nid");
-      //      $output .= (strpos($node->title, '?'))? " </span>" : ". </span>";  // if the title ends in a question mark, don't put a period after it.
-      //      $output .= (!empty ($node->biblio_secondary_title)) ? check_plain($node->biblio_secondary_title) . '. ' : '';
-      //      $output .= (!empty ($node->biblio_volume))          ? check_plain($node->biblio_volume) : '';
-      //      $output .= (!empty ($node->biblio_issue))           ? '(' . check_plain($node->biblio_issue) . ')' : '';
-      //      $output .= (!empty ($node->biblio_pages))           ? ':' . str_replace(" ", "", check_plain($node->biblio_pages)) . '.' : '';
-      break; // generic
+      if (!ereg("\. *$", $output)) $output .= ".";
+      break;
   }
-  /*  if ($node->biblio_date) $output .= ', '. check_plain($node->biblio_date);
-   if ($node->biblio_number) $output .= ', Number '. check_plain($node->biblio_number);
-
-   if ($node->biblio_place_published) $output .= ', '. check_plain($node->biblio_place_published);
-   */
   return $output;
-}
-function _mla_format_author($author) {
-  $format = $author['prefix'] . ' ' . $author['lastname'] . ' ';
-  $format .= !empty ($author['firstname']) ? ' ' . drupal_substr($author['firstname'], 0, 1) : '';
-  $format .= !empty ($author['initials']) ? str_replace(' ', '', $author['initials']) : '';
-  return $format;
 }
