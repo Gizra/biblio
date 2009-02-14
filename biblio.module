@@ -1341,8 +1341,7 @@ function biblio_citekey_generate($node) {
     ob_start();
     $return = eval($php);
     ob_end_clean();
-    if (!is_string($return)) $return = '';
-    return check_plain($return);
+    return check_plain(strip_tags((string)$return));
   }
 }
 
