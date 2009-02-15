@@ -1623,7 +1623,7 @@ function biblio_update_6014() {
     // add new field titles from author type + appended 's'
     $result[] = update_sql("INSERT INTO {biblio_field_type_data} 
     												SELECT auth_type AS ftdid, CONCAT(TRIM(ctd.title),'s') AS title, NULL AS hint
-    												FROM biblio_contributor_type_data ctd WHERE auth_type>1 AND auth_type<6");
+    												FROM {biblio_contributor_type_data} ctd WHERE auth_type>1 AND auth_type<6");
     // create space for new fields in linking table
     $result[] = update_sql("UPDATE {biblio_field_type} ft SET fid=fid+4 WHERE fid>1 ORDER BY fid DESC");
     // shift ftdid and cust_tdid for non-custom ftids
