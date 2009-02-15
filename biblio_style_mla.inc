@@ -18,6 +18,25 @@ function biblio_style_mla_info() {
     'mla' => 'Modern Language Association (MLA)'
     );
 }
+function biblio_sytle_mla_author_options() {
+  $author_options = array(
+    'BetweenAuthorsDelimStandard' =>', ',         //4
+    'BetweenAuthorsDelimLastAuthor' => ', and ',  //5
+    'AuthorsInitialsDelimFirstAuthor' => ', ',     //7
+    'AuthorsInitialsDelimStandard'=> ' ',         //8
+    'betweenInitialsDelim' => '. ',               //9
+    'initialsBeforeAuthorFirstAuthor' => false,   //10
+    'initialsBeforeAuthorStandard' => true,       //11
+    'shortenGivenNames' => FALSE,                 //12
+    'numberOfAuthorsTriggeringEtAl' => 3,         //13
+    'includeNumberOfAuthors' => 1,                //14
+    'customStringAfterFirstAuthors' => ', et al.',//15
+    'encodeHTML' => true
+  );
+   
+  return $author_options;
+}
+
 /**
  * Apply a bibliographic style to the node
  *
@@ -34,20 +53,8 @@ function biblio_style_mla_info() {
  */
 function biblio_style_mla($node, $base = 'biblio', $inline = false) {
 
-  $author_options = array(
-    'BetweenAuthorsDelimStandard' =>', ',         //4
-    'BetweenAuthorsDelimLastAuthor' => ', and ',  //5
-    'AuthorsInitialsDelimFirstAuthor' => ', ',     //7
-    'AuthorsInitialsDelimStandard'=> ' ',         //8
-    'betweenInitialsDelim' => '. ',               //9
-    'initialsBeforeAuthorFirstAuthor' => false,   //10
-    'initialsBeforeAuthorStandard' => true,       //11
-    'shortenGivenNames' => FALSE,                 //12
-    'numberOfAuthorsTriggeringEtAl' => 3,         //13
-    'includeNumberOfAuthors' => 1,                //14
-    'customStringAfterFirstAuthors' => ', et al.',//15
-    'encodeHTML' => true
-  );
+  $author_options = biblio_sytle_mla_author_options();
+
   // $authors = theme('biblio_authors', $node->biblio_contributors[1], 'mla', 1, $inline);
 
   $authors = theme('biblio_authors2', $node->biblio_contributors[1], $author_options, $inline);
