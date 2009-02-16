@@ -298,6 +298,13 @@ function biblio_build_query($arg_list) {
           array_push($args, $type, $term[0]);
           $operator = NULL;
           break;
+        case 'citekey':
+          $term = explode("?",array_shift($arg_list));
+          $terms[] = db_escape_string($term[0]);
+          $where[] = "b.biblio_citekey= '%s' ";
+          array_push($args, $type, $term[0]);
+          $operator = NULL;
+          break;
         case 'type':
           $term = db_escape_string(array_shift($arg_list));
           $limit .= $operator. "b.biblio_type=%d ";
