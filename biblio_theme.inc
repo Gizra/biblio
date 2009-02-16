@@ -274,7 +274,9 @@ function theme_biblio_authors($contributors, $style = 'classic', $cat = 1, $inli
   $author_links = variable_get('biblio_author_links', 1);
   $base  = variable_get('biblio_base', 'biblio');
   foreach ($contributors as $key => $author) {
-    $author = biblio_parse_author($author, $cat); // this is needed for form preview to fill in all fields
+    if (!isset($author['lastname'])) {
+      $author = biblio_parse_author($author, $cat); // this is needed for form preview to fill in all fields
+    }
     if (strlen($author['name'])) {
       $format = $author_style_function($author);
       if ($author_links) $format = _biblio_author_link($format, $author['cid'], $base, $inline);

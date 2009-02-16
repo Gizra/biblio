@@ -1055,7 +1055,11 @@ function biblio_admin_author_type_delete_confirm_submit($form, &$form_state) {
 
 function biblio_admin_author_edit_form($form_state, $author_id) {
   $author = db_fetch_object(db_query('SELECT * FROM {biblio_contributor_data} b WHERE b.cid = %d ', $author_id));
-
+  if (!$author) {
+    drupal_not_found();
+    return;
+  }
+  
   $base = variable_get('biblio_base', 'biblio');  
   $menu = menu_get_active_title();
   if ($menu == 'Edit author information') $path = $base.'/authors';
