@@ -868,29 +868,14 @@ function biblio_form_filter_submit($form, &$form_state) {
  * @param $profile
  * @return unknown_type
  */
-function biblio_get_user_pubs($user, $profile=''){
- 
-/*  switch ((isset($user->biblio_profile_uid) ) ? $user->biblio_profile_uid : variable_get('biblio_profile_uid', 'uid')){
-    case 'lastname':
-      $pubs = biblio_db_search('author', $user->biblio_lastname, $profile);
-      break;
-    case 'uid_lastname':
-      $pubs = biblio_db_search('uid', $user->uid, 'author', $user->biblio_lastname, $profile);
-      break;
-    case 'uid':
-    default:
-      $pubs = biblio_db_search('uid', $user->uid, $profile);
-  }
-*/  
-  
+function biblio_get_user_pubs($user, $profile='', $nofilters=''){
   if (isset($user->biblio_contributor_id) && $user->biblio_contributor_id > 0 ){
-    $pubs = biblio_db_search('author', $user->biblio_contributor_id, $profile);
+    $pubs = biblio_db_search('author', $user->biblio_contributor_id, $profile, $nofilters);
   }else{
-   $pubs = biblio_db_search('uid', $user->uid, $profile);
+    $pubs = biblio_db_search('uid', $user->uid, $profile, $nofilters);
   }
 
   return $pubs;
-
 }
 
 /**
