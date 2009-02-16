@@ -926,13 +926,14 @@ function biblio_form_sort($a, $b) {
 function biblio_admin_get_query($name) {
   switch ($name) {
     case "author_dup" :
-      return ('SELECT lastname, firstname, initials, COUNT(lastname) as cnt  FROM {biblio_contributor_data} GROUP BY lastname HAVING cnt>1 ORDER BY lastname ASC, firstname ASC, initials ASC ');
+      return ('SELECT lastname, firstname, initials, COUNT(lastname) as cnt  FROM {biblio_contributor_data} GROUP BY lastname, firstname, initials HAVING COUNT(*)>1 ORDER BY lastname ASC, firstname ASC, initials ASC ');
       break;
     case "author_by_name" :
-      return ('SELECT lastname, cid FROM {biblio_contributor_data} where lastname LIKE "%s"');
+      return ("SELECT lastname, cid FROM {biblio_contributor_data} where lastname LIKE '%s'");
       break;
     case 'author_pub_count' :
-      return ('SELECT bd.lastname, b.cid,COUNT(*) AS cnt FROM {biblio_contributor} b, {biblio_contributor_data} bd WHERE bd.cid=b.cid GROUP BY b.cid HAVING cnt > 0 ORDER BY lastname ASC');
+//      return ('SELECT bd.lastname, b.cid,COUNT(*) AS cnt FROM {biblio_contributor} b, {biblio_contributor_data} bd WHERE bd.cid=b.cid GROUP BY b.cid HAVING cnt > 0 ORDER BY lastname ASC');
+      return ('SELECT bd.lastname, b.cid,COUNT(*) AS cnt FROM {biblio_contributor} b, {biblio_contributor_data} bd WHERE bd.cid=b.cid GROUP BY b.cid, bd.lastname HAVING COUNT(*) > 0 ORDER BY lastname ASC');
       break;
   }
 }
@@ -980,16 +981,21 @@ function biblio_admin_author_types_form($form_state, $op = NULL, $id = NULL) {
 }
 
 function theme_biblio_admin_author_types_form($form) {
-  // We need this complex query to realize author_types which are not in use (cid is NULL)
-  $db_result = db_query("SELECT ctd.*, cid FROM {biblio_contributor_type_data} ctd
+   // We need this complex query to realize author_types which are not in use (count(cid) is zero).
+   // Grouping by title and hint (which are functionally dependent on auth_type)
+   // is required by the SQL standard, i.e., as a rule, in a query with a GROUP
+   // BY clause, only attributes appearing in the GROUP BY
+   // clause, or aggregate functions, may be selected.
+   // (PostgreSQL enforces this rule).
+      $db_result = db_query("SELECT ctd.*, count(cid) as cid FROM {biblio_contributor_type_data} ctd
                          LEFT JOIN {biblio_contributor} c ON ctd.auth_type = c.auth_type 
-                         GROUP BY ctd.auth_type");
+                         GROUP BY ctd.auth_type, ctd.title, ctd.hint");
   while ($row = db_fetch_object($db_result)) {
-    $ops = l(t('edit'), 'admin/settings/biblio/author/type/'.$row->auth_type.'/edit' );
-    if (!isset($row->cid) && $row->auth_type >= 10) { // allow delete only if type not in use
-      $ops .= '&nbsp;&nbsp;';
-      $ops .= l(t('delete'), 'admin/settings/biblio/author/type/'.$row->auth_type.'/delete/');
-    }
+     $ops = l(t('edit'), 'admin/settings/biblio/author/type/'.$row->auth_type.'/edit' );
+     if ($row->cid == 0 && $row->auth_type >= 10) { // allow delete only if type not in use
+       $ops .= '&nbsp;&nbsp;';
+       $ops .= l(t('delete'), 'admin/settings/biblio/author/type/'.$row->auth_type.'/delete/');
+     }
     $rows[] = array(
       $row->auth_type,
       $row->title,
@@ -1146,8 +1152,8 @@ function biblio_admin_author_edit_form($form_state, $author_id) {
     '#required' => FALSE,
     '#maxlength' => 256
   );
-
-  $authors = db_query("SELECT * FROM {biblio_contributor_data} cd WHERE LOCATE('%s', name) AND cid!=%d",array($author->lastname, $author_id));
+  $authors = db_query("SELECT * FROM {biblio_contributor_data} cd WHERE name LIKE '%%s%' AND cid!=%d", array($author->lastname, $author_id));
+ // $authors = db_query("SELECT * FROM {biblio_contributor_data} cd WHERE LOCATE('%s', name) AND cid!=%d",array($author->lastname, $author_id));
   unset($options);
   $base = variable_get('biblio_base', 'biblio');
   while($author=db_fetch_array($authors)) {
@@ -1252,7 +1258,8 @@ function biblio_admin_keyword_edit_form($form_state, $keyword_id) {
     '#maxlength' => 255
   );
 
-  $keywords = db_query("SELECT * FROM {biblio_keyword_data} kd WHERE LOCATE('%s', word) AND kid!=%d", drupal_substr($keyword->word,1,5), $keyword_id);
+  $keywords = db_query("SELECT * FROM {biblio_keyword_data} kd WHERE word LIKE '%%s%' AND kid!=%d", drupal_substr($keyword->word,1,5), $keyword_id);
+
   unset($options);
   $base = variable_get('biblio_base', 'biblio');
   while($kw=db_fetch_object($keywords)) {
