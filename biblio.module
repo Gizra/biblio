@@ -2054,3 +2054,12 @@ function _biblio_profile_access($user, $type = 'profile') {
   if ($type == 'profile') return $user->biblio_show_profile;
   if ($type == 'menu')    return $user->biblio_my_pubs_menu;
 }
+
+/**
+ * Implementation of hook_views_api().
+ */
+function biblio_views_api() {
+  return array(
+    'api' => 2,
+  );
+}
