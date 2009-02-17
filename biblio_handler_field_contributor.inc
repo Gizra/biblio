@@ -10,7 +10,6 @@ class biblio_handler_field_contributor extends views_handler_field {
 
   function options(&$options) {
     parent::options($options);
-    $options['label'] = '';
   }
 
   function query() {

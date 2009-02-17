@@ -68,7 +68,7 @@ function biblio_views_data() {
     if ($field['type'] == 'contrib_widget') {
       $data[$field['name']]['field'] = array(
         'handler' => 'biblio_handler_field_contributor',
-        'ftdid' => $field['ftdid'],
+        'auth_category' => $field['ftdid'],
       );    
     }
   }
