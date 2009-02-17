@@ -115,7 +115,7 @@ function biblio_build_query($arg_list) {
                     WHEN SUBSTR(n.title,1,4)='The ' THEN LOWER(SUBSTR(n.title,5))
                     ELSE LOWER(n.title)
                  END ";
-  
+
   $limit = '';
   if (variable_get('biblio_view_only_own', 0) ) {
     $limit .= " AND n.uid = $user->uid ";
@@ -174,7 +174,7 @@ function biblio_build_query($arg_list) {
       array_shift($arg_list);
       $operator = ($operator)?$operator:" AND "; //defaults to AND
       switch ($type) {
-        case 'no_filters': 
+        case 'no_filters':
           break;
         case 'and':
           $operator = " AND ";
@@ -235,7 +235,7 @@ function biblio_build_query($arg_list) {
           if (is_numeric($term[0])){
             $join[] = "inner join {biblio_contributor} as bc". $bcc ." on n.vid = bc". $bcc .".vid";
             $where[] = "bc". $bcc .".cid = '%d' ";
-            $terms[] = db_escape_string($term[0]);             
+            $terms[] = db_escape_string($term[0]);
           }else{
             $where[] = " bcd". $bcc .'.name '. $match_op .' "[[:<:]]%s[[:>:]]" ';
             $join[] = " JOIN {biblio_contributor} as bc". $bcc ." on b.vid = bc". $bcc .".vid ";
@@ -272,12 +272,23 @@ function biblio_build_query($arg_list) {
           $operator = NULL;
           break;
         case 'keyword':
+          $bkd++;
           $term = explode("?",array_shift($arg_list));
-     //     $where[] = "b.biblio_keywords RLIKE '%s' ";
-          $terms[] = db_escape_string($term[0]);
-          $join[] = "inner join {biblio_keyword} as bk on n.vid = bk.vid";
+          if (is_numeric($term[0])){
+            $terms[] = db_escape_string($term[0]);
+            $join[] = "inner join {biblio_keyword} as bk on n.vid = bk.vid";
           //$join[] = "inner join {biblio_keyword_data} as bkd on bk.kid= bkd.kid";
-          $where[] = "bk.kid = %d ";
+            $where[] = "bk.kid = %d ";
+          }else{
+            $where[] = " bkd". $bkd .'.word '. $match_op .' "[[:<:]]%s[[:>:]]" ';
+            $join[] = " JOIN {biblio_keyword} as bk". $bkd ." on b.vid = bk". $bkd .".vid ";
+            $join[] = " JOIN {biblio_keyword_data} as bkd". $bkd ." on bk". $bkd .".kid = bkd".$bkd .".kid ";
+            $terms[] = db_escape_string($term[0]);
+            $operator = NULL;
+            $rss_info['title'] = t("Keyword " . $term[0]);
+            $rss_info['description'] = t("These publications, containing the keyword: %keyword, are part of the works listed at %sitename", array('%keyword' => $term[0], '%sitename' => variable_get('site_name', 'Drupal')));
+            $rss_info['link'] = '/keyword/' . $term[0];
+          }
           array_push($args, $type, $term[0]);
           $operator = NULL;
           break;
@@ -385,7 +396,7 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
   global $pager_total_items;
   module_load_include('inc','biblio','biblio.contributors');
   module_load_include('inc','biblio','biblio.keywords');
-  
+
   $base =  variable_get('biblio_base', 'biblio');
   $style = variable_get('biblio_style', 'cse');
   if ($inline === 'profile') {
@@ -470,8 +481,10 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
         }
         if ($type == 'keyword') {
           require_once(drupal_get_path('module', 'biblio') .'/biblio.keywords.inc');
-          $term = biblio_get_keyword_by_id($value);
-          $value = $term->word;
+          if (is_numeric($value)) {
+            $term = biblio_get_keyword_by_id($value);
+            $value = $term->word;
+          }
           $type = t("Keyword");
         }
         if ($type == 'uid' ) {
@@ -523,18 +536,18 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
       $content .= '</div>';
     }
   }
-  
+
   if ($inline === true) print '<div class="biblio-inline">';
   if ($_GET['sort'] == 'title' || $_GET['sort'] == 'author'){
     $content .= theme(biblio_alpha_line,$_GET['sort'],$value);
-  }      
-  
+  }
+
   $_char = $_type = $_year = $name = ""; $count = 0;
   while ($node = db_fetch_object($result)) {
     $count++;
     $node->biblio_contributors = biblio_load_contributors($node->vid);
     $node->biblio_keywords = biblio_load_keywords($node->vid);
-    
+
     if ( module_exists("upload") ) {
       $node->files = upload_load($node);
     }
@@ -613,7 +626,7 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
  */
 function biblio_search_form(&$form_state) {
   $form['biblio_search'] = array(
-    '#prefix' => '<div class="container-inline biblio-search clear-block">', 
+    '#prefix' => '<div class="container-inline biblio-search clear-block">',
     '#suffix' => '</div>',
     );
   $form['biblio_search']['keys'] = array(
@@ -742,7 +755,7 @@ function _get_biblio_filters() {
   $type_select   = isset($pub_type)  ? array('title' => t('Type'), 'options' => array_unique($pub_type))  : null;
   $tax_select    = isset($pub_taxo)  ? array('title' => t('Term'),'options' => array_unique($pub_taxo))  : null;
   $keyword_select = isset($pub_keywords) ? array('title' => t('Keyword'), 'options' => $pub_keywords) : null;
-  
+
   $filters = array(
     'author'     => $author_select,
     'type'    => $type_select,
@@ -939,10 +952,10 @@ function _biblio_keyword_links($keywords,$base='biblio') {
 }
 
 function biblio_author_page($filter = NULL) {
-    $base = variable_get('biblio_base', 'biblio');  
+    $base = variable_get('biblio_base', 'biblio');
     $menu = menu_get_active_title();
     if ($menu == 'Authors') $path = $base.'/authors/';
-    if ($menu == 'Biblio settings') $path = 'admin/settings/biblio/author/list/'; 
+    if ($menu == 'Biblio settings') $path = 'admin/settings/biblio/author/list/';
     if ($filter) {
       $filter = strtoupper($filter);
       $query_ext =  " AND UPPER(SUBSTRING(lastname,1,1)) = '%s' ";
@@ -952,7 +965,7 @@ function biblio_author_page($filter = NULL) {
       $query_ext =  NULL;
       $header_ext = NULL;
     }
-    
+
 //    $db_result = db_query('SELECT bd.*, COUNT(*) AS cnt FROM {biblio_contributor} b, {biblio_contributor_data} bd WHERE bd.cid=b.cid '. $query_ext.' GROUP BY b.cid HAVING cnt > 0 ORDER BY  lastname ASC, SUBSTRING(firstname,1,1) ASC, initials ASC',$filter);
      $db_result = db_query('SELECT bd.cid, bd.drupal_uid, bd.name, bd.lastname,
                               bd.firstname, bd.prefix, bd.suffix, bd.initials,
@@ -966,16 +979,16 @@ function biblio_author_page($filter = NULL) {
                             HAVING COUNT(*) > 0
                             ORDER BY  lastname ASC, SUBSTRING(firstname,1,1) ASC,
                             initials ASC', $filter);
-    
+
     while ($author = db_fetch_array($db_result)){
       $authors[] = $author;
     }
     $rows[] = array(array('data' => theme(biblio_alpha_line, 'authors', $filter, $path), 'colspan' => 3));
     for ($i=0; $i < count($authors); $i+=3) {
-      $rows[] = array( array('data' => _biblio_format_author($authors[$i], $path) ), 
+      $rows[] = array( array('data' => _biblio_format_author($authors[$i], $path) ),
                        array('data' => isset($authors[$i+1])?_biblio_format_author($authors[$i+1], $path):'' ),
                        array('data' => isset($authors[$i+2])?_biblio_format_author($authors[$i+2], $path):'' ));
-    }    
+    }
   $header = array(array('data' => t('There are a total of @count authors !header_ext in the database',array('@count' => count($authors), '!header_ext' => $header_ext)), 'align' =>'center', 'colspan' => 3));
   $output .= theme('table', $header, $rows);
   return $output;
@@ -1028,6 +1041,6 @@ function _biblio_format_keyword($keyword) {
   $format   .= ' ('. $keyword->cnt . ') ' ;
   $edit_link = ' ['.l(t('edit'), "$base/keyword/$keyword->kid/edit/" ).'] ';
   $format   .= (user_access('administer biblio')) ? $edit_link: '';
-  
+
   return $format;
 }
