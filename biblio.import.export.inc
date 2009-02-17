@@ -360,7 +360,7 @@ function biblio_export($format = "tagged", $nid = null, $popup = false, $version
     $params = $_SESSION['last_biblio_query_terms'];
   }
   elseif (!empty ($nid)) {
-    $query = db_rewrite_sql("SELECT * FROM {node} n left join {biblio} b  on n.vid=b.vid WHERE n.nid=%d GROUP by n.nid");
+    $query = db_rewrite_sql("SELECT * FROM {node} n left join {biblio} b  on n.vid=b.vid WHERE n.nid=%d /*GROUP by n.nid*/");
     $params[] = $nid;
   } else {
     return;
