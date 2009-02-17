@@ -1152,8 +1152,7 @@ function biblio_admin_author_edit_form($form_state, $author_id) {
     '#required' => FALSE,
     '#maxlength' => 256
   );
-  $authors = db_query("SELECT * FROM {biblio_contributor_data} cd WHERE name LIKE '%%s%' AND cid!=%d", array($author->lastname, $author_id));
- // $authors = db_query("SELECT * FROM {biblio_contributor_data} cd WHERE LOCATE('%s', name) AND cid!=%d",array($author->lastname, $author_id));
+ $authors = db_query("SELECT * FROM {biblio_contributor_data} cd WHERE name LIKE '%%%s%%' AND cid != %d",$author->lastname, $author_id);
   unset($options);
   $base = variable_get('biblio_base', 'biblio');
   while($author=db_fetch_array($authors)) {
@@ -1258,7 +1257,7 @@ function biblio_admin_keyword_edit_form($form_state, $keyword_id) {
     '#maxlength' => 255
   );
 
-  $keywords = db_query("SELECT * FROM {biblio_keyword_data} kd WHERE word LIKE '%%s%' AND kid!=%d", drupal_substr($keyword->word,1,5), $keyword_id);
+  $keywords = db_query("SELECT * FROM {biblio_keyword_data} kd WHERE word LIKE '%%%s%%' AND kid!=%d", drupal_substr($keyword->word,1,5), $keyword_id);
 
   unset($options);
   $base = variable_get('biblio_base', 'biblio');

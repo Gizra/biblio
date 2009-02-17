@@ -212,7 +212,7 @@ function biblio_import_batch_operations($session_id, $userid, $terms, &$context)
     $context['results']['terms'] = $terms;
     $context['sandbox']['progress'] = 0;
     $context['sandbox']['current_id'] = 0;
-    $context['sandbox']['max'] = db_result(db_query('SELECT COUNT(DISTINCT id) FROM {biblio_import_cache} WHERE session_id = "%s"', $session_id));
+    $context['sandbox']['max'] = db_result(db_query("SELECT COUNT(DISTINCT(id)) FROM {biblio_import_cache} WHERE session_id = '%s'", $session_id));
   }
 
   // Process the next 20 nodes.
