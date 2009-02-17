@@ -1,6 +1,6 @@
 <?php
 
-class biblio_handler_field_contributor extends views_handler_field {
+class biblio_handler_field_contributor extends biblio_handler_field {
   function construct() {
     parent::construct();
     $this->additional_fields['vid'] = array('table' => 'biblio', 'field' => 'vid');

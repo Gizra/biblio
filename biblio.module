@@ -1495,83 +1495,7 @@ function _parse_author_array($authorArray) {
   return $creators;
   return FALSE;
 }
-// grab firstname and initials which may be of form "A.B.C." or "A. B. C." or " A B C " etc.
-/*
- function biblio_views_tables() {
 
- $table = views_new_table('biblio', 'internal', 'node', 'vid', 'vid');
- $result = db_query('SELECT name,title FROM {biblio_fields} ');
- while ($field = db_fetch_array($result)) {
- views_table_add_field($table, $field['name'], "Biblio: ".$field['title'], "", array(
- 'sortable' => TRUE,
- 'notafield' => FALSE,
- ));
- }
-
- $tables['biblio'] = $table;
- $table = views_new_table('biblio_types', 'internal', 'biblio', 'tid', 'tid');
- $tables['biblio_types'] = $table;
- return $tables;
- }
- function biblio_views_default_views() {
- $view = new stdClass();
- $view->name = 'biblioview';
- $view->description = 'Shows a summary view of biblio entries';
- $view->access = array();
- $view->view_args_php = '';
- $view->page = TRUE;
- $view->page_title = 'Biblio';
- $view->page_header = '';
- $view->page_header_format = '1';
- $view->page_footer = '';
- $view->page_footer_format = '1';
- $view->page_empty = '';
- $view->page_empty_format = '1';
- $view->page_type = 'table';
- $view->url = 'biblioview';
- $view->use_pager = TRUE;
- $view->nodes_per_page = '10';
- $view->sort = array();
- $view->argument = array(
- array(
- 'type' => 'nodetype',
- 'argdefault' => '2',
- 'title' => '',
- 'options' => '',
- 'wildcard' => 'biblio',
- 'wildcard_substitution' => '',
- ),
- );
- $view->field = array(
- array(
- 'tablename' => 'biblio',
- 'field' => 'biblio_year',
- 'label' => 'Year',
- 'sortable' => '1',
- 'defaultsort' => 'DESC',
- ),
- array(
- 'tablename' => 'biblio',
- 'field' => 'biblio_authors',
- 'sortable' => '1',
- 'label' => 'Author',
- ),
- array(
- 'tablename' => 'node',
- 'field' => 'title',
- 'label' => 'Title',
- 'handler' => 'views_handler_field_nodelink',
- 'sortable' => '1',
- 'options' => 'link',
- ),
- );
- $view->filter = array();
- $view->exposed_filter = array();
- $view->requires = array(biblio, node);
- $views[$view->name] = $view;
- return $views;
- }
- */
 /*******************************************
  * Filter
  * Largely inspired from the footnote module
@@ -2040,4 +1964,13 @@ function _biblio_profile_access($user, $type = 'profile') {
   if (!variable_get('biblio_show_user_profile_form', '1') || !isset($user->$key))
     return variable_get($key, '0'); // return site default
   else return $user->$key; // return user setting
+}
+
+/**
+ * Implementation of hook_views_api().
+ */
+function biblio_views_api() {
+  return array(
+    'api' => 2,
+  );
 }

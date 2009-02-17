@@ -6,8 +6,11 @@
 function biblio_views_handlers() {
   return array(
     'handlers' => array(
-      'biblio_handler_field_contributor' => array(
+      'biblio_handler_field' => array(
         'parent' => 'views_handler_field',
+      ),
+      'biblio_handler_field_contributor' => array(
+        'parent' => 'biblio_handler_field',
       ),
 /*
       'biblio_handler_filter_contributor' => array(
@@ -39,17 +42,6 @@ function biblio_views_data() {
     'title' => t('Biblio'),
     'help' => t("Biblio publications."),
   );
-  // how this joins to other existing tables (node, node_revisions)
-  $data['table']['join'] = array(
-    'node' => array(
-      'left_field' => 'vid',
-      'field' => 'vid',
-    ),
-    'node_revisions' => array(
-      'left_field' => 'vid',
-      'field' => 'vid',
-    ),
-  );
 
   // add fields
   $result = db_query('SELECT f.name,f.type,ftd.title,ft.ftdid FROM {biblio_fields} f 
@@ -61,7 +53,7 @@ function biblio_views_data() {
       'title' => $field['title'], 
       'help'  => "Display the " . $field['title'], 
       'field' => array(
-        'handler' => 'views_handler_field',
+        'handler' => 'biblio_handler_field',
       ),
     );
     // for contrib_widgets we use a special handler:
