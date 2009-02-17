@@ -59,72 +59,63 @@ function biblio_init() {
 function biblio_theme() {
   return array(
     'biblio_alpha_line' => array(
-      'file' => 'biblio_theme.inc',
-      'arguments' => array('type'),
-  ),
-
+        'file' => 'biblio_theme.inc',
+        'arguments' => array('type'),
+    ),
     'biblio_admin_author_types_form' => array(
-      'file' => 'biblio.admin.inc',
-      'arguments' => array('form'),
-  ),
+        'file' => 'biblio.admin.inc',
+        'arguments' => array('form'),
+    ),
     'biblio_admin_types_edit_form' => array(
-      'file' => 'biblio_theme.inc',
-      'arguments' => array('form'),
-  ),
-
+        'file' => 'biblio_theme.inc',
+        'arguments' => array('form'),
+    ),
     'biblio_admin_author_edit_form' => array(
-      'file' => 'biblio_theme.inc',
-      'arguments' => array('form'),
-  ),
+        'file' => 'biblio_theme.inc',
+        'arguments' => array('form'),
+    ),
     'biblio_admin_orphans_form' => array(
-      'file' => 'biblio_theme.inc',
-      'arguments' => array('form'),
-  ),
-
+        'file' => 'biblio_theme.inc',
+        'arguments' => array('form'),
+    ),
     'biblio_coin_button' => array(
-      'file' => 'biblio_theme.inc',
-      'arguments' => array('element'),
-  ),
-
+        'file' => 'biblio_theme.inc',
+        'arguments' => array('element'),
+    ),
     'biblio_openurl' => array(
-      'file' => 'biblio_theme.inc',
-      'arguments' => array('openURL'),
-  ),
-
+        'file' => 'biblio_theme.inc',
+        'arguments' => array('openURL'),
+    ),
     'biblio_style' => array(
-      'file' => 'biblio_theme.inc',
-      'arguments' => array(
-        'node',
-        'base' => 'biblio',
-        'style_name' => 'classic',
-        'inline' => FALSE),
-  ),
-
+        'file' => 'biblio_theme.inc',
+        'arguments' => array(
+          'node',
+          'base' => 'biblio',
+          'style_name' => 'classic',
+          'inline' => FALSE),
+    ),
     'biblio_long' => array(
-      'file' => 'biblio_theme.inc',
-      'arguments' => array(
-        'node',
-        'base' => 'biblio',
-        'style_name' => 'classic'),
-        ),
-
+        'file' => 'biblio_theme.inc',
+        'arguments' => array(
+          'node',
+          'base' => 'biblio',
+          'style_name' => 'classic'),
+    ),
     'biblio_tabular' => array(
-      'file' => 'biblio_theme.inc',
-      'arguments' => array(
-        'node',
-        'base' => 'biblio',
-        'teaser' => FALSE),
-        ),
-
+        'file' => 'biblio_theme.inc',
+        'arguments' => array(
+          'node',
+          'base' => 'biblio',
+          'teaser' => FALSE),
+    ),
     'biblio_entry' => array(
-      'file' => 'biblio_theme.inc',
-      'arguments' => array(
-        'node',
-        'base' => 'biblio',
-        'style_name' => 'classic',
-        'inline' => FALSE),
-        ),
-
+        'file' => 'biblio_theme.inc',
+        'arguments' => array(
+          'node',
+          'base' => 'biblio',
+          'style_name' => 'classic',
+          'inline' => FALSE),
+    ),
     'biblio_authors' => array(
       'file' => 'biblio_theme.inc',
       'arguments' => array(
@@ -132,55 +123,48 @@ function biblio_theme() {
         'style' => 'classic',
         'inline' => FALSE,
         'glue' => ', '),
-        ),
+    ),
     'biblio_authors2' => array(
       'file' => 'biblio_theme.inc',
       'arguments' => array(
         'contributors',
         'options' => array(),
         'inline' => FALSE,),
-        ),
+    ),
 
     'biblio_filters' => array(
-      'file' => 'biblio_theme.inc',
-      'arguments' => array('form'),
-        ),
-
+        'file' => 'biblio_theme.inc',
+        'arguments' => array('form'),
+    ),
     'form_filter' => array(
-      'file' => 'biblio_theme.inc',
-      'arguments' => array('form'),
-        ),
-
+        'file' => 'biblio_theme.inc',
+        'arguments' => array('form'),
+    ),
     'biblio_tagged_link' => array(
-      'file' => 'biblio_theme.inc',
-      'arguments' => array('base', 'nid'),
-        ),
-
-    'biblio_xml_link' => array(
-      'file' => 'biblio_theme.inc',
-      'arguments' => array('base', 'nid'),
-        ),
-
-    'biblio_bibtex_link' => array(
-      'file' => 'biblio_theme.inc',
-      'arguments' => array('base', 'nid'),
-        ),
-
+        'file' => 'biblio_theme.inc',
+        'arguments' => array('base', 'nid'),
+    ),
+   'biblio_xml_link' => array(
+        'file' => 'biblio_theme.inc',
+        'arguments' => array('base', 'nid'),
+    ),
+   'biblio_bibtex_link' => array(
+        'file' => 'biblio_theme.inc',
+        'arguments' => array('base', 'nid'),
+    ),
     'biblio_export_links' => array(
-      'file' => 'biblio_theme.inc',
-      'arguments' => array('nid'),
-        ),
-
+        'file' => 'biblio_theme.inc',
+        'arguments' => array('nid'),
+    ),
     'biblio_download_links' => array(
-      'file' => 'biblio_theme.inc',
-      'arguments' => array('node'),
-        ),
-
+        'file' => 'biblio_theme.inc',
+        'arguments' => array('node'),
+    ),
     'biblio_contributors' => array(
-      'file' => 'biblio_theme.inc',
-      'arguments' => array('form'),
-        ),
-        );
+        'file' => 'biblio_theme.inc',
+        'arguments' => array('form'),
+    ),
+  );
 }
 function biblio_autocomplete($field, $string = '') {
   $matches = array();
