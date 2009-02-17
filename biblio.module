@@ -415,24 +415,22 @@ function biblio_forms() {
   return $forms;
 
 }
+/**
+ * Return actual argument for %biblio_user placeholders in menu paths
+ */
 function biblio_user_to_arg($arg) {
-
   // Give back the current user uid when called from eg. tracker, aka.
   // with an empty arg. Also use the current user uid when called from
   // the menu with a % for the current account link.
-  return empty($arg) || $arg == '%' ? $GLOBALS['user']->uid : $arg;
+  return (empty($arg) || $arg == '%') ? $GLOBALS['user']->uid : $arg;
 }
-
+/**
+ * load user object from arg, used for %biblio_user placeholders in menu paths
+ * @param $uid
+ * @return $user
+ */
 function biblio_user_load($uid) {
-  $user = user_load($uid);
-  if ($user->uid == 0) return FALSE;
-  if ($user->uid && variable_get('biblio_my_pubs_menu', '0') &&
-     ((isset($user->biblio_my_pubs_menu)) ? $user->biblio_my_pubs_menu : 0)) {
-       return $user;
-     }
-     else{
-       return FALSE;
-     }
+  return user_load($uid);
 }
 /**
  * Implementation of hook_menu().
@@ -533,7 +531,7 @@ function biblio_menu() {
   $items["user/%user/$base"] = array(
     'title' => t('Publications'),
     'page callback' => 'biblio_get_user_pubs',
-    'page arguments' => array(1, 'profile'),
+    'page arguments' => array(1, 'profile', 'no_filters'),
     'access callback' => '_biblio_profile_access',
     'access arguments' => array(1, 'profile'),
     'file' => 'biblio.pages.inc',
@@ -1393,8 +1391,7 @@ function biblio_block($op = 'list', $delta = 0) {
       $query = "SELECT COUNT(*)
                   FROM {node} n
                   LEFT JOIN {biblio} b  on n.vid=b.vid
-                  WHERE n.type = 'biblio' AND n.status=1
-                  ORDER BY $block_order DESC";
+                  WHERE n.type = 'biblio' AND n.status=1";
       $num_rows = db_result(db_query_range(db_rewrite_sql($query), 0, $num_in_block));
       if ($num_rows) {
         $query = "SELECT n.nid, n.title, n.status, b.biblio_year
@@ -2051,15 +2048,12 @@ function biblio_token_values($type, $object = NULL) {
 }
 
 function _biblio_profile_access($user, $type = 'profile') {
-  if ($type == 'profile') return $user->biblio_show_profile;
-  if ($type == 'menu')    return $user->biblio_my_pubs_menu;
-}
-
-/**
- * Implementation of hook_views_api().
- */
-function biblio_views_api() {
-  return array(
-    'api' => 2,
-  );
+  if ($type == 'profile') $key = 'biblio_show_profile';
+  else if ($type == 'menu') $key = 'biblio_my_pubs_menu';
+  else return false;
+   
+  // if user cannot override site settings or user hasn't yet made its selection, we use site default
+  if (!variable_get('biblio_show_user_profile_form', '1') || !isset($user->$key))
+    return variable_get($key, '0'); // return site default
+  else return $user->$key; // return user setting
 }
