@@ -124,7 +124,7 @@ function biblio_theme() {
         'inline' => FALSE,
         'glue' => ', '),
     ),
-    'biblio_authors2' => array(
+    'biblio_format_authors' => array(
       'file' => 'biblio_theme.inc',
       'arguments' => array(
         'contributors',

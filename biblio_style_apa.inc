@@ -13,6 +13,25 @@ function biblio_style_apa_info() {
     'apa' => 'American Psychological Association (APA)'
   );
 }
+
+function biblio_sytle_apa_author_options() {
+  $author_options = array(
+    'BetweenAuthorsDelimStandard'     =>  ', ',      //4
+    'BetweenAuthorsDelimLastAuthor'   =>  ', & ',    //5
+    'AuthorsInitialsDelimFirstAuthor' =>  ', ',      //7
+    'AuthorsInitialsDelimStandard'    =>  ' ',       //8
+    'betweenInitialsDelim'            =>  '. ',      //9
+    'initialsBeforeAuthorFirstAuthor' =>  FALSE,     //10
+    'initialsBeforeAuthorStandard'    =>  TRUE,      //11
+    'shortenGivenNames'               =>  FALSE,     //12
+    'numberOfAuthorsTriggeringEtAl'   =>  6,         //13
+    'includeNumberOfAuthors'          =>  6,         //14
+    'customStringAfterFirstAuthors'   =>  ', et al.',//15
+    'encodeHTML'                      =>  true
+  );
+  return $author_options;
+}
+
 /**
  * Apply a bibliographic style to the node
  *
@@ -28,10 +47,12 @@ function biblio_style_apa_info() {
  *   The styled biblio entry
  */
 function biblio_style_apa($node, $base = 'biblio', $inline = FALSE) {
-  $authors = theme('biblio_authors', $node->biblio_contributors[1], 'apa', 1, $inline);
-  if (empty($authors)) $authors = theme('biblio_authors', $node->biblio_contributors[5], 'apa', 5, $inline);  // if no authors substitute corp author if available
+  $author_options = biblio_sytle_apa_author_options();
+  $authors = theme('biblio_format_authors', $node->biblio_contributors[1], $author_options, $inline);
+
+  if (empty($authors)) theme('biblio_format_authors', $node->biblio_contributors[5], $author_options, $inline);  // if no authors substitute corp author if available
   if (empty($authors)) $authors = '[' . t('Anonymous') . ']';  // use anonymous if we still have nothing.
-  $output .= '<span class="biblio-authors">' . $authors . "</span> \n";
+    $output .= '<span class="biblio-authors">' . $authors . "</span> \n";
   $output .= (strrpos($authors, '.') == strlen($authors)) ? ".&nbsp;&nbsp;" : " ";
   switch ($node->biblio_type) {
     case 1 : // Journal Article

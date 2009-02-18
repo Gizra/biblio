@@ -12,6 +12,24 @@ function biblio_style_classic_info() {
     'classic' => 'Classic - This is the original biblio style'
   );
 }
+function biblio_sytle_classic_author_options() {
+  $author_options = array(
+    'BetweenAuthorsDelimStandard'     =>  ', ',      //4
+    'BetweenAuthorsDelimLastAuthor'   =>  ', and ',    //5
+    'AuthorsInitialsDelimFirstAuthor' =>  ', ',      //7
+    'AuthorsInitialsDelimStandard'    =>  ' ',       //8
+    'betweenInitialsDelim'            =>  '. ',      //9
+    'initialsBeforeAuthorFirstAuthor' =>  FALSE,     //10
+    'initialsBeforeAuthorStandard'    =>  FALSE,      //11
+    'shortenGivenNames'               =>  FALSE,      //12
+    'numberOfAuthorsTriggeringEtAl'   =>  10,        //13
+    'includeNumberOfAuthors'          =>  10,        //14
+    'customStringAfterFirstAuthors'   =>  ', et al.',//15
+    'encodeHTML'                      =>  true
+  );
+  return $author_options;
+}
+
 /**
  * Apply a bibliographic style to the node
  *
@@ -27,7 +45,8 @@ function biblio_style_classic_info() {
  *   The styled biblio entry
  */
 function biblio_style_classic($node, $base = 'biblio', $inline = false) {
-  $authors = theme('biblio_authors', $node->biblio_contributors[1], 'classic', 1, $inline);
+  $author_options = biblio_sytle_classic_author_options();
+  $authors = theme('biblio_format_authors', $node->biblio_contributors[1], $author_options, $inline);
   $output = '<span class="biblio-title">';
   $output .= $inline ? l("$node->title", "$base/viewinline/$node->nid") : l("$node->title", "node/$node->nid");
   $output .= "</span>, \n";

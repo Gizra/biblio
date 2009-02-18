@@ -26,9 +26,29 @@ function biblio_style_cse_info() {
  * @return
  *   The styled biblio entry
  */
+function biblio_sytle_cse_author_options() {
+  $author_options = array(
+    'BetweenAuthorsDelimStandard'     =>', ',      //4
+    'BetweenAuthorsDelimLastAuthor'   => ', ', //5
+    'AuthorsInitialsDelimFirstAuthor' => ', ',     //7
+    'AuthorsInitialsDelimStandard'    => ' ',      //8
+    'betweenInitialsDelim'            => '',     //9
+    'initialsBeforeAuthorFirstAuthor' => false,    //10
+    'initialsBeforeAuthorStandard'    => FALSE,     //11
+    'shortenGivenNames'               => TRUE,    //12
+    'numberOfAuthorsTriggeringEtAl'   => 10,       //13
+    'includeNumberOfAuthors'          => 10,       //14
+    'customStringAfterFirstAuthors'   => ' et al.',//15
+    'encodeHTML'                      => true
+  );
+  return $author_options;
+}
+
 function biblio_style_cse($node, $base = 'biblio', $inline = false) {
-  $authors = theme('biblio_authors', $node->biblio_contributors[1], 'cse', 1, $inline);
-  if (empty($authors)) $authors = theme('biblio_authors', $node->biblio_contributors[5], 'cse', 5, $inline);  // if no authors substitute corp author if available
+  $author_options = biblio_sytle_cse_author_options();
+  $authors = theme('biblio_format_authors', $node->biblio_contributors[1], $author_options, $inline);
+
+  if (empty($authors)) theme('biblio_format_authors', $node->biblio_contributors[5], $author_options, $inline);  // if no authors substitute corp author if available
   if (empty($authors)) $authors = '[' . t('Anonymous') . ']';  // use anonymous if we still have nothing.
   $output .= '<span class="biblio-authors">' . $authors . "</span>.&nbsp; \n";
   switch ($node->biblio_type) {

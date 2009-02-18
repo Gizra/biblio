@@ -56,10 +56,10 @@ function biblio_sytle_chicago_author_options() {
  */
 function biblio_style_chicago($node, $base = 'biblio', $inline = false) {
 
-  $author_options = biblio_sytle_chicago_get_author_options();
+  $author_options = biblio_sytle_chicago_author_options();
   // $authors = theme('biblio_authors', $node->biblio_contributors[1], 'mla', 1, $inline);
 
-  $authors = theme('biblio_authors2', $node->biblio_contributors[1], $author_options, $inline);
+  $authors = theme('biblio_format_authors', $node->biblio_contributors[1], $author_options, $inline);
   //$editors = theme('biblio_authors2', $node->biblio_contributors[2], $author_options, $inline);
   //if (empty($authors)) $authors = theme('biblio_authors', $node->biblio_contributors[5], 'mla', 5, $inline);  // if no authors substitute corp author if available
   //if (empty($authors)) $authors = '[' . t('Anonymous') . ']';  // use anonymous if we still have nothing.

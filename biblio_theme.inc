@@ -195,6 +195,7 @@ function theme_biblio_tabular($node, $base = 'biblio', $teaser = false) {
   }
   $tid = $node->biblio_type;
   $style_name = variable_get('biblio_style', 'cse');
+  $style_function = "biblio_sytle_$style_name"."_author_options";
   module_load_include('inc','biblio',"biblio_style_$style_name");
   $fields = _biblio_get_field_information($node->biblio_type);
   $rows[] = array(
@@ -216,7 +217,9 @@ function theme_biblio_tabular($node, $base = 'biblio', $teaser = false) {
   foreach ($fields as $key => $row) {
     // handling the contributor categories like any other field orders them correctly by weight
     if ($row['type'] == 'contrib_widget' && !empty($node->biblio_contributors[$row['fid']])) {
-      $data =  theme('biblio_authors', $node->biblio_contributors[$row['fid']], $style_name, $row['fid']) ;
+      $author_options = $style_function();
+      $author_options['numberOfAuthorsTriggeringEtAl'] = 100; //set really high so we see all authors
+      $data = theme('biblio_format_authors', $node->biblio_contributors[$row['fid']], $author_options, $inline);
       if (!$data) {
         //      if ($row['fid'] == 1) $data = t('No author information available');
         //      else continue;
@@ -291,7 +294,7 @@ function theme_biblio_authors($contributors, $style = 'classic', $cat = 1, $inli
   $output .= '</span>';
   return $output;
 }
-function theme_biblio_authors2($contributors, $options, $inline = false)
+function theme_biblio_format_authors($contributors, $options, $inline = false)
 {
   $base  = variable_get('biblio_base', 'biblio');
   $author_links = variable_get('biblio_author_links', 1);
