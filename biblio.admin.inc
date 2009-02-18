@@ -403,7 +403,7 @@ function biblio_admin_settings() {
   $form['style']['biblio_style'] = array(
     '#type' => 'radios',
     '#title' => t('Style'),
-    '#default_value' => variable_get('biblio_style', 'cse'),
+    '#default_value' => variable_get('biblio_style', 'classic'),
     '#options' => _biblio_admin_get_styles(),
     '#description' => t('This alters the layout of the "list" (short) view.')
   );
