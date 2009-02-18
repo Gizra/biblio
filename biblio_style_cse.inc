@@ -26,7 +26,7 @@ function biblio_style_cse_info() {
  * @return
  *   The styled biblio entry
  */
-function biblio_sytle_cse_author_options() {
+function biblio_style_cse_author_options() {
   $author_options = array(
     'BetweenAuthorsDelimStandard'     =>', ',      //4
     'BetweenAuthorsDelimLastAuthor'   => ', ', //5
@@ -45,7 +45,7 @@ function biblio_sytle_cse_author_options() {
 }
 
 function biblio_style_cse($node, $base = 'biblio', $inline = false) {
-  $author_options = biblio_sytle_cse_author_options();
+  $author_options = biblio_style_cse_author_options();
   $authors = theme('biblio_format_authors', $node->biblio_contributors[1], $author_options, $inline);
 
   if (empty($authors)) theme('biblio_format_authors', $node->biblio_contributors[5], $author_options, $inline);  // if no authors substitute corp author if available

@@ -12,7 +12,7 @@ function biblio_style_classic_info() {
     'classic' => 'Classic - This is the original biblio style'
   );
 }
-function biblio_sytle_classic_author_options() {
+function biblio_style_classic_author_options() {
   $author_options = array(
     'BetweenAuthorsDelimStandard'     =>  ', ',      //4
     'BetweenAuthorsDelimLastAuthor'   =>  ', and ',    //5
@@ -45,7 +45,7 @@ function biblio_sytle_classic_author_options() {
  *   The styled biblio entry
  */
 function biblio_style_classic($node, $base = 'biblio', $inline = false) {
-  $author_options = biblio_sytle_classic_author_options();
+  $author_options = biblio_style_classic_author_options();
   $authors = theme('biblio_format_authors', $node->biblio_contributors[1], $author_options, $inline);
   $output = '<span class="biblio-title">';
   $output .= $inline ? l("$node->title", "$base/viewinline/$node->nid") : l("$node->title", "node/$node->nid");

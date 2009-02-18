@@ -14,7 +14,7 @@ function biblio_style_apa_info() {
   );
 }
 
-function biblio_sytle_apa_author_options() {
+function biblio_style_apa_author_options() {
   $author_options = array(
     'BetweenAuthorsDelimStandard'     =>  ', ',      //4
     'BetweenAuthorsDelimLastAuthor'   =>  ', & ',    //5
@@ -47,12 +47,11 @@ function biblio_sytle_apa_author_options() {
  *   The styled biblio entry
  */
 function biblio_style_apa($node, $base = 'biblio', $inline = FALSE) {
-  $author_options = biblio_sytle_apa_author_options();
+  $author_options = biblio_style_apa_author_options();
   $authors = theme('biblio_format_authors', $node->biblio_contributors[1], $author_options, $inline);
-
-  if (empty($authors)) theme('biblio_format_authors', $node->biblio_contributors[5], $author_options, $inline);  // if no authors substitute corp author if available
+  if (empty($authors)) $authors = theme('biblio_format_authors', $node->biblio_contributors[5], $author_options, $inline);  // if no authors substitute corp author if available
   if (empty($authors)) $authors = '[' . t('Anonymous') . ']';  // use anonymous if we still have nothing.
-    $output .= '<span class="biblio-authors">' . $authors . "</span> \n";
+  $output .= '<span class="biblio-authors">' . $authors . "</span> \n";
   $output .= (strrpos($authors, '.') == strlen($authors)) ? ".&nbsp;&nbsp;" : " ";
   switch ($node->biblio_type) {
     case 1 : // Journal Article

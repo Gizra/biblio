@@ -22,7 +22,7 @@ function biblio_style_chicago_info() {
     'chicago' => 'Chicago'
     );
 }
-function biblio_sytle_chicago_author_options() {
+function biblio_style_chicago_author_options() {
   $author_options = array(
     'BetweenAuthorsDelimStandard' =>', ',         //4
     'BetweenAuthorsDelimLastAuthor' => ', and ',  //5
@@ -56,7 +56,7 @@ function biblio_sytle_chicago_author_options() {
  */
 function biblio_style_chicago($node, $base = 'biblio', $inline = false) {
 
-  $author_options = biblio_sytle_chicago_author_options();
+  $author_options = biblio_style_chicago_author_options();
   // $authors = theme('biblio_authors', $node->biblio_contributors[1], 'mla', 1, $inline);
 
   $authors = theme('biblio_format_authors', $node->biblio_contributors[1], $author_options, $inline);

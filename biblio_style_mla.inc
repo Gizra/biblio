@@ -18,7 +18,7 @@ function biblio_style_mla_info() {
     'mla' => 'Modern Language Association (MLA)'
     );
 }
-function biblio_sytle_mla_author_options() {
+function biblio_style_mla_author_options() {
   $author_options = array(
     'BetweenAuthorsDelimStandard' =>', ',         //4
     'BetweenAuthorsDelimLastAuthor' => ', and ',  //5
@@ -53,7 +53,7 @@ function biblio_sytle_mla_author_options() {
  */
 function biblio_style_mla($node, $base = 'biblio', $inline = false) {
 
-  $author_options = biblio_sytle_mla_author_options();
+  $author_options = biblio_style_mla_author_options();
   $authors = theme('biblio_format_authors', $node->biblio_contributors[1], $author_options, $inline);
   //if (empty($authors)) $authors = theme('biblio_authors', $node->biblio_contributors[5], 'mla', 5, $inline);  // if no authors substitute corp author if available
   //if (empty($authors)) $authors = '[' . t('Anonymous') . ']';  // use anonymous if we still have nothing.

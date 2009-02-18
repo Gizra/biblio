@@ -15,7 +15,7 @@ function biblio_style_ieee_info() {
     'ieee' => 'Institute of Electrical and Electronics Engineers (IEEE)'
   );
 }
-function biblio_sytle_ieee_author_options() {
+function biblio_style_ieee_author_options() {
   $author_options = array(
     'BetweenAuthorsDelimStandard'     =>  ', ',      //4
     'BetweenAuthorsDelimLastAuthor'   =>  ', and ',    //5
@@ -48,7 +48,7 @@ function biblio_sytle_ieee_author_options() {
  *   The styled biblio entry
  */
 function biblio_style_ieee($node, $base = 'biblio', $inline = false) {
-  $author_options = biblio_sytle_ieee_author_options();
+  $author_options = biblio_style_ieee_author_options();
   $authors = theme('biblio_format_authors', $node->biblio_contributors[1], $author_options, $inline);
   $output .= '<span class="biblio-authors">' . $authors . ", </span> \n";
   switch ($node->biblio_type) {
