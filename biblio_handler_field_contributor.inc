@@ -27,6 +27,8 @@ class biblio_handler_field_contributor extends biblio_handler_field {
   function query() {
     $this->add_additional_fields();
     $this->field_alias = $this->aliases['vid'];
+    // add the biblio_type field as tid
+    $this->query->add_field($this->table_alias, 'biblio_type', 'biblio_tid');
   }
 
   function pre_render($values) {
@@ -56,7 +58,8 @@ class biblio_handler_field_contributor extends biblio_handler_field {
   }
 
   function render($values) {
-    $vid = $values->{$this->field_alias};
+  	parent::set_label($values);
+  	$vid = $values->{$this->field_alias};
     if (!isset($this->items[$vid])) return NULL;
     return theme('biblio_format_authors', $this->items[$vid], $this->author_options);
   }

@@ -12,10 +12,10 @@ function biblio_views_handlers() {
       'biblio_handler_field_contributor' => array(
         'parent' => 'biblio_handler_field',
       ),
-/*
       'biblio_handler_filter_contributor' => array(
         'parent' => 'views_handler_filter_many_to_one',
       ),
+/*
       'biblio_handler_filter_role' => array(
         'parent' => 'views_handler_filter_many_to_one',
       ),
@@ -34,7 +34,7 @@ function biblio_views_data() {
 
   /**************** biblio table **************/
   $data = array();
-  // we make a new group
+  // everything belongs to the Biblio group
   $data['table']['group'] = t('Biblio');
   // advertise this table as a possible base table
   $data['table']['base'] = array(
@@ -64,8 +64,27 @@ function biblio_views_data() {
       );    
     }
   }
-
   $viewsdata['biblio'] = $data;
+
+  /**************** biblio contributors table **************/
+  $data = array();
+  // everything belongs to the Biblio group
+  $data['table']['group'] = t('Biblio');
+  $data['table']['join']['biblio'] = array(
+    'table' => 'biblio_contributor',
+    'left_field' => 'vid',
+    'field' => 'vid',
+  );
+  $data['cid'] = array(
+    'title' => t('Contributors'),
+    'help' => t('Filter by any kind of contributor.'), 
+    'filter' => array(
+      'handler' => 'biblio_handler_filter_contributor',
+    )
+  );
+  
+  $viewsdata['biblio_contributor'] = $data;
+  
   return $viewsdata;
 }
 
