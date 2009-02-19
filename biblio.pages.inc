@@ -133,7 +133,7 @@ function biblio_build_query($arg_list) {
 
   switch ($sort_attrib['sort']) {
     case 'type':
-      $sortby = "ORDER BY bt.name %s, $sort_title ASC ";
+      $sortby = "ORDER BY bt.name %s, b.biblio_year DESC ";
       break;
     case 'title':
       //$sortby = "ORDER BY SUBSTRING(n.title,1,3) %s, b.biblio_year DESC ";
@@ -141,7 +141,7 @@ function biblio_build_query($arg_list) {
       break;
     case 'author':
       $sortby = "ORDER BY bcd.lastname %s ";
-      //$where['bc-rank'] = "bc.rank=0";
+      $where['bc-rank'] = "bc.rank=0";
       //$where[] = "bc.ctid=1";
       $join['bc'] = '  JOIN {biblio_contributor} as bc on b.vid = bc.vid ';
       $join['bcd'] = '  JOIN {biblio_contributor_data} as bcd on bc.cid = bcd.cid ';
@@ -317,7 +317,7 @@ function biblio_build_query($arg_list) {
           array_push($args, $type, $term);
           switch ($term) {
             case 'type':
-              $sortby = "ORDER BY bt.name %s, b.biblio_year DESC, $sort_title ASC ";
+              $sortby = "ORDER BY bt.name %s, b.biblio_year DESC ";
               break;
             case 'title':
               $sortby = "ORDER BY $sort_title %s, b.biblio_year DESC ";
