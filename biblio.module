@@ -452,7 +452,7 @@ function biblio_menu() {
     'file' => 'biblio.pages.inc',
     'weight' => 2,
   );
-  $items["$base/import/form"] = array(
+  $items["$base/import"] = array(
     'title' => t('Import'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('biblio_import_form'),
@@ -1959,7 +1959,7 @@ function _biblio_profile_access($user, $type = 'profile') {
   if ($type == 'profile') $key = 'biblio_show_profile';
   else if ($type == 'menu') $key = 'biblio_my_pubs_menu';
   else return false;
-   
+
   // if user cannot override site settings or user hasn't yet made its selection, we use site default
   if (!variable_get('biblio_show_user_profile_form', '1') || !isset($user->$key))
     return variable_get($key, '0'); // return site default
