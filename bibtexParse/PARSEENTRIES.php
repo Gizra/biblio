@@ -652,7 +652,10 @@ class PARSEENTRIES
       }
       $node['biblio_isbn']            = (!empty($entry['isbn'])) ? $entry['isbn'] : NULL;
       $node['biblio_url']             = (!empty($entry['url'])) ? $entry['url'] : NULL;
-      if (!empty($terms)) $node['taxonomy'] = array_merge($terms,$node['taxonomy']);
+      if (!empty($terms)) {
+        if (!isset($node['taxonomy'])) $node['taxonomy'] = array(); 
+        $node['taxonomy'] = array_merge($terms,$node['taxonomy']);
+      }
       $nids[] = biblio_save_node($node, $batch, $session_id);
     }
     return (!empty($nids)) ? $nids : NULL;
