@@ -206,7 +206,7 @@ function biblio_style_mla($node, $base = 'biblio', $inline = false) {
             'customStringAfterFirstAuthors' => ', et al.',//15
             'encodeHTML' => true
           );
-          $editor = theme('biblio_authors2', $node->biblio_contributors[2], $editor_options, $inline);
+          $editor = theme('biblio_format_authors', $node->biblio_contributors[2], $editor_options, $inline);
 
           if (!ereg("[?!.][ \"" . '</i>' . "]*$", $output)) $output .= ".";
 
@@ -347,7 +347,7 @@ function biblio_style_mla($node, $base = 'biblio', $inline = false) {
           'customStringAfterFirstAuthors' => ', et al.',//15
           'encodeHTML' => true
         );
-        $editor = theme('biblio_authors2', $node->biblio_contributors[2], $editor_options, $inline);
+        $editor = theme('biblio_format_authors', $node->biblio_contributors[2], $editor_options, $inline);
         if (!ereg("[?!.][ \"" . '</i>' . "]*$", $output)) $output .= ".";
 
         if (count($node->biblio_contributors[2] > 1)) {// there are at least two editors (separated by ';')
