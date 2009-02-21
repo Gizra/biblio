@@ -153,7 +153,7 @@ function biblio_build_query($arg_list) {
       break;
     case 'year':
     default:
-      $sortby = "ORDER BY b.biblio_year %s, b.biblio_date %s, $sort_title ASC ";
+      $sortby = "ORDER BY b.biblio_year %s, b.biblio_date %s";
   } //end switch
   if (!isset($_SESSION['biblio_filter']) || !is_array($_SESSION['biblio_filter'])) {
     $_SESSION['biblio_filter'] = array();
