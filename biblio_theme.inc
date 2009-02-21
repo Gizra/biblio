@@ -296,6 +296,8 @@ function theme_biblio_authors($contributors, $style = 'classic', $cat = 1, $inli
 }
 function theme_biblio_format_authors($contributors, $options, $inline = false)
 {
+  if (empty($contributors)) return;
+  
   $base  = variable_get('biblio_base', 'biblio');
   $author_links = variable_get('biblio_author_links', 1);
   // Matches ISO-8859-1 letters & digits:
