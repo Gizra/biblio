@@ -1408,7 +1408,10 @@ function _move_field_data(&$result)
       $new_ftdid = variable_get('biblio_last_ftdid',100);
       variable_set('biblio_last_ftdid',$new_ftdid + 1);
       $fieldtype = array('ftdid' => $new_ftdid, 'title' => $row['title'], 'hint' => $row['hint']);
-      drupal_write_record('biblio_field_type_data',$fieldtype);
+    // write_record may not work if module is diabled.  
+    //drupal_write_record('biblio_field_type_data',$fieldtype); 
+      db_query("INSERT INTO {biblio_field_type_data} (ftdid, title, hint) 
+                  VALUES('" . implode("', '", $fieldtype) . "')");
     }
     // update ftdid in linking table to new field type
     $ftdid=$fieldtype['ftdid'];
@@ -1486,6 +1489,12 @@ function _parse_authors(&$biblio_contributors, $authors, $cat = 1)
 
 function _move_authors(&$result)
 {
+  $disable = FALSE;
+  if (!module_exists('biblio')) { // if the module is disabled, enable it so drupal_get_schema will work
+    module_enable(array('biblio'));
+    $disable = TRUE;
+  }
+  drupal_get_schema('biblio_contributor', TRUE);
   drupal_get_schema('biblio_contributor_data', TRUE);
   // this update will move author information from existing biblio table to the new
   // biblio_contributor_data table and make the appropriate links in the biblio_contributor table
@@ -1524,6 +1533,11 @@ function _move_authors(&$result)
   $result[] = array('success' => ($count_success == $count), 
                     'query' => 'Moved authors from '.$count_success.' / '.$count.' publications to the new database stucture');
 
+  
+  if ($disable) { // if the module was disabled, then set it back that way.
+    module_disable(array('biblio'));
+  }
+  
   return $result;
 }
 
