@@ -42,10 +42,13 @@ function _ris_tagged_import($file, $terms = array(), $batch = FALSE, $session_id
     }
     if ($line_len > 3) { // if this is not a blank line
       switch ($tag) {
-        case 'ER' :         
+        case 'ER' :
           if (!empty($node)) {
             if (empty ($node['title'])) $node['title'] = t("Untitled");
-            if (!empty($terms)) $node['taxonomy'] = array_merge($terms, $node['taxonomy']);
+            if (!empty($terms)) {
+              if (!isset($node['taxonomy'])) $node['taxonomy'] = array();
+              $node['taxonomy'] = array_merge($terms, $node['taxonomy']);
+            }
             $nids[] = biblio_save_node($node, $batch, $session_id);
           }
           $node = array();

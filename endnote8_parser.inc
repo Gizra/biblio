@@ -41,7 +41,10 @@ function en8_endElement($parser, $name) {
   switch ($name) {
     case 'record' :
       $element = $contributors = $contrib_count = $dates = $urls = '';
-      if (!empty($terms)) $node['taxonomy'] = array_merge($terms,$node['taxonomy']);
+      if (!empty($terms)) {
+        if (!isset($node['taxonomy'])) $node['taxonomy'] = array();
+        $node['taxonomy'] = array_merge($terms,$node['taxonomy']);
+      }
       $nids[] = biblio_save_node($node, $batch_proc, $session_id);
       break;
     case 'authors' :
@@ -77,7 +80,7 @@ function en8_endElement($parser, $name) {
     default :
   }
   $element = '';
-  
+
 }
 function en8_characterData($parser, $data) {
   global $node, $element, $contributors, $contrib_count, $dates, $urls, $keyword_count;
@@ -92,7 +95,7 @@ function en8_characterData($parser, $data) {
         break;
 
         //Author information
-      case 'author' :        
+      case 'author' :
         switch ($contributors) {
           case 'authors' :
             $node['biblio_contributors'][1][$contrib_count]['name'] .= $data;
@@ -183,7 +186,7 @@ function en8_characterData($parser, $data) {
         break;
       case 'keyword' :
         $vid = variable_get('biblio_keyword_vocabulary', 0);
-        if ($vid  && variable_get('biblio_keyword_freetagging', 0)) { 
+        if ($vid  && variable_get('biblio_keyword_freetagging', 0)) {
            //TODO: this will potentially cause problems exta commas in the tags string if all the data is not stored in one pass.
           $node['taxonomy']['tags'][$vid] .= (empty($node['taxonomy']['tags'][$vid])) ? "\"$data\"" : ",\"$data\"";
         }

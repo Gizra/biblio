@@ -49,7 +49,10 @@ function en7_endElement($parser, $name) {
   global $node, $element, $terms, $batch, $session_id, $nids, $auth_count, $keyword_count;
   switch ($name) {
     case 'RECORD' :
-      if (!empty($terms)) $node['taxonomy'] = array_merge($terms, $node['taxonomy']);
+      if (!empty($terms)) {
+        if (!isset($node['taxonomy'])) $node['taxonomy'] = array();
+        $node['taxonomy'] = array_merge($terms, $node['taxonomy']);
+      }
       $nids[] = biblio_save_node($node, $batch, $session_id);
       break;
     case 'AUTHOR':
@@ -57,7 +60,7 @@ function en7_endElement($parser, $name) {
     case 'TERTIARY_AUTHOR':
     case 'SUBSIDIARY_AUTHOR':
       $auth_category = en7_field_map($name);
-      $node['biblio_contributors'][$auth_category][$auth_count]['auth_type'] = _biblio_get_auth_type($auth_category, $node['biblio_type']);       
+      $node['biblio_contributors'][$auth_category][$auth_count]['auth_type'] = _biblio_get_auth_type($auth_category, $node['biblio_type']);
       $auth_count++;
       break;
     case 'KEYWORD':
@@ -90,7 +93,7 @@ function en7_characterData($parser, $data) {
         break;
       case 'KEYWORD':
         $vid = variable_get('biblio_keyword_vocabulary', 0);
-        if ($vid && variable_get('biblio_keyword_freetagging', 0)) { 
+        if ($vid && variable_get('biblio_keyword_freetagging', 0)) {
            //TODO: this will potentially cause problems exta commas in the tags string if all the data is not stored in one pass.
           $node['taxonomy']['tags'][$vid] .= (empty($node['taxonomy']['tags'][$vid])) ? "\"$data\"" : ",\"$data\"";
         }
@@ -107,7 +110,7 @@ function en7_field_map($enfield) {
   static $fmap = array();
   if(empty($fmap)) {
     $fmap = array(
-    'AUTHOR' => 1,            // 
+    'AUTHOR' => 1,            //
     'SECONDARY_AUTHOR' => 2,  // The 4 author fields map back to the author category
     'TERTIARY_AUTHOR' => 3,   // rather than a field name.
     'SUBSIDIARY_AUTHOR' => 4, //
@@ -131,7 +134,7 @@ function en7_field_map($enfield) {
     'SHORT_TITLE'       => 'biblio_short_title',
     'ALTERNATE_TITLE'   => 'biblio_alternate_title',
     'ISBN'              => 'biblio_isbn',
-    'ORIGINAL_PUB'      => 'biblio_original_publication', 
+    'ORIGINAL_PUB'      => 'biblio_original_publication',
     'REPRINT_EDITION'   => 'biblio_reprint_edition',
     'REVIEWED_ITEM'     => '',
     'CUSTOM1'           => 'biblio_custom1',
