@@ -209,7 +209,7 @@ function biblio_style_ama($node, $base = 'biblio', $inline = false) {
         $editor = theme('biblio_format_authors', $node->biblio_contributors[2], $editor_options, $inline);
 
         $output .= " In: " . $editor . ", ";
-        if (ereg("^[^;\r\n]+(;[^;\r\n]+)+$", $editor)) // there are at least two editors (separated by ';')
+        if (count ($node->biblio_contributors[2]) > 1) // there are at least two editors (separated by ';')
         $output .= "eds";
         else // there's only one editor (or the editor field is malformed with multiple editors but missing ';' separator[s])
         $output .= "ed";
@@ -398,7 +398,7 @@ function biblio_style_ama($node, $base = 'biblio', $inline = false) {
         $output .= ".";
 
         $output .= " " . $editor;
-        if (ereg("^[^;\r\n]+(;[^;\r\n]+)+$", $editor)) // there are at least two editors (separated by ';')
+        if (count ($node->biblio_contributors[2]) > 1) // there are at least two editors (separated by ';')
         $output .= ", eds";
         else // there's only one editor (or the editor field is malformed with multiple editors but missing ';' separator[s])
         $output .= ", ed";
