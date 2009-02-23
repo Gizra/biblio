@@ -168,7 +168,7 @@ function biblio_import_form_submit($form, & $form_state) {
             else {
               $terms[] = array($form_state['values'][$key]);
             }
-          } 
+          }
         }
       }
       // Added the $terms argument
@@ -183,7 +183,7 @@ function biblio_import_form_submit($form, & $form_state) {
             array('biblio_import', array($import_file, $filetype, $userid, $terms, $batch_proc, $session_id)),
             array('biblio_import_batch_operations', array($session_id, $userid, $terms)),
            ),
-          'progressive' => TRUE, 
+          'progressive' => TRUE,
           'finished' => 'biblio_import_batch_finished',
           'init_message' => t('Parsing file...'),
           'progress_message' => t('Saving nodes...'),
@@ -220,12 +220,12 @@ function biblio_import_batch_operations($session_id, $userid, $terms, &$context)
   $result = db_query_range("SELECT id, data FROM {biblio_import_cache} WHERE id > %d AND session_id = '%s' ORDER BY id ASC", $context['sandbox']['current_id'], $session_id, 0, $limit);
   while ($row = db_fetch_array($result)) {
     $node = unserialize($row['data']);
-    node_save($node);    
+    node_save($node);
     $context['results']['nids'][] = $node->nid;
     $context['sandbox']['progress']++;
     $context['sandbox']['current_id'] = $row['id'];
   }
-  
+
   // Multistep processing : report progress.
   if ($context['sandbox']['progress'] != $context['sandbox']['max']) {
     $context['finished'] = $context['sandbox']['progress'] / $context['sandbox']['max'];
@@ -371,7 +371,7 @@ function biblio_export($format = "tagged", $nid = null, $popup = false, $version
     $node->biblio_keywords = biblio_load_keywords($node->vid);
     if ($vid = variable_get('biblio_keyword_vocabulary', 0)){
         $node->terms = taxonomy_node_get_terms_by_vocabulary($node, $vid);
-    }  
+    }
     $results[] = $node;
   }
 
@@ -382,7 +382,7 @@ function biblio_export($format = "tagged", $nid = null, $popup = false, $version
           drupal_set_header('Content-type: 	application/x-endnote-refer');
           drupal_set_header('Content-Disposition:  filename="Drupal-Biblio.enw"');
           print biblio_endnote_tagged_export($results);
-        } 
+        }
         else {
           return '<pre>' . biblio_endnote_tagged_export($results) . '</pre>';
         }
@@ -392,7 +392,7 @@ function biblio_export($format = "tagged", $nid = null, $popup = false, $version
           drupal_set_header('Content-type: application/xml; charset=utf-8');
           drupal_set_header('Content-Disposition: attachment; filename="Biblio-EndNote'. $version .'.xml"');
           print biblio_endnote_XML_export($results, $version);
-        } 
+        }
         else {
           drupal_set_header('Content-type: application/xml; charset=utf-8');
           return '<pre>'. htmlspecialchars(biblio_endnote_XML_export($results, $version)) . '</pre>';
@@ -495,6 +495,9 @@ function biblio_bibtex_export($results) {
         $type = "phdthesis";
         $school = $pub->biblio_publisher;
         $pub->biblio_publisher = null;
+        if (stripos($pub->biblio_type_of_work, 'masters')) {
+          $type = "mastersthesis";
+        }
         break;
       case 104 :
         $type = "proceedings";
@@ -618,7 +621,7 @@ function biblio_save_node($node, $batch = FALSE, $session_id = NULL) {
       'format' => 0,
       'status' => in_array('status', $options),
   );
-  
+
   $node = (object) array_merge($node, $node_template);
   if ($batch && $session_id){
     $node = serialize($node);
@@ -655,11 +658,11 @@ function biblio_endnote_XML_import($xml_file, $taxo_terms = array(), $batch_proc
   // use case-folding so we are sure to find the tag in
   xml_parser_set_option($xml_parser, XML_OPTION_CASE_FOLDING, false);
   xml_parser_set_option($xml_parser, XML_OPTION_SKIP_WHITE, true);
-  
+
   module_load_include('inc', 'biblio', 'endnote'.$ver.'_parser');
   xml_set_element_handler($xml_parser, 'en'.$ver.'_startElement', 'en'.$ver.'_endElement');
-  xml_set_character_data_handler($xml_parser, 'en'.$ver.'_characterData'); 
-  
+  xml_set_character_data_handler($xml_parser, 'en'.$ver.'_characterData');
+
   xml_parse($xml_parser, $data, feof($fp));
   while ($data = fread($fp, 2048)){
    // $data = fread($fp, 2048);
@@ -845,7 +848,7 @@ function biblio_endnote_tagged_export($results) {
       foreach($pub->biblio_keywords as $term){
         $kw_array[] = $term->word;
       }
-    }   
+    }
     if (!empty($kw_array)){
       $kw_array = array_unique($kw_array);
       foreach($kw_array as $term){

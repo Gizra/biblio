@@ -550,7 +550,7 @@ class PARSEENTRIES
     for ($i = $start; $i < $limit; $i++)
     {
       $node = array();
-      $entry = $this->entries[$i];  
+      $entry = $this->entries[$i];
       if($this->removeDelimit || $this->expandMacro && $this->fieldExtract)
       {
         foreach($entry as $key => $value)
@@ -587,12 +587,14 @@ class PARSEENTRIES
           break;
         case mastersthesis:
           $node['biblio_type'] = 108;
+          $node['biblio_type_of_work'] = 'masters';
           break;
         case misc:
           $node['biblio_type'] = 129;
           break;
         case phdthesis:
           $node['biblio_type'] = 108;
+          $node['biblio_type_of_work'] = 'phd';
           break;
         case proceedings:
           $node['biblio_type'] = 104;
@@ -637,7 +639,7 @@ class PARSEENTRIES
       if (!empty($entry['school']))       $node['biblio_publisher']       = $entry['school'];
       if (!empty($entry['institution']))  $node['biblio_publisher']       = $entry['institution'];
       $node['title']                  = (!empty($entry['title'])) ? $entry['title'] : NULL;
-      $node['biblio_type_of_work']    = (!empty($entry['type'])) ? $entry['type'] : NULL;
+      $node['biblio_type_of_work']    .= (!empty($entry['type'])) ? $entry['type'] : NULL;
       $node['biblio_edition']         = (!empty($entry['edition'])) ? $entry['edition'] : NULL;
       $node['biblio_section']         = (!empty($entry['chapter'])) ? $entry['chapter'] : NULL;
       $node['biblio_place_published'] = (!empty($entry['address'])) ? $entry['address'] : NULL;
@@ -647,13 +649,13 @@ class PARSEENTRIES
         $vid = variable_get('biblio_keyword_vocabulary', 0);
         if ($vid  && variable_get('biblio_keyword_freetagging', 0)) {
           $node['taxonomy']['tags'][$vid] .= $entry['keywords'];
-        }  
+        }
         $node['biblio_keywords'] = explode(',', $entry['keywords']);
       }
       $node['biblio_isbn']            = (!empty($entry['isbn'])) ? $entry['isbn'] : NULL;
       $node['biblio_url']             = (!empty($entry['url'])) ? $entry['url'] : NULL;
       if (!empty($terms)) {
-        if (!isset($node['taxonomy'])) $node['taxonomy'] = array(); 
+        if (!isset($node['taxonomy'])) $node['taxonomy'] = array();
         $node['taxonomy'] = array_merge($terms,$node['taxonomy']);
       }
       $nids[] = biblio_save_node($node, $batch, $session_id);
