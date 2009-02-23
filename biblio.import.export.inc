@@ -583,6 +583,12 @@ function biblio_bibtex_export($results) {
     $bibtex .= "}\n\n";
   }
 
+  //now convert any special characters to the latex equivelents...
+  module_load_include('php', 'biblio', 'bibtexParse/PARSEENTRIES');
+  require_once(drupal_get_path('module', 'biblio') . '/bibtexParse/transtab_unicode_bibtex.inc.php');
+  $converter = new PARSEENTRIES();
+  $bibtex = $converter->searchReplaceText($transtab_unicode_bibtex, $bibtex, false);
+
   return $bibtex;
 }
 /**
