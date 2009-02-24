@@ -918,3 +918,28 @@ function theme_biblio_admin_orphans_form($form) {
 
   return $output;
 }
+function theme_biblio_admin_types_form($form) {
+
+  drupal_add_tabledrag('pub-type-table', 'order', 'sibling', 'weight',NULL,NULL,false);
+  foreach (element_children($form['types']) as $type) {
+    $row = array();
+    $row[] = array('data' => drupal_render($form['types'][$type]['tid']));
+    $row[] = array('data' => drupal_render($form['types'][$type]['name']));
+    $row[] = array('data' => drupal_render($form['types'][$type]['actions']));
+    $row[] = array('data' => drupal_render($form['types'][$type]['weight']));
+    $table[] = array('data' => $row, 'class' => 'draggable');
+  }
+  $header = array(
+    t('Type Id'),
+    t('Type Name'), 
+    t('Operations'),
+     );
+
+  $output .= '<p>[ '. l(t('Add New Type'), 'admin/settings/biblio/fields/type/new') .' ]';
+  $output .= ' [ '. l(t('Reset all types to defaults'), 'admin/settings/biblio/fields/type/reset') .' ]';
+  $output .= theme('table', $header, $table, array('id' => 'pub-type-table'));
+  $output .= '<p>[ '. l(t('Add New Type'), 'admin/settings/biblio/fields/type/new') .' ]';
+  $output .= ' [ '. l(t('Reset all types to defaults'), 'admin/settings/biblio/fields/type/reset') .' ]';
+  
+  return $output;
+}

@@ -70,6 +70,10 @@ function biblio_theme() {
         'file' => 'biblio_theme.inc',
         'arguments' => array('form'),
     ),
+    'biblio_admin_types_form' => array(
+      'file' => 'biblio_theme.inc',
+      'arguments' => array('form')
+    ),
     'biblio_admin_author_edit_form' => array(
         'file' => 'biblio_theme.inc',
         'arguments' => array('form'),
@@ -581,7 +585,8 @@ function biblio_menu() {
   );
   $items['admin/settings/biblio/fields/type'] = array(
     'title' => t('Publication Types'),
-    'page callback' => 'biblio_admin_types_form',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('biblio_admin_types_form'),
     'access arguments' => array('administer biblio'),
     'file' => 'biblio.admin.inc',
     'type' => MENU_LOCAL_TASK,

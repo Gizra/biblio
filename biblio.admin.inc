@@ -694,38 +694,24 @@ function biblio_admin_types_edit_form_submit($form, & $form_state) {
   // Clear the cached pages and menus:
   menu_rebuild();
 }
-function biblio_admin_types_form() {
-  $result = db_query('SELECT t.* FROM {biblio_types as t WHERE t.tid > 0}');
+function biblio_admin_types_form($form) {
+  $result = db_query('SELECT t.* FROM {biblio_types as t WHERE t.tid > 0 ORDER BY t.weight}');
   //$rows[] = array('',t('Fields Common To All Types'),l('edit', 'admin/settings/biblio/types/edit'),'');
+  $form['types']['#tree'] = TRUE;
   while ($row = db_fetch_object($result)) {
     if ($row->tid < 999) {
-      $rows[] = array(
-        $row->tid,
-        $row->name,
-        ($row->visible) ? l(t('edit'), 'admin/settings/biblio/fields/type/edit/'. $row->tid) : '', ($row->visible) ? l(t('hide'), 'admin/settings/biblio/fields/type/hide/'. $row->tid) : l(t('show'), 'admin/settings/biblio/fields/type/show/'. $row->tid)
-      );
+      $actions = (($row->visible) ? '['. l(t('edit'), 'admin/settings/biblio/fields/type/edit/'. $row->tid).']' : ''). (($row->visible) ? ' ['. l(t('hide'), 'admin/settings/biblio/fields/type/hide/'. $row->tid).']' : ' ['. l(t('show'), 'admin/settings/biblio/fields/type/show/'. $row->tid).']');
     }
     else {
-      $rows[] = array(
-        $row->tid,
-        $row->name,
-        l(t('edit'), 'admin/settings/biblio/fields/type/edit/'. $row->tid), l(t('delete'), 'admin/settings/biblio/fields/type/delete/'. $row->tid)
-      );
+      $actions = l(t('edit'), 'admin/settings/biblio/fields/type/edit/'. $row->tid). l(t('delete'), 'admin/settings/biblio/fields/type/delete/'. $row->tid);
     }
+    $form['types'][$row->weight]['tid'] = array('#type' => 'markup', '#value' => $row->tid);
+    $form['types'][$row->weight]['name'] = array('#value' => $row->name);
+    $form['types'][$row->weight]['actions'] = array('#value' => $actions);
+    $form['types'][$row->weight]['weight'] = array('#hidden' => $row->weight);
   }
-  $header = array(
-    t('Type Id'),
-    t('Type Name'), array(
-      'data' => t('Operations'),
-      'colspan' => '2'
-    )
-  );
-  $output .= '<p>[ '. l(t('Add New Type'), 'admin/settings/biblio/fields/type/new') .' ]';
-  $output .= ' [ '. l(t('Reset all types to defaults'), 'admin/settings/biblio/fields/type/reset') .' ]';
-  $output .= theme('table', $header, $rows);
-  $output .= '<p>[ '. l(t('Add New Type'), 'admin/settings/biblio/fields/type/new') .' ]';
-  $output .= ' [ '. l(t('Reset all types to defaults'), 'admin/settings/biblio/fields/type/reset') .' ]';
-  return $output;
+
+  return $form;
 }
 function biblio_admin_types_add_form() {
   $form['name'] = array(
