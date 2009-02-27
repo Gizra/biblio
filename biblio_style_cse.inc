@@ -48,7 +48,7 @@ function biblio_style_cse($node, $base = 'biblio', $inline = false) {
   $author_options = biblio_style_cse_author_options();
   $authors = theme('biblio_format_authors', $node->biblio_contributors[1], $author_options, $inline);
 
-  if (empty($authors)) theme('biblio_format_authors', $node->biblio_contributors[5], $author_options, $inline);  // if no authors substitute corp author if available
+  if (empty($authors)) $authors = theme('biblio_format_authors', $node->biblio_contributors[5], $author_options, $inline);  // if no authors substitute corp author if available
   if (empty($authors)) $authors = '[' . t('Anonymous') . ']';  // use anonymous if we still have nothing.
   $output .= '<span class="biblio-authors">' . $authors . "</span>.&nbsp; \n";
   switch ($node->biblio_type) {
@@ -68,7 +68,7 @@ function biblio_style_cse($node, $base = 'biblio', $inline = false) {
   }
   /*  if ($node->biblio_date) $output .= ', '. check_plain($node->biblio_date);
     if ($node->biblio_number) $output .= ', Number '. check_plain($node->biblio_number);
-  
+
     if ($node->biblio_place_published) $output .= ', '. check_plain($node->biblio_place_published);
   */
   return $output;
