@@ -64,7 +64,10 @@ function biblio_style_chicago($node, $base = 'biblio', $inline = false) {
   //if (empty($authors)) $authors = theme('biblio_authors', $node->biblio_contributors[5], 'mla', 5, $inline);  // if no authors substitute corp author if available
   //if (empty($authors)) $authors = '[' . t('Anonymous') . ']';  // use anonymous if we still have nothing.
   //$output .= '<span class="biblio-authors">' . $authors . "</span>.&nbsp; \n";
-
+  if (!empty ($node->biblio_citekey)&&(variable_get('biblio_display_citation_key',0))) {
+    $output .= '[' . check_plain($node->biblio_citekey) . '] ';
+  }
+  
   switch ($node->biblio_type) {
     case 102: //Journal Article
     case 105: //Newspaper Article

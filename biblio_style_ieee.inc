@@ -50,6 +50,9 @@ function biblio_style_ieee_author_options() {
 function biblio_style_ieee($node, $base = 'biblio', $inline = false) {
   $author_options = biblio_style_ieee_author_options();
   $authors = theme('biblio_format_authors', $node->biblio_contributors[1], $author_options, $inline);
+  if (!empty ($node->biblio_citekey)&&(variable_get('biblio_display_citation_key',0))) {
+    $output .= '[' . check_plain($node->biblio_citekey) . '] ';
+  }
   $output .= '<span class="biblio-authors">' . $authors . ", </span> \n";
   switch ($node->biblio_type) {
     default :

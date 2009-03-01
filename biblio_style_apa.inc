@@ -51,6 +51,9 @@ function biblio_style_apa($node, $base = 'biblio', $inline = FALSE) {
   $authors = theme('biblio_format_authors', $node->biblio_contributors[1], $author_options, $inline);
   if (empty($authors)) $authors = theme('biblio_format_authors', $node->biblio_contributors[5], $author_options, $inline);  // if no authors substitute corp author if available
   if (empty($authors)) $authors = '[' . t('Anonymous') . ']';  // use anonymous if we still have nothing.
+  if (!empty ($node->biblio_citekey)&&(variable_get('biblio_display_citation_key',0))) {
+    $output .= '[' . check_plain($node->biblio_citekey) . '] ';
+  }
   $output .= '<span class="biblio-authors">' . $authors . "</span> \n";
   $output .= (strrpos($authors, '.') == strlen($authors)) ? ".&nbsp;&nbsp;" : " ";
   switch ($node->biblio_type) {

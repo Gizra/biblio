@@ -119,6 +119,13 @@ function biblio_admin_settings() {
     '#title' => t('Citekey'),
     '#description' => t('You can alter citekey related settings here.')
   );
+  $form['citekey']['biblio_display_citation_key'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Show citation key in results'),
+    '#return_value' => 1,
+    '#default_value' => variable_get('biblio_display_citation_key', 0),
+    '#description' => t('This will output the citekey as the first item in the citation string')
+  );
   $form['citekey']['biblio_auto_citekey'] = array(
     '#type' => 'checkbox',
     '#title' => t('Auto generate citekeys if not given'),
