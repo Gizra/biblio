@@ -209,7 +209,7 @@ function biblio_schema() {
   ),
       'biblio_number' => array (
         'type' => 'varchar',
-        'length' => '10',
+        'length' => '24',
         'description' =>'',
   ),
       'biblio_other_number' => array (
@@ -250,7 +250,7 @@ function biblio_schema() {
   ),
       'biblio_volume' => array (
         'type' => 'varchar',
-        'length' => '10',
+        'length' => '24',
         'description' =>'',
   ),
       'biblio_pages' => array (
@@ -294,7 +294,7 @@ function biblio_schema() {
   ),
       'biblio_issue' => array (
         'type' => 'varchar',
-        'length' => '10',
+        'length' => '24',
         'description' =>'',
   ),
       'biblio_type_of_work' => array (
@@ -350,7 +350,7 @@ function biblio_schema() {
   ),
       'biblio_number_of_volumes' => array (
         'type' => 'varchar',
-        'length' => '10',
+        'length' => '24',
         'description' =>'',
   ),
       'biblio_short_title' => array (
@@ -380,7 +380,7 @@ function biblio_schema() {
   ),
       'biblio_section' => array (
         'type' => 'varchar',
-        'length' => '10',
+        'length' => '24',
         'description' =>'',
   ),
       'biblio_citekey' => array (
@@ -394,7 +394,7 @@ function biblio_schema() {
   ),
       'biblio_doi' => array (
         'type' => 'varchar',
-        'length' => '100',
+        'length' => '255',
         'description' =>'',
   ),
       'biblio_issn' => array (
@@ -1684,5 +1684,17 @@ function biblio_update_6015() {
   $result[] = array('success' => TRUE, 
                     'query' => "Moved $count keywords to the new database stucture");
   db_drop_field($result,'biblio', 'biblio_keywords');
+  return $result;
+}
+
+function biblio_update_6016() {
+  $result = array();
+  $result[] = update_sql("ALTER TABLE {biblio} 
+                          MODIFY COLUMN biblio_number             VARCHAR(24),
+                          MODIFY COLUMN biblio_section            VARCHAR(24),
+                          MODIFY COLUMN biblio_volume             VARCHAR(24),
+                          MODIFY COLUMN biblio_number_of_volumes  VARCHAR(24),
+                          MODIFY COLUMN biblio_issue              VARCHAR(24),
+                          MODIFY COLUMN biblio_doi                VARCHAR(255)");
   return $result;
 }
