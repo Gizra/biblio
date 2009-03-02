@@ -208,10 +208,17 @@ function theme_biblio_tabular($node, $base = 'biblio', $teaser = false) {
   );
 
   if ($node->biblio_url) {
-    $attrib = (variable_get('biblio_links_target_new_window', null)) ? array(
-      'target' => '_blank'
-    ) : array();
+    $attrib = (variable_get('biblio_links_target_new_window', null)) ? array('target' => '_blank') : array();
     $node->biblio_url = l($node->biblio_url, $node->biblio_url, $attrib);
+  }
+  if ($node->biblio_doi) {
+    $doi_url = '';
+    $attrib = (variable_get('biblio_links_target_new_window', null)) ? array('target' => '_blank') : array();
+    if ( ($doi_start = strpos($node->biblio_doi, '10.')) !== FALSE) {
+      $doi = substr($node->biblio_doi, $doi_start);
+      $doi_url .= 'http://dx.doi.org/'. $doi;
+    }
+    $node->biblio_doi = l($node->biblio_doi, $doi_url, $attrib);
   }
 
   foreach ($fields as $key => $row) {
@@ -232,6 +239,7 @@ function theme_biblio_tabular($node, $base = 'biblio', $teaser = false) {
           $data = _biblio_keyword_links($node->$row['name'], $base);
           break;
         case 'biblio_url' :
+        case 'biblio_doi' :
           // check_plain is not need on these since they have gone through
           // the l() function which does a check_plain
           $data = $node-> $row['name'];

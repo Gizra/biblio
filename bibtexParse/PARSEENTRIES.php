@@ -654,6 +654,7 @@ class PARSEENTRIES
       }
       $node['biblio_isbn']            = (!empty($entry['isbn'])) ? $entry['isbn'] : NULL;
       $node['biblio_url']             = (!empty($entry['url'])) ? $entry['url'] : NULL;
+      $node['biblio_doi']             = (!empty($entry['doi'])) ? $entry['doi'] : NULL;
       if (!empty($terms)) {
         if (!isset($node['taxonomy'])) $node['taxonomy'] = array();
         $node['taxonomy'] = array_merge($terms,$node['taxonomy']);
