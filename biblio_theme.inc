@@ -173,10 +173,10 @@ function theme_biblio_long($node, $base = 'biblio', $style = 'classic') {
     $output .= '<p>'. check_markup($node->biblio_abst_f, $node->format, FALSE) ."\n";
   if ($node->biblio_notes)
     $output .= '<h3>'. t("Notes") .': </h3>'. check_markup($node->biblio_notes, $node->format, FALSE) ."\n";
-  /*  if ( strlen(trim($node->body)) && user_access('view full text') ) {
+  if ( strlen(trim($node->body)) && user_access('view full text') ) {
        $output .= '<h3>'.t('Full Text').':</h3>'.check_markup($node->body, $node->format, FALSE);
-    }
-  */
+  }
+  
   if (biblio_access('export', $node)) {
     $output .= theme('biblio_export_links', $node->nid);
   }
@@ -262,6 +262,13 @@ function theme_biblio_tabular($node, $base = 'biblio', $teaser = false) {
       			'class' => 'biblio-row-title'),
       array('data' => theme('biblio_export_links', $node->nid) )
     );
+  }
+  if (strlen(trim($node->body)) && user_access('view full text')) {
+    $rows[] = array(
+        array('data' => t('Full Text'),  'valign' => 'top'),
+        array('data' =>  check_markup($node->body, $node->format, FALSE))
+    );
+    
   }
   $output = '<div id="biblio-node">';
   $output .= $node->biblio_coins;
