@@ -270,8 +270,12 @@ function biblio_access($op, $node = '') {
     return user_access('import from file');
   }
   if ($op == 'download') {
-    // Only users with permission to do so may export entries from file.
-    return user_access('show download links');
+    // Only users with permission to do so may see download links to attached files.
+    if (user_access('show download links') || (user_access('show own download links') && ($user->uid == $node->uid)))
+    {
+      return TRUE;
+    }
+    break;
   }
   if ($op == 'export') {
     // Only users with permission to do so may export entries from file.
@@ -325,6 +329,7 @@ function biblio_perm() {
     'import from file',
     'show export links',
     'show download links',
+    'show own download links',
     'show filter tab',
     'show sort links',
     'view full text'
@@ -1743,15 +1748,16 @@ function biblio_contextObject($node) {
   }
   // atitle, btitle, title (title, publication)
   if (($node->biblio_type == 102) || ($node->biblio_type == 101)) {
-    if (!empty($node->title))
-    $co["rft.atitle"] = $node->title;
+    if (!empty($node->title)) $co["rft.atitle"] = $node->title;
     if (!empty($node->biblio_secondary_title)) {
       $co["rft.title"] = $node->biblio_secondary_title;
       if ($node->biblio_type == 101)
       $co["rft.btitle"] = $node->biblio_secondary_title;
     }
   }
-  elseif (!empty($node->title)) $co["rft.title"] = $node->title;
+  elseif (!empty($node->title)) {
+   $co["rft.title"] = $node->title;
+  }
   if (($node->biblio_type == 100) && (!empty($node->title))) $co["rft.btitle"] = $node->title;
   // stitle (abbrev_journal)
   if (!empty($node->biblio_short_title)) $co["rft.stitle"] = $node->biblio_short_title;
@@ -1781,25 +1787,25 @@ function biblio_contextObject($node) {
       $pagetotal = preg_replace('/^(\d+)\s*pp?\.?$/', "\\1", $node->biblio_pages);
       $co["rft.tpages"] = $pagetotal;
     }
-    else
-    $co["rft.spage"] = $node->biblio_pages;
+    else {
+      $co["rft.spage"] = $node->biblio_pages;
+    }
   }
   // aulast, aufirst, author (author)
   if (!empty($node->biblio_contributors)) {
-    if (!empty($node->biblio_contributors[1][0]['lastname']))
-    $co["rft.aulast"] = $node->biblio_contributors[1][0]['lastname'];
+    if (!empty($node->biblio_contributors[1][0]['lastname'])) {
+      $co["rft.aulast"] = $node->biblio_contributors[1][0]['lastname'];
+    }
     if (!empty($node->biblio_contributors[1][0]['firstname'])) {
       $co["rft.aufirst"] = $node->biblio_contributors[1][0]['firstname'];
     }
     elseif (!empty($node->biblio_contributors[1][0]['initials'])) {
       $co["rft.aufirst"] = $node->biblio_contributors[1][0]['initials'];
     }
-    // TODO: cleanup and put this function in include.inc.php?
     foreach((array)$node->biblio_contributors[1] as $author) {
       if (!empty($author['lastname'])) {
         $au = $author['lastname'];
-        if (!empty($author['firstname']) || !empty($author['initials']))
-        $au .= ", ";
+        if (!empty($author['firstname']) || !empty($author['initials'])) $au .= ", ";
       }
       if (!empty($author['firstname'])) {
         $au .= $author['firstname'];
@@ -1807,8 +1813,7 @@ function biblio_contextObject($node) {
       elseif (!empty($author['initials'])) {
         $au .= $author['initials'];
       }
-      if (!empty($au))
-      $co["rft.au". $i] = $au;
+      if (!empty($au)) $co["rft.au".$i++] = $au;
     }
   }
   // pub (publisher)
@@ -1816,8 +1821,13 @@ function biblio_contextObject($node) {
   // place
   if (!empty($node->biblio_place_published)) $co["rft.place"] = $node->biblio_place_published;
   // id (doi, url)
-  if (!empty($node->biblio_doi)) $co["rft_id"] = "info:doi/". $node->biblio_doi;
-  elseif (!empty($node->biblio_url)) $co["rft_id"] = $node->biblio_url;
+  if (!empty($node->biblio_doi)) {
+    $co["rft_id"] = "info:doi/". $node->biblio_doi;
+  }
+  elseif (!empty($node->biblio_url)) {
+    $co["rft_id"] = $node->biblio_url;
+  }
+
   return $co;
 }
 function biblio_hash($node) {
