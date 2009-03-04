@@ -67,17 +67,25 @@ function biblio_import_form() {
       '#size' => 60
     );
     $form['filetype'] = array (
-      '#type' => 'radios',
+      '#type' => 'select',
       '#title' => t('File Type'),
-      '#default_value' => '',
+      '#default_value' => 0,
       '#options' => array (
-        'tagged' => t('EndNote Tagged'),
-        'ris'    => t('RIS'),
-        'xml'    => t('EndNote 7 XML (and previous versions)'),
-        'xml8'   => t('EndNote 8 XML (and versions upto X2)'),
+        0     => t('Select type'),
         'bib'    => t('BibTex'),
-        'marc'    => t('MARC')
-    )
+        'tagged' => t('EndNote Tagged'),
+        'xml'    => t('EndNote 7 XML (and previous versions)'),
+        'xml8'   => t('EndNote 8 XML (and newer versions)'),
+        'marc'   => t('MARC'),
+        'ris'    => t('RIS'),
+      )
+    );
+    
+    $form['batch_process'] = array (
+      '#type' => 'checkbox',
+      '#title' => t('Batch Process'),
+      '#default_value' => 0,
+      '#description' => t('You should use batch processing if your import file is large enough ( > 100KB) to require more than ~30 seconds to import, or if you are experiencing script timeouts during import'),
     );
     $form ['userid'] = _biblio_admin_build_user_select($user->uid);
     // Get the vocabularies  attached to the biblio node type ...
@@ -142,7 +150,8 @@ function biblio_import_form_validate($form, & $form_state) {
       case 8: form_set_error('', t("File upload stopped by extension."));
     }
   }
-  if ($op == t('Import') && $filetype == '') {
+
+  if ($op == t('Import') && $filetype === 0) {
     form_set_error('', t("You must select a file type"));
   }
 }
@@ -154,7 +163,8 @@ function biblio_import_form_submit($form, & $form_state) {
   global  $session_id;
   if ($form_state['values']['op'] == t('Import') && isset ($form_state['values']['filetype'])) {
     if ($import_file = file_save_upload('biblio_import_file')) {
-      if($import_file->filesize > 50000) $batch_proc = 1;  // we will use batch import for larger files.
+      if($form_state['values']['batch_process'] == 1) $batch_proc = 1;  // we will use batch import for larger files.
+
       drupal_set_message(t("@file was uploaded", array ('@file' => $import_file->filename)), 'status');
       // Concatenate all the terms of the different vocabularies
       // in a single array to be sent to biblio_import
@@ -193,7 +203,7 @@ function biblio_import_form_submit($form, & $form_state) {
         // only needed if not inside a form _submit handler :
         batch_process('biblio');
 
-      }else{
+      }else{ //not batch processing the file
         $session_id = microtime();
         $dummy = array();
         $content = biblio_import($import_file, $filetype, $userid, $terms, $batch_proc, $session_id, $dummy);
@@ -444,8 +454,79 @@ function biblio_marc_import($file, $terms, $batch, $session_id) {
   $nids = array();
   module_load_include('php', 'biblio', 'marcParse/php-marc');
   $marcfile = new File($file->filepath);
-  $record = $marcfile->next();
+  while ($record = $marcfile->next() ) {
+    $node=array();
+    foreach($record->fields() as $fields) {
+      foreach ($fields as $field){
+        switch ($field->tagno) {
+          case '008':
+            $data = $field->data();
+            $node['biblio_year'] = substr($data,7,4);
+            $node['biblio_lang'] = substr($data,35,3);
+            break;
+          case '020':
+            $node['biblio_isbn'] = $field->subfield('a');
+            break;
+          case '022':
+            $node['biblio_issn'] = $field->subfield('a');
+            break;
+          case '024':
+            $node['biblio_other_number'] = $field->subfield('a');
+            break;
+          case '050': //LIBRARY OF CONGRESS CALL NUMBER
+          case '055': //CLASSIFICATION NUMBERS ASSIGNED IN CANADA
+          case '060': //NATIONAL LIBRARY OF MEDICINE CALL NUMBER
+            $node['biblio_call_number'] = $field->subfield('a');
+            break;
+          case '130':
+            $node['title'] = str_replace(' /', '', $field->subfield('a'));
+            break;
+          case '210':
+            $node['biblio_short_title'] = str_replace(' /', '', $field->subfield('a'));
+            break;
+          case '245':
+            $node['title'] = str_replace(' /', '', $field->subfield('a')).' '.$field->subfield('b');
+            break;
+          case '250':
+            $node['biblio_edition'] = $field->subfield('a');
+            break;
+          case '260':
+            $node['biblio_place_published'] = str_replace(' :', '', $field->subfield('a'));
+            $node['biblio_publisher'] = $field->subfield('b');
+            $node['biblio_date'] = $field->subfield('c');
+            break;
+          case '300':
+            $node['biblio_pages'] = $field->subfield('a');
+            break;
+          case '490':
+            $node['biblio_volumne'] = $field->subfield('v');
+            break;
+          case '100':
+          case '700':
+            $node['biblio_contributors'][1][] = array(
+              'name' => $field->subfield('a'),
+              'auth_type' => 1
+            );
+            break;
+          case '110':
+          case '710':
+            $node['biblio_contributors'][5][] = array(
+              'name' => $field->subfield('a'),
+              'auth_type' => 5
+            );
+            break;
+        }
+      }
+    }
+    if (!empty($node)) {
+      if (!empty($terms)) {
+        if (!isset($node['taxonomy'])) $node['taxonomy'] = array();
+        $node['taxonomy'] = array_merge($terms,$node['taxonomy']);
+      }
+      $nids[] = biblio_save_node($node, $batch, $session_id);
+    }
 
+  }
   return $nids;
 }
 /**
@@ -629,6 +710,7 @@ function biblio_save_node($node, $batch = FALSE, $session_id = NULL) {
   );
 
   $node = (object) array_merge($node, $node_template);
+  if(!isset($node->biblio_type)) $node->biblio_type = 129; // default to misc if not set.
   if ($batch && $session_id){
     $node = serialize($node);
     db_query("INSERT INTO {biblio_import_cache} (session_id, data) VALUES ('%s', %b)", $session_id, $node);
