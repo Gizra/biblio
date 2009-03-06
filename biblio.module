@@ -82,6 +82,10 @@ function biblio_theme() {
         'file' => 'biblio_theme.inc',
         'arguments' => array('form'),
     ),
+    'biblio_admin_keyword_orphans_form' => array(
+        'file' => 'biblio_theme.inc',
+        'arguments' => array('form'),
+    ),
     'biblio_coin_button' => array(
         'file' => 'biblio_theme.inc',
         'arguments' => array('element'),
@@ -719,6 +723,44 @@ function biblio_menu() {
     'file' => 'biblio.admin.inc',
     'weight' => 1,
     'type' => MENU_LOCAL_TASK
+  );
+  $items['admin/settings/biblio/keyword'] = array(
+    'title' => t('Keywords'),
+    'page callback' => 'biblio_keyword_page',
+    'access callback' => 'user_access',
+    'access arguments' => array('access content'),
+    'file' => 'biblio.pages.inc',
+     'type' => MENU_LOCAL_TASK,
+    'weight' => -7
+  );
+  $items['admin/settings/biblio/keyword/list'] = array(
+    'title' => t('List'),
+    'page callback' => 'biblio_keyword_page',
+    'access callback' => 'user_access',
+    'access arguments' => array('access content'),
+    'file' => 'biblio.pages.inc',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -7
+  );
+  $items['admin/settings/biblio/keyword/list/%/edit'] = array(
+    'title' => t('Edit keyword information'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('biblio_admin_keyword_edit_form',5),
+    'access callback' => 'user_access',
+    'access arguments' => array('administer biblio'),
+    'file' => 'biblio.admin.inc',
+    'type' => MENU_LOCAL_TASK,
+    'weight' => -6
+  );
+  $items['admin/settings/biblio/keyword/orphans'] = array(
+    'title' => t('Orphaned Keywords'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('biblio_admin_keyword_orphans_form'),
+    'access arguments' => array('administer biblio'),
+    'description' => t('Delete orphaned biblio keywords.'),
+    'file' => 'biblio.admin.inc',
+    'type' => MENU_LOCAL_TASK,
+    'weight' => -6
   );
   /*    $items['admin/settings/biblio/authors/reset'] = array(
    'title' => t('Reset all Author types to defaults'),

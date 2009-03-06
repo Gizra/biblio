@@ -1202,13 +1202,6 @@ function biblio_admin_author_edit_form_submit($form, &$form_state) {
 
 function biblio_admin_orphans_form($form_state) {
   $base = variable_get('biblio_base', 'biblio');
-
-  $form['submit'] = array(
-  	'#type' => 'submit',
-    '#value' => t('Delete'),
-    '#submit' => array('biblio_admin_orphans_form_submit'),
-  );
-
   $result = pager_query('SELECT * FROM {biblio_contributor_data} WHERE cid NOT IN (SELECT cid FROM {biblio_contributor} GROUP BY cid)', 50);
   $authors = array();
   while ($author = db_fetch_object($result)) {
@@ -1219,11 +1212,17 @@ function biblio_admin_orphans_form($form_state) {
   $form['authors'] = array('#type' => 'checkboxes', '#options' => $authors);
   $form['pager']   = array('#value' => theme('pager', NULL, 50, 0));
   $form['#theme'] = 'biblio_admin_orphans_form';
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Delete'),
+    '#disabled' => (!count($authors)),
+    '#submit' => array('biblio_admin_orphans_form_submit'),
+  );
   return $form;
 }
 function biblio_admin_orphans_form_validate($form, &$form_state) {
-  $authors = array_filter($form_state['values']['authors']);
-  if (count($authors) == 0) {
+  $check_count = array_filter($form_state['values']['authors']);
+  if (count($check_count) == 0) {
     form_set_error('', t('No items selected.'));
   }
 }
@@ -1233,6 +1232,42 @@ function biblio_admin_orphans_form_submit($form, &$form_state) {
   $authors = array_filter($form_state['values']['authors']);
   update_sql('DELETE FROM {biblio_contributor_data} WHERE cid IN ('.implode(',',$authors).')');
   drupal_set_message(t('The orphaned authors ('.implode(',',$authors).') have been deleted.'));
+
+}
+function biblio_admin_keyword_orphans_form($form_state) {
+  $base = variable_get('biblio_base', 'biblio');
+  $result = pager_query('SELECT * FROM {biblio_keyword_data} WHERE kid NOT IN (SELECT kid FROM {biblio_keyword} GROUP BY kid)', 50);
+  $keywords = array();
+  while ($keyword = db_fetch_object($result)) {
+    $keywords[$keyword->kid] = '';
+    $form['keyword'][$keyword->kid] = array('#value' => l($keyword->word, $base.'/keyword/'.$keyword->kid.'/edit'));
+  }
+  $form['keywords'] = array('#type' => 'checkboxes', '#options' => $keywords);
+
+  $form['pager']   = array('#value' => theme('pager', NULL, 50, 0));
+  $form['#theme'] = 'biblio_admin_keyword_orphans_form';
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Delete'),
+    '#disabled' => (!count($keywords)),
+    '#submit' => array('biblio_admin_keyword_orphans_form_submit'),
+  );
+  return $form;
+}
+function biblio_admin_keyword_orphans_form_validate($form, &$form_state) {
+  $check_count = array_filter($form_state['values']['keywords']);
+  if (count($check_count) == 0) {
+    form_set_error('', t('No items selected.'));
+  }
+}
+
+function biblio_admin_keyword_orphans_form_submit($form, &$form_state) {
+ 
+  $keywords = array_filter($form_state['values']['keywords']);
+  update_sql('DELETE FROM {biblio_keyword_data} WHERE kid IN ('.implode(',',$keywords).')');
+  $count = count($keywords);
+  drupal_set_message(t('%count orphaned keywords have been deleted.', array('%count' => $count)));
+
 }
 
 function biblio_admin_keyword_edit_form($form_state, $keyword_id) {
