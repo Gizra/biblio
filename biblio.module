@@ -54,7 +54,14 @@ function _biblio_get_field_information($biblio_type) {
 }
 
 function biblio_init() {
+  global $user, $conf;
   drupal_add_css(drupal_get_path('module', 'biblio') .'/biblio.css');
+
+  if ($user->uid === 0) { // Prevent caching of biblio pages for anonymous users so session variables work and thus filering works
+    $base = variable_get('biblio_base', 'biblio');
+    if (drupal_match_path($_GET['q'], "$base\n$base/*"))
+      $conf['cache'] = FALSE;
+  }
 }
 function biblio_theme() {
   return array(
