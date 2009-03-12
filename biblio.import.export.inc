@@ -84,8 +84,8 @@ function biblio_import_form() {
     $form['batch_process'] = array (
       '#type' => 'checkbox',
       '#title' => t('Batch Process'),
-      '#default_value' => 0,
-      '#description' => t('You should use batch processing if your import file is large enough ( > 100KB) to require more than ~30 seconds to import, or if you are experiencing script timeouts during import'),
+      '#default_value' => 1,
+      '#description' => t('You should use batch processing if your import file contains more than about 20 records, or if you are experiencing script timeouts during import'),
     );
     $form ['userid'] = _biblio_admin_build_user_select($user->uid);
     // Get the vocabularies  attached to the biblio node type ...

@@ -286,7 +286,6 @@ function biblio_access($op, $node = '') {
     {
       return TRUE;
     }
-    break;
   }
   if ($op == 'export') {
     // Only users with permission to do so may export entries from file.
@@ -401,7 +400,8 @@ function biblio_user($type, & $edit, & $user, $category = NULL) {
     menu_rebuild();
   }
   if ($type == 'update' && $category == 'account') {
-    if ($edit['biblio_contributor_id'] > 0) {
+    if (isset($edit['biblio_contributor_id'])) {
+      db_query("UPDATE {biblio_contributor_data} SET drupal_uid = 0 WHERE drupal_uid = %d", $user->uid);
       db_query('UPDATE {biblio_contributor_data} set drupal_uid = %d WHERE cid = %d ', $user->uid, $edit['biblio_contributor_id']);
     }
   }

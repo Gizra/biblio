@@ -879,7 +879,7 @@ function _biblio_get_user_profile_form(& $form, $profile_user = FALSE) {
     $db_result = db_query("SELECT cd.lastname, cd.firstname, cd.initials, cd.cid FROM {biblio_contributor_data} cd
             ORDER by cd.lastname ASC ");
     $options = array();
-    $options[0] = t('(none)');
+    $options[0] = t('(None)');
 
     while ($row = db_fetch_object($db_result)) {
         $options[$row->cid] =  "$row->lastname, $row->firstname $row->initials ";
@@ -888,6 +888,7 @@ function _biblio_get_user_profile_form(& $form, $profile_user = FALSE) {
     '#type' => 'select',
     '#title' => t('Link My Profile with this Author from the Biblio database'),
     '#default_value' => $profile_user->biblio_contributor_id ,
+    '#disabled' => !$allow_edit,
     '#options' => $options,
     '#description' => t('This will link your profile to the selected author from the biblio database, then all publications containing this author to be displayed on your "Publications" tab.'),
     );
@@ -1077,7 +1078,7 @@ function biblio_admin_author_edit_form($form_state, $author_id) {
     '#value' => $author_id
   );
   $users = db_query('SELECT uid,name FROM {users} WHERE uid>0 ORDER BY name');
-  $options[0] = 'Please choose';
+  $options[0] = t('(None)');
   while($user=db_fetch_array($users)) {
     $options[$user['uid']] = $user['name'];
   }
@@ -1191,13 +1192,29 @@ function biblio_admin_author_edit_form_validate($form, &$form_state) {
   }
 }
 function biblio_admin_author_edit_form_submit($form, &$form_state) {
-   drupal_write_record('biblio_contributor_data', $form_state['values'], 'cid');
-   // merge authors
-   if (count($form_state['values']['merge_authors'])) {
-     $authors = implode(',', $form_state['values']['merge_authors']);
-     update_sql("UPDATE {biblio_contributor} SET cid={$form_state['values']['cid']} WHERE cid IN ($authors)");
-     update_sql("DELETE FROM {biblio_contributor_data} WHERE cid IN ($authors)");
-   }
+
+  if ($form_state['values']['drupal_uid'] == 0 ) {
+    $uid = $form['drupal_uid']['#default_value'];
+    $cid = 0;
+  }
+  else {
+    $uid = $form_state['values']['drupal_uid'];
+    $cid = $form_state['values']['cid'] ;
+  }
+
+  db_query("UPDATE {biblio_contributor_data} SET drupal_uid = 0 WHERE drupal_uid = %d", $uid);
+  $data = unserialize(db_result(db_query('SELECT data FROM {users} WHERE uid = %d', $uid)));
+  $data['biblio_contributor_id'] = $cid;
+  $v[] = serialize($data);
+  db_query("UPDATE {users} SET data = '%s' WHERE uid = %d", array_merge($v, array($uid)));
+
+  drupal_write_record('biblio_contributor_data', $form_state['values'], 'cid');
+  // merge authors
+  if (count($form_state['values']['merge_authors'])) {
+    $authors = implode(',', $form_state['values']['merge_authors']);
+    update_sql("UPDATE {biblio_contributor} SET cid={$form_state['values']['cid']} WHERE cid IN ($authors)");
+    update_sql("DELETE FROM {biblio_contributor_data} WHERE cid IN ($authors)");
+  }
 }
 
 function biblio_admin_orphans_form($form_state) {
