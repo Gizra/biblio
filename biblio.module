@@ -1513,47 +1513,6 @@ function biblio_get_db_fields() {
   }
   return $fields;
 }
-function _parse_author_array($authorArray) {
-  //	$input = trim($input);
-  // split on ' and '
-  //	$authorArray = preg_split("/\s(and)\s/i", $input);
-  // check if there's anything that looks like et. al
-  $count = 1;
-  foreach ($authorArray as $value) {
-    $appellation = $prefix = $surname = $firstname = $initials = '';
-    $author = explode(",", preg_replace("/\s{2,}/", ' ', trim($value)));
-    $size = sizeof($author);
-    // No commas therefore something like Mark Grimshaw, Mark Nicholas Grimshaw, M N Grimshaw, Mark N. Grimshaw
-    if ($size == 1) {
-      $author = split(" ", $value);
-      // last of array is surname (no prefix if entered correctly)
-      $surname = array_pop($author);
-    }
-    // Something like Grimshaw, Mark or Grimshaw, Mark Nicholas  or Grimshaw, M N or Grimshaw, Mark N.
-    else
-    if ($size == 2) {
-      // first of array is surname (perhaps with prefix)
-      list ($surname, $prefix) = _grabSurname(array_shift($author));
-    }
-    // If $size is > 2, we're looking at something like Bush, George W, III
-    else {
-      // last of array is 'Jr.', 'IV' etc.
-      $appellation = array_pop($author);
-      // first of array is surname (perhaps with prefix)
-      list ($surname, $prefix) = _grabSurname(array_shift($author));
-    }
-    $remainder = join(" ", $author);
-    list ($firstname, $initials) = _grabFirstnameInitials_old($remainder);
-    $surname = $surname .' '. $appellation;
-    $creators[] = array(
-      'first_name' => trim("$firstname"
-    ), 'initials' => trim("$initials"), 'last_name' => trim("$surname"), 'prefix' => trim("$prefix"), 'order' => "$count");
-    $count++;
-  }
-  if (isset($creators))
-  return $creators;
-  return FALSE;
-}
 
 /*******************************************
  * Filter
