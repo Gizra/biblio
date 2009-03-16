@@ -413,7 +413,7 @@ function theme_biblio_format_authors($contributors, $options, $inline = false)
         }
       }
       else { // $rank > 0 // -> all authors except the first one
-        if($options['initialsBeforeAuthorFirstAuthor']) {
+        if($options['initialsBeforeAuthorStandard']) {
           $singleAuthorString = $author['firstname'].$options['AuthorsInitialsDelimStandard'].$author['lastname'];
         }
         else{
