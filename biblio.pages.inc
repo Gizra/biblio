@@ -142,7 +142,7 @@ function biblio_build_query($arg_list) {
     case 'author':
       $sortby = "ORDER BY bcd.lastname %s ";
       $where['bc-rank'] = "bc.rank=0";
-      //$where[] = "bc.ctid=1";
+      $where['bc-auth-category'] = "bc.auth_category=1";
       $join['bc'] = '  JOIN {biblio_contributor} as bc on b.vid = bc.vid ';
       $join['bcd'] = '  JOIN {biblio_contributor_data} as bcd on bc.cid = bcd.cid ';
       break;
@@ -406,135 +406,33 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
   if (module_exists('popups')){
      popups_add_popups();
   }
-  if (variable_get('biblio_rss', 0)) {
-    drupal_set_html_head('<link rel="alternate" type="application/rss+xml" title="'.variable_get('site_name', 'Drupal').' RSS" href="'.url("$base/rss.xml").'" />');
-  }
-  $pub_types = db_query('SELECT t.* FROM {biblio_types} as t WHERE t.tid>0');
-  while ($option = db_fetch_object($pub_types)) {
-    $pub_type["$option->tid"] = $option->name;
-  }
   if (!$inline && !$profile) {
+    $content .= '<div id="biblio-header">';
+    if (variable_get('biblio_rss', 0)) {
+      drupal_set_html_head('<link rel="alternate" type="application/rss+xml" title="'.variable_get('site_name', 'Drupal').' RSS" href="'.url("$base/rss.xml").'" />');
+    }
+    $pub_types = db_query('SELECT t.* FROM {biblio_types} as t WHERE t.tid>0');
+    while ($option = db_fetch_object($pub_types)) {
+      $pub_type["$option->tid"] = $option->name;
+    }
     // Search box. Has same permissions as the filter tab.
     if (variable_get('biblio_search',0) && user_access('show filter tab')) {
       $content .= drupal_get_form('biblio_search_form');
     }
-    // Add some links to the top of the page to change the sorting/ordering...
-    $order = ($attrib['order'] == "desc" || $attrib['order'] == "DESC")?"asc":"desc";
     if ( biblio_access('export')) {
-//      $content .= '<div class="biblio-export">'.t('Export @count results', array('@count' => $pager_total_items[0])).':['.l("Tagged","$base/export/tagged"). ']['.l("XML","$base/export/xml"). ']['.l("CSV","$base/export/csv").']['.l("BibTex","$base/export/bibtex").']</div>';
       $content .= '<div class="biblio-export">'.t('Export @count results', array('@count' => $pager_total_items[0])).':' . theme('biblio_export_links'). '</div>';
     }else{
       $content .= '<div class="biblio-export">'.t('Found @count results', array('@count' => $pager_total_items[0])) .'</div><br />';
     }
+    // Add some links to the top of the page to change the sorting/ordering...
     if (user_access('show sort links')) {
-      $options = array('attributes'=>array("title"=>t("Click a second time to reverse the sort order")));
-
-      $sort_links =  variable_get('biblio_sort_tabs', array('author'=>'author','title'=>'title','type'=>'type','year'=>'year'));
-
-      $content .= '<div class="biblio-sort">';
-      foreach($sort_links as $key => $link) {
-        if ($key === $link) {
-          $content .= t('Sort by').':';
-          break;
-        }
-      }
-
-      if ($sort_links['year']) {
-        $options['query'] = "sort=year&order=$order";
-        $content .= "[".l(t("Year"),$_GET['q'],$options)."]";
-      }
-      if ($sort_links['title']) {
-        $options['query'] = "sort=title&order=$order";
-        $content .= "[".l(t("Title"),$_GET['q'],$options)."]";
-      }
-      if ($sort_links['type']) {
-        $options['query'] = "sort=type&order=$order";
-        $content .= "[".l(t("Type"),$_GET['q'],$options)."]";
-      }
-      if ($sort_links['author']) {
-        $options['query'] = "sort=author&order=$order";
-        $content .= "[".l(t("Author"),$_GET['q'],$options)."]";
-      }
-      if ($sort_links['keyword']) {
-        $options['query'] = "sort=keyword&order=$order";
-        $content .= "[".l(t("Keyword"),$_GET['q'],$options)."]";
-      }
-      $content .= "</div> ";
+      $content .= _biblio_sort_tabs($attrib, $options);
     }
 
-    $session = &$_SESSION['biblio_filter'];
-    // if there are any filters in place, print them at the top of the list
-    if (count($args)) {
-      $i = 0;
-      while ($args) {
-        $type = $args[0];
-        array_shift($args);
-        $value = db_escape_string($args[0]);
-        if ($type == 'search') {
-          $search_content = '<em>'. array_shift($args).'</em>';
-          continue;
-        }
-        if ($type == 'term_id') {
-          $term = taxonomy_get_term($value);
-          $value = $term->name;
-          $type = t("Taxonomy Term");
-        }
-        if ($type == 'keyword') {
-          require_once(drupal_get_path('module', 'biblio') .'/biblio.keywords.inc');
-          if (is_numeric($value)) {
-            $term = biblio_get_keyword_by_id($value);
-            $value = $term->word;
-          }
-          $type = t("Keyword");
-        }
-        if ($type == 'uid' ) {
-          $user = user_load($value);
-          $value = $user->name;
-          $type = t("Drupal User");
-        }
-        if ($type == 'aid' || ($type == 'author' && is_numeric($value))) {
-          $author = biblio_get_contributor($value);
-          $value = $author->name;
-          $type = t("Author");
-        }
-        if ($type == 'ag' ) {
-          $type = t("First letter of last name");
-        }
-        if ($type == 'tg' ) {
-          $type = t("First letter of title");
-        }
-        if ($type == 'type') $value = $pub_type["$value"];
-        array_shift($args);
-        $params = array('%a' =>  $type , '%b' =>  $value );
-        $filtercontent .= ($i++ ? t('<em> and</em> <strong>%a</strong> is <strong>%b</strong>', $params) : t('<strong>%a</strong> is <strong>%b</strong>', $params)) ;
-      }
-      if ($search_content) {
-        $content .= '<div class="biblio-current-filters"><b>'.t('Search results for ').'</b>';
-        $content .= $search_content;
-        if ($filtercontent) {
-          $content .= '<br><b>'.t('Filters').': </b>';
-        }
-      }
-      else {
-        $content .= '<div class="biblio-current-filters"><b>'.t('Filters').': </b>';
-      }
-      $content .= $filtercontent;
-      $link_options = array();
-      if (isset($_GET['sort'])) {
-        $link_options['query']  .= "sort=" . $_GET['sort'];
-      }
-  	   if (isset($_GET['order'])) {
-  	     $link_options['query']   .= $options['query'] ? "&" : "" ;
-  	     $link_options['query']   .= "order=" . $_GET['order'];
-  	   }
-
-      if ($search_content) {
-        $content .= '&nbsp;&nbsp;'.l('['.t('Reset Search').']',"$base/filter/clear", $link_options);
-      } else {
-        $content .= '&nbsp;&nbsp;'.l('['.t('Clear All Filters').']',"$base/filter/clear", $link_options);
-      }
-      $content .= '</div>';
+    if  (user_access('show filter tab')) {
+      $content .= _biblio_filter_info_line($args);
     }
+    $content .= '</div>';
   }
 
   if ($inline === true) print '<div class="biblio-inline">';
@@ -542,7 +440,8 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
     $content .= theme(biblio_alpha_line,$_GET['sort'],$value);
   }
 
-  $_char = $_type = $_year = $name = ""; $count = 0;
+  $count = 0;
+  
   while ($node = db_fetch_object($result)) {
     $count++;
     $node->biblio_contributors = biblio_load_contributors($node->vid);
@@ -551,58 +450,17 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
     if ( module_exists("upload") ) {
       $node->files = upload_load($node);
     }
-
+    
     if (isset($node->biblio_year) && ($node->biblio_year == 9998))  $node->biblio_year = t("In Press") ;
     if (isset($node->biblio_year) && ($node->biblio_year == 9999))  $node->biblio_year = t("Submitted") ;
-    switch ($attrib['sort']) {
-      case 'title':
-        $first = drupal_substr(drupal_ucfirst(ltrim($node->title)), 0, 1);
-        if (drupal_substr(drupal_ucfirst(ltrim($node->title)), 0, 1) == '"' ) $first = drupal_ucfirst(drupal_substr(ltrim($node->title), 1, 1));
-        if (drupal_substr(drupal_ucfirst(ltrim($node->title)), 0, 1) == "'" ) $first = drupal_ucfirst(drupal_substr(ltrim($node->title), 1, 1));
-        if (drupal_substr(drupal_ucfirst(ltrim($node->title)), 0, 2) == "A " ) $first = drupal_ucfirst(drupal_substr(ltrim($node->title), 2, 1));
-        if (drupal_substr(drupal_ucfirst(ltrim($node->title)), 0, 3) == "An " ) $first = drupal_ucfirst(drupal_substr(ltrim($node->title), 3, 1));
-        if (drupal_substr(drupal_ucfirst(ltrim($node->title)), 0, 4) == "The " ) $first = drupal_ucfirst(drupal_substr(ltrim($node->title), 4, 1));
-        if ( $first  != $_char) {
-          $_char =  $first ;
-          $content .= '<div class="biblio-year">' . $_char . "</div>\n";
-        }
-        break;
-      case 'author':
-        if ( drupal_substr(drupal_ucfirst(ltrim($node->biblio_contributors[1][0]['lastname'])), 0, 1) != $_char) {
-          $_char = drupal_substr(drupal_ucfirst(ltrim($node->biblio_contributors[1][0]['lastname'])), 0, 1) ;
-          $content .= '<div class="biblio-year">' . $_char . "</div>\n";
-        }
-        break;
-      case 'type':
-        if ($node->biblio_type_name != $_type) {
-          $_type = $node->biblio_type_name;
-          //      $name = db_result(db_query("SELECT name FROM {biblio_types} as t where t.tid=%d", $node->biblio_type)) ;
-          $content .= '<div class="biblio-year">' . $_type . "</div>\n";
-        }
-        break;
-      case 'keyword': 	// added msh 08 aug 07
-        $kw = array_shift($node->biblio_keywords);
-        $tok = drupal_ucfirst($kw->word);
-        if (empty($tok)) {
-          $tok = t("No Keywords");
-        }
-        if ($tok != $name) {
-          $name = $tok;
-          if ($name != '') {
-            $content .= '<div class="biblio-year">' . $name . "</div>\n";
-          }
-        }
-        break;
-      case 'year':
-      default:
-        if ($node->biblio_year != $_year) {
-          $_year = $node->biblio_year;
-          $content .= '<div class="biblio-year">' .$_year. "</div>\n";
-        }
-    } //end switch
-    $inline_links = ($inline && variable_get('inlinemode_in_links',0)) ? true : false;
+    
+    // output separator bar if needed
+    $content .= _biblio_category_separator_bar($attrib, $node);
+    
+    $inline_links = ($inline && variable_get('biblio_inlinemode_in_links',0)) ? true : false;
     $content .= theme('biblio_entry', $node,$base,$style,$inline);
   } //end while
+  
   $content .= theme('pager', 0, variable_get('biblio_rowsperpage', 25));
   if ($count == 0) {
     $content .= "<h3>".t("No items found")."</h3>";
@@ -616,6 +474,196 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
 
 }
 
+function _biblio_sort_tabs($attrib, &$options) {
+  $content = '';
+  $base =  variable_get('biblio_base', 'biblio');
+  $order = ($attrib['order'] == "desc" || $attrib['order'] == "DESC")?"asc":"desc";
+  $path = drupal_get_path('module','biblio');
+  $order_arrow = ($order == 'asc') ? '&nbsp;<img src ="'.$path.'/arrow-asc.png">':'&nbsp;<img src ="'.$path.'/arrow-desc.png">';
+  $options = array('attributes'=>array("title"=>t("Click a second time to reverse the sort order")));
+  $options = array('html' => true);
+  $sort_links =  variable_get('biblio_sort_tabs', array('author'=>'author', 'title'=>'title', 'type'=>'type', 'year'=>'year', 'keyword'=>'keyword'));
+  $content .= '<ul class="tabs ">';
+  foreach($sort_links as $key => $link) {
+    if ($key === $link) {
+      //$content .= t('Sort by').':';
+      //break;
+    }
+  }
+  if ($sort_links['year']) {
+    $active = ($attrib['sort'] == 'year') ? 'class="active"' : '';
+    $arrow = empty($active)?'':$order_arrow;
+    $options['query'] = "sort=year&order=$order";
+  //  $content .= "[".l(t("Year"),$_GET['q'],$options)."]";
+      $content .= '<li '. $active .'><a href="'. url($base,$options).'"'. $active .'><span class="a"><span class="b">'. t("Year") .$arrow.'</span></span></a></li>';
+  }
+  if ($sort_links['title']) {
+    $options['query'] = "sort=title&order=$order";
+    $active = ($attrib['sort'] == 'title') ? 'class="active"' : '';
+    $arrow = empty($active)?'':$order_arrow;
+    //  $content .= "[".l(t("Title"),$_GET['q'],$options)."]";
+    $content .= '<li '. $active .'><a href="'. url($base,$options).'"'. $active .'><span class="a"><span class="b">'. t("Title") .$arrow.'</span></span></a></li>';
+  }
+  if ($sort_links['type']) {
+    $options['query'] = "sort=type&order=$order";
+    $active = ($attrib['sort'] == 'type') ? 'class="active"' : '';
+    $arrow = empty($active)?'':$order_arrow;
+    //  $content .= "[".l(t("Type"),$_GET['q'],$options)."]";
+    $content .= '<li '. $active .'><a href="'. url($base,$options).'"'. $active .'><span class="a"><span class="b">'. t("Type") .$arrow.'</span></span></a></li>';
+  }
+  if ($sort_links['author']) {
+    $options['query'] = "sort=author&order=$order";
+    $active = ($attrib['sort'] == 'author') ? 'class="active"' : '';
+    $arrow = empty($active)?'':$order_arrow;
+    //  $content .= "[".l(t("Author"),$_GET['q'],$options)."]";
+    $content .= '<li '. $active .'><a href="'. url($base,$options).'"'. $active .'><span class="a"><span class="b">'. t("Author") .$arrow.'</span></span></a></li>';
+  }
+  if ($sort_links['keyword']) {
+    $options['query'] = "sort=keyword&order=$order";
+    $active = ($attrib['sort'] == 'keyword') ? 'class="active"' : '';
+    $arrow = empty($active)?'':$order_arrow;
+    //  $content .= "[".l(t("Keyword"),$_GET['q'],$options)."]";
+    $content .= '<li '. $active .'><a href="'. url($base,$options).'"'. $active .'><span class="a"><span class="b">'. t("Keyword") .$arrow.'</span></span></a></li>';
+  }
+  $content .= "</ul>";
+
+  return $content;
+}
+
+function _biblio_filter_info_line($args) {
+  $content = '';
+  $base =  variable_get('biblio_base', 'biblio');
+  $session = &$_SESSION['biblio_filter'];
+  // if there are any filters in place, print them at the top of the list
+  if (count($args)) {
+    $i = 0;
+    while ($args) {
+      $type = $args[0];
+      array_shift($args);
+      $value = db_escape_string($args[0]);
+      if ($type == 'search') {
+        $search_content = '<em>'. array_shift($args).'</em>';
+        continue;
+      }
+      if ($type == 'term_id') {
+        $term = taxonomy_get_term($value);
+        $value = $term->name;
+        $type = t("Taxonomy Term");
+      }
+      if ($type == 'keyword') {
+        require_once(drupal_get_path('module', 'biblio') .'/biblio.keywords.inc');
+        if (is_numeric($value)) {
+          $term = biblio_get_keyword_by_id($value);
+          $value = $term->word;
+        }
+        $type = t("Keyword");
+      }
+      if ($type == 'uid' ) {
+        $user = user_load($value);
+        $value = $user->name;
+        $type = t("Drupal User");
+      }
+      if ($type == 'aid' || ($type == 'author' && is_numeric($value))) {
+        $author = biblio_get_contributor($value);
+        $value = $author->name;
+        $type = t("Author");
+      }
+      if ($type == 'ag' ) {
+        $type = t("First letter of last name");
+      }
+      if ($type == 'tg' ) {
+        $type = t("First letter of title");
+      }
+      if ($type == 'type') $value = $pub_type["$value"];
+      array_shift($args);
+      $params = array('%a' =>  $type , '%b' =>  $value );
+      $filtercontent .= ($i++ ? t('<em> and</em> <strong>%a</strong> is <strong>%b</strong>', $params) : t('<strong>%a</strong> is <strong>%b</strong>', $params)) ;
+    }
+    if ($search_content) {
+      $content .= '<div class="biblio-current-filters"><b>'.t('Search results for ').'</b>';
+      $content .= $search_content;
+      if ($filtercontent) {
+        $content .= '<br><b>'.t('Filters').': </b>';
+      }
+    }
+    else {
+      $content .= '<div class="biblio-current-filters"><b>'.t('Filters').': </b>';
+    }
+    $content .= $filtercontent;
+
+    $link_options = array();
+    if (isset($_GET['sort'])) {
+      $link_options['query']  .= "sort=" . $_GET['sort'];
+    }
+    if (isset($_GET['order'])) {
+      $link_options['query']   .= $options['query'] ? "&" : "" ;
+      $link_options['query']   .= "order=" . $_GET['order'];
+    }
+
+    if ($search_content) {
+      $content .= '&nbsp;&nbsp;'.l('['.t('Reset Search').']',"$base/filter/clear", $link_options);
+    } else {
+      $content .= '&nbsp;&nbsp;'.l('['.t('Clear All Filters').']',"$base/filter/clear", $link_options);
+    }
+    $content .= '</div>';
+  }
+
+  return $content;
+}
+
+function _biblio_category_separator_bar($attrib, $node) {
+  static $_char='', $_type='', $name='', $_year='';
+
+  switch ($attrib['sort']) {
+    case 'title':
+      $first = drupal_substr(drupal_ucfirst(ltrim($node->title)), 0, 1);
+      if (drupal_substr(drupal_ucfirst(ltrim($node->title)), 0, 1) == '"' ) $first = drupal_ucfirst(drupal_substr(ltrim($node->title), 1, 1));
+      if (drupal_substr(drupal_ucfirst(ltrim($node->title)), 0, 1) == "'" ) $first = drupal_ucfirst(drupal_substr(ltrim($node->title), 1, 1));
+      if (drupal_substr(drupal_ucfirst(ltrim($node->title)), 0, 2) == "A " ) $first = drupal_ucfirst(drupal_substr(ltrim($node->title), 2, 1));
+      if (drupal_substr(drupal_ucfirst(ltrim($node->title)), 0, 3) == "An " ) $first = drupal_ucfirst(drupal_substr(ltrim($node->title), 3, 1));
+      if (drupal_substr(drupal_ucfirst(ltrim($node->title)), 0, 4) == "The " ) $first = drupal_ucfirst(drupal_substr(ltrim($node->title), 4, 1));
+      if ( $first  != $_char) {
+        $_char =  $first ;
+        $content .= '<div class="biblio-separator-bar">' . $_char . "</div>\n";
+      }
+      break;
+    case 'author':
+      if ( (isset($node->biblio_contributors[1][0]['lastname'])) &&
+      (drupal_substr(drupal_ucfirst(ltrim($node->biblio_contributors[1][0]['lastname'])), 0, 1) != $_char))
+      {
+        $_char = drupal_substr(drupal_ucfirst(ltrim($node->biblio_contributors[1][0]['lastname'])), 0, 1) ;
+        $content .= '<div class="biblio-separator-bar">' . $_char . "</div>\n";
+      }
+      break;
+    case 'type':
+      if ($node->biblio_type_name != $_type) {
+        $_type = $node->biblio_type_name;
+        //      $name = db_result(db_query("SELECT name FROM {biblio_types} as t where t.tid=%d", $node->biblio_type)) ;
+        $content .= '<div class="biblio-separator-bar">' . $_type . "</div>\n";
+      }
+      break;
+    case 'keyword':   // added msh 08 aug 07
+      $kw = array_shift($node->biblio_keywords);
+      $tok = drupal_ucfirst($kw->word);
+      if (empty($tok)) {
+        $tok = t("No Keywords");
+      }
+      if ($tok != $name) {
+        $name = $tok;
+        if ($name != '') {
+          $content .= '<div class="biblio-separator-bar">' . $name . "</div>\n";
+        }
+      }
+      break;
+    case 'year':
+    default:
+      if ($node->biblio_year != $_year) {
+        $_year = $node->biblio_year;
+        $content .= '<div class="biblio-separator-bar">' .$_year. "</div>\n";
+      }
+  } //end switch
+  return $content;
+}
 
 /**
  * Add a search field on the main biblio page.
