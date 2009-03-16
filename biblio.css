@@ -61,7 +61,7 @@ dl.bibliomultiselect .form-item {
 	background-color: #ffe1e1;
 }
 
-.biblio-year {
+.biblio-separator-bar {
 	color: #000000;
 	font-weight: bold;
 	background-color: #e1e1e1;
@@ -151,7 +151,7 @@ a:active {
 .biblio-export {
 	text-align: right;
 	text-decoration: none;
-	float: right;
+	float: right; 
 }
 
 .biblio-abstract-link {
@@ -205,4 +205,93 @@ ul.biblio-export-buttons,ul.biblio-export-buttons li {
   text-align: right;
   vertical-align: top;
   width: 20%;
+}
+#biblio-header {
+/*
+	list-style-image:none;
+list-style-position:outside;
+list-style-type:none;
+white-space:nowrap;
+
+	margin: 0 -26px 1em;
+  padding: 0 26px;
+  border-bottom: 1px solid #BBBBBB;
+	  */
+  position: relative;
+	display:block;
+}
+#biblio-header ul.tabs {
+  vertical-align: top;
+  border-bottom: 1px solid #BBBBBB;
+  padding:0 0 1.465em 1em;
+  margin:-0.5em 0 0.75em;
+}
+#biblio-header ul li {
+  padding: 0 0 0 0;
+}
+#biblio-header ul.tabs li a .a{
+display:block;
+
+float: left;
+height:20px;
+padding:2px 0em 3px 0em;
+margin:0px;
+padding:0px;
+background-image:url(main-tab1.png);
+background-repeat:no-repeat;
+background-position:100% 0px;
+
+}
+#biblio-header ul.tabs li a .a .b{
+display:block;
+list-style-type:none;
+margin:0px;
+height:20px;
+padding:0px 1em 3px;
+background-image:url(main-tab2.png);
+background-repeat:no-repeat;
+background-position:0% 0px;
+_cursor:hand;
+}
+#biblio-header ul.tabs li.active a{
+background-color:transparent;
+border-width:0px;
+
+
+}
+#biblio-header ul.tabs li.active a .a{
+background-position:100% -60px;
+
+}
+#biblio-header ul.tabs li.active a .a .b{
+background-position:0% -60px;
+
+}
+#biblio-header ul.tabs li a:hover{
+border-width:0px;
+text-decoration:none !important;
+
+
+}
+#biblio-header ul.tabs li a:hover .a{
+background-position:100% -30px;
+
+}
+#biblio-header ul.tabs li a:hover .a .b{
+background-position:0% -30px;
+
+}
+#biblio-header ul.tabs li.active a:hover{
+background-color:#fff;
+border-width:0px;
+
+
+}
+#biblio-header ul.tabs li.active a:hover .a{
+background-position:100% -60px;
+
+}
+#biblio-header ul.tabs li.active a:hover .a .b{
+background-position:0% -60px;
+
 }
