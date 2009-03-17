@@ -364,7 +364,7 @@ function biblio_build_query($arg_list) {
 
   $where_clause = count($where) > 1 ? '('. implode(') AND (', $where) .')': $where[0];
 
-  $query = db_rewrite_sql("SELECT n.*, b.*, bt.name as biblio_type_name FROM {node} n $joins  WHERE $where_clause $limit $sortby ");
+  $query = db_rewrite_sql("SELECT DISTINCT(n.nid), n.*, b.*, bt.name as biblio_type_name FROM {node} n $joins  WHERE $where_clause $limit $sortby ");
   $count_query = db_rewrite_sql("SELECT COUNT(DISTINCT(n.nid)) FROM {node} n $joins  WHERE $where_clause $limit ");
   $_SESSION['last_biblio_query'] = $query;
   $terms[] = $sort_attrib['order']; // this is either asc or desc to be inserted into the first term of the ORDER clause
@@ -408,7 +408,7 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
      popups_add_popups();
   }
   if (!$inline && !$profile) {
-    $content .= '<div id="biblio-header">';
+    
     if (variable_get('biblio_rss', 0)) {
       drupal_set_html_head('<link rel="alternate" type="application/rss+xml" title="'.variable_get('site_name', 'Drupal').' RSS" href="'.url("$base/rss.xml").'" />');
     }
@@ -426,14 +426,15 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
       $content .= '<div class="biblio-export">'.t('Found @count results', array('@count' => $pager_total_items[0])) .'</div><br />';
     }
     // Add some links to the top of the page to change the sorting/ordering...
+    $content .= '<div id="biblio-header">';
     if (user_access('show sort links')) {
       $content .= _biblio_sort_tabs($attrib, $options);
     }
-
+    $content .= '</div>';
+    
     if  (user_access('show filter tab')) {
       $content .= _biblio_filter_info_line($args);
     }
-    $content .= '</div>';
   }
 
   if ($inline === true) print '<div class="biblio-inline">';
