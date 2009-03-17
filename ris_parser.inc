@@ -31,10 +31,10 @@ function _ris_tagged_import($file, $terms = array(), $batch = FALSE, $session_id
     $line = fgets($fp);
     $line_len = strlen($line);
      if ($line_len > 3) {
-       $start = strpos($line, '  - '); // There could be some unprintables at the beginning of the line so fine the location of the %
+       $start = strpos($line, '  -'); // There could be some unprintables at the beginning of the line so fine the location of the %
        if ($start !== FALSE) {
         $tag = drupal_substr($line, $start -2, 2);
-        $value = trim(drupal_substr($line, $start +4));
+        $value = trim(drupal_substr($line, $start +3));
      }
       else {
         $value = $line;
@@ -134,10 +134,10 @@ function _ris_tagged_import($file, $terms = array(), $batch = FALSE, $session_id
                 'auth_type' => _biblio_get_auth_type(1, $node['biblio_type']));
               break;
             case 'JF' :
-              $node['biblio_secondary_title'] = $value;
+              $node['biblio_secondary_title'] .= $value;
               break;
             case 'CY' :
-              $node['biblio_place_published'] = $value;
+              $node['biblio_place_published'] .= $value;
               break;
             case 'Y1' :
             case 'PY' :
@@ -151,10 +151,10 @@ function _ris_tagged_import($file, $terms = array(), $batch = FALSE, $session_id
                 'auth_type' => _biblio_get_auth_type(2, $node['biblio_type']));
               break;
             case 'PB' :
-              $node['biblio_publisher'] = $value;
+              $node['biblio_publisher'] .= $value;
               break;
             case 'T2' :
-              $node['biblio_secondary_title'] = $value;
+              $node['biblio_secondary_title'] .= $value;
               break;
             case 'KW' :
               $vid = variable_get('biblio_keyword_vocabulary', 0);
@@ -165,26 +165,26 @@ function _ris_tagged_import($file, $terms = array(), $batch = FALSE, $session_id
               break;
             case 'IS' :
             case 'CP' :
-              $node['biblio_issue'] = $value;
+              $node['biblio_issue'] .= $value;
               break;
             case 'SP' :
             case 'EP' :
               $node['biblio_pages'] .= ($tag == "SP") ? $value : " - " . $value;
               break;
             case 'T3' :
-              $node['biblio_tertiary_title'] = $value;
+              $node['biblio_tertiary_title'] .= $value;
               break;
             case 'TI' :
             case 'T1' :
             case 'CT' :
             case 'BT' :
-              $node['title'] = $value;
+              $node['title'] .= $value;
               break;
             case 'UR' :
-              $node['biblio_url'] = $value;
+              $node['biblio_url'] .= $value;
               break;
             case 'VL' :
-              $node['biblio_volume'] = $value;
+              $node['biblio_volume'] .= $value;
               break;
             case 'AB' :
             case 'N2' :
@@ -199,22 +199,22 @@ function _ris_tagged_import($file, $terms = array(), $batch = FALSE, $session_id
               $node['biblio_notes'] .= $value;
               break;
             case 'U1' : // CUSTOM 1
-              $node['biblio_custom1'] = $value;
+              $node['biblio_custom1'] .= $value;
               break;
             case 'U2' : // CUSTOM 2
-              $node['biblio_custom2'] = $value;
+              $node['biblio_custom2'] .= $value;
               break;
             case 'U3' : // CUSTOM 3
-              $node['biblio_custom3'] = $value;
+              $node['biblio_custom3'] .= $value;
               break;
             case 'U4' : // CUSTOM 4
-              $node['biblio_custom4'] = $value;
+              $node['biblio_custom4'] .= $value;
               break;
             case 'U5' : // CUSTOM 5
-              $node['biblio_custom5'] = $value;
+              $node['biblio_custom5'] .= $value;
               break;
             case 'SN' :
-              $node['biblio_isbn'] = $value;
+              $node['biblio_isbn'] .= $value;
               break;
             default :
               break;
