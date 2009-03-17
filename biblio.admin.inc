@@ -943,7 +943,7 @@ function biblio_admin_get_query($name) {
 function biblio_admin_author_types_form($form_state, $op = NULL, $id = NULL) {
   switch ($op) {
     case 'edit':
-      $type = db_fetch_object(db_query("SELECT * FROM {biblio_contributor_type_data WHERE auth_type=%d",$id));
+      $type = db_fetch_object(db_query("SELECT * FROM {biblio_contributor_type_data} WHERE auth_type=%d",$id));
       $form['auth_type'] = array(
         '#type' => 'hidden',
         '#value' => $type->auth_type);

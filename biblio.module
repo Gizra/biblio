@@ -715,7 +715,7 @@ function biblio_menu() {
   $items['admin/settings/biblio/author/type/%/edit'] = array(
     'title' => t('Add New Author Type'),
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('biblio_admin_author_types_form_edit', 'edit', 6),
+    'page arguments' => array('biblio_admin_author_types_form_edit', 'edit', 5),
     'access arguments' => array('administer biblio'),
     'file' => 'biblio.admin.inc',
     'type' => MENU_LOCAL_TASK,
