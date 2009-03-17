@@ -51,26 +51,27 @@ function biblio_db_search() {
     // Only search in biblio nodes. If we use a SESSION filter and have a list of
     // nids stored there, don't re-search. List is reset when submitting a new search.
     if ($search !== FALSE || !_get_biblio_search_filter('nodelist')) {
-      if ($result = node_search('search',$keys.' type:biblio')) {
-        $node_list = '';
-        foreach ($result as $res) {
-          $node_list .= $res['node']->nid.",";
-        }
-      }
-      else {
+      if ($result = biblio_build_search_query($keys)) {
+	$node_list = '';
+	while ($nid = db_result($result)) {
+	  $node_list .= $nid.",";
+	}
         // No node search result. Make sure we find nothing, too. Node -1 does not exist.
-        $node_list = '-1';
+	if (empty($node_list)) $node_list = '-1';
+	
+	// Store as SESSION filter or argument list.
+	// When called as function argument it takes only one parameter, i.e.
+	// biblio_db_search('search', 'bla blu') and we must insert the node
+	// list inbetween.
+	if ($search !== FALSE) {
+	  array_splice($arg_list,$search+1,0,$node_list);
+	}
+	else {
+	  $_SESSION['biblio_filter'] = array(array('search',rtrim($node_list,','),$keys));
+	}
       }
-      // Store as SESSION filter or argument list.
-      // When called as function argument it takes only one parameter, i.e.
-      // biblio_db_search('search', 'bla blu') and we must insert the node
-      // list inbetween.
-      if ($search !== FALSE) {
-        array_splice($arg_list,$search+1,0,$node_list);
-      }
-      else {
-        $_SESSION['biblio_filter'] = array(array('search',rtrim($node_list,','),$keys));
-      }
+      // Wrong query (too short, only negative words etc.). Warning has been issued.
+      else $_SESSION['biblio_filter'] = array();
     }
   }
 
@@ -690,24 +691,42 @@ function biblio_search_form(&$form_state) {
 }
 
 /**
- * We must validate the keyword length before calling node_search. Otherwise
- * we would store a keyword of e.g. length 1, but do_search would complain about
- * it later and resend us to the input form. But since the keyword was stored already
- * we could never again display the page without errors
-
- * @param $form
- * @param $form_state
- * @return unknown_type
+ * Build the query following the do_search algorithm in search.module.
+ * Unfortunately we cannot reuse anything from do_search as everything
+ * is hard-coded :-(
+ * @param $keys 
  */
-function biblio_search_form_validate($form, &$form_state) {
-  // Empty searchbox finds everything.
-  $keys = $form_state['values']['keys'];
+function biblio_build_search_query($keys = '') {
   if ($keys != '')  {
-    $query = search_parse_query($form_state['values']['keys']);
+    $query = search_parse_query($keys);
     if ($query[2] == '') {
       form_set_error('keys', t('You must include at least one positive keyword with @count characters or more.', array('@count' => variable_get('minimum_word_size', 3))));
+      return FALSE;
     }
+    if ($query === NULL || $query[0] == '') return FALSE;
+
+    $where = '('.$query[2].')';
+    $args = $query[3];
+    if (!$query[5]) {
+      $where .= " AND ($query[0])";
+      $args = array_merge($args, $query[1]);
+      $join = " INNER JOIN {search_dataset} d ON i.sid = d.sid AND i.type = d.type";
+    }
+    // The COUNT ensures that we get only nodes where "term1 AND term2"
+    // match as we demand 2 matches. Note that this doesn't work when
+    // using the partial word search patch.
+    $args[] =$query[4];
+
+    $query = "SELECT distinct(i.sid) FROM {search_index} i 
+              INNER JOIN node n ON n.nid = i.sid 
+              $join
+              WHERE n.status = 1 AND (n.type = 'biblio')
+              AND $where
+              AND i.type = 'node'
+              GROUP BY i.type, i.sid HAVING COUNT(*) >= %d";
+    return db_query(db_rewrite_sql($query), $args);
   }
+  return FALSE;
 }
 
 
