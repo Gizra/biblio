@@ -466,7 +466,7 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
     $inline_links = ($inline && variable_get('biblio_inlinemode_in_links',0)) ? true : false;
     $content .= theme('biblio_entry', $node,$base,$style,$inline);
   } //end while
-  
+  if ($count) $content .= '</div><!-- end category-section -->';
   $content .= theme('pager', 0, variable_get('biblio_rowsperpage', 25));
   if ($count == 0) {
     $content .= "<h3>".t("No items found")."</h3>";
@@ -485,7 +485,7 @@ function _biblio_sort_tabs($attrib, &$options) {
   $base =  variable_get('biblio_base', 'biblio');
   $order = ($attrib['order'] == "desc" || $attrib['order'] == "DESC")?"asc":"desc";
   $path = drupal_get_path('module','biblio');
-  $order_arrow = ($order == 'asc') ? '&nbsp;<img src ="'.$path.'/arrow-asc.png">':'&nbsp;<img src ="'.$path.'/arrow-desc.png">';
+  $order_arrow = ($order == 'asc') ? '&nbsp;<img src ="'.$path.'/arrow-asc.png" />':'&nbsp;<img src ="'.$path.'/arrow-desc.png" />';
   $options = array('attributes'=>array("title"=>t("Click a second time to reverse the sort order")));
   $options = array('html' => true);
   $sort_links =  variable_get('biblio_sort_tabs', array('author'=>'author', 'title'=>'title', 'type'=>'type', 'year'=>'year', 'keyword'=>'keyword'));
@@ -499,37 +499,37 @@ function _biblio_sort_tabs($attrib, &$options) {
   if ($sort_links['year']) {
     $active = ($attrib['sort'] == 'year') ? 'class="active"' : '';
     $arrow = empty($active)?'':$order_arrow;
-    $options['query'] = "sort=year&order=$order";
+    $options['query'] = "sort=year&amp;order=$order";
   //  $content .= "[".l(t("Year"),$_GET['q'],$options)."]";
-      $content .= '<li '. $active .'><a href="'. url($base,$options).'"'. $active .'><span class="a"><span class="b">'. t("Year") .$arrow.'</span></span></a></li>';
+      $content .= '<li '. $active .'><a href="'.  url($base).'&amp;'.$options['query'].'"'. $active .'><span class="a"><span class="b">'. t("Year") .$arrow.'</span></span></a></li>';
   }
   if ($sort_links['title']) {
-    $options['query'] = "sort=title&order=$order";
+    $options['query'] = "sort=title&amp;order=$order";
     $active = ($attrib['sort'] == 'title') ? 'class="active"' : '';
     $arrow = empty($active)?'':$order_arrow;
     //  $content .= "[".l(t("Title"),$_GET['q'],$options)."]";
-    $content .= '<li '. $active .'><a href="'. url($base,$options).'"'. $active .'><span class="a"><span class="b">'. t("Title") .$arrow.'</span></span></a></li>';
+    $content .= '<li '. $active .'><a href="'. url($base).'&amp;'.$options['query'].'"' . $active .'><span class="a"><span class="b">'. t("Title") .$arrow.'</span></span></a></li>';
   }
   if ($sort_links['type']) {
-    $options['query'] = "sort=type&order=$order";
+    $options['query'] = "sort=type&amp;order=$order";
     $active = ($attrib['sort'] == 'type') ? 'class="active"' : '';
     $arrow = empty($active)?'':$order_arrow;
     //  $content .= "[".l(t("Type"),$_GET['q'],$options)."]";
-    $content .= '<li '. $active .'><a href="'. url($base,$options).'"'. $active .'><span class="a"><span class="b">'. t("Type") .$arrow.'</span></span></a></li>';
+    $content .= '<li '. $active .'><a href="'. url($base).'&amp;'.$options['query'].'"' . $active .'><span class="a"><span class="b">'. t("Type") .$arrow.'</span></span></a></li>';
   }
   if ($sort_links['author']) {
-    $options['query'] = "sort=author&order=$order";
+    $options['query'] = "sort=author&amp;order=$order";
     $active = ($attrib['sort'] == 'author') ? 'class="active"' : '';
     $arrow = empty($active)?'':$order_arrow;
     //  $content .= "[".l(t("Author"),$_GET['q'],$options)."]";
-    $content .= '<li '. $active .'><a href="'. url($base,$options).'"'. $active .'><span class="a"><span class="b">'. t("Author") .$arrow.'</span></span></a></li>';
+    $content .= '<li '. $active .'><a href="'. url($base).'&amp;'.$options['query'].'"' . $active .'><span class="a"><span class="b">'. t("Author") .$arrow.'</span></span></a></li>';
   }
   if ($sort_links['keyword']) {
-    $options['query'] = "sort=keyword&order=$order";
+    $options['query'] = "sort=keyword&amp;order=$order";
     $active = ($attrib['sort'] == 'keyword') ? 'class="active"' : '';
     $arrow = empty($active)?'':$order_arrow;
     //  $content .= "[".l(t("Keyword"),$_GET['q'],$options)."]";
-    $content .= '<li '. $active .'><a href="'. url($base,$options).'"'. $active .'><span class="a"><span class="b">'. t("Keyword") .$arrow.'</span></span></a></li>';
+    $content .= '<li '. $active .'><a href="'. url($base).'&amp;'.$options['query'].'"' . $active .'><span class="a"><span class="b">'. t("Keyword") .$arrow.'</span></span></a></li>';
   }
   $content .= "</ul>";
 
@@ -631,23 +631,35 @@ function _biblio_category_separator_bar($attrib, $node) {
       if (drupal_substr(drupal_ucfirst(ltrim($node->title)), 0, 3) == "An " ) $first = drupal_ucfirst(drupal_substr(ltrim($node->title), 3, 1));
       if (drupal_substr(drupal_ucfirst(ltrim($node->title)), 0, 4) == "The " ) $first = drupal_ucfirst(drupal_substr(ltrim($node->title), 4, 1));
       if ( $first  != $_char) {
+        if ($_char != '' ) {
+          $content .= "\n</div><!-- end category-section -->";
+        }
         $_char =  $first ;
-        $content .= '<div class="biblio-separator-bar">' . $_char . "</div>\n";
+        $content .= "\n".'<div class="biblio-separator-bar">' . $_char . "</div>\n";
+        $content .= "\n".'<div class ="biblio-category-section">';
       }
       break;
     case 'author':
       if ( (isset($node->biblio_contributors[1][0]['lastname'])) &&
       (drupal_substr(drupal_ucfirst(ltrim($node->biblio_contributors[1][0]['lastname'])), 0, 1) != $_char))
       {
+        if ($_char != '' ) {
+          $content .= "\n</div><!-- end category-section -->";
+        }
         $_char = drupal_substr(drupal_ucfirst(ltrim($node->biblio_contributors[1][0]['lastname'])), 0, 1) ;
         $content .= '<div class="biblio-separator-bar">' . $_char . "</div>\n";
+        $content .= "\n".'<div class ="biblio-category-section">';
       }
       break;
     case 'type':
       if ($node->biblio_type_name != $_type) {
+        if ($_type != '' ) {
+          $content .= "\n</div><!-- end category-section -->";
+        }
         $_type = $node->biblio_type_name;
         //      $name = db_result(db_query("SELECT name FROM {biblio_types} as t where t.tid=%d", $node->biblio_type)) ;
         $content .= '<div class="biblio-separator-bar">' . $_type . "</div>\n";
+        $content .= "\n".'<div class ="biblio-category-section">';
       }
       break;
     case 'keyword':   // added msh 08 aug 07
@@ -657,17 +669,25 @@ function _biblio_category_separator_bar($attrib, $node) {
         $tok = t("No Keywords");
       }
       if ($tok != $name) {
+        if ($name != '' ) {
+          $content .= "\n</div><!-- end category-section -->";
+        }
         $name = $tok;
         if ($name != '') {
           $content .= '<div class="biblio-separator-bar">' . $name . "</div>\n";
+          $content .= "\n".'<div class ="biblio-category-section">';
         }
       }
       break;
     case 'year':
     default:
       if ($node->biblio_year != $_year) {
-        $_year = $node->biblio_year;
+        if ($_year != '' ) {
+          $content .= "\n</div><!-- end category-section -->";
+        }
+         $_year = $node->biblio_year;
         $content .= '<div class="biblio-separator-bar">' .$_year. "</div>\n";
+        $content .= "\n".'<div class ="biblio-category-section">';
       }
   } //end switch
   return $content;

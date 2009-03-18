@@ -570,7 +570,7 @@ function theme_biblio_style(& $node, $base = 'biblio', $style_name = 'classic', 
  * @return unknown_type
  */
 function theme_biblio_entry($node, $base = 'biblio', $style = 'classic', $inline = false) {
-  $output  = '<div class="biblio-entry">' . "\n";
+  $output  = "\n".'<div class="biblio-entry">'."\n" ;
 
   // first add the styled entry...
   $output .= theme('biblio_style', $node, $base, $style, $inline);
@@ -603,7 +603,7 @@ function theme_biblio_entry($node, $base = 'biblio', $style = 'classic', $inline
     $output .= theme('biblio_download_links',$node);
   }
 
-  $output .= "</div>\n";
+  $output .= "\n</div>";
 
   return $output;
 }
