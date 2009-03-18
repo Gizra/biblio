@@ -216,7 +216,7 @@ function biblio_build_query($arg_list) {
           break;
         case 'tg':
           $term = explode("?",array_shift($arg_list));
-          $where[] = $sort_title . $match_op . " '%s'";
+          $where[] = "substring($sort_title,1 ,1)" . $match_op . " LOWER('%s')";
           $terms[] = db_escape_string($term[0]);
           array_push($args, $type, $term[0]);
           $operator = NULL;
@@ -438,7 +438,11 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
   }
 
   if ($inline === true) print '<div class="biblio-inline">';
-  if ($_GET['sort'] == 'title' || $_GET['sort'] == 'author'){
+  
+  if ($_GET['sort'] == 'title' || $_GET['sort'] == 'author') {
+    if (strpos($_GET['q'],'ag') || strpos($_GET['q'],'tg')) {
+      $value = substr($_GET['q'],strrpos($_GET['q'],'/')+1);
+    }
     $content .= theme(biblio_alpha_line,$_GET['sort'],$value);
   }
 
@@ -571,9 +575,11 @@ function _biblio_filter_info_line($args) {
         $type = t("Author");
       }
       if ($type == 'ag' ) {
+        return;
         $type = t("First letter of last name");
       }
       if ($type == 'tg' ) {
+        return;
         $type = t("First letter of title");
       }
       if ($type == 'type') $value = $pub_type["$value"];

@@ -847,6 +847,8 @@ function theme_biblio_alpha_line($type = 'author',$current = NULL, $path = NULL)
     case 'title':
       $options['query'] .= 'sort=title';
       $path = "$base/tg/";
+      $all_query['query'] = 'sort=title'. ($_GET['order']?'&order='.$_GET['order']:'');
+      $all = '['.l(t('Show ALL'), $base,$all_query).']' ;
       break;
     default:
       if (!isset ($_GET['sort']) || $_GET['sort'] == 'year' || $_GET['sort'] == 'type')
