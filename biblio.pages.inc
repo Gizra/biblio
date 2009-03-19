@@ -58,7 +58,7 @@ function biblio_db_search() {
 	}
         // No node search result. Make sure we find nothing, too. Node -1 does not exist.
 	if (empty($node_list)) $node_list = '-1';
-	
+
 	// Store as SESSION filter or argument list.
 	// When called as function argument it takes only one parameter, i.e.
 	// biblio_db_search('search', 'bla blu') and we must insert the node
@@ -408,7 +408,7 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
      popups_add_popups();
   }
   if (!$inline && !$profile) {
-    
+
     if (variable_get('biblio_rss', 0)) {
       drupal_set_html_head('<link rel="alternate" type="application/rss+xml" title="'.variable_get('site_name', 'Drupal').' RSS" href="'.url("$base/rss.xml").'" />');
     }
@@ -417,6 +417,7 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
       $pub_type["$option->tid"] = $option->name;
     }
     // Search box. Has same permissions as the filter tab.
+    $content .= '<div id="biblio-header" class="clear-block">';
     if (variable_get('biblio_search',0) && user_access('show filter tab')) {
       $content .= drupal_get_form('biblio_search_form');
     }
@@ -426,19 +427,18 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
       $content .= '<div class="biblio-export">'.t('Found @count results', array('@count' => $pager_total_items[0])) .'</div><br />';
     }
     // Add some links to the top of the page to change the sorting/ordering...
-    $content .= '<div id="biblio-header">';
     if (user_access('show sort links')) {
       $content .= _biblio_sort_tabs($attrib, $options);
     }
     $content .= '</div>';
-    
+
     if  (user_access('show filter tab')) {
       $content .= _biblio_filter_info_line($args);
     }
   }
 
   if ($inline === true) print '<div class="biblio-inline">';
-  
+
   if ($_GET['sort'] == 'title' || $_GET['sort'] == 'author') {
     if (strpos($_GET['q'],'ag') || strpos($_GET['q'],'tg')) {
       $value = substr($_GET['q'],strrpos($_GET['q'],'/')+1);
@@ -447,7 +447,7 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
   }
 
   $count = 0;
-  
+
   while ($node = db_fetch_object($result)) {
     $count++;
     $node->biblio_contributors = biblio_load_contributors($node->vid);
@@ -456,13 +456,13 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
     if ( module_exists("upload") ) {
       $node->files = upload_load($node);
     }
-    
+
     if (isset($node->biblio_year) && ($node->biblio_year == 9998))  $node->biblio_year = t("In Press") ;
     if (isset($node->biblio_year) && ($node->biblio_year == 9999))  $node->biblio_year = t("Submitted") ;
-    
+
     // output separator bar if needed
     $content .= _biblio_category_separator_bar($attrib, $node);
-    
+
     $inline_links = ($inline && variable_get('biblio_inlinemode_in_links',0)) ? true : false;
     $content .= theme('biblio_entry', $node,$base,$style,$inline);
   } //end while
@@ -489,46 +489,46 @@ function _biblio_sort_tabs($attrib, &$options) {
   $options = array('attributes'=>array("title"=>t("Click a second time to reverse the sort order")));
   $options = array('html' => true);
   $sort_links =  variable_get('biblio_sort_tabs', array('author'=>'author', 'title'=>'title', 'type'=>'type', 'year'=>'year', 'keyword'=>'keyword'));
-  $content .= '<ul class="tabs ">';
+  $content .= '<ul class="tabs secondary ">';
   foreach($sort_links as $key => $link) {
-    if ($key === $link) {
-      //$content .= t('Sort by').':';
-      //break;
-    }
+//    if ($key === $link) {
+//      $content .= t('Sort by').':';
+//      break;
+//    }
   }
   if ($sort_links['year']) {
     $active = ($attrib['sort'] == 'year') ? 'class="active"' : '';
     $arrow = empty($active)?'':$order_arrow;
-    $options['query'] = "sort=year&amp;order=$order";
-  //  $content .= "[".l(t("Year"),$_GET['q'],$options)."]";
+    $options['query'] = "sort=year&order=$order";
+  //  $content .= "[".l(t("Year").$arrow,$_GET['q'],$options)."]";
       $content .= '<li '. $active .'><a href="'.  url($base).'&amp;'.$options['query'].'"'. $active .'><span class="a"><span class="b">'. t("Year") .$arrow.'</span></span></a></li>';
   }
   if ($sort_links['title']) {
-    $options['query'] = "sort=title&amp;order=$order";
+    $options['query'] = "sort=title&order=$order";
     $active = ($attrib['sort'] == 'title') ? 'class="active"' : '';
     $arrow = empty($active)?'':$order_arrow;
-    //  $content .= "[".l(t("Title"),$_GET['q'],$options)."]";
+  //  $content .= "[".l(t("Title").$arrow,$_GET['q'],$options)."]";
     $content .= '<li '. $active .'><a href="'. url($base).'&amp;'.$options['query'].'"' . $active .'><span class="a"><span class="b">'. t("Title") .$arrow.'</span></span></a></li>';
   }
   if ($sort_links['type']) {
-    $options['query'] = "sort=type&amp;order=$order";
+    $options['query'] = "sort=type&order=$order";
     $active = ($attrib['sort'] == 'type') ? 'class="active"' : '';
     $arrow = empty($active)?'':$order_arrow;
-    //  $content .= "[".l(t("Type"),$_GET['q'],$options)."]";
+    //$content .= "[".l(t("Type").$arrow,$_GET['q'],$options)."]";
     $content .= '<li '. $active .'><a href="'. url($base).'&amp;'.$options['query'].'"' . $active .'><span class="a"><span class="b">'. t("Type") .$arrow.'</span></span></a></li>';
   }
   if ($sort_links['author']) {
-    $options['query'] = "sort=author&amp;order=$order";
+    $options['query'] = "sort=author&order=$order";
     $active = ($attrib['sort'] == 'author') ? 'class="active"' : '';
     $arrow = empty($active)?'':$order_arrow;
-    //  $content .= "[".l(t("Author"),$_GET['q'],$options)."]";
+    //$content .= "[".l(t("Author").$arrow,$_GET['q'],$options)."]";
     $content .= '<li '. $active .'><a href="'. url($base).'&amp;'.$options['query'].'"' . $active .'><span class="a"><span class="b">'. t("Author") .$arrow.'</span></span></a></li>';
   }
   if ($sort_links['keyword']) {
-    $options['query'] = "sort=keyword&amp;order=$order";
+    $options['query'] = "sort=keyword&order=$order";
     $active = ($attrib['sort'] == 'keyword') ? 'class="active"' : '';
     $arrow = empty($active)?'':$order_arrow;
-    //  $content .= "[".l(t("Keyword"),$_GET['q'],$options)."]";
+    //$content .= "[".l(t("Keyword").$arrow,$_GET['q'],$options)."]";
     $content .= '<li '. $active .'><a href="'. url($base).'&amp;'.$options['query'].'"' . $active .'><span class="a"><span class="b">'. t("Keyword") .$arrow.'</span></span></a></li>';
   }
   $content .= "</ul>";
@@ -721,7 +721,7 @@ function biblio_search_form(&$form_state) {
  * Build the query following the do_search algorithm in search.module.
  * Unfortunately we cannot reuse anything from do_search as everything
  * is hard-coded :-(
- * @param $keys 
+ * @param $keys
  */
 function biblio_build_search_query($keys = '') {
   if ($keys != '')  {
@@ -744,8 +744,8 @@ function biblio_build_search_query($keys = '') {
     // using the partial word search patch.
     $args[] =$query[4];
 
-    $query = "SELECT distinct(i.sid) FROM {search_index} i 
-              INNER JOIN node n ON n.nid = i.sid 
+    $query = "SELECT distinct(i.sid) FROM {search_index} i
+              INNER JOIN node n ON n.nid = i.sid
               $join
               WHERE n.status = 1 AND (n.type = 'biblio')
               AND $where

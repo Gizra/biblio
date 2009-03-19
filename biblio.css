@@ -169,6 +169,7 @@ a:active {
 	font-weight: normal;
 	font-size: 75%;
 	line-height: 100%;
+
 }
 
 ul.biblio-export-buttons,ul.biblio-export-buttons li {
@@ -210,7 +211,7 @@ ul.biblio-export-buttons,ul.biblio-export-buttons li {
 #biblio-header {
 	display: block;
 }
-
+/*
 #biblio-header ul.tabs {
 	border-bottom: 1px solid #BBBBBB;
 	padding: 0 0 1.765em 1em;
@@ -281,3 +282,4 @@ ul.biblio-export-buttons,ul.biblio-export-buttons li {
 #biblio-header ul.tabs li.active a:hover .a .b {
 	background-position: 0% -60px;
 }
+*/
