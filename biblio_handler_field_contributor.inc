@@ -13,7 +13,7 @@ class biblio_handler_field_contributor extends biblio_handler_field {
     return $options;
   }
   function options_form(&$form, &$form_state) {
-    parent::options_form(&$form, &$form_state);
+    parent::options_form($form, $form_state);
     module_load_include('inc','biblio','biblio.admin');
     $form['style_name'] = array(
       '#type' => 'radios',

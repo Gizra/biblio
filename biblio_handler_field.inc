@@ -33,7 +33,7 @@ class biblio_handler_field extends views_handler_field {
       .l(t('biblio settings'),'admin/settings/biblio/fields/type'),
       '#default_value' => $this->options['biblio_label'],
     );
-    parent::options_form(&$form, &$form_state);
+    parent::options_form($form, $form_state);
     $form['label'] += array(
   		'#process' => array('views_process_dependency'),
   		'#dependency' => array(
