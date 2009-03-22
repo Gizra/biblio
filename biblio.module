@@ -39,13 +39,15 @@ function _biblio_get_auth_type($auth_category, $biblio_type) {
   // return first element of the array
   return empty($result) ? NULL : current($result);
 }
-function _biblio_get_field_information($biblio_type) {
+function _biblio_get_field_information($biblio_type, $only_visible = FALSE) {
+  $visible = $only_visible ? ' AND (bt.common = 1 OR bt.visible=1) ' : '';
   $result = db_query("SELECT b.*, btd.*, btt.name AS type_name
                       FROM {biblio_fields} AS b
                       INNER JOIN {biblio_field_type} AS bt ON bt.fid = b.fid
                       INNER JOIN {biblio_field_type_data} AS btd ON btd.ftdid = bt.ftdid
                       INNER JOIN {biblio_types} as btt ON btt.tid = bt.tid
-                      WHERE bt.tid = %d ORDER BY bt.weight ASC", $biblio_type);
+                      WHERE bt.tid = %d $visible 
+                      ORDER BY bt.weight ASC", $biblio_type);
   while ($row = db_fetch_array($result)) {
     $fields[$row['fid']] = $row;
   }

@@ -197,7 +197,7 @@ function theme_biblio_tabular($node, $base = 'biblio', $teaser = false) {
   $style_name = variable_get('biblio_style', 'classic');
   $style_function = "biblio_style_$style_name"."_author_options";
   module_load_include('inc','biblio',"biblio_style_$style_name");
-  $fields = _biblio_get_field_information($node->biblio_type);
+  $fields = _biblio_get_field_information($node->biblio_type, TRUE);
   $rows[] = array(
     array('data' => t('Title'), 'class' => 'biblio-row-title'),
     array('data' => $node->title)
