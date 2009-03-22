@@ -412,10 +412,6 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
     if (variable_get('biblio_rss', 0)) {
       drupal_set_html_head('<link rel="alternate" type="application/rss+xml" title="'.variable_get('site_name', 'Drupal').' RSS" href="'.url("$base/rss.xml").'" />');
     }
-    $pub_types = db_query('SELECT t.* FROM {biblio_types} as t WHERE t.tid>0');
-    while ($option = db_fetch_object($pub_types)) {
-      $pub_type["$option->tid"] = $option->name;
-    }
     // Search box. Has same permissions as the filter tab.
     $content .= '<div id="biblio-header" class="clear-block">';
     if (variable_get('biblio_search',0) && user_access('show filter tab')) {
@@ -582,7 +578,13 @@ function _biblio_filter_info_line($args) {
         return;
         $type = t("First letter of title");
       }
-      if ($type == 'type') $value = $pub_type["$value"];
+      if ($type == 'type') {
+        $pub_types = db_query('SELECT t.* FROM {biblio_types} as t WHERE t.tid>0');
+        while ($option = db_fetch_object($pub_types)) {
+          $pub_type["$option->tid"] = $option->name;
+        }
+        $value = $pub_type["$value"];
+      }
       array_shift($args);
       $params = array('%a' =>  $type , '%b' =>  $value );
       $filtercontent .= ($i++ ? t('<em> and</em> <strong>%a</strong> is <strong>%b</strong>', $params) : t('<strong>%a</strong> is <strong>%b</strong>', $params)) ;
