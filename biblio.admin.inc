@@ -1163,11 +1163,11 @@ function biblio_admin_author_edit_form($form_state, $author_id) {
   if ($options) {
     $form['merge'] = array(
       '#type' => 'fieldset',
-      '#title' => t('Author Merge'),
-      '#description' => t('Select other author names which will be merged with this one.  You should only do this if you are sure the other authors represent the same author as the one being edited.'),
+      '#title' => t('Author Link/Merge'),
+      '#description' => t('Select other author names which will be linked or merged.  Linking relates all the selected authors and keeps each instance in the database, merging removes all the selected authors and links thier entries to the author being edited above.  You should only do this if you are sure the other authors represent the same author as the one being edited.'),
       '#weight' => 5,
       '#collapsible' => TRUE,
-      '#collapsed' => FALSE,
+      '#collapsed' => TRUE,
     );
     $form['merge']['merge_authors'] = array(
       '#type' => 'checkboxes',
@@ -1176,7 +1176,15 @@ function biblio_admin_author_edit_form($form_state, $author_id) {
       '#weight' => 12,
       '#required' => FALSE,
       '#multiple' => TRUE,
-    '#size' => min(count($options), 6),
+      '#size' => min(count($options), 6),
+    );
+    $form['merge']['link'] = array(
+      '#type' => 'submit',
+      '#value' => t('Link')
+    );
+    $form['merge']['merge'] = array(
+      '#type' => 'submit',
+      '#value' => t('Merge')
     );
   }
   $form['submit'] = array(
@@ -1192,7 +1200,7 @@ function biblio_admin_author_edit_form_validate($form, &$form_state) {
   }
 }
 function biblio_admin_author_edit_form_submit($form, &$form_state) {
-
+  $op = $form_state['values']['op'];
   if ($form_state['values']['drupal_uid'] == 0 ) {
     $uid = $form['drupal_uid']['#default_value'];
     $cid = 0;
@@ -1212,8 +1220,13 @@ function biblio_admin_author_edit_form_submit($form, &$form_state) {
   // merge authors
   if (count($form_state['values']['merge_authors'])) {
     $authors = implode(',', $form_state['values']['merge_authors']);
-    update_sql("UPDATE {biblio_contributor} SET cid={$form_state['values']['cid']} WHERE cid IN ($authors)");
-    update_sql("DELETE FROM {biblio_contributor_data} WHERE cid IN ($authors)");
+    if ($op == t('Merge')) {
+      db_query("UPDATE {biblio_contributor} SET cid={$form_state['values']['cid']} WHERE cid IN ($authors)");
+      db_query("DELETE FROM {biblio_contributor_data} WHERE cid IN ($authors)");
+    }
+    elseif ($op == t('Link')) {
+      db_query("UPDATE {biblio_contributor_data} SET aka={$form_state['values']['cid']} WHERE cid IN ($authors)");
+    }
   }
 }
 
@@ -1279,7 +1292,7 @@ function biblio_admin_keyword_orphans_form_validate($form, &$form_state) {
 }
 
 function biblio_admin_keyword_orphans_form_submit($form, &$form_state) {
- 
+
   $keywords = array_filter($form_state['values']['keywords']);
   update_sql('DELETE FROM {biblio_keyword_data} WHERE kid IN ('.implode(',',$keywords).')');
   $count = count($keywords);
