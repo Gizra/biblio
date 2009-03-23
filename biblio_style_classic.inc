@@ -51,7 +51,9 @@ function biblio_style_classic($node, $base = 'biblio', $inline = false) {
     $output .= '[' . check_plain($node->biblio_citekey) . '] ';
   }
   $output .= '<span class="biblio-title">';
-  $output .= $inline ? l("$node->title", "$base/viewinline/$node->nid") : l("$node->title", "node/$node->nid");
+    $link = ((variable_get('biblio_link_title_url', 0) && !empty($node->biblio_url)) ? $node->biblio_url : ($inline ? "$base/viewinline/$node->nid":"node/$node->nid" ) ) ;
+    $options['attributes'] = (variable_get('biblio_links_target_new_window',null)) ? array('target'=>'_blank') : null;
+    $output .= l($node->title, $link, $options);
   $output .= "</span>, \n";
   $output .= '<span class="biblio-authors">' . $authors . "</span> \n";
   if ($node->biblio_secondary_title) {

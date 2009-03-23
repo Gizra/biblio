@@ -67,7 +67,7 @@ function biblio_style_chicago($node, $base = 'biblio', $inline = false) {
   if (!empty ($node->biblio_citekey)&&(variable_get('biblio_display_citation_key',0))) {
     $output .= '[' . check_plain($node->biblio_citekey) . '] ';
   }
-  
+
   switch ($node->biblio_type) {
     case 102: //Journal Article
     case 105: //Newspaper Article
@@ -83,7 +83,10 @@ function biblio_style_chicago($node, $base = 'biblio', $inline = false) {
       {
         if (!empty($authors)) $output .= " ";
         $output .= '"' ;
-        $output .= $inline ? l("$node->title", "$base/viewinline/$node->nid") : l("$node->title", "node/$node->nid");
+        $link = ((variable_get('biblio_link_title_url', 0) && !empty($node->biblio_url)) ? $node->biblio_url : ($inline ? "$base/viewinline/$node->nid":"node/$node->nid" ) ) ;
+        $options['attributes'] = (variable_get('biblio_links_target_new_window',null)) ? array('target'=>'_blank') : null;
+        $output .= l($node->title, $link, $options);
+        //$output .= $inline ? l("$node->title", "$base/viewinline/$node->nid") : l("$node->title", "node/$node->nid");
         if (!ereg("[?!.]$", $node->title)) $output .= ".";
         $output .= '"';
       }
@@ -176,7 +179,10 @@ function biblio_style_chicago($node, $base = 'biblio', $inline = false) {
         if (!empty($authors))  $output .= " ";
 
         $output .= '"<i>' ;
-        $output .= $inline ? l("$node->title", "$base/viewinline/$node->nid") : l("$node->title", "node/$node->nid");
+        $link = ((variable_get('biblio_link_title_url', 0) && !empty($node->biblio_url)) ? $node->biblio_url : ($inline ? "$base/viewinline/$node->nid":"node/$node->nid" ) ) ;
+        $options['attributes'] = (variable_get('biblio_links_target_new_window',null)) ? array('target'=>'_blank') : null;
+        $output .= l($node->title, $link, $options);
+        //$output .= $inline ? l("$node->title", "$base/viewinline/$node->nid") : l("$node->title", "node/$node->nid");
         $output .= '</i>';
         if (!ereg("[?!.]$", $node->title)) $output .= ".";
         $output .= '"';
@@ -321,7 +327,10 @@ function biblio_style_chicago($node, $base = 'biblio', $inline = false) {
         }
         else // not a thesis
         $output .= '<i>';
-        $output .= $inline ? l("$node->title", "$base/viewinline/$node->nid") : l("$node->title", "node/$node->nid");
+        $link = ((variable_get('biblio_link_title_url', 0) && !empty($node->biblio_url)) ? $node->biblio_url : ($inline ? "$base/viewinline/$node->nid":"node/$node->nid" ) ) ;
+        $options['attributes'] = (variable_get('biblio_links_target_new_window',null)) ? array('target'=>'_blank') : null;
+        $output .= l($node->title, $link, $options);
+        //$output .= $inline ? l("$node->title", "$base/viewinline/$node->nid") : l("$node->title", "node/$node->nid");
         $output .= '</i>';
       }
       $publication = ereg_replace("[ \r\n]*\(Eds?:[^\)\r\n]*\)", "", $node->biblio_secondary_title);

@@ -12,7 +12,7 @@
   // based on 'cite_AMA.php'
 
   // NOTES: - In the Vancouver style, the reference list is arranged numerically in the order in which references are cited in the text.
-  //          This isn't currently handled by this style 
+  //          This isn't currently handled by this style
   //        - For conference proceedings, you'll currently need to add the place & date of the conference in the proceedings title field
   //          (e.g. "Proceedings of the 5th Germ Cell Tumour Conference; 2001 Sep 13-15; Leeds, UK").
 
@@ -52,7 +52,7 @@ function biblio_style_vancouver_author_options() {
     'customStringAfterFirstAuthors'     => ', et al.',
     'encodeHTML'                        => true
   );
-  
+
   return $author_options;
 }
 
@@ -69,7 +69,7 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = false) {
   if (!empty ($node->biblio_citekey)&&(variable_get('biblio_display_citation_key',0))) {
     $output .= '[' . check_plain($node->biblio_citekey) . '] ';
   }
-  
+
   switch ($node->biblio_type) {
     case 102: //Journal Article
     case 105: //Newspaper Article
@@ -85,7 +85,10 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = false) {
       {
         if (!empty($authors)) $output .= " ";
         $output .= '"' ;
-        $output .= $inline ? l("$node->title", "$base/viewinline/$node->nid") : l("$node->title", "node/$node->nid");
+        $link = ((variable_get('biblio_link_title_url', 0) && !empty($node->biblio_url)) ? $node->biblio_url : ($inline ? "$base/viewinline/$node->nid":"node/$node->nid" ) ) ;
+        $options['attributes'] = (variable_get('biblio_links_target_new_window',null)) ? array('target'=>'_blank') : null;
+        $output .= l($node->title, $link, $options);
+        //$output .= $inline ? l("$node->title", "$base/viewinline/$node->nid") : l("$node->title", "node/$node->nid");
         if (!ereg("[?!.]$", $node->title)) $output .= ".";
         $output .= '"';
       }
@@ -182,7 +185,10 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = false) {
       {
         if (!empty($authors))  $output .= " ";
 
-        $output .= $inline ? l("$node->title", "$base/viewinline/$node->nid") : l("$node->title", "node/$node->nid");
+        $link = ((variable_get('biblio_link_title_url', 0) && !empty($node->biblio_url)) ? $node->biblio_url : ($inline ? "$base/viewinline/$node->nid":"node/$node->nid" ) ) ;
+        $options['attributes'] = (variable_get('biblio_links_target_new_window',null)) ? array('target'=>'_blank') : null;
+        $output .= l($node->title, $link, $options);
+        //$output .= $inline ? l("$node->title", "$base/viewinline/$node->nid") : l("$node->title", "node/$node->nid");
         if (!ereg("[?!.]$", $node->title)) $output .= ".";
         $output .= '"';
       }
@@ -314,7 +320,7 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = false) {
 
       if (!ereg("\. *$", $output))
         $output .= ".";
-      
+
       break;
 
     default : // all other types
@@ -338,7 +344,10 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = false) {
         $output .= " ";
 
         // TODO: book/volume/report/etc titles should be formatted in heading caps, however, this doesn't yet work correctly if the publication title contains HTML entities
-        $output .= $inline ? l("$node->title", "$base/viewinline/$node->nid") : l("$node->title", "node/$node->nid");
+        $link = ((variable_get('biblio_link_title_url', 0) && !empty($node->biblio_url)) ? $node->biblio_url : ($inline ? "$base/viewinline/$node->nid":"node/$node->nid" ) ) ;
+        $options['attributes'] = (variable_get('biblio_links_target_new_window',null)) ? array('target'=>'_blank') : null;
+        $output .= l($node->title, $link, $options);
+        //$output .= $inline ? l("$node->title", "$base/viewinline/$node->nid") : l("$node->title", "node/$node->nid");
       }
       if ($row['type'] == "Software") // for software, add software label
         $output .= " [computer program]";
@@ -383,7 +392,7 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = false) {
           $output .= " " . $node->biblio_edition . $editionSuffix;
         }
       }
-      
+
       if (count($node->biblio_contributors[2]))      // editor (if different from author, see note above regarding the check for ' (ed)' or ' (eds)')
       {
 
@@ -527,7 +536,7 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = false) {
         $output .= "."; // NOTE: the examples in the above mentioned resources differ wildly w.r.t. whether the closing period should be omitted for online publications
       break;
   }
-  
+
   return trim($output);
 }
 

@@ -71,7 +71,10 @@ function biblio_style_apa($node, $base = 'biblio', $inline = FALSE) {
         $output .= "(" . check_plain($node->biblio_year) . ").&nbsp;&nbsp;";
       }
       $output .= '<span class="biblio-title-apa">';
-      $output .= $inline ? l("$node->title", "$base/viewinline/$node->nid") : l("$node->title", "node/$node->nid");
+        $link = ((variable_get('biblio_link_title_url', 0) && !empty($node->biblio_url)) ? $node->biblio_url : ($inline ? "$base/viewinline/$node->nid":"node/$node->nid" ) ) ;
+        $options['attributes'] = (variable_get('biblio_links_target_new_window',null)) ? array('target'=>'_blank') : null;
+        $output .= l($node->title, $link, $options);
+        //$output .= $inline ? l("$node->title", "$base/viewinline/$node->nid") : l("$node->title", "node/$node->nid");
       $output .= ". </span> \n";
       $output .= !empty ($node->biblio_contributors[2]) ? '(' . theme('biblio_authors', $node->biblio_contributors[2], 'apa', 2, $inline) . ', Ed.).' : "";
       $output .= ($node->biblio_secondary_title) ? '<u>' . check_plain($node->biblio_secondary_title) . '. ' : '<u>';
@@ -82,13 +85,13 @@ function biblio_style_apa($node, $base = 'biblio', $inline = FALSE) {
   }
   /*  if ($node->biblio_date) $output .= ', '. check_plain($node->biblio_date);
     if ($node->biblio_number) $output .= ', Number '. check_plain($node->biblio_number);
-  
+
     if ($node->biblio_place_published) $output .= ', '. check_plain($node->biblio_place_published);
   */
   return $output;
 }
 /**
- * 
+ *
  */
 function _apa_format_author($author) {
   $format = $author['prefix'] . ' ' . $author['lastname'];
