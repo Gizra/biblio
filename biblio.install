@@ -12,9 +12,9 @@ function biblio_install() {
   $result[] = _add_custom_field_data();
 
   //_enable_biblio_keyword_vocabulary();
-  
+
   $result[] = _set_system_weight();
-  
+
   if (count($result) == count(array_filter($result))) {
     drupal_set_message(t('The biblio module has successfully added its tables to the database.'));
   }
@@ -35,12 +35,12 @@ function biblio_uninstall(){
   foreach ($voc as $vid => $vocabulary) {
     if ($vocabulary->module == 'biblio')  taxonomy_del_vocabulary($vid);
   }
-  
+
   $result = db_query("SELECT * FROM {node} WHERE type='biblio' ");
   while ($node = db_fetch_object($result)){
     db_query('DELETE FROM {node} WHERE nid = %d', $node->nid);
     db_query('DELETE FROM {node_revisions} WHERE nid = %d', $node->nid);
- 
+
     // Remove this node from the search index if needed.
     if (function_exists('search_wipe')) {
       search_wipe($node->nid, 'node');
@@ -48,14 +48,14 @@ function biblio_uninstall(){
   }
 
   drupal_uninstall_schema('biblio');
-  
+
   $vars = db_query("SELECT * FROM {variable} WHERE name LIKE 'biblio_%'");
   while ($var = db_fetch_object($vars)) {
     variable_del($var->name);
   }
-  
+
   cache_clear_all();
-  
+
 }
 
 function _set_system_weight() {
@@ -63,8 +63,8 @@ function _set_system_weight() {
 }
 
 function _enable_biblio_keyword_vocabulary(){
-    
-  
+
+
   if ($vocabulary = taxonomy_vocabulary_load(variable_get('biblio_keyword_vocabulary', 0))) {
       // Existing install. Add back forum node type, if the biblio
     // vocabulary still exists. Keep all other node types intact there.
@@ -92,7 +92,7 @@ function _enable_biblio_keyword_vocabulary(){
 //  }
   return $vocabulary['vid'];
 }
-function _enable_biblio_collection_vocabulary(){  
+function _enable_biblio_collection_vocabulary(){
   if ($vocabulary = taxonomy_vocabulary_load(variable_get('biblio_collection_vocabulary', 0))) {
     // Existing install. Add back forum node type, if the biblio
     // vocabulary still exists. Keep all other node types intact there.
@@ -131,13 +131,13 @@ function _enable_biblio_collection_vocabulary(){
     taxonomy_save_term($default_collection);
   }
   return $vocabulary['vid'];
-  
+
 }
 
 /**
- * Copies keywords from the biblio_keyword column of the biblio table 
+ * Copies keywords from the biblio_keyword column of the biblio table
  * to a taxonomy vocabulary
- * 
+ *
  * @return none
  */
 function _add_biblio_keywords() {
@@ -185,7 +185,7 @@ function _add_biblio_keywords() {
 }
 
 
- 
+
 function biblio_schema() {
   $schema['biblio'] = array (
     'fields' => array (
@@ -684,13 +684,19 @@ function biblio_schema() {
         'unsigned' => TRUE,
         'description' =>'Primary Key: Author ID',
         ),
+      'aka' => array(
+        'type' => 'int',
+        'not null' => FALSE,
+        'unsigned' => TRUE,
+        'description' =>'Also known as, links this author entry with others so you can have variation on the name, but listing by cid will find all other (aka) author entries',
+        ),
       'drupal_uid' => array(
         'type' => 'int',
         'not null' => FALSE,
         'unsigned' => TRUE,
         'description' =>'Drupal User ID',
         ),
-        'name' => array(
+      'name' => array(
         'type' => 'varchar',
         'length' => '128',
         'not null' => TRUE,
@@ -979,7 +985,7 @@ function biblio_schema() {
             'size' => 'big'),
         ),
         'primary key' => array('id'));
-      
+
    return ($schema);
 
 }
@@ -992,7 +998,7 @@ function biblio_reset_types(){
   db_drop_table($result, 'biblio_fields');
   db_drop_table($result, 'biblio_contributor_type');
   db_drop_table($result, 'biblio_contributor_type_data');
-  
+
   $schema = biblio_schema();
   db_create_table($result, 'biblio_field_type_data', $schema['biblio_field_type_data']);
   db_create_table($result, 'biblio_field_type', $schema['biblio_field_type']);
@@ -1183,7 +1189,7 @@ function _add_db_field_data() {
 
   db_query("/*!40000 ALTER TABLE {biblio_field_type_data} ENABLE KEYS */;");
   db_query("/*!40000 ALTER TABLE {biblio_fields} ENABLE KEYS */;");
-  
+
   return $result;
 }
 
@@ -1200,7 +1206,7 @@ function _add_custom_field_data() {
   }
 
   $csv_file = drupal_get_path('module', 'biblio') .'/biblio.field.type.data.csv';
-  
+
   if ($handle = fopen($csv_file, "r")){
     $header = fgetcsv($handle, 10000, ","); // the first line has the field names
     $generic = fgetcsv($handle, 10000, ","); // the second line has the default titles if none given
@@ -1210,14 +1216,14 @@ function _add_custom_field_data() {
     // map contributor field titles to field ids
     $res = db_query("SELECT fid,name FROM {biblio_fields} WHERE type='contrib_widget'");
     $contributor_categories = array();
-    while ($row = db_fetch_object($res)) { 
+    while ($row = db_fetch_object($res)) {
       $contributor_categories[$row->name] = $row->fid;
     }
     // process all rows of the file
     while (($row = fgetcsv($handle, 10000, ",")) !== FALSE) {
       $column = 0;
       if (empty($row[1])) continue;
-      
+
       foreach ($header as $key => $field_name) {
         if (!empty($field_name) && $field_name != 'tid') {
           if (!empty($row[$column]) && $row[$column] != "~" && isset($fieldmap[$field_name])) {
@@ -1234,7 +1240,7 @@ function _add_custom_field_data() {
               _id_by_name('biblio_field_type_data',$row[$column], $ftd[0]);  // cache the new id value for future use
               variable_set('biblio_last_ftdid', $ftd[0] +1); //increment the field type data id by one.
        	    }
-       	    
+
        	    // also populate biblio_contributor_type tables
        	    if ((substr($field_name,-7,7) == 'authors') && $row[$column] != '~' ) {
        	      $type = $contributor_categories[$field_name];
@@ -1388,14 +1394,14 @@ function _move_field_data(&$result)
     INNER JOIN {biblio_fields_old} fo ON fo.name=f.name /* link to old biblio_fields by name */
     SET ftd.title=fo.title, ftd.hint=fo.hint, ft.common=fo.common, ft.autocomplete=fo.autocomplete, ft.required=fo.required, ft.weight=fo.weight, ft.visible=fo.visible
     WHERE ft.ftdid=ftd.ftdid AND ft.tid=0");
-  
+
   // add new field types from old biblio_type_details
-  $db_result = db_query("SELECT old.*,f.fid as fidnew FROM 
+  $db_result = db_query("SELECT old.*,f.fid as fidnew FROM
 		/* biblio_type_details augmented by field name (biblio_*) */
-		(SELECT otd.*,fo.name FROM {biblio_type_details} otd 
-		 INNER JOIN {biblio_fields_old} fo ON otd.fid=fo.fid) old 
+		(SELECT otd.*,fo.name FROM {biblio_type_details} otd
+		 INNER JOIN {biblio_fields_old} fo ON otd.fid=fo.fid) old
 		/* left join: all entries from biblio_type_details are matched to existing entries in biblio_field_type_data */
-		LEFT JOIN {biblio_field_type_data} ftd ON old.title=ftd.title 
+		LEFT JOIN {biblio_field_type_data} ftd ON old.title=ftd.title
 		/* add matching fids (fidnew) from new biblio_fields based on field name */
 		INNER JOIN {biblio_fields} f ON f.name=old.name
 		/* consider only those entries in biblio_type_details which have no match in biblio_field_type_data yet */
@@ -1408,9 +1414,9 @@ function _move_field_data(&$result)
       $new_ftdid = variable_get('biblio_last_ftdid',100);
       variable_set('biblio_last_ftdid',$new_ftdid + 1);
       $fieldtype = array('ftdid' => $new_ftdid, 'title' => $row['title'], 'hint' => $row['hint']);
-    // write_record may not work if module is diabled.  
-    //drupal_write_record('biblio_field_type_data',$fieldtype); 
-      db_query("INSERT INTO {biblio_field_type_data} (ftdid, title, hint) 
+    // write_record may not work if module is diabled.
+    //drupal_write_record('biblio_field_type_data',$fieldtype);
+      db_query("INSERT INTO {biblio_field_type_data} (ftdid, title, hint)
                   VALUES('" . implode("', '", $fieldtype) . "')");
     }
     // update ftdid in linking table to new field type
@@ -1419,17 +1425,17 @@ function _move_field_data(&$result)
   }
 
   // update biblio_field_type (linking table) with overrides from old biblio_type_details
-  $result[] = update_sql("UPDATE {biblio_field_type} ft 
-		INNER JOIN {biblio_field_type_data} ftd ON ft.ftdid=ftd.ftdid 
+  $result[] = update_sql("UPDATE {biblio_field_type} ft
+		INNER JOIN {biblio_field_type_data} ftd ON ft.ftdid=ftd.ftdid
 		/* link to old biblio_type_details based on field title and publication type */
 		INNER JOIN {biblio_type_details} otd ON otd.title=ftd.title AND otd.tid=ft.tid
 		SET ft.required=otd.required, ft.weight=otd.weight");
   // update auth_type associated to (auth_category,biblio_type) from old biblio_type_details
   $result[] = update_sql("UPDATE {biblio_contributor_type} ct
-		INNER JOIN 
+		INNER JOIN
 			/* select contributor fields from biblio_type_details (fid <= 4) and augment with new ctd.auth_type */
-			(SELECT tid,IF(fid=4,5,fid) AS auth_category,ctd.auth_type FROM {biblio_type_details} b 
- 			 INNER JOIN {biblio_contributor_type_data} ctd ON b.title=ctd.title WHERE b.fid <= 4) otd 
+			(SELECT tid,IF(fid=4,5,fid) AS auth_category,ctd.auth_type FROM {biblio_type_details} b
+ 			 INNER JOIN {biblio_contributor_type_data} ctd ON b.title=ctd.title WHERE b.fid <= 4) otd
 			/* match on publication type and auth_category, fid=4 (corp. author) changed to catagory 5 */
 			ON otd.tid=ct.biblio_type AND otd.auth_category=ct.auth_category
 		SET ct.auth_type=otd.auth_type");
@@ -1438,9 +1444,9 @@ function _move_field_data(&$result)
 }
 /**
  * This function generates md5 hashes for all the biblio entries in the
- * database. These hashes are used to detect potential duplicate entries 
- * when adding or importing. 
- * 
+ * database. These hashes are used to detect potential duplicate entries
+ * when adding or importing.
+ *
  * @return a result array for the update process
  */
 function biblio_md5_generate()
@@ -1466,17 +1472,17 @@ function biblio_md5_generate()
 }
 
 /**
- * This parses the old (pre 6.x) format author entry, splits in on 
+ * This parses the old (pre 6.x) format author entry, splits in on
  * the semicolons and adds new elements to the biblio_contributors array
- * @param $biblio_contributors an array passed in by reference 
+ * @param $biblio_contributors an array passed in by reference
  * @param $authors    The old author string
  * @param $type   The type of author (Primary, Secondary, Tertiary, Corporate)
- * @return none ($biblio_contributors is passed in by reference) 
+ * @return none ($biblio_contributors is passed in by reference)
  */
 function _parse_authors(&$biblio_contributors, $authors, $cat = 1)
 {
-  $authors = str_ireplace(" and ", "; ", $authors); 
-  $authors = str_ireplace(" & ", "; ", $authors); 
+  $authors = str_ireplace(" and ", "; ", $authors);
+  $authors = str_ireplace(" & ", "; ", $authors);
   $author_array = explode(';', $authors);
   $rank = 0;
   foreach($author_array as $author)
@@ -1512,17 +1518,17 @@ function _move_authors(&$result)
     $count++;
   }
   // change auth_type to match overrides set in old biblio_type_details
-  update_sql("UPDATE {biblio_contributor} c 
+  update_sql("UPDATE {biblio_contributor} c
 		/* augment by biblio_type from biblio */
 		INNER JOIN {biblio} b ON c.nid=b.nid AND c.vid=b.vid
-		/* augment by old config settings */ 
-		INNER JOIN 
+		/* augment by old config settings */
+		INNER JOIN
 			(SELECT tid,if(fid=4,5,fid) as auth_type,title FROM
 				/* select (tid,fid) specific titles from 5.x: biblio_fields_old contains the defaults, biblio_type_details the overrides */
 				(SELECT tid,fid,title FROM {biblio_type_details} WHERE fid<=4
 				 UNION SELECT tid,fid,title FROM {biblio_fields_old}, {biblio_types} WHERE fid<=4 AND tid>=100) t
 			 /* grouping by tid,fid removes the duplicate default title if an override is available */
-			 GROUP BY tid,fid) otd 
+			 GROUP BY tid,fid) otd
 		/* match old config (otd) and newly imported (with type 1,2,3,5 see above) on biblio_type and auth_type */
 		ON otd.tid=b.biblio_type AND otd.auth_type=c.auth_type
 		/* augment with new auth_type based on title */
@@ -1546,13 +1552,13 @@ function _move_authors(&$result)
     $count_fail = $count - $count_success;
     $mesg = 'There was a problem moving authors from '. $count_fail .' / '. $count .' publications to the new database structure. The existing author fields have been retained in the database, go to the "admin/settings/biblio/author" page to try again.';
   }
-  $result[] = array('success' => ($count_success == $count), 
+  $result[] = array('success' => ($count_success == $count),
                     'query' => $mesg);
-  
+
   if ($disable) { // if the module was disabled, then set it back that way.
     module_disable(array('biblio'));
   }
-  
+
   return;
 }
 
@@ -1599,7 +1605,7 @@ function biblio_update_6000()
 
   $result[] = biblio_md5_generate();
   return $result;
-} 
+}
 
 function biblio_update_6011(){
   $result = array();
@@ -1630,7 +1636,7 @@ function biblio_update_6013() {
 function biblio_update_6014() {
   $result = array();
   $contributors = array(
-    2 => 'biblio_secondary_authors', 
+    2 => 'biblio_secondary_authors',
     3 => 'biblio_tertiary_authors',
     4 => 'biblio_subsidiary_authors',
     5 => 'biblio_corp_authors');
@@ -1650,7 +1656,7 @@ function biblio_update_6014() {
     // create space for new fields in field_type_data
     $result[] = update_sql("UPDATE {biblio_field_type_data} f SET ftdid=ftdid + 4 WHERE ftdid>1 AND ftdid<100 ORDER BY ftdid DESC");
     // add new field titles from author type + appended 's'
-    $result[] = update_sql("INSERT INTO {biblio_field_type_data} 
+    $result[] = update_sql("INSERT INTO {biblio_field_type_data}
     												SELECT auth_type AS ftdid, CONCAT(TRIM(ctd.title),'s') AS title, NULL AS hint
     												FROM {biblio_contributor_type_data} ctd WHERE auth_type>1 AND auth_type<6");
     // create space for new fields in linking table
@@ -1660,7 +1666,7 @@ function biblio_update_6014() {
     $result[] = update_sql("UPDATE {biblio_field_type} ft SET cust_tdid=cust_tdid+4 WHERE cust_tdid>1 AND ftdid<100");
     // add linking data for new fields
     $result[] = update_sql("INSERT INTO {biblio_field_type}
-    												SELECT tid,ftd.ftdid,ftd.ftdid,ftd.ftdid,1,1,1,2 AS weight,1 
+    												SELECT tid,ftd.ftdid,ftd.ftdid,ftd.ftdid,1,1,1,2 AS weight,1
                             FROM {biblio_field_type} ft, {biblio_field_type_data} ftd
                             WHERE ft.fid=1 AND ftd.ftdid > 1 AND ftd.ftdid < 6");
     // add default linking for author categories => author types
@@ -1676,21 +1682,21 @@ function biblio_update_6015() {
     variable_set('biblio_keyword_vocabulary', $vid);
   }
   variable_del('biblio_freetagging_vocab');
-  
+
   $result[] = update_sql("ALTER TABLE {biblio_keyword_data} MODIFY COLUMN kid INTEGER UNSIGNED NOT NULL AUTO_INCREMENT");
   $db_result = db_query('SELECT t.nid, t.vid, td.name as biblio_keywords FROM {term_node} t left join {term_data} td on t.tid=td.tid where td.vid=%d', variable_get('biblio_keyword_vocabulary', -1));
   $count=0;
   while ($node = db_fetch_object($db_result)){
     $count += biblio_save_keywords($node, TRUE);
   }
-  $result[] = array('success' => TRUE, 
+  $result[] = array('success' => TRUE,
                     'query' => "Copied $count keywords to the new database stucture from taxonomy");
   $count=0;
   $db_result = db_query('SELECT nid,vid,biblio_keywords FROM {biblio} where biblio_keywords != "" ');
   while ($node = db_fetch_object($db_result)){
     $count += biblio_save_keywords($node, TRUE);
   }
-  $result[] = array('success' => TRUE, 
+  $result[] = array('success' => TRUE,
                     'query' => "Moved $count keywords to the new database stucture");
   db_drop_field($result,'biblio', 'biblio_keywords');
   return $result;
@@ -1698,12 +1704,18 @@ function biblio_update_6015() {
 
 function biblio_update_6016() {
   $result = array();
-  $result[] = update_sql("ALTER TABLE {biblio} 
+  $result[] = update_sql("ALTER TABLE {biblio}
                           MODIFY COLUMN biblio_number             VARCHAR(24),
                           MODIFY COLUMN biblio_section            VARCHAR(24),
                           MODIFY COLUMN biblio_volume             VARCHAR(24),
                           MODIFY COLUMN biblio_number_of_volumes  VARCHAR(24),
                           MODIFY COLUMN biblio_issue              VARCHAR(24),
                           MODIFY COLUMN biblio_doi                VARCHAR(255)");
+  return $result;
+}
+function biblio_update_6017() {
+  $result = array();
+  $result[] = update_sql("ALTER TABLE {biblio_contributor_data} ADD COLUMN aka INTEGER UNSIGNED ");
+
   return $result;
 }
