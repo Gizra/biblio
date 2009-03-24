@@ -902,6 +902,7 @@ function theme_biblio_admin_author_edit_form($form){
 
   $output = theme('table', $header, $rows);
   $output .= drupal_render($form['merge']);
+  $output .= drupal_render($form['link']);
   $output .= drupal_render($form);
 
   return $output;
