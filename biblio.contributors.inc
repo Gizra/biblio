@@ -113,7 +113,7 @@ function _save_contributors($contributors, $nid, $vid, $update = FALSE) {
         'nid' => $nid,
         'vid' => $vid,
         'cid' => $cid,
-        'rank' => $key,
+        'rank' => isset($author['rank']) ? $author['rank'] : $key,
         'auth_type' => $author['auth_type'],
         'auth_category' => $cat,
       );
