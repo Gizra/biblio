@@ -72,7 +72,7 @@ function biblio_style_apa($node, $base = 'biblio', $inline = FALSE) {
       }
       $output .= '<span class="biblio-title-apa">';
         $link = ((variable_get('biblio_link_title_url', 0) && !empty($node->biblio_url)) ? $node->biblio_url : ($inline ? "$base/viewinline/$node->nid":"node/$node->nid" ) ) ;
-        $options['attributes'] = (variable_get('biblio_links_target_new_window',null)) ? array('target'=>'_blank') : null;
+        $options['attributes'] = (variable_get('biblio_links_target_new_window',null) && variable_get('biblio_link_title_url', 0) && !empty($node->biblio_url)) ? array('target'=>'_blank') : null;
         $output .= l($node->title, $link, $options);
         //$output .= $inline ? l("$node->title", "$base/viewinline/$node->nid") : l("$node->title", "node/$node->nid");
       $output .= ". </span> \n";
