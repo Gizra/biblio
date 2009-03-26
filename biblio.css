@@ -37,6 +37,22 @@ dl.bibliomultiselect .form-item {
 	height: 1.75em;
 	margin: 0;
 }
+#biblio-authors table, #biblio-tertiary-authors  table  {
+  width: 100%;	
+}
+#biblio-authors  .form-text {
+  width: 95%;  
+}
+#biblio-authors  td.biblio-contributor,
+#biblio-secondary-authors td.biblio-contributor,
+#biblio-tertiary-authors td.biblio-contributor,
+#biblio-subsidiary-authors  td.biblio-contributor,
+#biblio-corp-authors td.biblio-contributor{
+	width: 98%;
+}
+#biblio-authors #biblio-tertiary-authors .draggable a.tabledrag-handle {
+	padding: 0;
+}
 
 .biblio-head {
 	width: 97%;
