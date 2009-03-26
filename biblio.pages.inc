@@ -100,9 +100,18 @@ function biblio_build_query($arg_list) {
   static $bcc; //biblio_contributor (bc) count , increase for every invocation
   if ( !isset( $bcc ) ) $bcc = 0;
   $inline = $rss_info['feed'] = false;
-  $join = array();
-  $join[] = "left join {biblio} b  on n.vid=b.vid ";
-  $join[] = "inner join {biblio_types} bt  on b.biblio_type=bt.tid ";
+  $joins = array();
+  $selects = array();
+  $count_selects = array();
+
+  $selects[] = "DISTINCT(n.nid)";
+  $count_selects[] = "DISTINCT(n.nid)";
+  $selects[] = "n.*";
+  $selects[] = "b.*";
+  $selects[] = "bt.name as biblio_type_nam";
+
+  $joins[] = "left join {biblio} b  on n.vid=b.vid ";
+  $joins[] = "inner join {biblio_types} bt  on b.biblio_type=bt.tid ";
 
   // POSIX regular expression matching, case insensitive
   $match_op = ($db_type == 'pgsql') ? '~*' : 'RLIKE';
@@ -144,13 +153,15 @@ function biblio_build_query($arg_list) {
       $sortby = "ORDER BY bcd.lastname %s ";
       $where['bc-rank'] = "bc.rank=0";
       $where['bc-auth-category'] = "bc.auth_category=1";
-      $join['bc'] = '  JOIN {biblio_contributor} as bc on b.vid = bc.vid ';
-      $join['bcd'] = '  JOIN {biblio_contributor_data} as bcd on bc.cid = bcd.cid ';
+      $joins['bc'] = '  JOIN {biblio_contributor} as bc on b.vid = bc.vid ';
+      $joins['bcd'] = '  JOIN {biblio_contributor_data} as bcd on bc.cid = bcd.cid ';
       break;
     case 'keyword': // added msh 070808
       $sortby = "ORDER BY bkd.word %s ";
-      $join['bk'] = '  JOIN {biblio_keyword} as bk on b.vid = bk.vid ';
-      $join['bkd'] = '  JOIN {biblio_keyword_data} as bkd on bk.kid = bkd.kid ';
+      $joins['bk'] = '  JOIN {biblio_keyword} as bk on b.vid = bk.vid ';
+      $joins['bkd'] = '  JOIN {biblio_keyword_data} as bkd on bk.kid = bkd.kid ';
+      $selects[] = "bkd.word as biblio_keyword";
+      $count_selects[] = "bkd.word";
       break;
     case 'year':
     default:
@@ -196,7 +207,7 @@ function biblio_build_query($arg_list) {
         case 'aid':
           $bcc++;
           $term = explode("?",array_shift($arg_list));
-          $join[] = "inner join {biblio_contributor} as bc". $bcc ." on n.vid = bc". $bcc .".vid";
+          $joins[] = "inner join {biblio_contributor} as bc". $bcc ." on n.vid = bc". $bcc .".vid";
           $where[] = "bc". $bcc .".cid = '%d' ";
           $terms[] = db_escape_string($term[0]);
           array_push($args, $type, $term[0]);
@@ -204,9 +215,9 @@ function biblio_build_query($arg_list) {
         case 'term':
         case 'term_id':
           $term = explode("?",array_shift($arg_list));
-          $join[] = "inner join {term_node} as tn on n.vid = tn.vid";
+          $joins[] = "inner join {term_node} as tn on n.vid = tn.vid";
           if ($type == 'term') {
-            $join[] = "inner join  {term_data} as td on tn.tid= td.tid";
+            $joins[] = "inner join  {term_data} as td on tn.tid= td.tid";
             $where[] = "td.name = '%s' ";
           }elseif ($type == 'term_id') {
             $where[] = "tn.tid = '%d' ";
@@ -224,8 +235,8 @@ function biblio_build_query($arg_list) {
         case 'ag': //selects entries whoose authors firstname starts with the letter provided
           $term = explode("?",array_shift($arg_list));
           $where[] = " UPPER(substring(bcd.lastname,1,1)) = '%s' ";
-          $join['bc'] = '  INNER JOIN {biblio_contributor} as bc on b.vid = bc.vid ';
-          $join['bcd'] = '  JOIN {biblio_contributor_data} as bcd on bc.cid = bcd.cid ';
+          $joins['bc'] = '  INNER JOIN {biblio_contributor} as bc on b.vid = bc.vid ';
+          $joins['bcd'] = '  JOIN {biblio_contributor_data} as bcd on bc.cid = bcd.cid ';
           $terms[] = db_escape_string(strtoupper($term[0]));
           array_push($args, $type, $term[0]);
           $operator = NULL;
@@ -234,13 +245,13 @@ function biblio_build_query($arg_list) {
           $bcc++;
           $term = explode("?",array_shift($arg_list));
           if (is_numeric($term[0])){
-            $join[] = "inner join {biblio_contributor} as bc". $bcc ." on n.vid = bc". $bcc .".vid";
+            $joins[] = "inner join {biblio_contributor} as bc". $bcc ." on n.vid = bc". $bcc .".vid";
             $where[] = "bc". $bcc .".cid = '%d' ";
             $terms[] = db_escape_string($term[0]);
           }else{
             $where[] = " bcd". $bcc .'.name '. $match_op .' "[[:<:]]%s[[:>:]]" ';
-            $join[] = " JOIN {biblio_contributor} as bc". $bcc ." on b.vid = bc". $bcc .".vid ";
-            $join[] = " JOIN {biblio_contributor_data} as bcd". $bcc ." on bc". $bcc .".cid = bcd".$bcc .".cid ";
+            $joins[] = " JOIN {biblio_contributor} as bc". $bcc ." on b.vid = bc". $bcc .".vid ";
+            $joins[] = " JOIN {biblio_contributor_data} as bcd". $bcc ." on bc". $bcc .".cid = bcd".$bcc .".cid ";
             $terms[] = db_escape_string($term[0]);
             $operator = NULL;
             $rss_info['title'] = t("Publications by " . $term[0]);
@@ -277,13 +288,13 @@ function biblio_build_query($arg_list) {
           $term = explode("?",array_shift($arg_list));
           if (is_numeric($term[0])){
             $terms[] = db_escape_string($term[0]);
-            $join[] = "inner join {biblio_keyword} as bk on n.vid = bk.vid";
-          //$join[] = "inner join {biblio_keyword_data} as bkd on bk.kid= bkd.kid";
+            $joins[] = "inner join {biblio_keyword} as bk on n.vid = bk.vid";
+          //$joins[] = "inner join {biblio_keyword_data} as bkd on bk.kid= bkd.kid";
             $where[] = "bk.kid = %d ";
           }else{
             $where[] = " bkd". $bkd .'.word '. $match_op .' "[[:<:]]%s[[:>:]]" ';
-            $join[] = " JOIN {biblio_keyword} as bk". $bkd ." on b.vid = bk". $bkd .".vid ";
-            $join[] = " JOIN {biblio_keyword_data} as bkd". $bkd ." on bk". $bkd .".kid = bkd".$bkd .".kid ";
+            $joins[] = " JOIN {biblio_keyword} as bk". $bkd ." on b.vid = bk". $bkd .".vid ";
+            $joins[] = " JOIN {biblio_keyword_data} as bkd". $bkd ." on bk". $bkd .".kid = bkd".$bkd .".kid ";
             $terms[] = db_escape_string($term[0]);
             $operator = NULL;
             $rss_info['title'] = t("Keyword " . $term[0]);
@@ -360,12 +371,14 @@ function biblio_build_query($arg_list) {
     $where[] = 'n.status = 1 ';
   }//show only published entries to everyone except admin
 
-  $joins = implode(' ', $join);
+  $select = implode(', ', $selects);
+  $count_select = implode(', ', $count_selects);
+  $join = implode(' ', $joins);
 
   $where_clause = count($where) > 1 ? '('. implode(') AND (', $where) .')': $where[0];
 
-  $query = db_rewrite_sql("SELECT DISTINCT(n.nid), n.*, b.*, bt.name as biblio_type_name FROM {node} n $joins  WHERE $where_clause $limit $sortby ");
-  $count_query = db_rewrite_sql("SELECT COUNT(DISTINCT(n.nid)) FROM {node} n $joins  WHERE $where_clause $limit ");
+  $query = db_rewrite_sql("SELECT $select FROM {node} n $join  WHERE $where_clause $limit $sortby ");
+  $count_query = db_rewrite_sql("SELECT COUNT($count_select) FROM {node} n $join  WHERE $where_clause $limit ");
   $_SESSION['last_biblio_query'] = $query;
   $terms[] = $sort_attrib['order']; // this is either asc or desc to be inserted into the first term of the ORDER clause
   if($sort_attrib['sort'] == 'year') $terms[] = $sort_attrib['order']; // we need any extra order term when sorting by year since there are to date terms biblio_year and biblio_date
@@ -665,8 +678,8 @@ function _biblio_category_separator_bar($attrib, $node) {
       }
       break;
     case 'keyword':   // added msh 08 aug 07
-      $kw = array_shift($node->biblio_keywords);
-      $tok = drupal_ucfirst($kw->word);
+     // $kw = array_shift($node->biblio_keyword);
+      $tok = $node->biblio_keyword;
       if (empty($tok)) {
         $tok = t("No Keywords");
       }
