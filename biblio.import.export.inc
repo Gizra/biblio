@@ -78,9 +78,8 @@ function biblio_import_form() {
         'xml8'   => t('EndNote 8 XML (and newer versions)'),
         'marc'   => t('MARC'),
         'ris'    => t('RIS'),
-      )
+        )
     );
-    
     $form['batch_process'] = array (
       '#type' => 'checkbox',
       '#title' => t('Batch Process'),
@@ -200,8 +199,9 @@ function biblio_import_form_submit($form, & $form_state) {
           'file' => './'. drupal_get_path('module', 'biblio') .'/biblio.import.export.inc'
         );
         batch_set($batch_op);
-        // only needed if not inside a form _submit handler :
-        batch_process('biblio');
+        
+        $base = variable_get('biblio_base', 'biblio');
+        batch_process("$base/import");
 
       }else{ //not batch processing the file
         $session_id = microtime();

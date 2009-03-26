@@ -27,13 +27,13 @@
  */
 function biblio_get_keyword_by_name($name) {
   static $keywords = array();
-  
+
   if (!$kid = array_search($name, $keywords)) {
     $term = db_fetch_object(db_query("SELECT * FROM {biblio_keyword_data} k WHERE LOWER(k.word) = LOWER('%s')", trim($name)));
     $keywords[$term->kid] = $term;
     return $term;
   }
-  
+
   return $keywords[$kid];
 }
 
@@ -49,7 +49,7 @@ function biblio_get_keyword_by_id($kid) {
   }
 
   return $keywords[$kid];
-  
+
 }
 
 /**
@@ -57,22 +57,19 @@ function biblio_get_keyword_by_id($kid) {
  * @return unknown_type
  */
 function biblio_load_keywords($vid) {
-  static $keywords;
 
-  if (!isset($keywords[$vid])) {
-    $result = db_query('SELECT bkd.* FROM {biblio_keyword} bk INNER JOIN {biblio_keyword_data} bkd ON bk.kid = bkd.kid  WHERE bk.vid = %d', $vid);
-    $keywords[$vid] = array();
-    while ($keyword = db_fetch_object($result)) {
-      $keywords[$vid][$keyword->kid] = $keyword;
-    }
+  $result = db_query('SELECT bkd.* FROM {biblio_keyword} bk INNER JOIN {biblio_keyword_data} bkd ON bk.kid = bkd.kid  WHERE bk.vid = %d', $vid);
+  $keywords[$vid] = array();
+  while ($keyword = db_fetch_object($result)) {
+    $keywords[$vid][$keyword->kid] = $keyword;
   }
   return $keywords[$vid];
-  
+
 }
 
 /**
  * @param $node
- * @return 
+ * @return
  */
 function biblio_save_keywords($node, $update = FALSE) {
   if (!is_array($node->biblio_keywords)) {
@@ -85,7 +82,7 @@ function biblio_save_keywords($node, $update = FALSE) {
     $word = (is_object($keyword)) ? $keyword->word : $keyword;
     if (!strlen(trim($word))) continue; //skip if we have a blank
     $kid = NULL;
-    // See if the term exists 
+    // See if the term exists
     if ($term = biblio_get_keyword_by_name($word)) $kid = $term->kid;
     if (!$kid) {
       $term = array('word' => trim($word));
@@ -93,7 +90,7 @@ function biblio_save_keywords($node, $update = FALSE) {
       $kid = $term['kid'];
     }
     // Defend against duplicate, differently cased tags
-    if (!isset($inserted[$kid])) {    
+    if (!isset($inserted[$kid])) {
       if ($update) db_query('DELETE FROM {biblio_keyword} WHERE nid = %d AND vid = %d AND kid = %d', array($node->nid, $node->vid, $kid));
       db_query('INSERT INTO {biblio_keyword} (kid, nid, vid) VALUES (%d, %d, %d)', $kid, $node->nid, $node->vid);
       $inserted[$kid] = TRUE;
@@ -104,7 +101,7 @@ function biblio_save_keywords($node, $update = FALSE) {
 
 /**
  * @param $word
- * @return 
+ * @return
  */
 function biblio_save_keyword(&$form_values) {
   if (!empty($form_values['kid']) && $form_values['word']) {
@@ -114,8 +111,8 @@ function biblio_save_keyword(&$form_values) {
     drupal_write_record('biblio_keyword_data', $form_values);
     $status = SAVED_NEW;
   }
-  
-  return $status;  
+
+  return $status;
 }
 
 /**
