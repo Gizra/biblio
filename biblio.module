@@ -1457,6 +1457,7 @@ function biblio_block($op = 'list', $delta = 0) {
               'absolute' => TRUE
           )), t('Recently Added Publications'));
         }
+        $block['content'] .= l(t('more...'), $base, array('attributes' => array('style' => "float: right")));
         $block['content'] .= '</div>';
       }
       return $block;
