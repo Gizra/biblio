@@ -108,7 +108,7 @@ function biblio_build_query($arg_list) {
   $count_selects[] = "DISTINCT(n.nid)";
   $selects[] = "n.*";
   $selects[] = "b.*";
-  $selects[] = "bt.name as biblio_type_nam";
+  $selects[] = "bt.name as biblio_type_name";
 
   $joins[] = "left join {biblio} b  on n.vid=b.vid ";
   $joins[] = "inner join {biblio_types} bt  on b.biblio_type=bt.tid ";
@@ -244,11 +244,20 @@ function biblio_build_query($arg_list) {
         case 'author':
           $bcc++;
           $term = explode("?",array_shift($arg_list));
+
           if (is_numeric($term[0])){
             $joins[] = "inner join {biblio_contributor} as bc". $bcc ." on n.vid = bc". $bcc .".vid";
             $where[] = "bc". $bcc .".cid = '%d' ";
             $terms[] = db_escape_string($term[0]);
-          }else{
+          }elseif (strlen($term[0]) == 1) {
+            $where[] = " UPPER(substring(bcd.lastname,1,1)) = '%s' ";
+            $joins['bc'] = '  INNER JOIN {biblio_contributor} as bc on b.vid = bc.vid ';
+            $joins['bcd'] = '  JOIN {biblio_contributor_data} as bcd on bc.cid = bcd.cid ';
+            $terms[] = db_escape_string(strtoupper($term[0]));
+            array_push($args, $type, $term[0]);
+            $operator = NULL;
+          }
+          else {
             $where[] = " bcd". $bcc .'.name '. $match_op .' "[[:<:]]%s[[:>:]]" ';
             $joins[] = " JOIN {biblio_contributor} as bc". $bcc ." on b.vid = bc". $bcc .".vid ";
             $joins[] = " JOIN {biblio_contributor_data} as bcd". $bcc ." on bc". $bcc .".cid = bcd".$bcc .".cid ";
