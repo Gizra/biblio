@@ -831,7 +831,7 @@ function _biblio_get_user_profile_form(& $form, $profile_user = FALSE) {
   $form['profile'] = array(
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
-    '#collapsed' => ($profile_user) ? FALSE : TRUE,
+    '#collapsed' =>  TRUE,
     '#title' => ($profile_user) ? t('My publications') : t('Profile pages')
   );
   if(!$profile_user) {
