@@ -9,7 +9,7 @@ class biblio_handler_field_contributor extends biblio_handler_field {
 
   function option_definition() {
     $options = parent::option_definition();
-    $options['style_name'] = array('default' => variable_get('biblio_style', 'classic'));
+    $options['style_name'] = array('default' => biblio_get_style());
     return $options;
   }
   function options_form(&$form, &$form_state) {

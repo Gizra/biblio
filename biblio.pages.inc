@@ -421,7 +421,7 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
   module_load_include('inc','biblio','biblio.keywords');
 
   $base =  variable_get('biblio_base', 'biblio');
-  $style = variable_get('biblio_style', 'cse');
+  $style = biblio_get_style();
   if ($inline === 'profile') {
     $profile = true;
     $inline  = false;
@@ -994,7 +994,7 @@ function biblio_get_user_pubs($user, $profile='', $nofilters=''){
  * @return unknown_type
  */
 function biblio_view_inline(&$node) {
-  $style = variable_get('biblio_style', 'classic');
+  $style = biblio_get_style();
   $base =  variable_get('biblio_base', 'biblio');
   $layout = variable_get('biblio_node_layout', 'tabular');
   $theme = ($layout == 'tabular') ? 'biblio_tabular' : 'biblio_long';

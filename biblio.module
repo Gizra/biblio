@@ -881,7 +881,7 @@ function biblio_nodeapi(& $node, $op, $teaser, $page) {
          //	$node->body = '';
          //	$node_clone = clone($node); // we need a clone since objects get passed by reference regardless and we don't want to change the whole node object
          //	$node->body = theme('biblio_tabular', $node_clone, $base, $teaser);
-         $style = variable_get('biblio_style', 'classic');
+         $style = biblio_get_style();
          $node->teaser = theme('biblio_style', $node_clone, $base, $style);
          }
          break;
@@ -1394,7 +1394,7 @@ function biblio_citekey_generate($node) {
  */
 function biblio_view(& $node, $teaser = FALSE, $page = FALSE) {
   if (strlen(trim($node->body))) $node = node_prepare($node, $teaser);
-  $style = variable_get('biblio_style', 'classic');
+  $style = biblio_get_style();
   $base  = variable_get('biblio_base', 'biblio');
   $base_title = variable_get('biblio_base_title', 'Biblio');
   if ($teaser) {
@@ -1525,7 +1525,7 @@ function biblio_get_db_fields() {
 function _biblio_citekey_print($citekey) {
   $nid = db_fetch_object(db_query("SELECT nid FROM {biblio} WHERE biblio_citekey = '%s' ORDER BY vid DESC", $citekey));
   if ($nid->nid > 0) {
-    $style = variable_get('biblio_style', 'classic');
+    $style = biblio_get_style();
     $base = variable_get('biblio_base', 'biblio');
     $node = node_load($nid->nid);
     return theme('biblio_style', $node, $base, $style);
@@ -1991,7 +1991,14 @@ function _biblio_profile_access($user, $type = 'profile') {
     return variable_get($key, '0'); // return site default
   else return $user->$key; // return user setting
 }
-
+/*
+ * Helper function to get either the user or system style
+ */
+function biblio_get_style() {
+  global $user;
+  if (isset($user->biblio_user_style) && $user->biblio_user_style != "system") return $user->biblio_user_style;
+  return variable_get('biblio_style', 'cse');
+}
 /**
  * Implementation of hook_views_api().
  */

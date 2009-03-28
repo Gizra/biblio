@@ -377,13 +377,14 @@ function biblio_admin_settings() {
     '#title' => t('Styling'),
     '#description' => t('You can set the default style for the /biblio page here.')
   );
-//  $form['style']['biblio_normalize'] = array(
-//    '#type' => 'checkbox',
-//    '#title' => t('Normalize author names when displaying biblio records'),
-//    '#return_value' => 1,
-//    '#default_value' => variable_get('biblio_normalize', 0),
-//    '#description' => t('Tries (doesn\'t always work) to reformat author names so that they are displayed in the format "Lastname, Initials" e.g. Smith, J.S. (Note: This setting does not modify the entry in the database, it only reformats it\'s presentation. This option can be turned off at any time to diplay the oringal format.)')
-//  );
+  $form['style']['biblio_style'] = array(
+    '#type' => 'radios',
+    '#title' => t('Style'),
+    '#default_value' => biblio_get_style(),
+    '#options' => _biblio_admin_get_styles(),
+    '#description' => t('Set the bibliographic style of the "list" view.')
+  );
+  
   $form['style']['biblio_node_layout'] = array(
     '#type' => 'radios',
     '#title' => t('Node Layout'),
@@ -413,13 +414,6 @@ function biblio_admin_settings() {
     '#description' => t('Select a field from which an annotation will be displayed below biblo entry in "short" listings'),
     '#multiple' => FALSE,
     '#size' => 0
-  );
-  $form['style']['biblio_style'] = array(
-    '#type' => 'radios',
-    '#title' => t('Style'),
-    '#default_value' => variable_get('biblio_style', 'classic'),
-    '#options' => _biblio_admin_get_styles(),
-    '#description' => t('This alters the layout of the "list" (short) view.')
   );
   $form['syndication'] = array(
     '#type' => 'fieldset',
@@ -892,6 +886,17 @@ function _biblio_get_user_profile_form(& $form, $profile_user = FALSE) {
     '#options' => $options,
     '#description' => t('This will link your profile to the selected author from the biblio database, then all publications containing this author to be displayed on your "Publications" tab.'),
     );
+    $options = array();
+    $options['system'] = t('System default');
+    $options = array_merge($options, _biblio_admin_get_styles() );
+    $form['profile']['biblio_user_style'] = array(
+    '#type' => 'radios',
+    '#title' => t('Style'),
+    '#default_value' => (isset($profile_user->biblio_user_style) ? $profile_user->biblio_user_style : 'system'),
+    '#options' => $options,
+    '#description' => t('Set the bibliographic style of the "list" view.')
+  );
+    
   }
 }
 /*  This function parses the module directory for 'style' files, loads them and

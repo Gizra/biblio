@@ -194,7 +194,7 @@ function theme_biblio_tabular($node, $base = 'biblio', $teaser = false) {
      popups_add_popups();
   }
   $tid = $node->biblio_type;
-  $style_name = variable_get('biblio_style', 'classic');
+  $style_name = biblio_get_style();
   $style_function = "biblio_style_$style_name"."_author_options";
   module_load_include('inc','biblio',"biblio_style_$style_name");
   $fields = _biblio_get_field_information($node->biblio_type, TRUE);
