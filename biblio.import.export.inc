@@ -214,129 +214,6 @@ function biblio_import_form_submit($form, & $form_state) {
     }
   }
 }
-
-function biblio_identify_source_format($sourceText)
-{
-  $sourceFormat = "";
-
-  // CSA format:
-  if (preg_match("/^Record \d+ of \d+/m", $sourceText) AND preg_match("/^SO: Source *[\r\n]+ {4,4}/m", $sourceText)) // CSA records must at least start with a record identifier ("Record x of xx") and contain the "SO: Source" tag
-  $sourceFormat = "CSA";
-
-  // PubMed MEDLINE format:
-  elseif (preg_match("/^PMID- /m", $sourceText) AND preg_match("/^PT  - /m", $sourceText)) // PubMed MEDLINE records must at least contain the "PMID" and "PT" tags
-  $sourceFormat = "Pubmed Medline";
-
-  // PubMed XML format:
-  elseif (preg_match("/<PubmedArticle[^<>\r\n]*>/i", $sourceText) AND preg_match("/<\/PubmedArticle>/", $sourceText)) // PubMed XML records must at least contain the "<PubmedArticle>...</PubmedArticle>" root element
-  $sourceFormat = "Pubmed XML";
-
-  // ISI Web of Science format:
-  elseif (preg_match("/^PT /m", $sourceText) AND preg_match("/^SO /m", $sourceText) AND preg_match("/^ER *[\r\n]/m", $sourceText)) // ISI records must at least contain the "PT" and "SO" tags and end with an "ER" tag
-  $sourceFormat = "ISI";
-
-  // RIS format:
-  elseif (preg_match("/^TY  - /m", $sourceText) AND preg_match("/^ER  -/m", $sourceText)) // RIS records must at least start with the "TY" tag and end with an "ER" tag (we'll only check for their presence, though)
-  $sourceFormat = "ris";
-
-  // RefWorks format:
-  elseif (preg_match("/^RT /m", $sourceText)) // RefWorks records must at least start with the "RT" tag (we'll only check for its presence, though)
-  $sourceFormat = "RefWorks";
-
-  // SciFinder format:
-  elseif (preg_match("/^START_RECORD/m", $sourceText) AND preg_match("/^END_RECORD/m", $sourceText)) // SciFinder records must at least start with the "START_RECORD" tag and end with an "END_RECORD" tag (we'll only check for their presence, though)
-  $sourceFormat = "SciFinder";
-
-  // Copac format:
-  elseif (preg_match("/^TI- /m", $sourceText) AND preg_match("/^HL- /m", $sourceText)) // Copac records must at least contain the "TI" and "HL" tags
-  $sourceFormat = "Copac";
-
-  // Endnote format:
-  elseif (preg_match("/^%0 /m", $sourceText) AND preg_match("/^%T /m", $sourceText)) // Endnote records must at least start with the "%0" tag (we'll only check for presence, though) and contain a "%T" tag
-  $sourceFormat = "tagged";
-
-  // MODS XML format:
-  elseif (preg_match("/<mods[^<>\r\n]*>/i", $sourceText) AND preg_match("/<\/mods>/", $sourceText)) // MODS XML records must at least contain the "<mods>...</mods>" root element
-  $sourceFormat = "MODS XML";
-
-  // Endnote XML format:
-  elseif (preg_match("/<xml>[^<>]*?<records>[^<>]*?<record>/mi", $sourceText)) // Endnote XML records must at least contain the elements "<xml>...<records>...<record>"
-  $sourceFormat = "xml";
-
-  // BibTeX format:
-  elseif (preg_match("/^@\w+\{[^ ,\r\n]* *, *[\r\n]/m", $sourceText)) // BibTeX records must start with the "@" sign, followed by a type specifier and an optional cite key (such as in '@article{steffens1988,')
-  $sourceFormat = "bib";
-
-  // CrossRef "unixref" XML format:
-  // TODO: improve match
-  elseif (preg_match("/<doi_records[^<>\r\n]*>/i", $sourceText) AND preg_match("/<\/doi_records>/", $sourceText)) // CrossRef XML records must at least contain the "<doi_records>...</doi_records>" root element
-  $sourceFormat = "CrossRef XML";
-
-  // arXiv.org Atom XML OpenSearch format:
-  // TODO: add regex pattern that matches arXiv.org Atom feeds
-
-  return $sourceFormat;
-}
-function biblio_fetch_from_url($URL)
-{
-  $handle = fopen($URL, "r"); // fetch data from URL in read mode
-  $data = "";
-  if ($handle)
-  {
-    while (!feof($handle))
-    {
-      $data .= fread($handle, 4096); // read data in chunks
-    }
-    fclose($handle);
-  }
-  else
-  {
-    $errorMessage = t("Error occurred: Failed to open ") . $URL; // network error
-    drupal_set_message($errorMessage, 'error');
-  }
-  
-  return $data;
-}
-  // Send '$dataString' as POST request (using the 'application/x-www-form-urlencoded'
-  // content type) to the given '$host'/'$path':
-function biblio_send_post_request($host, $path, $referer, $dataString)
-{
-  $port = 80; // server port to be used with the connection
-  $timeout = 600; // connection time out in seconds
-  $result = "";
-
-  // build header:
-  $header = "POST " . $path . " HTTP/1.0\r\n" // "HTTP/1.1" would return data with "Transfer-Encoding: chunked"
-  . "Host: " . $host . "\r\n"
-  . "Referer: " . $referer . "\r\n"
-  . "Content-Type: application/x-www-form-urlencoded\r\n"
-  . "Content-Length: ". strlen($dataString) ."\r\n"
-  . "\r\n";
-
-  // open connection:
-  // see <http://www.php.net/fsockopen>
-  $fp = fsockopen($host, $port, $errorNo, $errorMsg, $timeout);
-
-  if (!$fp)
-  {
-    $result = "Error $errorNo : $errorMsg";
-  }
-  else
-  {
-    // POST data:
-    fputs($fp, $header . $dataString);
-
-    // read result:
-    while (!feof($fp))
-    $result .= fgets($fp, 1024);
-
-    // close connection:
-    fclose($fp);
-  }
-
-  return $result;
-}
-
 function biblio_import_batch_operations($session_id, $userid, $terms, &$context) {
   if (empty($context['sandbox'])) {
     // Initiate multistep processing.
@@ -381,6 +258,27 @@ function biblio_import_batch_finished($success, $results, $operations) {
   db_query("DELETE FROM {biblio_import_cache} WHERE session_id = '%s'",$results['session_id']);
 
 }
+
+function biblio_import_from_url($URL) {
+  $handle = fopen($URL, "r"); // fetch data from URL in read mode
+  $data = "";
+  if ($handle)
+  {
+    while (!feof($handle))
+    {
+      $data .= fread($handle, 4096); // read data in chunks
+    }
+    fclose($handle);
+  }
+  else
+  {
+    $errorMessage = t("Error occurred: Failed to open ") . $URL; // network error
+    drupal_set_message($errorMessage, 'error');
+  }
+
+  return $data;
+}
+
 function biblio_export_form() {
   $form['pot'] = array (
     '#type' => 'fieldset',
@@ -843,6 +741,25 @@ function biblio_save_node($node, $batch = FALSE, $session_id = NULL) {
 
   return (isset($node->nid)) ? $node->nid : 0;
 }
+
+function biblio_crossref_xml_import($xml) {
+  global $node ;
+  $xml_parser = drupal_xml_parser_create($xml);
+  // use case-folding so we are sure to find the tag in
+  xml_parser_set_option($xml_parser, XML_OPTION_CASE_FOLDING, false);
+  xml_parser_set_option($xml_parser, XML_OPTION_SKIP_WHITE, true);
+
+  module_load_include('inc', 'biblio', 'crossref_unixref_parser');
+  xml_set_element_handler($xml_parser, 'unixref_startElement', 'unixref_endElement');
+  xml_set_character_data_handler($xml_parser, 'unixref_characterData');
+
+  xml_parse($xml_parser, $xml);
+  return $node;
+  //$form_state['values'] = array_merge($form_state['values'], $node);
+
+}
+
+
 /**
  * Import EndNote XML data.
  *

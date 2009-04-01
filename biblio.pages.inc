@@ -247,17 +247,31 @@ function biblio_build_query($arg_list) {
 
           if (is_numeric($term[0])){
             $joins[] = "inner join {biblio_contributor} as bc". $bcc ." on n.vid = bc". $bcc .".vid";
-            $where[] = "bc". $bcc .".cid = '%d' ";
-            $terms[] = db_escape_string($term[0]);
-          }elseif (strlen($term[0]) == 1) {
-            $where[] = " UPPER(substring(bcd.lastname,1,1)) = '%s' ";
-            $joins['bc'] = '  INNER JOIN {biblio_contributor} as bc on b.vid = bc.vid ';
-            $joins['bcd'] = '  JOIN {biblio_contributor_data} as bcd on bc.cid = bcd.cid ';
-            $terms[] = db_escape_string(strtoupper($term[0]));
-            array_push($args, $type, $term[0]);
-            $operator = NULL;
+            //$where[] = "bc". $bcc .".cid = '%d' ";
+//
+            $cids = db_query('select cid from {biblio_contributor_data}
+                              where cid = %d
+                              or    aka = %d
+                              or cid = (select aka from {biblio_contributor_data} where cid = %d)
+                              or aka = (select aka from {biblio_contributor_data} where cid = %d)
+                              and aka > 0 ',$term[0],$term[0],$term[0],$term[0]);
+            while ($cid = db_fetch_object($cids) ){
+              $wr .= empty($wr)?'':' OR ';
+              $wr .= "bc". $bcc .".cid = $cid->cid ";
           }
-          else {
+            $where[] = $wr;
+
+//             $where[] = 'bc'. $bcc .'.cid in ( (select cid from {biblio_contributor_data}
+//                                            where cid = %d
+//                                            or    aka = %d
+//                                            or cid = (select aka from {biblio_contributor_data} where cid = %d)
+//                                            or aka = (select aka from {biblio_contributor_data} where cid = %d)
+//                                            and biblio_contributor_data.aka > 0)) ';
+//            $terms[] = db_escape_string($term[0]);
+//            $terms[] = db_escape_string($term[0]);
+//            $terms[] = db_escape_string($term[0]);
+//            $terms[] = db_escape_string($term[0]);
+          }else{
             $where[] = " bcd". $bcc .'.name '. $match_op .' "[[:<:]]%s[[:>:]]" ';
             $joins[] = " JOIN {biblio_contributor} as bc". $bcc ." on b.vid = bc". $bcc .".vid ";
             $joins[] = " JOIN {biblio_contributor_data} as bcd". $bcc ." on bc". $bcc .".cid = bcd".$bcc .".cid ";
@@ -508,12 +522,12 @@ function _biblio_sort_tabs($attrib, &$options) {
   $options = array('html' => true);
   $sort_links =  variable_get('biblio_sort_tabs', array('author'=>'author', 'title'=>'title', 'type'=>'type', 'year'=>'year', 'keyword'=>'keyword'));
   $content .= '<ul class="tabs secondary ">';
-  foreach($sort_links as $key => $link) {
+//  foreach($sort_links as $key => $link) {
 //    if ($key === $link) {
 //      $content .= t('Sort by').':';
 //      break;
 //    }
-  }
+  //   }
   if ($sort_links['year']) {
     $active = ($attrib['sort'] == 'year') ? 'class="active"' : '';
     $arrow = empty($active)?'':$order_arrow;

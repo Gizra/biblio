@@ -867,7 +867,7 @@ function biblio_filter_clear() {
   }
   drupal_goto($base, $options);
 }
-function biblio_nodeapi(& $node, $op, $teaser, $page) {
+function biblio_nodeapi(& $node, $op, $a3, $a4) {
   if ($node->type == 'biblio') {
     switch ($op) {
       case 'delete revision' :
@@ -956,6 +956,26 @@ function biblio_form($node, $form_state) {
   while ($option = db_fetch_object($result)) {
     $options["$option->tid"] = $option->name;
   }
+
+//  $form['doi_lookup'] = array(
+//    '#type' => 'fieldset',
+//    '#title' => t('DOI Lookup'),
+//    '#weight' => -20,
+//  );
+//  $form['doi_lookup']['doi_data'] = array(
+//      '#type' => 'textfield',
+//      '#title' => t('DOI'),
+//      '#required' => FALSE,
+//      '#default_value' => '',
+//      '#size' => 60,
+//      '#maxlength' => 255,
+//      '#weight' => -4
+//        );
+//  $form['doi_lookup']['doi_submit'] = array(
+//      '#type' => 'submit',
+//      '#value' => t('Populate using DOI')
+//  );
+
   $form['biblio_type'] = array(
     '#type' => 'select',
     '#title' => t('Publication Type'),
@@ -963,9 +983,7 @@ function biblio_form($node, $form_state) {
     '#options' => $options,
     '#description' => NULL,
     '#weight' => -15,
-    '#attributes' => array(
-      'onchange' => 'document.getElementById(\'node-form\').submit()'
-      ),
+    '#attributes' => array('onchange' => 'document.getElementById(\'node-form\').submit()'),
     '#multiple' => FALSE,
     '#required' => TRUE
       );
@@ -1256,7 +1274,24 @@ function biblio_contributors_js($tid, $auth_category, $other_fields = FALSE) {
  * Errors should be signaled with form_set_error().
  */
 function biblio_form_validate($form, & $form_state) {
-  if ($form_state['storage'] == $form_state['values']['biblio_type'] || (!empty($form['#node']->biblio_type) && $form['#node']->biblio_type == $form_state['values']['biblio_type'])) {
+
+  if($form_state['values']['op'] == t('Populate using DOI') && !empty($form_state['values']['doi_data'])) {
+    module_load_include('inc', 'biblio', 'biblio.import.export');
+    $url = 'http://www.crossref.org/openurl/?noredirect=true&format=unixref&id=doi%3A'. $form['#post']['doi_data'];
+    $crossref_xml_data = biblio_import_from_url($url);
+    $node_data = biblio_crossref_xml_import($crossref_xml_data);
+    $form_build_id = $_POST['form_build_id'];
+    $form = form_get_cache($form_build_id, $form_state);
+
+    foreach($node_data as $key => $value) {
+      $form[$key]['#value'] = $value;
+    }
+//    $form_state = array('submitted' => FALSE);
+    form_set_cache($form_build_id, $form, $form_state);
+    $form_state['rebuild'] = TRUE;
+    return;
+  }
+  elseif ($form_state['storage'] == $form_state['values']['biblio_type'] || (!empty($form['#node']->biblio_type) && $form['#node']->biblio_type == $form_state['values']['biblio_type'])) {
     $form_state['storage'] = "";
     $form_state['rebuild'] = FALSE;
   }
@@ -1337,6 +1372,9 @@ function biblio_update($node) {
   }
 
   biblio_save_contributors($node, TRUE);
+  if (variable_get('biblio_auto_orphaned_author_delete', 0)) {
+    db_query('DELETE FROM {biblio_contributor_data} WHERE cid NOT IN (SELECT DISTINCT(cid) FROM {biblio_contributor})');
+  }
   biblio_save_keywords($node);
 
 }
@@ -1350,6 +1388,9 @@ function biblio_delete($node) {
   db_query('DELETE FROM {biblio} WHERE nid = %d', $node->nid);
   //now remove the entries from the contributor linking table
   db_query('DELETE FROM {biblio_contributor} WHERE nid = %d', $node->nid);
+  if (variable_get('biblio_auto_orphaned_author_delete', 0)) {
+    db_query('DELETE FROM {biblio_contributor_data} WHERE cid NOT IN (SELECT DISTINCT(cid) FROM {biblio_contributor})');
+  }
   db_query('DELETE FROM {biblio_keyword} WHERE nid = %d', $node->nid);
 }
 /**

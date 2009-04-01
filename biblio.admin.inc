@@ -69,6 +69,20 @@ function biblio_admin_settings() {
     '#default_value' => variable_get('biblio_view_only_own', 0),
     '#description' => t('This option restricts the users capability to view biblio entries.  They will only be able to see the entries which they have created and own.')
   );
+  $form['authors'] = array(
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#title' => t('Author'),
+    '#description' => ''
+  );
+  $form['authors']['biblio_auto_orphaned_author_delete'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Automatically delete orphaned authors'),
+    '#return_value' => 1,
+    '#default_value' => variable_get('biblio_auto_orphaned_author_delete', 0),
+    '#description' => t('Orphaned authors are those which are no longer linked to any entries as the result of a biblio update or delete.')
+  );
   $form['block'] = array(
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
