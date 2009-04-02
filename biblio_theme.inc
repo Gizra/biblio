@@ -176,7 +176,7 @@ function theme_biblio_long($node, $base = 'biblio', $style = 'classic') {
   if ( strlen(trim($node->body)) && user_access('view full text') ) {
        $output .= '<h3>'.t('Full Text').':</h3>'.check_markup($node->body, $node->format, FALSE);
   }
-  
+
   if (biblio_access('export', $node)) {
     $output .= theme('biblio_export_links', $node->nid);
   }
@@ -223,7 +223,7 @@ function theme_biblio_tabular($node, $base = 'biblio', $teaser = false) {
 
   foreach ($fields as $key => $row) {
     // handling the contributor categories like any other field orders them correctly by weight
-    if ($row['type'] == 'contrib_widget' && !empty($node->biblio_contributors[$row['fid']])) {
+    if ($row['type'] == 'contrib_widget' && !empty($node->biblio_contributors[$row['fid']][0]['name']) ) {
       $author_options = $style_function();
       $author_options['numberOfAuthorsTriggeringEtAl'] = 100; //set really high so we see all authors
       $data = theme('biblio_format_authors', $node->biblio_contributors[$row['fid']], $author_options, $inline);
@@ -236,7 +236,11 @@ function theme_biblio_tabular($node, $base = 'biblio', $teaser = false) {
     else {
       switch ($row['name']) {
         case 'biblio_keywords' :
-          $data = _biblio_keyword_links($node->$row['name'], $base);
+         if (!is_array($node->biblio_keywords)) {
+           module_load_include('inc','biblio','biblio.keywords');
+           $node->$row['name'] = biblio_parse_keyword_string($node->$row['name']);
+         }
+         $data = _biblio_keyword_links($node->$row['name'], $base);
           break;
         case 'biblio_url' :
         case 'biblio_doi' :
@@ -276,7 +280,7 @@ function theme_biblio_tabular($node, $base = 'biblio', $teaser = false) {
         array('data' => t('Full Text'),  'valign' => 'top'),
         array('data' =>  check_markup($node->body, $node->format, FALSE))
     );
-    
+
   }
   $output = '<div id="biblio-node">';
   $output .= $node->biblio_coins;
@@ -292,7 +296,7 @@ function theme_biblio_authors($contributors, $style = 'classic', $cat = 1, $inli
   $author_links = variable_get('biblio_author_links', 1);
   $base  = variable_get('biblio_base', 'biblio');
   foreach ($contributors as $key => $author) {
-    if (!isset($author['lastname'])) {
+    if (!empty($author['name']) && !isset($author['lastname'])) {
       $author = biblio_parse_author($author, $cat); // this is needed for form preview to fill in all fields
     }
     if (strlen($author['name'])) {
@@ -365,6 +369,11 @@ function theme_biblio_format_authors($contributors, $options, $inline = false)
 
   foreach($contributors as $rank => $author)
   {
+    if (empty($author['name'])) continue;
+    if (!isset($author['lastname'])) {
+      $author = biblio_parse_author($author, $author['auth_type']); // this is needed for form preview to fill in all fields
+
+    }
     //    $singleAuthorArray = split($oldAuthorsInitialsDelim, $authorsArray[$i]); // for each author, extract author name & initials to separate list items
 
     //    if (!$options['familyNameFirst']) // if the family name comes *after* the given name (or initials) in the source string, put array elements in reverse order:

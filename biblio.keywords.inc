@@ -59,7 +59,7 @@ function biblio_get_keyword_by_id($kid) {
 function biblio_load_keywords($vid) {
 
   $result = db_query('SELECT bkd.* FROM {biblio_keyword} bk INNER JOIN {biblio_keyword_data} bkd ON bk.kid = bkd.kid  WHERE bk.vid = %d', $vid);
-  $keywords[$vid] = array();
+  $keywords[$vid] = '';
   while ($keyword = db_fetch_object($result)) {
     $keywords[$vid][$keyword->kid] = $keyword;
   }
@@ -98,7 +98,19 @@ function biblio_save_keywords($node, $update = FALSE) {
   }
   return count($inserted);
 }
+function biblio_parse_keyword_string($keywords) {
+  $kw = array();
+  if (!is_array($keywords)) {
 
+    $sep = variable_get('biblio_keyword_sep', ',');
+    foreach( explode($sep,$keywords) as $keyword) {
+      $obj  = new StdClass;
+      $obj->word = $keyword;
+      $kw[] = $obj;
+    };
+  }
+  return $kw;
+}
 /**
  * @param $word
  * @return

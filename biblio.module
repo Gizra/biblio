@@ -46,7 +46,7 @@ function _biblio_get_field_information($biblio_type, $only_visible = FALSE) {
                       INNER JOIN {biblio_field_type} AS bt ON bt.fid = b.fid
                       INNER JOIN {biblio_field_type_data} AS btd ON btd.ftdid = bt.ftdid
                       INNER JOIN {biblio_types} as btt ON btt.tid = bt.tid
-                      WHERE bt.tid = %d $visible 
+                      WHERE bt.tid = %d $visible
                       ORDER BY bt.weight ASC", $biblio_type);
   while ($row = db_fetch_array($result)) {
     $fields[$row['fid']] = $row;
@@ -1027,12 +1027,13 @@ function biblio_form($node, $form_state) {
         if ($key == 'biblio_keywords' ) {
           $sep = variable_get('biblio_keyword_sep', ',');
           $keywords = '';
-          if (!empty($node->$key)) {
+          if (!empty($node->$key) && is_array($node->$key)) {
             foreach ($node->$key as $keyword) {
               $keywords .= (empty($keywords)?$keyword->word:"$sep " . $keyword->word);
             }
+            $node->$key = $keywords;
           }
-          $node->$key = $keywords;
+
           $fld['hint'] = t('Separate keywords using the " @sep " character', array('@sep' => $sep));
         }
         $field_widget = array(
