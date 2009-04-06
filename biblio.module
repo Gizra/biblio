@@ -906,14 +906,17 @@ function biblio_nodeapi(& $node, $op, $a3, $a4) {
 
   }
 }
-function biblio_form_alter(& $form, $form_state, $form_id) {
+function biblio_form_alter(&$form, $form_state, $form_id) {
 
   if ($form_id == "biblio_node_form") { // this next bit is to remove all the form elements execpt the pub type select box the first time through
     if (!isset($form_state['values']['biblio_type']) &&
         empty($form_state['post']['biblio_type']) &&
         empty($form_state['submitted']) &&
         empty($form['vid']['#value'])) {
+      
       foreach (element_children($form) as $form_element) {
+        if ($form_element == 'doi_lookup') continue; 
+        if ($form_element == 'cut_paste') continue; 
         if ($form[$form_element]['#type'] == 'fieldset' ||
             $form_element == 'buttons' ||
             $form_element == 'taxonomy') {
@@ -956,26 +959,52 @@ function biblio_form($node, $form_state) {
   while ($option = db_fetch_object($result)) {
     $options["$option->tid"] = $option->name;
   }
-
-//  $form['doi_lookup'] = array(
-//    '#type' => 'fieldset',
-//    '#title' => t('DOI Lookup'),
-//    '#weight' => -20,
-//  );
-//  $form['doi_lookup']['doi_data'] = array(
-//      '#type' => 'textfield',
-//      '#title' => t('DOI'),
-//      '#required' => FALSE,
-//      '#default_value' => '',
-//      '#size' => 60,
-//      '#maxlength' => 255,
-//      '#weight' => -4
-//        );
-//  $form['doi_lookup']['doi_submit'] = array(
-//      '#type' => 'submit',
-//      '#value' => t('Populate using DOI')
-//  );
-
+  if(!isset($form_state['storage']['doi'])) {
+    $form['doi_lookup'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('DOI Lookup'),
+      '#weight' => -20,
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+    );
+    $form['doi_lookup']['doi_data'] = array(
+      '#type' => 'textfield',
+      '#title' => t('DOI'),
+      '#required' => FALSE,
+      '#default_value' => '',
+      '#description' => t('Enter a DOI name in the form: <b>10.1000/123456</b>'),
+      '#size' => 60,
+      '#maxlength' => 255,
+      '#weight' => -4
+    );
+    $form['doi_lookup']['doi_submit'] = array(
+      '#type' => 'submit',
+      '#value' => t('Populate using DOI')
+    );
+  }
+  if(!isset($form_state['storage']['paste'])) {
+    $form['cut_paste'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Paste'),
+      '#weight' => -20,
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+    );
+    $form['cut_paste']['paste_data'] = array(
+      '#type' => 'textarea',
+      '#title' => t('BibTex'),
+      '#required' => FALSE,
+      '#default_value' => '',
+      '#description' => t('Paste a BibTex entry here'),
+      '#size' => 60,
+      '#maxlength' => 2048,
+      '#weight' => -4
+    );
+    $form['cut_paste']['paste_submit'] = array(
+      '#type' => 'submit',
+      '#value' => t('Populate using BibTex')
+    );
+  }
   $form['biblio_type'] = array(
     '#type' => 'select',
     '#title' => t('Publication Type'),
@@ -992,7 +1021,7 @@ function biblio_form($node, $form_state) {
       '#type' => 'textfield',
       '#title' => t('Title'),
       '#required' => TRUE,
-      '#default_value' => $node->title,
+      '#default_value' => trim((($form_state['values']['title'])?$form_state['values']['title']:$node->title)),
       '#size' => 60,
       '#maxlength' => 255,
       '#weight' => -4
@@ -1018,18 +1047,39 @@ function biblio_form($node, $form_state) {
       $main_area = $fld['common'] || $fld['visible'];
       if ($fld['type'] == 'contrib_widget') {
         $auth_category = $fld['fid'];
-        if ($main_area)
-          $form += _biblio_contributor_widget($node, $fld, $auth_category, $tid);
-        else
-          $form['other_fields'] += _biblio_contributor_widget($node, $fld, $auth_category, $tid, TRUE);
+        if ($main_area) {
+          if(isset($form_state['values'])) {
+            $form += _biblio_contributor_widget($form_state['values'], $fld, $auth_category, $tid);
+          }
+          else {
+            $form += _biblio_contributor_widget($node, $fld, $auth_category, $tid);
+          }
+        }
+        else {
+          if(isset($form_state['values'])) {
+            $form['other_fields'] += _biblio_contributor_widget($form_state['values'], $fld, $auth_category, $tid, TRUE);
+          }
+          else {
+            $form['other_fields'] += _biblio_contributor_widget($node, $fld, $auth_category, $tid, TRUE);
+          }
+        }
       }
       else {
         if ($key == 'biblio_keywords' ) {
           $sep = variable_get('biblio_keyword_sep', ',');
+          if (isset($form_state['values']['biblio_keywords'])) {
+            $node->$key = $form_state['values']['biblio_keywords'];
+            unset($form_state['values']['biblio_keywords']);
+          }
           $keywords = '';
           if (!empty($node->$key) && is_array($node->$key)) {
             foreach ($node->$key as $keyword) {
-              $keywords .= (empty($keywords)?$keyword->word:"$sep " . $keyword->word);
+              if (is_object($keyword)) {
+                $keywords .= (empty($keywords)?$keyword->word:"$sep " . $keyword->word);
+              }
+              else {
+                $keywords .= (empty($keywords)?$keyword:"$sep " . $keyword);
+              }
             }
             $node->$key = $keywords;
           }
@@ -1037,7 +1087,7 @@ function biblio_form($node, $form_state) {
           $fld['hint'] = t('Separate keywords using the " @sep " character', array('@sep' => $sep));
         }
         $field_widget = array(
-            '#default_value' => $node->$key,
+            '#default_value' => ($form_state['values'][$key]?$form_state['values'][$key]:$node->$key),
             '#type' => $fld['type'],
             '#title' => $fld['title'],
             '#size' => $fld['size'],
@@ -1108,7 +1158,13 @@ function biblio_form($node, $form_state) {
 function _biblio_contributor_widget($node, $fld, $auth_category, $biblio_type, $other_fieldset = FALSE) {
   $fldname = $fld['name'];
   $type = str_replace('_', '-', $fldname);
-  $contributors = (array) $node->biblio_contributors[$auth_category];
+  if (is_object($node)) {
+    $contributors = (array) $node->biblio_contributors[$auth_category];
+  }
+  else {
+    $contributors = $node['biblio_contributors'][$auth_category];
+  }
+  
   $contributor_count = max(4, count($contributors));
 
   $ctypes = _biblio_get_auth_types($auth_category, $biblio_type);
@@ -1275,29 +1331,54 @@ function biblio_contributors_js($tid, $auth_category, $other_fields = FALSE) {
  * Errors should be signaled with form_set_error().
  */
 function biblio_form_validate($form, & $form_state) {
-
-  if($form_state['values']['op'] == t('Populate using DOI') && !empty($form_state['values']['doi_data'])) {
-    module_load_include('inc', 'biblio', 'biblio.import.export');
-    $url = 'http://www.crossref.org/openurl/?noredirect=true&format=unixref&id=doi%3A'. $form['#post']['doi_data'];
-    $crossref_xml_data = biblio_import_from_url($url);
-    $node_data = biblio_crossref_xml_import($crossref_xml_data);
-    $form_build_id = $_POST['form_build_id'];
-    $form = form_get_cache($form_build_id, $form_state);
-
-    foreach($node_data as $key => $value) {
-      $form[$key]['#value'] = $value;
+  $op = $form['#post']['op'];
+  switch ($op) {
+    case t('Populate using DOI'):
+      module_load_include('inc','biblio','biblio.import.export');
+      if ($op == t('Populate using DOI') &&  ($doi_start = strpos($form_state['values']['doi_data'], '10.')) !== FALSE) {
+        $doi = substr($form_state['values']['doi_data'], $doi_start);
+        $node_data = biblio_crossref_xml_import($doi);
+        if (isset($node_data['error'])) {
+          unset($form_state['values']['biblio_type']);
+          unset($form_state['post']['biblio_type']);
+          form_set_error('doi_data',$node_data['error']);
+          return;
+        }
+      }
+      else {
+        form_set_error('doi_data',t('This does not appear to be a valid DOI name, it should start with "10." '));
+        return;
+      }
+      break;
+    case t('Populate using BibTex'):
+      module_load_include('inc','biblio','biblio.import.export');
+      if (strlen($form_state['values']['paste_data'])) {
+        $node_data = biblio_bibtex_import($form_state['values']['paste_data'], array(), FALSE, NULL, FALSE, TRUE);
+      }
+      else {
+        form_set_error('bibtex_data',t('There does not appear to be any bibtex data to work with '));
+        return;
+      }
+      break;
+    default:
+      if ($form_state['storage'] == $form_state['values']['biblio_type'] || (!empty($form['#node']->biblio_type) && $form['#node']->biblio_type == $form_state['values']['biblio_type'])) {
+        $form_state['storage'] = "";
+        $form_state['rebuild'] = FALSE;
+      }
+      else {
+        $form_state['storage']['doi'] = TRUE;
+        $form_state['storage']['paste'] = TRUE;
+        $form_state['storage'] = $form_state['values']['biblio_type'];
+        $form_state['rebuild'] = TRUE;
+        return;
+      }
+  }
+  if(!empty($node_data)) {
+    foreach($node_data[0] as $key => $value) {
+      $form_state['values'][$key] = $value;
     }
-//    $form_state = array('submitted' => FALSE);
-    form_set_cache($form_build_id, $form, $form_state);
-    $form_state['rebuild'] = TRUE;
-    return;
-  }
-  elseif ($form_state['storage'] == $form_state['values']['biblio_type'] || (!empty($form['#node']->biblio_type) && $form['#node']->biblio_type == $form_state['values']['biblio_type'])) {
-    $form_state['storage'] = "";
-    $form_state['rebuild'] = FALSE;
-  }
-  else {
-    $form_state['storage'] = $form_state['values']['biblio_type'];
+    $form_state['storage']['doi'] = TRUE;
+    $form_state['storage']['paste'] = TRUE;
     $form_state['rebuild'] = TRUE;
     return;
   }

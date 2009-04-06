@@ -543,7 +543,7 @@ class PARSEENTRIES
   }
 
 
-  function bib2node($terms = array(), $batch = FALSE, $session_id = NULL, $start = 0, $limit = 0){
+  function bib2node($terms = array(), $batch = FALSE, $session_id = NULL, $save = TRUE, $start = 0, $limit = 0){
     //list($preamble, $strings, $entries, $undefinedStrings) = $this->returnArrays();
     $limit = ($limit) ? $limit : count($this->entries);
     if (($start + $limit) > count($this->entries)) $limit = count($this->entries) - $start;
@@ -659,7 +659,7 @@ class PARSEENTRIES
         if (!isset($node['taxonomy'])) $node['taxonomy'] = array();
         $node['taxonomy'] = array_merge($terms,$node['taxonomy']);
       }
-      $nids[] = biblio_save_node($node, $batch, $session_id);
+      $nids[] = biblio_save_node($node, $batch, $session_id, $save);
     }
     return (!empty($nids)) ? $nids : NULL;
   }

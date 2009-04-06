@@ -459,15 +459,19 @@ function biblio_export($format = "tagged", $nid = null, $popup = false, $version
  * @return
  *   an array of node ids
  */
-function biblio_bibtex_import($file, $terms, $batch, $session_id) {
+function biblio_bibtex_import($file, $terms = array(), $batch = FALSE, $session_id = NULL, $save = TRUE, $string = FALSE) {
   $nids = array();
   module_load_include('php', 'biblio', 'bibtexParse/PARSEENTRIES');
   $bibtex = new PARSEENTRIES();
-  //$bibtex->loadBibtexString($data);
-  $bibtex->openBib($file->filepath);
+  if ($string) {
+    $bibtex->loadBibtexString($file);
+  }
+  else {
+    $bibtex->openBib($file->filepath);
+  }
   $bibtex->extractEntries();
   if ($bibtex->count) {
-    $nids = $bibtex->bib2node($terms, $batch, $session_id);
+    $nids = $bibtex->bib2node($terms, $batch, $session_id, $save);
   }
   return $nids;
 }
@@ -715,7 +719,7 @@ function biblio_save_imported_nodes(& $node_array) {
 */
   return $node_ids;
 }
-function biblio_save_node($node, $batch = FALSE, $session_id = NULL) {
+function biblio_save_node($node, $batch = FALSE, $session_id = NULL, $save_node = TRUE) {
   $options = variable_get('node_options_biblio', array ('status'));
   if (module_exists('i18n') && variable_get('i18n_node_biblio', 0)) {
     $node['language'] = module_invoke('i18n', 'default_language');
@@ -732,18 +736,38 @@ function biblio_save_node($node, $batch = FALSE, $session_id = NULL) {
 
   $node = (object) array_merge($node, $node_template);
   if(!isset($node->biblio_type)) $node->biblio_type = 129; // default to misc if not set.
-  if ($batch && $session_id){
+  if ($batch && $session_id){ // we are batch processing some import data
     $node = serialize($node);
     db_query("INSERT INTO {biblio_import_cache} (session_id, data) VALUES ('%s', %b)", $session_id, $node);
-  }else{
-    node_save($node);
+    return;
   }
-
-  return (isset($node->nid)) ? $node->nid : 0;
+  elseif ($save_node) { // $save_node = TRUE, the normal save path
+    node_save($node);
+    return (isset($node->nid)) ? $node->nid : 0;
+  }
+  else { // $save_node = FALSE, primarily used to parse data and return it to the input form
+    return (array)$node;
+  }
 }
 
-function biblio_crossref_xml_import($xml) {
-  global $node ;
+function biblio_crossref_query($doi) {
+  $url = 'http://www.crossref.org/openurl/?noredirect=true&format=unixref&id=doi%3A'. $doi;
+  $crossref_xml_data = biblio_import_from_url($url);
+  
+  return biblio_crossref_xml_import($crossref_xml_data);
+}
+
+function biblio_crossref_xml_import($doi, $terms = array(), $batch = FALSE, $session_id = NULL, $save = FALSE) {
+  global $node, $save_node, $nids;
+  $save_node = $save;
+  $nids = array();
+  $url = 'http://www.crossref.org/openurl/?noredirect=true&format=unixref&id=doi%3A'. $doi;
+  if (!($fp = fopen($url, "r"))) {
+    drupal_set_message(t('Could not open crossref.org for XML input'),'error');
+    return;
+  }
+  $xml = fread($fp, 2048);
+  
   $xml_parser = drupal_xml_parser_create($xml);
   // use case-folding so we are sure to find the tag in
   xml_parser_set_option($xml_parser, XML_OPTION_CASE_FOLDING, false);
@@ -754,8 +778,17 @@ function biblio_crossref_xml_import($xml) {
   xml_set_character_data_handler($xml_parser, 'unixref_characterData');
 
   xml_parse($xml_parser, $xml);
-  return $node;
-  //$form_state['values'] = array_merge($form_state['values'], $node);
+  while ($xml = fread($fp, 2048)){
+    set_time_limit(30);
+    if(!xml_parse($xml_parser, $xml, feof($fp))){
+      drupal_set_message(sprintf("XML error: %s at line %d",
+      xml_error_string(xml_get_error_code($xml_parser)),
+      xml_get_current_line_number($xml_parser)),'error');
+    }  
+  }
+  xml_parser_free($xml_parser);
+  fclose($fp);
+  return (!empty($nids)) ? $nids : array();
 
 }
 
@@ -1211,4 +1244,36 @@ function biblio_strcsv($fields = array(), $delimiter = ',', $enclosure = '"') {
   $str = substr($str, 0, -1);
   $str .= "\n";
   return $str;
+}
+
+function biblio_pubmed_query () {
+  $query = ''; //your query term
+    $dnum = 100; // total number of documents here it's set to 100
+    $pids = ''; // PubMED record ID's from e-search initialize to NULL
+    $term = 360; // time interval of when documents were published - this one is one year=360days
+    //retreive PID's of all articles published withing past year that contain query term
+    $esearch = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term=$query&reldate=$term&datetype=edat&retmax=100&usehistory=y";
+    $handle = fopen($esearch, "r");
+    $rettype = "abstract"; //retreives abstract of the record, rather than full record
+    $retmode = "xml";
+    $utils = "http://www.ncbi.nlm.nih.gov/entrez/eutils";
+    if (!$handle) {die();}
+    //collect returned pubmed PID's
+    while (!feof ($handle)) $pids .= fgets($handle, 4096);
+    fclose($handle);
+    //Get query string from eSearch
+    preg_match("/(\w+)<\/QueryKey>/i",$pids,$match);
+    $queryKey = $match[1];
+    //get webenv
+    preg_match("/(\S+)<\/WebEnv>/i",$pids,$match);
+    $webEnv = $match[1];
+    $retstart = 0;
+    //fetch xml docs from PUBMED for returned PID's
+    $efetch = "$utils/efetch.fcgi?rettype=$rettype&retmode=$retmode&retstart=$retstart&retmax=$dnum&db=pubmed&query_key=$queryKey&WebEnv=$webEnv&email=abc@xyz.com";
+    $pids = '';
+    $handle = fopen($efetch, "r");
+    if(!$handle) { die(); }
+    while (!feof ($handle)) $pids .= fgets($handle, 4096);
+    fclose($handle);
+    
 }

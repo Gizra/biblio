@@ -1719,3 +1719,10 @@ function biblio_update_6017() {
 
   return $result;
 }
+function biblio_update_6018() {
+  $result = array();
+  $result = update_sql("UPDATE {biblio_contributor_data} SET aka = cid WHERE aka = 0 OR aka IS NULL");
+  $result = update_sql("UPDATE {biblio_field_type_data} SET title = 'Keywords' WHERE title = 'Key Words' ");
+  
+  return $result;
+}

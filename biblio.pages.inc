@@ -249,12 +249,9 @@ function biblio_build_query($arg_list) {
             $joins[] = "inner join {biblio_contributor} as bc". $bcc ." on n.vid = bc". $bcc .".vid";
             //$where[] = "bc". $bcc .".cid = '%d' ";
 //
-            $cids = db_query('select cid from {biblio_contributor_data}
-                              where cid = %d
-                              or    aka = %d
-                              or cid = (select aka from {biblio_contributor_data} where cid = %d)
-                              or aka = (select aka from {biblio_contributor_data} where cid = %d)
-                              and aka > 0 ',$term[0],$term[0],$term[0],$term[0]);
+            $cids = db_query('SELECT cid FROM {biblio_contributor_data}
+                              WHERE cid = %d OR aka = (SELECT aka FROM {biblio_contributor_data} WHERE cid = %d)'
+                              ,$term[0],$term[0]);
             while ($cid = db_fetch_object($cids) ){
               $wr .= empty($wr)?'':' OR ';
               $wr .= "bc". $bcc .".cid = $cid->cid ";
@@ -1121,7 +1118,7 @@ function biblio_author_page($filter = NULL) {
                        array('data' => isset($authors[$i+1])?_biblio_format_author($authors[$i+1], $path):'' ),
                        array('data' => isset($authors[$i+2])?_biblio_format_author($authors[$i+2], $path):'' ));
     }
-  $header = array(array('data' => t('There are a total of @count authors !header_ext in the database',array('@count' => count($authors), '!header_ext' => $header_ext)), 'align' =>'center', 'colspan' => 3));
+  //$header = array(array('data' => t('There are a total of @count authors !header_ext in the database',array('@count' => count($authors), '!header_ext' => $header_ext)), 'align' =>'center', 'colspan' => 3));
   $output .= theme('table', $header, $rows);
   return $output;
 }

@@ -371,8 +371,8 @@ function theme_biblio_format_authors($contributors, $options, $inline = false)
   {
     if (empty($author['name'])) continue;
     if (!isset($author['lastname'])) {
+      module_load_include('inc','biblio',"biblio.contributors");
       $author = biblio_parse_author($author, $author['auth_type']); // this is needed for form preview to fill in all fields
-
     }
     //    $singleAuthorArray = split($oldAuthorsInitialsDelim, $authorsArray[$i]); // for each author, extract author name & initials to separate list items
 

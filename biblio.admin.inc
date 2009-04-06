@@ -1172,25 +1172,31 @@ function biblio_admin_author_edit_form($form_state, $author_id) {
     '#required' => FALSE,
     '#maxlength' => 256
   );
- $authors = db_query("SELECT * FROM {biblio_contributor_data} cd WHERE name LIKE '%%%s%%' AND cid != %d",$author->lastname, $author_id);
-  unset($options);
+  $authors = db_query("SELECT * FROM {biblio_contributor_data} cd WHERE cid != %d ORDER BY lastname", $author_id);
   $base = variable_get('biblio_base', 'biblio');
   while($other_author=db_fetch_array($authors)) {
-    if ((empty($other_author['aka']) && $author->aka != $other_author['cid'])) {
+    if ((stripos($other_author['name'],$author->lastname) !== FALSE) && $author->aka != $other_author['cid']) {
       $merge_options[$other_author['cid']] = l($other_author['name'],$base.'/authors/'.$other_author['cid'].'/edit/');
+      if ($other_author['affiliation']) $merge_options[$other_author['cid']] .= ' (' . $other_author['affiliation'] . ')';
     }
-    $link_options[$other_author['cid']] = l($other_author['name'],$base.'/authors/'.$other_author['cid'].'/edit/');
-    $link_default_values[] = (!empty($other_author['aka']) || $author->aka == $other_author['cid']) ?$other_author['cid']:0;
-    if ($other_author['affiliation']) $options[$other_author['cid']] .= ' (' . $other_author['affiliation'] . ')';
+    if ($author->aka == $other_author['aka']) {
+      $linked[$other_author['cid']] = l($other_author['lastname']. ($other_author['firstname']?', '.$other_author['firstname']:($other_author['initials']?', '.$other_author['initials']:'')),$base.'/authors/'.$other_author['cid'].'/edit/');
+      if ($other_author['affiliation']) $linked[$other_author['cid']] .= ' (' . $other_author['affiliation'] . ')';
+      $linked_default_values[] = $other_author['cid'];
+    }
+    else {
+      $link_options[$other_author['cid']] = $other_author['lastname']. ($other_author['firstname']?', '.$other_author['firstname']:($other_author['initials']?', '.$other_author['initials']:''));
+      if ($other_author['affiliation']) $link_options[$other_author['cid']] .= ' (' . $other_author['affiliation'] . ')';
+    }
   }
-  if ($merge_options) {
+
     $form['merge'] = array(
       '#type' => 'fieldset',
       '#title' => t('Author Merge'),
       '#description' => t('Select other author names which will be merged.  Merging removes all the selected authors, then replaces any references to these authors with the author being edited above.  You should only do this if you are sure the other authors represent the same author as the one being edited. <B>THIS CANNOT BE UNDONE!</B>'),
       '#weight' => 5,
       '#collapsible' => TRUE,
-      '#collapsed' => TRUE,
+      '#collapsed' => !count($merge_options),
     );
     
     $form['merge']['merge_authors'] = array(
@@ -1199,39 +1205,39 @@ function biblio_admin_author_edit_form($form_state, $author_id) {
 	    '#options' => $merge_options,
       '#weight' => 12,
       '#required' => FALSE,
-      '#multiple' => TRUE,
-      '#size' => min(count($merge_options), 6),
     );
     $form['merge']['merge'] = array(
       '#type' => 'submit',
       '#value' => t('Merge')
     );
-  }
-  if ($link_options) {
+
     $form['link'] = array(
       '#type' => 'fieldset',
       '#title' => t('Author Link'),
       '#description' => t('Select other author names which will be linked.  Linking relates all the selected authors to the author being edited above, and and keeps each instance in the database.  You should only do this if you are sure the other authors represent the same author as the one being edited. '),
       '#weight' => 5,
       '#collapsible' => TRUE,
-      '#collapsed' => TRUE,
+      '#collapsed' => !count($linked),
     );
-    
+    if (count($linked)) {
+      $form['link']['linked_authors'] = array(
+        '#type' => 'checkboxes',
+        '#title' => t('This author has already been linked to these authors'),
+        '#default_value' => $linked_default_values,
+        '#options' => $linked,
+        '#weight' => 12,
+        '#required' => FALSE,
+      );
+    }
     $form['link']['link_authors'] = array(
-      '#type' => 'checkboxes',
-      '#title' => t('Similar authors'),
-      '#default_value' => $link_default_values,
+      '#type' => 'select',
+      '#title' => t('Other authors which could be linked to this author'),
+      //'#default_value' => $link_default_values,
       '#options' => $link_options,
       '#weight' => 12,
       '#required' => FALSE,
       '#multiple' => TRUE,
-      '#size' => min(count($link_options), 6),
     );
-    $form['link']['link'] = array(
-      '#type' => 'submit',
-      '#value' => t('Link')
-    );
-  }
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save')
@@ -1271,15 +1277,17 @@ function biblio_admin_author_edit_form_submit($form, &$form_state) {
       db_query("DELETE FROM {biblio_contributor_data} WHERE cid IN ($authors)");
     }
   }
-  if (isset($form_state['values']['link_authors']) && $op == t('Link')) {
+  if (isset($form_state['values']['linked_authors']) ) {
+    foreach ($form_state['values']['linked_authors'] as $key => $value) {
+      if ($value == 0) {
+        db_query("UPDATE {biblio_contributor_data} SET aka=$key WHERE cid=$key");
+      }
+    }
+  }
+  if (isset($form_state['values']['link_authors']) ) {
     //db_query("UPDATE {biblio_contributor_data} SET aka=$form_state['values']['cid'] WHERE cid IN ($authors)");
     foreach ($form_state['values']['link_authors'] as $key => $value) {
-      if ($value == 0) {
-        db_query("UPDATE {biblio_contributor_data} SET aka=$value WHERE cid=$key");
-      }
-      else {
         db_query("UPDATE {biblio_contributor_data} SET aka={$form_state['values']['cid']} WHERE cid=$key");
-      }
     }
   }
 }
