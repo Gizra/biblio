@@ -752,7 +752,7 @@ function biblio_schema() {
         )
 
         ),
-      'primary key' => array('cid'),
+      'primary key' => array('cid','aka'),
       'indexes' => array(
           'lastname' => array('lastname'),
           'firstname' => array('firstname'),
@@ -1721,8 +1721,9 @@ function biblio_update_6017() {
 }
 function biblio_update_6018() {
   $result = array();
-  $result = update_sql("UPDATE {biblio_contributor_data} SET aka = cid WHERE aka = 0 OR aka IS NULL");
-  $result = update_sql("UPDATE {biblio_field_type_data} SET title = 'Keywords' WHERE title = 'Key Words' ");
+  $result[] = update_sql("UPDATE {biblio_contributor_data} SET aka = cid WHERE aka = 0 OR aka IS NULL");
+  $result[] = update_sql("ALTER TABLE {biblio_contributor_data} DROP PRIMARY KEY, ADD PRIMARY KEY (cid, aka)");
+  $result[] = update_sql("UPDATE {biblio_field_type_data} SET title = 'Keywords' WHERE title = 'Key Words' ");
   
   return $result;
 }
