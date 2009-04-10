@@ -959,7 +959,7 @@ function biblio_form($node, $form_state) {
   while ($option = db_fetch_object($result)) {
     $options["$option->tid"] = $option->name;
   }
-  if(!isset($form_state['storage']['doi'])) {
+  if(phpversion() > 5 && !isset($form_state['storage']['doi'])) {
     $form['doi_lookup'] = array(
       '#type' => 'fieldset',
       '#title' => t('DOI Lookup'),
