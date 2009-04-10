@@ -505,7 +505,11 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
   }
   if ($profile === true)  return $content;
   if ($inline === true)   print $content . "</div>";
-  if ($inline === false)  print theme('page', $content);
+  if ($inline === false)  {
+    $base_title = variable_get('biblio_base_title', 'Biblio');
+    drupal_set_title($base_title);
+    print theme('page', $content);
+  }
 
 }
 
