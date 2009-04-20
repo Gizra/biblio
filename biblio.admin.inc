@@ -1189,7 +1189,7 @@ function biblio_admin_author_edit_form($form_state, $author_id) {
       if ($other_author['affiliation']) $link_options[$other_author['cid']] .= ' (' . $other_author['affiliation'] . ')';
     }
   }
-
+  if (count($merge_options)) {
     $form['merge'] = array(
       '#type' => 'fieldset',
       '#title' => t('Author Merge'),
@@ -1210,7 +1210,8 @@ function biblio_admin_author_edit_form($form_state, $author_id) {
       '#type' => 'submit',
       '#value' => t('Merge')
     );
-
+  }
+    
     $form['link'] = array(
       '#type' => 'fieldset',
       '#title' => t('Author Link'),

@@ -1042,22 +1042,6 @@ function biblio_citekey_view() {
  * @param $inline
  * @return unknown_type
  */
-function _biblio_author_link($author, $aid, $base='biblio', $inline = FALSE) {
-  $options = array();
-  $inline = $inline ? "/inline" : "";
-
-  if (isset($_GET['sort'])) {
-    $options['query']  .= "sort=" . $_GET['sort'];
-  }
-  if (isset($_GET['order'])) {
-    $options['query']   .= $options['query'] ? "&" : "" ;
-    $options['query']   .= "order=" . $_GET['order'];
-  }
-
-  $html = l(trim($author), "$base/author/$aid".$inline,$options );
-
-  return $html;
-}
 
 /**
  * @param $keywords
@@ -1074,12 +1058,13 @@ function _biblio_keyword_links($keywords,$base='biblio') {
     $options['query']  .= "order=" . $_GET['order'];
   }
   $html = "";
-  $sep = variable_get('biblio_keyword_sep', ',');
-  $keyword_array = explode($sep, $keywords);
+  if (!is_array($keywords)) {
+    $keywords = biblio_explode_keywords($keywords);
+  }
 
-  foreach($keywords as $keyword ) {
+  foreach($keywords as $kid => $keyword ) {
     $html .= (empty($html))? "" : "$sep ";
-    $html .= l(trim($keyword->word), "$base/keyword/$keyword->kid" , $options);
+    $html .= l(trim($keyword), "$base/keyword/$kid" , $options);
   }
   return $html;
 }
@@ -1099,7 +1084,6 @@ function biblio_author_page($filter = NULL) {
       $header_ext = NULL;
     }
 
-//    $db_result = db_query('SELECT bd.*, COUNT(*) AS cnt FROM {biblio_contributor} b, {biblio_contributor_data} bd WHERE bd.cid=b.cid '. $query_ext.' GROUP BY b.cid HAVING cnt > 0 ORDER BY  lastname ASC, SUBSTRING(firstname,1,1) ASC, initials ASC',$filter);
      $db_result = db_query('SELECT bd.cid, bd.drupal_uid, bd.name, bd.lastname,
                               bd.firstname, bd.prefix, bd.suffix, bd.initials,
                               bd.affiliation, bd.md5, COUNT(*) AS cnt
@@ -1126,14 +1110,15 @@ function biblio_author_page($filter = NULL) {
   $output .= theme('table', $header, $rows);
   return $output;
 }
-
+/*
+ * Helper function to format the authors and add edit links if required
+ */
 function _biblio_format_author($author, $path) {
-  $format = $author['prefix'] . ' ' . $author['lastname'] ;
-  $firstname = !empty ($author['firstname']) ?  drupal_substr($author['firstname'], 0, 1) : '';
-  $initials = !empty ($author['initials']) ? str_replace(' ', '', $author['initials']) : '';
-  $base = variable_get('biblio_base', 'biblio');
-  $format .= (!empty($firstname) || !empty($initials)) ? ', '.$firstname.' '.$initials : '';
-  $format = _biblio_author_link($format, $author['cid'], $base, $inline);
+  $style_name = biblio_get_style();
+  $style_function = "biblio_style_$style_name"."_author_options";
+  module_load_include('inc','biblio',"biblio_style_$style_name");
+  $author_options = $style_function();
+  $format = theme('biblio_format_authors', array($author), $author_options, $inline);
   $format .= ' ('. $author['cnt'] . ') '. ((user_access('administer biblio'))?_biblio_author_edit_links($author, $path):'');
   return $format;
 }

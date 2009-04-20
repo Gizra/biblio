@@ -148,7 +148,14 @@ function biblio_theme() {
         'options' => array(),
         'inline' => FALSE,),
     ),
-
+    'biblio_author_link' => array(
+      'file' => 'biblio_theme.inc',
+      'arguments' => array(
+        'author',
+        'authorID',
+        'base' => 'biblio',
+        'inline' => FALSE),
+    ),
     'biblio_filters' => array(
         'file' => 'biblio_theme.inc',
         'arguments' => array('form'),
@@ -386,7 +393,7 @@ function biblio_link($type, $node = NULL, $teaser = FALSE) {
  * Implementation of hook_user().
  */
 function biblio_user($type, & $edit, & $user, $category = NULL) {
-  if ($type == 'form' && $category == 'account' ) { //&& variable_get('biblio_show_user_profile_form', '1')) {
+  if ($type == 'form' && $category == 'account' && variable_get('biblio_show_user_profile_form', '1')) {
     $form = array();
     include_once drupal_get_path('module', 'biblio') .'/biblio.admin.inc';
     _biblio_get_user_profile_form($form, $user);
@@ -943,9 +950,15 @@ function biblio_form_alter(&$form, $form_state, $form_id) {
  * that will be later placed inside the form.
  */
 function biblio_form($node, $form_state) {
-  if (isset($form_state['post']['biblio_type'])) $tid = $form_state['post']['biblio_type'];
-  else if (isset($form_state['values']['biblio_type'])) $tid = $form_state['values']['biblio_type'];
-  else $tid = $node->biblio_type;
+  if (isset($form_state['post']['biblio_type'])) {
+    $tid = $form_state['post']['biblio_type'];
+  }
+  elseif (isset($form_state['values']['biblio_type'])) {
+    $tid = $form_state['values']['biblio_type'];
+  }
+  else {
+    $tid = $node->biblio_type;
+  }
   $show_fields = !empty($tid);
 
   $form['#validate'][] = 'biblio_form_validate';
@@ -959,6 +972,7 @@ function biblio_form($node, $form_state) {
   while ($option = db_fetch_object($result)) {
     $options["$option->tid"] = $option->name;
   }
+  if (!isset($node->nid)) {// only show the doi lookup and paste boxes if this is a new entry
   if(phpversion() > 5 && !isset($form_state['storage']['doi'])) {
     $form['doi_lookup'] = array(
       '#type' => 'fieldset',
@@ -1004,6 +1018,7 @@ function biblio_form($node, $form_state) {
       '#type' => 'submit',
       '#value' => t('Populate using BibTex')
     );
+  }
   }
   $form['biblio_type'] = array(
     '#type' => 'select',
@@ -1067,22 +1082,14 @@ function biblio_form($node, $form_state) {
       else {
         if ($key == 'biblio_keywords' ) {
           $sep = variable_get('biblio_keyword_sep', ',');
-          if (isset($form_state['values']['biblio_keywords'])) {
-            $node->$key = $form_state['values']['biblio_keywords'];
-            unset($form_state['values']['biblio_keywords']);
+          // is the kewords are in array form, then implode them into a string.
+          if (isset($form_state['values']['biblio_keywords']) && 
+             is_array($form_state['values']['biblio_keywords'])) {
+             $form_state['values']['biblio_keywords'] = biblio_implode_keywords($form_state['values']['biblio_keywords']);
           }
-          $keywords = '';
           if (!empty($node->$key) && is_array($node->$key)) {
-            foreach ($node->$key as $keyword) {
-              if (is_object($keyword)) {
-                $keywords .= (empty($keywords)?$keyword->word:"$sep " . $keyword->word);
+            $node->$key = biblio_implode_keywords($node->$key);
               }
-              else {
-                $keywords .= (empty($keywords)?$keyword:"$sep " . $keyword);
-              }
-            }
-            $node->$key = $keywords;
-          }
 
           $fld['hint'] = t('Separate keywords using the " @sep " character', array('@sep' => $sep));
         }
@@ -1384,9 +1391,17 @@ function biblio_form_validate($form, & $form_state) {
   }
   $today = getdate();
   if (!is_numeric(_biblio_numeric_year($form_state['values']['biblio_year'])))  {
-    form_set_error('biblio_year', t('Year of Publication must be a number between 1 and @thisyear or the words "In Press" or "Submitted" ', array(
-      '@thisyear' => $today['year'] + 1
-    )));
+    form_set_error('biblio_year', t('Year of Publication must be a number between 1 and @thisyear or the words "In Press" or "Submitted" ', array('@thisyear' => $today['year'] + 1 )));
+  }
+  if (isset($form_state['values']['biblio_keywords'])) {
+    if (!is_array($form_state['values']['biblio_keywords'])) {
+      $form_state['values']['biblio_keywords'] = biblio_explode_keywords($form_state['values']['biblio_keywords']);
+    }
+    foreach ($form_state['values']['biblio_keywords'] as $keyword) {
+      if (strlen($keyword) > 255) {
+         form_set_error('biblio_keywords', t('No single keyword can be greater than 255 characters in length, the word: @kw exceeds this length', array('@kw' => $keyword )));
+      }
+    }
   }
 }
 function _biblio_numeric_year($year) {

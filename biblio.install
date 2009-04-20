@@ -1727,3 +1727,9 @@ function biblio_update_6018() {
   
   return $result;
 }
+function biblio_update_6019() {
+  $result = array();
+  $result[] = update_sql("UPDATE {biblio_fields} SET maxsize = 1000 WHERE name = 'biblio_keywords' ");
+  
+  return $result;
+}

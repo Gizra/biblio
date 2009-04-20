@@ -30,8 +30,13 @@ function biblio_get_keyword_by_name($name) {
 
   if (!$kid = array_search($name, $keywords)) {
     $term = db_fetch_object(db_query("SELECT * FROM {biblio_keyword_data} k WHERE LOWER(k.word) = LOWER('%s')", trim($name)));
+    if ($term) {
     $keywords[$term->kid] = $term;
-    return $term;
+      return $keywords[$term->kid];
+    }
+    else {
+      return FALSE;
+    }
   }
 
   return $keywords[$kid];
@@ -61,7 +66,7 @@ function biblio_load_keywords($vid) {
   $result = db_query('SELECT bkd.* FROM {biblio_keyword} bk INNER JOIN {biblio_keyword_data} bkd ON bk.kid = bkd.kid  WHERE bk.vid = %d', $vid);
   $keywords[$vid] = '';
   while ($keyword = db_fetch_object($result)) {
-    $keywords[$vid][$keyword->kid] = $keyword;
+    $keywords[$vid][$keyword->kid] = $keyword->word;
   }
   return $keywords[$vid];
 
@@ -73,17 +78,18 @@ function biblio_load_keywords($vid) {
  */
 function biblio_save_keywords($node, $update = FALSE) {
   if (!is_array($node->biblio_keywords)) {
-    $sep = variable_get('biblio_keyword_sep', ',');
-    $node->biblio_keywords = explode($sep,$node->biblio_keywords );
+    $node->biblio_keywords = biblio_explode_keywords($node->biblio_keywords);
   }
   if (!$update) db_query('DELETE FROM {biblio_keyword} WHERE nid = %d AND vid = %d', array($node->nid, $node->vid));
 
   foreach ($node->biblio_keywords as $keyword) {
     $word = (is_object($keyword)) ? $keyword->word : $keyword;
     if (!strlen(trim($word))) continue; //skip if we have a blank
-    $kid = NULL;
+    $kid = FALSE;
     // See if the term exists
-    if ($term = biblio_get_keyword_by_name($word)) $kid = $term->kid;
+    if ( ($term = biblio_get_keyword_by_name($word)) ) {
+      $kid = $term->kid;
+    }
     if (!$kid) {
       $term = array('word' => trim($word));
       $status = biblio_save_keyword($term);
@@ -97,19 +103,6 @@ function biblio_save_keywords($node, $update = FALSE) {
     }
   }
   return count($inserted);
-}
-function biblio_parse_keyword_string($keywords) {
-  $kw = array();
-  if (!is_array($keywords)) {
-
-    $sep = variable_get('biblio_keyword_sep', ',');
-    foreach( explode($sep,$keywords) as $keyword) {
-      $obj  = new StdClass;
-      $obj->word = $keyword;
-      $kw[] = $obj;
-    };
-  }
-  return $kw;
 }
 /**
  * @param $word
@@ -146,4 +139,36 @@ function biblio_delete_revision_keywords($node) {
 function biblio_delete_keyword($keyword_id) {
   db_query('DELETE FROM {biblio_keyword} WHERE kid = %d', $keyword_id);
   db_query('DELETE FROM {biblio_keyword_data} WHERE kid = %d', $keyword_id);
+}
+function biblio_explode_keywords($string) {
+  $sep = variable_get('biblio_keyword_sep', ',');
+  $regexp = '%(?:^|'.$sep.'\ *)("(?>[^"]*)(?>""[^"]* )*"|(?: [^"'.$sep.']*))%x';
+  preg_match_all($regexp, $string, $matches);
+  $keyword_array = array_unique($matches[1]);
+
+  $keywords = array();
+  foreach ($keyword_array as $keyword) {
+    // If a user has escaped a term (to demonstrate that it is a group,
+    // or includes a comma or quote character), we remove the escape
+    // formatting so to save the term into the database as the user intends.
+    $keyword = trim(str_replace('""', '"', preg_replace('/^"(.*)"$/', '\1', $keyword)));
+    if ($keyword != "") {
+      $keywords[] = $keyword;
+    }
+  }
+  return $keywords;
+}
+function biblio_implode_keywords($keywords) {
+  $sep = variable_get('biblio_keyword_sep', ',');
+  $string = '';
+  foreach ($keywords as $kid => $keyword) {
+    $string .= strlen($string)?"$sep ":'';
+    if (strpos($keyword, $sep) !== FALSE) {
+      $string .= '"'.$keyword.'"';
+    }
+    else {
+      $string .= $keyword;
+    }
+  }
+  return $string;
 }

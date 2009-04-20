@@ -104,7 +104,7 @@ function theme_biblio_long($node, $base = 'biblio', $style = 'classic') {
     return $output;
   }
   foreach ((array)$node->biblio_contributors[1] as $auth) {
-    $authors[] = _biblio_author_link($auth['name'], $auth['cid']);
+    $authors[] = theme('biblio_author_link', $auth['name'], $auth['cid']);
   }
   $authors = implode('; ', (array)$authors);
   $openurl_base = variable_get('biblio_baseopenurl', '');
@@ -236,10 +236,6 @@ function theme_biblio_tabular($node, $base = 'biblio', $teaser = false) {
     else {
       switch ($row['name']) {
         case 'biblio_keywords' :
-         if (!is_array($node->biblio_keywords)) {
-           module_load_include('inc','biblio','biblio.keywords');
-           $node->$row['name'] = biblio_parse_keyword_string($node->$row['name']);
-         }
          $data = _biblio_keyword_links($node->$row['name'], $base);
           break;
         case 'biblio_url' :
@@ -301,7 +297,7 @@ function theme_biblio_authors($contributors, $style = 'classic', $cat = 1, $inli
     }
     if (strlen($author['name'])) {
       $format = $author_style_function($author);
-      if ($author_links) $format = _biblio_author_link($format, $author['cid'], $base, $inline);
+      if ($author_links) $format = theme('biblio_author_link', $format, $author['cid'], $base, $inline);
       // add the auth_type as css id to allow later formatting
       $author_array[] = '<span id="'.$author['auth_type'].'">'.$format.'</span>';
     }
@@ -319,45 +315,45 @@ function theme_biblio_format_authors($contributors, $options, $inline = false)
 
   $base  = variable_get('biblio_base', 'biblio');
   $author_links = variable_get('biblio_author_links', 1);
-  // Matches ISO-8859-1 letters & digits:
-  $alnum = "[:alnum:]��������������������������������������������������������";
+  // Matches Unicode letters & digits:
+  $alnum = "\p{Ll}\p{Lu}\p{Lt}\p{Lo}\p{Nd}"; // Unicode-aware equivalent of "[:alnum:]"
 
-  // Matches ISO-8859-1 letters:
-  $alpha = "[:alpha:]��������������������������������������������������������";
+  // Matches Unicode letters:
+  $alpha = "\p{Ll}\p{Lu}\p{Lt}\p{Lo}"; // Unicode-aware equivalent of "[:alpha:]"
 
-  // Matches ISO-8859-1 control characters:
-  $cntrl = "[:cntrl:]";
+  // Matches Unicode control codes & characters not in other categories:
+  $cntrl = "\p{C}"; // Unicode-aware equivalent of "[:cntrl:]"
 
-  // Matches ISO-8859-1 dashes & hyphens:
-  $dash = "-�";
+  // Matches Unicode dashes & hyphens:
+  $dash = "\p{Pd}";
 
-  // Matches ISO-8859-1 digits:
-  $digit = "[:digit:]";
+  // Matches Unicode digits:
+  $digit = "\p{Nd}"; // Unicode-aware equivalent of "[:digit:]"
 
-  // Matches ISO-8859-1 printing characters (excluding space):
-  $graph = "[:graph:]��������������������������������������������������������";
+  // Matches Unicode printing characters (excluding space):
+  $graph = "^\p{C}\t\n\f\r\p{Z}"; // Unicode-aware equivalent of "[:graph:]"
 
-  // Matches ISO-8859-1 lower case letters:
-  $lower = "[:lower:]�����������������������������";
+  // Matches Unicode lower case letters:
+  $lower = "\p{Ll}"; // Unicode-aware equivalent of "[:lower:]"
 
-  // Matches ISO-8859-1 printing characters (including space):
-  $print = "[:print:]��������������������������������������������������������";
+  // Matches Unicode printing characters (including space):
+  $print = "\P{C}"; // same as "^\p{C}", Unicode-aware equivalent of "[:print:]"
 
-  // Matches ISO-8859-1 punctuation:
-  $punct = "[:punct:]";
+  // Matches Unicode punctuation (printing characters excluding letters & digits):
+  $punct = "\p{P}"; // Unicode-aware equivalent of "[:punct:]"
 
-  // Matches ISO-8859-1 whitespace (separating characters with no visual representation):
-  $space = "[:space:]";
+  // Matches Unicode whitespace (separating characters with no visual representation):
+  $space = "\t\n\f\r\p{Z}"; // Unicode-aware equivalent of "[:space:]"
 
-  // Matches ISO-8859-1 upper case letters:
-  $upper = "[:upper:]���������������������������";
+  // Matches Unicode upper case letters:
+  $upper = "\p{Lu}\p{Lt}"; // Unicode-aware equivalent of "[:upper:]"
 
-  // Matches ISO-8859-1 "word" characters:
-  $word = "_[:alnum:]��������������������������������������������������������";
+  // Matches Unicode "word" characters:
+  $word = "_\p{Ll}\p{Lu}\p{Lt}\p{Lo}\p{Nd}"; // Unicode-aware equivalent of "[:word:]" (or "[:alnum:]" plus "_")
 
   // Defines the PCRE pattern modifier(s) to be used in conjunction with the above variables:
   // More info: <http://www.php.net/manual/en/reference.pcre.pattern.modifiers.php>
-  $patternModifiers = "";
+  $patternModifiers = "u"; // the "u" (PCRE_UTF8) pattern modifier causes PHP/PCRE to treat pattern strings as UTF-8
 
   $authorCount = count($contributors); // check how many authors we have to deal with
   $output = ""; // this variable will hold the final author string
@@ -374,25 +370,24 @@ function theme_biblio_format_authors($contributors, $options, $inline = false)
       module_load_include('inc','biblio',"biblio.contributors");
       $author = biblio_parse_author($author, $author['auth_type']); // this is needed for form preview to fill in all fields
     }
-    //    $singleAuthorArray = split($oldAuthorsInitialsDelim, $authorsArray[$i]); // for each author, extract author name & initials to separate list items
 
-    //    if (!$options['familyNameFirst']) // if the family name comes *after* the given name (or initials) in the source string, put array elements in reverse order:
-    //    $singleAuthorArray = array_reverse($singleAuthorArray); // (Note: this only works, if the array has only *two* elements, i.e., one containing the author's name and one holding the initials!)
-
-    if (isset($author['firstname'])) {
+    if (!empty($author['firstname'])) {
       if ($options['shortenGivenNames']) // if we're supposed to abbreviate given names
       {
         // within initials, reduce all full first names (-> defined by a starting uppercase character, followed by one ore more lowercase characters)
         // to initials, i.e., only retain their first character
-        $author['firstname'] = preg_replace("/([$upper])[$lower]+/$patternModifiers", "\\1", $author['firstname']);
+        $author['firstname'] = preg_replace("/([$upper])[$lower]+/$patternModifiers", '\\1', $author['firstname']);
+        //$author['firstname'] = drupal_substr($author['firstname'], 0, 1);
       }
     }
     if (isset($author['initials'])) {
       // within initials, remove any dots:
       $author['initials'] = preg_replace("/([$upper])\.+/$patternModifiers", "\\1", $author['initials']);
+      //$author['initials'] = str_replace('.', '',  $author['initials']);
 
       // within initials, remove any spaces *between* initials:
       $author['initials'] = preg_replace("/(?<=[-$upper]) +(?=[-$upper])/$patternModifiers", "", $author['initials']);
+      //$author['initials'] = str_replace(' ', '',  $author['initials']);
 
       // within initials, add a space after a hyphen, but only if ...
       if (ereg(" $", $options['betweenInitialsDelim'])) // ... the delimiter that separates initials ends with a space
@@ -411,6 +406,9 @@ function theme_biblio_format_authors($contributors, $options, $inline = false)
         $author['firstname'] = $author['initials'];
       }
     }
+
+    // if there is a surname prefix like "van", "von" etc, stick it back before the last name.
+    if (!empty($author['prefix'])) $author['lastname'] = $author['prefix'] .' '. $author['lastname'];
 
     if (!empty($author['firstname'])) {
       if ($rank == 0) { // -> first author
@@ -433,7 +431,7 @@ function theme_biblio_format_authors($contributors, $options, $inline = false)
     else {
       $singleAuthorString = $author['lastname'];
     }
-    if ($author_links) $singleAuthorString = _biblio_author_link($singleAuthorString, $author['cid'], $base, $inline);
+    if ($author_links) $singleAuthorString = theme('biblio_author_link',$singleAuthorString, $author['cid'], $base, $inline);
     // append this author to the final author string:
     if (($rank == 0) OR ($rank + 1) < $authorCount) // -> first author, or (for multiple authors) all authors except the last one
     {
@@ -470,6 +468,24 @@ function theme_biblio_format_authors($contributors, $options, $inline = false)
 
   return $output;
 }
+
+function theme_biblio_author_link($author, $aid, $base='biblio', $inline = FALSE) {
+  $options = array();
+  $inline = $inline ? "/inline" : "";
+
+  if (isset($_GET['sort'])) {
+    $options['query']  .= "sort=" . $_GET['sort'];
+  }
+  if (isset($_GET['order'])) {
+    $options['query']   .= $options['query'] ? "&" : "" ;
+    $options['query']   .= "order=" . $_GET['order'];
+  }
+
+  $html = l(trim($author), "$base/author/$aid".$inline,$options );
+
+  return $html;
+}
+
 // Format page information:
 //
 // NOTES: - this function (and refbase in general) assumes following rules for the original formatting of page information in '$origPageInfo':

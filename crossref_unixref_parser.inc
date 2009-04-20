@@ -1,7 +1,7 @@
 <?php
 // $Id$
 function unixref_startElement($parser, $name, $attrs) {
-  global $node, $element, $auth_category, $contrib_count, $org_count, $titles, $periodical, $dates, $urls, $keyword_count;
+  global $node, $element,  $attribute, $auth_category, $contrib_count, $org_count;
   switch ($name) {
     case 'doi_record' :
       $node = array();
@@ -25,32 +25,32 @@ function unixref_startElement($parser, $name, $attrs) {
       if (!isset($org_count))
         $org_count = 0;
       break;
-    case 'web-urls' :
-    case 'pdf-urls' :
-    case 'text-urls' :
-    case 'related-urls' :
-    case 'image-urls' :
-      $urls = $name;
+    case 'issn':
+      if ($attrs['media_type'] == 'print') $attribute = 'issn_print';
+      break;
+    case 'isbn':
+      if ($attrs['media_type'] == 'print') $attribute = 'isbn_print';
       break;
     default :
-      $element = $name;
+
   }
+  $element = $name;
 }
 function unixref_endElement($parser, $name) {
-  global $node, $nids, $element, $terms, $batch_proc, $session_id, $save_node, $auth_category, $contrib_count, $org_count, $dates, $urls, $keyword_count;
+  global $node, $nids, $element, $attribute, $terms, $batch_proc, $session_id, $save_node, $auth_category, $contrib_count, $org_count;
   switch ($name) {
     case 'doi_record' :
       $nids[] = biblio_save_node($node, $batch, $session_id, $save_node);
       break;
     case 'person_name' :
       $node['biblio_contributors'][$auth_category][$contrib_count]['auth_type'] = _biblio_get_auth_type($auth_category, $node['biblio_type']);
-      $node['biblio_contributors'][$auth_category][$contrib_count]['name'] = 
-          $node['biblio_contributors'][$auth_category][$contrib_count]['lastname']; 
+      $node['biblio_contributors'][$auth_category][$contrib_count]['name'] =
+          $node['biblio_contributors'][$auth_category][$contrib_count]['lastname'];
       if (isset($node['biblio_contributors'][$auth_category][$contrib_count]['firstname'])) {
-         $node['biblio_contributors'][$auth_category][$contrib_count]['name'] .= 
+         $node['biblio_contributors'][$auth_category][$contrib_count]['name'] .=
             ', ' . $node['biblio_contributors'][$auth_category][$contrib_count]['firstname'];
       }
-      
+
       $auth_category = '';
       $contrib_count++;
       break;
@@ -63,29 +63,33 @@ function unixref_endElement($parser, $name) {
       if (isset($node{'biblio_last_page'}))  $node['biblio_pages'] .= ' - ' . $node['biblio_last_page'];
       break;
     case 'publication_date':
-      
+
       break;
-    case 'year' :
-    case 'pub-dates' :
-    case 'copyright-dates' :
-      $dates = '';
+    case 'journal_issue':
+      $node['biblio_date'] = (!empty($node['month'])?$node['month'].'/':'').$node['year'];
       break;
-    case 'web-urls' :
-    case 'pdf-urls' :
-    case 'text-urls' :
-    case 'related-urls' :
-    case 'image-urls' :
-      $urls = '';
+    case 'journal_article':
+    case 'conference_paper':
+    case 'content_item':
+    case 'report-paper_metadata':
+    case 'standard_metadata':
+    case 'database_date':
+    case 'component':
+      $node['biblio_year'] = $node['year'];
       break;
-    case 'style' :
+    case 'issn':
+      if($attribute == 'issn_print') $node['biblio_issn'] = $node['issn'];
+      break;
+    case 'isbn':
+      if($attribute == 'isbn_print') $node['biblio_isbn'] = $node['isbn'];
       break;
     default :
   }
-  $element = '';
+  $element = $attribute = '';
 
 }
 function unixref_characterData($parser, $data) {
-  global $node, $element, $auth_category, $contrib_count, $org_count, $dates, $urls, $keyword_count;
+  global $node, $element, $auth_category, $contrib_count, $org_count;
   if (trim($data)) {
     switch ($element) {
       case 'surname' :
@@ -103,40 +107,20 @@ function unixref_characterData($parser, $data) {
       case 'organization':
         $node['biblio_contributors'][5][$org_count]['name'] .= $data;
         break;
-      case 'tertiary-title' :
-        $node['biblio_tertiary_title'] .= $data;
+      case 'year':
+        $node['year'] = $data;
         break;
-      case 'alt-title' :
-        $node['biblio_alternate_title'] .= $data;
+      case 'month':
+        $node['month'] = $data;
         break;
-      case 'short-title' :
-        $node['biblio_short_title'] .= $data;
-        break;
-      case 'translated-title' :
-        $node['biblio_translated_title'] .= $data;
-        break;
-        // Periodical information
-      case 'language' :
-        $node['biblio_lang'] .= $data;
-        break;
-      case 'urls' :
-      case 'url' :
-        switch ($urls) {
-          case 'web-urls' :
-          case 'pdf-urls' :
-          case 'text-urls' :
-          case 'image-urls' :
-            break;
-          case 'related-urls' :
-            $node['biblio_url'] .= $data;
-            break;
-        }
+      case 'day':
+        $node['day'] = $data;
         break;
       default:
         if ($field = _unixref_field_map(trim($element))) {
           $node[$field] .= $data;
         }
-        
+
     }
   }
 }
@@ -156,8 +140,8 @@ function _unixref_field_map($field) {
       'section'             => 'biblio_section',
       'doi'                 => 'biblio_doi',
       'title'               => 'title',
-      'isbn'                => 'biblio_isbn',
-      'issn'                => 'biblio_issn',
+      'isbn'                => 'isbn',
+      'issn'                => 'issn',
       'first_page'          => 'biblio_first_page',
       'last_page'           => 'biblio_last_page',
       // Journal metadata
@@ -169,12 +153,14 @@ function _unixref_field_map($field) {
       'conference_acronym'  => 'biblio_short_title',
       // Proceedings metadata
       'proceedings_title'   => 'biblio_secondary_title',
-      'year'                => 'biblio_year',
+      'year'                => 'year',
+      'month'               => 'month',
+      'day'                 => 'day',
       'degree'              => 'biblio_type_of_work',
       'error'               => 'error',
-    
+      'language'            => 'biblio_lang',
     );
-    
+
   }
   return (isset($field_map[$field])) ? $field_map[$field]: FALSE;
 }
