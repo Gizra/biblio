@@ -100,7 +100,7 @@ function biblio_import_form() {
       $i = 0;
       foreach ($vocabularies as $vocabulary) {
         $form['import_taxonomy']['vocabulary'. $i] = module_invoke('taxonomy', 'form', $vocabulary->vid, 0);
-        $form['import_taxonomy']['vocabulary'. $i++]['#description'] = t("Select taxonomy term to assigned to imported entries");
+        $form['import_taxonomy']['vocabulary'. $i++]['#description'] = t("Select taxonomy term to be assigned to imported entries");
       }
     } else {
       $vocab_msg = t('There are currently no vocabularies assigned to the biblio node type, please go the the !url page to fix this', array ('!url' => l(t('admin/content/taxonomy'), 'admin/content/taxonomy')));

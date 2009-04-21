@@ -31,7 +31,7 @@ function biblio_get_keyword_by_name($name) {
   if (!$kid = array_search($name, $keywords)) {
     $term = db_fetch_object(db_query("SELECT * FROM {biblio_keyword_data} k WHERE LOWER(k.word) = LOWER('%s')", trim($name)));
     if ($term) {
-    $keywords[$term->kid] = $term;
+      $keywords[$term->kid] = $term;
       return $keywords[$term->kid];
     }
     else {
@@ -77,16 +77,38 @@ function biblio_load_keywords($vid) {
  * @return
  */
 function biblio_save_keywords(&$node, $update = FALSE) {
+  $taxo_terms = $typed_keywords = array();
+
   if (!is_array($node->biblio_keywords)) {
-    $keywords = biblio_explode_keywords($node->biblio_keywords);
+    $typed_keywords = biblio_explode_keywords($node->biblio_keywords);
   }
   else {
-    $keywords = $node->biblio_keywords;
+    $typed_keywords = $node->biblio_keywords;
   }
+
   if (!$update) db_query('DELETE FROM {biblio_keyword} WHERE nid = %d AND vid = %d', array($node->nid, $node->vid));
 
+  if (isset($node->taxonomy) && is_array($node->taxonomy)) { //add any taxonomy terms to our keyword list
+    foreach ($node->taxonomy as $term) {
+      if (is_array($term)) {
+        foreach ($term as $tid) {
+          if ($tid) {
+            $term_obj = taxonomy_get_term($tid);
+            $taxo_terms[] = $term_obj->name;
+          }
+        }
+      }
+      else if ($term) {
+        $term_obj = taxonomy_get_term($term);
+        $taxo_terms[] = $term_obj->name;
+      }
+    }
+  }
+
+  $keywords = array_merge($typed_keywords, $taxo_terms);
+
   foreach ($keywords as $keyword) {
-    $word = (is_object($keyword)) ? $keyword->word : $keyword;
+    $word = (is_object($keyword)) ? trim($keyword->word) : trim($keyword);
     if (!strlen(trim($word))) continue; //skip if we have a blank
     $kid = FALSE;
     // See if the term exists
@@ -105,13 +127,15 @@ function biblio_save_keywords(&$node, $update = FALSE) {
       $inserted[$kid] = TRUE;
     }
   }
+
   // now if we are saving keywords into a taxonomy freetagging vocabulary, then create the tags string and add it to the node object.
   $kw_vocab = variable_get('biblio_keyword_vocabulary', 0);
   $freetagging = variable_get('biblio_keyword_freetagging', 0);
+
   if ($freetagging && $kw_vocab ) {
-    $node->taxonomy['tags'][$kw_vocab] =  biblio_implode_keywords($keywords, ', ');
+    $node->taxonomy['tags'][$kw_vocab] =  biblio_implode_keywords($typed_keywords, ',');
   }
-  
+
   return count($inserted);
 }
 /**
@@ -170,7 +194,7 @@ function biblio_explode_keywords($string) {
   return $keywords;
 }
 function biblio_implode_keywords($keywords, $sep = '') {
-  
+
   if (empty($sep)) $sep = variable_get('biblio_keyword_sep', ',');
   $string = '';
   foreach ($keywords as $kid => $keyword) {
