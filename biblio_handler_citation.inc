@@ -1,12 +1,16 @@
 <?php
 // $Id$
-class biblio_handler_field_contributor extends biblio_handler_field {
-  function construct() {
-    parent::construct();
+class biblio_handler_citation extends views_handler_field {
+  function init(&$view, $options) {
+    parent::init($view, $options);
     $this->additional_fields['vid'] = array('table' => 'biblio', 'field' => 'vid');
-    $this->auth_category = isset($this->definition['auth_category']) ? $this->definition['auth_category'] : 1;
+    
   }
-
+  function query() {
+    $this->add_additional_fields();
+    $this->field_alias = $this->aliases['vid'];
+    // add the biblio_type field as tid
+  }
   function option_definition() {
     $options = parent::option_definition();
     $options['style_name'] = array('default' => biblio_get_style());
@@ -23,15 +27,10 @@ class biblio_handler_field_contributor extends biblio_handler_field {
       '#description' => t('Define the layout of author lists.')
     );
   }
-  
-  function query() {
-    $this->add_additional_fields();
-    $this->field_alias = $this->aliases['vid'];
-    // add the biblio_type field as tid
-    $this->query->add_field($this->table_alias, 'biblio_type', 'biblio_tid');
-  }
-
   function pre_render($values) {
+    module_load_include('inc','biblio','biblio.contributors');
+    module_load_include('inc','biblio','biblio.keywords');
+    
     module_load_include('inc','biblio','biblio_style_'.$this->options['style_name']);
     $author_options_func = 'biblio_style_'.$this->options['style_name'].'_author_options';
     $this->author_options = $author_options_func();
@@ -44,23 +43,24 @@ class biblio_handler_field_contributor extends biblio_handler_field {
     }
 
     if (count($vids)) {
-      $result = db_query('SELECT * FROM {biblio_contributor} bc
-                          INNER JOIN {biblio_contributor_data} bcd ON bc.cid = bcd.cid
-													WHERE vid IN ('. implode(',', $vids) .')'.
-                         ' AND auth_category='.$this->auth_category.
-                         ' ORDER BY bc.rank');
-      while ($item = db_fetch_array($result)) {
+      $result = db_query('SELECT n.title, b.* FROM {node} n 
+                          LEFT JOIN {biblio} b on n.vid = b.vid 
+                          WHERE n.vid IN ('. implode(',', $vids) .')');
+      while ($item = db_fetch_object($result)) {
         // Clean up the $item from vid.
-        $vid = $item['vid']; unset($item['vid']);
-        $this->items[$vid][] = $item;
+        $vid = $item->vid; //unset($item['vid']);
+        $item->biblio_contributors = biblio_load_contributors($item->vid);
+        $item->biblio_keywords = biblio_load_keywords($item->vid);
+        $this->items[$vid] = $item;
       }
     }
   }
-
+  
   function render($values) {
-  	parent::set_label($values);
-  	$vid = $values->{$this->field_alias};
+    $vid = $values->{$this->field_alias};
+//    print_r($this->items[$vid]);
     if (!isset($this->items[$vid])) return NULL;
-    return theme('biblio_format_authors', $this->items[$vid], $this->author_options);
+    return theme('biblio_entry', $this->items[$vid], $base, $this->options['style_name'], $inline);
   }
+  
 }

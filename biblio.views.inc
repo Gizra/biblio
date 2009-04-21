@@ -1,5 +1,5 @@
 <?php
-// $Id $
+// $Id$
 /**
  * Implementation of hook_views_handlers().
  */
@@ -173,6 +173,7 @@ function biblio_views_data() {
   
   return $viewsdata;
 }
+
 /**
  * Use hook_views_data_alter to add items to the node and node_revisions tables
  * This allows to join these tables, when biblio is the base table.
