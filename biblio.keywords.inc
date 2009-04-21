@@ -76,13 +76,16 @@ function biblio_load_keywords($vid) {
  * @param $node
  * @return
  */
-function biblio_save_keywords($node, $update = FALSE) {
+function biblio_save_keywords(&$node, $update = FALSE) {
   if (!is_array($node->biblio_keywords)) {
-    $node->biblio_keywords = biblio_explode_keywords($node->biblio_keywords);
+    $keywords = biblio_explode_keywords($node->biblio_keywords);
+  }
+  else {
+    $keywords = $node->biblio_keywords;
   }
   if (!$update) db_query('DELETE FROM {biblio_keyword} WHERE nid = %d AND vid = %d', array($node->nid, $node->vid));
 
-  foreach ($node->biblio_keywords as $keyword) {
+  foreach ($keywords as $keyword) {
     $word = (is_object($keyword)) ? $keyword->word : $keyword;
     if (!strlen(trim($word))) continue; //skip if we have a blank
     $kid = FALSE;
@@ -102,6 +105,13 @@ function biblio_save_keywords($node, $update = FALSE) {
       $inserted[$kid] = TRUE;
     }
   }
+  // now if we are saving keywords into a taxonomy freetagging vocabulary, then create the tags string and add it to the node object.
+  $kw_vocab = variable_get('biblio_keyword_vocabulary', 0);
+  $freetagging = variable_get('biblio_keyword_freetagging', 0);
+  if ($freetagging && $kw_vocab ) {
+    $node->taxonomy['tags'][$kw_vocab] =  biblio_implode_keywords($keywords, ', ');
+  }
+  
   return count($inserted);
 }
 /**
@@ -140,6 +150,7 @@ function biblio_delete_keyword($keyword_id) {
   db_query('DELETE FROM {biblio_keyword} WHERE kid = %d', $keyword_id);
   db_query('DELETE FROM {biblio_keyword_data} WHERE kid = %d', $keyword_id);
 }
+
 function biblio_explode_keywords($string) {
   $sep = variable_get('biblio_keyword_sep', ',');
   $regexp = '%(?:^|'.$sep.'\ *)("(?>[^"]*)(?>""[^"]* )*"|(?: [^"'.$sep.']*))%x';
@@ -158,8 +169,9 @@ function biblio_explode_keywords($string) {
   }
   return $keywords;
 }
-function biblio_implode_keywords($keywords) {
-  $sep = variable_get('biblio_keyword_sep', ',');
+function biblio_implode_keywords($keywords, $sep = '') {
+  
+  if (empty($sep)) $sep = variable_get('biblio_keyword_sep', ',');
   $string = '';
   foreach ($keywords as $kid => $keyword) {
     $string .= strlen($string)?"$sep ":'';
