@@ -938,6 +938,11 @@ function biblio_form_alter(&$form, $form_state, $form_id) {
       if (isset($form['taxonomy']['#title'])) {
         $form['taxonomy']['#title'] = t('Keyword and Collection Settings (Taxonomy)');
       }
+      $kw_vocab = variable_get('biblio_keyword_vocabulary', 0);
+      $freetagging = variable_get('biblio_keyword_freetagging', 0);
+      if ($freetagging && $kw_vocab && isset($form['taxonomy']['tags'][$kw_vocab])) {
+        unset($form['taxonomy']['tags'][$kw_vocab]);
+      }
     }
   }
   return $form;
