@@ -528,7 +528,7 @@ function _biblio_sort_tabs($attrib, &$options) {
 //      $content .= t('Sort by').':';
 //      break;
 //    }
-  //   }
+//   }
   if ($sort_links['year']) {
     $active = ($attrib['sort'] == 'year') ? 'class="active"' : '';
     $arrow = empty($active)?'':$order_arrow;
@@ -1119,9 +1119,10 @@ function _biblio_format_author($author, $path) {
   module_load_include('inc','biblio',"biblio_style_$style_name");
   $author_options = $style_function();
   $format = theme('biblio_format_authors', array($author), $author_options, $inline);
-  $format .= ' ('. $author['cnt'] . ') '. ((user_access('administer biblio'))?_biblio_author_edit_links($author, $path):'');
+  $format .= ' ('. $author['cnt'] . ') '. ((biblio_access('edit_author'))?_biblio_author_edit_links($author, $path):'');
   return $format;
 }
+
 function _biblio_author_edit_links($author, $path) {
     $base = variable_get('biblio_base', 'biblio');
     return l(' ['.t('edit').']', "$path" . $author['cid'] ."/edit/" );

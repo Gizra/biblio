@@ -289,6 +289,13 @@ function biblio_access($op, $node = '') {
     // Only users with permission to do so may import entries from file.
     return user_access('import from file');
   }
+  if ($op == 'edit_author') {
+    if (user_access('administer biblio') || (user_access('edit biblio authors')))
+    {
+      return TRUE;
+    }
+    
+  }
   if ($op == 'download') {
     // Only users with permission to do so may see download links to attached files.
     if (user_access('show download links') || (user_access('show own download links') && ($user->uid == $node->uid)))
@@ -345,6 +352,7 @@ function biblio_perm() {
     'create biblio',
     'edit all biblio entries',
     'edit own biblio entries',
+    'edit biblio authors',
     'import from file',
     'show export links',
     'show download links',
@@ -520,8 +528,8 @@ function biblio_menu() {
     'title' => t('Edit author information'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('biblio_admin_author_edit_form', 2),
-    'access callback' => 'user_access',
-    'access arguments' => array('administer biblio'),
+    'access callback' => 'biblio_access',
+    'access arguments' => array('edit_author'),
     'file' => 'biblio.admin.inc',
     'type' => MENU_CALLBACK);
   $items["$base/keyword/%/edit"] = array(
@@ -686,8 +694,8 @@ function biblio_menu() {
     'title' => t('Edit author information'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('biblio_admin_author_edit_form',5),
-    'access callback' => 'user_access',
-    'access arguments' => array('administer biblio'),
+    'access callback' => 'biblio_access',
+    'access arguments' => array('edit_author'),
     'file' => 'biblio.admin.inc',
    	'type' => MENU_LOCAL_TASK,
     'weight' => -6
@@ -920,10 +928,10 @@ function biblio_form_alter(&$form, $form_state, $form_id) {
         empty($form_state['post']['biblio_type']) &&
         empty($form_state['submitted']) &&
         empty($form['vid']['#value'])) {
-      
+
       foreach (element_children($form) as $form_element) {
-        if ($form_element == 'doi_lookup') continue; 
-        if ($form_element == 'cut_paste') continue; 
+        if ($form_element == 'doi_lookup') continue;
+        if ($form_element == 'cut_paste') continue;
         if ($form[$form_element]['#type'] == 'fieldset' ||
             $form_element == 'buttons' ||
             $form_element == 'taxonomy') {
@@ -978,52 +986,52 @@ function biblio_form($node, $form_state) {
     $options["$option->tid"] = $option->name;
   }
   if (!isset($node->nid)) {// only show the doi lookup and paste boxes if this is a new entry
-  if(phpversion() > 5 && !isset($form_state['storage']['doi'])) {
-    $form['doi_lookup'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('DOI Lookup'),
-      '#weight' => -20,
-      '#collapsible' => TRUE,
-      '#collapsed' => TRUE,
-    );
-    $form['doi_lookup']['doi_data'] = array(
-      '#type' => 'textfield',
-      '#title' => t('DOI'),
-      '#required' => FALSE,
-      '#default_value' => '',
-      '#description' => t('Enter a DOI name in the form: <b>10.1000/123456</b>'),
-      '#size' => 60,
-      '#maxlength' => 255,
-      '#weight' => -4
-    );
-    $form['doi_lookup']['doi_submit'] = array(
-      '#type' => 'submit',
-      '#value' => t('Populate using DOI')
-    );
-  }
-  if(!isset($form_state['storage']['paste'])) {
-    $form['cut_paste'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Paste'),
-      '#weight' => -20,
-      '#collapsible' => TRUE,
-      '#collapsed' => TRUE,
-    );
-    $form['cut_paste']['paste_data'] = array(
-      '#type' => 'textarea',
-      '#title' => t('BibTex'),
-      '#required' => FALSE,
-      '#default_value' => '',
-      '#description' => t('Paste a BibTex entry here'),
-      '#size' => 60,
-      '#maxlength' => 2048,
-      '#weight' => -4
-    );
-    $form['cut_paste']['paste_submit'] = array(
-      '#type' => 'submit',
-      '#value' => t('Populate using BibTex')
-    );
-  }
+    if(phpversion() > 5 && !isset($form_state['storage']['doi'])) {
+      $form['doi_lookup'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('DOI Lookup'),
+        '#weight' => -20,
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE,
+      );
+      $form['doi_lookup']['doi_data'] = array(
+        '#type' => 'textfield',
+        '#title' => t('DOI'),
+        '#required' => FALSE,
+        '#default_value' => '',
+        '#description' => t('Enter a DOI name in the form: <b>10.1000/123456</b>'),
+        '#size' => 60,
+        '#maxlength' => 255,
+        '#weight' => -4
+      );
+      $form['doi_lookup']['doi_submit'] = array(
+        '#type' => 'submit',
+        '#value' => t('Populate using DOI')
+      );
+    }
+    if(!isset($form_state['storage']['paste'])) {
+      $form['cut_paste'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Paste'),
+        '#weight' => -20,
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE,
+      );
+      $form['cut_paste']['paste_data'] = array(
+        '#type' => 'textarea',
+        '#title' => t('BibTex'),
+        '#required' => FALSE,
+        '#default_value' => '',
+        '#description' => t('Paste a BibTex entry here'),
+        '#size' => 60,
+        '#maxlength' => 2048,
+        '#weight' => -4
+      );
+      $form['cut_paste']['paste_submit'] = array(
+        '#type' => 'submit',
+        '#value' => t('Populate using BibTex')
+      );
+    }
   }
   $form['biblio_type'] = array(
     '#type' => 'select',
@@ -1094,7 +1102,7 @@ function biblio_form($node, $form_state) {
           }
           if (!empty($node->$key) && is_array($node->$key)) {
             $node->$key = biblio_implode_keywords($node->$key);
-              }
+          }
 
           $fld['hint'] = t('Separate keywords using the " @sep " character', array('@sep' => $sep));
         }
@@ -1176,7 +1184,7 @@ function _biblio_contributor_widget($node, $fld, $auth_category, $biblio_type, $
   else {
     $contributors = $node['biblio_contributors'][$auth_category];
   }
-  
+
   $contributor_count = max(4, count($contributors));
 
   $ctypes = _biblio_get_auth_types($auth_category, $biblio_type);
