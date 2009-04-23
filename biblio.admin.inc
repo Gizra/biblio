@@ -228,7 +228,7 @@ function biblio_admin_settings() {
     '#type' => 'checkbox',
     '#title' => t('Use keywords from biblio entries as taxonomy "free tags"'),
     '#return_value' => 1,
-    '#default_value' => variable_get('biblio_keyword_freetagging', 1),
+    '#default_value' => variable_get('biblio_keyword_freetagging', 0),
     '#description' => t('This option allows user to add keywords (free tags) to describe their documents. These keywords will be registered as taxonomy.')
   );
   $vocabularies = module_invoke('taxonomy', 'get_vocabularies');
@@ -398,7 +398,7 @@ function biblio_admin_settings() {
     '#options' => _biblio_admin_get_styles(),
     '#description' => t('Set the bibliographic style of the "list" view.')
   );
-  
+
   $form['style']['biblio_node_layout'] = array(
     '#type' => 'radios',
     '#title' => t('Node Layout'),
