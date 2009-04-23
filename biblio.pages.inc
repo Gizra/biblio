@@ -1150,7 +1150,7 @@ function biblio_keyword_page($filter = NULL) {
     array('data' => isset($keywords[$i+1])?_biblio_format_keyword($keywords[$i+1]):'' ),
     array('data' => isset($keywords[$i+2])?_biblio_format_keyword($keywords[$i+2]):'' ));
   }
-  $header = array(array('data' => t('There are a total of @count keywords !header_ext in the database',array('@count' => count($keywords), '!header_ext' => $header_ext)), 'align' =>'center', 'colspan' => 3));
+  //$header = array(array('data' => t('There are a total of @count keywords !header_ext in the database',array('@count' => count($keywords), '!header_ext' => $header_ext)), 'align' =>'center', 'colspan' => 3));
   $output .= theme('table', $header, $rows);
   return $output;
 }
