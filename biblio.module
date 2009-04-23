@@ -294,7 +294,7 @@ function biblio_access($op, $node = '') {
     {
       return TRUE;
     }
-    
+
   }
   if ($op == 'download') {
     // Only users with permission to do so may see download links to attached files.
@@ -1096,7 +1096,7 @@ function biblio_form($node, $form_state) {
         if ($key == 'biblio_keywords' ) {
           $sep = variable_get('biblio_keyword_sep', ',');
           // is the kewords are in array form, then implode them into a string.
-          if (isset($form_state['values']['biblio_keywords']) && 
+          if (isset($form_state['values']['biblio_keywords']) &&
              is_array($form_state['values']['biblio_keywords'])) {
              $form_state['values']['biblio_keywords'] = biblio_implode_keywords($form_state['values']['biblio_keywords']);
           }
@@ -1786,7 +1786,7 @@ function _biblio_filter_replace_callback($matches, $op = '') {
   $str = '';
   if ($op == 'output footer') {
     if ($n > 0) {
-      $str = '<p><hr /><p><h3>'. t('References') .'</h3></p>';
+      $str = '<p><hr /></p><h3>'. t('References') .'</h3>';
       $str .= '<div class="references"><ol>';
       for ($m = 1; $m <= $n; $m++) {
         $str .= '<li id="reference'. $m .'">'. _biblio_citekey_print($store_matches[$m -1]) ." </li>\n\n";
