@@ -378,6 +378,7 @@ function theme_biblio_format_authors($contributors, $options, $inline = false)
         // to initials, i.e., only retain their first character
         $author['firstname'] = preg_replace("/([$upper])[$lower]+/$patternModifiers", '\\1', $author['firstname']);
         //$author['firstname'] = drupal_substr($author['firstname'], 0, 1);
+        $author['firstname'] = preg_replace("/($space|$dash)?/$patternModifier", $options['betweenInitialsDelim'], $author['firstname']);
       }
     }
     if (isset($author['initials'])) {
