@@ -539,7 +539,6 @@ function biblio_schema() {
       'weight' => array(
         'type' => 'int',
         'not null' => TRUE,
-        'unsigned' => FALSE,
         'default' => 0,
         'description' => 'The weight (location) of the field on the input form'
         ),
@@ -589,7 +588,6 @@ function biblio_schema() {
         'tid' => array(
         'type' => 'int',
         'not null' => TRUE,
-        'unsigned' => FALSE,
         'default' => 0,
         'description' =>'{biblio_types}.tid of the publication type',
         ),
@@ -602,13 +600,13 @@ function biblio_schema() {
         ),
       'description' => array(
         'type' => 'varchar',
+        'not null' => FALSE,
         'length' => '255',
         'description' => 'Description of the publication type'
         ),
       'weight' => array(
         'type' => 'int',
         'not null' => TRUE,
-          'unsigned' => FALSE,
         'default' => 0,
         'description' => 'Controls the order the types are listed in'
         ),
@@ -686,7 +684,7 @@ function biblio_schema() {
         ),
       'aka' => array(
         'type' => 'int',
-        'not null' => FALSE,
+        'not null' => TRUE,
         'unsigned' => TRUE,
         'description' =>'Also known as, links this author entry with others so you can have variation on the name, but listing by cid will find all other (aka) author entries',
         ),
@@ -700,28 +698,24 @@ function biblio_schema() {
         'type' => 'varchar',
         'length' => '128',
         'not null' => TRUE,
-        'default' => '',
         'description' =>'Author last name',
         ),
       'lastname' => array(
         'type' => 'varchar',
         'length' => '128',
         'not null' => TRUE,
-        'default' => '',
         'description' =>'Author last name',
         ),
       'firstname' => array(
         'type' => 'varchar',
         'length' => '128',
         'not null' => FALSE,
-        'default' => '',
         'description' =>'Author first name',
         ),
       'prefix' => array(
         'type' => 'varchar',
         'length' => '128',
         'not null' => FALSE,
-        'default' => '',
         'description' =>'Author name prefix',
         ),
       'suffix' => array(
@@ -748,6 +742,7 @@ function biblio_schema() {
       'md5' => array (
         'type' => 'varchar',
         'length' => '32',
+        'not null' => FALSE,
         'description' =>'',
         )
 
@@ -961,7 +956,7 @@ function biblio_schema() {
           'description' => t('The type of duplicate 0=biblio, 1=author.'),
         ),
         ),
-      'primary key' => array('vid,did'),
+      'primary key' => array('vid','did'),
         'indexes' => array(
            'did' => array('vid'),
         ),
