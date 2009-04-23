@@ -685,6 +685,7 @@ function biblio_schema() {
       'aka' => array(
         'type' => 'int',
         'not null' => TRUE,
+        'default'  => 0,
         'unsigned' => TRUE,
         'description' =>'Also known as, links this author entry with others so you can have variation on the name, but listing by cid will find all other (aka) author entries',
         ),
@@ -698,24 +699,28 @@ function biblio_schema() {
         'type' => 'varchar',
         'length' => '128',
         'not null' => TRUE,
+        'default' => '',
         'description' =>'Author last name',
         ),
       'lastname' => array(
         'type' => 'varchar',
         'length' => '128',
         'not null' => TRUE,
+        'default' => '',
         'description' =>'Author last name',
         ),
       'firstname' => array(
         'type' => 'varchar',
         'length' => '128',
         'not null' => FALSE,
+        'default' => '',
         'description' =>'Author first name',
         ),
       'prefix' => array(
         'type' => 'varchar',
         'length' => '128',
         'not null' => FALSE,
+        'default' => '',
         'description' =>'Author name prefix',
         ),
       'suffix' => array(
