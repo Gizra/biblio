@@ -52,23 +52,23 @@ function biblio_db_search() {
     // nids stored there, don't re-search. List is reset when submitting a new search.
     if ($search !== FALSE || !_get_biblio_search_filter('nodelist')) {
       if ($result = biblio_build_search_query($keys)) {
-	$node_list = '';
-	while ($nid = db_result($result)) {
-	  $node_list .= $nid.",";
-	}
+        $node_list = '';
+        while ($nid = db_result($result)) {
+          $node_list .= $nid.",";
+        }
         // No node search result. Make sure we find nothing, too. Node -1 does not exist.
-	if (empty($node_list)) $node_list = '-1';
+        if (empty($node_list)) $node_list = '-1';
 
-	// Store as SESSION filter or argument list.
-	// When called as function argument it takes only one parameter, i.e.
-	// biblio_db_search('search', 'bla blu') and we must insert the node
-	// list inbetween.
-	if ($search !== FALSE) {
-	  array_splice($arg_list,$search+1,0,$node_list);
-	}
-	else {
-	  $_SESSION['biblio_filter'] = array(array('search',rtrim($node_list,','),$keys));
-	}
+        // Store as SESSION filter or argument list.
+        // When called as function argument it takes only one parameter, i.e.
+        // biblio_db_search('search', 'bla blu') and we must insert the node
+        // list inbetween.
+        if ($search !== FALSE) {
+          array_splice($arg_list, $search + 1, 0, $node_list);
+        }
+        else {
+          $_SESSION['biblio_filter'] = array(array('search', rtrim($node_list, ','), $keys));
+        }
       }
       // Wrong query (too short, only negative words etc.). Warning has been issued.
       else $_SESSION['biblio_filter'] = array();
@@ -76,12 +76,13 @@ function biblio_db_search() {
   }
 
   $inline = in_array('inline', $arg_list);
-  $inline = in_array('profile',$arg_list)?'profile':$inline;
+  $inline = in_array('profile', $arg_list)?'profile':$inline;
 
   $query_info = biblio_build_query($arg_list);
   if ($query_info['rss']['feed']){
-  	 biblio_filter_feed($query_info['query'], $query_info['query_terms'], $query_info['rss']);
-  }else{
+    biblio_filter_feed($query_info['query'], $query_info['query_terms'], $query_info['rss']);
+  }
+  else{
     //$count = db_result(db_query($query_info['count_query'],$query_info['query_terms']));
     $result = pager_query($query_info['query'], variable_get('biblio_rowsperpage', 25),0,$query_info['count_query'],$query_info['query_terms']);
     return biblio_show_results($result, $query_info['sort_attrib'], $query_info['args'],$inline);
@@ -515,7 +516,7 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
 
 function _biblio_sort_tabs($attrib, &$options) {
   $content = '';
-  $base =  variable_get('biblio_base', 'biblio');
+  $base =  $_GET['q']; //variable_get('biblio_base', 'biblio');
   $order = ($attrib['order'] == "desc" || $attrib['order'] == "DESC")?"asc":"desc";
   $path = drupal_get_path('module','biblio');
   $order_arrow = ($order == 'asc') ? '&nbsp;<img src ="'.$path.'/arrow-asc.png" />':'&nbsp;<img src ="'.$path.'/arrow-desc.png" />';
