@@ -1,0 +1,121 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body>
+
+Upgrades from 5.x or RC2 and later are directly supported without any intermediate updates.
+
+<h3>New features...</h3>
+<b>6.x-1.3</b>
+<ol>
+  <li>Added "DOI Lookup" option on the input form. Entering a valid DOI name (number) here will query crossref.org and poplulate the input form with all the data it gets.  You are then presented with the populated form to make further additions/changes prior to saving it to the database.
+  <li>Added "BibTex cut and paste" option to the input form.  Pasting a valid bibTex string into the box will populate the input form with the data and similar to the DOI lookup above, allows you to preview and make changes prior to saving it in the database.
+  <li>Added a new user permission called "edit biblio authors" which allows the user to edit biblio author information but not other biblio settings, unlike "administer biblio" which gives them the right to edit all biblio settings.
+  <li>Changed "Views" integration such that Blblio is no longer a "Base" type of view.  You should now use the "Node" view type to create a view containing biblio information.
+  <li>Added an option to toggle sort links between text and tab type display.
+</ol>
+<b>6.x-1.2</b>
+<ol>
+  <li>Added option to automatically delete authors "orphaned" by the update or deletion of an entry</li>
+  <li>User selectable bibliographic styles, authorized users can choose a style other than the system default on their "edit user" page</li>
+  <li>Author "Link" allows 2 or more authors to be linked together (intended to deal with name changes due to marriage, but could be used for other purposes)</li>
+  </ol>
+<b>6.x-1.1</b>
+<ol>
+  <li>MARC format file import</li>
+  <li>New bibliographic output sytles (AMA, Chicago, MLA, Vancouver)</li>
+  <li>Authors page (biblio/authors) which displays all authors in the database linked to publication lists filtered by that author. ("edit" links are provided for privileged users)</li>
+  <li>Author edit/merge form (merge allows you to merge all instances of the same author which have been entered slightly
+differently. i.e. Smith, J and John Smith are the same person so you merge the two entries into one.)</li>
+  <li>Orphaned author&nbsp;page(admin/settings/biblio/author/orphans),&nbsp;allows you to remove authors who are not associated with any publications from the database</li>
+  <li>Keywords page (biblio/keywords) which displays all keywords in the database linked to publication list filtered by that keyword. ("edit" links are&nbsp;provided for privileged users)</li>
+  <li>Orphaned keyword page (admin/settings/biblio/keyword/orphans) allows you to find and remove orphaned keywords (keywords which are no longer associated with any publications)</li>
+  <li>added 'tabledrag' to admin/settings/biblio/defaults and admin/settings/biblio/types/edit/xxx which allows you to change the order of the fields on the input form by just dragging them to the desired location</li>
+  <li>input your own PHP code to generate cite keys</li>
+</ol>
+<h3>Bugs Fixed...</h3>
+<b>6.x-1.3</b>
+<ul>
+  <li>[#437440]</li>
+  <li>[#435058]</li>
+  <li>[#439152]</li>
+  <li>[#356322]</li>
+  <li>[#355572]</li>
+  <li>[#340570]</li>
+  <li>[#442916]</li>
+  <li>[#440248]</li>
+  <li>[#438930]</li>
+  <li>[#441104]</li>
+  <li>[#439086]</li>
+  <li>[#435058]</li>
+  <li>[#433198]</li>
+  <li>[#431688]</li>
+  <li>[#425852]</li>
+  <li>[#429226]</li>
+  <li>[#421546]</li>
+</ul>
+<b>6.x-1.2</b>
+<ul>
+  <li>[#376808]</li>
+  <li>[#415478]</li>
+  <li>[#414870]</li>
+  <li>[#414380]</li>
+  <li>[#412720]</li>
+  <li>[#410610]</li>
+  <li>[#409952]</li>
+  <li>[#376802]</li>
+  <li>[#404842]</li>
+  <li>[#404522]</li>
+  <li>[#397104]</li>
+  <li>[#403484]</li>
+  <li>[#404080]</li>
+  <li>[#402468]</li>
+  <li>[#401938]</li>
+</ul>
+<b>6.x-1.1</b>
+<ul>
+  <li>[#398472]</li>
+  <li>[#396654]</li>
+  <li>[#398226]</li>
+  <li>[#396096]</li>
+</ul>
+<b>6.x-1.0</b>
+<ul>
+  <li>[#141602]</li>
+  <li>[#381190]</li>
+  <li>[#385830]</li>
+  <li>[#387788]</li>
+  <li>[#388722]</li>
+  <li>[#183517]</li>
+  <li>[#376852]</li>
+  <li>[#372820]</li>
+  <li>[#381070]</li>
+  <li>[#376852]</li>
+  <li>[#372038]</li>
+  <li>[#375085]</li>
+  <li>innumerable D5 -&gt; D6 upgrade fixes provided by Robert Haschke (http://drupal.org/user/409889)</li>
+  <li>[#371867]</li>
+  <li>[#372770]</li>
+  <li>[#373107]</li>
+  <li>[#373129]</li>
+  <li>[#372915]</li>
+  <li>[#372238]</li>
+  <li>[#372024]</li>
+  <li>[#354676] fixed inconsistency between page title and breadcrumb</li>
+  <li>[#355480] fixed issue with setting user id on import by none admin users</li>
+  <li>[#357298] fixed another userID related issue</li>
+  <li>[#336344] fixed problem with taxonomy tags not being added to imported entries</li>
+  <li>[#356322] added danep's patch to correct XHTML validation warnings</li>
+  <li>[#355621] fixed PHP4 compatibility problem</li>
+  <li>[#275410] fixed issue where "My Publications" tab on profile pages could not be turned off</li>
+  <li>[#359752] fixed issue related to profile and inline modes</li>
+  <li>[#360391] fixed problem creating database on install with aliased</li>
+  <li>[#365425] fixed Importing bibtex omits Conference title</li>
+  <li>[#365435] fixed URL search doesn't show search keywords</li>
+  <li>[#362696] RIS Import omits Journal Abbreviation field (JA)</li>
+</ul>
+</body>
+</html>
