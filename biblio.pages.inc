@@ -516,57 +516,66 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
 
 function _biblio_sort_tabs($attrib, &$options) {
   $content = '';
-  $base =  $_GET['q']; //variable_get('biblio_base', 'biblio');
+  $tabs = variable_get('biblio_sort_tabs_style', 0);
   $order = ($attrib['order'] == "desc" || $attrib['order'] == "DESC")?"asc":"desc";
+  $cur_order = ($attrib['order'] == "desc" || $attrib['order'] == "DESC")?"desc":"asc";
   $path = drupal_get_path('module','biblio');
   $order_arrow = ($order == 'asc') ? '&nbsp;<img src ="'.$path.'/arrow-asc.png" />':'&nbsp;<img src ="'.$path.'/arrow-desc.png" />';
-  $options = array('attributes'=>array("title"=>t("Click a second time to reverse the sort order")));
-  $options = array('html' => true);
   $sort_links =  variable_get('biblio_sort_tabs', array('author'=>'author', 'title'=>'title', 'type'=>'type', 'year'=>'year', 'keyword'=>'keyword'));
-  $content .= '<ul class="tabs secondary ">';
-//  foreach($sort_links as $key => $link) {
-//    if ($key === $link) {
-//      $content .= t('Sort by').':';
-//      break;
-//    }
-//   }
+
+  $content .= $tabs ? '<ul class="tabs secondary ">':'<ul>';
+
+  foreach($sort_links as $key => $link) {
+    $sort_links[$link] = array();
+    $sort_links[$link]['options']['attributes'] = array("title"=>t("Click a second time to reverse the sort order"));
+    $sort_links[$link]['options']['html'] = TRUE;
+
+    if ($key === $link && $link === $attrib['sort']) {
+      $sort_links[$link]['options']['query'] = "sort=$link&order=$order";
+      $sort_links[$link]['class'] = 'class="active"';
+      $sort_links[$link]['pfx'] = ' [';
+      $sort_links[$link]['sfx'] = ' ]';
+      $sort_links[$link]['arrow'] = $order_arrow;
+      if (!$tabs) $content = t('Sort by').': ';
+    }
+    else {
+      $sort_links[$link]['options']['query'] = "sort=$link&order=$cur_order";
+    //  $sort_links[$link]['options']['html'] = TRUE;
+      $sort_links[$link]['class'] = '';
+      $sort_links[$link]['pfx'] = ' ';
+      $sort_links[$link]['sfx'] = ' ';
+      $sort_links[$link]['arrow'] = '';
+    }
+  }
+
   if ($sort_links['year']) {
-    $active = ($attrib['sort'] == 'year') ? 'class="active"' : '';
-    $arrow = empty($active)?'':$order_arrow;
-    $options['query'] = "sort=year&order=$order";
-  //  $content .= "[".l(t("Year").$arrow,$_GET['q'],$options)."]";
-      $content .= '<li '. $active .'><a href="'.  url($base).'&amp;'.$options['query'].'"'. $active .'><span class="a"><span class="b">'. t("Year") .$arrow.'</span></span></a></li>';
+    $content .= _biblio_sort_tab($sort_links['year'],  t("Year"), $tabs );
   }
   if ($sort_links['title']) {
-    $options['query'] = "sort=title&order=$order";
-    $active = ($attrib['sort'] == 'title') ? 'class="active"' : '';
-    $arrow = empty($active)?'':$order_arrow;
-  //  $content .= "[".l(t("Title").$arrow,$_GET['q'],$options)."]";
-    $content .= '<li '. $active .'><a href="'. url($base).'&amp;'.$options['query'].'"' . $active .'><span class="a"><span class="b">'. t("Title") .$arrow.'</span></span></a></li>';
+    $content .= _biblio_sort_tab($sort_links['title'],  t("Title"), $tabs );
   }
   if ($sort_links['type']) {
-    $options['query'] = "sort=type&order=$order";
-    $active = ($attrib['sort'] == 'type') ? 'class="active"' : '';
-    $arrow = empty($active)?'':$order_arrow;
-    //$content .= "[".l(t("Type").$arrow,$_GET['q'],$options)."]";
-    $content .= '<li '. $active .'><a href="'. url($base).'&amp;'.$options['query'].'"' . $active .'><span class="a"><span class="b">'. t("Type") .$arrow.'</span></span></a></li>';
+    $content .= _biblio_sort_tab($sort_links['type'],  t("Type"), $tabs );
   }
   if ($sort_links['author']) {
-    $options['query'] = "sort=author&order=$order";
-    $active = ($attrib['sort'] == 'author') ? 'class="active"' : '';
-    $arrow = empty($active)?'':$order_arrow;
-    //$content .= "[".l(t("Author").$arrow,$_GET['q'],$options)."]";
-    $content .= '<li '. $active .'><a href="'. url($base).'&amp;'.$options['query'].'"' . $active .'><span class="a"><span class="b">'. t("Author") .$arrow.'</span></span></a></li>';
+    $content .= _biblio_sort_tab($sort_links['author'],  t("Author"), $tabs );
   }
   if ($sort_links['keyword']) {
-    $options['query'] = "sort=keyword&order=$order";
-    $active = ($attrib['sort'] == 'keyword') ? 'class="active"' : '';
-    $arrow = empty($active)?'':$order_arrow;
-    //$content .= "[".l(t("Keyword").$arrow,$_GET['q'],$options)."]";
-    $content .= '<li '. $active .'><a href="'. url($base).'&amp;'.$options['query'].'"' . $active .'><span class="a"><span class="b">'. t("Keyword") .$arrow.'</span></span></a></li>';
+    $content .= _biblio_sort_tab($sort_links['keyword'],  t("Keyword"), $tabs );
   }
   $content .= "</ul>";
 
+  return $content;
+}
+
+function _biblio_sort_tab($options,  $title, $tabs = FALSE) {
+  if ($tabs) {
+    $content .= '<li '.$options['class'] .'>';
+    $content .= '<a href="'.  url($_GET['q']).'&amp;'.$options['options']['query'].'"'. $options['class'] .'>';
+    $content .= '<span class="a"><span class="b">'. $title .$options['arrow'].'</span></span></a></li>';
+  } else {
+    $content .= $options['pfx'].l($title.$options['arrow'] ,$_GET['q'],$options['options']) .$options['sfx'];
+  }
   return $content;
 }
 
@@ -609,11 +618,11 @@ function _biblio_filter_info_line($args) {
         $type = t("Author");
       }
       if ($type == 'ag' ) {
-        return;
+        //return;
         $type = t("First letter of last name");
       }
       if ($type == 'tg' ) {
-        return;
+        //return;
         $type = t("First letter of title");
       }
       if ($type == 'type') {
