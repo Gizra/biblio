@@ -309,13 +309,12 @@ function theme_biblio_authors($contributors, $style = 'classic', $cat = 1, $inli
   $output .= '</span>';
   return $output;
 }
-function theme_biblio_format_authors($contributors, $options, $inline = false)
-{
-  if (empty($contributors)) return;
 
-  $base  = variable_get('biblio_base', 'biblio');
-  $author_links = variable_get('biblio_author_links', 1);
-  // Matches Unicode letters & digits:
+/*
+ * Helper function for theme_biblio_format_authors() and theme_biblio_page_number()
+ */
+function _biblio_get_utf8_regex() {
+    // Matches Unicode letters & digits:
   $alnum = "\p{Ll}\p{Lu}\p{Lt}\p{Lo}\p{Nd}"; // Unicode-aware equivalent of "[:alnum:]"
 
   // Matches Unicode letters:
@@ -354,6 +353,18 @@ function theme_biblio_format_authors($contributors, $options, $inline = false)
   // Defines the PCRE pattern modifier(s) to be used in conjunction with the above variables:
   // More info: <http://www.php.net/manual/en/reference.pcre.pattern.modifiers.php>
   $patternModifiers = "u"; // the "u" (PCRE_UTF8) pattern modifier causes PHP/PCRE to treat pattern strings as UTF-8
+  
+  return array($alnum, $alpha, $cntrl, $dash, $digit, $graph, $lower, 
+       $print, $punct, $space, $upper, $word, $patternModifiers);
+}
+
+function theme_biblio_format_authors($contributors, $options, $inline = false)
+{
+  if (empty($contributors)) return;
+  list($alnum, $alpha, $cntrl, $dash, $digit, $graph, $lower, 
+       $print, $punct, $space, $upper, $word, $patternModifiers) = _biblio_get_utf8_regex();
+  $base  = variable_get('biblio_base', 'biblio');
+  $author_links = variable_get('biblio_author_links', 1);
 
   $authorCount = count($contributors); // check how many authors we have to deal with
   $output = ""; // this variable will hold the final author string
@@ -504,13 +515,9 @@ function theme_biblio_author_link($author, $aid, $base='biblio', $inline = FALSE
 //        - for '$shortenPageRangeEnd=true', add support for page locators that contain letters (e.g. "A1 - A3" or "4a-4c")
 function theme_biblio_page_number($origPageInfo, $pageRangeDelim = "-", $singlePagePrefix = "", $pageRangePrefix = "", $totalPagesPrefix = "", $singlePageSuffix = "", $pageRangeSuffix = "", $totalPagesSuffix = "", $shortenPageRangeEnd = false)
 {
-  global $alnum, $alpha, $cntrl, $dash, $digit, $graph, $lower, $print, $punct, $space, $upper, $word, $patternModifiers; // defined in 'transtab_unicode_charset.inc.php' and 'transtab_latin1_charset.inc.php'
-  // Matches ISO-8859-1 dashes & hyphens:
-  $dash = "-�";
-  // Defines the PCRE pattern modifier(s) to be used in conjunction with the above variables:
-  // More info: <http://www.php.net/manual/en/reference.pcre.pattern.modifiers.php>
-  $patternModifiers = "";
-
+  list($alnum, $alpha, $cntrl, $dash, $digit, $graph, $lower, 
+       $print, $punct, $space, $upper, $word, $patternModifiers) = _biblio_get_utf8_regex();
+  
   // Check original page info for any recognized page locators, and process them appropriately:
   if (preg_match("/\w*\d+\w* *[$dash]+ *(?:\w*\d+\w*)?/$patternModifiers", $origPageInfo)) // the original page info contains a page range (like: "127-127", "127-132", "A1 - A3", "4a-4c", or "127-" if only start page given)
   {
