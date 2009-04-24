@@ -375,6 +375,13 @@ function biblio_admin_settings() {
     ),
     '#description' => t('You turn the sorting links at the top of the /biblio page here.')
   );
+  $form['sort']['biblio_sort_tabs_style'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Show sort links as "tabs"'),
+    '#default_value' => variable_get('biblio_sort_tabs_style', 0),
+    '#return_value' => 1,
+    '#description' => t('This changes the sort links from text links to tabs')
+  );
   $form['sort']['biblio_order'] = array(
     '#type' => 'radios',
     '#title' => t('Order'),
@@ -910,7 +917,7 @@ function _biblio_get_user_profile_form(& $form, $profile_user = FALSE) {
     '#options' => $options,
     '#description' => t('Set the bibliographic style of the "list" view.')
   );
-    
+
   }
 }
 /*  This function parses the module directory for 'style' files, loads them and
@@ -1198,7 +1205,7 @@ function biblio_admin_author_edit_form($form_state, $author_id) {
       '#collapsible' => TRUE,
       '#collapsed' => !count($merge_options),
     );
-    
+
     $form['merge']['merge_authors'] = array(
       '#type' => 'checkboxes',
       '#title' => t('Similar authors'),
@@ -1211,7 +1218,7 @@ function biblio_admin_author_edit_form($form_state, $author_id) {
       '#value' => t('Merge')
     );
   }
-    
+
     $form['link'] = array(
       '#type' => 'fieldset',
       '#title' => t('Author Link'),
