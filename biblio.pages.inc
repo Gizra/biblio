@@ -257,8 +257,9 @@ function biblio_build_query($arg_list) {
             while ($cid = db_fetch_object($cids) ){
               $wr .= empty($wr)?'':' OR ';
               $wr .= "bc". $bcc .".cid = $cid->cid ";
-          }
-            $where[] = $wr;
+            }
+
+            $where[] = (!empty($wr)) ? $wr : "bc". $bcc .".cid = -1 ";
 
 //             $where[] = 'bc'. $bcc .'.cid in ( (select cid from {biblio_contributor_data}
 //                                            where cid = %d
