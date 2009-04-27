@@ -1719,6 +1719,7 @@ function biblio_update_6017() {
 
   return $result;
 }
+
 function biblio_update_6018() {
   $result = array();
   $result[] = update_sql("UPDATE {biblio_contributor_data} SET aka = cid WHERE aka = 0 OR aka IS NULL");

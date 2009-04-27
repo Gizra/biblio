@@ -199,7 +199,7 @@ function biblio_import_form_submit($form, & $form_state) {
           'file' => './'. drupal_get_path('module', 'biblio') .'/biblio.import.export.inc'
         );
         batch_set($batch_op);
-        
+
         $base = variable_get('biblio_base', 'biblio');
         batch_process("$base/import");
 
@@ -285,7 +285,7 @@ function biblio_export_form() {
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
     '#title' => t('POT Export'),
-    '#description' => t('Here you may export a ".pot" file which contains the titles and hints from the database which are not normally captured by traslation extrators)')
+    '#description' => t('Here you may export a ".pot" file which contains the titles and hints from the database which are not normally captured by translation extractors)')
   );
   $form['pot']['button'] = array (
     '#type' => 'submit',
@@ -753,7 +753,7 @@ function biblio_save_node($node, $batch = FALSE, $session_id = NULL, $save_node 
 function biblio_crossref_query($doi) {
   $url = 'http://www.crossref.org/openurl/?noredirect=true&format=unixref&id=doi%3A'. $doi;
   $crossref_xml_data = biblio_import_from_url($url);
-  
+
   return biblio_crossref_xml_import($crossref_xml_data);
 }
 
@@ -767,7 +767,7 @@ function biblio_crossref_xml_import($doi, $terms = array(), $batch = FALSE, $ses
     return;
   }
   $xml = fread($fp, 2048);
-  
+
   $xml_parser = drupal_xml_parser_create($xml);
   // use case-folding so we are sure to find the tag in
   xml_parser_set_option($xml_parser, XML_OPTION_CASE_FOLDING, false);
@@ -784,7 +784,7 @@ function biblio_crossref_xml_import($doi, $terms = array(), $batch = FALSE, $ses
       drupal_set_message(sprintf("XML error: %s at line %d",
       xml_error_string(xml_get_error_code($xml_parser)),
       xml_get_current_line_number($xml_parser)),'error');
-    }  
+    }
   }
   xml_parser_free($xml_parser);
   fclose($fp);
@@ -1275,5 +1275,5 @@ function biblio_pubmed_query () {
     if(!$handle) { die(); }
     while (!feof ($handle)) $pids .= fgets($handle, 4096);
     fclose($handle);
-    
+
 }
