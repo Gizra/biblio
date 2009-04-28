@@ -114,7 +114,7 @@ function _endnote8_XML_export($results){
      */
     if (!empty($pub->biblio_keywords)) {
       foreach($pub->biblio_keywords as $term) {
-        $kw_array[] = trim($term->word);
+        $kw_array[] = trim($term);
       }
     }
     if (!empty($kw_array)) {

@@ -1,5 +1,6 @@
 <?php
-// $Id$
+// $Id $
+//
 function _endnote7_XML_export($results) {
   $xml = '<?xml version="1.0" encoding="UTF-8"?>';
   $xml .= "\n<XML><RECORDS>\n";
@@ -71,7 +72,7 @@ function _endnote7_XML_export($results) {
     }
     if (!empty($pub->biblio_keywords)) {
       foreach($pub->biblio_keywords as $term) {
-        $kw_array[] = trim($term->word);
+        $kw_array[] = trim($term);
       }
     }
     if (!empty($kw_array)) {
