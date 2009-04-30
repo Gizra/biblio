@@ -309,11 +309,55 @@ function theme_biblio_authors($contributors, $style = 'classic', $cat = 1, $inli
   $output .= '</span>';
   return $output;
 }
+function _biblio_get_latin1_regex() {
+  $alnum = "[:alnum:]ÄÅÁÀÂÃÇÉÈÊËÑÖØÓÒÔÕÜÚÙÛÍÌÎÏÆäåáàâãçéèêëñöøóòôõüúùûíìîïæÿß";
 
+  // Matches ISO-8859-1 letters:
+  $alpha = "[:alpha:]ÄÅÁÀÂÃÇÉÈÊËÑÖØÓÒÔÕÜÚÙÛÍÌÎÏÆäåáàâãçéèêëñöøóòôõüúùûíìîïæÿß";
+
+  // Matches ISO-8859-1 control characters:
+  $cntrl = "[:cntrl:]";
+
+  // Matches ISO-8859-1 dashes & hyphens:
+  $dash = "-–";
+
+  // Matches ISO-8859-1 digits:
+  $digit = "[:digit:]";
+
+  // Matches ISO-8859-1 printing characters (excluding space):
+  $graph = "[:graph:]ÄÅÁÀÂÃÇÉÈÊËÑÖØÓÒÔÕÜÚÙÛÍÌÎÏÆäåáàâãçéèêëñöøóòôõüúùûíìîïæÿß";
+
+  // Matches ISO-8859-1 lower case letters:
+  $lower = "[:lower:]äåáàâãçéèêëñöøóòôõüúùûíìîïæÿß";
+
+  // Matches ISO-8859-1 printing characters (including space):
+  $print = "[:print:]ÄÅÁÀÂÃÇÉÈÊËÑÖØÓÒÔÕÜÚÙÛÍÌÎÏÆäåáàâãçéèêëñöøóòôõüúùûíìîïæÿß";
+
+  // Matches ISO-8859-1 punctuation:
+  $punct = "[:punct:]";
+
+  // Matches ISO-8859-1 whitespace (separating characters with no visual representation):
+  $space = "[:space:]";
+
+  // Matches ISO-8859-1 upper case letters:
+  $upper = "[:upper:]ÄÅÁÀÂÃÇÉÈÊËÑÖØÓÒÔÕÜÚÙÛÍÌÎÏÆ";
+
+  // Matches ISO-8859-1 "word" characters:
+  $word = "_[:alnum:]ÄÅÁÀÂÃÇÉÈÊËÑÖØÓÒÔÕÜÚÙÛÍÌÎÏÆäåáàâãçéèêëñöøóòôõüúùûíìîïæÿß";
+
+  // Defines the PCRE pattern modifier(s) to be used in conjunction with the above variables:
+  // More info: <http://www.php.net/manual/en/reference.pcre.pattern.modifiers.php>
+  $patternModifiers = "";
+
+  return array($alnum, $alpha, $cntrl, $dash, $digit, $graph, $lower,
+       $print, $punct, $space, $upper, $word, $patternModifiers);
+
+}
 /*
  * Helper function for theme_biblio_format_authors() and theme_biblio_page_number()
  */
 function _biblio_get_utf8_regex() {
+
     // Matches Unicode letters & digits:
   $alnum = "\p{Ll}\p{Lu}\p{Lt}\p{Lo}\p{Nd}"; // Unicode-aware equivalent of "[:alnum:]"
 
@@ -353,16 +397,26 @@ function _biblio_get_utf8_regex() {
   // Defines the PCRE pattern modifier(s) to be used in conjunction with the above variables:
   // More info: <http://www.php.net/manual/en/reference.pcre.pattern.modifiers.php>
   $patternModifiers = "u"; // the "u" (PCRE_UTF8) pattern modifier causes PHP/PCRE to treat pattern strings as UTF-8
-  
-  return array($alnum, $alpha, $cntrl, $dash, $digit, $graph, $lower, 
+
+  return array($alnum, $alpha, $cntrl, $dash, $digit, $graph, $lower,
        $print, $punct, $space, $upper, $word, $patternModifiers);
 }
 
+function _biblio_get_regex_patterns() {
+  // Checks if PCRE is compiled with UTF-8 and Unicode support
+  if (!@preg_match('/\pL/u', 'a')) {
+    // probably a broken PCRE library
+    return _biblio_get_latin1_regex();
+  } else {
+    // Unicode safe filter for the value
+    return _biblio_get_utf8_regex();
+  }
+}
 function theme_biblio_format_authors($contributors, $options, $inline = false)
 {
   if (empty($contributors)) return;
-  list($alnum, $alpha, $cntrl, $dash, $digit, $graph, $lower, 
-       $print, $punct, $space, $upper, $word, $patternModifiers) = _biblio_get_utf8_regex();
+  list($alnum, $alpha, $cntrl, $dash, $digit, $graph, $lower,
+       $print, $punct, $space, $upper, $word, $patternModifiers) = _biblio_get_regex_patterns();
   $base  = variable_get('biblio_base', 'biblio');
   $author_links = variable_get('biblio_author_links', 1);
 
@@ -515,9 +569,9 @@ function theme_biblio_author_link($author, $aid, $base='biblio', $inline = FALSE
 //        - for '$shortenPageRangeEnd=true', add support for page locators that contain letters (e.g. "A1 - A3" or "4a-4c")
 function theme_biblio_page_number($origPageInfo, $pageRangeDelim = "-", $singlePagePrefix = "", $pageRangePrefix = "", $totalPagesPrefix = "", $singlePageSuffix = "", $pageRangeSuffix = "", $totalPagesSuffix = "", $shortenPageRangeEnd = false)
 {
-  list($alnum, $alpha, $cntrl, $dash, $digit, $graph, $lower, 
-       $print, $punct, $space, $upper, $word, $patternModifiers) = _biblio_get_utf8_regex();
-  
+  list($alnum, $alpha, $cntrl, $dash, $digit, $graph, $lower,
+       $print, $punct, $space, $upper, $word, $patternModifiers) = _biblio_get_regex_patterns();
+
   // Check original page info for any recognized page locators, and process them appropriately:
   if (preg_match("/\w*\d+\w* *[$dash]+ *(?:\w*\d+\w*)?/$patternModifiers", $origPageInfo)) // the original page info contains a page range (like: "127-127", "127-132", "A1 - A3", "4a-4c", or "127-" if only start page given)
   {

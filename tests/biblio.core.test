@@ -1,0 +1,15 @@
+<?php
+class BiblioTestCase extends DrupalWebTestCase {
+
+}
+class BiblioCoreTestCase extends BiblioTestCase {
+  public static function getInfo() {
+    return array(
+      'name' => t('Biblio Core'),
+      'description' => t('Test creating, reading, updating and deleting a biblio entry.'),
+      'group' => t('Biblio'),
+    );
+  }
+
+}
+?>

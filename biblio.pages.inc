@@ -1041,15 +1041,6 @@ function biblio_citekey_view() {
 
 }
 
-
-/**
- * @param $author
- * @param $aid
- * @param $base
- * @param $inline
- * @return unknown_type
- */
-
 /**
  * @param $keywords
  * @param $base
@@ -1066,6 +1057,7 @@ function _biblio_keyword_links($keywords,$base='biblio') {
   }
   $html = "";
   if (!is_array($keywords)) {
+    require_once(drupal_get_path('module', 'biblio') .'/biblio.keywords.inc');
     $keywords = biblio_explode_keywords($keywords);
   }
 

@@ -1100,9 +1100,11 @@ function biblio_form($node, $form_state) {
           // is the kewords are in array form, then implode them into a string.
           if (isset($form_state['values']['biblio_keywords']) &&
              is_array($form_state['values']['biblio_keywords'])) {
+             require_once(drupal_get_path('module', 'biblio') .'/biblio.keywords.inc');
              $form_state['values']['biblio_keywords'] = biblio_implode_keywords($form_state['values']['biblio_keywords']);
           }
           if (!empty($node->$key) && is_array($node->$key)) {
+            require_once(drupal_get_path('module', 'biblio') .'/biblio.keywords.inc');
             $node->$key = biblio_implode_keywords($node->$key);
           }
 
@@ -1409,6 +1411,7 @@ function biblio_form_validate($form, & $form_state) {
     form_set_error('biblio_year', t('Year of Publication must be a number between 1 and @thisyear or the words "In Press" or "Submitted" ', array('@thisyear' => $today['year'] + 1 )));
   }
   if (isset($form_state['values']['biblio_keywords'])) {
+    require_once(drupal_get_path('module', 'biblio') .'/biblio.keywords.inc');
     if (!is_array($form_state['values']['biblio_keywords'])) {
       $form_state['values']['biblio_keywords'] = biblio_explode_keywords($form_state['values']['biblio_keywords']);
     }
@@ -1474,6 +1477,7 @@ function biblio_insert($node) {
  * database updates.
  */
 function biblio_update($node) {
+  require_once(drupal_get_path('module', 'biblio') .'/biblio.keywords.inc');
   _biblio_prepare_submit($node);
   // Update the node in the database:
   if ($node->revision) {

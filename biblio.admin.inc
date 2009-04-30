@@ -401,7 +401,7 @@ function biblio_admin_settings() {
   $form['style']['biblio_style'] = array(
     '#type' => 'radios',
     '#title' => t('Style'),
-    '#default_value' => biblio_get_style(),
+    '#default_value' => variable_get('biblio_style', 'cse'),
     '#options' => _biblio_admin_get_styles(),
     '#description' => t('Set the bibliographic style of the "list" view.')
   );
@@ -940,7 +940,8 @@ function _biblio_admin_get_styles() {
       }
     }
   }
-  return ($styles);
+  ksort($styles);
+  return $styles;
 }
 function biblio_form_sort($a, $b) {
   $a_weight = (is_array($a) && isset($a['weight'])) ? $a['weight'] : 0;
