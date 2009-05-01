@@ -9,6 +9,11 @@
 Upgrades from 5.x or RC2 and later are directly supported without any intermediate updates.
 
 <h3>New features...</h3>
+<b>6.x-1.4</b>
+<ul>
+  <li>No new features, 1.4 was released to address a major bug which crashed the code when saving a new entry containing keywords.</li>
+</ul>
+
 <b>6.x-1.3</b>
 <ol>
   <li>Added "DOI Lookup" option on the input form. Entering a valid DOI name (number) here will query crossref.org and poplulate the input form with all the data it gets.  You are then presented with the populated form to make further additions/changes prior to saving it to the database.</li>
@@ -38,51 +43,61 @@ differently. i.e. Smith, J and John Smith are the same person so you merge the t
   <li>input your own PHP code to generate cite keys</li>
 </ol>
 <h3>Bugs Fixed...</h3>
+<b>6.x-1.5</b>
+<ul>
+  <li><a href="http://drupal.org/node/450522">#450522</a> Limit on author initials is not respected in Vancouver style
+  <li><a href="http://drupal.org/node/450030">#450030</a> Minor error on edit authors
+</ul>
+<b>6.x-1.4</b>
+<ul>
+  <li><a href="http://drupal.org/node/448732">#448732</a> can't save any biblio: "Call to undefined function biblio_explode_keywords()"</li>
+  <li><a href="http://drupal.org/node/448306">#448306</a> preg_replace() error</li>
+</ul>
 <b>6.x-1.3</b>
 <ul>
-  <li>[#444428]</li>
-  <li>[#437440]</li>
-  <li>[#435058]</li>
-  <li>[#439152]</li>
-  <li>[#356322]</li>
-  <li>[#355572]</li>
-  <li>[#340570]</li>
-  <li>[#442916]</li>
-  <li>[#440248]</li>
-  <li>[#438930]</li>
-  <li>[#441104]</li>
-  <li>[#439086]</li>
-  <li>[#435058]</li>
-  <li>[#433198]</li>
-  <li>[#431688]</li>
-  <li>[#425852]</li>
-  <li>[#429226]</li>
-  <li>[#421546]</li>
+  <li><a href="http://drupal.org/node/444428">#444428</a> simple mispelled words</li>
+  <li><a href="http://drupal.org/node/437440">#437440</a> Citation Key cannot be longer than 16 </li>
+  <li><a href="http://drupal.org/node/435058">#435058</a> Keywords field length exceeded</li>
+  <li><a href="http://drupal.org/node/439152">#439152</a> Export by keyword</li>
+  <li><a href="http://drupal.org/node/356322">#356322</a> Biblio nodes not XHTML-compliant</li>
+  <li><a href="http://drupal.org/node/355572">#355572</a> Filtering by author should be more lenient / "smart"</li>
+  <li><a href="http://drupal.org/node/340570">#340570</a> inline biblio_db_search layout is broken</li>
+  <li><a href="http://drupal.org/node/442916">#442916</a> Shortening forenames does not use betweenInitialsDelim option</li>
+  <li><a href="http://drupal.org/node/440248">#440248</a> Typo in HTML in _biblio_filter_replace_callback()</li>
+  <li><a href="http://drupal.org/node/438930">#438930</a> edit_authors permission</li>
+  <li><a href="http://drupal.org/node/441104">#441104</a> schema module reports a mismatch</li>
+  <li><a href="http://drupal.org/node/439086">#439086</a> Biblio Keywords and Biblio free tags</li>
+  <li><a href="http://drupal.org/node/435058">#435058</a> Keywords field length exceeded</li>
+  <li><a href="http://drupal.org/node/433198">#433198</a> Shortening forename of authors containing UTF-8 special characters does not work</li>
+  <li><a href="http://drupal.org/node/431688">#431688</a> Interaction between url filter and standard sorting filters</li>
+  <li><a href="http://drupal.org/node/425852">#425852</a> Biblio page title setting ignored</li>
+  <li><a href="http://drupal.org/node/429226">#429226</a> Quotes around title in Vancouver style</li>
+  <li><a href="http://drupal.org/node/421546">#421546</a> Keywords vanish when previewing</li>
 </ul>
 <b>6.x-1.2</b>
 <ul>
-  <li>[#376808]</li>
-  <li>[#415478]</li>
-  <li>[#414870]</li>
-  <li>[#414380]</li>
-  <li>[#412720]</li>
-  <li>[#410610]</li>
-  <li>[#409952]</li>
-  <li>[#376802]</li>
-  <li>[#404842]</li>
-  <li>[#404522]</li>
-  <li>[#397104]</li>
-  <li>[#403484]</li>
-  <li>[#404080]</li>
-  <li>[#402468]</li>
-  <li>[#401938]</li>
+  <li><a href="http://drupal.org/node/376808">#376808</a> Delete orphaned authors automatically?</li>
+  <li><a href="http://drupal.org/node/415478">#415478</a> Sorting by type without bars</li>
+  <li><a href="http://drupal.org/node/414870">#414870</a> "more" link in the Block for new publications</li>
+  <li><a href="http://drupal.org/node/414380">#414380</a> Only one keyword is shown</li>
+  <li><a href="http://drupal.org/node/412720">#412720</a> Broken download links when filtering with clean URLs (e.g. /biblio/year/2009)</li>
+  <li><a href="http://drupal.org/node/410610">#410610</a> "Hyperlink titles using supplied URL if available" feature does not seem to work.</li>
+  <li><a href="http://drupal.org/node/409952">#409952</a> All Fields appear (even when unchecked) after upgrade from Biblio 5x to 6x</li>
+  <li><a href="http://drupal.org/node/376802">#376802</a> Search index not updated when editing a node </li>
+  <li><a href="http://drupal.org/node/404842">#404842</a> Tabs and styling</li>
+  <li><a href="http://drupal.org/node/404522">#404522</a> Redirection after batch import</li>
+  <li><a href="http://drupal.org/node/397104">#397104</a> Search function sucks :-)</li>
+  <li><a href="http://drupal.org/node/403484">#403484</a> Slightly malformed RIS files are not imported</li>
+  <li><a href="http://drupal.org/node/404080">#404080</a> Typo in hook_menu prevents author type editing</li>
+  <li><a href="http://drupal.org/node/402468">#402468</a> Filter by author, sort both first and secondary authors </li>
+  <li><a href="http://drupal.org/node/401938">#401938</a> First name / Last name order switched</li>
 </ul>
 <b>6.x-1.1</b>
 <ul>
-  <li>[#398472]</li>
-  <li>[#396654]</li>
-  <li>[#398226]</li>
-  <li>[#396096]</li>
+  <li><a href="http://drupal.org/node/398472">#398472</a> Drupal UserID-Author Mapping problems</li>
+  <li><a href="http://drupal.org/node/396654">#396654</a> Export single reference fails - SQL error</li>
+  <li><a href="http://drupal.org/node/398226">#398226</a> Fatal error: Cannot break/continue 1 level in biblio.module on line 277</li>
+  <li><a href="http://drupal.org/node/396096">#396096</a> Caching problem: no filters for anonymous users</li>
 </ul>
 <b>6.x-1.0</b>
 <ul>

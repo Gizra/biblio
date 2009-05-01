@@ -46,6 +46,7 @@ function biblio_style_vancouver_author_options() {
     'betweenInitialsDelim'              => '',
     'initialsBeforeAuthorFirstAuthor'   => FALSE,
     'initialsBeforeAuthorStandard'      => FALSE,
+    'numberOfInitialsToKeep'            => 2,
     'shortenGivenNames'                 => TRUE,
     'numberOfAuthorsTriggeringEtAl'     => 6,
     'includeNumberOfAuthors'            => 6,

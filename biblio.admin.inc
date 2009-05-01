@@ -1096,8 +1096,7 @@ function biblio_admin_author_edit_form($form_state, $author_id) {
 
   $base = variable_get('biblio_base', 'biblio');
   $menu = menu_get_active_title();
-  if ($menu == 'Edit author information') $path = $base.'/authors';
-  if ($menu == 'Biblio settings') $path = 'admin/settings/biblio/author/list';
+  $path = (strpos($_GET['q'],'settings'))? 'admin/settings/biblio/author' : $base.'/authors';
   $form['#redirect'] = $path;
 
   $form['cid'] = array(
@@ -1378,7 +1377,8 @@ function biblio_admin_keyword_edit_form($form_state, $keyword_id) {
   $keyword = db_fetch_object(db_query('SELECT * FROM {biblio_keyword_data} bkd WHERE bkd.kid = %d ', $keyword_id));
 
   $base = variable_get('biblio_base', 'biblio');
-  $form['#redirect'] = "$base/keywords";
+  $path = (strpos($_GET['q'],'settings'))? 'admin/settings/biblio/keywords' : $base.'/keywords';
+  $form['#redirect'] = $path;
 
   $form['kid'] = array(
     '#type' => 'value',

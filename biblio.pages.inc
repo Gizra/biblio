@@ -541,7 +541,7 @@ function _biblio_sort_tabs($attrib, $options) {
       $sort_links['sfx'] = '] ';
       $sort_links['arrow'] = $order_arrow;
       $content .= _biblio_sort_tab($sort_links, $title, $tabs );
-      
+
     }
     elseif ($key === $link ) {
       $sort_links['options']['query'] = "sort=$link&order=$cur_order";
@@ -551,7 +551,7 @@ function _biblio_sort_tabs($attrib, $options) {
       $sort_links['arrow'] = '';
       $content .= _biblio_sort_tab($sort_links,  t("!title", array('!title' => $title)), $tabs );
     }
-    
+
   }
   if (!$tabs) $content = t('Sort by').': '.$content;
   $content .= $tabs ? '</ul>':'';
@@ -662,7 +662,7 @@ function _biblio_filter_info_line($args) {
 }
 
 function _biblio_category_separator_bar($attrib, $node) {
-  static $_text = ''; 
+  static $_text = '';
 
   switch ($attrib['sort']) {
     case 'title':
@@ -1099,11 +1099,11 @@ function biblio_author_page($filter = NULL) {
     while ($author = db_fetch_array($db_result)){
       $authors[] = $author;
     }
-    $rows[] = array(array('data' => theme(biblio_alpha_line, 'authors', $filter, $path), 'colspan' => 3));
+    $rows[] = array(array('data' => theme(biblio_alpha_line, 'authors', $filter), 'colspan' => 3));
     for ($i=0; $i < count($authors); $i+=3) {
-      $rows[] = array( array('data' => _biblio_format_author($authors[$i], $path) ),
-                       array('data' => isset($authors[$i+1])?_biblio_format_author($authors[$i+1], $path):'' ),
-                       array('data' => isset($authors[$i+2])?_biblio_format_author($authors[$i+2], $path):'' ));
+      $rows[] = array( array('data' => _biblio_format_author($authors[$i]) ),
+                       array('data' => isset($authors[$i+1])?_biblio_format_author($authors[$i+1]):'' ),
+                       array('data' => isset($authors[$i+2])?_biblio_format_author($authors[$i+2]):'' ));
     }
   //$header = array(array('data' => t('There are a total of @count authors !header_ext in the database',array('@count' => count($authors), '!header_ext' => $header_ext)), 'align' =>'center', 'colspan' => 3));
   $output .= theme('table', $header, $rows);
@@ -1112,19 +1112,19 @@ function biblio_author_page($filter = NULL) {
 /*
  * Helper function to format the authors and add edit links if required
  */
-function _biblio_format_author($author, $path) {
+function _biblio_format_author($author) {
   $style_name = biblio_get_style();
   $style_function = "biblio_style_$style_name"."_author_options";
   module_load_include('inc','biblio',"biblio_style_$style_name");
   $author_options = $style_function();
   $format = theme('biblio_format_authors', array($author), $author_options, $inline);
-  $format .= ' ('. $author['cnt'] . ') '. ((biblio_access('edit_author'))?_biblio_author_edit_links($author, $path):'');
+  $format .= ' ('. $author['cnt'] . ') '. ((biblio_access('edit_author'))?_biblio_author_edit_links($author):'');
   return $format;
 }
 
-function _biblio_author_edit_links($author, $path) {
-    $base = variable_get('biblio_base', 'biblio');
-    return l(' ['.t('edit').']', "$path" . $author['cid'] ."/edit/" );
+function _biblio_author_edit_links($author) {
+    $path =  (ord(substr($_GET['q'],-1)) > 97) ? $_GET['q'] . "/" : substr($_GET['q'], 0, -1); 
+    return l(' ['.t('edit').']', $path . $author['cid'] ."/edit/" );
 }
 
 function biblio_keyword_page($filter = NULL) {
@@ -1157,7 +1157,8 @@ function _biblio_format_keyword($keyword) {
   $base      = variable_get('biblio_base', 'biblio');
   $format    = l(trim($keyword->word), "$base/keyword/$keyword->kid" );
   $format   .= ' ('. $keyword->cnt . ') ' ;
-  $edit_link = ' ['.l(t('edit'), "$base/keyword/$keyword->kid/edit/" ).'] ';
+  $path =  (ord(substr($_GET['q'],-1)) > 97) ? $_GET['q'] . "/" : substr($_GET['q'], 0, -1); 
+  $edit_link = ' ['.l(t('edit'), $path . $keyword->kid . "/edit/" ).'] ';
   $format   .= (user_access('administer biblio')) ? $edit_link: '';
 
   return $format;

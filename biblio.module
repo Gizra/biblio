@@ -534,7 +534,7 @@ function biblio_menu() {
     'access arguments' => array('edit_author'),
     'file' => 'biblio.admin.inc',
     'type' => MENU_CALLBACK);
-  $items["$base/keyword/%/edit"] = array(
+  $items["$base/keywords/%/edit"] = array(
     'title' => '',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('biblio_admin_keyword_edit_form', 2),
@@ -633,7 +633,7 @@ function biblio_menu() {
     'page arguments' => array('biblio_admin_types_edit_form'),
     'access arguments' => array('administer biblio'),
     'file' => 'biblio.admin.inc',
-    'type' => MENU_LOCAL_TASK
+    'type' => MENU_CALLBACK
   );
   $items['admin/settings/biblio/fields/type/delete'] = array(
     'title' => '',
@@ -692,14 +692,14 @@ function biblio_menu() {
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => -7
   );
-  $items['admin/settings/biblio/author/list/%/edit'] = array(
+  $items['admin/settings/biblio/author/%/edit'] = array(
     'title' => t('Edit author information'),
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('biblio_admin_author_edit_form',5),
+    'page arguments' => array('biblio_admin_author_edit_form',4),
     'access callback' => 'biblio_access',
     'access arguments' => array('edit_author'),
     'file' => 'biblio.admin.inc',
-   	'type' => MENU_LOCAL_TASK,
+   	'type' => MENU_CALLBACK,
     'weight' => -6
   );
   $items['admin/settings/biblio/author/orphans'] = array(
@@ -737,7 +737,7 @@ function biblio_menu() {
     'page arguments' => array('biblio_admin_author_types_form_edit', 'edit', 5),
     'access arguments' => array('administer biblio'),
     'file' => 'biblio.admin.inc',
-    'type' => MENU_LOCAL_TASK,
+    'type' => MENU_CALLBACK,
     'weight' => -9
   );
   $items['admin/settings/biblio/author/type/%/delete'] = array(
@@ -748,9 +748,9 @@ function biblio_menu() {
     'access arguments' => array('administer biblio'),
     'file' => 'biblio.admin.inc',
     'weight' => 1,
-    'type' => MENU_LOCAL_TASK
+    'type' => MENU_CALLBACK
   );
-  $items['admin/settings/biblio/keyword'] = array(
+  $items['admin/settings/biblio/keywords'] = array(
     'title' => t('Keywords'),
     'page callback' => 'biblio_keyword_page',
     'access callback' => 'user_access',
@@ -759,7 +759,7 @@ function biblio_menu() {
      'type' => MENU_LOCAL_TASK,
     'weight' => -7
   );
-  $items['admin/settings/biblio/keyword/list'] = array(
+  $items['admin/settings/biblio/keywords/list'] = array(
     'title' => t('List'),
     'page callback' => 'biblio_keyword_page',
     'access callback' => 'user_access',
@@ -768,17 +768,17 @@ function biblio_menu() {
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => -7
   );
-  $items['admin/settings/biblio/keyword/list/%/edit'] = array(
+  $items['admin/settings/biblio/keywords/%/edit'] = array(
     'title' => t('Edit keyword information'),
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('biblio_admin_keyword_edit_form',5),
+    'page arguments' => array('biblio_admin_keyword_edit_form',4),
     'access callback' => 'user_access',
     'access arguments' => array('administer biblio'),
     'file' => 'biblio.admin.inc',
-    'type' => MENU_LOCAL_TASK,
+    'type' => MENU_CALLBACK,
     'weight' => -6
   );
-  $items['admin/settings/biblio/keyword/orphans'] = array(
+  $items['admin/settings/biblio/keywords/orphans'] = array(
     'title' => t('Orphaned Keywords'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('biblio_admin_keyword_orphans_form'),

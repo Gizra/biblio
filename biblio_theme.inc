@@ -462,8 +462,13 @@ function theme_biblio_format_authors($contributors, $options, $inline = false)
       // then, separate initials with the specified delimiter:
       $delim = $options['betweenInitialsDelim'];
       $author['initials'] = preg_replace("/([$upper])(?=[^$lower]+|$)/$patternModifiers", "\\1$delim", $author['initials']);
+
+      $shortenInitials = (isset($options['numberOfInitialsToKeep'])) ? $options['numberOfInitialsToKeep'] : FALSE;
+      if ($shortenInitials) $author['initials'] = drupal_substr($author['initials'], 0, $shortenInitials);
+
       if ($options['shortenGivenNames'] && !empty($author['firstname'])) {
         $author['firstname'] = $author['firstname'].$options['betweenInitialsDelim'].$author['initials'];
+        if ($shortenInitials) $author['firstname'] = drupal_substr($author['firstname'], 0, $shortenInitials);
       }
       elseif(!empty($author['firstname'])) {
         $author['firstname'] = $author['firstname'].' '.$author['initials'];
@@ -918,12 +923,9 @@ function theme_biblio_alpha_line($type = 'author',$current = NULL, $path = NULL)
   $all = '';
   switch ($type){
     case 'authors':
-      //$group = 'authors/';
-      $all = '['.l(t('Show ALL'), $path).']' ;
-      break;
     case 'keywords':
-      $path = "$base/keywords/";
-      $all = '['.l(t('Show ALL'), $path).']' ;
+      $path =  (ord(substr($_GET['q'],-1)) > 97) ? $_GET['q'] . "/" : substr($_GET['q'], 0, -1); 
+      $all = '['.l(t('Show ALL'), substr($_GET['q'], 0, -2)).']' ;
       break;
     case 'author':
       $options['query'] .= 'sort=author';
