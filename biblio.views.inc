@@ -58,6 +58,7 @@ function biblio_views_data() {
                       INNER JOIN {biblio_field_type} AS ft ON ft.fid = f.fid
                       INNER JOIN {biblio_field_type_data} ftd ON ft.ftdid = ftd.ftdid
                       WHERE ft.tid=0');
+  
   while ($field = db_fetch_array($result)){
     $data[$field['name']] = array(
       'title' => $field['title'], 
@@ -101,8 +102,8 @@ function biblio_views_data() {
     ),
     'node_revision' => array(
       'left_table' => 'biblio',
-    'left_field' => 'vid',
-    'field' => 'vid',
+      'left_field' => 'vid',
+      'field' => 'vid',
     ),
     // This is provided for many_to_one argument
     'biblio' => array(
@@ -132,8 +133,8 @@ function biblio_views_data() {
     ),
     'node_revision' => array(
       'left_table' => 'biblio',
-     'left_field' => 'vid',
-     'field' => 'vid',
+      'left_field' => 'vid',
+      'field' => 'vid',
     ),
     // This is provided for many_to_one argument
     'biblio' => array(
@@ -147,7 +148,7 @@ function biblio_views_data() {
     'filter' => array(
       'handler' => 'biblio_handler_filter_keyword',
     )
-     );
+  );
   
   $viewsdata['biblio_keyword'] = $data;
 /*
@@ -158,10 +159,10 @@ function biblio_views_data() {
   $data['table']['join'] = array(
     'node' => array(
       'left_table' => 'biblio_keyword',
-     'left_field' => 'vid',
-     'field' => 'vid',
+      'left_field' => 'vid',
+      'field' => 'vid',
     ),
-     );
+  );
   $data['word'] = array(
     'title' => t('Keyword'), 
     'help'  => t("Display the keyword from a Biblio node"), 

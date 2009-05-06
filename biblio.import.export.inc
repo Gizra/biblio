@@ -391,7 +391,7 @@ function biblio_export($format = "tagged", $nid = null, $popup = false, $version
     $params = $_SESSION['last_biblio_query_terms'];
   }
   elseif (!empty ($nid)) {
-    $query = db_rewrite_sql("SELECT * FROM {node} n left join {biblio} b  on n.vid=b.vid WHERE n.nid=%d ");
+    $query = db_rewrite_sql("SELECT DISTINCT(n.nid), n.*, b.* FROM {node} n left join {biblio} b  on n.vid=b.vid WHERE n.nid=%d ");
     $params[] = $nid;
   } else {
     return;
@@ -666,7 +666,7 @@ function biblio_bibtex_export($results) {
     }
     if (!empty($pub->biblio_keywords)) {
       foreach($pub->biblio_keywords as $term){
-        $kw_array[] = $term->word;
+        $kw_array[] = $term;
       }
     }
     if (!empty($kw_array)){
@@ -1007,7 +1007,7 @@ function biblio_endnote_tagged_export($results) {
     }
     if (!empty($pub->biblio_keywords)) {
       foreach($pub->biblio_keywords as $term){
-        $kw_array[] = $term->word;
+        $kw_array[] = $term;
       }
     }
     if (!empty($kw_array)){

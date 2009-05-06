@@ -104,6 +104,7 @@ function biblio_build_query($arg_list) {
   $joins = array();
   $selects = array();
   $count_selects = array();
+  $count_limit = '';
 
   $selects[] = "DISTINCT(n.nid)";
   $count_selects[] = "DISTINCT(n.nid)";
@@ -200,6 +201,7 @@ function biblio_build_query($arg_list) {
           break;
         case 'rss.xml':
           $rss_info['feed'] = true;
+          $count_limit = 'LIMIT '. variable_get('biblio_rss_number_of_entries', 10);
           break;
         case 'profile':
           $inline = "profile";
@@ -400,8 +402,8 @@ function biblio_build_query($arg_list) {
 
   $where_clause = count($where) > 1 ? '('. implode(') AND (', $where) .')': $where[0];
 
-  $query = db_rewrite_sql("SELECT $select FROM {node} n $join  WHERE $where_clause $limit $sortby ");
-  $count_query = db_rewrite_sql("SELECT COUNT($count_select) FROM {node} n $join  WHERE $where_clause $limit ");
+  $query = db_rewrite_sql("SELECT $select FROM {node} n $join  WHERE $where_clause $limit $sortby $count_limit");
+  $count_query = db_rewrite_sql("SELECT COUNT($count_select) FROM {node} n $join  WHERE $where_clause $limit $count_limit");
   $_SESSION['last_biblio_query'] = $query;
   $terms[] = $sort_attrib['order']; // this is either asc or desc to be inserted into the first term of the ORDER clause
   if($sort_attrib['sort'] == 'year') $terms[] = $sort_attrib['order']; // we need any extra order term when sorting by year since there are to date terms biblio_year and biblio_date
@@ -523,7 +525,7 @@ function _biblio_sort_tabs($attrib, $options) {
   $order = ($attrib['order'] == "desc" || $attrib['order'] == "DESC")?"asc":"desc";
   $cur_order = ($attrib['order'] == "desc" || $attrib['order'] == "DESC")?"desc":"asc";
   $path = drupal_get_path('module','biblio');
-  $order_arrow = ($order == 'asc') ? '&nbsp;<img src ="'.$path.'/arrow-asc.png" />':'&nbsp;<img src ="'.$path.'/arrow-desc.png" />';
+  $order_arrow = ($order == 'asc') ? '<img src ="/'.$path.'/arrow-asc.png" alt =" (Desc)" />':'<img src ="/'.$path.'/arrow-desc.png" alt = " (Asc)" />';
   $sort_links =  variable_get('biblio_sort_tabs', array('author'=>'author', 'title'=>'title', 'type'=>'type', 'year'=>'year', 'keyword'=>'keyword'));
   ksort($sort_links);
   $content .= $tabs ? '<ul class="tabs secondary ">':'';
@@ -532,8 +534,7 @@ function _biblio_sort_tabs($attrib, $options) {
     $sort_links['options'] = array();
     $sort_links['options']['attributes'] = array("title"=>t("Click a second time to reverse the sort order"));
     $sort_links['options']['html'] = TRUE;
-    $title = drupal_ucfirst($link);
-    $title = t("!title", array('!title' => $title));
+    $title = t(ucfirst($link));
     if ($key === $link && $link == $attrib['sort']) {
       $sort_links['options']['query'] = "sort=$link&order=$order";
       $sort_links['class'] = 'class="active"';
@@ -758,8 +759,8 @@ function biblio_search_form(&$form_state) {
     '#size' => 25,
     '#maxlength' => 255,
   );
-  $button_text = strlen(variable_get('biblio_search_button_text', ''))?variable_get('biblio_search_button_text', t('Biblio search')):t('Biblio search');
-  $form['biblio_search']['submit'] = array('#type' => 'submit', '#value' => $button_text);
+  $button_text = variable_get('biblio_search_button_text', 'Biblio search');
+  $form['biblio_search']['submit'] = array('#type' => 'submit', '#value' => t($button_text));
   return $form;
 }
 
@@ -1123,7 +1124,7 @@ function _biblio_format_author($author) {
 }
 
 function _biblio_author_edit_links($author) {
-    $path =  (ord(substr($_GET['q'],-1)) > 97) ? $_GET['q'] . "/" : substr($_GET['q'], 0, -1); 
+    $path =  (ord(substr($_GET['q'],-1)) > 97) ? $_GET['q'] . "/" : substr($_GET['q'], 0, -1);
     return l(' ['.t('edit').']', $path . $author['cid'] ."/edit/" );
 }
 
@@ -1157,7 +1158,7 @@ function _biblio_format_keyword($keyword) {
   $base      = variable_get('biblio_base', 'biblio');
   $format    = l(trim($keyword->word), "$base/keyword/$keyword->kid" );
   $format   .= ' ('. $keyword->cnt . ') ' ;
-  $path =  (ord(substr($_GET['q'],-1)) > 97) ? $_GET['q'] . "/" : substr($_GET['q'], 0, -1); 
+  $path =  (ord(substr($_GET['q'],-1)) > 97) ? $_GET['q'] . "/" : substr($_GET['q'], 0, -1);
   $edit_link = ' ['.l(t('edit'), $path . $keyword->kid . "/edit/" ).'] ';
   $format   .= (user_access('administer biblio')) ? $edit_link: '';
 
