@@ -99,7 +99,9 @@ function biblio_db_search() {
 function biblio_build_query($arg_list) {
   global $user, $db_type;
   static $bcc; //biblio_contributor (bc) count , increase for every invocation
+  static $tcc; //term counter, increase for every invocation
   if ( !isset( $bcc ) ) $bcc = 0;
+  if ( !isset( $tcc ) ) $tcc = 0;
   $inline = $rss_info['feed'] = false;
   $joins = array();
   $selects = array();
@@ -145,7 +147,8 @@ function biblio_build_query($arg_list) {
 
   switch ($sort_attrib['sort']) {
     case 'type':
-      $sortby = "ORDER BY bt.name %s, b.biblio_year DESC ";
+      //$sortby = "ORDER BY bt.name %s, b.biblio_year DESC ";
+      $sortby = "ORDER BY bt.name %s, $sort_title";
       break;
     case 'title':
       //$sortby = "ORDER BY SUBSTRING(n.title,1,3) %s, b.biblio_year DESC ";
@@ -153,7 +156,7 @@ function biblio_build_query($arg_list) {
       break;
     case 'author':
       $sortby = "ORDER BY bcd.lastname %s ";
-      $where['bc-rank'] = "bc.rank=0";
+      //$where['bc-rank'] = "bc.rank=0";
       $where['bc-auth-category'] = "bc.auth_category=1";
       $joins['bc'] = '  INNER JOIN {biblio_contributor} as bc on b.vid = bc.vid ';
       $joins['bcd'] = '  JOIN {biblio_contributor_data} as bcd on bc.cid = bcd.cid ';
@@ -218,15 +221,16 @@ function biblio_build_query($arg_list) {
         case 'term':
         case 'term_id':
           $term = explode("?",array_shift($arg_list));
-          $joins[] = "inner join {term_node} as tn on n.vid = tn.vid";
+          $joins[] = "inner join {term_node} as tn". $tcc ." on n.vid = tn".$tcc.".vid";
           if ($type == 'term') {
-            $joins[] = "inner join  {term_data} as td on tn.tid= td.tid";
+            $joins[] = "inner join  {term_data} as td on tn". $tcc .".tid= td.tid";
             $where[] = "td.name = '%s' ";
           }elseif ($type == 'term_id') {
-            $where[] = "tn.tid = '%d' ";
+            $where[] = "tn". $tcc .".tid = '%d' ";
           }
           $terms[] = db_escape_string($term[0]);
           array_push($args, $type, $term[0]);
+          $tcc++;
           break;
         case 'tg':
           $term = explode("?",array_shift($arg_list));
@@ -238,7 +242,7 @@ function biblio_build_query($arg_list) {
         case 'ag': //selects entries whoose authors firstname starts with the letter provided
           $term = explode("?",array_shift($arg_list));
           $where[] = " UPPER(substring(bcd.lastname,1,1)) = '%s' ";
-          $where['bc-rank'] = "bc.rank=0";
+          //$where['bc-rank'] = "bc.rank=0";
           $joins['bc'] = '  INNER JOIN {biblio_contributor} as bc on b.vid = bc.vid ';
           $joins['bcd'] = '  JOIN {biblio_contributor_data} as bcd on bc.cid = bcd.cid ';
           $terms[] = db_escape_string(strtoupper($term[0]));
@@ -338,7 +342,8 @@ function biblio_build_query($arg_list) {
           break;
         case 'type':
           $term = db_escape_string(array_shift($arg_list));
-          $limit .= $operator. "b.biblio_type=%d ";
+          $where[] = "b.biblio_type=%d ";
+          //$limit .= $operator. "b.biblio_type=%d ";
           $terms[] = (int)$term;
           array_push($args, $type, (int)$term);
           $operator = NULL;
@@ -591,7 +596,7 @@ function _biblio_filter_info_line($args) {
       if ($type == 'term_id') {
         $term = taxonomy_get_term($value);
         $value = $term->name;
-        $type = t("Taxonomy Term");
+        $type = t("Taxonomy term");
       }
       if ($type == 'keyword') {
         require_once(drupal_get_path('module', 'biblio') .'/biblio.keywords.inc');
@@ -604,7 +609,7 @@ function _biblio_filter_info_line($args) {
       if ($type == 'uid' ) {
         $user = user_load($value);
         $value = $user->name;
-        $type = t("Drupal User");
+        $type = t("Drupal user");
       }
       if ($type == 'aid' || ($type == 'author' && is_numeric($value))) {
         $author = biblio_get_contributor($value);
@@ -619,15 +624,14 @@ function _biblio_filter_info_line($args) {
         //return;
         $type = t("First letter of title");
       }
-      if ($type == 'type') {
-        $pub_types = db_query('SELECT t.* FROM {biblio_types} as t WHERE t.tid>0');
-        while ($option = db_fetch_object($pub_types)) {
-          $pub_type["$option->tid"] = $option->name;
+      if ($type == 'type' && $value > 0) {
+        if (($pub_type = db_fetch_object(db_query('SELECT t.* FROM {biblio_types} as t WHERE t.tid=%d', $value)))) {
+        $value = drupal_ucfirst($pub_type->name);
+        $type = t("Type");
         }
-        $value = $pub_type["$value"];
       }
       array_shift($args);
-      $params = array('%a' =>  $type , '%b' =>  $value );
+      $params = array('%a' =>  ucwords($type) , '%b' =>  $value );
       $filtercontent .= ($i++ ? t('<em> and</em> <strong>%a</strong> is <strong>%b</strong>', $params) : t('<strong>%a</strong> is <strong>%b</strong>', $params)) ;
     }
     if ($search_content) {

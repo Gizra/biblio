@@ -279,6 +279,13 @@ function biblio_admin_settings() {
     '#default_value' => variable_get('biblio_link_title_url', 0),
     '#description' => t('Selecting this links the titles to the supplied URL (if available) rather than the "node" view.')
   );
+  $form['links']['biblio_author_links'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Hyperlink author names'),
+    '#return_value' => 1,
+    '#default_value' => variable_get('biblio_author_links', 1),
+    '#description' => t('This creates a hyperlink on author names which, when clicked, will select entries which contain that author')
+  );
   $form['openurl'] = array(
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
