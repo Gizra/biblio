@@ -1101,16 +1101,19 @@ function biblio_author_page($filter = NULL) {
                             ORDER BY  lastname ASC, SUBSTRING(firstname,1,1) ASC,
                             initials ASC', $filter);
 
+   
     while ($author = db_fetch_array($db_result)){
       $authors[] = $author;
     }
-    $rows[] = array(array('data' => theme(biblio_alpha_line, 'authors', $filter), 'colspan' => 3));
-    for ($i=0; $i < count($authors); $i+=3) {
-      $rows[] = array( array('data' => _biblio_format_author($authors[$i]) ),
-                       array('data' => isset($authors[$i+1])?_biblio_format_author($authors[$i+1]):'' ),
-                       array('data' => isset($authors[$i+2])?_biblio_format_author($authors[$i+2]):'' ));
+    if (count($authors)) {
+      $rows[] = array(array('data' => theme(biblio_alpha_line, 'authors', $filter), 'colspan' => 3));
+      for ($i=0; $i < count($authors); $i+=3) {
+        $rows[] = array( array('data' => _biblio_format_author($authors[$i]) ),
+        array('data' => isset($authors[$i+1])?_biblio_format_author($authors[$i+1]):'' ),
+        array('data' => isset($authors[$i+2])?_biblio_format_author($authors[$i+2]):'' ));
+      }
     }
-  //$header = array(array('data' => t('There are a total of @count authors !header_ext in the database',array('@count' => count($authors), '!header_ext' => $header_ext)), 'align' =>'center', 'colspan' => 3));
+    //$header = array(array('data' => t('There are a total of @count authors !header_ext in the database',array('@count' => count($authors), '!header_ext' => $header_ext)), 'align' =>'center', 'colspan' => 3));
   $output .= theme('table', $header, $rows);
   return $output;
 }

@@ -78,7 +78,6 @@ function biblio_load_keywords($vid) {
  */
 function biblio_save_keywords(&$node, $update = FALSE) {
   $taxo_terms = $typed_keywords = array();
-
   if (!is_array($node->biblio_keywords)) {
     $typed_keywords = biblio_explode_keywords($node->biblio_keywords);
   }
@@ -89,8 +88,12 @@ function biblio_save_keywords(&$node, $update = FALSE) {
   if (!$update) db_query('DELETE FROM {biblio_keyword} WHERE nid = %d AND vid = %d', array($node->nid, $node->vid));
 
   if (isset($node->taxonomy) && is_array($node->taxonomy)) { //add any taxonomy terms to our keyword list
-    foreach ($node->taxonomy as $term) {
-      if (is_array($term)) {
+    foreach ($node->taxonomy as $vid => $term) {
+      if ($vid == 'copy_to_biblio' && $term == 0) {
+        $taxo_terms = array();
+        break;
+      }
+      if (is_array($term) && !empty($term)) {
         foreach ($term as $tid) {
           if ($tid) {
             $term_obj = taxonomy_get_term($tid);
@@ -104,7 +107,7 @@ function biblio_save_keywords(&$node, $update = FALSE) {
       }
     }
   }
-
+  
   $keywords = array_merge($typed_keywords, $taxo_terms);
 
   foreach ($keywords as $keyword) {

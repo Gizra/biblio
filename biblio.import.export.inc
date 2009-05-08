@@ -97,23 +97,31 @@ function biblio_import_form() {
       '#title' => t('Taxonomy Settings'),
       '#description' => t('Typically you don\'t have to do anything here, however if you wish, you may select terms to be assigned to imported records. This effectively adds a keyword to all entries being imported.'));
     if (count($vocabularies)) {
+      if (variable_get('biblio_keyword_freetagging', 0)) {
+        $freetag_vocab = $vocabularies[variable_get('biblio_keyword_vocabulary', 0)];
+        unset($vocabularies[variable_get('biblio_keyword_vocabulary', 0)]);
+        $msg = t('<b>NOTE:</b> Keyword "free tagging" is turned on, consequently all incomming keywords will be added to the <b>@name</b> vocabulary as specified in the "Keyword" section of the !url page.', array ('@name' => $freetag_vocab->name, '!url' => l(t('admin/settings/biblio'), 'admin/settings/biblio')));
+      } else {
+        $msg = t('<b>NOTE:</b> Keyword "free tagging" is turned off, consequently keywords will <b>NOT</b> be added to the vocabulary as specified in the Taxonomy section of the !url page.', array ('!url' => l(t('admin/settings/biblio'), 'admin/settings/biblio')));
+      }
       $i = 0;
       foreach ($vocabularies as $vocabulary) {
         $form['import_taxonomy']['vocabulary'. $i] = module_invoke('taxonomy', 'form', $vocabulary->vid, 0);
         $form['import_taxonomy']['vocabulary'. $i++]['#description'] = t("Select taxonomy term to be assigned to imported entries");
       }
+      $form['import_taxonomy']['copy_to_biblio'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Copy these terms to the biblio keyword database'),
+        '#return_value' => 1,
+        '#default_value' =>  variable_get('biblio_copy_taxo_terms_to_keywords', 0),
+        '#description' => t('If this option is selected, the selected taxonomy terms will be copied to the '.variable_get('biblio_base_title', 'Biblio').' keyword database and be displayed as keywords (as well as taxonomy terms) for this entry.')
+      );
+      
     } else {
       $vocab_msg = t('There are currently no vocabularies assigned to the biblio node type, please go the the !url page to fix this', array ('!url' => l(t('admin/content/taxonomy'), 'admin/content/taxonomy')));
       $form['import_taxonomy']['vocabulary_message'] = array (
         '#value' => '<p><div>'. $vocab_msg .'</div></p>'
       );
-    }
-    if (variable_get('biblio_keyword_freetagging', 0)) {
-      $vocabularies = module_invoke('taxonomy', 'get_vocabularies', 'biblio');
-      $freetag_vocab = $vocabularies[variable_get('biblio_keyword_vocabulary', 0)];
-      $msg = t('<b>NOTE:</b> Keyword "free tagging" is turned on, consequently all incomming keywords will be added to the <b>@name</b> vocabulary as specified in the "Keyword" section of the !url page.', array ('@name' => $freetag_vocab->name, '!url' => l(t('admin/settings/biblio'), 'admin/settings/biblio')));
-    } else {
-      $msg = t('<b>NOTE:</b> Keyword "free tagging" is turned off, consequently keywords will <b>NOT</b> be added to the vocabulary as specified in the Taxonomy section of the !url page.', array ('!url' => l(t('admin/settings/biblio'), 'admin/settings/biblio')));
     }
     $form['import_taxonomy']['freetagging_information'] = array (
       '#value' => '<p><div>'. $msg .'</div></p>'
@@ -179,7 +187,9 @@ function biblio_import_form_submit($form, & $form_state) {
             }
           }
         }
+        if ($key == 'copy_to_biblio') $terms['copy_to_biblio'] = $form_state['values'][$key];
       }
+      
       // Added the $terms argument
       // the array of terms to be attached to the node(s)
       $userid = (isset ($form_state['values']['userid'])) ? $form_state['values']['userid'] : 1;
