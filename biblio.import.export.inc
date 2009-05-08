@@ -627,7 +627,7 @@ function biblio_bibtex_export($results) {
         $type = "unpublished";
         break;
     }
-    $bibtex .= '@'. $type .' { ';
+    $bibtex .= '@'. $type .' {';
     $bibtex .= ($pub->biblio_citekey) ? $pub->biblio_citekey .",\n" : ",\n";
     if (!empty($pub->title))
       $bibtex .= "\ttitle = {". $pub->title ."},\n";
