@@ -322,7 +322,7 @@ function _biblio_get_latin1_regex() {
   $dash = "-–";
 
   // Matches ISO-8859-1 digits:
-  $digit = "[:digit:]";
+  $digit = "[\d]";
 
   // Matches ISO-8859-1 printing characters (excluding space):
   $graph = "[:graph:]ÄÅÁÀÂÃÇÉÈÊËÑÖØÓÒÔÕÜÚÙÛÍÌÎÏÆäåáàâãçéèêëñöøóòôõüúùûíìîïæÿß";
@@ -337,7 +337,7 @@ function _biblio_get_latin1_regex() {
   $punct = "[:punct:]";
 
   // Matches ISO-8859-1 whitespace (separating characters with no visual representation):
-  $space = "[:space:]";
+  $space = "[\s]";
 
   // Matches ISO-8859-1 upper case letters:
   $upper = "[:upper:]ÄÅÁÀÂÃÇÉÈÊËÑÖØÓÒÔÕÜÚÙÛÍÌÎÏÆ";
