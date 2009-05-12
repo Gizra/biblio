@@ -863,14 +863,14 @@ function _biblio_get_user_profile_form(& $form, $profile_user = FALSE) {
   $allow_edit = variable_get('biblio_show_user_profile_form', '1');
   $allow_edit = $allow_edit || user_access('administer biblio');
 
-  $form['profile'] = array(
+  $form['biblio_profile'] = array(
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
     '#collapsed' =>  TRUE,
     '#title' => ($profile_user) ? t('My publications') : t('Profile pages')
   );
   if(!$profile_user) {
-    $form['profile']['biblio_show_user_profile_form'] = array(
+    $form['biblio_profile']['biblio_show_user_profile_form'] = array(
       '#type' => 'checkbox',
       '#title' => t('Allow users to override these settings on their "My account" page') ,
       '#return_value' => 1,
@@ -878,7 +878,7 @@ function _biblio_get_user_profile_form(& $form, $profile_user = FALSE) {
       '#default_value' => variable_get('biblio_show_user_profile_form', '1')
     );
   }
-  $form['profile']['biblio_show_profile'] = array(
+  $form['biblio_profile']['biblio_show_profile'] = array(
     '#type' => 'checkbox',
     '#title' => ($profile_user) ? t('Show my publications on my profile page') : t('Show publications on users profile pages'),
     '#return_value' => 1,
@@ -886,12 +886,12 @@ function _biblio_get_user_profile_form(& $form, $profile_user = FALSE) {
     '#description' => ($profile_user) ? t('Selecting this will create a listing of your publications on your profile page') : t('This sets the site wide default, users may change this in their profile')
   );
   if ($profile_user) {
-    $form['profile']['biblio_show_profile']['#default_value'] = (isset($profile_user->biblio_show_profile)) ? $profile_user->biblio_show_profile : variable_get('biblio_show_profile', '0');
+    $form['biblio_profile']['biblio_show_profile']['#default_value'] = (isset($profile_user->biblio_show_profile)) ? $profile_user->biblio_show_profile : variable_get('biblio_show_profile', '0');
   }
   else {
-    $form['profile']['biblio_show_profile']['#default_value'] = variable_get('biblio_show_profile', '0');
+    $form['biblio_profile']['biblio_show_profile']['#default_value'] = variable_get('biblio_show_profile', '0');
   }
-  $form['profile']['biblio_my_pubs_menu'] = array(
+  $form['biblio_profile']['biblio_my_pubs_menu'] = array(
     '#type' => 'checkbox',
     '#title' => t('Show "My publications" item in the navigation menu'),
     '#disabled' => !$allow_edit,
@@ -899,10 +899,10 @@ function _biblio_get_user_profile_form(& $form, $profile_user = FALSE) {
     '#description' => ''
   );
   if ($profile_user) {
-    $form['profile']['biblio_my_pubs_menu']['#default_value'] = ((isset($profile_user->biblio_my_pubs_menu)) ? $profile_user->biblio_my_pubs_menu : variable_get('biblio_my_pubs_menu', '0'));
+    $form['biblio_profile']['biblio_my_pubs_menu']['#default_value'] = ((isset($profile_user->biblio_my_pubs_menu)) ? $profile_user->biblio_my_pubs_menu : variable_get('biblio_my_pubs_menu', '0'));
   }
   else {
-    $form['profile']['biblio_my_pubs_menu']['#default_value'] = variable_get('biblio_my_pubs_menu', '0');
+    $form['biblio_profile']['biblio_my_pubs_menu']['#default_value'] = variable_get('biblio_my_pubs_menu', '0');
   }
   if ($profile_user) {
     $db_result = db_query("SELECT cd.lastname, cd.firstname, cd.initials, cd.cid FROM {biblio_contributor_data} cd
@@ -913,7 +913,7 @@ function _biblio_get_user_profile_form(& $form, $profile_user = FALSE) {
     while ($row = db_fetch_object($db_result)) {
         $options[$row->cid] =  "$row->lastname, $row->firstname $row->initials ";
     }
-    $form['profile']['biblio_contributor_id'] = array(
+    $form['biblio_profile']['biblio_contributor_id'] = array(
     '#type' => 'select',
     '#title' => t('Link My Profile with this Author from the Biblio database'),
     '#default_value' => $profile_user->biblio_contributor_id ,
@@ -924,7 +924,7 @@ function _biblio_get_user_profile_form(& $form, $profile_user = FALSE) {
     $options = array();
     $options['system'] = t('System default');
     $options = array_merge($options, _biblio_admin_get_styles() );
-    $form['profile']['biblio_user_style'] = array(
+    $form['biblio_profile']['biblio_user_style'] = array(
     '#type' => 'radios',
     '#title' => t('Style'),
     '#default_value' => (isset($profile_user->biblio_user_style) ? $profile_user->biblio_user_style : 'system'),
@@ -933,6 +933,24 @@ function _biblio_get_user_profile_form(& $form, $profile_user = FALSE) {
   );
 
   }
+}
+function _biblio_get_user_doi_form(&$form, $user) {
+  $form['biblio_doi'] = array(
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' =>  TRUE,
+    '#title' => t('CrossRef Login Information')
+  );
+  $link_attrs = array('attributes' => array('target' => '_blank'),
+                      'absolue' => TRUE);
+  $form['biblio_doi']['biblio_crossref_pid'] = array(
+    '#type' => 'textfield',
+    '#title' => t('CrossRef OpenURL Account ID'),
+    '#default_value' => $user->biblio_crossref_pid,
+    '#return_value' => 1,
+    '#description' => t('Enter your CrossRef OpenURL account ID which you can obtain here ') .l('OpenURL Account Request Form', 'http://www.crossref.org/requestaccount/', $link_attrs)
+  );
+  return $form;
 }
 /*  This function parses the module directory for 'style' files, loads them and
  *  calls the info fuction to get some basic information like the short and long

@@ -760,24 +760,17 @@ function biblio_save_node($node, $batch = FALSE, $session_id = NULL, $save_node 
   }
 }
 
-function biblio_crossref_query($doi) {
-  $url = 'http://www.crossref.org/openurl/?noredirect=true&format=unixref&id=doi%3A'. $doi;
-  $crossref_xml_data = biblio_import_from_url($url);
-
-  return biblio_crossref_xml_import($crossref_xml_data);
-}
-
 function biblio_crossref_xml_import($doi, $terms = array(), $batch = FALSE, $session_id = NULL, $save = FALSE) {
-  global $node, $save_node, $nids;
+  global $user, $node, $save_node, $nids;
+  if (!isset($user->biblio_crossref_pid) || empty($user->biblio_crossref_pid) ) return FALSE;
   $save_node = $save;
   $nids = array();
-  $url = 'http://www.crossref.org/openurl/?noredirect=true&format=unixref&id=doi%3A'. $doi;
+  $url = 'http://www.crossref.org/openurl/?pid='. $user->biblio_crossref_pid .'&noredirect=true&format=unixref&id=doi%3A'. $doi;
   if (!($fp = fopen($url, "r"))) {
     drupal_set_message(t('Could not open crossref.org for XML input'),'error');
     return;
   }
   $xml = fread($fp, 2048);
-
   $xml_parser = drupal_xml_parser_create($xml);
   // use case-folding so we are sure to find the tag in
   xml_parser_set_option($xml_parser, XML_OPTION_CASE_FOLDING, false);
