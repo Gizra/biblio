@@ -284,8 +284,10 @@ function biblio_access($op, $node = '', $user = '') {
     case 'update':
       if (user_access('edit all biblio entries')) return;
       if (user_access('edit own biblio entries') && $user->uid != $node->uid) return FALSE;
+      break;
     case 'view':
       if ((variable_get('biblio_view_only_own', 0)) && $user->uid != $node->uid) return FALSE;
+      break;
     case 'admin':
       return user_access('administer biblio');
     case 'import':
@@ -294,13 +296,15 @@ function biblio_access($op, $node = '', $user = '') {
       return user_access('show export links');
     case 'edit_author':
         if (user_access('administer biblio') || user_access('edit biblio authors')) return TRUE;
+        break;
     case 'download':
       if (user_access('show download links') || (user_access('show own download links') && ($user->uid == $node->uid))) return TRUE;
+      break;
     case 'rss':
       return variable_get('biblio_rss', 0);
     default:
   }
-  return TRUE;
+  return;
 }
 /**
  * Implementation of hook_perm().
