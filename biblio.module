@@ -316,6 +316,7 @@ function biblio_access($op, $node = '', $user = '') {
 function biblio_perm() {
   return array(
     'administer biblio',
+    'access biblio content',
     'create biblio',
     'edit all biblio entries',
     'edit own biblio entries',
@@ -437,7 +438,7 @@ function biblio_menu() {
     'title'             => $base_title,
     'page callback'     => 'biblio_db_search',
     'access callback'   => 'user_access',
-    'access arguments'  => array('access content'),
+    'access arguments'  => array('access biblio content'),
     'file'              => 'biblio.pages.inc',
   //'type'              => MENU_CALLBACK
   );
@@ -445,7 +446,7 @@ function biblio_menu() {
     'title'             => 'Authors',
     'page callback'     => 'biblio_author_page',
     'access callback'   => 'user_access',
-    'access arguments'  => array('access content'),
+    'access arguments'  => array('access biblio content'),
     'file'              => 'biblio.pages.inc',
     'type'              => MENU_LOCAL_TASK,
     'weight'            => 1,
@@ -454,7 +455,7 @@ function biblio_menu() {
     'title' => 'Keywords',
     'page callback' => 'biblio_keyword_page',
     'access callback' => 'user_access',
-    'access arguments' => array('access content'),
+    'access arguments' => array('access biblio content'),
     'file' => 'biblio.pages.inc',
     'type' => MENU_LOCAL_TASK,
     'weight' => 2,
@@ -492,7 +493,7 @@ function biblio_menu() {
     'title'             => '',
     'page callback'     => 'biblio_dump_db_data_for_pot',
     'access callback'   => 'user_access',
-    'access arguments'  => array('access content'),
+    'access arguments'  => array('access biblio content'),
     'type'              => MENU_CALLBACK
   );
   $items["$base/authors/%/edit"] = array(
@@ -650,7 +651,7 @@ function biblio_menu() {
     'title'             => 'Authors',
     'page callback'     => 'biblio_author_page',
     'access callback'   => 'user_access',
-    'access arguments'  => array('access content'),
+    'access arguments'  => array('access biblio content'),
     'file'              => 'biblio.pages.inc',
     'type'              => MENU_LOCAL_TASK,
     'weight'            => -7
@@ -659,7 +660,7 @@ function biblio_menu() {
     'title'             => 'List',
     'page callback'     => 'biblio_author_page',
     'access callback'   => 'user_access',
-    'access arguments'  => array('access content'),
+    'access arguments'  => array('access biblio content'),
     'file'              => 'biblio.pages.inc',
     'type'              => MENU_DEFAULT_LOCAL_TASK,
     'weight'            => -7
@@ -726,7 +727,7 @@ function biblio_menu() {
     'title'             => 'Keywords',
     'page callback'     => 'biblio_keyword_page',
     'access callback'   => 'user_access',
-    'access arguments'  => array('access content'),
+    'access arguments'  => array('access biblio content'),
     'file'              => 'biblio.pages.inc',
     'type'              => MENU_LOCAL_TASK,
     'weight'            => -7
@@ -735,7 +736,7 @@ function biblio_menu() {
     'title'             => 'List',
     'page callback'     => 'biblio_keyword_page',
     'access callback'   => 'user_access',
-    'access arguments'  => array('access content'),
+    'access arguments'  => array('access biblio content'),
     'file'              => 'biblio.pages.inc',
     'type'              => MENU_DEFAULT_LOCAL_TASK,
     'weight'            => -7
@@ -773,13 +774,13 @@ function biblio_menu() {
     'title'             => 'Autocomplete ',
     'page callback'     => 'biblio_autocomplete',
     'access callback'   => 'user_access',
-    'access arguments'  => array('access content'),
+    'access arguments'  => array('access biblio content'),
     'type'              => MENU_CALLBACK
   );
   $items['biblio/js'] = array(
     'title'             => 'Javascript Contributors Form',
     'page callback'     => 'biblio_contributors_js',
-    'access arguments'  => array('access content'),
+    'access arguments'  => array('access biblio content'),
     'type'              => MENU_CALLBACK,
   );
   $items["$base/list"] = array(
@@ -801,14 +802,14 @@ function biblio_menu() {
     'title'             => '',
     'page callback'     => 'biblio_filter_clear',
     'access callback'   => 'user_access',
-    'access arguments'  => array('access content'),
+    'access arguments'  => array('access biblio content'),
     'type'              => MENU_CALLBACK
   );
   $items["$base/help"] = array(
     'title'             => 'Help',
     'page callback'     => 'biblio_help_page',
     'access callback'   => 'user_access',
-    'access arguments'  => array('access content'),
+    'access arguments'  => array('access biblio content'),
     'type'              => MENU_CALLBACK
   );
   $items["$base/export"] = array(
@@ -822,7 +823,7 @@ function biblio_menu() {
   $items["$base/citekey"] = array(
     'title'             => '',
     'page callback'     => 'biblio_citekey_view',
-    'access arguments'  => array('access content'),
+    'access arguments'  => array('access biblio content'),
     'file'              => 'biblio.pages.inc',
     'type'              => MENU_CALLBACK
   );
@@ -831,7 +832,7 @@ function biblio_menu() {
     'page callback'     => 'biblio_view_inline',
     'page arguments'    => array(2),
     'access callback'   => 'user_access',
-    'access arguments'  => array('access content'),
+    'access arguments'  => array('access biblio content'),
     'file'              => 'biblio.pages.inc',
     'type'              => MENU_CALLBACK
   );
