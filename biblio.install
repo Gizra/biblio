@@ -1734,3 +1734,14 @@ function biblio_update_6019() {
   
   return $result;
 }
+function biblio_update_6020() {// add new 'access biblio content' permission to any role which has 'access content' 
+  $result = array();
+  $dbresult = db_query('SELECT p.* FROM {permission} p');
+  while ($role = db_fetch_object($dbresult)) {
+    if ( (strpos($role->perm, 'access content') !== FALSE)) {
+      $role->perm = 'access biblio content, ' . $role->perm;
+      $result[] = update_sql("UPDATE {permission} SET perm = '$role->perm' WHERE rid = $role->rid");
+    }
+  }
+  return $result;
+}
