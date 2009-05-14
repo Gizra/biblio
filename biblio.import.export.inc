@@ -590,10 +590,13 @@ function biblio_bibtex_export($results) {
       case 100 :
         $type = "book";
         $series = $pub->biblio_secondary_title;
+        $organization = $pub->biblio_publisher;
         break;
       case 101 :
         $type = "inbook";
         $booktitle = $pub->biblio_secondary_title;
+        $organization = $pub->biblio_publisher;
+        $series = $pub->biblio_tertiary_title;
         break;
       case 100 :
         $type = "incollection";
@@ -685,6 +688,11 @@ function biblio_bibtex_export($results) {
     }
     if (!empty($pub->biblio_isbn))
       $bibtex .= "\tISBN = {". $pub->biblio_isbn ."},\n";
+    if (!empty($pub->biblio_issn))
+      $bibtex .= "\tISSN = {". $pub->biblio_issn ."},\n";
+    if (!empty($pub->biblio_doi))
+      $bibtex .= "\tDOI = {". $pub->biblio_doi ."},\n";
+      
     if (!empty($pub->biblio_url))
       $bibtex .= "\tURL = {". $pub->biblio_url ."},\n";
     $a = $e = array();

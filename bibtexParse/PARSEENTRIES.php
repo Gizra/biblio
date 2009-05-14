@@ -577,7 +577,7 @@ class PARSEENTRIES
           $node['biblio_type'] = 103;
           break;
         case incollection:
-          $node['biblio_type'] = 100;
+          $node['biblio_type'] = 101;
           break;
         case inproceedings:
           $node['biblio_type'] = 103;
@@ -627,7 +627,7 @@ class PARSEENTRIES
 
       $node['biblio_secondary_title'] = (!empty($entry['journal'])) ? $entry['journal'] : NULL;
       if (!empty($entry['booktitle'])) $node['biblio_secondary_title'] =  $entry['booktitle'];
-      if (!empty($entry['series']))    $node['biblio_secondary_title'] =  $entry['series'];
+      if (!empty($entry['series']))    $node['biblio_tertiary_title'] =  $entry['series'];
       $node['biblio_volume']          = (!empty($entry['volume'])) ? $entry['volume'] : NULL;
       $node['biblio_number']          = (!empty($entry['number'])) ? $entry['number'] : NULL;
       $node['biblio_year']            = (!empty($entry['year'])) ? $entry['year'] : NULL;
@@ -649,6 +649,7 @@ class PARSEENTRIES
         $node['biblio_keywords'] = explode(',', $entry['keywords']);
       }
       $node['biblio_isbn']            = (!empty($entry['isbn'])) ? $entry['isbn'] : NULL;
+      $node['biblio_issn']            = (!empty($entry['issn'])) ? $entry['issn'] : NULL;
       $node['biblio_url']             = (!empty($entry['url'])) ? $entry['url'] : NULL;
       $node['biblio_doi']             = (!empty($entry['doi'])) ? $entry['doi'] : NULL;
       if (!empty($terms)) {
