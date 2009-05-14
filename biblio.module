@@ -1397,6 +1397,7 @@ function biblio_form_validate($form, & $form_state) {
     }
     $form_state['storage']['biblio_doi']   = TRUE;
     $form_state['storage']['biblio_paste'] = TRUE;
+    $form_state['storage']['biblio_type']  = $node_data[0]['biblio_type'];
     $form_state['rebuild'] = TRUE;
     return;
   }
