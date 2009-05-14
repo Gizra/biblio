@@ -116,7 +116,7 @@ function biblio_import_form() {
         '#default_value' =>  variable_get('biblio_copy_taxo_terms_to_keywords', 0),
         '#description' => t('If this option is selected, the selected taxonomy terms will be copied to the '.variable_get('biblio_base_title', 'Biblio').' keyword database and be displayed as keywords (as well as taxonomy terms) for this entry.')
       );
-      
+
     } else {
       $vocab_msg = t('There are currently no vocabularies assigned to the biblio node type, please go the the !url page to fix this', array ('!url' => l(t('admin/content/taxonomy'), 'admin/content/taxonomy')));
       $form['import_taxonomy']['vocabulary_message'] = array (
@@ -189,7 +189,7 @@ function biblio_import_form_submit($form, & $form_state) {
         }
         if ($key == 'copy_to_biblio') $terms['copy_to_biblio'] = $form_state['values'][$key];
       }
-      
+
       // Added the $terms argument
       // the array of terms to be attached to the node(s)
       $userid = (isset ($form_state['values']['userid'])) ? $form_state['values']['userid'] : 1;
@@ -687,14 +687,14 @@ function biblio_bibtex_export($results) {
       $bibtex .= "\tkeywords = {". implode(', ', $kw_array) ."},\n";
     }
     if (!empty($pub->biblio_isbn))
-      $bibtex .= "\tISBN = {". $pub->biblio_isbn ."},\n";
+      $bibtex .= "\tisbn = {". $pub->biblio_isbn ."},\n";
     if (!empty($pub->biblio_issn))
-      $bibtex .= "\tISSN = {". $pub->biblio_issn ."},\n";
+      $bibtex .= "\tissn = {". $pub->biblio_issn ."},\n";
     if (!empty($pub->biblio_doi))
-      $bibtex .= "\tDOI = {". $pub->biblio_doi ."},\n";
-      
+      $bibtex .= "\tdoi = {". $pub->biblio_doi ."},\n";
+
     if (!empty($pub->biblio_url))
-      $bibtex .= "\tURL = {". $pub->biblio_url ."},\n";
+      $bibtex .= "\turl = {". $pub->biblio_url ."},\n";
     $a = $e = array();
     foreach ((array)$pub->biblio_contributors[1] as $auth) $a[] = trim($auth['name']);
     foreach ((array)$pub->biblio_contributors[2] as $auth) $e[] = trim($auth['name']);
