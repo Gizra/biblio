@@ -83,6 +83,21 @@ function biblio_admin_settings() {
     '#default_value' => variable_get('biblio_auto_orphaned_author_delete', 0),
     '#description' => t('Orphaned authors are those which are no longer linked to any entries as the result of a biblio update or delete.')
   );
+  $form['bibtex'] = array(
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#title' => t('BibTex settings'),
+    '#description' => ''
+  );
+  $form['bibtex']['biblio_hide_bibtex_braces'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Retain bibtex\'s {Protected} capitalization in the title string, but hide the braces on display'),
+    '#return_value' => 1,
+    '#default_value' => variable_get('biblio_hide_bibtex_braces', 0),
+    '#description' =>'' 
+  );
+  
   $form['block'] = array(
     '#type' => 'fieldset',
     '#collapsible' => TRUE,

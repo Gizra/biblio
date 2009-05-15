@@ -857,6 +857,22 @@ function biblio_filter_clear() {
   }
   drupal_goto($base, $options);
 }
+function biblio_remove_brace($title_string){
+    //$title_string = utf8_encode($title_string);
+    $matchpattern = '/\{\$(?:(?!\$\}).)*\$\}|(\{[^}]*\})/';
+    $output = preg_replace_callback($matchpattern,'biblio_remove_brace_callback',$title_string);
+    return $output;
+}
+
+function biblio_remove_brace_callback($match){
+        if(isset($match[1])){
+                $braceless = str_replace('{', '', $match[1]);
+                $braceless = str_replace('}', '', $braceless);
+                return $braceless;
+        }
+        return $match[0];
+}
+
 function biblio_nodeapi(& $node, $op, $a3, $a4) {
   if ($node->type == 'biblio') {
     switch ($op) {
@@ -892,6 +908,11 @@ function biblio_nodeapi(& $node, $op, $a3, $a4) {
           search_update_totals();
         }
         break;
+      case 'view':
+        if ($node->type == 'biblio' && variable_get('biblio_hide_bibtex_braces', 0)) {
+          drupal_set_title($node->title);
+        }
+        break;        
     }
 
   }
@@ -1549,6 +1570,8 @@ function biblio_view(& $node, $teaser = FALSE, $page = FALSE) {
   $style = biblio_get_style();
   $base  = variable_get('biblio_base', 'biblio');
   $base_title = variable_get('biblio_base_title', 'Biblio');
+  if (variable_get('biblio_hide_bibtex_braces', 0)) $node->title = biblio_remove_brace($node->title);
+  
   if ($teaser) {
     $node->content['teaser']['#value'] = theme('biblio_style', $node, $base, $style);
   }

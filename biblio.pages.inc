@@ -491,7 +491,7 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
     $count++;
     $node->biblio_contributors = biblio_load_contributors($node->vid);
     $node->biblio_keywords = biblio_load_keywords($node->vid);
-
+    if (variable_get('biblio_hide_bibtex_braces', 0)) $node->title = biblio_remove_brace($node->title);
     if ( module_exists("upload") ) {
       $node->files = upload_load($node);
     }
