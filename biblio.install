@@ -24,16 +24,41 @@ function biblio_install() {
 }
 
 function biblio_enable() {
-  _enable_biblio_keyword_vocabulary();
+  if (module_exists('taxonomy')) _enable_biblio_vocabularies();
   _set_system_weight();
   //_enable_biblio_collection_vocabulary();
  // _add_biblio_keywords();
 }
 
+function _enable_biblio_vocabularies(){
+  $vids = variable_get('biblio_vocabularies', array());
+  foreach ($vids as $vid ) {
+    if (($voc = taxonomy_vocabulary_load($vid)))  {
+      $voc = (array) $voc;
+      $voc['nodes']['biblio'] = 1;
+      taxonomy_save_vocabulary($voc);
+    }
+  }
+}
+
+function biblio_disable() {
+  if (module_exists('taxonomy')) {
+    $voc = taxonomy_get_vocabularies();
+    foreach ($voc as $vid => $vocabulary) {
+      if (isset($vocabulary->nodes['biblio']))  {
+        $vids[] = $vid;
+      }
+    }
+    variable_set('biblio_vocabularies', $vids);
+  }
+}
+
 function biblio_uninstall(){
-  $voc = taxonomy_get_vocabularies();
-  foreach ($voc as $vid => $vocabulary) {
-    if ($vocabulary->module == 'biblio')  taxonomy_del_vocabulary($vid);
+  if (module_exists('taxonomy')) {
+    $voc = taxonomy_get_vocabularies();
+    foreach ($voc as $vid => $vocabulary) {
+      if ($vocabulary->module == 'biblio')  taxonomy_del_vocabulary($vid);
+    }
   }
 
   $result = db_query("SELECT * FROM {node} WHERE type='biblio' ");
