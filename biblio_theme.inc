@@ -694,7 +694,7 @@ function theme_biblio_entry($node, $base = 'biblio', $style = 'classic', $inline
     // add links to attached files (if any)
     $output .= theme('biblio_download_links',$node);
   }
-
+  $output .= theme_biblio_google_scholar_link($node);
   $output .= "\n</div>";
 
   return $output;
@@ -826,7 +826,14 @@ function theme_biblio_export_links($nid = NULL) {
   $links .= '<li> '. theme('biblio_bibtex_link', $base, $nid) .'</li></ul>';
   return $links;
 }
-
+function theme_biblio_google_scholar_link($node) {
+   //http://scholar.google.com/scholar?as_q=The+extended+mind.+&btnG=Search+Scholar&as_epq=&as_oq=&as_eq=&as_occt=any&as_sauthors=Clark
+  $link  = 'http://scholar.google.com/scholar?as_q=';
+  $link .= '"'.str_replace(' ', '+', $node->title).'"';
+  $link .= '&btnG=Search+Scholar&as_epq=&as_oq=&as_eq=&as_occt=any&as_sauthors='.$node->biblio_contributors[1][0]['lastname'];
+  $output = l(t("Google Scholar"), $link, array('attributes'=>array('title' => t("Click to download the EndNote Tagged formatted file"))));
+  return $output;
+}
 /**
  * Creates a link to export a node (or view) in EndNote Tagged format
  *
