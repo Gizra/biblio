@@ -239,19 +239,22 @@ function biblio_admin_settings() {
     '#default_value' => variable_get('biblio_keyword_orphan_autoclean', 1),
     '#description' => t('This option automatically deletes keywords which are no longer associated with any publications (primarily due to the due to the removal of a publication or editing a keyword).')
   );
+  $taxo_mesg = '<div class="admin-dependencies">'. t('Depends on') .': '. t('Taxonomy') .' (<span class="admin-disabled">'. t('disabled') .'</span>)</div>';
   $form['keywords']['biblio_copy_taxo_terms_to_keywords'] = array(
     '#type' => 'checkbox',
     '#title' => t('Copy any selected taxonomy terms to the biblio keyword database'),
     '#return_value' => 1,
-    '#default_value' =>  variable_get('biblio_copy_taxo_terms_to_keywords', 0),
-    '#description' => t('If this option is selected, the selected taxonomy terms will be copied to the '.variable_get('biblio_base_title', 'Biblio').' keyword database and be displayed as keywords (as well as taxonomy terms) for this entry.')
+    '#default_value' =>  module_exists('taxonomy') ? variable_get('biblio_copy_taxo_terms_to_keywords', 0) : 0,
+    '#disabled' => (!module_exists('taxonomy')),
+    '#description' => module_exists('taxonomy') ? t('If this option is selected, the selected taxonomy terms will be copied to the '.variable_get('biblio_base_title', 'Biblio').' keyword database and be displayed as keywords (as well as taxonomy terms) for this entry.') : $taxo_mesg
    );
-    $form['keywords']['biblio_keyword_freetagging'] = array(
+  $form['keywords']['biblio_keyword_freetagging'] = array(
     '#type' => 'checkbox',
     '#title' => t('Use keywords from biblio entries as taxonomy "free tags"'),
     '#return_value' => 1,
-    '#default_value' => variable_get('biblio_keyword_freetagging', 0),
-    '#description' => t('This option allows user to add keywords (free tags) to describe their documents. These keywords will be registered as taxonomy.')
+    '#default_value' => module_exists('taxonomy') ? variable_get('biblio_keyword_freetagging', 0) : 0,
+    '#disabled' => (!module_exists('taxonomy')),
+    '#description' => module_exists('taxonomy') ? t('This option allows user to add keywords (free tags) to describe their documents. These keywords will be registered as taxonomy.') : $taxo_mesg
   );
   $vocabularies = module_invoke('taxonomy', 'get_vocabularies');
   // ... and print a form to select the terms in each of them
