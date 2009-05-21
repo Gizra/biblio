@@ -118,7 +118,12 @@ function biblio_import_form() {
       );
 
     } else {
-      $vocab_msg = t('There are currently no vocabularies assigned to the biblio node type, please go the the !url page to fix this', array ('!url' => l(t('admin/content/taxonomy'), 'admin/content/taxonomy')));
+      if (module_exists('taxonomy')){
+        $vocab_msg = t('There are currently no vocabularies assigned to the biblio node type, please go the the !url page to fix this', array ('!url' => l(t('admin/content/taxonomy'), 'admin/content/taxonomy')));
+      }else{
+        $vocab_msg = '<div class="admin-dependencies">'. t('Depends on') .': '. t('Taxonomy') .' (<span class="admin-disabled">'. t('disabled') .'</span>)</div>';
+        
+      }
       $form['import_taxonomy']['vocabulary_message'] = array (
         '#value' => '<p><div>'. $vocab_msg .'</div></p>'
       );
@@ -410,7 +415,7 @@ function biblio_export($format = "tagged", $nid = null, $popup = false, $version
   while ($node = db_fetch_object($result)) {
     $node->biblio_contributors = biblio_load_contributors($node->vid);
     $node->biblio_keywords = biblio_load_keywords($node->vid);
-    if ($vid = variable_get('biblio_keyword_vocabulary', 0)){
+    if ($vid = variable_get('biblio_keyword_vocabulary', 0) && module_exists('taxonomy')){
         $node->terms = taxonomy_node_get_terms_by_vocabulary($node, $vid);
     }
     $results[] = $node;
