@@ -673,7 +673,7 @@ function theme_biblio_entry($node, $base = 'biblio', $style = 'classic', $inline
     $output .= l(" Abstract", "node/$node->nid") ."\n";
     $output .= '</span>';
   }
-  $annotation_field = variable_get('biblio-annotations', 'none');
+  $annotation_field = variable_get('biblio_annotations', 'none');
   if ($annotation_field != 'none' && $node-> $annotation_field) {
     $output .= '<div class="biblio-annotation">';
     $output .= check_markup($node-> $annotation_field, FILTER_HTML_ESCAPE, FALSE);
@@ -931,7 +931,7 @@ function theme_biblio_alpha_line($type = 'author',$current = NULL, $path = NULL)
   switch ($type){
     case 'authors':
     case 'keywords':
-      $path =  (ord(substr($_GET['q'],-1)) > 97) ? $_GET['q'] . "/" : substr($_GET['q'], 0, -1); 
+      $path =  (ord(substr($_GET['q'],-1)) > 97) ? $_GET['q'] . "/" : substr($_GET['q'], 0, -1);
       $all = '['.l(t('Show ALL'), substr($_GET['q'], 0, -2)).']' ;
       break;
     case 'author':
