@@ -744,7 +744,7 @@ function biblio_save_imported_nodes(& $node_array) {
 }
 function biblio_save_node($node, $batch = FALSE, $session_id = NULL, $save_node = TRUE) {
   $options = variable_get('node_options_biblio', array ('status'));
-  if (module_exists('i18n') && variable_get('i18n_node_biblio', 0)) {
+  if (module_exists('i18n') && variable_get('i18n_node_biblio', 0) && variable_get('language_content_type_biblio', 0) ){
     $node['language'] = module_invoke('i18n', 'default_language');
   }
   $node_template = array (

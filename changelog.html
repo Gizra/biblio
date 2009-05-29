@@ -1,162 +1,171 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html>
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-<title>Insert title here</title>
-</head>
-<body>
+<HTML>
+<HEAD>
+<META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<TITLE>Biblio Change Log</TITLE>
+</HEAD>
+<BODY>
 
 Upgrades from 5.x or RC2 and later are directly supported without any intermediate updates.
 
-<h3>New features...</h3>
-<b>6.x-1.5</b>
-<ul>
-  <li>Added a new feature (and setting to turn it on/off) which will allow you to retain BibTex protected capitalization braces in title strings, they will be stripped out on display, but will still be in place when exported in BibTex format. </li>
-  <li>Added a <em>new permission</em> "access biblio content" which will allow you to restrict access to any of the biblio pages (biblio, biblio/authors, biblio/keywords etc.) <b>A user <ul>MUST</ul> have this permission to see anything from the biblio module!</b></li>
-  <li>Added a section to the user profile page to allow entry of CrossRef login information used for DOI lookup</li>
-  <li>Added a new option when selecting taxonomy terms from a vocabulary, you can now choose to copy them to the biblio keyword database or not.  There is a check box on the input and import forms and there is also a new check box in the "Keywords" section of the admin/settings page which sets the default for this option.</li>
-  <li>Added a setting in the links section to toggle the hyperlinks on the author names.</li>
-</ul>
-<b>6.x-1.4</b>
-<ul>
-  <li>No new features, 1.4 was released to address a major bug which crashed the code when saving a new entry containing keywords.</li>
-</ul>
+<H3>New features...</H3>
+<B>6.x-1.5</B>
+<OL>
+  <LI>Added new settings in the links section on the admin/settings/biblio page.  You choose to carry "inline" mode through to all subsequent links.  Inline mode is used primarily by people accessing biblio data from custom code, so the average user will not need this.</LI>
+  <LI>Added new settings in the links section on the admin/settings/biblio page.  You can now toggle the export links on/off individually as well as the Google Scholar link</LI>
+  <LI>Added links from each entry to Google Scholar.  Following the link does a Google Scholar search using the title and first authors name.</LI>
+  <LI>Added a new feature (and setting to turn it on/off) which will allow you to retain BibTex protected capitalization braces in title strings, they will be stripped out on display, but will still be in place when exported in BibTex format. </LI>
+  <LI>Added a <B><EM>new permission</EM></B> called "access biblio content" which will allow you to restrict access to any of the biblio pages (biblio, biblio/authors, biblio/keywords etc.) <B>A user <U>MUST</U> have this permission to see anything from the biblio module!</B></LI>
+  <LI>Added a section to the user profile page to allow entry of CrossRef login information used for DOI lookup</LI>
+  <LI>Added a new option when selecting taxonomy terms from a vocabulary, you can now choose to copy them to the biblio keyword database or not.  There is a check box on the input and import forms and there is also a new check box in the "Keywords" section of the admin/settings page which sets the default for this option.</LI>
+  <LI>Added a setting in the links section to toggle the hyperlinks on the author names.</LI>
+</OL>
+<B>6.x-1.4</B>
+<OL>
+  <LI>No new features, 1.4 was released to address a major bug which crashed the code when saving a new entry containing keywords.</LI>
+</OL>
 
-<b>6.x-1.3</b>
-<ol>
-  <li>Added "DOI Lookup" option on the input form. Entering a valid DOI name (number) here will query crossref.org and poplulate the input form with all the data it gets.  You are then presented with the populated form to make further additions/changes prior to saving it to the database.</li>
-  <li>Added "BibTex cut and paste" option to the input form.  Pasting a valid bibTex string into the box will populate the input form with the data and similar to the DOI lookup above, allows you to preview and make changes prior to saving it in the database.</li>
-  <li>Added a new user permission called "edit biblio authors" which allows the user to edit biblio author information but not other biblio settings, unlike "administer biblio" which gives them the right to edit all biblio settings.</li>
-  <li>Changed "Views" integration such that Blblio is no longer a "Base" type of view.  You should now use the "Node" view type to create a view containing biblio information.</li>
-  <li>Added an option to toggle sort links between text and tab type display.</li>
-  <li>Changed Keyword/Taxonomy freetag handling...  The Taxonomy freetag input box is no longer displayed on the input form. All keywords/taxonomy freetags should be entered into the biblio Keywords input box and (if required) the taxonomy freetags will be updated when the keywords are saved.  This keeps the keywords and freetags in sync and avoids the confustion of having two input boxes (one for keywords and one for freetags).</li>   
-</ol>
-<b>6.x-1.2</b>
-<ol>
-  <li>Added option to automatically delete authors "orphaned" by the update or deletion of an entry</li>
-  <li>User selectable bibliographic styles, authorized users can choose a style other than the system default on their "edit user" page</li>
-  <li>Author "Link" allows 2 or more authors to be linked together (intended to deal with name changes due to marriage, but could be used for other purposes)</li>
-  </ol>
-<b>6.x-1.1</b>
-<ol>
-  <li>MARC format file import</li>
-  <li>New bibliographic output sytles (AMA, Chicago, MLA, Vancouver)</li>
-  <li>Authors page (biblio/authors) which displays all authors in the database linked to publication lists filtered by that author. ("edit" links are provided for privileged users)</li>
-  <li>Author edit/merge form (merge allows you to merge all instances of the same author which have been entered slightly
-differently. i.e. Smith, J and John Smith are the same person so you merge the two entries into one.)</li>
-  <li>Orphaned author&nbsp;page(admin/settings/biblio/author/orphans),&nbsp;allows you to remove authors who are not associated with any publications from the database</li>
-  <li>Keywords page (biblio/keywords) which displays all keywords in the database linked to publication list filtered by that keyword. ("edit" links are&nbsp;provided for privileged users)</li>
-  <li>Orphaned keyword page (admin/settings/biblio/keyword/orphans) allows you to find and remove orphaned keywords (keywords which are no longer associated with any publications)</li>
-  <li>added 'tabledrag' to admin/settings/biblio/defaults and admin/settings/biblio/types/edit/xxx which allows you to change the order of the fields on the input form by just dragging them to the desired location</li>
-  <li>input your own PHP code to generate cite keys</li>
-</ol>
-<h3>Bugs Fixed...</h3>
-<b>6.x-1.5</b>
-<ul>
-  <li><a href="http://drupal.org/node/464572">#464572</a> Undefined function taxonomy_vocabulary_load()-installation error </li>
-  <li><a href="http://drupal.org/node/461474">#461474</a> BibTex - ISSN field </li>
-  <li><a href="http://drupal.org/node/461464">#461464</a> BibTex - Inproceedings and inbook - booktitle replaced by series</li>  
-  <li><a href="http://drupal.org/node/461426">#461426</a> BibTex - @incollection interpreted as @book</li>  
-  <li><a href="http://drupal.org/node/461422">#461422</a> BibTex - export - no doi</li>
-  <li><a href="http://drupal.org/node/456750">#456750</a> Content Access Permissions are ignored</li>  
-  <li><a href="http://drupal.org/node/459374">#459374</a> Use of $form_state['storage'] to hold a string/integer (as opposed to an array)</li>
-  <li><a href="http://drupal.org/node/459684">#459684</a> DOI import fails, CrossRef registration required now</li>
-  <li><a href="http://drupal.org/node/455216">#455216</a> Compilation failed: POSIX named classes.. in biblio_theme.inc</li>
-  <li><a href="http://drupal.org/node/456360">#456360</a> Export and Import in Bibtext format changes the citekey</li>
-  <li><a href="http://drupal.org/node/455402">#455402</a> Changes to Biblio Filter</li>
-  <li><a href="http://drupal.org/node/455022">#455022</a> Extend admin pages to set the 'biblio_author_links' variable</li>
-  <li>fixed problem with missing sort arrow images when filtering</li>
-  <li><a href="http://drupal.org/node/460240">#460240</a>fixed keyword export in BibTex and EndNote Tagged formats</li>
-  <li><a href="http://drupal.org/node/453708">#453708</a> Duplicate bibtex export</li>
-  <li><a href="http://drupal.org/node/453298">#453298</a> "Number of items in the RSS feed" not working...</li>
-  <li><a href="http://drupal.org/node/450522">#450522</a> Limit on author initials is not respected in Vancouver style</li>
-  <li><a href="http://drupal.org/node/450030">#450030</a> Minor error on edit authors</li>
-</ul>
-<b>6.x-1.4</b>
-<ul>
-  <li><a href="http://drupal.org/node/448732">#448732</a> can't save any biblio: "Call to undefined function biblio_explode_keywords()"</li>
-  <li><a href="http://drupal.org/node/448306">#448306</a> preg_replace() error</li>
-</ul>
-<b>6.x-1.3</b>
-<ul>
-  <li><a href="http://drupal.org/node/444428">#444428</a> simple mispelled words</li>
-  <li><a href="http://drupal.org/node/437440">#437440</a> Citation Key cannot be longer than 16 </li>
-  <li><a href="http://drupal.org/node/435058">#435058</a> Keywords field length exceeded</li>
-  <li><a href="http://drupal.org/node/439152">#439152</a> Export by keyword</li>
-  <li><a href="http://drupal.org/node/356322">#356322</a> Biblio nodes not XHTML-compliant</li>
-  <li><a href="http://drupal.org/node/355572">#355572</a> Filtering by author should be more lenient / "smart"</li>
-  <li><a href="http://drupal.org/node/340570">#340570</a> inline biblio_db_search layout is broken</li>
-  <li><a href="http://drupal.org/node/442916">#442916</a> Shortening forenames does not use betweenInitialsDelim option</li>
-  <li><a href="http://drupal.org/node/440248">#440248</a> Typo in HTML in _biblio_filter_replace_callback()</li>
-  <li><a href="http://drupal.org/node/438930">#438930</a> edit_authors permission</li>
-  <li><a href="http://drupal.org/node/441104">#441104</a> schema module reports a mismatch</li>
-  <li><a href="http://drupal.org/node/439086">#439086</a> Biblio Keywords and Biblio free tags</li>
-  <li><a href="http://drupal.org/node/435058">#435058</a> Keywords field length exceeded</li>
-  <li><a href="http://drupal.org/node/433198">#433198</a> Shortening forename of authors containing UTF-8 special characters does not work</li>
-  <li><a href="http://drupal.org/node/431688">#431688</a> Interaction between url filter and standard sorting filters</li>
-  <li><a href="http://drupal.org/node/425852">#425852</a> Biblio page title setting ignored</li>
-  <li><a href="http://drupal.org/node/429226">#429226</a> Quotes around title in Vancouver style</li>
-  <li><a href="http://drupal.org/node/421546">#421546</a> Keywords vanish when previewing</li>
-</ul>
-<b>6.x-1.2</b>
-<ul>
-  <li><a href="http://drupal.org/node/376808">#376808</a> Delete orphaned authors automatically?</li>
-  <li><a href="http://drupal.org/node/415478">#415478</a> Sorting by type without bars</li>
-  <li><a href="http://drupal.org/node/414870">#414870</a> "more" link in the Block for new publications</li>
-  <li><a href="http://drupal.org/node/414380">#414380</a> Only one keyword is shown</li>
-  <li><a href="http://drupal.org/node/412720">#412720</a> Broken download links when filtering with clean URLs (e.g. /biblio/year/2009)</li>
-  <li><a href="http://drupal.org/node/410610">#410610</a> "Hyperlink titles using supplied URL if available" feature does not seem to work.</li>
-  <li><a href="http://drupal.org/node/409952">#409952</a> All Fields appear (even when unchecked) after upgrade from Biblio 5x to 6x</li>
-  <li><a href="http://drupal.org/node/376802">#376802</a> Search index not updated when editing a node </li>
-  <li><a href="http://drupal.org/node/404842">#404842</a> Tabs and styling</li>
-  <li><a href="http://drupal.org/node/404522">#404522</a> Redirection after batch import</li>
-  <li><a href="http://drupal.org/node/397104">#397104</a> Search function sucks :-)</li>
-  <li><a href="http://drupal.org/node/403484">#403484</a> Slightly malformed RIS files are not imported</li>
-  <li><a href="http://drupal.org/node/404080">#404080</a> Typo in hook_menu prevents author type editing</li>
-  <li><a href="http://drupal.org/node/402468">#402468</a> Filter by author, sort both first and secondary authors </li>
-  <li><a href="http://drupal.org/node/401938">#401938</a> First name / Last name order switched</li>
-</ul>
-<b>6.x-1.1</b>
-<ul>
-  <li><a href="http://drupal.org/node/398472">#398472</a> Drupal UserID-Author Mapping problems</li>
-  <li><a href="http://drupal.org/node/396654">#396654</a> Export single reference fails - SQL error</li>
-  <li><a href="http://drupal.org/node/398226">#398226</a> Fatal error: Cannot break/continue 1 level in biblio.module on line 277</li>
-  <li><a href="http://drupal.org/node/396096">#396096</a> Caching problem: no filters for anonymous users</li>
-</ul>
-<b>6.x-1.0</b>
-<ul>
-  <li>[#141602]</li>
-  <li>[#381190]</li>
-  <li>[#385830]</li>
-  <li>[#387788]</li>
-  <li>[#388722]</li>
-  <li>[#183517]</li>
-  <li>[#376852]</li>
-  <li>[#372820]</li>
-  <li>[#381070]</li>
-  <li>[#376852]</li>
-  <li>[#372038]</li>
-  <li>[#375085]</li>
-  <li>innumerable D5 -&gt; D6 upgrade fixes provided by Robert Haschke (http://drupal.org/user/409889)</li>
-  <li>[#371867]</li>
-  <li>[#372770]</li>
-  <li>[#373107]</li>
-  <li>[#373129]</li>
-  <li>[#372915]</li>
-  <li>[#372238]</li>
-  <li>[#372024]</li>
-  <li>[#354676] fixed inconsistency between page title and breadcrumb</li>
-  <li>[#355480] fixed issue with setting user id on import by none admin users</li>
-  <li>[#357298] fixed another userID related issue</li>
-  <li>[#336344] fixed problem with taxonomy tags not being added to imported entries</li>
-  <li>[#356322] added danep's patch to correct XHTML validation warnings</li>
-  <li>[#355621] fixed PHP4 compatibility problem</li>
-  <li>[#275410] fixed issue where "My Publications" tab on profile pages could not be turned off</li>
-  <li>[#359752] fixed issue related to profile and inline modes</li>
-  <li>[#360391] fixed problem creating database on install with aliased</li>
-  <li>[#365425] fixed Importing bibtex omits Conference title</li>
-  <li>[#365435] fixed URL search doesn't show search keywords</li>
-  <li>[#362696] RIS Import omits Journal Abbreviation field (JA)</li>
-</ul>
-</body>
-</html>
+<B>6.x-1.3</B>
+<OL>
+  <LI>Added "DOI Lookup" option on the input form. Entering a valid DOI name (number) here will query crossref.org and poplulate the input form with all the data it gets.  You are then presented with the populated form to make further additions/changes prior to saving it to the database.</LI>
+  <LI>Added "BibTex cut and paste" option to the input form.  Pasting a valid bibTex string into the box will populate the input form with the data and similar to the DOI lookup above, allows you to preview and make changes prior to saving it in the database.</LI>
+  <LI>Added a new user permission called "edit biblio authors" which allows the user to edit biblio author information but not other biblio settings, unlike "administer biblio" which gives them the right to edit all biblio settings.</LI>
+  <LI>Changed "Views" integration such that Blblio is no longer a "Base" type of view.  You should now use the "Node" view type to create a view containing biblio information.</LI>
+  <LI>Added an option to toggle sort links between text and tab type display.</LI>
+  <LI>Changed Keyword/Taxonomy freetag handling...  The Taxonomy freetag input box is no longer displayed on the input form. All keywords/taxonomy freetags should be entered into the biblio Keywords input box and (if required) the taxonomy freetags will be updated when the keywords are saved.  This keeps the keywords and freetags in sync and avoids the confustion of having two input boxes (one for keywords and one for freetags).</LI>   
+</OL>
+<B>6.x-1.2</B>
+<OL>
+  <LI>Added option to automatically delete authors "orphaned" by the update or deletion of an entry</LI>
+  <LI>User selectable bibliographic styles, authorized users can choose a style other than the system default on their "edit user" page</LI>
+  <LI>Author "Link" allows 2 or more authors to be linked together (intended to deal with name changes due to marriage, but could be used for other purposes)</LI>
+  </OL>
+<B>6.x-1.1</B>
+<OL>
+  <LI>MARC format file import</LI>
+  <LI>New bibliographic output sytles (AMA, Chicago, MLA, Vancouver)</LI>
+  <LI>Authors page (biblio/authors) which displays all authors in the database linked to publication lists filtered by that author. ("edit" links are provided for privileged users)</LI>
+  <LI>Author edit/merge form (merge allows you to merge all instances of the same author which have been entered slightly
+differently. i.e. Smith, J and John Smith are the same person so you merge the two entries into one.)</LI>
+  <LI>Orphaned author page(admin/settings/biblio/author/orphans), allows you to remove authors who are not associated with any publications from the database</LI>
+  <LI>Keywords page (biblio/keywords) which displays all keywords in the database linked to publication list filtered by that keyword. ("edit" links are provided for privileged users)</LI>
+  <LI>Orphaned keyword page (admin/settings/biblio/keyword/orphans) allows you to find and remove orphaned keywords (keywords which are no longer associated with any publications)</LI>
+  <LI>added 'tabledrag' to admin/settings/biblio/defaults and admin/settings/biblio/types/edit/xxx which allows you to change the order of the fields on the input form by just dragging them to the desired location</LI>
+  <LI>input your own PHP code to generate cite keys</LI>
+</OL>
+<H3>Bugs Fixed...</H3>
+<B>6.x-1.5</B>
+<UL>
+  <LI><A href="http://drupal.org/node/282996">#282996</A> FileField support for Biblio? </LI>
+  <LI><A href="http://drupal.org/node/469502">#469502</A> problem with viewinline </LI>
+  <LI><A href="http://drupal.org/node/465834">#465834</A> issn and section fields too small for patent type </LI>
+  <LI><A href="http://drupal.org/node/472062">#472062</A> Biblio and i18n - Problem with assigned language when importing nodes </LI>
+  <LI><A href="http://drupal.org/node/471436">#471436</A> Problem with Taxonomy and Biblio Keywords </LI>
+  <LI><A href="http://drupal.org/node/469328">#469328</A> What to do if Author is an Organization (CSE & APA styles only) </LI>
+  <LI><A href="http://drupal.org/node/464572">#464572</A> Undefined function taxonomy_vocabulary_load()-installation error </LI>
+  <LI><A href="http://drupal.org/node/461474">#461474</A> BibTex - ISSN field </LI>
+  <LI><A href="http://drupal.org/node/461464">#461464</A> BibTex - Inproceedings and inbook - booktitle replaced by series</LI>  
+  <LI><A href="http://drupal.org/node/461426">#461426</A> BibTex - @incollection interpreted as @book</LI>  
+  <LI><A href="http://drupal.org/node/461422">#461422</A> BibTex - export - no doi</LI>
+  <LI><A href="http://drupal.org/node/456750">#456750</A> Content Access Permissions are ignored</LI>  
+  <LI><A href="http://drupal.org/node/459374">#459374</A> Use of $form_state['storage'] to hold a string/integer (as opposed to an array)</LI>
+  <LI><A href="http://drupal.org/node/459684">#459684</A> DOI import fails, CrossRef registration required now</LI>
+  <LI><A href="http://drupal.org/node/455216">#455216</A> Compilation failed: POSIX named classes.. in biblio_theme.inc</LI>
+  <LI><A href="http://drupal.org/node/456360">#456360</A> Export and Import in Bibtext format changes the citekey</LI>
+  <LI><A href="http://drupal.org/node/455402">#455402</A> Changes to Biblio Filter</LI>
+  <LI><A href="http://drupal.org/node/455022">#455022</A> Extend admin pages to set the 'biblio_author_links' variable</LI>
+  <LI>fixed problem with missing sort arrow images when filtering</LI>
+  <LI><A href="http://drupal.org/node/460240">#460240</A>fixed keyword export in BibTex and EndNote Tagged formats</LI>
+  <LI><A href="http://drupal.org/node/453708">#453708</A> Duplicate bibtex export</LI>
+  <LI><A href="http://drupal.org/node/453298">#453298</A> "Number of items in the RSS feed" not working...</LI>
+  <LI><A href="http://drupal.org/node/450522">#450522</A> Limit on author initials is not respected in Vancouver style</LI>
+  <LI><A href="http://drupal.org/node/450030">#450030</A> Minor error on edit authors</LI>
+</UL>
+<B>6.x-1.4</B>
+<UL>
+  <LI><A href="http://drupal.org/node/448732">#448732</A> can't save any biblio: "Call to undefined function biblio_explode_keywords()"</LI>
+  <LI><A href="http://drupal.org/node/448306">#448306</A> preg_replace() error</LI>
+</UL>
+<B>6.x-1.3</B>
+<UL>
+  <LI><A href="http://drupal.org/node/444428">#444428</A> simple mispelled words</LI>
+  <LI><A href="http://drupal.org/node/437440">#437440</A> Citation Key cannot be longer than 16 </LI>
+  <LI><A href="http://drupal.org/node/435058">#435058</A> Keywords field length exceeded</LI>
+  <LI><A href="http://drupal.org/node/439152">#439152</A> Export by keyword</LI>
+  <LI><A href="http://drupal.org/node/356322">#356322</A> Biblio nodes not XHTML-compliant</LI>
+  <LI><A href="http://drupal.org/node/355572">#355572</A> Filtering by author should be more lenient / "smart"</LI>
+  <LI><A href="http://drupal.org/node/340570">#340570</A> inline biblio_db_search layout is broken</LI>
+  <LI><A href="http://drupal.org/node/442916">#442916</A> Shortening forenames does not use betweenInitialsDelim option</LI>
+  <LI><A href="http://drupal.org/node/440248">#440248</A> Typo in HTML in _biblio_filter_replace_callback()</LI>
+  <LI><A href="http://drupal.org/node/438930">#438930</A> edit_authors permission</LI>
+  <LI><A href="http://drupal.org/node/441104">#441104</A> schema module reports a mismatch</LI>
+  <LI><A href="http://drupal.org/node/439086">#439086</A> Biblio Keywords and Biblio free tags</LI>
+  <LI><A href="http://drupal.org/node/435058">#435058</A> Keywords field length exceeded</LI>
+  <LI><A href="http://drupal.org/node/433198">#433198</A> Shortening forename of authors containing UTF-8 special characters does not work</LI>
+  <LI><A href="http://drupal.org/node/431688">#431688</A> Interaction between url filter and standard sorting filters</LI>
+  <LI><A href="http://drupal.org/node/425852">#425852</A> Biblio page title setting ignored</LI>
+  <LI><A href="http://drupal.org/node/429226">#429226</A> Quotes around title in Vancouver style</LI>
+  <LI><A href="http://drupal.org/node/421546">#421546</A> Keywords vanish when previewing</LI>
+</UL>
+<B>6.x-1.2</B>
+<UL>
+  <LI><A href="http://drupal.org/node/376808">#376808</A> Delete orphaned authors automatically?</LI>
+  <LI><A href="http://drupal.org/node/415478">#415478</A> Sorting by type without bars</LI>
+  <LI><A href="http://drupal.org/node/414870">#414870</A> "more" link in the Block for new publications</LI>
+  <LI><A href="http://drupal.org/node/414380">#414380</A> Only one keyword is shown</LI>
+  <LI><A href="http://drupal.org/node/412720">#412720</A> Broken download links when filtering with clean URLs (e.g. /biblio/year/2009)</LI>
+  <LI><A href="http://drupal.org/node/410610">#410610</A> "Hyperlink titles using supplied URL if available" feature does not seem to work.</LI>
+  <LI><A href="http://drupal.org/node/409952">#409952</A> All Fields appear (even when unchecked) after upgrade from Biblio 5x to 6x</LI>
+  <LI><A href="http://drupal.org/node/376802">#376802</A> Search index not updated when editing a node </LI>
+  <LI><A href="http://drupal.org/node/404842">#404842</A> Tabs and styling</LI>
+  <LI><A href="http://drupal.org/node/404522">#404522</A> Redirection after batch import</LI>
+  <LI><A href="http://drupal.org/node/397104">#397104</A> Search function sucks :-)</LI>
+  <LI><A href="http://drupal.org/node/403484">#403484</A> Slightly malformed RIS files are not imported</LI>
+  <LI><A href="http://drupal.org/node/404080">#404080</A> Typo in hook_menu prevents author type editing</LI>
+  <LI><A href="http://drupal.org/node/402468">#402468</A> Filter by author, sort both first and secondary authors </LI>
+  <LI><A href="http://drupal.org/node/401938">#401938</A> First name / Last name order switched</LI>
+</UL>
+<B>6.x-1.1</B>
+<UL>
+  <LI><A href="http://drupal.org/node/398472">#398472</A> Drupal UserID-Author Mapping problems</LI>
+  <LI><A href="http://drupal.org/node/396654">#396654</A> Export single reference fails - SQL error</LI>
+  <LI><A href="http://drupal.org/node/398226">#398226</A> Fatal error: Cannot break/continue 1 level in biblio.module on line 277</LI>
+  <LI><A href="http://drupal.org/node/396096">#396096</A> Caching problem: no filters for anonymous users</LI>
+</UL>
+<B>6.x-1.0</B>
+<UL>
+  <LI>[#141602]</LI>
+  <LI>[#381190]</LI>
+  <LI>[#385830]</LI>
+  <LI>[#387788]</LI>
+  <LI>[#388722]</LI>
+  <LI>[#183517]</LI>
+  <LI>[#376852]</LI>
+  <LI>[#372820]</LI>
+  <LI>[#381070]</LI>
+  <LI>[#376852]</LI>
+  <LI>[#372038]</LI>
+  <LI>[#375085]</LI>
+  <LI>innumerable D5 -&gt; D6 upgrade fixes provided by Robert Haschke (http://drupal.org/user/409889)</LI>
+  <LI>[#371867]</LI>
+  <LI>[#372770]</LI>
+  <LI>[#373107]</LI>
+  <LI>[#373129]</LI>
+  <LI>[#372915]</LI>
+  <LI>[#372238]</LI>
+  <LI>[#372024]</LI>
+  <LI>[#354676] fixed inconsistency between page title and breadcrumb</LI>
+  <LI>[#355480] fixed issue with setting user id on import by none admin users</LI>
+  <LI>[#357298] fixed another userID related issue</LI>
+  <LI>[#336344] fixed problem with taxonomy tags not being added to imported entries</LI>
+  <LI>[#356322] added danep's patch to correct XHTML validation warnings</LI>
+  <LI>[#355621] fixed PHP4 compatibility problem</LI>
+  <LI>[#275410] fixed issue where "My Publications" tab on profile pages could not be turned off</LI>
+  <LI>[#359752] fixed issue related to profile and inline modes</LI>
+  <LI>[#360391] fixed problem creating database on install with aliased</LI>
+  <LI>[#365425] fixed Importing bibtex omits Conference title</LI>
+  <LI>[#365435] fixed URL search doesn't show search keywords</LI>
+  <LI>[#362696] RIS Import omits Journal Abbreviation field (JA)</LI>
+</UL>
+</BODY>
+</HTML>

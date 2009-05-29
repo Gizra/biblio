@@ -234,12 +234,12 @@ function biblio_schema() {
   ),
       'biblio_number' => array (
         'type' => 'varchar',
-        'length' => '24',
+        'length' => '128',
         'description' =>'',
   ),
       'biblio_other_number' => array (
         'type' => 'varchar',
-        'length' => '24',
+        'length' => '128',
         'description' =>'',
   ),
       'biblio_secondary_title' => array (
@@ -275,7 +275,7 @@ function biblio_schema() {
   ),
       'biblio_volume' => array (
         'type' => 'varchar',
-        'length' => '24',
+        'length' => '128',
         'description' =>'',
   ),
       'biblio_pages' => array (
@@ -290,7 +290,7 @@ function biblio_schema() {
   ),
       'biblio_isbn' => array (
         'type' => 'varchar',
-        'length' => '24',
+        'length' => '128',
         'description' =>'',
   ),
       'biblio_lang' => array (
@@ -319,22 +319,22 @@ function biblio_schema() {
   ),
       'biblio_issue' => array (
         'type' => 'varchar',
-        'length' => '24',
+        'length' => '128',
         'description' =>'',
   ),
       'biblio_type_of_work' => array (
         'type' => 'varchar',
-        'length' => '100',
+        'length' => '128',
         'description' =>'',
   ),
       'biblio_accession_number' => array (
         'type' => 'varchar',
-        'length' => '30',
+        'length' => '128',
         'description' =>'',
   ),
       'biblio_call_number' => array (
         'type' => 'varchar',
-        'length' => '30',
+        'length' => '128',
         'description' =>'',
   ),
       'biblio_notes' => array (
@@ -375,7 +375,7 @@ function biblio_schema() {
   ),
       'biblio_number_of_volumes' => array (
         'type' => 'varchar',
-        'length' => '24',
+        'length' => '128',
         'description' =>'',
   ),
       'biblio_short_title' => array (
@@ -405,7 +405,7 @@ function biblio_schema() {
   ),
       'biblio_section' => array (
         'type' => 'varchar',
-        'length' => '24',
+        'length' => '128',
         'description' =>'',
   ),
       'biblio_citekey' => array (
@@ -424,7 +424,7 @@ function biblio_schema() {
   ),
       'biblio_issn' => array (
         'type' => 'varchar',
-        'length' => '24',
+        'length' => '128',
         'description' =>'',
   ),
       'biblio_auth_address' => array (
@@ -1748,7 +1748,8 @@ function biblio_update_6017() {
 function biblio_update_6018() {
   $result = array();
   $result[] = update_sql("UPDATE {biblio_contributor_data} SET aka = cid WHERE aka = 0 OR aka IS NULL");
-  $result[] = update_sql("ALTER TABLE {biblio_contributor_data} DROP PRIMARY KEY, ADD PRIMARY KEY (cid, aka)");
+  db_drop_primary_key($result, 'biblio_contributor_data');
+  db_add_primary_key($result, 'biblio_contributor_data', array('cid', 'aka'));
   $result[] = update_sql("UPDATE {biblio_field_type_data} SET title = 'Keywords' WHERE title = 'Key Words' ");
   
   return $result;
@@ -1768,5 +1769,20 @@ function biblio_update_6020() {// add new 'access biblio content' permission to 
       $result[] = update_sql("UPDATE {permission} SET perm = '$role->perm' WHERE rid = $role->rid");
     }
   }
+  return $result;
+}
+function biblio_update_6021() {
+  $result = array();
+  db_change_field($result, 'biblio', 'biblio_number', 'biblio_number', array('type' => 'varchar', 'length' => '128'));
+  db_change_field($result, 'biblio', 'biblio_other_number', 'biblio_other_number', array('type' => 'varchar', 'length' => '128'));
+  db_change_field($result, 'biblio', 'biblio_volume', 'biblio_volume', array('type' => 'varchar', 'length' => '128'));
+  db_change_field($result, 'biblio', 'biblio_isbn', 'biblio_isbn', array('type' => 'varchar', 'length' => '128'));
+  db_change_field($result, 'biblio', 'biblio_issue', 'biblio_issue', array('type' => 'varchar', 'length' => '128'));
+  db_change_field($result, 'biblio', 'biblio_type_of_work', 'biblio_type_of_work', array('type' => 'varchar', 'length' => '128'));
+  db_change_field($result, 'biblio', 'biblio_accession_number', 'biblio_accession_number', array('type' => 'varchar', 'length' => '128'));
+  db_change_field($result, 'biblio', 'biblio_call_number', 'biblio_call_number', array('type' => 'varchar', 'length' => '128'));
+  db_change_field($result, 'biblio', 'biblio_number_of_volumes', 'biblio_number_of_volumes', array('type' => 'varchar', 'length' => '128'));
+  db_change_field($result, 'biblio', 'biblio_section', 'biblio_section', array('type' => 'varchar', 'length' => '128'));
+  db_change_field($result, 'biblio', 'biblio_issn', 'biblio_issn', array('type' => 'varchar', 'length' => '128'));
   return $result;
 }

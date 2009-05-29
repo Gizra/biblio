@@ -87,9 +87,9 @@ function biblio_save_keywords(&$node, $update = FALSE) {
 
   if (!$update) db_query('DELETE FROM {biblio_keyword} WHERE nid = %d AND vid = %d', array($node->nid, $node->vid));
 
-  if (isset($node->taxonomy) && is_array($node->taxonomy)) { //add any taxonomy terms to our keyword list
+  if (isset($node->taxonomy) && is_array($node->taxonomy) && variable_get('biblio_copy_taxo_terms_to_keywords', 0)) { //add any taxonomy terms to our keyword list
     foreach ($node->taxonomy as $vid => $term) {
-      if ($vid == 'copy_to_biblio' && $term == 0) {
+      if ($vid == 'copy_to_biblio' && $term == 0 ) {// don't copy if user overrides the default to copy, just set the $taxo_terms to an empty array and break out of the for loop
         $taxo_terms = array();
         break;
       }

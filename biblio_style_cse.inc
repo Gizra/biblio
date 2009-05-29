@@ -47,8 +47,12 @@ function biblio_style_cse_author_options() {
 function biblio_style_cse($node, $base = 'biblio', $inline = false) {
   $author_options = biblio_style_cse_author_options();
   $authors = theme('biblio_format_authors', $node->biblio_contributors[1], $author_options, $inline);
-
-  if (empty($authors)) $authors = theme('biblio_format_authors', $node->biblio_contributors[5], $author_options, $inline);  // if no authors substitute corp author if available
+  if (empty($authors) && count($node->biblio_contributors[5])) {// if no authors substitute corp author if available
+    foreach ($node->biblio_contributors[5] as $rank => $author) {
+      $authors .= (empty($authors)) ? '' : ', ';
+      $authors .= (variable_get('biblio_author_links', 1)) ?  theme('biblio_author_link',$author['name'], $author['cid'], variable_get('biblio_base', 'biblio'), $inline) : $author['name'];
+    }
+  }
   if (empty($authors)) $authors = '[' . t('Anonymous') . ']';  // use anonymous if we still have nothing.
   if (!empty ($node->biblio_citekey)&&(variable_get('biblio_display_citation_key',0))) {
     $output .= '[' . check_plain($node->biblio_citekey) . '] ';

@@ -694,7 +694,7 @@ function theme_biblio_entry($node, $base = 'biblio', $style = 'classic', $inline
     // add links to attached files (if any)
     $output .= theme('biblio_download_links',$node);
   }
-  $output .= theme_biblio_google_scholar_link($node);
+  if (variable_get('biblio_google_link', 1)) $output .= theme_biblio_google_scholar_link($node);
   $output .= "\n</div>";
 
   return $output;
@@ -794,22 +794,38 @@ function theme_biblio_admin_types_edit_form($form) {
 }
 
 function theme_biblio_download_links($node = NULL) {
-    if (!empty ($node->files) && count($node->files) > 0 && user_access('view uploaded files')) {
-      $files .= '<span class="biblio_file_links">';
-      $files .= '&nbsp;'. t('Download') .':&nbsp;';
-      $file_count = 0;
-      foreach ($node->files as $file) {
-        if ($file->list) {
-          $file_count++;
-          $href = file_create_url($file->filepath);
-          $text = $file->description ? $file->description : $file->filename;
-          $files .= l($text, $href) .'&nbsp;('. format_size($file->filesize).')';
+  $files = '';
+  if (!empty ($node->files) && count($node->files) > 0 && user_access('view uploaded files')) {
+    $files .= '<span class="biblio_file_links">';
+    $files .= '&nbsp;'. t('Download') .':&nbsp;';
+    $file_count = 0;
+    foreach ($node->files as $file) {
+      if ($file->list) {
+        $file_count++;
+        $href = file_create_url($file->filepath);
+        $text = $file->description ? $file->description : $file->filename;
+        $files .= l($text, $href) .'&nbsp;('. format_size($file->filesize).')';
+      }
+    }
+    $files .= '</span>';
+  }
+  if (module_exists('filefield')) { // now lets get any CCK FileField files...
+    $fields = filefield_get_field_list('biblio');
+    foreach ($fields as $field_name => $field) {
+      if (filefield_view_access($field_name)) {
+        $field_files = filefield_get_node_files($node, $field_name);
+        if ($field_files) {
+          foreach ($field_files as $file) {
+            if ($file['fid']) {
+              $files .= theme('filefield_file', $file);
+            }
+          }
         }
       }
-      $files .= '</span>';
-      if ($file_count) return $files;
     }
-    return '';
+  }
+
+  return $files;
 }
 
 /**
@@ -819,11 +835,12 @@ function theme_biblio_download_links($node = NULL) {
  */
 function theme_biblio_export_links($nid = NULL) {
   $base = variable_get('biblio_base', 'biblio');
+  $show_link = variable_get('biblio_export_links', array('tagged', 'xml', 'bibtex'));
   $links = '';
   $links .= '<ul class="biblio-export-buttons">';
-  $links .= '<li> '. theme('biblio_tagged_link', $base, $nid) .'</li>';
-  $links .= '<li> '. theme('biblio_xml_link', $base, $nid) .'</li>';
-  $links .= '<li> '. theme('biblio_bibtex_link', $base, $nid) .'</li></ul>';
+  if ($show_link['tagged']) $links .= '<li> '. theme('biblio_tagged_link', $base, $nid) .'</li>';
+  if ($show_link['xml'])    $links .= '<li> '. theme('biblio_xml_link', $base, $nid) .'</li>';
+  if ($show_link['bibtex']) $links .= '<li> '. theme('biblio_bibtex_link', $base, $nid) .'</li></ul>';
   return $links;
 }
 function theme_biblio_google_scholar_link($node) {
@@ -831,7 +848,9 @@ function theme_biblio_google_scholar_link($node) {
   $link  = 'http://scholar.google.com/scholar?as_q=';
   $link .= '"'.str_replace(' ', '+', $node->title).'"';
   $link .= '&btnG=Search+Scholar&as_epq=&as_oq=&as_eq=&as_occt=any&as_sauthors='.$node->biblio_contributors[1][0]['lastname'];
-  $output = l(t("Google Scholar"), $link, array('attributes'=>array('title' => t("Click to download the EndNote Tagged formatted file"))));
+  $output .= '<ul class="biblio-export-buttons"><li>';
+  $output .= l(t("Google Scholar"), $link, array('attributes'=>array('title' => t("Click to download the EndNote Tagged formatted file"))));
+  $output .= '</li> ';
   return $output;
 }
 /**

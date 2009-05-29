@@ -283,6 +283,37 @@ function biblio_admin_settings() {
     '#collapsed' => TRUE,
     '#title' => t('Links')
   );
+  $form['links']['export'] = array(
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+    '#title' => t('Export Links')
+  );
+  $form['links']['export']['biblio_export_links'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Show export links'),
+    '#default_value' => variable_get('biblio_export_links', array('tagged', 'xml', 'bibtex')),
+    '#options' => array(
+      'tagged'  => t('EndNote Tagged'),
+      'xml'     => t('EndNote XML'),
+      'bibtex'  => t('BibTex'),
+    ),
+    '#description' => t('You can select which export links to display here.')
+  );
+  $form['links']['google'] = array(
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+    '#title' => t('Google Scholar Link')
+  );
+  $form['links']['google']['biblio_google_link'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Show Google Scholar links'),
+    '#return_value' => 1,
+    '#default_value' => variable_get('biblio_google_link', 1),
+    '#description' => t('Selecting this option will display a link to Google Scholar beside each entry.  Clicking this link searches Google Scholar using the title and first author of the current biblio entry.')
+  );
+  
   $form['links']['biblio_links_target_new_window'] = array(
     '#type' => 'checkbox',
     '#title' => t('Links open in new browser'),
@@ -290,13 +321,14 @@ function biblio_admin_settings() {
     '#default_value' => variable_get('biblio_links_target_new_window', 0),
     '#description' => t('This causes related URLs to open in a new browser window')
   );
-  /*  $form['links']['biblio_inlinemode_in_links'] = array(
+  $form['links']['biblio_inlinemode_in_links'] = array(
       '#type' => 'checkbox',
       '#title' => t('Carry "inline" mode through to all links'),
       '#return_value' => 1,
       '#default_value' => variable_get('biblio_inlinemode_in_links', 0),
-      '#description' => t('This causes the "inline" mode to be applied to all links such as titles, authors and keywords') );
-  */
+      '#description' => t('This causes the "inline" mode to be applied to all links such as titles, authors and keywords') 
+  );
+  
   $form['links']['biblio_link_title_url'] = array(
     '#type' => 'checkbox',
     '#title' => t('Hyperlink titles using supplied URL if available'),
@@ -748,24 +780,38 @@ function biblio_admin_types_edit_form_submit($form, & $form_state) {
   // Clear the cached pages and menus:
   menu_rebuild();
 }
-function biblio_admin_types_form($form) {
-  $result = db_query('SELECT t.* FROM {biblio_types as t WHERE t.tid > 0 ORDER BY t.weight}');
+function biblio_admin_types_form() {
+  $result = db_query('SELECT t.* FROM {biblio_types as t WHERE t.tid > 0}');
   //$rows[] = array('',t('Fields Common To All Types'),l('edit', 'admin/settings/biblio/types/edit'),'');
-  $form['types']['#tree'] = TRUE;
   while ($row = db_fetch_object($result)) {
     if ($row->tid < 999) {
-      $actions = (($row->visible) ? '['. l(t('edit'), 'admin/settings/biblio/fields/type/edit/'. $row->tid).']' : ''). (($row->visible) ? ' ['. l(t('hide'), 'admin/settings/biblio/fields/type/hide/'. $row->tid).']' : ' ['. l(t('show'), 'admin/settings/biblio/fields/type/show/'. $row->tid).']');
+      $rows[] = array(
+        $row->tid,
+        $row->name,
+        ($row->visible) ? l(t('edit'), 'admin/settings/biblio/fields/type/edit/'. $row->tid) : '', ($row->visible) ? l(t('hide'), 'admin/settings/biblio/fields/type/hide/'. $row->tid) : l(t('show'), 'admin/settings/biblio/fields/type/show/'. $row->tid)
+      );
     }
     else {
-      $actions = l(t('edit'), 'admin/settings/biblio/fields/type/edit/'. $row->tid). l(t('delete'), 'admin/settings/biblio/fields/type/delete/'. $row->tid);
+      $rows[] = array(
+        $row->tid,
+        $row->name,
+        l(t('edit'), 'admin/settings/biblio/fields/type/edit/'. $row->tid), l(t('delete'), 'admin/settings/biblio/fields/type/delete/'. $row->tid)
+      );
     }
-    $form['types'][$row->weight]['tid'] = array('#type' => 'markup', '#value' => $row->tid);
-    $form['types'][$row->weight]['name'] = array('#value' => $row->name);
-    $form['types'][$row->weight]['actions'] = array('#value' => $actions);
-    $form['types'][$row->weight]['weight'] = array('#hidden' => $row->weight);
   }
-
-  return $form;
+  $header = array(
+    t('Type Id'),
+    t('Type Name'), array(
+      'data' => t('Operations'),
+      'colspan' => '2'
+    )
+  );
+  $output .= '<p>[ '. l(t('Add New Type'), 'admin/settings/biblio/fields/type/new') .' ]';
+  $output .= ' [ '. l(t('Reset all types to defaults'), 'admin/settings/biblio/fields/type/reset') .' ]';
+  $output .= theme('table', $header, $rows);
+  $output .= '<p>[ '. l(t('Add New Type'), 'admin/settings/biblio/fields/type/new') .' ]';
+  $output .= ' [ '. l(t('Reset all types to defaults'), 'admin/settings/biblio/fields/type/reset') .' ]';
+  return $output;
 }
 function biblio_admin_types_add_form() {
   $form['name'] = array(

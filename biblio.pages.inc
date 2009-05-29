@@ -503,7 +503,8 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
     $content .= _biblio_category_separator_bar($attrib, $node);
 
     $inline_links = ($inline && variable_get('biblio_inlinemode_in_links',0)) ? true : false;
-    $content .= theme('biblio_entry', $node,$base,$style,$inline);
+    
+    $content .= theme('biblio_entry', $node,$base,$style,$inline_links);
   } //end while
   if ($count) $content .= '</div><!-- end category-section -->';
   $content .= theme('pager', 0, variable_get('biblio_rowsperpage', 25));

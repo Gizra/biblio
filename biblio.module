@@ -593,8 +593,8 @@ function biblio_menu() {
   );
   $items['admin/settings/biblio/fields/type'] = array(
     'title'             => 'Publication Types',
-    'page callback'     => 'drupal_get_form',
-    'page arguments'    => array('biblio_admin_types_form'),
+    'page callback'     => 'biblio_admin_types_form',
+//    'page arguments'    => array('biblio_admin_types_form'),
     'access arguments'  => array('administer biblio'),
     'file'              => 'biblio.admin.inc',
     'type'              => MENU_LOCAL_TASK,
@@ -939,14 +939,17 @@ function biblio_form_alter(&$form, $form_state, $form_id) {
     else {
       if (isset($form['menu']['#weight']) && $form['menu']['#weight'] < 20) $form['menu']['#weight'] = 20;
       if (isset($form['book']['#weight']) && $form['book']['#weight'] < 20) $form['book']['#weight'] = 20;
-      if (isset($form['taxonomy']['#title'])) {
+      if (isset($form['taxonomy'])) {
+        if (!isset($form['taxonomy']['#title'])) {
+          $form['taxonomy'] += array(
+            '#type' => 'fieldset',
+            '#title' => t('Vocabularies'),
+            '#collapsible' => TRUE,
+            '#collapsed' => FALSE,
+        );
+          
+        }
         $form['taxonomy']['#description'] = t('Select taxonomy terms which will be related to this ').variable_get('biblio_base_title', 'Biblio').t(' entry.');
-      }
-      $kw_vocab = variable_get('biblio_keyword_vocabulary', 0);
-      $freetagging = variable_get('biblio_keyword_freetagging', 0);
-      if ($freetagging && $kw_vocab && isset($form['taxonomy']['tags'][$kw_vocab])) {
-        unset($form['taxonomy']['tags'][$kw_vocab]);
-
         $form['taxonomy']['copy_to_biblio'] = array(
           '#type' => 'checkbox',
           '#title' => t('Copy these terms to the biblio keyword database'),
@@ -954,6 +957,12 @@ function biblio_form_alter(&$form, $form_state, $form_id) {
           '#default_value' =>  variable_get('biblio_copy_taxo_terms_to_keywords', 0),
           '#description' => t('If this option is selected, the selected taxonomy terms will be copied to the '.variable_get('biblio_base_title', 'Biblio').' keyword database and be displayed as keywords (as well as taxonomy terms) for this entry.')
         );
+      }
+      $kw_vocab = variable_get('biblio_keyword_vocabulary', 0);
+      $freetagging = variable_get('biblio_keyword_freetagging', 0);
+      if ($freetagging && $kw_vocab && isset($form['taxonomy']['tags'][$kw_vocab])) {
+        unset($form['taxonomy']['tags'][$kw_vocab]);
+
       }
     }
   }
@@ -1469,7 +1478,7 @@ function _biblio_prepare_submit(&$node) {
     $node->biblio_citekey = biblio_citekey_generate($node);
   }
   $duplicate = biblio_hash($node);
-  if (isset ($duplicate) && $duplicate != $node->nid) { // if this is a potential duplcate, write the nids of the pre-existing and new nodes
+  if (isset($duplicate) && $duplicate != $node->nid) { // if this is a potential duplcate, write the nids of the pre-existing and new nodes
     $dup_map = array('vid' => $duplicate, 'did' => $node->nid);
     drupal_write_record('biblio_duplicates', $dup_map);
   }

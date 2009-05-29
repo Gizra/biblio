@@ -48,21 +48,21 @@ function biblio_views_data() {
 
   // add fields
   $data['citation'] = array(
-    'title' => t('Biblio Citation'), 
-    'help'  => t("Display the complete citation for a given node"), 
+    'title' => t('Biblio Citation'),
+    'help'  => t("Display the complete citation for a given node"),
     'field' => array(
       'handler' => 'biblio_handler_citation',
     ),
   );
-  $result = db_query('SELECT f.name,f.type,ftd.title,ft.ftdid FROM {biblio_fields} f 
+  $result = db_query('SELECT f.name,f.type,ftd.title,ft.ftdid FROM {biblio_fields} f
                       INNER JOIN {biblio_field_type} AS ft ON ft.fid = f.fid
                       INNER JOIN {biblio_field_type_data} ftd ON ft.ftdid = ftd.ftdid
                       WHERE ft.tid=0');
-  
+
   while ($field = db_fetch_array($result)){
     $data[$field['name']] = array(
-      'title' => $field['title'], 
-      'help'  => "Display the " . $field['title'], 
+      'title' => $field['title'],
+      'help'  => "Display the " . $field['title'],
       'field' => array(
         'handler' => 'biblio_handler_field',
       ),
@@ -72,9 +72,12 @@ function biblio_views_data() {
       $data[$field['name']]['field'] = array(
         'handler' => 'biblio_handler_field_contributor',
         'auth_category' => $field['ftdid'],
-      );    
+      );
     }
   }
+  $data['biblio_year']['sort'] = array(
+    'handler' => 'views_handler_sort_date',
+  );
   $data['table']['join'] = array(
     'node' => array(
       // links directly to node via vid
@@ -87,7 +90,7 @@ function biblio_views_data() {
       'field' => 'vid',
     ),
     );
-  
+
   $viewsdata['biblio'] = $data;
 
   /**************** biblio contributors table **************/
@@ -113,15 +116,15 @@ function biblio_views_data() {
   );
   $data['cid'] = array(
     'title' => t('Contributors'),
-    'help' => t('Filter by any kind of contributor.'), 
+    'help' => t('Filter by any kind of contributor.'),
     'filter' => array(
       'handler' => 'biblio_handler_filter_contributor',
     )
   );
-  
+
   $viewsdata['biblio_contributor'] = $data;
 /*
- * Describe the keyword table...  
+ * Describe the keyword table...
  */
   $data = array();
   $data['table']['group'] = t('Biblio');
@@ -144,15 +147,15 @@ function biblio_views_data() {
   );
   $data['kid'] = array(
     'title' => t('Keyword'),
-    'help' => t('Filter by any keyword.'), 
+    'help' => t('Filter by any keyword.'),
     'filter' => array(
       'handler' => 'biblio_handler_filter_keyword',
     )
   );
-  
+
   $viewsdata['biblio_keyword'] = $data;
 /*
- * Describe the keyword_data table  
+ * Describe the keyword_data table
  */
   $data = array();
   $data['table']['group'] = t('Biblio');
@@ -164,14 +167,14 @@ function biblio_views_data() {
     ),
   );
   $data['word'] = array(
-    'title' => t('Keyword'), 
-    'help'  => t("Display the keyword from a Biblio node"), 
+    'title' => t('Keyword'),
+    'help'  => t("Display the keyword from a Biblio node"),
     'field' => array(
       'handler' => 'biblio_handler_field',
     ),
   );
   $viewsdata['biblio_keyword_data'] = $data;
-  
+
   return $viewsdata;
 }
 
