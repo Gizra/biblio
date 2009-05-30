@@ -82,9 +82,3 @@ function biblio_style_cse($node, $base = 'biblio', $inline = false) {
   */
   return $output;
 }
-function _cse_format_author($author) {
-  $format = $author['prefix'] . ' ' . $author['lastname'] . ' ';
-  $format .= !empty ($author['firstname']) ? ' ' . drupal_substr($author['firstname'], 0, 1) : '';
-  $format .= !empty ($author['initials']) ? str_replace(' ', '', $author['initials']) : '';
-  return $format;
-}
