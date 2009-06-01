@@ -16,6 +16,16 @@ function unixref_startElement($parser, $name, $attrs) {
     case 'sa_component':
       $node['biblio_type'] = _unixref_type_map($name);
       break;
+    case 'journal_article':
+    case 'conference_paper':
+    case 'content_item':
+    case 'report-paper_metadata':
+    case 'standard_metadata':
+    case 'database_date':
+    case 'component':
+      $node['year'] = '';
+      $node['doi']  = '';
+      break;
     case 'person_name' :
       $auth_category = _unixref_get_contributor_category($attrs['contributor_role']);
       if (!isset($contrib_count))
@@ -36,10 +46,15 @@ function unixref_startElement($parser, $name, $attrs) {
   }
   $element = $name;
 }
+function unixref_decode(&$item, $key) {
+  $item = html_entity_decode($item, NULL, 'UTF-8');
+  print $key.' = '. $item . "\n";
+}
 function unixref_endElement($parser, $name) {
   global $node, $nids, $element, $attribute, $terms, $batch_proc, $session_id, $save_node, $auth_category, $contrib_count, $org_count;
   switch ($name) {
     case 'doi_record' :
+      array_walk_recursive($node,'unixref_decode' );
       $nids[] = biblio_save_node($node, $batch, $session_id, $save_node);
       break;
     case 'person_name' :
@@ -76,12 +91,15 @@ function unixref_endElement($parser, $name) {
     case 'database_date':
     case 'component':
       $node['biblio_year'] = $node['year'];
+      $node['biblio_doi']  = $node['doi'];
       break;
     case 'issn':
       if($attribute == 'issn_print') $node['biblio_issn'] = $node['issn'];
+      $node['issn'] = '';
       break;
     case 'isbn':
       if($attribute == 'isbn_print') $node['biblio_isbn'] = $node['isbn'];
+      $node['isbn'] = '';
       break;
     default :
   }
@@ -90,6 +108,7 @@ function unixref_endElement($parser, $name) {
 }
 function unixref_characterData($parser, $data) {
   global $node, $element, $auth_category, $contrib_count, $org_count;
+  $data = htmlspecialchars_decode($data);
   if (trim($data)) {
     switch ($element) {
       case 'surname' :
@@ -138,7 +157,7 @@ function _unixref_field_map($field) {
       'issue'               => 'biblio_issue',
       'edition_number'      => 'biblio_edition',
       'section'             => 'biblio_section',
-      'doi'                 => 'biblio_doi',
+      'doi'                 => 'doi',
       'title'               => 'title',
       'isbn'                => 'isbn',
       'issn'                => 'issn',
