@@ -1786,3 +1786,19 @@ function biblio_update_6021() {
   db_change_field($result, 'biblio', 'biblio_issn', 'biblio_issn', array('type' => 'varchar', 'length' => '128'));
   return $result;
 }
+function biblio_update_6022() {
+  $result = array();
+  $result[] = update_sql("UPDATE {biblio_fields} SET maxsize = 128 WHERE name = 'biblio_number' 
+                          OR name = 'biblio_other_number'
+                          OR name = 'biblio_volume'
+                          OR name = 'biblio_isbn'
+                          OR name = 'biblio_issue'
+                          OR name = 'biblio_type_of_work'
+                          OR name = 'biblio_accession_number'
+                          OR name = 'biblio_call_number'
+                          OR name = 'biblio_number_of_volumes'
+                          OR name = 'biblio_section'
+                          OR name = 'biblio_issn' ");
+  return $result;
+}
+
