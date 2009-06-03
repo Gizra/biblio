@@ -122,15 +122,15 @@ function theme_biblio_long($node, $base = 'biblio', $style = 'classic') {
   }
   if ($node->biblio_volume) {
     $source .= $source ? ", " : "";
-    $source .= t('Volume ') . check_plain($node->biblio_volume);
+    $source .= t('Volume') .' '. check_plain($node->biblio_volume);
   }
   if ($node->biblio_issue) {
     $source .= $source ? ", " : "";
-    $source .= t('Issue ') . check_plain($node->biblio_issue);
+    $source .= t('Issue') . ' '.check_plain($node->biblio_issue);
   }
   if ($node->biblio_number) {
     $source .= $source ? ", " : "";
-    $source .= t('Number ') . check_plain($node->biblio_number);
+    $source .= t('Number') . ' '.check_plain($node->biblio_number);
   }
   if ($node->biblio_place_published) {
     $source .= $source ? ", " : "";
