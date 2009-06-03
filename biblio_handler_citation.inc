@@ -4,7 +4,7 @@ class biblio_handler_citation extends views_handler_field {
   function init(&$view, $options) {
     parent::init($view, $options);
     $this->additional_fields['vid'] = array('table' => 'biblio', 'field' => 'vid');
-    
+
   }
   function query() {
     $this->add_additional_fields();
@@ -30,11 +30,11 @@ class biblio_handler_citation extends views_handler_field {
   function pre_render($values) {
     module_load_include('inc','biblio','biblio.contributors');
     module_load_include('inc','biblio','biblio.keywords');
-    
+
     module_load_include('inc','biblio','biblio_style_'.$this->options['style_name']);
     $author_options_func = 'biblio_style_'.$this->options['style_name'].'_author_options';
     $this->author_options = $author_options_func();
-    
+
     $vids = array();
     $this->items = array();
 
@@ -43,24 +43,27 @@ class biblio_handler_citation extends views_handler_field {
     }
 
     if (count($vids)) {
-      $result = db_query('SELECT n.title, b.* FROM {node} n 
-                          LEFT JOIN {biblio} b on n.vid = b.vid 
+      $result = db_query('SELECT n.title, b.* FROM {node} n
+                          LEFT JOIN {biblio} b on n.vid = b.vid
                           WHERE n.vid IN ('. implode(',', $vids) .')');
       while ($item = db_fetch_object($result)) {
         // Clean up the $item from vid.
         $vid = $item->vid; //unset($item['vid']);
+        if (isset($item->biblio_year) && ($item->biblio_year == 9998))  $item->biblio_year = t("In Press") ;
+        if (isset($item->biblio_year) && ($item->biblio_year == 9999))  $item->biblio_year = t("Submitted") ;
+
         $item->biblio_contributors = biblio_load_contributors($item->vid);
         $item->biblio_keywords = biblio_load_keywords($item->vid);
         $this->items[$vid] = $item;
       }
     }
   }
-  
+
   function render($values) {
     $vid = $values->{$this->field_alias};
 //    print_r($this->items[$vid]);
     if (!isset($this->items[$vid])) return NULL;
     return theme('biblio_entry', $this->items[$vid], $base, $this->options['style_name'], $inline);
   }
-  
+
 }

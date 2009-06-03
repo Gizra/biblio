@@ -18,6 +18,9 @@ function biblio_views_handlers() {
       'biblio_handler_filter_contributor' => array(
         'parent' => 'views_handler_filter_many_to_one',
       ),
+      'biblio_handler_filter_type' => array(
+        'parent' => 'views_handler_filter_in_operator',
+      ),
 /*
       'biblio_handler_filter_role' => array(
         'parent' => 'views_handler_filter_many_to_one',
@@ -61,23 +64,33 @@ function biblio_views_data() {
 
   while ($field = db_fetch_array($result)){
     $data[$field['name']] = array(
-      'title' => $field['title'],
-      'help'  => "Display the " . $field['title'],
-      'field' => array(
-        'handler' => 'biblio_handler_field',
-      ),
+      'title'   => $field['title'],
+      'help'    => "Display the " . $field['title'],
+      'field'   => array('handler' => 'biblio_handler_field'),
+      'sort'    => array('handler' => 'views_handler_sort'),
+      'filter'  => array('handler' => 'views_handler_filter_string')
     );
+
     // for contrib_widgets we use a special handler:
     if ($field['type'] == 'contrib_widget') {
       $data[$field['name']]['field'] = array(
         'handler' => 'biblio_handler_field_contributor',
         'auth_category' => $field['ftdid'],
       );
+      unset($data[$field['name']]['sort']);
+      unset($data[$field['name']]['filter']);
     }
   }
-  $data['biblio_year']['sort'] = array(
-    'handler' => 'views_handler_sort_date',
+  unset($data['biblio_keywords']['filter']);
+  unset($data['biblio_keywords']['sort']);
+  $data['biblio_year']['sort'] = array('handler' => 'views_handler_sort');
+  $data['biblio_type'] = array(
+    'filter'  => array('handler' => 'biblio_handler_filter_type'),
+    'sort'    => array('handler' => 'views_handler_sort'),
+    'title'   => t('Type of Publication'),
+    'help'    => t('The type of publication: Journal, Book, Conference Paper, etc.')
   );
+
   $data['table']['join'] = array(
     'node' => array(
       // links directly to node via vid
@@ -174,7 +187,6 @@ function biblio_views_data() {
     ),
   );
   $viewsdata['biblio_keyword_data'] = $data;
-
   return $viewsdata;
 }
 
