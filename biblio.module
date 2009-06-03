@@ -947,7 +947,7 @@ function biblio_form_alter(&$form, $form_state, $form_id) {
             '#collapsible' => TRUE,
             '#collapsed' => FALSE,
         );
-          
+
         }
         $form['taxonomy']['#description'] = t('Select taxonomy terms which will be related to this ').variable_get('biblio_base_title', 'Biblio').t(' entry.');
         $form['taxonomy']['copy_to_biblio'] = array(
@@ -2047,34 +2047,6 @@ function biblio_hash($node) {
   }
   $node->biblio_md5 = $sum;
   return $duplicate; //return the nid of the potential duplicate
-}
-function biblio_dump_db_data_for_pot() {
-  $query = "SELECT name, description FROM {biblio_types} ";
-  $result = db_query($query);
-  while ($type = db_fetch_object($result)) {
-    $output .= "msgid \"$type->name\"\nmsgstr \"\"\n\n";
-    if (!empty($type->description))
-    $output .= "msgid \"$type->description\"\nmsgstr \"\"\n\n";
-  }
-  $query = "SELECT title, hint FROM {biblio_field_type_data} ";
-  $result = db_query($query);
-  while ($type_data = db_fetch_object($result)) {
-    $output .= "msgid \"$type_data->title\"\nmsgstr \"\"\n\n";
-    if (!empty($type_data->hint))
-    $output .= "msgid \"$type_data->hint\"\nmsgstr \"\"\n\n";
-  }
-  $query = "SELECT title, hint FROM {biblio_contributor_type_data} ";
-  $result = db_query($query);
-  while ($type_data = db_fetch_object($result)) {
-    $output .= "msgid \"$type_data->title\"\nmsgstr \"\"\n\n";
-    if (!empty($type_data->hint))
-    $output .= "msgid \"$type_data->hint\"\nmsgstr \"\"\n\n";
-  }
-
-
-  drupal_set_header('Content-Type: text/plain; charset=utf-8');
-  drupal_set_header('Content-Disposition: attachment; filename=biblio_db_values.pot');
-  print $output;
 }
 
 /**

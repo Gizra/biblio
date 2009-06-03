@@ -122,7 +122,7 @@ function biblio_import_form() {
         $vocab_msg = t('There are currently no vocabularies assigned to the biblio node type, please go the the !url page to fix this', array ('!url' => l(t('admin/content/taxonomy'), 'admin/content/taxonomy')));
       }else{
         $vocab_msg = '<div class="admin-dependencies">'. t('Depends on') .': '. t('Taxonomy') .' (<span class="admin-disabled">'. t('disabled') .'</span>)</div>';
-        
+
       }
       $form['import_taxonomy']['vocabulary_message'] = array (
         '#value' => '<p><div>'. $vocab_msg .'</div></p>'
@@ -1260,6 +1260,35 @@ function biblio_strcsv($fields = array(), $delimiter = ',', $enclosure = '"') {
   $str = substr($str, 0, -1);
   $str .= "\n";
   return $str;
+}
+function biblio_dump_db_data_for_pot() {
+  $query = "SELECT name, description FROM {biblio_types} ";
+  $result = db_query($query);
+  $strings = array();
+  while ($type = db_fetch_object($result)) {
+    $strings[] = $type->name;
+    if (!empty($type->description)) $strings[] = $type->description;
+  }
+  $query = "SELECT title, hint FROM {biblio_field_type_data} ";
+  $result = db_query($query);
+  while ($type_data = db_fetch_object($result)) {
+    $strings[] = $type_data->title;
+    if (!empty($type_data->hint)) $strings[] = $type_data->hint;
+  }
+  $query = "SELECT title, hint FROM {biblio_contributor_type_data} ";
+  $result = db_query($query);
+  while ($type_data = db_fetch_object($result)) {
+    $strings[] = $type_data->title;
+    if (!empty($type_data->hint)) $type_data->hint;
+  }
+  $strings = array_unique($strings);
+  foreach ($strings as $string) {
+    $output .= "t(\"$string\"\);\n";
+  }
+
+  drupal_set_header('Content-Type: text/plain; charset=utf-8');
+  drupal_set_header('Content-Disposition: attachment; filename=biblio_db_values.pot');
+  print $output;
 }
 
 function biblio_pubmed_query () {
