@@ -5,6 +5,9 @@
  */
 function biblio_views_handlers() {
   return array(
+    'info' => array(
+      'path' => drupal_get_path('module', 'biblio') . '/views',
+    ),
     'handlers' => array(
       'biblio_handler_field' => array(
         'parent' => 'views_handler_field',
