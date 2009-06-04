@@ -492,10 +492,9 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
     $node->biblio_contributors = biblio_load_contributors($node->vid);
     $node->biblio_keywords = biblio_load_keywords($node->vid);
     if (variable_get('biblio_hide_bibtex_braces', 0)) $node->title = biblio_remove_brace($node->title);
-    if ( module_exists("upload") ) {
-      $node->files = upload_load($node);
-    }
-
+    if (module_exists("upload")) $node->files = upload_load($node);
+    if (variable_get('biblio_fix_isi_links', 0)) biblio_fix_isi_links($node);
+    
     if (isset($node->biblio_year) && ($node->biblio_year == 9998))  $node->biblio_year = t("In Press") ;
     if (isset($node->biblio_year) && ($node->biblio_year == 9999))  $node->biblio_year = t("Submitted") ;
 

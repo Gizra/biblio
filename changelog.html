@@ -11,6 +11,7 @@ Upgrades from 5.x or RC2 and later are directly supported without any intermedia
 <H3>New features...</H3>
 <B>6.x-1.5</B>
 <OL>
+  <LI>Added new settings in the ISI Web of Knowledge section on the admin/settings/biblio page.  Turning this on automatically converts EndNote "Go to ISI" links to valid ISI search links. (ISI subscription required)</LI>
   <LI>Added new settings in the links section on the admin/settings/biblio page.  You choose to carry "inline" mode through to all subsequent links.  Inline mode is used primarily by people accessing biblio data from custom code, so the average user will not need this.</LI>
   <LI>Added new settings in the links section on the admin/settings/biblio page.  You can now toggle the export links on/off individually as well as the Google Scholar link</LI>
   <LI>Added links from each entry to Google Scholar.  Following the link does a Google Scholar search using the title and first authors name.</LI>
@@ -55,7 +56,8 @@ differently. i.e. Smith, J and John Smith are the same person so you merge the t
 </OL>
 <H3>Bugs Fixed...</H3>
 <B>6.x-1.5</B>
-<UL>
+<UL>http://drupal.org/node/150002#comment-1659312
+  <LI><A href="http://drupal.org/node/150002#comment-1659312">#150002</A> Go to ISI Link </LI>
   <LI><A href="http://drupal.org/node/477502">#477502</A> Unescape XML Entities in import from crossref </LI>
   <LI><A href="http://drupal.org/node/477432">#477432</A> crossref_unix_parser pulls in extra dois </LI>
   <LI><A href="http://drupal.org/node/477448">#477448</A> crossref_unix_parser on multiple isbns </LI>

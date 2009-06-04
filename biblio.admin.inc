@@ -218,6 +218,28 @@ function biblio_admin_settings() {
     '#default_value' => variable_get('biblio_footnotes_integration', 0),
     '#description' => t('This will convert &lt;bib&gt; tags into &lt;fn&gt; tags.  This will cause intermingled &lt;bib&gt; and &lt;fn&gt; tags to be sequentially numbered.  For this to work, you must put the &lt;bib&gt; filter ahead of the &lt;fn&gt; filter in the filter chain.  If this option is not set, &lt;bib&gt; and &lt;fn&gt; tags will be handled separately.')
   );
+  $form['isi_wok'] = array(
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#title' => t('ISI Web of Knowledge'),
+    '#description' => ''
+  );
+  $form['isi_wok']['biblio_fix_isi_links'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Automatically replace "Go to ISI" links with the  URL below'),
+    '#return_value' => 1,
+    '#default_value' => variable_get('biblio_fix_isi_links', 0),
+    '#description' => t('This option automatically replaces any fake "Go to ISI" links with the supplied URL to ISI Web of Knowledge.  Note a subscription with ISI is required for these links to function.')
+  );
+  $form['isi_wok']['biblio_isi_url'] = array(
+    '#type' => 'textfield',
+    '#title' => t('ISI Web of Knowledge URL'),
+    '#size' => 128,
+    '#maxlength' => 512, 
+    '#default_value' => variable_get('biblio_isi_url', 'http://apps.isiknowledge.com/InboundService.do?Func=Frame&product=WOS&action=retrieve&SrcApp=EndNote&Init=Yes&SrcAuth=ResearchSoft&mode=FullRecord&UT='),
+    '#description' => t('Enter the URL which will replace the "Go to ISI" fake links imported from EndNote')
+  );
   $form['keywords'] = array(
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
