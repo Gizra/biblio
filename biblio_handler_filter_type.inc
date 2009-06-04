@@ -1,4 +1,5 @@
 <?php
+// $Id$
 class biblio_handler_filter_type extends views_handler_filter_in_operator {
 
   function construct() {
