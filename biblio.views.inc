@@ -67,11 +67,12 @@ function biblio_views_data() {
 
   while ($field = db_fetch_array($result)){
     $data[$field['name']] = array(
-      'title'   => $field['title'],
-      'help'    => "Display the " . $field['title'],
-      'field'   => array('handler' => 'biblio_handler_field'),
-      'sort'    => array('handler' => 'views_handler_sort'),
-      'filter'  => array('handler' => 'views_handler_filter_string')
+      'title'     => $field['title'],
+      'help'      => "Display the " . $field['title'],
+      'field'     => array('handler' => 'biblio_handler_field'),
+      'sort'      => array('handler' => 'views_handler_sort'),
+      'filter'    => array('handler' => 'views_handler_filter_string'),
+      'argument'  => array('handler' => 'views_handler_argument_string')
     );
 
     // for contrib_widgets we use a special handler:
@@ -82,6 +83,7 @@ function biblio_views_data() {
       );
       unset($data[$field['name']]['sort']);
       unset($data[$field['name']]['filter']);
+      unset($data[$field['name']]['argument']);
     }
   }
   unset($data['biblio_keywords']['filter']);
