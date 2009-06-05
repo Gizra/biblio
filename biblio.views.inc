@@ -24,6 +24,12 @@ function biblio_views_handlers() {
       'biblio_handler_filter_type' => array(
         'parent' => 'views_handler_filter_in_operator',
       ),
+      'biblio_handler_filter_biblio_keyword_kid' => array(
+        'parent' => 'views_handler_filter_many_to_one',
+      ),
+     'biblio_handler_field_biblio_keyword_kid' => array(
+        'parent' => 'views_handler_field_prerender_list',
+      ),
 /*
       'biblio_handler_filter_role' => array(
         'parent' => 'views_handler_filter_many_to_one',
@@ -86,12 +92,12 @@ function biblio_views_data() {
       unset($data[$field['name']]['argument']);
     }
   }
-  unset($data['biblio_keywords']['filter']);
-  unset($data['biblio_keywords']['sort']);
-  $data['biblio_year']['sort'] = array('handler' => 'views_handler_sort');
-  $data['biblio_type'] = array(
+
+  unset($data['biblio_keywords']); // keywords are in a separate table which has it's own handlers
+
+  $data['biblio_type'] =  array(
     'filter'  => array('handler' => 'biblio_handler_filter_type'),
-    'sort'    => array('handler' => 'views_handler_sort'),
+    'sort'      => array('handler' => 'views_handler_sort'),
     'title'   => t('Type of Publication'),
     'help'    => t('The type of publication: Journal, Book, Conference Paper, etc.')
   );
@@ -148,12 +154,12 @@ function biblio_views_data() {
   $data['table']['group'] = t('Biblio');
   $data['table']['join'] = array(
     'node' => array(
-      'left_table' => 'biblio',
+//      'left_table' => 'biblio',
       'left_field' => 'vid',
       'field' => 'vid',
     ),
     'node_revision' => array(
-      'left_table' => 'biblio',
+ //     'left_table' => 'biblio',
       'left_field' => 'vid',
       'field' => 'vid',
     ),
@@ -164,12 +170,29 @@ function biblio_views_data() {
     ),
   );
   $data['kid'] = array(
-    'title' => t('Keyword'),
-    'help' => t('Filter by any keyword.'),
+    'title' => t('Keyword ID'),
+    'help' => t('The Biblio keyword ID'),
+    'field' => array(
+      'title' => t('All keywords'),
+      'help' => t('Display all keywords associated with a node.'),
+      'handler' => 'biblio_handler_field_biblio_keyword_kid',
+      'skip base' => 'term_data',
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument_many_to_one',
+      'name table' => 'biblio_keyword_data',
+      'name field' => 'word',
+      'empty name field' => t('No Keyword'),
+      'numeric' => TRUE,
+      'skip base' => 'biblio_keyword_data',
+    ),
     'filter' => array(
-      'handler' => 'biblio_handler_filter_keyword',
-    )
-  );
+      'title' => t('Keyword'),
+      'handler' => 'biblio_handler_filter_biblio_keyword_kid',
+      'numeric' => TRUE,
+      'skip base' => 'biblio_keyword_data',
+    ),
+    );
 
   $viewsdata['biblio_keyword'] = $data;
 /*
@@ -178,18 +201,22 @@ function biblio_views_data() {
   $data = array();
   $data['table']['group'] = t('Biblio');
   $data['table']['join'] = array(
+    'biblio_keyword' => array(
+      'left_field' => 'kid',
+      'field' => 'kid',
+    ),
     'node' => array(
       'left_table' => 'biblio_keyword',
-      'left_field' => 'vid',
-      'field' => 'vid',
+      'left_field' => 'kid',
+      'field' => 'kid',
     ),
-  );
+    );
   $data['word'] = array(
     'title' => t('Keyword'),
     'help'  => t("Display the keyword from a Biblio node"),
-    'field' => array(
-      'handler' => 'biblio_handler_field',
-    ),
+    'field' => array('handler' => 'biblio_handler_field'),
+    'filter' => array('handler' => 'views_handler_filter_string'),
+
   );
   $viewsdata['biblio_keyword_data'] = $data;
   return $viewsdata;
