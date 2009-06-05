@@ -211,13 +211,13 @@ function biblio_views_data() {
       'field' => 'kid',
     ),
     );
-  $data['word'] = array(
-    'title' => t('Keyword'),
-    'help'  => t("Display the keyword from a Biblio node"),
-    'field' => array('handler' => 'biblio_handler_field'),
-    'filter' => array('handler' => 'views_handler_filter_string'),
-
-  );
+//  $data['word'] = array(
+//    'title' => t('Keyword'),
+//    'help'  => t("Display the keyword from a Biblio node"),
+//    'field' => array('handler' => 'biblio_handler_field'),
+//    'filter' => array('handler' => 'views_handler_filter_string'),
+//
+//  );
   $viewsdata['biblio_keyword_data'] = $data;
   return $viewsdata;
 }
