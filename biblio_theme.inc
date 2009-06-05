@@ -94,7 +94,7 @@ function theme_biblio_long($node, $base = 'biblio', $style = 'classic') {
     $annotation_field = variable_get('biblio_annotations', 'none');
     if ($annotation_field != 'none' && $node-> $annotation_field) {
       $output .= '<div class="biblio-annotation">';
-      $output .= check_markup($node-> $annotation_field, $node->format, FALSE);
+      $output .= check_markup($node->$annotation_field, $node->format, FALSE);
       $output .= '</div>';
     }
     $output .= check_markup($node->body, $node->format, FALSE);
@@ -676,7 +676,7 @@ function theme_biblio_entry($node, $base = 'biblio', $style = 'classic', $inline
   $annotation_field = variable_get('biblio_annotations', 'none');
   if ($annotation_field != 'none' && $node-> $annotation_field) {
     $output .= '<div class="biblio-annotation">';
-    $output .= check_markup($node-> $annotation_field, FILTER_HTML_ESCAPE, FALSE);
+    $output .= check_markup($node->$annotation_field, $node->format, FALSE);
     $output .= '</div>';
   }
   $openurl_base = variable_get('biblio_baseopenurl', '');
