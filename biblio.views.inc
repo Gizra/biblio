@@ -162,7 +162,33 @@ function biblio_views_data() {
 
   $viewsdata['biblio_contributor'] = $data;
 
-/***************** Describe the keyword table ***********/
+/**************** biblio_contributor_data table ***********/
+  $data = array();
+  $data['table']['group'] = t('Biblio');
+  $data['table']['join'] = array(
+    'biblio_contributor' => array(
+      'left_field' => 'cid',
+      'field' => 'cid',
+    ),
+    'node' => array(
+      'left_table' => 'biblio_contributor',
+      'left_field' => 'cid',
+      'field' => 'cid',
+    ),
+    );
+  $data['drupal_uid'] =  array(
+    'field'     => array('handler' => 'views_handler_field'),
+    'filter'    => array('handler' => 'views_handler_filter'),
+    'argument'  => array('handler' => 'views_handler_argument_numeric'),
+    'title'     => t('Drupal UserID'),
+    'help'      => t('This is the Drupal user associated with the Biblio Author.')
+  );
+  
+  $viewsdata['biblio_contributor_data'] = $data;
+    
+  
+  
+/***************** Describe the keyword table *************/
   
   $data = array();
   $data['table']['group'] = t('Biblio');
