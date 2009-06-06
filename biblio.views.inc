@@ -21,8 +21,11 @@ function biblio_views_handlers() {
       'biblio_handler_filter_contributor' => array(
         'parent' => 'views_handler_filter_many_to_one',
       ),
-      'biblio_handler_filter_type' => array(
+      'biblio_handler_filter_biblio_type' => array(
         'parent' => 'views_handler_filter_in_operator',
+      ),
+      'biblio_handler_field_biblio_type' => array(
+        'parent' => 'biblio_handler_field',
       ),
       'biblio_handler_filter_biblio_keyword_kid' => array(
         'parent' => 'views_handler_filter_many_to_one',
@@ -30,11 +33,6 @@ function biblio_views_handlers() {
      'biblio_handler_field_biblio_keyword_kid' => array(
         'parent' => 'views_handler_field_prerender_list',
       ),
-/*
-      'biblio_handler_filter_role' => array(
-        'parent' => 'views_handler_filter_many_to_one',
-      ),
-*/
     )
   );
 }
@@ -51,14 +49,7 @@ function biblio_views_data() {
   $data = array();
   // everything belongs to the Biblio group
   $data['table']['group'] = t('Biblio');
-//  // advertise this table as a possible base table
-//  $data['table']['base'] = array(
-//    'field' => 'vid',
-//    'title' => t('Biblio'),
-//    'help' => t("Biblio publications."),
-//  );
 
-  // add fields
   $data['citation'] = array(
     'title' => t('Biblio Citation'),
     'help'  => t("Display the complete citation for a given node"),
@@ -95,13 +86,6 @@ function biblio_views_data() {
 
   unset($data['biblio_keywords']); // keywords are in a separate table which has it's own handlers
 
-  $data['biblio_type'] =  array(
-    'filter'  => array('handler' => 'biblio_handler_filter_type'),
-    'sort'      => array('handler' => 'views_handler_sort'),
-    'title'   => t('Type of Publication'),
-    'help'    => t('The type of publication: Journal, Book, Conference Paper, etc.')
-  );
-
   $data['table']['join'] = array(
     'node' => array(
       // links directly to node via vid
@@ -116,10 +100,40 @@ function biblio_views_data() {
     );
 
   $viewsdata['biblio'] = $data;
+  
+  /**************** biblio_types table *********************/
 
-  /**************** biblio contributors table **************/
   $data = array();
-  // everything belongs to the Biblio group
+  $data['table']['group'] = t('Biblio');
+  $data['table']['join'] = array(
+    'node' => array(
+      'left_table' => 'biblio',
+      'left_field' => 'biblio_type',
+      'field' => 'tid',
+    ),
+    'node_revision' => array(
+      'left_table' => 'biblio',
+      'left_field' => 'biblio_type',
+      'field' => 'tid',
+    ),
+  );
+  $data['name'] =  array(
+    'field'   => array('handler' => 'views_handler_field'),
+    'sort'    => array('handler' => 'views_handler_sort'),
+    'title'   => t('Type of Publication'),
+    'help'    => t('The type of publication: Journal, Book, Conference Paper, etc.')
+  );
+  $data['tid'] =  array(
+    'filter'  => array('handler' => 'biblio_handler_filter_biblio_type'),
+    'title'   => t('Type of Publication'),
+    'help'    => t('The type of publication: Journal, Book, Conference Paper, etc.')
+  );
+  
+  $viewsdata['biblio_types'] = $data;
+  
+  /**************** biblio contributors table **************/
+  
+  $data = array();
   $data['table']['group'] = t('Biblio');
   $data['table']['join'] = array(
     'node' => array(
@@ -147,19 +161,17 @@ function biblio_views_data() {
   );
 
   $viewsdata['biblio_contributor'] = $data;
-/*
- * Describe the keyword table...
- */
+
+/***************** Describe the keyword table ***********/
+  
   $data = array();
   $data['table']['group'] = t('Biblio');
   $data['table']['join'] = array(
     'node' => array(
-//      'left_table' => 'biblio',
       'left_field' => 'vid',
       'field' => 'vid',
     ),
     'node_revision' => array(
- //     'left_table' => 'biblio',
       'left_field' => 'vid',
       'field' => 'vid',
     ),
@@ -195,9 +207,9 @@ function biblio_views_data() {
     );
 
   $viewsdata['biblio_keyword'] = $data;
-/*
- * Describe the keyword_data table
- */
+
+/***************** Describe the keyword_data table ***********/
+
   $data = array();
   $data['table']['group'] = t('Biblio');
   $data['table']['join'] = array(
@@ -211,36 +223,10 @@ function biblio_views_data() {
       'field' => 'kid',
     ),
     );
-//  $data['word'] = array(
-//    'title' => t('Keyword'),
-//    'help'  => t("Display the keyword from a Biblio node"),
-//    'field' => array('handler' => 'biblio_handler_field'),
-//    'filter' => array('handler' => 'views_handler_filter_string'),
-//
-//  );
+
+  
   $viewsdata['biblio_keyword_data'] = $data;
+  
   return $viewsdata;
 }
 
-/**
- * Use hook_views_data_alter to add items to the node and node_revisions tables
- * This allows to join these tables, when biblio is the base table.
- */
-//function biblio_views_data_alter(&$data) {
-//  $data['node']['table']['join']['biblio'] = array(
-//     'left_field' => 'vid',
-//     'field' => 'vid',
-//     'type' => 'INNER',
-//     );
-//  $data['node_revisions']['table']['join']['biblio'] = array(
-//     'left_field' => 'vid',
-//     'field' => 'vid',
-//     'type' => 'INNER',
-//     );
-//  $data['users']['table']['join']['biblio'] = array(
-//     'left_table' => 'node',
-//     'left_field' => 'uid',
-//     'field' => 'uid',
-//     'type' => 'INNER', // all nodes have an author.
-//  );
-//}
