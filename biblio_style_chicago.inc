@@ -85,6 +85,7 @@ function biblio_style_chicago($node, $base = 'biblio', $inline = false) {
         $output .= '"' ;
         $link = ((variable_get('biblio_link_title_url', 0) && !empty($node->biblio_url)) ? $node->biblio_url : ($inline ? "$base/viewinline/$node->nid":"node/$node->nid" ) ) ;
         $options['attributes'] = (variable_get('biblio_links_target_new_window',null) && variable_get('biblio_link_title_url', 0) && !empty($node->biblio_url)) ? array('target'=>'_blank') : null;
+        $options['html'] = TRUE;
         $output .= l($node->title, $link, $options);
         //$output .= $inline ? l("$node->title", "$base/viewinline/$node->nid") : l("$node->title", "node/$node->nid");
         if (!ereg("[?!.]$", $node->title)) $output .= ".";
@@ -181,6 +182,7 @@ function biblio_style_chicago($node, $base = 'biblio', $inline = false) {
         $output .= '"<i>' ;
         $link = ((variable_get('biblio_link_title_url', 0) && !empty($node->biblio_url)) ? $node->biblio_url : ($inline ? "$base/viewinline/$node->nid":"node/$node->nid" ) ) ;
         $options['attributes'] = (variable_get('biblio_links_target_new_window',null) && variable_get('biblio_link_title_url', 0) && !empty($node->biblio_url)) ? array('target'=>'_blank') : null;
+        $options['html'] = TRUE;
         $output .= l($node->title, $link, $options);
         //$output .= $inline ? l("$node->title", "$base/viewinline/$node->nid") : l("$node->title", "node/$node->nid");
         $output .= '</i>';
@@ -329,6 +331,7 @@ function biblio_style_chicago($node, $base = 'biblio', $inline = false) {
         $output .= '<i>';
         $link = ((variable_get('biblio_link_title_url', 0) && !empty($node->biblio_url)) ? $node->biblio_url : ($inline ? "$base/viewinline/$node->nid":"node/$node->nid" ) ) ;
         $options['attributes'] = (variable_get('biblio_links_target_new_window',null) && variable_get('biblio_link_title_url', 0) && !empty($node->biblio_url)) ? array('target'=>'_blank') : null;
+        $options['html'] = TRUE;
         $output .= l($node->title, $link, $options);
         //$output .= $inline ? l("$node->title", "$base/viewinline/$node->nid") : l("$node->title", "node/$node->nid");
         $output .= '</i>';

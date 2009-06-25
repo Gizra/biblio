@@ -56,17 +56,18 @@ function biblio_style_ieee($node, $base = 'biblio', $inline = false) {
   $output .= '<span class="biblio-authors">' . $authors . ", </span> \n";
   switch ($node->biblio_type) {
     default :
+      $options['attributes'] = (variable_get('biblio_links_target_new_window',null) && variable_get('biblio_link_title_url', 0) && !empty($node->biblio_url)) ? array('target'=>'_blank') : null;
+      $options['html'] = TRUE;
+      $link = ((variable_get('biblio_link_title_url', 0) && !empty($node->biblio_url)) ? $node->biblio_url : ($inline ? "$base/viewinline/$node->nid":"node/$node->nid" ) ) ;
       if (!empty ($node->biblio_secondary_title)) {
         $output .= '<span class="biblio-title">&quot;';
-          $link = ((variable_get('biblio_link_title_url', 0) && !empty($node->biblio_url)) ? $node->biblio_url : ($inline ? "$base/viewinline/$node->nid":"node/$node->nid" ) ) ;
-          $options['attributes'] = (variable_get('biblio_links_target_new_window',null) && variable_get('biblio_link_title_url', 0) && !empty($node->biblio_url)) ? array('target'=>'_blank') : null;
-          $output .= l($node->title, $link, $options);
+        $output .= l($node->title, $link, $options);
           //$output .= $inline ? l("$node->title", "$base/viewinline/$node->nid") : l("$node->title", "node/$node->nid");
         $output .= "&quot;, </span> \n";
         $output .= '<i>' . check_plain($node->biblio_secondary_title) . '</i>';
       } else {
         $output .= '<span class="biblio-title"><i>';
-        $output .= $inline ? l("$node->title", "$base/viewinline/$node->nid") : l("$node->title", "node/$node->nid");
+        $output .= l($node->title, $link, $options);
         $output .= ", </i></span> \n";
       }
       if (!empty ($node->biblio_edition))

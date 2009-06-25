@@ -397,7 +397,7 @@ function biblio_import($import_file, $type, $userid = 1, $terms = NULL, $batch =
  * @return
  *   none
  */
-function biblio_export($format = "tagged", $nid = null, $popup = false, $version = 7) {
+function biblio_export($format = "tagged", $nid = null, $popup = false, $version = 8) {
   module_load_include('inc', 'biblio', 'biblio.contributors');
   module_load_include('inc', 'biblio', 'biblio.keywords');
   $params = array ();

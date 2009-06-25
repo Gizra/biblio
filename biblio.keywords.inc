@@ -63,7 +63,7 @@ function biblio_get_keyword_by_id($kid) {
  */
 function biblio_load_keywords($vid) {
 
-  $result = db_query('SELECT bkd.* FROM {biblio_keyword} bk INNER JOIN {biblio_keyword_data} bkd ON bk.kid = bkd.kid  WHERE bk.vid = %d', $vid);
+  $result = db_query('SELECT bkd.* FROM {biblio_keyword} bk INNER JOIN {biblio_keyword_data} bkd ON bk.kid = bkd.kid  WHERE bk.vid = %d ORDER BY bkd.word ASC', $vid);
   $keywords[$vid] = '';
   while ($keyword = db_fetch_object($result)) {
     $keywords[$vid][$keyword->kid] = $keyword->word;
@@ -107,7 +107,7 @@ function biblio_save_keywords(&$node, $update = FALSE) {
       }
     }
   }
-  
+
   $keywords = array_merge($typed_keywords, $taxo_terms);
 
   foreach ($keywords as $keyword) {

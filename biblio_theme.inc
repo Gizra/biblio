@@ -36,10 +36,10 @@ function theme_biblio_coin_button($element) {
 function theme_biblio_openurl($openURL) {
   $openurl_image = variable_get('biblio_openurlimage', '');
   if ($openurl_image != '') {
-    $output .= '<div class="biblio-openurl-image"><a href="'. $openURL .'"><img border="0" src="'. $openurl_image .'" /></a></div>';
+    $output .= '<div class="biblio-openurl-image"><a href="'. $openURL .'"target=_blank><img border="0" src="'. $openurl_image .'" /></a></div>';
   }
   else {
-    $output .= '<div class="biblio-openurl-text"><a href="'. $openURL .'">'. t('Find It Via OpenURL!') .'</a></div>';
+    $output .= '<div class="biblio-openurl-text"><a href="'. $openURL .'" target=_blank>'. t('Find It Via OpenURL!') .'</a></div>';
   }
   return $output;
 }
@@ -57,7 +57,8 @@ function biblio_openURL($node) {
   //  global $hostInstitutionAbbrevName;
   $openURLResolver = variable_get('biblio_baseopenurl', '');
   $co = biblio_contextObject($node);
-  $co["sid"] = "biblio:". variable_get('site_name', 'Drupal');
+  $sid = "biblio:". variable_get('site_name', 'Drupal');
+  $co["sid"] = variable_get('biblio_openurl_sid', $sid);
   $openURL = $openURLResolver;
   if (!ereg("\?", $openURLResolver))
     $openURL .= "?";
@@ -104,7 +105,7 @@ function theme_biblio_long($node, $base = 'biblio', $style = 'classic') {
     return $output;
   }
   foreach ((array)$node->biblio_contributors[1] as $auth) {
-    $authors[] = theme('biblio_author_link', $auth['name'], $auth['cid']);
+    $authors[] = theme('biblio_author_link', $auth['name'], $auth['cid'], $base);
   }
   $authors = implode('; ', (array)$authors);
   $openurl_base = variable_get('biblio_baseopenurl', '');
@@ -177,9 +178,6 @@ function theme_biblio_long($node, $base = 'biblio', $style = 'classic') {
        $output .= '<h3>'.t('Full Text').':</h3>'.check_markup($node->body, $node->format, FALSE);
   }
 
-  if (biblio_access('export', $node)) {
-    $output .= theme('biblio_export_links', $node->nid);
-  }
   return $output;
 }
 /**
@@ -264,13 +262,24 @@ function theme_biblio_tabular($node, $base = 'biblio', $teaser = false) {
     );
   }
 
-  if (biblio_access('export', $node) && $teaser == false) {
-    $rows[] = array(
-      array('data' => t('Export'),
-      			'class' => 'biblio-row-title'),
-      array('data' => theme('biblio_export_links', $node->nid) )
-    );
-  }
+/*
+ * export and google links moved to hook_link in biblio.module
+ */
+// if (biblio_access('export', $node) && $teaser == false) {
+//    $rows[] = array(
+//      array('data' => t('Export'),
+//      			'class' => 'biblio-row-title'),
+//      array('data' => theme('biblio_export_links', $node->nid) )
+//    );
+//  }
+//  if (variable_get('biblio_google_link', 1)) {
+//    $rows[] = array(
+//      array('data' => t('Google Scholar'),
+//            'class' => 'biblio-row-title'),
+//      array('data' => theme_biblio_google_scholar_link($node) )
+//    );
+//  }
+
   if (strlen(trim($node->body)) && user_access('view full text')) {
     $rows[] = array(
         array('data' => t('Full Text'),  'valign' => 'top'),
@@ -443,7 +452,8 @@ function theme_biblio_format_authors($contributors, $options, $inline = false)
         // to initials, i.e., only retain their first character
         $author['firstname'] = preg_replace("/([$upper])[$lower]+/$patternModifiers", '\\1', $author['firstname']);
         //$author['firstname'] = drupal_substr($author['firstname'], 0, 1);
-        $author['firstname'] = preg_replace("/($space|$dash)?/$patternModifier", $options['betweenInitialsDelim'], $author['firstname']);
+        // the next line caused extra betweenInitialsDelim to appear in some circumstances
+        //$author['firstname'] = preg_replace("/($space|$dash)?/$patternModifier", $options['betweenInitialsDelim'], $author['firstname']);
       }
     }
     if (isset($author['initials'])) {
@@ -835,7 +845,7 @@ function theme_biblio_download_links($node = NULL) {
  */
 function theme_biblio_export_links($nid = NULL) {
   $base = variable_get('biblio_base', 'biblio');
-  $show_link = variable_get('biblio_export_links', array('tagged', 'xml', 'bibtex'));
+  $show_link = variable_get('biblio_export_links', array('tagged' => TRUE, 'xml' => TRUE, 'bibtex' => TRUE));
   $links = '';
   $links .= '<ul class="biblio-export-buttons">';
   if ($show_link['tagged']) $links .= '<li> '. theme('biblio_tagged_link', $base, $nid) .'</li>';
@@ -844,14 +854,17 @@ function theme_biblio_export_links($nid = NULL) {
   return $links;
 }
 function theme_biblio_google_scholar_link($node) {
-   //http://scholar.google.com/scholar?as_q=The+extended+mind.+&btnG=Search+Scholar&as_epq=&as_oq=&as_eq=&as_occt=any&as_sauthors=Clark
+  $link  = _build_google_scholar_link($node);
+  $output .= '<ul class="biblio-export-buttons"><li>';
+  $output .= l(t("Google Scholar"), $link, array('attributes'=>array('title' => t("Click to search Google Scholar for this entry"))));
+  $output .= '</li> ';
+  return $output;
+}
+function _build_google_scholar_link($node) {
   $link  = 'http://scholar.google.com/scholar?as_q=';
   $link .= '"'.str_replace(' ', '+', $node->title).'"';
   $link .= '&btnG=Search+Scholar&as_epq=&as_oq=&as_eq=&as_occt=any&as_sauthors='.$node->biblio_contributors[1][0]['lastname'];
-  $output .= '<ul class="biblio-export-buttons"><li>';
-  $output .= l(t("Google Scholar"), $link, array('attributes'=>array('title' => t("Click to download the EndNote Tagged formatted file"))));
-  $output .= '</li> ';
-  return $output;
+  return ($link);
 }
 /**
  * Creates a link to export a node (or view) in EndNote Tagged format

@@ -1589,6 +1589,8 @@ function _move_authors(&$result)
 
 function biblio_update_6000()
 {
+  global $biblio_update_from_5;
+  $biblio_update_from_5 = TRUE;
   $result = array();
   $schema = biblio_schema();
   // modifications to biblio main table
@@ -1642,8 +1644,9 @@ function biblio_update_6011(){
 }
 
 function biblio_update_6013() {
+  global $biblio_update_from_5;
   $result = array();
-  if (!db_column_exists('biblio_contributor', 'auth_category')) { // we don't need to do this if upgrading from 5.x
+  if (!isset($biblio_update_from_5)) { // we don't need to do this if upgrading from 5.x
     db_add_field($result, 'biblio_contributor', 'auth_category',
     array('type' => 'int', 'not null' => TRUE, 'unsigned' => TRUE, 'default' => 1));
     $result[] = update_sql("UPDATE {biblio} b
@@ -1739,28 +1742,34 @@ function biblio_update_6016() {
   return $result;
 }
 function biblio_update_6017() {
-  $result = array();
-  $result[] = update_sql("ALTER TABLE {biblio_contributor_data} ADD COLUMN aka INTEGER UNSIGNED ");
+  global $biblio_update_from_5;
+  if (!isset($biblio_update_from_5)) { // we don't need to do this if upgrading from 5.x
+    $result = array();
+    $result[] = update_sql("ALTER TABLE {biblio_contributor_data} ADD COLUMN aka INTEGER UNSIGNED ");
 
-  return $result;
+    return $result;
+  }
 }
 
 function biblio_update_6018() {
+  global $biblio_update_from_5;
   $result = array();
   $result[] = update_sql("UPDATE {biblio_contributor_data} SET aka = cid WHERE aka = 0 OR aka IS NULL");
-  db_drop_primary_key($result, 'biblio_contributor_data');
-  db_add_primary_key($result, 'biblio_contributor_data', array('cid', 'aka'));
-  $result[] = update_sql("UPDATE {biblio_field_type_data} SET title = 'Keywords' WHERE title = 'Key Words' ");
-  
+  if (!isset($biblio_update_from_5)) { // we don't need to do this if upgrading from 5.x
+    db_drop_primary_key($result, 'biblio_contributor_data');
+    db_add_primary_key($result, 'biblio_contributor_data', array('cid', 'aka'));
+  }
+    $result[] = update_sql("UPDATE {biblio_field_type_data} SET title = 'Keywords' WHERE title = 'Key Words' ");
+
   return $result;
 }
 function biblio_update_6019() {
   $result = array();
   $result[] = update_sql("UPDATE {biblio_fields} SET maxsize = 1000 WHERE name = 'biblio_keywords' ");
-  
+
   return $result;
 }
-function biblio_update_6020() {// add new 'access biblio content' permission to any role which has 'access content' 
+function biblio_update_6020() {// add new 'access biblio content' permission to any role which has 'access content'
   $result = array();
   $dbresult = db_query('SELECT p.* FROM {permission} p');
   while ($role = db_fetch_object($dbresult)) {
@@ -1788,7 +1797,7 @@ function biblio_update_6021() {
 }
 function biblio_update_6022() {
   $result = array();
-  $result[] = update_sql("UPDATE {biblio_fields} SET maxsize = 128 WHERE name = 'biblio_number' 
+  $result[] = update_sql("UPDATE {biblio_fields} SET maxsize = 128 WHERE name = 'biblio_number'
                           OR name = 'biblio_other_number'
                           OR name = 'biblio_volume'
                           OR name = 'biblio_isbn'

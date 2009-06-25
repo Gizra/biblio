@@ -5,6 +5,7 @@ function unixref_startElement($parser, $name, $attrs) {
   switch ($name) {
     case 'doi_record' :
       $node = array();
+      $element = $name;
       break;
     case 'book':
     case 'journal':
@@ -15,6 +16,7 @@ function unixref_startElement($parser, $name, $attrs) {
     case 'database':
     case 'sa_component':
       $node['biblio_type'] = _unixref_type_map($name);
+      $element = $name;
       break;
     case 'journal_article':
     case 'conference_paper':
@@ -25,30 +27,39 @@ function unixref_startElement($parser, $name, $attrs) {
     case 'component':
       $node['year'] = '';
       $node['doi']  = '';
+      $element = $name;
       break;
     case 'person_name' :
       $auth_category = _unixref_get_contributor_category($attrs['contributor_role']);
-      if (!isset($contrib_count))
-        $contrib_count = 0;
+      if (!isset($contrib_count)) $contrib_count = 0;
+      $element = $name;
       break;
     case 'organization':
-      if (!isset($org_count))
-        $org_count = 0;
+      if (!isset($org_count)) $org_count = 0;
+      $element = $name;
       break;
     case 'issn':
       if ($attrs['media_type'] == 'print') $attribute = 'issn_print';
+      $element = $name;
       break;
     case 'isbn':
       if ($attrs['media_type'] == 'print') $attribute = 'isbn_print';
+      $element = $name;
+      break;
+    case 'i':  // HTML font style tags
+    case 'b':
+    case 'u':
+    case 'sub':
+    case 'sup':
+      unixref_characterData(NULL, ' <'.$name.'>');
       break;
     default :
+      $element = $name;
+  }
 
   }
-  $element = $name;
-}
 function unixref_decode(&$item, $key) {
   $item = html_entity_decode($item, NULL, 'UTF-8');
-  print $key.' = '. $item . "\n";
 }
 function unixref_endElement($parser, $name) {
   global $node, $nids, $element, $attribute, $terms, $batch_proc, $session_id, $save_node, $auth_category, $contrib_count, $org_count;
@@ -101,11 +112,17 @@ function unixref_endElement($parser, $name) {
       if($attribute == 'isbn_print') $node['biblio_isbn'] = $node['isbn'];
       $node['isbn'] = '';
       break;
+    case 'i':  // HTML font style tags
+    case 'b':
+    case 'u':
+    case 'sub':
+    case 'sup':
+      unixref_characterData(NULL, '</'.$name.'> ');
+      break;
     default :
   }
-  $element = $attribute = '';
-
 }
+
 function unixref_characterData($parser, $data) {
   global $node, $element, $auth_category, $contrib_count, $org_count;
   $data = htmlspecialchars_decode($data);

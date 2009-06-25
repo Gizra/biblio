@@ -49,11 +49,12 @@ class biblio_handler_citation extends views_handler_field {
       while ($item = db_fetch_object($result)) {
         // Clean up the $item from vid.
         $vid = $item->vid; //unset($item['vid']);
-        if (isset($item->biblio_year) && ($item->biblio_year == 9998))  $item->biblio_year = t("In Press") ;
-        if (isset($item->biblio_year) && ($item->biblio_year == 9999))  $item->biblio_year = t("Submitted") ;
-
+        if (isset($item->biblio_year)) $item->biblio_year = _biblio_text_year($item->biblio_year);
         $item->biblio_contributors = biblio_load_contributors($item->vid);
-        $item->biblio_keywords = biblio_load_keywords($item->vid);
+        if (variable_get('biblio_hide_bibtex_braces', 0)) {
+          $node->title = biblio_remove_brace($node->title);
+        }
+
         $this->items[$vid] = $item;
       }
     }

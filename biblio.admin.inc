@@ -379,6 +379,14 @@ function biblio_admin_settings() {
     '#default_value' => variable_get('biblio_baseopenurl', ''),
     '#description' => t('This sets your institution\'s base <a href="http://en.wikipedia.org/wiki/OpenURL">OpenURL</a> gateway, which is used to generate OpenURL links. To implement a "Universal" OpenURL system, try using OCLC\'s <a href="http://www.oclc.org/productworks/urlresolver.htm">OpenURL Resolver Registry</a> gateway: <a href="http://worldcatlibraries.org/registry/gateway">http://worldcatlibraries.org/registry/gateway</a>')
   );
+  $sid = "Biblio:". variable_get('site_name', 'Drupal');
+  $form['openurl']['biblio_openurl_sid'] = array(
+    '#type' => 'textfield',
+    '#title' => t('OpenURL Site ID'),
+    '#size' => 95,
+    '#default_value' => variable_get('biblio_openurl_sid', $sid),
+    '#description' => t('This sets your institution\'s site name, some link resolvers will require a specific Site ID in order to process your requests.')
+  );
   $form['openurl']['biblio_openurlimage'] = array(
     '#type' => 'textfield',
     '#title' => t('OpenURL Image'),

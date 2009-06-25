@@ -3,7 +3,7 @@
 function _endnote8_XML_export($results){
   $style_attr = 'face="normal" font="default" size="100%"';
   $xml = '<?xml version="1.0" encoding="UTF-8"?>';
-  $xml .= "\n<xml><records>\n";
+  $xml .= "<xml><records>";
   if (!is_array($results)) {
     $result_array[] = $results;
   }
@@ -11,218 +11,248 @@ function _endnote8_XML_export($results){
     $result_array = $results;
   }
   foreach ($result_array as $pub) {
-    $xml .= "<record>\n";
-    $xml .= '<source-app name="Biblio" version="6.x">Drupal-Biblio</source-app>'."\n";
-    $xml .= "\t<ref-type>". _endnote8_type_map($pub->biblio_type) ."</ref-type>\n";
-
+    //en8_encode_font_faces($pub);
+    $xml .= "<record>";
+    $xml .= '<source-app name="Biblio" version="6.x">Drupal-Biblio</source-app>';
+    $xml .= "\t<ref-type>". _endnote8_type_map($pub->biblio_type) ."</ref-type>";
+    unset($pub->biblio_type);
     //<!-- Author information -->
-    $xml .= '<contributors>';
-    if (count($pub->biblio_contributors[1])) {
-      $xml .= '<authors>';
-      foreach((array)$pub->biblio_contributors[1] as $auth) {
-        $xml .= "<author><style $style_attr>";
-        $xml .= htmlspecialchars(trim($auth['name'])); // insert author here.
-        $xml .= '</style></author> ';
-      }
-      $xml .= '</authors>';
-    }
-    if (count($pub->biblio_contributors[2])) {
-      $xml .= '<secondary-authors>';
-      foreach((array)$pub->biblio_contributors[2] as $auth) {
-        $xml .= "<author><style $style_attr>";
-        $xml .= htmlspecialchars(trim($auth['name'])); // insert author here.
-        $xml .= '</style></author> ';
-      }
-      $xml .= '</secondary-authors>';
-    }
-    if (count($pub->biblio_contributors[3])) {
-      $xml .= '<tertiary-authors>';
-      foreach((array)$pub->biblio_contributors[3] as $auth) {
-        $xml .= "<author><style $style_attr>";
-        $xml .= htmlspecialchars(trim($auth['name'])); // insert author here.
-        $xml .= '</style></author> ';
-      }
-      $xml .= '</tertiary-authors>';
-    }
-    if (count($pub->biblio_contributors[4])) {
-      $xml .= '<subsidiary-authors>';
-      foreach((array)$pub->biblio_contributors[4] as $auth) {
-        $xml .= "<author><style $style_attr>";
-        $xml .= htmlspecialchars(trim($auth['name'])); // insert author here.
-        $xml .= '</style></author> ';
-      }
-      $xml .= '</subsidiary-authors>';
-    }
-    if (count($pub->biblio_contributors[5])) {
-      $xml .= '<translated-authors>';
-      foreach((array)$pub->biblio_contributors[5] as $auth) {
-        $xml .= "<author><style $style_attr>";
-        $xml .= htmlspecialchars(trim($auth['name'])); // insert author here.
-        $xml .= '</style></author> ';
-      }
-      $xml .= '</translated-authors>';
-    }
-    $xml .= '</contributors>';
+    $xml .= en8_add_contributors($pub);
+    $xml .= en8_add_titles($pub);
+    $xml .= en8_add_keywords($pub);
+    $xml .= en8_add_dates($pub);
+    $xml .= en8_add_urls($pub);
 
-    //$xml .= "<auth-address><style $style_attr>";
-    // todo auth address here
-    //$xml .= '</style></auth-address>';
-    //$xml .= "<auth-affiliaton><style $style_attr>";
-    // todo auth affiliation here
-    //$xml .= '</style></auth-affiliaton>';
-
-    //<!-- Title information -->
-    $xml .= '<titles>';
-    $xml .= (!empty ($pub->title)) ? "<title><style $style_attr>".htmlspecialchars($pub->title)."</style></title>" :'';
-    $xml .= (!empty ($pub->biblio_secondary_title)) ? "<secondary-title><style $style_attr>".htmlspecialchars($pub->biblio_secondary_title)."</style></secondary-title>" :'';
-    $xml .= (!empty ($pub->biblio_tertiary_title)) ? "<tertiary-title><style $style_attr>".htmlspecialchars($pub->biblio_tertiary_title)."</style></tertiary-title>" :'';
-    $xml .= (!empty ($pub->biblio_alternate_title)) ? "<alt-title><style $style_attr>".htmlspecialchars($pub->biblio_alternate_title)."</style></alt-title>" :'';
-    $xml .= (!empty ($pub->biblio_short_title)) ? "<short-title><style $style_attr>".htmlspecialchars($pub->biblio_short_title)."</style></short-title>" :'';
-    $xml .= (!empty ($pub->biblio_translated_title)) ? "<translated-title><style $style_attr>".htmlspecialchars($pub->biblio_translated_title)."</style></translated-title>" :'';
-    $xml .= '</titles>';
-    //<!-- Periodical information -->
-    //$xml .= '<periodical>';
-    //$xml .=   "<full-title><style  $style_attr>";
-    //$xml .= '  </style></full-title>';
-    //$xml .=   "<abbr-1><style  $style_attr>";
-    //$xml .= '  </style></abbr-1>';
-    //$xml .=   "<abbr-2><style  $style_attr>";
-    //$xml .= '  </style></abbr-2>';
-    //$xml .=   "<abbr-3><style  $style_attr>";
-    //$xml .= '  </style></abbr-3>';
-    //$xml .= '</periodical>';
-
-    //<!-- Page range information -->
-    $xml .= (!empty ($pub->biblio_pages)) ? "<pages><style $style_attr>".htmlspecialchars($pub->biblio_pages)."</style></pages>":'';
-
-    //<!-- Volume, issue, and edition information -->
-    $xml .= (!empty ($pub->biblio_volume)) ? "<volume><style $style_attr>".htmlspecialchars($pub->biblio_volume)."</style></volume>":'';
-    $xml .= (!empty ($pub->biblio_number)) ? "<number><style $style_attr>".htmlspecialchars($pub->biblio_number)."</style></number>":'';
-    $xml .= (!empty ($pub->biblio_issue)) ? "<issue><style  $style_attr>".htmlspecialchars($pub->biblio_issue)."</style></issue>":'';
-    //    $xml .= "<secondary-volume><style $style_attr> </style></secondary-volume>";
-    //    $xml .= "<secondary-issue><style $style_attr> </style></secondary-issue>";
-    $xml .= (!empty ($pub->biblio_number_of_volumes)) ? "<num-vols><style $style_attr>".htmlspecialchars($pub->biblio_number_of_volumes)."</style></num-vols>":'';
-    $xml .= (!empty ($pub->biblio_edition)) ? "<edition><style $style_attr>".htmlspecialchars($pub->biblio_edition)."</style></edition>":'';
-    $xml .= (!empty ($pub->biblio_section)) ? "<section><style $style_attr>".htmlspecialchars($pub->biblio_section)."</style></section>":'';
-    $xml .= (!empty ($pub->biblio_reprint_edition)) ? "<reprint-edition><style $style_attr>".htmlspecialchars($pub->biblio_reprint_edition)."</style></reprint-edition>":'';
-    /*
-     <!ELEMENT reprint-status EMPTY>
-     <!ATTLIST reprint-status
-     date CDATA #IMPLIED
-     status (in-file | no-file | on-request) #REQUIRED
-     >
-     */
-    $kw_array = array();
-    if (!empty($pub->biblio_keywords)) {
-      foreach($pub->biblio_keywords as $term) {
-        $kw_array[] = trim($term);
+    foreach($pub as $key => $value) {
+      $entag = en8_field_map($key);
+      if (!empty($entag)) {
+        $xml .=  "<".$entag.'><style face="normal" font="default" size="100%">'.htmlspecialchars($value)."</style></$entag>";
       }
     }
-    if (!empty($kw_array)) {
-      $kw_array = array_unique($kw_array);
-      $xml .= '<keywords>';
-      foreach($kw_array as $word) {
-        $xml .= "<keyword><style  $style_attr>". htmlspecialchars(trim($word)) . "</style></keyword>";
-      }
-      $xml .= "</keywords>";
-    }
 
-    //<!-- Date information -->
-    if (!empty($pub->biblio_year) || !empty($pub->biblio_date) ) {
-      $xml .= '<dates>';
-      $xml .=  (!empty($pub->biblio_year)) ? "<year><style  $style_attr>". htmlspecialchars($pub->biblio_year)."</style></year>":'';
-      $xml .=  (!empty($pub->biblio_date)) ? "<date><style  $style_attr>". htmlspecialchars($pub->biblio_date)."</style></date>":'';
-      $xml .= '</dates>';
-    }
-    //    <!-- Publisher information -->
-    $xml .= (!empty ($pub->biblio_place_published)) ? "<pub-location><style $style_attr>". htmlspecialchars($pub->biblio_place_published)."</style></pub-location>":'';
-    $xml .= (!empty ($pub->biblio_publisher)) ? "<publisher><style $style_attr>". htmlspecialchars($pub->biblio_publisher)."</style></publisher>":'';
-    //    $xml .= "<orig-pub><style $style_attr> </style></orig-pub>";
-
-    //    <!-- Identifying numbers -->
-    $xml .= (!empty ($pub->biblio_isbn)) ? "<isbn><style $style_attr>". htmlspecialchars($pub->biblio_isbn)."</style></isbn>":'';
-    $xml .= (!empty ($pub->biblio_accession_number)) ? "<accession-num><style $style_attr>". htmlspecialchars($pub->biblio_accession_number)."</style></accession-num>":'';
-    $xml .= (!empty ($pub->biblio_call_number)) ? "<call-num><style $style_attr>". htmlspecialchars($pub->biblio_call_number)."</style></call-num>":'';
-    //    $xml .= "<report-id><style $style_attr> </style></report-id>";
-    //    $xml .= "<coden><style $style_attr> </style></coden>";
-    //    $xml .= "<electronic-resource-num><style $style_attr> </style></electronic-resource-num>";
-
-    //    <!-- Abstract, notes, images, etc. -->
-
-    $xml .= (!empty ($pub->biblio_abst_e)) ? "<abstract><style $style_attr>". htmlspecialchars($pub->biblio_abst_e)."</style></abstract>":'';
-    $xml .= (!empty ($pub->biblio_label)) ? "<label><style $style_attr>". htmlspecialchars($pub->biblio_label)."</style></label>":'';
-    //  $xml .= "<image><style $style_attr> </style></image>";
-    //  $xml .= "<caption><style $style_attr> </style></caption>";
-    $xml .= (!empty ($pub->biblio_notes)) ? "<notes><style $style_attr>". htmlspecialchars($pub->biblio_notes)."</style></notes>":'';
-    //    $xml .= "<research-notes><style $style_attr> </style></research-notes>";
-
-    //    <!-- Other detailed information on item -->
-
-    $xml .= (!empty ($pub->biblio_type_of_work)) ? "<work-type><style $style_attr>". htmlspecialchars($pub->biblio_type_of_work)."</style></work-type>":'';
-    //    <!ELEMENT reviewed-item (#PCDATA | style)*>
-    //    <!ELEMENT availability (#PCDATA | style)*>
-    //    <!ELEMENT remote-source (#PCDATA | style)*>
-    //    <!ELEMENT meeting-place (#PCDATA | style)*>
-    //    <!ELEMENT work-location (#PCDATA | style)*>
-    //    <!ELEMENT work-extent (#PCDATA | style)*>
-    //    <!ELEMENT pack-method (#PCDATA | style)*>
-    //    <!ELEMENT size (#PCDATA | style)*>
-    //    <!ELEMENT repro-ratio (#PCDATA | style)*>
-    $xml .= (!empty ($pub->biblio_remote_db_name)) ? "<remote-database-name><style $style_attr>". htmlspecialchars($pub->biblio_remote_db_name)."</style></remote-database-name>":'';
-    $xml .= (!empty ($pub->biblio_remote_db_provider)) ? "<remote-database-provider><style $style_attr>". htmlspecialchars($pub->biblio_remote_db_provider)."</style></remote-database-provider>":'';
-    $xml .= (!empty ($pub->biblio_lang)) ? "<language><style $style_attr>". htmlspecialchars($pub->biblio_lang)."</style></language>":'';
-
-    //    <!-- URL information -->
-    // TODO: fix URLS
-    if (!empty($pub->biblio_url)) {
-      $xml .= '<urls>';
-      $xml .= "<url><style $style_attr>".urlencode($pub->biblio_url)."</style></url>";
-      $xml .= '</urls>';      
-    }
-    //    <!ELEMENT urls (web-urls?, pdf-urls?, text-urls?, related-urls?, image-urls?)>
-    //    <!ELEMENT web-urls (url+)>
-    //    <!ELEMENT pdf-urls (url+)>
-    //    <!ELEMENT text-urls (url+)>
-    //    <!ELEMENT related-urls (url+)>
-    //    <!ELEMENT image-urls (url+)>
-    //    <!ELEMENT url (#PCDATA | style)*>
-    //    <!ATTLIST url
-    //    has-ut (yes | no) #IMPLIED
-    //    ppv-app CDATA #IMPLIED
-    //    ppv-ref (yes | no) #IMPLIED
-    //    ppv-ut CDATA #IMPLIED
-    //    >
-
-    //    <!-- Information about record -->
-    $xml .= (!empty($pub->biblio_access_date)) ? "<access-date><style $style_attr>$pub->biblio_access_date</style></access-date>":'';
- //   $xml .= "<modified-date><style $style_attr> </style></modified-date>";
-
-    //    <!-- Custom and miscellaneous fields -->
-
-    $xml .= (!empty($pub->biblio_custom1)) ? "<custom1><style $style_attr>". htmlspecialchars($pub->biblio_custom1)."</style></custom1>" : '';
-    $xml .= (!empty($pub->biblio_custom2)) ? "<custom2><style $style_attr>". htmlspecialchars($pub->biblio_custom2)."</style></custom2>" : '';
-    $xml .= (!empty($pub->biblio_custom3)) ? "<custom3><style $style_attr>". htmlspecialchars($pub->biblio_custom3)."</style></custom3>" : '';
-    $xml .= (!empty($pub->biblio_custom4)) ? "<custom4><style $style_attr>". htmlspecialchars($pub->biblio_custom4)."</style></custom4>" : '';
-    $xml .= (!empty($pub->biblio_custom5)) ? "<custom5><style $style_attr>". htmlspecialchars($pub->biblio_custom5)."</style></custom5>" : '';
-    $xml .= (!empty($pub->biblio_custom6)) ? "<custom6><style $style_attr>". htmlspecialchars($pub->biblio_custom6)."</style></custom6>" : '';
-    $xml .= (!empty($pub->biblio_custom7)) ? "<custom7><style $style_attr>". htmlspecialchars($pub->biblio_custom7)."</style></custom7>" : '';
-    //    <!ELEMENT misc1 (#PCDATA | style)*>
-    //    <!ELEMENT misc2 (#PCDATA | style)*>
-    //    <!ELEMENT misc3 (#PCDATA | style)*>
-    //    <!-- Styled text handling -->
-    //    <!ELEMENT style (#PCDATA)>
-    //    <!ATTLIST style
-    //    color CDATA #IMPLIED
-    //    face CDATA "normal"
-    //    font CDATA "default"
-    //    size CDATA #IMPLIED
-    //    >
-    $xml .='</record>';
+    $xml .= "</record>";
   }
   $xml .= '</records></xml>';
-  
   return $xml;
 }
+
+function en8_encode_font_faces(&$pub) {
+  $search = array('<b>','<i>', '<u>', '<sup>', '<sub>','</b>','</i>', '</u>', '</sup>', '</sub>');
+  $replace = array(
+    '<style face="bold" font="default" size="100%">',
+    '<style face="italic" font="default" size="100%">',
+    '<style face="underline" font="default" size="100%">',
+    '<style face="superscript" font="default" size="100%">',
+    '<style face="subscript" font="default" size="100%">',
+    '</sytle>',
+    '</sytle>',
+    '</sytle>',
+    '</sytle>',
+    '</sytle>',
+  );
+  foreach ($pub as $key => $value) {
+    $pub->$key = str_ireplace($search, $replace, $value);
+  }
+}
+
+function en8_add_titles(&$pub) {
+  $xml .= '<titles>';
+  $xml .= (!empty ($pub->title)) ? '<title><style face="normal" font="default" size="100%">'.htmlspecialchars($pub->title)."</style></title>" :'';
+  $xml .= (!empty ($pub->biblio_secondary_title)) ? '<secondary-title><style face="normal" font="default" size="100%">'.htmlspecialchars($pub->biblio_secondary_title)."</style></secondary-title>" :'';
+  $xml .= (!empty ($pub->biblio_tertiary_title)) ? '<tertiary-title><style face="normal" font="default" size="100%">'.htmlspecialchars($pub->biblio_tertiary_title)."</style></tertiary-title>" :'';
+  $xml .= (!empty ($pub->biblio_alternate_title)) ? '<alt-title><style face="normal" font="default" size="100%">'.htmlspecialchars($pub->biblio_alternate_title)."</style></alt-title>" :'';
+  $xml .= (!empty ($pub->biblio_short_title)) ? '<short-title><style face="normal" font="default" size="100%">'.htmlspecialchars($pub->biblio_short_title)."</style></short-title>" :'';
+  $xml .= (!empty ($pub->biblio_translated_title)) ? '<translated-title><style face="normal" font="default" size="100%">'.htmlspecialchars($pub->biblio_translated_title)."</style></translated-title>" :'';
+  $xml .= '</titles>';
+  unset($pub->title);
+  unset($pub->biblio_secondary_title);
+  unset($pub->biblio_tertiary_title);
+  unset($pub->biblio_alternate_title);
+  unset($pub->biblio_short_title);
+  unset($pub->biblio_translated_title);
+
+  return $xml;
+}
+function en8_add_urls(&$pub) {
+  $xml = '';
+  // TODO: fix URLS
+  if (!empty($pub->biblio_url)) {
+    $xml .= "<urls><related-urls>";
+    $xml .= '<url><style face="normal" font="default" size="100%">'.$pub->biblio_url."</style></url>";
+    $xml .= "</related-urls></urls>";
+  }
+  unset($pub->biblio_url);
+  return $xml;
+}
+
+function en8_add_dates(&$pub) {
+  $xml = '';
+  if (!empty($pub->biblio_year) || !empty($pub->biblio_date) ) {
+    $xml .= '<dates>';
+    $xml .=  (!empty($pub->biblio_year)) ? '<year><style  face="normal" font="default" size="100%">'. htmlspecialchars($pub->biblio_year)."</style></year>":'';
+    $xml .=  (!empty($pub->biblio_date)) ? '<pub-dates><date><style  face="normal" font="default" size="100%">'. htmlspecialchars($pub->biblio_date)."</style></date></pub-dates>":'';
+    $xml .= "</dates>";
+  }
+  unset($pub->biblio_year);
+  unset($pub->biblio_date);
+  return $xml;
+}
+
+function en8_add_keywords(&$pub) {
+  $kw_array = array();
+  $xml = '';
+  if (!empty($pub->biblio_keywords)) {
+    foreach($pub->biblio_keywords as $term) {
+      $kw_array[] = trim($term);
+    }
+  }
+  if (!empty($kw_array)) {
+    $kw_array = array_unique($kw_array);
+    $xml .= '<keywords>';
+    foreach($kw_array as $word) {
+      $xml .= '<keyword><style  face="normal" font="default" size="100%">'. htmlspecialchars(trim($word)) . "</style></keyword>";
+    }
+    $xml .= "</keywords>";
+  }
+  unset($pub->biblio_keywords);
+  return $xml;
+}
+
+function en8_add_contributors(&$pub) {
+  $xml .= '<contributors>';
+  if (count($pub->biblio_contributors[1])) {
+    $xml .= "<authors>";
+    foreach((array)$pub->biblio_contributors[1] as $auth) {
+      $xml .= '<author><style face="normal" font="default" size="100%">';
+      $xml .= htmlspecialchars(trim($auth['name'])); // insert author here.
+      $xml .= "</style></author>";
+    }
+    $xml .= "</authors>";
+  }
+  if (count($pub->biblio_contributors[2])) {
+    $xml .= "<secondary-authors>";
+    foreach((array)$pub->biblio_contributors[2] as $auth) {
+      $xml .= '<author><style face="normal" font="default" size="100%">';
+      $xml .= htmlspecialchars(trim($auth['name'])); // insert author here.
+      $xml .= "</style></author>";
+    }
+    $xml .= "</secondary-authors>";
+  }
+  if (count($pub->biblio_contributors[3])) {
+    $xml .= "<tertiary-authors>";
+    foreach((array)$pub->biblio_contributors[3] as $auth) {
+      $xml .= '<author><style face="normal" font="default" size="100%">';
+      $xml .= htmlspecialchars(trim($auth['name'])); // insert author here.
+      $xml .= "</style></author>";
+    }
+    $xml .= "</tertiary-authors>";
+  }
+  if (count($pub->biblio_contributors[4])) {
+    $xml .= "<subsidiary-authors>";
+    foreach((array)$pub->biblio_contributors[4] as $auth) {
+      $xml .= '<author><style face="normal" font="default" size="100%">';
+      $xml .= htmlspecialchars(trim($auth['name'])); // insert author here.
+      $xml .= "</style></author>";
+    }
+    $xml .= "</subsidiary-authors>";
+  }
+  if (count($pub->biblio_contributors[5])) {
+    $xml .= "<translated-authors>";
+    foreach((array)$pub->biblio_contributors[5] as $auth) {
+      $xml .= '<author><style face="normal" font="default" size="100%">';
+      $xml .= htmlspecialchars(trim($auth['name'])); // insert author here.
+      $xml .= "</style></author>";
+    }
+    $xml .= "</translated-authors>";
+  }
+  $xml .= '</contributors>';
+  unset($pub->biblio_contributors);
+  return $xml;
+}
+
+function en8_field_map($biblio_field) {
+  static $fmap = array();
+  if(empty($fmap)) {
+    $fmap = array(
+       'source-app'               => '',
+       'rec-number'               => '',
+       'ref-type'                 => 'biblio_type',
+       'auth-address'             => 'biblio_auth_address',
+       'auth-affiliaton'          => '',
+       'title'                    => 'title',
+       'secondary-title'          => 'biblio_secondary_title',
+       'tertiary-title'           => 'biblio_tertiary_title',
+       'alt-title'                => 'biblio_alternate_title',
+       'short-title'              => 'biblio_short_title',
+       'translated-title'         => 'biblio_translated_title',
+       'full-title'               => '',
+       'abbr-1'                   => '',
+       'abbr-2'                   => '',
+       'abbr-3'                   => '',
+       'pages'                    => 'biblio_pages',
+       'volume'                   => 'biblio_volume',
+       'number'                   => 'biblio_number',
+       'issue'                    => 'biblio_issue',
+       'secondary-volume'         => '',
+       'secondary-issue'          => '',
+       'num-vols'                 => 'biblio_number_of_volumes',
+       'edition'                  => 'biblio_edition',
+       'section'                  => 'biblio_section',
+       'reprint-edition'          => 'biblio_reprint_edition',
+       'reprint-status'           => '',
+       'year'                     => 'biblio_year',
+       'pub-dates'                => 'biblio_date',
+       'copyright-dates'          => '',
+       'pub-location'             => 'biblio_place_published',
+       'publisher'                => 'biblio_publisher',
+       'orig-pub'                 => 'biblio_original_publication',
+       'isbn'                     => 'biblio_isbn',
+       'accession-num'            => 'biblio_accession_number',
+       'call-num'                 => 'biblio_call_number',
+       'report-id'                => '',
+       'coden'                    => '',
+       'electronic-resource-num'  => '',
+       'abstract'                 => 'biblio_abst_e',
+       'label'                    => 'biblio_label',
+       'image'                    => '',
+       'caption'                  => '',
+       'notes'                    => 'biblio_notes',
+       'research-notes'           => 'biblio_research_notes',
+       'work-type'                => 'biblio_type_of_work',
+       'reviewed-item'            => '',
+       'availability'             => '',
+       'remote-source'            => '',
+       'meeting-place'            => '',
+       'work-location'            => '',
+       'work-extent'              => '',
+       'pack-method'              => '',
+       'size'                     => '',
+       'repro-ratio'              => '',
+       'remote-database-name'     => 'biblio_remote_db_name',
+       'remote-database-provider' => 'biblio_remote_db_provider',
+       'language'                 => 'biblio_lang',
+       'web-urls'                 => '',
+       'pdf-urls'                 => '',
+       'text-urls'                => '',
+       'image-urls'               => '',
+       'related-urls'             => 'biblio_url',
+       'access-date'              => 'biblio_access_date',
+       'modified-date'            => '',
+       'custom1'                  => 'biblio_custom1',
+       'custom2'                  => 'biblio_custom2',
+       'custom3'                  => 'biblio_custom3',
+       'custom4'                  => 'biblio_custom4',
+       'custom5'                  => 'biblio_custom5',
+       'custom6'                  => 'biblio_custom6',
+       'custom7'                  => 'biblio_custom7',
+       'misc1'                    => '',
+       'misc2'                    => '',
+       'misc3'                    => '',
+    );
+  }
+  return ($en8_field = array_search($biblio_field, $fmap)) ? $en8_field : '';
+}
+
 function _endnote8_type_map($bibliotype) {
   static $map = array();
   if (empty($map)) {

@@ -156,7 +156,7 @@ function biblio_build_query($arg_list) {
       break;
     case 'author':
       $sortby = "ORDER BY bcd.lastname %s ";
-      //$where['bc-rank'] = "bc.rank=0";
+      $where['bc-rank'] = "bc.rank=0";
       $where['bc-auth-category'] = "bc.auth_category=1";
       $joins['bc'] = '  INNER JOIN {biblio_contributor} as bc on b.vid = bc.vid ';
       $joins['bcd'] = '  JOIN {biblio_contributor_data} as bcd on bc.cid = bcd.cid ';
@@ -494,7 +494,7 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
     if (variable_get('biblio_hide_bibtex_braces', 0)) $node->title = biblio_remove_brace($node->title);
     if (module_exists("upload")) $node->files = upload_load($node);
     if (variable_get('biblio_fix_isi_links', 0)) biblio_fix_isi_links($node);
-    
+
     if (isset($node->biblio_year) && ($node->biblio_year == 9998))  $node->biblio_year = t("In Press") ;
     if (isset($node->biblio_year) && ($node->biblio_year == 9999))  $node->biblio_year = t("Submitted") ;
 
@@ -502,7 +502,7 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
     $content .= _biblio_category_separator_bar($attrib, $node);
 
     $inline_links = ($inline && variable_get('biblio_inlinemode_in_links',0)) ? true : false;
-    
+
     $content .= theme('biblio_entry', $node,$base,$style,$inline_links);
   } //end while
   if ($count) $content .= '</div><!-- end category-section -->';
@@ -524,13 +524,14 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
 }
 
 function _biblio_sort_tabs($attrib, $options) {
+  global $base_path;
   $content = '';
   $sort_links = array();
   $tabs = variable_get('biblio_sort_tabs_style', 0);
   $order = ($attrib['order'] == "desc" || $attrib['order'] == "DESC")?"asc":"desc";
   $cur_order = ($attrib['order'] == "desc" || $attrib['order'] == "DESC")?"desc":"asc";
   $path = drupal_get_path('module','biblio');
-  $order_arrow = ($order == 'asc') ? '<img src ="/'.$path.'/arrow-asc.png" alt =" (Desc)" />':'<img src ="/'.$path.'/arrow-desc.png" alt = " (Asc)" />';
+  $order_arrow = ($order == 'asc') ? '<img src ="'. $base_path . $path. '/arrow-asc.png" alt =" (Desc)" />':'<img src ="'. $base_path . $path .'/arrow-desc.png" alt = " (Asc)" />';
   $sort_links =  variable_get('biblio_sort_tabs', array('author'=>'author', 'title'=>'title', 'type'=>'type', 'year'=>'year', 'keyword'=>'keyword'));
   ksort($sort_links);
   $content .= $tabs ? '<ul class="tabs secondary ">':'';
@@ -796,7 +797,7 @@ function biblio_build_search_query($keys = '') {
     $args[] =$query[4];
 
     $query = "SELECT distinct(i.sid) FROM {search_index} i
-              INNER JOIN node n ON n.nid = i.sid
+              INNER JOIN {node} n ON n.nid = i.sid
               $join
               WHERE n.status = 1 AND (n.type = 'biblio')
               AND $where
@@ -1101,7 +1102,6 @@ function biblio_author_page($filter = NULL) {
                             ORDER BY  lastname ASC, SUBSTRING(firstname,1,1) ASC,
                             initials ASC', $filter);
 
-   
     while ($author = db_fetch_array($db_result)){
       $authors[] = $author;
     }
@@ -1113,7 +1113,7 @@ function biblio_author_page($filter = NULL) {
         array('data' => isset($authors[$i+2])?_biblio_format_author($authors[$i+2]):'' ));
       }
     }
-    //$header = array(array('data' => t('There are a total of @count authors !header_ext in the database',array('@count' => count($authors), '!header_ext' => $header_ext)), 'align' =>'center', 'colspan' => 3));
+  //$header = array(array('data' => t('There are a total of @count authors !header_ext in the database',array('@count' => count($authors), '!header_ext' => $header_ext)), 'align' =>'center', 'colspan' => 3));
   $output .= theme('table', $header, $rows);
   return $output;
 }
@@ -1132,6 +1132,7 @@ function _biblio_format_author($author) {
 
 function _biblio_author_edit_links($author) {
     $path =  (ord(substr($_GET['q'],-1)) > 97) ? $_GET['q'] . "/" : substr($_GET['q'], 0, -1);
+    $path = (strpos($path, 'list/')) ? str_replace('list/', '', $path) : $path;
     return l(' ['.t('edit').']', $path . $author['cid'] ."/edit/" );
 }
 
