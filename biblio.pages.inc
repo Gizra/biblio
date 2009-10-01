@@ -110,8 +110,8 @@ function biblio_build_query($arg_list) {
 
   $selects[] = "DISTINCT(n.nid)";
   $count_selects[] = "DISTINCT(n.nid)";
-  $selects[] = "n.*";
-  $selects[] = "b.*";
+  //$selects[] = "n.*";
+  //$selects[] = "b.*";
   $selects[] = "bt.name as biblio_type_name";
 
   $joins[] = "left join {biblio} b  on n.vid=b.vid ";
@@ -461,7 +461,7 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
       $content .= drupal_get_form('biblio_search_form');
     }
     if ( biblio_access('export')) {
-      $content .= '<div class="biblio-export">'.t('Export @count results', array('@count' => $pager_total_items[0])).':' . theme('biblio_export_links'). '</div>';
+      $content .= '<div class="biblio-export">'. theme('biblio_export_links'). '</div>';
     }else{
       $content .= '<div class="biblio-export">'.t('Found @count results', array('@count' => $pager_total_items[0])) .'</div><br />';
     }
@@ -489,14 +489,11 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
 
   while ($node = db_fetch_object($result)) {
     $count++;
-    $node->biblio_contributors = biblio_load_contributors($node->vid);
-    $node->biblio_keywords = biblio_load_keywords($node->vid);
+    $node = node_load($node->nid);
+
     if (variable_get('biblio_hide_bibtex_braces', 0)) $node->title = biblio_remove_brace($node->title);
-    if (module_exists("upload")) $node->files = upload_load($node);
     if (variable_get('biblio_fix_isi_links', 0)) biblio_fix_isi_links($node);
 
-    if (isset($node->biblio_year) && ($node->biblio_year == 9998))  $node->biblio_year = t("In Press") ;
-    if (isset($node->biblio_year) && ($node->biblio_year == 9999))  $node->biblio_year = t("Submitted") ;
 
     // output separator bar if needed
     $content .= _biblio_category_separator_bar($attrib, $node);
@@ -518,7 +515,7 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
   if ($inline === false)  {
     $base_title = variable_get('biblio_base_title', 'Biblio');
     drupal_set_title($base_title);
-    print theme('page', $content);
+    return $content;
   }
 
 }
@@ -632,12 +629,12 @@ function _biblio_filter_info_line($args) {
         }
       }
       array_shift($args);
-      $params = array('%a' =>  ucwords($type) , '%b' =>  $value );
+      $params = array('%a' =>  check_plain(ucwords($type)) , '%b' =>  check_plain($value) );
       $filtercontent .= ($i++ ? t('<em> and</em> <strong>%a</strong> is <strong>%b</strong>', $params) : t('<strong>%a</strong> is <strong>%b</strong>', $params)) ;
     }
     if ($search_content) {
       $content .= '<div class="biblio-current-filters"><b>'.t('Search results for ').'</b>';
-      $content .= $search_content;
+      $content .= check_plain($search_content);
       if ($filtercontent) {
         $content .= '<br><b>'.t('Filters').': </b>';
       }
@@ -736,7 +733,7 @@ function _biblio_category_separator_bar($attrib, $node) {
   return $content;
 }
 function theme_biblio_separator_bar($text) {
-  $content .= "\n".'<div class="biblio-separator-bar">' . $text . "</div>\n";
+  $content .= "\n".'<div class="biblio-separator-bar">' . check_plain($text) . "</div>\n";
   $content .= "\n".'<div class ="biblio-category-section">';
   return $content;
 }
@@ -880,13 +877,13 @@ function _get_biblio_filters() {
   $taxoresult = db_query("SELECT $taxo_fields FROM $table $taxo_joins ORDER BY $taxo_order");
 
   while ($option = db_fetch_object($result)) {
-    if ($option->biblio_year == 9998) { $option->biblio_year = t("In Press"); }
-    if ($option->biblio_year == 9999) { $option->biblio_year = t("Submitted"); }
-
+    if (isset ($option->biblio_year)) {
+      $option->biblio_year = _biblio_text_year($option->biblio_year);
+    }
     $pub_years["$option->biblio_year"] = $option->biblio_year;
     $pub_type["$option->tid"] = $option->name;
-
   }
+
   while($auth = db_fetch_object($authors)) {
     $pub_authors[$auth->cid] = $auth->lastname .((!empty($auth->firstname) || !empty($auth->initials))?', '.$auth->firstname.' '.$auth->initials :'');
   }
@@ -1075,6 +1072,9 @@ function _biblio_keyword_links($keywords,$base='biblio') {
 }
 
 function biblio_author_page($filter = NULL) {
+  $style_name = biblio_get_style();
+  module_load_include('inc', 'biblio', "biblio_style_$style_name");
+
     $base = variable_get('biblio_base', 'biblio');
     $menu = menu_get_active_title();
     if ($menu == 'Authors') $path = $base.'/authors/';
@@ -1105,8 +1105,8 @@ function biblio_author_page($filter = NULL) {
     while ($author = db_fetch_array($db_result)){
       $authors[] = $author;
     }
+    $rows[] = array(array('data' => theme(biblio_alpha_line, 'authors', $filter), 'colspan' => 3));
     if (count($authors)) {
-      $rows[] = array(array('data' => theme(biblio_alpha_line, 'authors', $filter), 'colspan' => 3));
       for ($i=0; $i < count($authors); $i+=3) {
         $rows[] = array( array('data' => _biblio_format_author($authors[$i]) ),
         array('data' => isset($authors[$i+1])?_biblio_format_author($authors[$i+1]):'' ),
@@ -1121,19 +1121,24 @@ function biblio_author_page($filter = NULL) {
  * Helper function to format the authors and add edit links if required
  */
 function _biblio_format_author($author) {
-  $style_name = biblio_get_style();
-  $style_function = "biblio_style_$style_name"."_author_options";
-  module_load_include('inc','biblio',"biblio_style_$style_name");
-  $author_options = $style_function();
+  static $author_options = array();
+  if (empty($author_options)) {
+    $style_name = biblio_get_style();
+    $style_function = "biblio_style_$style_name"."_author_options";
+    $author_options = $style_function();
+  }
   $format = theme('biblio_format_authors', array($author), $author_options, $inline);
   $format .= ' ('. $author['cnt'] . ') '. ((biblio_access('edit_author'))?_biblio_author_edit_links($author):'');
   return $format;
 }
 
 function _biblio_author_edit_links($author) {
+  static $path = '';
+  if (empty($path)){
     $path =  (ord(substr($_GET['q'],-1)) > 97) ? $_GET['q'] . "/" : substr($_GET['q'], 0, -1);
     $path = (strpos($path, 'list/')) ? str_replace('list/', '', $path) : $path;
-    return l(' ['.t('edit').']', $path . $author['cid'] ."/edit/" );
+  }
+  return l(' ['.t('edit').']', $path . $author['cid'] ."/edit/" );
 }
 
 function biblio_keyword_page($filter = NULL) {

@@ -51,10 +51,8 @@ function biblio_style_classic($node, $base = 'biblio', $inline = false) {
     $output .= '[' . check_plain($node->biblio_citekey) . '] ';
   }
   $output .= '<span class="biblio-title">';
-  $link = ((variable_get('biblio_link_title_url', 0) && !empty($node->biblio_url)) ? $node->biblio_url : ($inline ? "$base/viewinline/$node->nid":"node/$node->nid" ) ) ;
-  $options['attributes'] = (variable_get('biblio_links_target_new_window',null) && variable_get('biblio_link_title_url', 0) && !empty($node->biblio_url)) ? array('target'=>'_blank') : null;
-  $options['html'] = TRUE;
-  $output .= l($node->title, $link, $options);
+  $url = biblio_get_title_url_info($node);
+  $output .= l($node->title, $url['link'], $url['options']);
   $output .= "</span>, \n";
   $output .= '<span class="biblio-authors">' . $authors . "</span> \n";
   if ($node->biblio_secondary_title) {
@@ -75,7 +73,8 @@ function biblio_style_classic($node, $base = 'biblio', $inline = false) {
   if (isset ($node->biblio_year)) {
     $output .= ', (' . check_plain($node->biblio_year) . ")\n";
   }
-  return $output;
+  return filter_xss($output, biblio_get_allowed_tags());
+
 }
 
 function _classic_format_author($author) {

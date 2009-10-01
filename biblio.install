@@ -1810,4 +1810,18 @@ function biblio_update_6022() {
                           OR name = 'biblio_issn' ");
   return $result;
 }
-
+/*function biblio_update_6023() {
+  $result = array();
+  module_load_include('inc', 'biblio', 'biblio.type.mapper');
+  foreach (array('bibtex','ris','tagged','endnote7','endnote8') as $type)
+  {
+    $map = biblio_get_type_map($type, TRUE);
+    $names = biblio_get_type_names($type, TRUE);
+    foreach ($map as $key => $value) {
+      db_query("INSERT INTO {biblio_type_data} (fid, tid, format, name) VALUES ('%s', %d, '%s', '%s' )", $key, $value, $type, $names[$key]);
+    }
+  }
+  
+  return $result;
+}
+*/  

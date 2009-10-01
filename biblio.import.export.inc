@@ -107,6 +107,7 @@ function biblio_import_form() {
       $i = 0;
       foreach ($vocabularies as $vocabulary) {
         $form['import_taxonomy']['vocabulary'. $i] = module_invoke('taxonomy', 'form', $vocabulary->vid, 0);
+        $form['import_taxonomy']['vocabulary'. $i]['#weight'] = $vocabulary->weight;
         $form['import_taxonomy']['vocabulary'. $i++]['#description'] = t("Select taxonomy term to be assigned to imported entries");
       }
       $form['import_taxonomy']['copy_to_biblio'] = array(
@@ -398,6 +399,7 @@ function biblio_import($import_file, $type, $userid = 1, $terms = NULL, $batch =
  *   none
  */
 function biblio_export($format = "tagged", $nid = null, $popup = false, $version = 8) {
+  module_load_include('inc', 'biblio', 'endnote8_export');
   module_load_include('inc', 'biblio', 'biblio.contributors');
   module_load_include('inc', 'biblio', 'biblio.keywords');
   $params = array ();
@@ -406,61 +408,63 @@ function biblio_export($format = "tagged", $nid = null, $popup = false, $version
     $params = $_SESSION['last_biblio_query_terms'];
   }
   elseif (!empty ($nid)) {
-    $query = db_rewrite_sql("SELECT DISTINCT(n.nid), n.*, b.* FROM {node} n left join {biblio} b  on n.vid=b.vid WHERE n.nid=%d ");
+    $query = db_rewrite_sql("SELECT DISTINCT(n.nid) FROM {node} n  WHERE n.nid=%d ");
     $params[] = $nid;
   } else {
     return;
   }
   $result = db_query($query, $params);
+  $count = 0;
   while ($node = db_fetch_object($result)) {
-    $node->biblio_contributors = biblio_load_contributors($node->vid);
-    $node->biblio_keywords = biblio_load_keywords($node->vid);
-    if ($vid = variable_get('biblio_keyword_vocabulary', 0) && module_exists('taxonomy')){
-        $node->terms = taxonomy_node_get_terms_by_vocabulary($node, $vid);
-    }
-    $results[] = $node;
-  }
-
-  if (count($results)) {
+    $node = node_load($node->nid, FALSE, TRUE);
+//    $node->biblio_contributors = biblio_load_contributors($node->vid);
+//    $node->biblio_keywords = biblio_load_keywords($node->vid);
+//    if (module_exists("upload")) $node->files = upload_load($node);
+    $count++;
+    set_time_limit(30);
     switch ($format) {
       case "tagged" :
-        if (!$popup) {
+        if (!$popup && $count == 1) {
           drupal_set_header('Content-type: 	application/x-endnote-refer');
           drupal_set_header('Content-Disposition:  filename="Drupal-Biblio.enw"');
-          print biblio_endnote_tagged_export($results);
+        }
+        if (!$popup) {
+          print biblio_endnote_tagged_export($node);
         }
         else {
-          return '<pre>' . biblio_endnote_tagged_export($results) . '</pre>';
+          $popup_data .= biblio_endnote_tagged_export($node);
         }
         break;
       case "xml" :
-        if (!$popup) {
+        if ($count == 1) {
           drupal_set_header('Content-type: application/xml; charset=utf-8');
           drupal_set_header('Content-Disposition: attachment; filename="Biblio-EndNote'. $version .'.xml"');
-          print biblio_endnote_XML_export($results, $version);
+          print _endnote8_XML_export('', 'begin');
         }
-        else {
-          drupal_set_header('Content-type: application/xml; charset=utf-8');
-          return '<pre>'. htmlspecialchars(biblio_endnote_XML_export($results, $version)) . '</pre>';
-        }
+        print _endnote8_XML_export($node);
         break;
       case "bibtex" :
-        if (!$popup) {
+        if (!$popup && $count == 1) {
           drupal_set_header('Content-type: 	application/text; charset=utf-8');
           drupal_set_header('Content-Disposition:  filename="Biblio-Bibtex.bib"');
-          print biblio_bibtex_export($results);
+        }
+        if (!$popup) {
+          print biblio_bibtex_export($node);
         }
         else{
-          return '<pre>'. biblio_bibtex_export($results) . '</pre>';
+          $popup_data .=  biblio_bibtex_export($node);
         }
         break;
       case "csv" :
         drupal_set_header('Content-Type: application/text; charset=utf-8');
         drupal_set_header('Content-Disposition: attachment; filename=Biblio-export.csv');
-        print biblio_csv_export($results);
+        print biblio_csv_export($node);
         break;
     }
   }
+
+  if ($format == 'xml' && $count > 0) print _endnote8_XML_export('', 'end');
+  if ($popup && !empty($popup_data)) return '<pre>' . $popup_data . '</pre>';
 
 }
 /**
@@ -577,149 +581,117 @@ function biblio_marc_import($file, $terms, $batch, $session_id) {
  * @return
  *   none
  */
-function biblio_bibtex_export($results) {
-  if (!is_array($results)) {
-    $result_array[] = $results;
-  } else {
-    $result_array = $results;
-  }
+function biblio_bibtex_export($node) {
   $bibtex = '';
-  foreach ($result_array as $pub) {
     $type = "article";
     $journal = $series = $booktitle = $school = $organization = $institution = null;
-    switch ($pub->biblio_type) {
-      case 102 :
-        $type = "article";
-        $journal = $pub->biblio_secondary_title;
-        break;
+  $type = _bibtex_type_map($node->biblio_type);
+  switch ($node->biblio_type) {
       case 100 :
-        $type = "book";
-        $series = $pub->biblio_secondary_title;
-        $organization = $pub->biblio_publisher;
+      $series = $node->biblio_secondary_title;
+      $organization = $node->biblio_publisher;
         break;
       case 101 :
-        $type = "inbook";
-        $booktitle = $pub->biblio_secondary_title;
-        $organization = $pub->biblio_publisher;
-        $series = $pub->biblio_tertiary_title;
-        break;
-      case 100 :
-        $type = "incollection";
-        break;
       case 103 :
-        $type = "inproceedings";
-        $booktitle = $pub->biblio_secondary_title;
-        $organization = $pub->biblio_publisher;
-        $series = $pub->biblio_tertiary_title;
-        break;
-      case 129 :
-        $type = "misc";
+      $booktitle = $node->biblio_secondary_title;
+      $organization = $node->biblio_publisher;
+      $series = $node->biblio_tertiary_title;
         break;
       case 108 :
-        $type = "phdthesis";
-        $school = $pub->biblio_publisher;
-        $pub->biblio_publisher = null;
-        if (stripos($pub->biblio_type_of_work, 'masters')) {
+      $school = $node->biblio_publisher;
+      $node->biblio_publisher = null;
+      if (stripos($node->biblio_type_of_work, 'masters')) {
           $type = "mastersthesis";
         }
         break;
-      case 104 :
-        $type = "proceedings";
-        break;
       case 109 :
-        $type = "techreport";
-        $institution  = $pub->biblio_publisher;
-        $pub->biblio_publisher = null;
+      $institution  = $node->biblio_publisher;
+      $node->biblio_publisher = null;
         break;
-      case 124 :
-        $type = "unpublished";
+    case 102 :
+    default:
+      $journal = $node->biblio_secondary_title;
         break;
     }
     $bibtex .= '@'. $type .' {';
-    $bibtex .= ($pub->biblio_citekey) ? $pub->biblio_citekey .",\n" : ",\n";
-    if (!empty($pub->title))
-      $bibtex .= "\ttitle = {". $pub->title ."},\n";
-    if (!empty($journal))
-      $bibtex .= "\tjournal = {". $journal ."},\n";
-    if (!empty($booktitle))
-      $bibtex .= "\tbooktitle = {". $booktitle ."},\n";
-    if (!empty($series))
-      $bibtex .= "\tseries = {". $series ."},\n";
-    if (!empty($pub->biblio_volume))
-      $bibtex .= "\tvolume = {". $pub->biblio_volume ."},\n";
-    if (!empty($pub->biblio_number))
-      $bibtex .= "\tnumber = {". $pub->biblio_number ."},\n";
-    if (!empty($pub->biblio_year))
-      $bibtex .= "\tyear = {". $pub->biblio_year ."},\n";
-    if (!empty($pub->biblio_notes))
-      $bibtex .= "\tnote = {". $pub->biblio_notes ."},\n";
-    if (!empty($pub->biblio_date))
-      $bibtex .= "\tmonth = {". $pub->biblio_date ."},\n";
-    if (!empty($pub->biblio_pages))
-      $bibtex .= "\tpages = {". $pub->biblio_pages ."},\n";
-    if (!empty($pub->biblio_publisher))
-      $bibtex .= "\tpublisher = {". $pub->biblio_publisher ."},\n";
-    if (!empty($school))
-      $bibtex .= "\tschool = {". $school ."},\n";
-    if (!empty($organization))
-      $bibtex .= "\torganization = {". $organization ."},\n";
-    if (!empty($institution))
-      $bibtex .= "\tinstitution = {". $institution ."},\n";
-    if (!empty($pub->biblio_type_of_work))
-      $bibtex .= "\ttype = {". $pub->biblio_type_of_work ."},\n";
-    if (!empty($pub->biblio_edition))
-      $bibtex .= "\tedition = {". $pub->biblio_edition ."},\n";
-    if (!empty($pub->biblio_section))
-      $bibtex .= "\tchapter = {". $pub->biblio_section ."},\n";
-    if (!empty($pub->biblio_place_published))
-      $bibtex .= "\taddress = {". $pub->biblio_place_published ."},\n";
-    if (!empty($pub->biblio_abst_e))
-      $bibtex .= "\tabstract = {". $pub->biblio_abst_e ."},\n";
+  $bibtex .= ($node->biblio_citekey) ? $node->biblio_citekey  : "";
+  $bibtex .= _bibtex_format_entry('title', $node->title);
+  $bibtex .= _bibtex_format_entry('journal', $journal);
+  $bibtex .= _bibtex_format_entry('booktitle', $booktitle);
+  $bibtex .= _bibtex_format_entry('series', $series);
+  $bibtex .= _bibtex_format_entry('volume', $node->biblio_volume);
+  $bibtex .= _bibtex_format_entry('number', $node->biblio_number);
+  $bibtex .= _bibtex_format_entry('year', $node->biblio_year);
+  $bibtex .= _bibtex_format_entry('note', $node->biblio_notes);
+  $bibtex .= _bibtex_format_entry('month', $node->biblio_date);
+  $bibtex .= _bibtex_format_entry('pages', $node->biblio_pages);
+  $bibtex .= _bibtex_format_entry('publisher', $node->biblio_publisher);
+  $bibtex .= _bibtex_format_entry('school', $school);
+  $bibtex .= _bibtex_format_entry('organization', $organization);
+  $bibtex .= _bibtex_format_entry('institution', $institution);
+  $bibtex .= _bibtex_format_entry('type', $node->biblio_type_of_work);
+  $bibtex .= _bibtex_format_entry('edition', $node->biblio_edition);
+  $bibtex .= _bibtex_format_entry('chapter', $node->biblio_section);
+  $bibtex .= _bibtex_format_entry('address', $node->biblio_place_published);
+  $bibtex .= _bibtex_format_entry('abstract', $node->biblio_abst_e);
 
     $kw_array = array();
-    if (!empty($pub->terms)){
-      foreach($pub->terms as $term){
+  if (!empty($node->terms)){
+    foreach($node->terms as $term){
         $kw_array[] = $term->name;
       }
     }
-    if (!empty($pub->biblio_keywords)) {
-      foreach($pub->biblio_keywords as $term){
-        $kw_array[] = $term;
+  if (!empty($node->biblio_keywords)) {
+    foreach($node->biblio_keywords as $term){
+      $kw_array[] = $term;
       }
     }
     if (!empty($kw_array)){
       $kw_array = array_unique($kw_array);
-      $bibtex .= "\tkeywords = {". implode(', ', $kw_array) ."},\n";
+    $bibtex .= _bibtex_format_entry('keywords', implode(', ', $kw_array));
+  }
+  $bibtex .= _bibtex_format_entry('isbn', $node->biblio_isbn);
+  $bibtex .= _bibtex_format_entry('issn', $node->biblio_issn);
+  $bibtex .= _bibtex_format_entry('doi', $node->biblio_doi);
+  $bibtex .= _bibtex_format_entry('url', $node->biblio_url);
+  if (!empty ($node->files) && count($node->files) && user_access('view uploaded files')) {
+    foreach($node->files as $file) {
+      $attachments[] = file_create_url($file->filepath);
     }
-    if (!empty($pub->biblio_isbn))
-      $bibtex .= "\tisbn = {". $pub->biblio_isbn ."},\n";
-    if (!empty($pub->biblio_issn))
-      $bibtex .= "\tissn = {". $pub->biblio_issn ."},\n";
-    if (!empty($pub->biblio_doi))
-      $bibtex .= "\tdoi = {". $pub->biblio_doi ."},\n";
+    $bibtex .= _bibtex_format_entry('attachments', implode(' , ', $attachments));
+    }
 
-    if (!empty($pub->biblio_url))
-      $bibtex .= "\turl = {". $pub->biblio_url ."},\n";
     $a = $e = array();
-    foreach ((array)$pub->biblio_contributors[1] as $auth) $a[] = trim($auth['name']);
-    foreach ((array)$pub->biblio_contributors[2] as $auth) $e[] = trim($auth['name']);
+  foreach ((array)$node->biblio_contributors[1] as $auth) $a[] = trim($auth['name']);
+  foreach ((array)$node->biblio_contributors[2] as $auth) $e[] = trim($auth['name']);
     $a = implode(' and ', $a);
     $e = implode(' and ', $e);
-    if (!empty ($a))
-      $bibtex .= "\tauthor = {". $a ."}". (($e) ? ",\n" : "\n");
-    if (!empty ($e))
-      $bibtex .= "\teditor = {". $e ."}\n";
-    $bibtex .= "}\n\n";
-  }
+  if (!empty ($a)) $bibtex .= _bibtex_format_entry('author', $a);
+  if (!empty ($e)) $bibtex .= _bibtex_format_entry('editor', $e);
+  $bibtex .= "\n}\n";
+
 
   //now convert any special characters to the latex equivelents...
   module_load_include('php', 'biblio', 'bibtexParse/PARSEENTRIES');
-  require_once(drupal_get_path('module', 'biblio') . '/bibtexParse/transtab_unicode_bibtex.inc.php');
+  include(drupal_get_path('module', 'biblio') . '/bibtexParse/transtab_unicode_bibtex.inc.php');
   $converter = new PARSEENTRIES();
   $bibtex = $converter->searchReplaceText($transtab_unicode_bibtex, $bibtex, false);
 
   return $bibtex;
 }
+function _bibtex_format_entry($key, $value) {
+  return !empty($value) ? ",\n\t$key = {".$value."}" : '';
+}
+
+function _bibtex_type_map($bibliotype) {
+  static $map = array();
+  if (empty($map)) {
+    module_load_include('inc', 'biblio', 'biblio.type.mapper');
+    $map = biblio_get_type_map('bibtex');
+  }
+  return ($type = array_search($bibliotype, $map)) ? $type : 'article';
+}
+
 /**
  * Save node imported from a file.
  *
@@ -885,193 +857,114 @@ function biblio_endnote_XML_export($result, $version = 7) {
  * @return
  *   none
  */
-function biblio_endnote_tagged_export($results) {
-  if (!is_array($results)) {
-    $result_array[] = $results;
-  } else {
-    $result_array = $results;
-  }
-  $doc = "";
-  foreach ($result_array as $pub) {
-    switch ($pub->biblio_type) {
+function biblio_endnote_tagged_export($node) {
+
+  $tagged = "";
+  $tagged .= "%0 ". _endnote_tagged_type_map($node->biblio_type) ."\r\n";
+  switch ($node->biblio_type) {
       case 100 :
-        $doc .= "%0 Book\r\n";
-        if (!empty($pub->biblio_secondary_title))
-          $doc .= "%B ". trim($pub->biblio_secondary_title) ."\r\n";
-        break; // book section
       case 101 :
-        $doc .= "%0 Book Section\r\n";
-        if (!empty($pub->biblio_secondary_title))
-          $doc .= "%B ". trim($pub->biblio_secondary_title) ."\r\n";
-        break; // book section
-      case 102 :
-        $doc .= "%0 Journal Article\r\n";
-        if (!empty($pub->biblio_secondary_title))
-          $doc .= "%J ". trim($pub->biblio_secondary_title) ."\r\n";
-        break; // journal
       case 103 :
-        $doc .= "%0 Conference Paper\r\n";
-        if (!empty($pub->biblio_secondary_title))
-          $doc .= "%B ". trim($pub->biblio_secondary_title) ."\r\n";
-        break;
       case 104 :
-        $doc .= "%0 Conference Proceedings\r\n";
-        if (!empty($pub->biblio_secondary_title))
-          $doc .= "%B ". trim($pub->biblio_secondary_title) ."\r\n";
-        break; // conference proceedings
       case 105 :
-        $doc .= "%0  Newspaper Article\r\n";
-        if (!empty($pub->biblio_secondary_title))
-          $doc .= "%B ". trim($pub->biblio_secondary_title) ."\r\n";
-        break;
-      case 107 :
-        $doc .= "%0  Web Page\r\n";
-        break;
       case 108 :
-        $doc .= "%0 Thesis\r\n";
-        if (!empty($pub->biblio_secondary_title))
-          $doc .= "%B ". trim($pub->biblio_secondary_title) ."\r\n";
-        break; // thesis
-      case 109 :
-        $doc .= "%0 Report\r\n";
-        break; // report
-      case 110 :
-      case 111 :
-        $doc .= "%0  Film or Broadcast\r\n";
-        break;
-      case 112 :
-        $doc .= "%0  Artwork\r\n";
-        break;
-      case 114 :
-        $doc .= "%0  Audiovisual Material\r\n";
-        break;
-      case 115 :
-        $doc .= "%0  Hearing\r\n";
-        break;
-      case 116 :
-        $doc .= "%0  Case\r\n";
-        break;
-      case 117 :
-        $doc .= "%0  Bill\r\n";
-        break;
-      case 118 :
-        $doc .= "%0  Statute\r\n";
-        break;
       case 119 :
-        $doc .= "%0  Patent\r\n";
+      if (!empty($node->biblio_secondary_title))
+      $tagged .= "%B ". trim($node->biblio_secondary_title) ."\r\n";
         break;
-      case 120 :
-        $doc .= "%0  Personal Communication\r\n";
-        break;
-      case 121 :
-        $doc .= "%0  Manuscript\r\n";
-        break;
-      case 122 :
-        $doc .= "%0  Map\r\n";
-        break;
-      case 123 :
-        $doc .= "%0  Chart or Table\r\n";
-        break;
-      case 124 :
-        $doc .= "%0  Unpublished Work\r\n";
-        break;
-      case 125 :
-        $doc .= "%0  Online Database\r\n";
-        break;
-      case 126 :
-        $doc .= "%0  Government Document\r\n";
-        break;
-      case 127 :
-        $doc .= "%0  Classical Work\r\n";
-        break;
-      case 128 :
-        $doc .= "%0  Legal Rule or Regulation\r\n";
-        break;
-      case 119 :
-        $doc .= "%0 Patent\r\n";
-        if (!empty($pub->biblio_secondary_title))
-          $doc .= "%B ". trim($pub->biblio_secondary_title) ."\r\n";
-        break; // patent
-      default :
-        $doc .= "%0 Generic\r\n";
-        break; // generic
+    case 102 :
+      if (!empty($node->biblio_secondary_title))
+      $tagged .= "%J ". trim($node->biblio_secondary_title) ."\r\n";
+      break; // journal
     }
-    if (isset($pub->biblio_year) && $pub->biblio_year < 9998)
-      $doc .= "%D ". trim($pub->biblio_year) ."\r\n";
-    if (!empty($pub->title))
-      $doc .= "%T ". trim($pub->title) ."\r\n";
+  if (isset($node->biblio_year) && $node->biblio_year < 9998)
+  $tagged .= "%D ". trim($node->biblio_year) ."\r\n";
+  if (!empty($node->title))
+  $tagged .= "%T ". trim($node->title) ."\r\n";
 
-    foreach ((array)$pub->biblio_contributors[1] as $auth) {
-      $doc .= "%A " . trim($auth['name']) ."\r\n";
+  foreach ((array)$node->biblio_contributors[1] as $auth) {
+    $tagged .= "%A " . trim($auth['name']) ."\r\n";
     }
-    foreach ((array)$pub->biblio_contributors[2] as $auth) {
-      $doc .= "%E " . trim($auth['name']) ."\r\n";
+  foreach ((array)$node->biblio_contributors[2] as $auth) {
+    $tagged .= "%E " . trim($auth['name']) ."\r\n";
     }
-    foreach ((array)$pub->biblio_contributors[3] as $auth) {
-      $doc .= "%Y " . trim($auth['name']) ."\r\n";
+  foreach ((array)$node->biblio_contributors[3] as $auth) {
+    $tagged .= "%Y " . trim($auth['name']) ."\r\n";
     }
 
-    if (!empty($pub->biblio_place_published))
-      $doc .= "%C ". trim($pub->biblio_place_published) ."\r\n";
-    if (!empty($pub->biblio_publisher)) { $doc .= "%I ". trim($pub->biblio_publisher) ."\r\n"; }
+  if (!empty($node->biblio_place_published))
+  $tagged .= "%C ". trim($node->biblio_place_published) ."\r\n";
+  if (!empty($node->biblio_publisher)) { $tagged .= "%I ". trim($node->biblio_publisher) ."\r\n"; }
 
     $kw_array = array();
-    if (!empty($pub->terms)){
-      foreach($pub->terms as $term){
+  if (!empty($node->terms)){
+    foreach($node->terms as $term){
         $kw_array[] = $term->name;
       }
     }
-    if (!empty($pub->biblio_keywords)) {
-      foreach($pub->biblio_keywords as $term){
-        $kw_array[] = $term;
+  if (!empty($node->biblio_keywords)) {
+    foreach($node->biblio_keywords as $term){
+      $kw_array[] = $term;
       }
     }
     if (!empty($kw_array)){
       $kw_array = array_unique($kw_array);
       foreach($kw_array as $term){
-        $doc .= "%K ". trim($term) ."\r\n";
+      $tagged .= "%K ". trim($term) ."\r\n";
       }
     }
-    if (!empty($pub->biblio_call_number))
-      $doc .= "%L ". trim($pub->biblio_call_number) ."\r\n";
-    if (!empty($pub->biblio_accession_number))
-      $doc .= "%M ". trim($pub->biblio_accession_number) ."\r\n";
-    if (!empty($pub->biblio_issue))
-      $doc .= "%N ". trim($pub->biblio_issue) ."\r\n";
-    if (!empty($pub->biblio_pages))
-      $doc .= "%P ". trim($pub->biblio_pages) ."\r\n";
-    if (!empty($pub->biblio_tertiary_title))
-      $doc .= "%S ". trim($pub->biblio_tertiary_title) ."\r\n";
-    if (!empty($pub->biblio_url))
-      $doc .= "%U ". trim($pub->biblio_url) ."\r\n";
-    if (!empty($pub->biblio_volume))
-      $doc .= "%V ". trim($pub->biblio_volume) ."\r\n";
+  if (!empty($node->biblio_call_number))
+  $tagged .= "%L ". trim($node->biblio_call_number) ."\r\n";
+  if (!empty($node->biblio_accession_number))
+  $tagged .= "%M ". trim($node->biblio_accession_number) ."\r\n";
+  if (!empty($node->biblio_issue))
+  $tagged .= "%N ". trim($node->biblio_issue) ."\r\n";
+  if (!empty($node->biblio_pages))
+  $tagged .= "%P ". trim($node->biblio_pages) ."\r\n";
+  if (!empty($node->biblio_doi))
+  $tagged .= "%R ". trim($node->biblio_doi) ."\r\n";
+  if (!empty($node->biblio_tertiary_title))
+  $tagged .= "%S ". trim($node->biblio_tertiary_title) ."\r\n";
+  if (!empty($node->biblio_url))
+  $tagged .= "%U ". trim($node->biblio_url) ."\r\n";
+  if (!empty($node->biblio_volume))
+  $tagged .= "%V ". trim($node->biblio_volume) ."\r\n";
     $abst = "";
-    if (!empty($pub->biblio_abst_e))
-      $abst .= trim($pub->biblio_abst_e);
-    if (!empty($pub->biblio_abst_f))
-      $abst .= trim($pub->biblio_abst_f);
+  if (!empty($node->biblio_abst_e))
+  $abst .= trim($node->biblio_abst_e);
+  if (!empty($node->biblio_abst_f))
+  $abst .= trim($node->biblio_abst_f);
     if ($abst) {
       $search = array("/\r/", "/\n/");
       $replace = " ";
       $abst = preg_replace($search, $replace, $abst);
-      $doc .= "%X ". $abst ."\r\n";
-    }
-    if (!empty($pub->biblio_notes))
-      $doc .= "%Z ". trim($pub->biblio_notes) ."\r\n";
-    if (!empty($pub->biblio_edition))
-      $doc .= "%7 ". trim($pub->biblio_edition) ."\r\n";
-    if (!empty($pub->biblio_date))
-      $doc .= "%8 ". trim($pub->biblio_date) ."\r\n";
-    if (!empty($pub->biblio_type_of_work))
-      $doc .= "%9 ". trim($pub->biblio_type_of_work) ."\r\n";
-    if (!empty($pub->biblio_isbn))
-      $doc .= "%@ ". trim($pub->biblio_isbn) ."\r\n";
-
-    $doc .= "\r\n";
+    $tagged .= "%X ". $abst ."\r\n";
   }
-
-  return $doc;
+  if (!empty($node->biblio_notes))
+  $tagged .= "%Z ". trim($node->biblio_notes) ."\r\n";
+  if (!empty($node->biblio_edition))
+  $tagged .= "%7 ". trim($node->biblio_edition) ."\r\n";
+  if (!empty($node->biblio_date))
+  $tagged .= "%8 ". trim($node->biblio_date) ."\r\n";
+  if (!empty($node->biblio_type_of_work))
+  $tagged .= "%9 ". trim($node->biblio_type_of_work) ."\r\n";
+  if (!empty($node->biblio_isbn))
+  $tagged .= "%@ ". trim($node->biblio_isbn) ."\r\n";
+  if (!empty ($node->files) && count($node->files)  && user_access('view uploaded files')) {
+    foreach($node->files as $file) {
+      $tagged .= "%> ". file_create_url($file->filepath) . "\r\n"; // insert file here.
+    }
+  }
+  $tagged .= "\r\n";
+  return $tagged;
+    }
+function _endnote_tagged_type_map($bibliotype) {
+  static $map = array();
+  if (empty($map)) {
+    module_load_include('inc', 'biblio', 'biblio.type.mapper');
+    $map = biblio_get_type_map('tagged');
+  }
+  return ($type = array_search($bibliotype, $map)) ? $type : 'Generic'; //return the biblio type or 129 (Misc) if type not found
 }
 function biblio_csv_export_2($result, $bfields) {
   //  $query_biblio_fields = 'SELECT name, title FROM {biblio_fields}';

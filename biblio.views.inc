@@ -1,5 +1,36 @@
 <?php
 // $Id$
+function biblio_views_plugins() {
+  return array(
+    'display' => array(
+      'biblio' => array(
+        'title' => t('Biblio Page'),
+        'help' => t(''),
+        'handler' => 'views_plugin_display_page_biblio',
+        'path' => drupal_get_path('module', 'biblio') . '/views', // not necessary for most modules
+//        'theme' => 'views_view_row_node',
+        'base' => array('node'), // only works with 'node' as base.
+        'uses options' => TRUE,
+        'type' => 'normal',
+        ),     
+      ),
+    'style' => array(
+      // ... list of style plugins,
+      ),
+    'row' => array(
+      // ... list of row style plugins,
+      ),
+    'argument default' => array(
+      // ... list of argument default plugins,
+      ),
+    'argument validator' => array(
+      // ... list of argument validator plugins,
+      ),
+    'access' => array(
+      // ... list of access plugins,
+      ),
+   );
+}
 /**
  * Implementation of hook_views_handlers().
  */
@@ -95,7 +126,8 @@ function biblio_views_data() {
       unset($data[$field['name']]['argument']);
     }
   }
-
+  $data['biblio_year']['argument']  = array('handler' => 'views_handler_argument_numeric');  // biblio_year is an int 
+  $data['biblio_year']['filter']    = array('handler' => 'views_handler_filter_numeric');  // biblio_year is an int 
   unset($data['biblio_keywords']); // keywords are in a separate table which has it's own handlers
 
   $data['table']['join'] = array(
@@ -150,12 +182,10 @@ function biblio_views_data() {
   $data['table']['group'] = t('Biblio');
   $data['table']['join'] = array(
     'node' => array(
-      'left_table' => 'biblio',
       'left_field' => 'vid',
       'field' => 'vid',
     ),
     'node_revision' => array(
-      'left_table' => 'biblio',
       'left_field' => 'vid',
       'field' => 'vid',
     ),
@@ -166,8 +196,8 @@ function biblio_views_data() {
     ),
   );
   $data['cid'] = array(
-    'title' => t('Author Name'),
-    'help' => t('Filter by author name.'),
+    'title' => t('Author ID'),
+    'help' => t('Filter by author id.'),
     'argument' => array(
       'handler'    => 'views_handler_argument_many_to_one',
       'name table' => 'biblio_contributor_data',
@@ -319,3 +349,19 @@ function biblio_views_data() {
   return $viewsdata;
 }
 
+function template_preprocess_views_view_unformatted__biblio_year(&$vars) {
+  $view     = $vars['view'];
+  $rows     = $vars['rows'];
+
+  $vars['classes'] = array();
+  // Set up striping values.
+  foreach ($rows as $id => $row) {
+    $vars['classes'][$id] = 'views-row';
+    $vars['classes'][$id] .= ' views-row-' . ($id + 1);
+    $vars['classes'][$id] .= ' views-row-' . ($id % 2 ? 'even' : 'odd');
+    if ($id == 0) {
+      $vars['classes'][$id] .= ' views-row-first';
+    }
+  }
+  $vars['classes'][$id] .= ' views-row-last';
+}

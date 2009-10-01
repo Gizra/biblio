@@ -73,7 +73,7 @@ function biblio_admin_settings() {
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
-    '#title' => t('Author'),
+    '#title' => t('Authors'),
     '#description' => ''
   );
   $form['authors']['biblio_auto_orphaned_author_delete'] = array(
@@ -492,6 +492,21 @@ function biblio_admin_settings() {
     '#title' => t('Styling'),
     '#description' => t('You can set the default style for the /biblio page here.')
   );
+  $form['style']['biblio_no_year_text'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Text to display if no year of publication is available'),
+    '#size' => 95,
+    '#default_value' => variable_get('biblio_no_year_text', t('Submitted')),
+    '#description' => t('The text that is displayed when no date of publication is given or it is deliberately set to <b>9999</b>, it defaults to "Submitted".')
+  );
+  $form['style']['biblio_inpress_year_text'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Text to display if year of publication is set to 9998'),
+    '#size' => 95,
+    '#default_value' => variable_get('biblio_inpress_year_text', t('In Press')),
+    '#description' => t('The text that is displayed when the date of publication is deliberately set to <b>9998</b>, it defaults to "In Press".')
+  );
+
   $form['style']['biblio_style'] = array(
     '#type' => 'radios',
     '#title' => t('Style'),
@@ -810,8 +825,145 @@ function biblio_admin_types_edit_form_submit($form, & $form_state) {
   // Clear the cached pages and menus:
   menu_rebuild();
 }
+
+function biblio_admin_type_mapper_page() {
+  $output .= '<h3>'.t('Choose a file format to modify').'</h3><p />';
+  $output .= l('BibTex', 'admin/settings/biblio/fields/typemap/bibtex').'<br>';
+  $output .= l('RIS', 'admin/settings/biblio/fields/typemap/ris').'<br>';
+  $output .= l('EndNote Tagged', 'admin/settings/biblio/fields/typemap/tagged').'<br>';
+  $output .= l('EndNote 7 XML', 'admin/settings/biblio/fields/typemap/endnote7').'<br>';
+  $output .= l('EndNote X3 XML', 'admin/settings/biblio/fields/typemap/endnote8').'<br>';;
+  $output .= l('CrossRef XML', 'admin/settings/biblio/fields/typemap/unixref').'<br>';
+  return $output;
+}
+
+function biblio_admin_type_mapper_form($form_state, $format = 'bibtex', $op = 'map') {
+  module_load_include('inc', 'biblio', 'biblio.type.mapper');
+  $names = biblio_get_type_names($format);
+  $map = biblio_get_type_map($format);
+  ksort($names);
+  $form['fileformat'] = array(
+    '#type' => 'hidden',
+    '#value' => $format,
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save'),
+  );
+  $form['reset'] = array(
+    '#type' => 'submit',
+    '#value' => t('Reset to Defaults'),
+  );
+  $form['#redirect'] = 'admin/settings/biblio/fields/typemap';
+
+  if ($op == 'map') {
+    $result = db_query('SELECT t.* FROM {biblio_types} as t WHERE t.tid > 0');
+    while ($type = db_fetch_object($result)) {
+      $biblio_type_options[$type->tid] =  $type->name;
+    }
+    asort($biblio_type_options);
+    $biblio_type_select = array(
+    '#type' => 'select',
+    '#options' => $biblio_type_options,
+    );
+    foreach ($names as $key => $value) {
+      $biblio_type_select['#default_value'] = $map[$key];
+      $form['type'][$key] = array(
+      'format' => array('#value' => "<b>$key</b> (<i>$value</i>)"),
+      'biblio' => $biblio_type_select,
+      '#tree' => 1,
+      );
+
+    }
+  }
+  elseif($op == 'add') {
+    $form['type_name'] = array(
+      '#type' => 'textfield',
+      '#title' => 'Publication Type',
+      '#required' => TRUE,
+      '#description' => t('This is the name of the type identifier, exactly as it appears in the file'),
+    );
+    $form['type_desc'] = array(
+      '#type' => 'textfield',
+      '#title' => 'Description'
+    );
+    $form['submit']['#value'] = t('Add');
+    unset($form['reset']);
+    $form['#redirect'] = 'admin/settings/biblio/fields/typemap/'.$format;
+  }
+
+  return $form;
+}
+
+function theme_biblio_admin_type_mapper_form($form) {
+  switch ($form['fileformat']['#value']) {
+    case 'bibtex':
+      $title = 'BibTex';
+      break;
+    case 'ris':
+      $title = 'RIS';
+      break;
+    case 'tagged':
+      $title = 'EndNote Tagged';
+      break;
+    case 'endnote7':
+      $title = 'EndNote 7 and earlier XML';
+      break;
+    case 'endnote8':
+      $title = 'EndNote 8 and later XML';
+      break;
+  }
+  if ($form['submit']['#value'] == t('Save')) {
+  drupal_set_title($title.' '.t('Type Mapping'));
+  foreach(element_children($form['type']) as $key ){
+      $rows[] = array(
+        drupal_render($form['type'][$key]['format']),
+        drupal_render($form['type'][$key])
+      );
+  }
+  $header = array(
+    $title .' '.t('Publication Types'),
+    t('Biblio Publication Type')
+  );
+  $output .= theme('table', $header, $rows);
+  $output .= l('['.t('Add New'). " $title ".t('Publication Type').']','admin/settings/biblio/fields/typemap/'.$form['fileformat']['#value'].'/add').' ';
+  $output .= l('['.t('Add New Biblio Publication Type').']','admin/settings/biblio/fields/type/new').'<br />';
+  }
+  elseif($form['submit']['#value'] == t('Add')) {
+   drupal_set_title(t('Add new publication type to '). $title.' '.t('file type'));
+   $output .= drupal_render($form['type_name']);
+   $output .= drupal_render($form['type_desc']);
+  }
+  $output .= drupal_render($form['submit']);
+  $output .= drupal_render($form['reset']);
+  $output .= drupal_render($form);
+
+  return $output;
+}
+
+function biblio_admin_type_mapper_form_submit($form, $form_state) {
+  if ($form_state['values']['op'] == t('Save')) {
+    foreach($form_state['values'] as $key => $value) {
+      if (is_array($value)) {
+        $map[$key]=$value['biblio'];
+      }
+    }
+    variable_set('biblio_'.$form_state['values']['fileformat'] .'_type_map', $map);
+  }
+  elseif ($form_state['values']['op'] == t('Reset to Defaults')) {
+    variable_del('biblio_'. $form_state['values']['fileformat'] .'_type_map');
+    variable_del('biblio_'. $form_state['values']['fileformat'] .'_type_names');
+  }
+  elseif ($form_state['values']['op'] == t('Add')) {
+    $names = biblio_get_type_names($form_state['values']['fileformat']);
+    $names[$form_state['values']['type_name']] = $form_state['values']['type_desc'];
+    variable_set('biblio_'.$form_state['values']['fileformat'] .'_type_names', $names);
+  }
+  //drupal_goto('admin/settings/biblio/fields/typemap');
+}
+
 function biblio_admin_types_form() {
-  $result = db_query('SELECT t.* FROM {biblio_types as t WHERE t.tid > 0}');
+  $result = db_query('SELECT t.* FROM {biblio_types} as t WHERE t.tid > 0');
   //$rows[] = array('',t('Fields Common To All Types'),l('edit', 'admin/settings/biblio/types/edit'),'');
   while ($row = db_fetch_object($result)) {
     if ($row->tid < 999) {
@@ -873,10 +1025,12 @@ function biblio_admin_types_add_form_submit($form, & $form_state) {
   variable_set('biblio_max_user_tid', $values['tid']);
   for ($f = 1; $f <= 51; $f++) {
     $ft_vals = array(
-      'tid' => $values['tid'],
-      'fid' => $f,
-      'ftdid' => $f,
-      'cust_tdid' => $f
+      'tid'       => $values['tid'],
+      'fid'       => $f,
+      'ftdid'     => $f,
+      'cust_tdid' => $f,
+      'weight'    => $f,
+      'visible'    => 1,
     );
     drupal_write_record('biblio_field_type', $ft_vals);
   }
@@ -1046,6 +1200,31 @@ function _biblio_get_user_doi_form(&$form, $user) {
   );
   return $form;
 }
+function _biblio_get_user_openurl_form(&$form, $user) {
+  $form['openurl'] = array(
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#title' => t('OpenURL'),
+    '#description' => t('You can set an <a href="http://en.wikipedia.org/wiki/OpenURL">openurl</a> link here')
+  );
+  $form['openurl']['biblio_baseopenurl'] = array(
+    '#type' => 'textfield',
+    '#title' => t('OpenURL Base URL'),
+    '#size' => 95,
+    '#default_value' => !empty($user->biblio_baseopenurl) ? $user->biblio_baseopenurl :  '',
+    '#description' => t('This sets your base <a href="http://en.wikipedia.org/wiki/OpenURL">OpenURL</a> gateway, which is used to generate OpenURL links. To implement a "Universal" OpenURL system, try using OCLC\'s <a href="http://www.oclc.org/productworks/urlresolver.htm">OpenURL Resolver Registry</a> gateway: <a href="http://worldcatlibraries.org/registry/gateway">http://worldcatlibraries.org/registry/gateway</a>')
+  );
+  $sid = "Biblio:". variable_get('site_name', 'Drupal');
+  $form['openurl']['biblio_openurl_sid'] = array(
+    '#type' => 'textfield',
+    '#title' => t('OpenURL Site ID'),
+    '#size' => 95,
+    '#default_value' => !empty($user->biblio_openurl_sid) ? $user->biblio_openurl_sid : '',
+    '#description' => t('This sets your site name, some link resolvers will require a specific Site ID in order to process your requests.')
+  );
+  return $form;
+}
 /*  This function parses the module directory for 'style' files, loads them and
  *  calls the info fuction to get some basic information like the short and long
  *  names of the style
@@ -1135,21 +1314,16 @@ function biblio_admin_author_types_form($form_state, $op = NULL, $id = NULL) {
 }
 
 function theme_biblio_admin_author_types_form($form) {
-   // We need this complex query to realize author_types which are not in use (count(cid) is zero).
-   // Grouping by title and hint (which are functionally dependent on auth_type)
-   // is required by the SQL standard, i.e., as a rule, in a query with a GROUP
-   // BY clause, only attributes appearing in the GROUP BY
-   // clause, or aggregate functions, may be selected.
-   // (PostgreSQL enforces this rule).
-      $db_result = db_query("SELECT ctd.*, count(cid) as cid FROM {biblio_contributor_type_data} ctd
+  // We need this complex query to realize author_types which are not in use (cid is NULL)
+  $db_result = db_query("SELECT ctd.*, cid FROM {biblio_contributor_type_data} ctd
                          LEFT JOIN {biblio_contributor} c ON ctd.auth_type = c.auth_type
-                         GROUP BY ctd.auth_type, ctd.title, ctd.hint");
+                         GROUP BY ctd.auth_type");
   while ($row = db_fetch_object($db_result)) {
-     $ops = l(t('edit'), 'admin/settings/biblio/author/type/'.$row->auth_type.'/edit' );
-     if ($row->cid == 0 && $row->auth_type >= 10) { // allow delete only if type not in use
-       $ops .= '&nbsp;&nbsp;';
-       $ops .= l(t('delete'), 'admin/settings/biblio/author/type/'.$row->auth_type.'/delete/');
-     }
+    $ops = l(t('edit'), 'admin/settings/biblio/author/type/'.$row->auth_type.'/edit' );
+    if (!isset($row->cid) && $row->auth_type >= 10) { // allow delete only if type not in use
+      $ops .= '&nbsp;&nbsp;';
+      $ops .= l(t('delete'), 'admin/settings/biblio/author/type/'.$row->auth_type.'/delete/');
+    }
     $rows[] = array(
       $row->auth_type,
       $row->title,
@@ -1172,6 +1346,7 @@ function theme_biblio_admin_author_types_form($form) {
 }
 
 function biblio_admin_author_types_form_submit($form, $form_state) {
+
   $record->title = $form_state['values']['title'];
   $record->hint = $form_state['values']['hint'];
 
@@ -1525,7 +1700,7 @@ function biblio_admin_keyword_edit_form($form_state, $keyword_id) {
   unset($options);
   $base = variable_get('biblio_base', 'biblio');
   while($kw=db_fetch_object($keywords)) {
-    $options[$kw->kid] = l($kw->word,$base.'/keyword/'.$kw->kid.'/edit/');
+    $options[$kw->kid] = l($kw->word,$base.'/keywords/'.$kw->kid.'/edit/');
   }
   if ($options) {
     $form['merge'] = array(

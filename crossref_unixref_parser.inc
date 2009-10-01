@@ -57,7 +57,7 @@ function unixref_startElement($parser, $name, $attrs) {
       $element = $name;
   }
 
-  }
+}
 function unixref_decode(&$item, $key) {
   $item = html_entity_decode($item, NULL, 'UTF-8');
 }
@@ -204,20 +204,12 @@ function _unixref_field_map($field) {
 function _unixref_type_map($type){
   static $map = array();
   if (empty($map)) {
-    $map = array(
-    'error'        => 0,
-    'book'         => 100, // Book
-    'journal'      => 102, // Journal Article
-    'standard'     => 129, // Generic
-    'conference'   => 103, // conference_paper
-    'report-paper' => 109, // Report
-    'dissertation' => 108, // Thesis
-    'database'     => 125, // online database
-    'sa_component' => 129
-   );
+    module_load_include('inc', 'biblio', 'biblio.type.mapper');
+    $map = biblio_get_type_map('unixref');
   }
   return (isset($map[$type]))?$map[$type]:129; //return the biblio type or 129 (Misc) if type not found
 }
+
 function _unixref_get_contributor_category($role) {
   if ($role == 'author') return 1;
   if ($role == 'editor') return 2;

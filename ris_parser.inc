@@ -30,12 +30,12 @@ function _ris_tagged_import($file, $terms = array(), $batch = FALSE, $session_id
   while (!feof($fp)) {
     $line = fgets($fp);
     $line_len = strlen($line);
-     if ($line_len > 3) {
-       $start = strpos($line, '  -'); // There could be some unprintables at the beginning of the line so fine the location of the %
-       if ($start !== FALSE) {
+    if ($line_len > 3) {
+      $start = strpos($line, '  -'); // There could be some unprintables at the beginning of the line so fine the location of the %
+      if ($start !== FALSE) {
         $tag = drupal_substr($line, $start -2, 2);
         $value = trim(drupal_substr($line, $start +3));
-     }
+      }
       else {
         $value = $line;
       }
@@ -57,163 +57,95 @@ function _ris_tagged_import($file, $terms = array(), $batch = FALSE, $session_id
         case 'TY' :
           $node['biblio_contributors'] = array();
           $incite = TRUE;
-          switch ($value) {
-            case "ART" : // art work
-              $node['biblio_type'] = 112;
-              break;
-            case "COMP" : // computer program
-              $node['biblio_type'] = 113;
-              break;
-            case "ADVS" : //Audiovisual material
-              $node['biblio_type'] = 114;
-              break;
-            case "HEAR" : // Hearing
-              $node['biblio_type'] = 115;
-              break;
-            case "CASE" : // Case
-              $node['biblio_type'] = 116;
-              break;
-            case "BILL" : // Bill / resolution
-              $node['biblio_type'] = 117;
-              break;
-            case "JOUR" : // journal
-              $node['biblio_type'] = 102;
-              break;
-            case "CONF" : // conference proceedings
-              $node['biblio_type'] = 103;
-              break;
-            case "NEWS" : // newspaper
-              $node['biblio_type'] = 105;
-              break;
-            case "MGZN" : // magazine article
-              $node['biblio_type'] = 106;
-              break;
-            case "ICOMM" : // internet communication
-              $node['biblio_type'] = 107;
-              break;
-            case "RPRT" : // report
-              $node['biblio_type'] = 109;
-              break;
-            case "MPCT" : //motion picture
-              $node['biblio_type'] = 110;
-              break;
-            case "BOOK" : // book
-              $node['biblio_type'] = 100;
-              break;
-            case "CHAP" : // book chapter
-              $node['biblio_type'] = 101;
-              break;
-            case "THES" : // thesis
-              $node['biblio_type'] = 108;
-              break;
-            case "PAT" : // patent
-              $node['biblio_type'] = 119;
-              break;
-            case "PCOMM" : // Personal communication
-              $node['biblio_type'] = 120;
-              break;
-            case "MAP" : // map
-              $node['biblio_type'] = 122;
-              break;
-            case "DATA" : // database
-              $node['biblio_type'] = 125;
-              break;
-            case "STAT" : // statute
-              $node['biblio_type'] = 125;
-              break;
-            case "GEN" :
-            default :
-              $node['biblio_type'] = 129;
-              break; // generic
-          }
+          $node['biblio_type'] = ris_type_map($value);
           break;
-            case 'A1' :
-            case 'AU' :
-              $node['biblio_contributors'][1][] = array(
+        case 'A1' :
+        case 'AU' :
+          $node['biblio_contributors'][1][] = array(
                 'name' => $value,
                 'auth_type' => _biblio_get_auth_type(1, $node['biblio_type']));
-              break;
-            case 'JF' :
-              $node['biblio_secondary_title'] .= $value;
-              break;
-            case 'CY' :
-              $node['biblio_place_published'] .= $value;
-              break;
-            case 'Y1' :
-            case 'PY' :
-              $node['biblio_year'] = ($end = strpos($value, "/")) ? substr($value, 0, $end) : $value;
-              $node['biblio_date'] = $value;
-              break;
-            case 'A2' :
-            case 'ED' :
-              $node['biblio_contributors'][2][] = array(
+          break;
+        case 'JF' :
+          $node['biblio_secondary_title'] .= $value;
+          break;
+        case 'CY' :
+          $node['biblio_place_published'] .= $value;
+          break;
+        case 'Y1' :
+        case 'PY' :
+          $node['biblio_year'] = ($end = strpos($value, "/")) ? substr($value, 0, $end) : $value;
+          $node['biblio_date'] = $value;
+          break;
+        case 'A2' :
+        case 'ED' :
+          $node['biblio_contributors'][2][] = array(
                 'name' => $value,
                 'auth_type' => _biblio_get_auth_type(2, $node['biblio_type']));
-              break;
-            case 'PB' :
-              $node['biblio_publisher'] .= $value;
-              break;
-            case 'T2' :
-              $node['biblio_secondary_title'] .= $value;
-              break;
-            case 'KW' :
-              $node['biblio_keywords'][] = $value;
-              break;
-            case 'IS' :
-            case 'CP' :
-              $node['biblio_issue'] .= $value;
-              break;
-            case 'SP' :
-            case 'EP' :
-              $node['biblio_pages'] .= ($tag == "SP") ? $value : " - " . $value;
-              break;
-            case 'T3' :
-              $node['biblio_tertiary_title'] .= $value;
-              break;
-            case 'TI' :
-            case 'T1' :
-            case 'CT' :
-            case 'BT' :
-              $node['title'] .= $value;
-              break;
-            case 'UR' :
-              $node['biblio_url'] .= $value;
-              break;
-            case 'VL' :
-              $node['biblio_volume'] .= $value;
-              break;
-            case 'AB' :
-            case 'N2' :
-              $node['biblio_abst_e'] .= $value;
-              break;
-            case 'A3' :
-              $node['biblio_contributors'][5][] = array(
+          break;
+        case 'PB' :
+          $node['biblio_publisher'] .= $value;
+          break;
+        case 'T2' :
+          $node['biblio_secondary_title'] .= $value;
+          break;
+        case 'KW' :
+          $node['biblio_keywords'][] = $value;
+          break;
+        case 'IS' :
+        case 'CP' :
+          $node['biblio_issue'] .= $value;
+          break;
+        case 'SP' :
+        case 'EP' :
+          $node['biblio_pages'] .= ($tag == "SP") ? $value : " - " . $value;
+          break;
+        case 'T3' :
+          $node['biblio_tertiary_title'] .= $value;
+          break;
+        case 'TI' :
+        case 'T1' :
+        case 'CT' :
+        case 'BT' :
+          $node['title'] .= $value;
+          break;
+        case 'UR' :
+          $node['biblio_url'] .= $value;
+          break;
+        case 'VL' :
+          $node['biblio_volume'] .= $value;
+          break;
+        case 'AB' :
+        case 'N2' :
+          $node['biblio_abst_e'] .= $value;
+          break;
+        case 'A3' :
+          $node['biblio_contributors'][5][] = array(
                 'name' => $value,
                 'auth_type' => _biblio_get_auth_type(5, $node['biblio_type']));
-              break;
-            case 'N1' :
-              $node['biblio_notes'] .= $value;
-              break;
-            case 'U1' : // CUSTOM 1
-              $node['biblio_custom1'] .= $value;
-              break;
-            case 'U2' : // CUSTOM 2
-              $node['biblio_custom2'] .= $value;
-              break;
-            case 'U3' : // CUSTOM 3
-              $node['biblio_custom3'] .= $value;
-              break;
-            case 'U4' : // CUSTOM 4
-              $node['biblio_custom4'] .= $value;
-              break;
-            case 'U5' : // CUSTOM 5
-              $node['biblio_custom5'] .= $value;
-              break;
-            case 'SN' :
-              $node['biblio_isbn'] .= $value;
-              break;
-            default :
-              break;
+          break;
+        case 'N1' :
+          $node['biblio_notes'] .= $value;
+          break;
+        case 'U1' : // CUSTOM 1
+          $node['biblio_custom1'] .= $value;
+          break;
+        case 'U2' : // CUSTOM 2
+          $node['biblio_custom2'] .= $value;
+          break;
+        case 'U3' : // CUSTOM 3
+          $node['biblio_custom3'] .= $value;
+          break;
+        case 'U4' : // CUSTOM 4
+          $node['biblio_custom4'] .= $value;
+          break;
+        case 'U5' : // CUSTOM 5
+          $node['biblio_custom5'] .= $value;
+          break;
+        case 'SN' :
+          $node['biblio_isbn'] .= $value;
+          break;
+        default :
+          break;
       } //end switch
     }
     else {
@@ -222,4 +154,12 @@ function _ris_tagged_import($file, $terms = array(), $batch = FALSE, $session_id
   } // end while
   fclose($fp);
   return (!empty($nids)) ? $nids : array();
+}
+function ris_type_map($type) {
+  static $map = array();
+  if (empty($map)) {
+    module_load_include('inc', 'biblio', 'biblio.type.mapper');
+    $map = biblio_get_type_map('ris');
+  }
+  return (isset($map[$type]))?$map[$type]:129; //return the biblio type or 129 (Misc) if type not found
 }

@@ -1,42 +1,40 @@
 <?PHP
 // $Id$
-function _endnote8_XML_export($results){
+function _endnote8_XML_export($node, $part = 'record'){
   $style_attr = 'face="normal" font="default" size="100%"';
-  $xml = '<?xml version="1.0" encoding="UTF-8"?>';
-  $xml .= "<xml><records>";
-  if (!is_array($results)) {
-    $result_array[] = $results;
-  }
-  else {
-    $result_array = $results;
-  }
-  foreach ($result_array as $pub) {
-    //en8_encode_font_faces($pub);
-    $xml .= "<record>";
-    $xml .= '<source-app name="Biblio" version="6.x">Drupal-Biblio</source-app>';
-    $xml .= "\t<ref-type>". _endnote8_type_map($pub->biblio_type) ."</ref-type>";
-    unset($pub->biblio_type);
-    //<!-- Author information -->
-    $xml .= en8_add_contributors($pub);
-    $xml .= en8_add_titles($pub);
-    $xml .= en8_add_keywords($pub);
-    $xml .= en8_add_dates($pub);
-    $xml .= en8_add_urls($pub);
-
-    foreach($pub as $key => $value) {
-      $entag = en8_field_map($key);
-      if (!empty($entag)) {
-        $xml .=  "<".$entag.'><style face="normal" font="default" size="100%">'.htmlspecialchars($value)."</style></$entag>";
+  switch ($part) {
+    case 'begin':
+      $xml = '<?xml version="1.0" encoding="UTF-8"?>';
+      $xml .= "<xml><records>";
+      break;
+    case 'record':
+      $xml .= "<record>";
+      $xml .= '<source-app name="Biblio" version="6.x">Drupal-Biblio</source-app>';
+      $xml .= "<ref-type>". _endnote8_type_map($node->biblio_type) ."</ref-type>";
+      unset($node->biblio_type);
+      //<!-- Author information -->
+      $xml .= en8_add_contributors($node);
+      $xml .= en8_add_titles($node);
+      $xml .= en8_add_keywords($node);
+      $xml .= en8_add_dates($node);
+      $xml .= en8_add_urls($node);
+  
+      foreach($node as $key => $value) {
+        $entag = en8_field_map($key);
+        if (!empty($entag) && !empty($value)) {
+          $xml .=  "<".$entag.'><style face="normal" font="default" size="100%">'.htmlspecialchars($value)."</style></$entag>";
+        }
       }
-    }
-
-    $xml .= "</record>";
+      $xml .= "</record>";
+      break;
+    case 'end': 
+      $xml .= '</records></xml>';
+      break;
   }
-  $xml .= '</records></xml>';
-  return $xml;
+    return $xml;
 }
 
-function en8_encode_font_faces(&$pub) {
+function en8_encode_font_faces(&$node) {
   $search = array('<b>','<i>', '<u>', '<sup>', '<sub>','</b>','</i>', '</u>', '</sup>', '</sub>');
   $replace = array(
     '<style face="bold" font="default" size="100%">',
@@ -50,59 +48,71 @@ function en8_encode_font_faces(&$pub) {
     '</sytle>',
     '</sytle>',
   );
-  foreach ($pub as $key => $value) {
-    $pub->$key = str_ireplace($search, $replace, $value);
+  foreach ($node as $key => $value) {
+    $node->$key = str_ireplace($search, $replace, $value);
   }
 }
 
-function en8_add_titles(&$pub) {
+function en8_add_titles(&$node) {
   $xml .= '<titles>';
-  $xml .= (!empty ($pub->title)) ? '<title><style face="normal" font="default" size="100%">'.htmlspecialchars($pub->title)."</style></title>" :'';
-  $xml .= (!empty ($pub->biblio_secondary_title)) ? '<secondary-title><style face="normal" font="default" size="100%">'.htmlspecialchars($pub->biblio_secondary_title)."</style></secondary-title>" :'';
-  $xml .= (!empty ($pub->biblio_tertiary_title)) ? '<tertiary-title><style face="normal" font="default" size="100%">'.htmlspecialchars($pub->biblio_tertiary_title)."</style></tertiary-title>" :'';
-  $xml .= (!empty ($pub->biblio_alternate_title)) ? '<alt-title><style face="normal" font="default" size="100%">'.htmlspecialchars($pub->biblio_alternate_title)."</style></alt-title>" :'';
-  $xml .= (!empty ($pub->biblio_short_title)) ? '<short-title><style face="normal" font="default" size="100%">'.htmlspecialchars($pub->biblio_short_title)."</style></short-title>" :'';
-  $xml .= (!empty ($pub->biblio_translated_title)) ? '<translated-title><style face="normal" font="default" size="100%">'.htmlspecialchars($pub->biblio_translated_title)."</style></translated-title>" :'';
+  $xml .= (!empty ($node->title)) ? '<title><style face="normal" font="default" size="100%">'.htmlspecialchars($node->title)."</style></title>" :'';
+  $xml .= (!empty ($node->biblio_secondary_title)) ? '<secondary-title><style face="normal" font="default" size="100%">'.htmlspecialchars($node->biblio_secondary_title)."</style></secondary-title>" :'';
+  $xml .= (!empty ($node->biblio_tertiary_title)) ? '<tertiary-title><style face="normal" font="default" size="100%">'.htmlspecialchars($node->biblio_tertiary_title)."</style></tertiary-title>" :'';
+  $xml .= (!empty ($node->biblio_alternate_title)) ? '<alt-title><style face="normal" font="default" size="100%">'.htmlspecialchars($node->biblio_alternate_title)."</style></alt-title>" :'';
+  $xml .= (!empty ($node->biblio_short_title)) ? '<short-title><style face="normal" font="default" size="100%">'.htmlspecialchars($node->biblio_short_title)."</style></short-title>" :'';
+  $xml .= (!empty ($node->biblio_translated_title)) ? '<translated-title><style face="normal" font="default" size="100%">'.htmlspecialchars($node->biblio_translated_title)."</style></translated-title>" :'';
   $xml .= '</titles>';
-  unset($pub->title);
-  unset($pub->biblio_secondary_title);
-  unset($pub->biblio_tertiary_title);
-  unset($pub->biblio_alternate_title);
-  unset($pub->biblio_short_title);
-  unset($pub->biblio_translated_title);
+  unset($node->title);
+  unset($node->biblio_secondary_title);
+  unset($node->biblio_tertiary_title);
+  unset($node->biblio_alternate_title);
+  unset($node->biblio_short_title);
+  unset($node->biblio_translated_title);
 
   return $xml;
 }
-function en8_add_urls(&$pub) {
+function en8_add_urls(&$node) {
+  global $base_path;
   $xml = '';
   // TODO: fix URLS
-  if (!empty($pub->biblio_url)) {
-    $xml .= "<urls><related-urls>";
-    $xml .= '<url><style face="normal" font="default" size="100%">'.$pub->biblio_url."</style></url>";
-    $xml .= "</related-urls></urls>";
+  if (!empty($node->biblio_url)) {
+    $xml .= "<web-urls>";
+    $xml .= '<url><style face="normal" font="default" size="100%">'.$node->biblio_url."</style></url>";
+    $xml .= "</web-urls>";
   }
-  unset($pub->biblio_url);
-  return $xml;
+  unset($node->biblio_url);
+  if (!empty ($node->files) && count($node->files) && user_access('view uploaded files')) {
+    $xml .= "<related-urls>";
+    foreach($node->files as $file) {
+      $xml .= '<url><style face="normal" font="default" size="100%">';
+      $xml .= file_create_url($file->filepath);
+      $xml .= "</style></url>";
+    }
+    $xml .= "</related-urls>";
+  }
+  unset($node->files);
+  if (!empty($xml)) return "<urls>$xml</urls>";
+  return ;
 }
 
-function en8_add_dates(&$pub) {
+function en8_add_dates(&$node) {
   $xml = '';
-  if (!empty($pub->biblio_year) || !empty($pub->biblio_date) ) {
+  if (!empty($node->biblio_year) || !empty($node->biblio_date) ) {
     $xml .= '<dates>';
-    $xml .=  (!empty($pub->biblio_year)) ? '<year><style  face="normal" font="default" size="100%">'. htmlspecialchars($pub->biblio_year)."</style></year>":'';
-    $xml .=  (!empty($pub->biblio_date)) ? '<pub-dates><date><style  face="normal" font="default" size="100%">'. htmlspecialchars($pub->biblio_date)."</style></date></pub-dates>":'';
+    $xml .=  (!empty($node->biblio_year)) ? '<year><style  face="normal" font="default" size="100%">'. htmlspecialchars($node->biblio_year)."</style></year>":'';
+    $xml .=  (!empty($node->biblio_date)) ? '<pub-dates><date><style  face="normal" font="default" size="100%">'. htmlspecialchars($node->biblio_date)."</style></date></pub-dates>":'';
     $xml .= "</dates>";
   }
-  unset($pub->biblio_year);
-  unset($pub->biblio_date);
+  unset($node->biblio_year);
+  unset($node->biblio_date);
   return $xml;
 }
 
-function en8_add_keywords(&$pub) {
+function en8_add_keywords(&$node) {
   $kw_array = array();
   $xml = '';
-  if (!empty($pub->biblio_keywords)) {
-    foreach($pub->biblio_keywords as $term) {
+  if (!empty($node->biblio_keywords)) {
+    foreach($node->biblio_keywords as $term) {
       $kw_array[] = trim($term);
     }
   }
@@ -114,51 +124,51 @@ function en8_add_keywords(&$pub) {
     }
     $xml .= "</keywords>";
   }
-  unset($pub->biblio_keywords);
+  unset($node->biblio_keywords);
   return $xml;
 }
 
-function en8_add_contributors(&$pub) {
+function en8_add_contributors(&$node) {
   $xml .= '<contributors>';
-  if (count($pub->biblio_contributors[1])) {
+  if (count($node->biblio_contributors[1])) {
     $xml .= "<authors>";
-    foreach((array)$pub->biblio_contributors[1] as $auth) {
+    foreach((array)$node->biblio_contributors[1] as $auth) {
       $xml .= '<author><style face="normal" font="default" size="100%">';
       $xml .= htmlspecialchars(trim($auth['name'])); // insert author here.
       $xml .= "</style></author>";
     }
     $xml .= "</authors>";
   }
-  if (count($pub->biblio_contributors[2])) {
+  if (count($node->biblio_contributors[2])) {
     $xml .= "<secondary-authors>";
-    foreach((array)$pub->biblio_contributors[2] as $auth) {
+    foreach((array)$node->biblio_contributors[2] as $auth) {
       $xml .= '<author><style face="normal" font="default" size="100%">';
       $xml .= htmlspecialchars(trim($auth['name'])); // insert author here.
       $xml .= "</style></author>";
     }
     $xml .= "</secondary-authors>";
   }
-  if (count($pub->biblio_contributors[3])) {
+  if (count($node->biblio_contributors[3])) {
     $xml .= "<tertiary-authors>";
-    foreach((array)$pub->biblio_contributors[3] as $auth) {
+    foreach((array)$node->biblio_contributors[3] as $auth) {
       $xml .= '<author><style face="normal" font="default" size="100%">';
       $xml .= htmlspecialchars(trim($auth['name'])); // insert author here.
       $xml .= "</style></author>";
     }
     $xml .= "</tertiary-authors>";
   }
-  if (count($pub->biblio_contributors[4])) {
+  if (count($node->biblio_contributors[4])) {
     $xml .= "<subsidiary-authors>";
-    foreach((array)$pub->biblio_contributors[4] as $auth) {
+    foreach((array)$node->biblio_contributors[4] as $auth) {
       $xml .= '<author><style face="normal" font="default" size="100%">';
       $xml .= htmlspecialchars(trim($auth['name'])); // insert author here.
       $xml .= "</style></author>";
     }
     $xml .= "</subsidiary-authors>";
   }
-  if (count($pub->biblio_contributors[5])) {
+  if (count($node->biblio_contributors[5])) {
     $xml .= "<translated-authors>";
-    foreach((array)$pub->biblio_contributors[5] as $auth) {
+    foreach((array)$node->biblio_contributors[5] as $auth) {
       $xml .= '<author><style face="normal" font="default" size="100%">';
       $xml .= htmlspecialchars(trim($auth['name'])); // insert author here.
       $xml .= "</style></author>";
@@ -166,7 +176,7 @@ function en8_add_contributors(&$pub) {
     $xml .= "</translated-authors>";
   }
   $xml .= '</contributors>';
-  unset($pub->biblio_contributors);
+  unset($node->biblio_contributors);
   return $xml;
 }
 
@@ -256,47 +266,8 @@ function en8_field_map($biblio_field) {
 function _endnote8_type_map($bibliotype) {
   static $map = array();
   if (empty($map)) {
-    $map = array(
-    2 => 112, // artwork
-    3 => 114, // Audio Visual
-    4 => 117, // bill
-    5 => 101, // Book Section
-    6 => 100, // Book
-    7 => 116, // case
-    9 => 113, // software
-    17 => 102, // Journal Article
-    10 => 104, // Conference Proceeding
-    12 => 107, // web page
-    13 => 129, // Generic
-    14 => 115, // hearing
-    19 => 106, // magazine_article
-    20 => 122, // map
-    21 => 110, // film
-    21 => 111, // broadcast
-    23 => 105, // newspaper_article
-    25 => 119, // patent
-    26 => 120, // personal communication
-    27 => 109, // Report
-    28 => 129, // Edited Book
-    31 => 118, // statute
-    32 => 108, // Thesis
-    34 => 124, // unpublished
-    36 => 121, // manuscript
-    37 => 129, // figure
-    38 => 123, // chart
-    39 => 129, // equation
-    43 => 129, // electronic article
-    44 => 129, // electronic book
-    45 => 125, // online database
-    46 => 126, // government_document
-    47 => 103, // conference_paper
-    48 => 129, // online multimedia
-    49 => 127, // Classical Work
-    50 => 128, // legal_ruling
-    52 => 129, // Dictionary
-    53 => 129, // Encyclopedia
-    54 => 129, // Grant
-    );
+    module_load_include('inc', 'biblio', 'biblio.type.mapper');
+    $map = biblio_get_type_map('endnote8');
   }
   return ($en8_type = array_search($bibliotype, $map)) ? $en8_type : 13; //return the biblio type or 129 (Misc) if type not found
 }

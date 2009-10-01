@@ -95,7 +95,7 @@ function en8_endElement($parser, $name) {
       $urls = '';
       break;
     case 'ref-type':
-       $node['biblio_type'] = en8_type_map($node['biblio_type']);
+       $node['biblio_type'] = en8_parser_type_map($node['biblio_type']);
         $element = '';
        break;
     case 'style' :
@@ -191,14 +191,14 @@ function en8_characterData($parser, $data) {
         break;
 
       default:
-        if ($field = en8_field_map(trim($element))) {
+        if ($field = en8_parser_field_map(trim($element))) {
           $node[$field] .= $data;
         }
     }
   }
 }
 
-function en8_field_map($enfield) {
+function en8_parser_field_map($enfield) {
   static $fmap = array();
   if(empty($fmap)) {
     $fmap = array(
@@ -281,50 +281,12 @@ function en8_field_map($enfield) {
   return (!empty($fmap[$enfield])) ? $fmap[$enfield] : '';
 
 }
-function en8_type_map($en8type){
+
+function en8_parser_type_map($en8type){
   static $map = array();
-  if (empty($map)) {
-    $map = array(
-    2 => 112, // artwork
-    3 => 114, // Audio Visual
-    4 => 117, // bill
-    5 => 101, // Book Section
-    6 => 100, // Book
-    7 => 116, // case
-    9 => 113, // software
-    17 => 102, // Journal Article
-    10 => 104, // Conference Proceeding
-    12 => 107, // web page
-    13 => 129, // Generic
-    14 => 115, // hearing
-    19 => 106, // magazine_article
-    20 => 122, // map
-    21 => 110, // film
-    21 => 111, // broadcast
-    23 => 105, // newspaper_article
-    25 => 119, // patent
-    26 => 120, // personal communication
-    27 => 109, // Report
-    28 => 129, // Edited Book
-    31 => 118, // statute
-    32 => 108, // Thesis
-    34 => 124, // unpublished
-    36 => 121, // manuscript
-    37 => 129, // figure
-    38 => 123, // chart
-    39 => 129, // equation
-    43 => 129, // electronic article
-    44 => 129, // electronic book
-    45 => 125, // online database
-    46 => 126, // government_document
-    47 => 103, // conference_paper
-    48 => 129, // online multimedia
-    49 => 127, // Classical Work
-    50 => 128, // legal_ruling
-    52 => 129, // Dictionary
-    53 => 129, // Encyclopedia
-    54 => 129, // Grant
-    );
+  if (empty($map)) {// first check to see if there are user settings else load the defaults
+    module_load_include('inc', 'biblio', 'biblio.type.mapper');
+    $map = biblio_get_type_map('endnote8');
   }
   return (isset($map[$en8type]))?$map[$en8type]:129; //return the biblio type or 129 (Misc) if type not found
 }

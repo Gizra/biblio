@@ -97,32 +97,8 @@ function _endnote7_XML_export($results) {
 function _endnote7_type_map($bibliotype) {
   static $map = array();
   if (empty($map)) {
-    $map = array(
-    '0' => '102', // Journal Article
-    '1' => '100', // Book
-    '2' => '108', // Thesis
-    '3' => '103', // Conference Proceedings
-    '4' => '120', // Personal Communication
-    '5' => '105', // NewsPaper Article
-    '6' => '113', // Computer Program
-    '7' => '101', // Book Section
-    '8' => '106', // Magazine Article
-    '9' => '100', // Edited Book
-    '10' => '109', // Report
-    '11' => '122', // Map
-    '12' => '114', // Audiovisual Material
-    '13' => '112', // Artwork
-    '15' => '119', // Patent
-    '16' => '107', // Electronic Source
-    '17' => '117', // Bill
-    '18' => '116', // Case
-    '19' => '115', // Hearing
-    '20' => '121', // Manuscript
-    '21' => '110', // Film or Broadcast
-    '22' => '118', // Statute
-    '26' => '123', // Chart or Table
-    '31' => '129' // Generic
-    );
+    module_load_include('inc', 'biblio', 'biblio.type.mapper');
+    $map = biblio_get_type_map('endnote7');
   }
   return ($en7_type = array_search($bibliotype, $map)) ? $en7_type : 31; //return the biblio type or 129 (Misc) if type not found
 }

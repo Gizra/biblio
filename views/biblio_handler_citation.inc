@@ -52,7 +52,7 @@ class biblio_handler_citation extends views_handler_field {
         if (isset($item->biblio_year)) $item->biblio_year = _biblio_text_year($item->biblio_year);
         $item->biblio_contributors = biblio_load_contributors($item->vid);
         if (variable_get('biblio_hide_bibtex_braces', 0)) {
-          $node->title = biblio_remove_brace($node->title);
+          $item->title = biblio_remove_brace($item->title);
         }
 
         $this->items[$vid] = $item;

@@ -8,61 +8,47 @@
 
 Upgrades from 5.x or RC2 and later are directly supported without any intermediate updates.
 
-<h3>New features...</h3>
-<b>6.x-dev</b>
-<ol>
+<h3>6.x-1.7</h3>
+<b>New features...</b>
+<ul>
+  <li>New settings available in "Styling" to allow admin to change the text that is displayed when there is no year of publication available (9999) or the "In Press" text (9998)</li>
+  <li>Reworked the SQL query used for the list display to improve speed at which the list display is sorted.  This is especially noticable on large datasets.</li>
+  <li>Reworked export functions such that the data is streamed to the client node by node thus reducing the memory footprint required to export large datasets.</li>
+  <li>Thanks to <a href="http://drupal.org/user/106698">Filipe Rocha</a> for the Portuguese translation file (biblio.pt-pt.po)</li>
+  <li>Added links to file attachments in the Tagged, bibtex and EndNote 8 export file formats</li>
+  <li>Thanks to Turóczi Attil for the Hungarian translation file (biblio.hu.po)</li>
+</ul>
+<b>Bugs Fixed...</b>
+<ul>
+  <li>fixed potential XSS vulnerability</li>
+  <li><a href="http://drupal.org/node/585332">#585332</a> fixed Can't use the print module in the biblio list page</li>
+  <li> disabled default views so they do not over ride some of the built in paths</li>
+  <li><a href="http://drupal.org/node/570640">#570640</a> fixed author ordering problem when "More Authors" are added on the input form</li>
+  <li><a href="http://drupal.org/node/561722">#561722</a> fixed Order Vocabularies by Weight on Import Screen(s)</li>
+  <li><a href="http://drupal.org/node/561800">#561800</a> fixed Incorrectly placed curly bracket } around table name in db_query</li>
+  <li><a href="http://drupal.org/node/551362">#551362</a> fixed problem with author and keyword edit links when base url has more than one level</li>
+  <li><a href="http://drupal.org/node/502140">#502140</a> fixed typo which prevented removal of BibTex braces in the title with Views display</li>
+  <li><a href="http://drupal.org/node/536062">#536062</a> fixed bug which would overwrite page title if the page had a "View" containing a biblio node</li>
+  <li>fixed bug which prevented the "Alpha" line from being displayed on the "Authors" page when there were no authors to display</li>
+</ul>
+<hr />
+<h3>6.x-1.6</h3>
+<b>New features...</b>
+<ul>
+  <li>Added configurable "type" mapping <a href="http://drupal.org/node/520828">#520828</a>.  This feature allows mapping between various input file format publication types and Biblio publication types.  </li>
+  <li>Added a per-user setting for OpenURL information <a href="http://drupal.org/node/528930">#528930</a></li>
   <li>EndNote XML files are now formated in the latest XML format by default, good for versions 8 and newer of EndNote. </li>
   <li>Added new setting in the OpenURL section to set the Site ID (sid) of the OpenURL link </li>
-</ol>
-<b>6.x-1.5</b>
-<ol>
-  <li>Added Views handlers for sorting, filtering and arguments on most fields.</li>
-  <li>Added new settings in the ISI Web of Knowledge section on the admin/settings/biblio page.  Turning this on automatically converts EndNote "Go to ISI" links to valid ISI search links. (ISI subscription required)</li>
-  <li>Added new settings in the links section on the admin/settings/biblio page.  You choose to carry "inline" mode through to all subsequent links.  Inline mode is used primarily by people accessing biblio data from custom code, so the average user will not need this.</li>
-  <li>Added new settings in the links section on the admin/settings/biblio page.  You can now toggle the export links on/off individually as well as the Google Scholar link</li>
-  <li>Added links from each entry to Google Scholar.  Following the link does a Google Scholar search using the title and first authors name.</li>
-  <li>Added a new feature (and setting to turn it on/off) which will allow you to retain BibTex protected capitalization braces in title strings, they will be stripped out on display, but will still be in place when exported in BibTex format. </li>
-  <li>Added a <b><em>new permission</em></b> called "access biblio content" which will allow you to restrict access to any of the biblio pages (biblio, biblio/authors, biblio/keywords etc.) <b>A user <u>MUST</u> have this permission to see anything from the biblio module!</b></li>
-  <li>Added a section to the user profile page to allow entry of CrossRef login information used for DOI lookup</li>
-  <li>Added a new option when selecting taxonomy terms from a vocabulary, you can now choose to copy them to the biblio keyword database or not.  There is a check box on the input and import forms and there is also a new check box in the "Keywords" section of the admin/settings page which sets the default for this option.</li>
-  <li>Added a setting in the links section to toggle the hyperlinks on the author names.</li>
-</ol>
-<b>6.x-1.4</b>
-<ol>
-  <li>No new features, 1.4 was released to address a major bug which crashed the code when saving a new entry containing keywords.</li>
-</ol>
-
-<b>6.x-1.3</b>
-<ol>
-  <li>Added "DOI Lookup" option on the input form. Entering a valid DOI name (number) here will query crossref.org and poplulate the input form with all the data it gets.  You are then presented with the populated form to make further additions/changes prior to saving it to the database.</li>
-  <li>Added "BibTex cut and paste" option to the input form.  Pasting a valid bibTex string into the box will populate the input form with the data and similar to the DOI lookup above, allows you to preview and make changes prior to saving it in the database.</li>
-  <li>Added a new user permission called "edit biblio authors" which allows the user to edit biblio author information but not other biblio settings, unlike "administer biblio" which gives them the right to edit all biblio settings.</li>
-  <li>Changed "Views" integration such that Blblio is no longer a "Base" type of view.  You should now use the "Node" view type to create a view containing biblio information.</li>
-  <li>Added an option to toggle sort links between text and tab type display.</li>
-  <li>Changed Keyword/Taxonomy freetag handling...  The Taxonomy freetag input box is no longer displayed on the input form. All keywords/taxonomy freetags should be entered into the biblio Keywords input box and (if required) the taxonomy freetags will be updated when the keywords are saved.  This keeps the keywords and freetags in sync and avoids the confustion of having two input boxes (one for keywords and one for freetags).</li>   
-</ol>
-<b>6.x-1.2</b>
-<ol>
-  <li>Added option to automatically delete authors "orphaned" by the update or deletion of an entry</li>
-  <li>User selectable bibliographic styles, authorized users can choose a style other than the system default on their "edit user" page</li>
-  <li>Author "Link" allows 2 or more authors to be linked together (intended to deal with name changes due to marriage, but could be used for other purposes)</li>
-  </ol>
-<b>6.x-1.1</b>
-<ol>
-  <li>MARC format file import</li>
-  <li>New bibliographic output sytles (AMA, Chicago, MLA, Vancouver)</li>
-  <li>Authors page (biblio/authors) which displays all authors in the database linked to publication lists filtered by that author. ("edit" links are provided for privileged users)</li>
-  <li>Author edit/merge form (merge allows you to merge all instances of the same author which have been entered slightly
-differently. i.e. Smith, J and John Smith are the same person so you merge the two entries into one.)</li>
-  <li>Orphaned author page(admin/settings/biblio/author/orphans), allows you to remove authors who are not associated with any publications from the database</li>
-  <li>Keywords page (biblio/keywords) which displays all keywords in the database linked to publication list filtered by that keyword. ("edit" links are provided for privileged users)</li>
-  <li>Orphaned keyword page (admin/settings/biblio/keyword/orphans) allows you to find and remove orphaned keywords (keywords which are no longer associated with any publications)</li>
-  <li>added 'tabledrag' to admin/settings/biblio/defaults and admin/settings/biblio/types/edit/xxx which allows you to change the order of the fields on the input form by just dragging them to the desired location</li>
-  <li>input your own PHP code to generate cite keys</li>
-</ol>
-<h3>Bugs Fixed...</h3>
-<b>6.x-dev</b>
+</ul>
+<b>Bugs Fixed...</b>
 <ul>
+  <li>fixed potential XSS vulnerability</li>
+  <li><a href="http://drupal.org/node/514882">#514882</a> fixed MLA style looks for incorrect year field</li>
+  <li>#------ fixed incorrect link in keyword edit page</li>
+  <li><a href="http://drupal.org/node/513930">#513930</a>fixed Missing '&lt;/ul&gt;' tag in biblio_theme.inc, and also refactored the entire link building process so that the links on the "node" display are built by the same code as the links on the "bibliographic" display</li>
+  <li><a href="http://drupal.org/node/504702">#504702</a>fixed The first [bib] causes a line break with hovertips enabled</li>
+  <li><a href="http://drupal.org/node/501932#comment-1748502">#501932</a>fixed warning generated when new "type" is created and no fields are set "visible", also change the default for new types so that ALL fields will be visible rather than invisible.</li>
+  <li><a href="http://drupal.org/node/497594">#497594</a>removed the manditory requirement for the year of publication to be supplied</li>
   <li><a href="http://drupal.org/node/502140">#502140</a>fixed Views citation handler does not remove BibTeX brackets</li>
   <li><a href="http://drupal.org/node/501932">#501932</a>fixed Biblio Search returns error</li>
   <li><a href="http://drupal.org/node/477438">#477438</a>fixed issue with CrossRef XML parser where it would truncate data with embedded HTML tags, also added the retention of font style (bold, italic, underline, subscript, superscript) information.</li>
@@ -78,7 +64,22 @@ differently. i.e. Smith, J and John Smith are the same person so you merge the t
   <li><a href="http://drupal.org/node/483650#comment-1672390">#483650</a> Google Scholar links not shown in "node" view </li>
   <li><a href="http://drupal.org/node/467928#comment-1671984">#467928</a> Wrong tool tip on Google Scholar link </li>
 </ul>
-<b>6.x-1.5</b>
+<hr />
+<h3>6.x-1.5</h3>
+<b>New features...</b>
+<ul>
+  <li>Added Views handlers for sorting, filtering and arguments on most fields.</li>
+  <li>Added new settings in the ISI Web of Knowledge section on the admin/settings/biblio page.  Turning this on automatically converts EndNote "Go to ISI" links to valid ISI search links. (ISI subscription required)</li>
+  <li>Added new settings in the links section on the admin/settings/biblio page.  You choose to carry "inline" mode through to all subsequent links.  Inline mode is used primarily by people accessing biblio data from custom code, so the average user will not need this.</li>
+  <li>Added new settings in the links section on the admin/settings/biblio page.  You can now toggle the export links on/off individually as well as the Google Scholar link</li>
+  <li>Added links from each entry to Google Scholar.  Following the link does a Google Scholar search using the title and first authors name.</li>
+  <li>Added a new feature (and setting to turn it on/off) which will allow you to retain BibTex protected capitalization braces in title strings, they will be stripped out on display, but will still be in place when exported in BibTex format. </li>
+  <li>Added a <b><em>new permission</em></b> called "access biblio content" which will allow you to restrict access to any of the biblio pages (biblio, biblio/authors, biblio/keywords etc.) <b>A user <u>MUST</u> have this permission to see anything from the biblio module!</b></li>
+  <li>Added a section to the user profile page to allow entry of CrossRef login information used for DOI lookup</li>
+  <li>Added a new option when selecting taxonomy terms from a vocabulary, you can now choose to copy them to the biblio keyword database or not.  There is a check box on the input and import forms and there is also a new check box in the "Keywords" section of the admin/settings page which sets the default for this option.</li>
+  <li>Added a setting in the links section to toggle the hyperlinks on the author names.</li>
+</ul>
+<b>Bugs Fixed...</b>
 <ul>
   <li><a href="http://drupal.org/node/150002#comment-1659312">#150002</a> Go to ISI Link </li>
   <li><a href="http://drupal.org/node/477502">#477502</a> Unescape XML Entities in import from crossref </li>
@@ -89,7 +90,7 @@ differently. i.e. Smith, J and John Smith are the same person so you merge the t
   <li><a href="http://drupal.org/node/465834">#465834</a> issn and section fields too small for patent type </li>
   <li><a href="http://drupal.org/node/472062">#472062</a> Biblio and i18n - Problem with assigned language when importing nodes </li>
   <li><a href="http://drupal.org/node/471436">#471436</a> Problem with Taxonomy and Biblio Keywords </li>
-  <li><a href="http://drupal.org/node/469328">#469328</a> What to do if Author is an Organization (CSE & APA styles only) </li>
+  <li><a href="http://drupal.org/node/469328">#469328</a> What to do if Author is an Organization (CSE and APA styles only) </li>
   <li><a href="http://drupal.org/node/464572">#464572</a> Undefined function taxonomy_vocabulary_load()-installation error </li>
   <li><a href="http://drupal.org/node/461474">#461474</a> BibTex - ISSN field </li>
   <li><a href="http://drupal.org/node/461464">#461464</a> BibTex - Inproceedings and inbook - booktitle replaced by series</li>  
@@ -109,12 +110,25 @@ differently. i.e. Smith, J and John Smith are the same person so you merge the t
   <li><a href="http://drupal.org/node/450522">#450522</a> Limit on author initials is not respected in Vancouver style</li>
   <li><a href="http://drupal.org/node/450030">#450030</a> Minor error on edit authors</li>
 </ul>
-<b>6.x-1.4</b>
+<hr />
+<h3>6.x-1.4</h3>
+<b>Bugs Fixed...</b>
 <ul>
   <li><a href="http://drupal.org/node/448732">#448732</a> can't save any biblio: "Call to undefined function biblio_explode_keywords()"</li>
   <li><a href="http://drupal.org/node/448306">#448306</a> preg_replace() error</li>
 </ul>
-<b>6.x-1.3</b>
+<hr />
+<h3>6.x-1.3</h3>
+<b>New features...</b>
+<ul>
+  <li>Added "DOI Lookup" option on the input form. Entering a valid DOI name (number) here will query crossref.org and poplulate the input form with all the data it gets.  You are then presented with the populated form to make further additions/changes prior to saving it to the database.</li>
+  <li>Added "BibTex cut and paste" option to the input form.  Pasting a valid bibTex string into the box will populate the input form with the data and similar to the DOI lookup above, allows you to preview and make changes prior to saving it in the database.</li>
+  <li>Added a new user permission called "edit biblio authors" which allows the user to edit biblio author information but not other biblio settings, unlike "administer biblio" which gives them the right to edit all biblio settings.</li>
+  <li>Changed "Views" integration such that Blblio is no longer a "Base" type of view.  You should now use the "Node" view type to create a view containing biblio information.</li>
+  <li>Added an option to toggle sort links between text and tab type display.</li>
+  <li>Changed Keyword/Taxonomy freetag handling...  The Taxonomy freetag input box is no longer displayed on the input form. All keywords/taxonomy freetags should be entered into the biblio Keywords input box and (if required) the taxonomy freetags will be updated when the keywords are saved.  This keeps the keywords and freetags in sync and avoids the confustion of having two input boxes (one for keywords and one for freetags).</li>   
+</ul>
+<b>Bugs Fixed...</b>
 <ul>
   <li><a href="http://drupal.org/node/444428">#444428</a> simple mispelled words</li>
   <li><a href="http://drupal.org/node/437440">#437440</a> Citation Key cannot be longer than 16 </li>
@@ -135,7 +149,15 @@ differently. i.e. Smith, J and John Smith are the same person so you merge the t
   <li><a href="http://drupal.org/node/429226">#429226</a> Quotes around title in Vancouver style</li>
   <li><a href="http://drupal.org/node/421546">#421546</a> Keywords vanish when previewing</li>
 </ul>
-<b>6.x-1.2</b>
+<hr />
+<h3>6.x-1.2</h3>
+<b>New features...</b>
+<ul>
+  <li>Added option to automatically delete authors "orphaned" by the update or deletion of an entry</li>
+  <li>User selectable bibliographic styles, authorized users can choose a style other than the system default on their "edit user" page</li>
+  <li>Author "Link" allows 2 or more authors to be linked together (intended to deal with name changes due to marriage, but could be used for other purposes)</li>
+  </ul>
+<b>Bugs Fixed...</b>
 <ul>
   <li><a href="http://drupal.org/node/376808">#376808</a> Delete orphaned authors automatically?</li>
   <li><a href="http://drupal.org/node/415478">#415478</a> Sorting by type without bars</li>
@@ -153,14 +175,31 @@ differently. i.e. Smith, J and John Smith are the same person so you merge the t
   <li><a href="http://drupal.org/node/402468">#402468</a> Filter by author, sort both first and secondary authors </li>
   <li><a href="http://drupal.org/node/401938">#401938</a> First name / Last name order switched</li>
 </ul>
-<b>6.x-1.1</b>
+<hr />
+<h3>6.x-1.1</h3>
+<b>New features...</b>
+<ul>
+  <li>MARC format file import</li>
+  <li>New bibliographic output sytles (AMA, Chicago, MLA, Vancouver)</li>
+  <li>Authors page (biblio/authors) which displays all authors in the database linked to publication lists filtered by that author. ("edit" links are provided for privileged users)</li>
+  <li>Author edit/merge form (merge allows you to merge all instances of the same author which have been entered slightly
+differently. i.e. Smith, J and John Smith are the same person so you merge the two entries into one.)</li>
+  <li>Orphaned author page(admin/settings/biblio/author/orphans), allows you to remove authors who are not associated with any publications from the database</li>
+  <li>Keywords page (biblio/keywords) which displays all keywords in the database linked to publication list filtered by that keyword. ("edit" links are provided for privileged users)</li>
+  <li>Orphaned keyword page (admin/settings/biblio/keyword/orphans) allows you to find and remove orphaned keywords (keywords which are no longer associated with any publications)</li>
+  <li>added 'tabledrag' to admin/settings/biblio/defaults and admin/settings/biblio/types/edit/xxx which allows you to change the order of the fields on the input form by just dragging them to the desired location</li>
+  <li>input your own PHP code to generate cite keys</li>
+</ul>
+<b>Bugs Fixed...</b>
 <ul>
   <li><a href="http://drupal.org/node/398472">#398472</a> Drupal UserID-Author Mapping problems</li>
   <li><a href="http://drupal.org/node/396654">#396654</a> Export single reference fails - SQL error</li>
   <li><a href="http://drupal.org/node/398226">#398226</a> Fatal error: Cannot break/continue 1 level in biblio.module on line 277</li>
   <li><a href="http://drupal.org/node/396096">#396096</a> Caching problem: no filters for anonymous users</li>
 </ul>
-<b>6.x-1.0</b>
+<hr />
+<h3>6.x-1.0</h3>
+<b>Bugs Fixed...</b>
 <ul>
   <li>[#141602]</li>
   <li>[#381190]</li>

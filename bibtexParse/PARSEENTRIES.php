@@ -562,48 +562,13 @@ class PARSEENTRIES
       }
     //foreach($entries as $entry){
       $node['biblio_contributors'] = array();
+      $node['biblio_type'] = $this->bibtex_type_map($entry['bibtexEntryType']);
       switch ($entry['bibtexEntryType']){
-        case article:
-          $node['biblio_type'] = 102;
-          break;
-        case book:
-          $node['biblio_type'] = 100;
-          break;
-        case booklet:
-        case inbook:
-          $node['biblio_type'] = 101;
-          break;
-        case conference:
-          $node['biblio_type'] = 103;
-          break;
-        case incollection:
-          $node['biblio_type'] = 101;
-          break;
-        case inproceedings:
-          $node['biblio_type'] = 103;
-          break;
-        case manual:
-          $node['biblio_type'] = 129;
-          break;
         case mastersthesis:
-          $node['biblio_type'] = 108;
           $node['biblio_type_of_work'] = 'masters';
           break;
-        case misc:
-          $node['biblio_type'] = 129;
-          break;
         case phdthesis:
-          $node['biblio_type'] = 108;
           $node['biblio_type_of_work'] = 'phd';
-          break;
-        case proceedings:
-          $node['biblio_type'] = 104;
-          break;
-        case techreport:
-          $node['biblio_type'] = 109;
-          break;
-        case unpublished:
-          $node['biblio_type'] = 124;
           break;
       }
       if (!empty($entry['author'])){
@@ -659,6 +624,14 @@ class PARSEENTRIES
       $nids[] = biblio_save_node($node, $batch, $session_id, $save);
     }
     return (!empty($nids)) ? $nids : NULL;
+  }
+  function bibtex_type_map($type) {
+    static $map = array();
+    if (empty($map)) {
+      module_load_include('inc', 'biblio', 'biblio.type.mapper');
+      $map = biblio_get_type_map('bibtex');
+    }
+    return (isset($map[$type])) ? $map[$type] : 129; //return the biblio type or 129 (Misc) if type not found
   }
 
 }

@@ -77,6 +77,8 @@ function biblio_load_keywords($vid) {
  * @return
  */
 function biblio_save_keywords(&$node, $update = FALSE) {
+  $kw_vocab = variable_get('biblio_keyword_vocabulary', 0);
+  $freetagging = variable_get('biblio_keyword_freetagging', 0);
   $taxo_terms = $typed_keywords = array();
   if (!is_array($node->biblio_keywords)) {
     $typed_keywords = biblio_explode_keywords($node->biblio_keywords);
@@ -86,7 +88,6 @@ function biblio_save_keywords(&$node, $update = FALSE) {
   }
 
   if (!$update) db_query('DELETE FROM {biblio_keyword} WHERE nid = %d AND vid = %d', array($node->nid, $node->vid));
-
   if (isset($node->taxonomy) && is_array($node->taxonomy) && variable_get('biblio_copy_taxo_terms_to_keywords', 0)) { //add any taxonomy terms to our keyword list
     foreach ($node->taxonomy as $vid => $term) {
       if ($vid == 'copy_to_biblio' && $term == 0 ) {// don't copy if user overrides the default to copy, just set the $taxo_terms to an empty array and break out of the for loop
@@ -97,13 +98,13 @@ function biblio_save_keywords(&$node, $update = FALSE) {
         foreach ($term as $tid) {
           if ($tid) {
             $term_obj = taxonomy_get_term($tid);
-            $taxo_terms[] = $term_obj->name;
+            $taxo_terms[$term_obj->tid] = $term_obj->name;
           }
         }
       }
       else if ($term) {
         $term_obj = taxonomy_get_term($term);
-        $taxo_terms[] = $term_obj->name;
+        $taxo_terms[$term_obj->tid] = $term_obj->name;
       }
     }
   }
@@ -132,8 +133,6 @@ function biblio_save_keywords(&$node, $update = FALSE) {
   }
 
   // now if we are saving keywords into a taxonomy freetagging vocabulary, then create the tags string and add it to the node object.
-  $kw_vocab = variable_get('biblio_keyword_vocabulary', 0);
-  $freetagging = variable_get('biblio_keyword_freetagging', 0);
 
   if ($freetagging && $kw_vocab ) {
     $node->taxonomy['tags'][$kw_vocab] =  biblio_implode_keywords($typed_keywords, ',');

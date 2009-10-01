@@ -40,6 +40,7 @@ function _biblio_get_auth_type($auth_category, $biblio_type) {
   return empty($result) ? NULL : current($result);
 }
 function _biblio_get_field_information($biblio_type, $only_visible = FALSE) {
+  $fields = array();
   $visible = $only_visible ? ' AND (bt.common = 1 OR bt.visible=1) ' : '';
   $result = db_query("SELECT b.*, btd.*, btt.name AS type_name
                       FROM {biblio_fields} AS b
@@ -66,15 +67,24 @@ function biblio_init() {
   }
 }
 function biblio_theme() {
+  $path = drupal_get_path('module', 'biblio');
   return array(
+//   'views_view_unformatted__biblio_year' => array(
+//      'template' => 'views-view-unformatted--biblio-year',
+//      'path'  => $path,
+//    ),
     'biblio_alpha_line' => array(
         'file' => 'biblio_theme.inc',
         'arguments' => array('type'),
     ),
-    'biblio_admin_author_types_form' => array(
+   'biblio_admin_author_types_form' => array(
         'file' => 'biblio.admin.inc',
         'arguments' => array('form'),
     ),
+   'biblio_admin_type_mapper_form' => array(
+        'file' => 'biblio.admin.inc',
+        'arguments' => array('form'),
+    )    ,
     'biblio_admin_types_edit_form' => array(
         'file' => 'biblio_theme.inc',
         'arguments' => array('form'),
@@ -164,21 +174,9 @@ function biblio_theme() {
         'file' => 'biblio_theme.inc',
         'arguments' => array('form'),
     ),
-    'biblio_tagged_link' => array(
-        'file' => 'biblio_theme.inc',
-        'arguments' => array('base', 'nid'),
-    ),
-   'biblio_xml_link' => array(
-        'file' => 'biblio_theme.inc',
-        'arguments' => array('base', 'nid'),
-    ),
-   'biblio_bibtex_link' => array(
-        'file' => 'biblio_theme.inc',
-        'arguments' => array('base', 'nid'),
-    ),
     'biblio_export_links' => array(
         'file' => 'biblio_theme.inc',
-        'arguments' => array('nid'),
+        'arguments' => array('node'),
     ),
     'biblio_download_links' => array(
         'file' => 'biblio_theme.inc',
@@ -283,6 +281,7 @@ function biblio_access($op, $node = '', $user = '') {
     case 'delete':
     case 'update':
       if (user_access('edit all biblio entries')) return TRUE;
+      if (user_access('edit own biblio entries') && $user->uid == $node->uid) return TRUE;
       if (user_access('edit own biblio entries') && $user->uid != $node->uid) return FALSE;
       break;
     case 'view':
@@ -349,48 +348,13 @@ function biblio_link($type, $node = NULL, $teaser = FALSE) {
       );
 
     }
-    if (variable_get('biblio_google_link', 1)) {
-      $links['biblio_google_scholar'] = array(
-        'title' => t('Google Scholar'),
-        'href' => _build_google_scholar_link($node),
-        'attributes' => array('target'=>'_blank')
-      );
-    }
     if (biblio_access('export', $node)) {
       $show_link = variable_get('biblio_export_links', array('tagged' => TRUE, 'xml' => TRUE, 'bibtex' => TRUE));
-      if ($show_link['tagged']) {
-        $links['biblio_tagged'] = array(
-        'title'      => t('EndNote Tagged'),
-        'href'       => "$base/export/tagged/$node->nid",
-        'attributes' => array('title' => t("Click to get the EndNote Tagged output ")),
-        );
-        if (module_exists('popups')) {
-          $links['biblio_tagged']['href'] .= "/popup";
-          $links['biblio_tagged']['attributes']['class'] = 'popups';
-        }
-      }
-      if ($show_link['xml']) {
-        $links['biblio_xml'] = array(
-        'title'      => t('EndNote XML'),
-        'href'       => "$base/export/xml/$node->nid",
-        'attributes' => array('title' => t("Click to download the EndNote XML formatted file")),
-        );
-        if (module_exists('popups')) {
-          $links['biblio_xml']['href'] .= "/popup";
-          $links['biblio_xml']['attributes']['class'] = 'popups';
-        }
-      }
-      if ($show_link['bibtex']) {
-        $links['biblio_bibtex'] = array(
-        'title'      => t('BibTex'),
-        'href'       => "$base/export/bibtex/$node->nid",
-        'attributes' => array('title' => t("Click to download the BibTEX formatted file")),
-        );
-        if (module_exists('popups')) {
-          $links['biblio_bibtex']['href'] .= "/popup";
-          $links['biblio_bibtex']['attributes']['class'] = 'popups';
-        }
-      }
+      $show_link['google'] = variable_get('biblio_google_link', 1);
+      if ($show_link['tagged']) $links['biblio_tagged']         = _build_biblio_tagged_link($base, $node->nid);
+      if ($show_link['xml'])    $links['biblio_xml']            = _build_biblio_xml_link($base, $node->nid);
+      if ($show_link['bibtex']) $links['biblio_bibtex']         = _build_biblio_bibtex_link($base, $node->nid);
+      if ($show_link['google']) $links['biblio_google_scholar'] = _build_google_scholar_link($node);
     }
 
 
@@ -417,16 +381,26 @@ function biblio_link($type, $node = NULL, $teaser = FALSE) {
  */
 function biblio_user($type, & $edit, & $user, $category = NULL) {
   if ($type == 'form' && $category == 'account' ) {
-    $form = array();
+    $form['biblio_fieldset'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Biblio settings'),
+      '#weight' => 5,
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+    );
     include_once drupal_get_path('module', 'biblio') .'/biblio.admin.inc';
-    if (variable_get('biblio_show_user_profile_form', '1')) _biblio_get_user_profile_form($form, $user);
-    if (user_access('create biblio')) _biblio_get_user_doi_form($form, $user);
+    if (variable_get('biblio_show_user_profile_form', '1')) {
+      _biblio_get_user_profile_form($form['biblio_fieldset'], $user);
+      _biblio_get_user_openurl_form($form['biblio_fieldset'], $user);
+    }
+    if (user_access('create biblio')) _biblio_get_user_doi_form($form['biblio_fieldset'], $user);
+
     return $form;
   }
   if ($type == 'validate' && $category == 'account') { // TODO: this is not reached at all
     if (($edit['biblio_my_pubs_menu'] || $edit['biblio_show_profile']) && $edit['biblio_contributor_id'] == 0) {
       $message = t('You did not supply an associated biblio author.');
-      form_set_error('biblio_contributor_id', $message);
+      drupal_set_message($message, 'warning');
     }
   }
   if ($type == 'after_update' && $category == 'account') {
@@ -487,7 +461,6 @@ function biblio_menu() {
     'access callback'   => 'user_access',
     'access arguments'  => array('access biblio content'),
     'file'              => 'biblio.pages.inc',
-  //'type'              => MENU_CALLBACK
   );
   $items["$base/authors"] = array(
     'title'             => 'Authors',
@@ -495,7 +468,6 @@ function biblio_menu() {
     'access callback'   => 'user_access',
     'access arguments'  => array('access biblio content'),
     'file'              => 'biblio.pages.inc',
-    'type'              => MENU_LOCAL_TASK,
     'weight'            => 1,
   );
   $items["$base/keywords"] = array(
@@ -543,10 +515,13 @@ function biblio_menu() {
     'access arguments'  => array('access biblio content'),
     'type'              => MENU_CALLBACK
   );
+
+  $wildcard = 2 + (count(explode("/", $base)) - 1);
+
   $items["$base/authors/%/edit"] = array(
     'title'             => 'Edit author information',
     'page callback'     => 'drupal_get_form',
-    'page arguments'    => array('biblio_admin_author_edit_form', 2),
+    'page arguments'    => array('biblio_admin_author_edit_form', $wildcard),
     'access callback'   => 'biblio_access',
     'access arguments'  => array('edit_author'),
     'file'              => 'biblio.admin.inc',
@@ -555,7 +530,7 @@ function biblio_menu() {
   $items["$base/keywords/%/edit"] = array(
     'title'             => '',
     'page callback'     => 'drupal_get_form',
-    'page arguments'    => array('biblio_admin_keyword_edit_form', 2),
+    'page arguments'    => array('biblio_admin_keyword_edit_form', $wildcard),
     'access callback'   => 'user_access',
     'access arguments'  => array('administer biblio'),
     'file'              => 'biblio.admin.inc',
@@ -564,7 +539,7 @@ function biblio_menu() {
   $items["$base/keyword/%/delete"] = array(
     'title'             => 'Delete',
     'page callback'     => 'drupal_get_form',
-    'page arguments'    => array('biblio_admin_keyword_delete_confirm', 2),
+    'page arguments'    => array('biblio_admin_keyword_delete_confirm', $wildcard),
     'access callback'   => 'user_access',
     'access arguments'  => array('administer biblio'),
     'file'              => 'biblio.admin.inc',
@@ -646,6 +621,24 @@ function biblio_menu() {
     'file'              => 'biblio.admin.inc',
     'type'              => MENU_LOCAL_TASK,
     'weight'            => -8
+  );
+  $items['admin/settings/biblio/fields/typemap'] = array(
+    'title'             => t('Type Mapping'),
+    'page callback'     => 'biblio_admin_type_mapper_page',
+ //   'page arguments'    => array('biblio_admin_type_mapper_page'),
+    'access arguments'  => array('administer biblio'),
+    'file'              => 'biblio.admin.inc',
+    'type'              => MENU_LOCAL_TASK,
+    'weight'            => -1
+  );
+  $items['admin/settings/biblio/fields/typemap/%'] = array(
+    'title'             => t('Type Mapping'),
+    'page callback'     => 'drupal_get_form',
+    'page arguments'    => array('biblio_admin_type_mapper_form', 5),
+    'access arguments'  => array('administer biblio'),
+    'file'              => 'biblio.admin.inc',
+    'type'              => MENU_CALLBACK,
+    'weight'            => -1
   );
   $items['admin/settings/biblio/fields/type/edit'] = array(
     'title'             => '',
@@ -957,7 +950,7 @@ function biblio_nodeapi(& $node, $op, $a3, $a4) {
         break;
       case 'view':
         if ($node->type == 'biblio' && variable_get('biblio_hide_bibtex_braces', 0)) {
-          drupal_set_title($node->title);
+          drupal_set_title(filter_xss($node->title, biblio_get_allowed_tags()));
         }
         break;
     }
@@ -977,7 +970,8 @@ function biblio_form_alter(&$form, $form_state, $form_id) {
         if ($form_element == 'cut_paste') continue;
         if ($form[$form_element]['#type'] == 'fieldset' ||
             $form_element == 'buttons' ||
-            $form_element == 'taxonomy') {
+            $form_element == 'taxonomy' ||
+            strstr($form_element, 'field_')) {
           $form[$form_element] = NULL;
         }
       }
@@ -993,8 +987,7 @@ function biblio_form_alter(&$form, $form_state, $form_id) {
             '#title' => t('Vocabularies'),
             '#collapsible' => TRUE,
             '#collapsed' => FALSE,
-        );
-
+          );
         }
         $form['taxonomy']['#description'] = t('Select taxonomy terms which will be related to this ').variable_get('biblio_base_title', 'Biblio').t(' entry.');
         $form['taxonomy']['copy_to_biblio'] = array(
@@ -1237,8 +1230,9 @@ function biblio_form($node, $form_state) {
       '#weight' => 19
     );
     // embed filter form in "Full Text" fieldset, because it applies to the full text only
+    $form['body_field']['format'] = filter_form($node->format, 20);
   }
-  $form['format'] = filter_form($node->format, 20);
+ // $form['format'] = filter_form($node->format, 20);
 
   return $form;
 }
@@ -1479,10 +1473,10 @@ function biblio_form_validate($form, & $form_state) {
     $form_state['rebuild'] = TRUE;
     return;
   }
-  $today = getdate();
-  if (!is_numeric(_biblio_numeric_year($form_state['values']['biblio_year'])))  {
-    form_set_error('biblio_year', t('Year of Publication must be a number between 1 and @thisyear or the words "In Press" or "Submitted" ', array('@thisyear' => $today['year'] + 1 )));
-  }
+//  $today = getdate();
+//  if (!is_numeric(_biblio_numeric_year($form_state['values']['biblio_year'])))  {
+//    form_set_error('biblio_year', t('Year of Publication must be a number between 1 and @thisyear or the words "In Press" or "Submitted" ', array('@thisyear' => $today['year'] + 1 )));
+//  }
   if (isset($form_state['values']['biblio_keywords'])) {
     require_once(drupal_get_path('module', 'biblio') .'/biblio.keywords.inc');
     if (!is_array($form_state['values']['biblio_keywords'])) {
@@ -1505,8 +1499,8 @@ function _biblio_numeric_year($year) {
   }
 }
 function _biblio_text_year($year) {
-  if ($year == 9998) return t("In Press");
-  if ($year == 9999) return t("Submitted");
+  if ($year == 9998) return variable_get('biblio_inpress_year_text', t('In Press'));
+  if ($year == 9999) return variable_get('biblio_no_year_text', t('Submitted'));
   return $year;
 }
 /**
@@ -1629,8 +1623,6 @@ function biblio_view(& $node, $teaser = FALSE, $page = FALSE) {
   $base_title = variable_get('biblio_base_title', 'Biblio');
   if (variable_get('biblio_fix_isi_links', 0)) biblio_fix_isi_links($node);
 
-  if (variable_get('biblio_hide_bibtex_braces', 0)) $node->title = biblio_remove_brace($node->title);
-
   if ($teaser) {
     $node->content['teaser']['#value'] = theme('biblio_style', $node, $base, $style);
   }
@@ -1648,6 +1640,10 @@ function biblio_view(& $node, $teaser = FALSE, $page = FALSE) {
   }
   if ($page) {
     drupal_set_breadcrumb(array(l(t('Home'), NULL), l(drupal_ucfirst($base_title), $base)));
+    if (variable_get('biblio_hide_bibtex_braces', 0) && !isset($node->view )) {
+      $node->title = biblio_remove_brace($node->title);
+      drupal_set_title(filter_xss($node->title, biblio_get_allowed_tags()));
+    }
   }
   return $node;
 }
@@ -1667,15 +1663,13 @@ function biblio_block($op = 'list', $delta = 0) {
       // Retrieve the latest pubs
       $num_in_block = variable_get('biblio_rowsperblock', 4);
       $block_order = variable_get('biblio_block_order', 'n.created');
-      $query = "SELECT COUNT(*)
+      $query = "SELECT COUNT(n.nid)
                   FROM {node} n
-                  LEFT JOIN {biblio} b  on n.vid=b.vid
                   WHERE n.type = 'biblio' AND n.status=1";
       $num_rows = db_result(db_query_range(db_rewrite_sql($query), 0, $num_in_block));
       if ($num_rows) {
-        $query = "SELECT n.nid, n.title, n.status, b.biblio_year
+        $query = "SELECT n.nid, n.title
                     FROM {node} n
-                    LEFT JOIN {biblio} b  on n.vid=b.vid
                     WHERE n.type = 'biblio' AND n.status=1
                     ORDER BY $block_order DESC";
         $result = db_query_range(db_rewrite_sql($query), 0, $num_in_block);
@@ -1684,7 +1678,7 @@ function biblio_block($op = 'list', $delta = 0) {
         $block['content'] = '<div class="item-list"><ul>';
         $options['html'] = TRUE;
         while ($pub = db_fetch_object($result)) {
-          $block['content'] .= '<li >'. l("$pub->title", "node/$pub->nid", $options) .'</li>';
+          $block['content'] .= '<li >'. l(filter_xss($pub->title, biblio_get_allowed_tags()), "node/$pub->nid", $options) .'</li>';
         }
         $block['content'] .= '</ul>';
         if (variable_get('biblio_rss', 0)) {
@@ -1897,7 +1891,7 @@ function _biblio_filter_replace_callback($matches, $op = '') {
   //$text .= '<span class="hovertip">'._biblio_citekey_print($title) .'</span>';
   $text = '<span hovertip="reference'. $n .'">['. $n .']</span>';
   if (module_exists('hovertip')) {
-    $text .= '<div id="reference'. $n .'" class="hovertip"><h1>Reference</h1>'. _biblio_citekey_print($title) .'</div>';
+    $text .= '<span id="reference'. $n .'" class="hovertip"><h1>Reference</h1>'. _biblio_citekey_print($title) .'</span>';
   }
   return $text;
 }
@@ -1994,59 +1988,59 @@ function biblio_contextObject($node) {
 //  }
   // atitle, btitle, title (title, publication)
   if (($node->biblio_type == 102) || ($node->biblio_type == 101)) {
-    if (!empty($node->title)) $co["rft.atitle"] = $node->title;
+    if (!empty($node->title)) $co["rft.atitle"] = check_plain($node->title);
     if (!empty($node->biblio_secondary_title)) {
-      $co["rft.title"] = $node->biblio_secondary_title;
+      $co["rft.title"] = check_plain($node->biblio_secondary_title);
       if ($node->biblio_type == 101)
-      $co["rft.btitle"] = $node->biblio_secondary_title;
+      $co["rft.btitle"] = check_plain($node->biblio_secondary_title);
     }
   }
   elseif (!empty($node->title)) {
-   $co["rft.title"] = $node->title;
+   $co["rft.title"] = check_plain($node->title);
   }
-  if (($node->biblio_type == 100) && (!empty($node->biblio_secondary_title))) $co["rft.btitle"] = $node->biblio_secondary_title;
+  if (($node->biblio_type == 100) && (!empty($node->biblio_secondary_title))) $co["rft.btitle"] = check_plain($node->biblio_secondary_title);
   // stitle (abbrev_journal)
-  if (!empty($node->biblio_short_title)) $co["rft.stitle"] = $node->biblio_short_title;
+  if (!empty($node->biblio_short_title)) $co["rft.stitle"] = check_plain($node->biblio_short_title);
   // series (series_title)
-  if (!empty($node->biblio_tertiary_title)) $co["rft.series"] = $node->biblio_tertiary_title;
+  if (!empty($node->biblio_tertiary_title)) $co["rft.series"] = check_plain($node->biblio_tertiary_title);
   // issn
-  if (!empty($node->biblio_issn)) $co["rft.issn"] = $node->biblio_issn;
+  if (!empty($node->biblio_issn)) $co["rft.issn"] = check_plain($node->biblio_issn);
   // isbn
-  if (!empty($node->biblio_isbn)) $co["rft.isbn"] = $node->biblio_isbn;
+  if (!empty($node->biblio_isbn)) $co["rft.isbn"] = check_plain($node->biblio_isbn);
   // date (year)
-  if (!empty($node->biblio_year)) $co["rft.date"] = $node->biblio_year;
+  if (!empty($node->biblio_year)) $co["rft.date"] = check_plain($node->biblio_year);
   // volume
-  if (!empty($node->biblio_volume)) $co["rft.volume"] = $node->biblio_volume;
+  if (!empty($node->biblio_volume)) $co["rft.volume"] = check_plain($node->biblio_volume);
   // issue
-  if (!empty($node->biblio_issue)) $co["rft.issue"] = $node->biblio_issue;
+  if (!empty($node->biblio_issue)) $co["rft.issue"] = check_plain($node->biblio_issue);
   // spage, epage, tpages (pages)
   // NOTE: lifted from modsxml.inc.php--should throw some into a new include file
   if (!empty($node->biblio_pages)) {
     if (ereg("[0-9] *- *[0-9]", $node->biblio_pages)) {
       list ($pagestart, $pageend) = preg_split('/\s*[-]\s*/', $node->biblio_pages);
       if ($pagestart < $pageend) {
-        $co["rft.spage"] = $pagestart;
-        $co["rft.epage"] = $pageend;
+        $co["rft.spage"] = check_plain($pagestart);
+        $co["rft.epage"] = check_plain($pageend);
       }
     }
     elseif ($node->biblio_type == 100) { //"Book Whole") {
       $pagetotal = preg_replace('/^(\d+)\s*pp?\.?$/', "\\1", $node->biblio_pages);
-      $co["rft.tpages"] = $pagetotal;
+      $co["rft.tpages"] = check_plain($pagetotal);
     }
     else {
-      $co["rft.spage"] = $node->biblio_pages;
+      $co["rft.spage"] = check_plain($node->biblio_pages);
     }
   }
   // aulast, aufirst, author (author)
   if (!empty($node->biblio_contributors)) {
     if (!empty($node->biblio_contributors[1][0]['lastname'])) {
-      $co["rft.aulast"] = $node->biblio_contributors[1][0]['lastname'];
+      $co["rft.aulast"] = check_plain($node->biblio_contributors[1][0]['lastname']);
     }
     if (!empty($node->biblio_contributors[1][0]['firstname'])) {
-      $co["rft.aufirst"] = $node->biblio_contributors[1][0]['firstname'];
+      $co["rft.aufirst"] = check_plain($node->biblio_contributors[1][0]['firstname']);
     }
     elseif (!empty($node->biblio_contributors[1][0]['initials'])) {
-      $co["rft.auinit"] = $node->biblio_contributors[1][0]['initials'];
+      $co["rft.auinit"] = check_plain($node->biblio_contributors[1][0]['initials']);
     }
 //    foreach((array)$node->biblio_contributors[1] as $author) {
 //      if (!empty($author['lastname'])) {
@@ -2063,12 +2057,12 @@ function biblio_contextObject($node) {
 //    }
   }
   // pub (publisher)
-  if (!empty($node->biblio_publisher)) $co["rft.pub"] = $node->biblio_publisher;
+  if (!empty($node->biblio_publisher)) $co["rft.pub"] = check_plain($node->biblio_publisher);
   // place
-  if (!empty($node->biblio_place_published)) $co["rft.place"] = $node->biblio_place_published;
+  if (!empty($node->biblio_place_published)) $co["rft.place"] = check_plain($node->biblio_place_published);
   // id (doi, url)
   if (!empty($node->biblio_doi)) {
-    $co["rft_id"] = "info:doi/". $node->biblio_doi;
+    $co["rft_id"] = "info:doi/". check_plain($node->biblio_doi);
   }
 //  elseif (!empty($node->biblio_url)) {
 //    $co["rft_id"] = $node->biblio_url;
@@ -2223,4 +2217,16 @@ function biblio_fix_isi_links(&$node) {
   if (isset($node->biblio_accession_number) && preg_match ('/^ISI:/',$node->biblio_accession_number)){
     $node->biblio_accession_number = str_replace("ISI:", $isi, $node->biblio_accession_number);
   }
+}
+
+function biblio_get_allowed_tags() {
+  return array('a', 'b', 'i', 'u', 'sub', 'sup');
+}
+
+function biblio_get_title_url_info($node) {
+  return array('link' =>  ((variable_get('biblio_link_title_url', 0) && !empty($node->biblio_url)) ? $node->biblio_url : ($inline ? "$base/viewinline/$node->nid":"node/$node->nid" ) ),
+               'options' =>
+                  array('attributes' => (variable_get('biblio_links_target_new_window',null) && variable_get('biblio_link_title_url', 0) && !empty($node->biblio_url)) ? array('target'=>'_blank') : null,
+                        'html' => TRUE),
+                );
 }

@@ -75,11 +75,10 @@ function biblio_style_ama($node, $base = 'biblio', $inline = false) {
       {
         if (!empty($authors)) $output .= " ";
         $output .= '"' ;
-        $link = ((variable_get('biblio_link_title_url', 0) && !empty($node->biblio_url)) ? $node->biblio_url : ($inline ? "$base/viewinline/$node->nid":"node/$node->nid" ) ) ;
-        $options['attributes'] = (variable_get('biblio_links_target_new_window',null) && variable_get('biblio_link_title_url', 0) && !empty($node->biblio_url)) ? array('target'=>'_blank') : null;
-        $options['html'] = TRUE;
-        $output .= l($node->title, $link, $options);
-        //$output .= $inline ? l("$node->title", "$base/viewinline/$node->nid") : l("$node->title", "node/$node->nid");
+        $output .= '<span class="biblio-title">';
+        $url = biblio_get_title_url_info($node);
+        $output .= l($node->title, $url['link'], $url['options']);
+        $output .= "</span>, \n";
         if (!ereg("[?!.]$", $node->title)) $output .= ".";
         $output .= '"';
       }
@@ -189,11 +188,10 @@ function biblio_style_ama($node, $base = 'biblio', $inline = false) {
         if (!empty($authors))  $output .= " ";
 
         $output .= '"<i>' ;
-        $link = ((variable_get('biblio_link_title_url', 0) && !empty($node->biblio_url)) ? $node->biblio_url : ($inline ? "$base/viewinline/$node->nid":"node/$node->nid" ) ) ;
-        $options['attributes'] = (variable_get('biblio_links_target_new_window',null) && variable_get('biblio_link_title_url', 0) && !empty($node->biblio_url)) ? array('target'=>'_blank') : null;
-        $options['html'] = TRUE;
-        $output .= l($node->title, $link, $options);
-        //$output .= $inline ? l("$node->title", "$base/viewinline/$node->nid") : l("$node->title", "node/$node->nid");
+        $output .= '<span class="biblio-title">';
+        $url = biblio_get_title_url_info($node);
+        $output .= l($node->title, $url['link'], $url['options']);
+        $output .= "</span>, \n";
         $output .= '</i>';
         if (!ereg("[?!.]$", $node->title)) $output .= ".";
         $output .= '"';
@@ -342,11 +340,10 @@ function biblio_style_ama($node, $base = 'biblio', $inline = false) {
 
         $output .= '<i>';
         // TODO: book/volume/report/etc titles should be formatted in heading caps, however, this doesn't yet work correctly if the publication title contains HTML entities
-        $link = ((variable_get('biblio_link_title_url', 0) && !empty($node->biblio_url)) ? $node->biblio_url : ($inline ? "$base/viewinline/$node->nid":"node/$node->nid" ) ) ;
-        $options['attributes'] = (variable_get('biblio_links_target_new_window',null) && variable_get('biblio_link_title_url', 0) && !empty($node->biblio_url)) ? array('target'=>'_blank') : null;
-        $options['html'] = TRUE;
-        $output .= l($node->title, $link, $options);
-        //$output .= $inline ? l("$node->title", "$base/viewinline/$node->nid") : l("$node->title", "node/$node->nid");
+        $output .= '<span class="biblio-title">';
+        $url = biblio_get_title_url_info($node);
+        $output .= l($node->title, $url['link'], $url['options']);
+        $output .= "</span>, \n";
         $output .= '</i>';
       }
       if ($node->biblio_type == "Software") // for software, add software label
@@ -518,6 +515,7 @@ function biblio_style_ama($node, $base = 'biblio', $inline = false) {
       $output .= ".";
       break;
   }
-  return $output;
+
+  return filter_xss($output, biblio_get_allowed_tags());
 }
 
