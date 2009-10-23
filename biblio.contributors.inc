@@ -32,7 +32,7 @@ function biblio_load_contributors($vid) {
 }
 /**
  * Add separate author named "et al" to the end of the author array
- * 
+ *
  * @param $authors - author array to augment
  * @param $type - auth_type
  * @return true if author was added, false if "etal" was already there
@@ -55,13 +55,13 @@ function biblio_authors_add_etal (&$authors, $type) {
 function biblio_parse_contributors($contributors) {
   $result = array();
   foreach ($contributors as $cat => $authors) {
-    $etal = array();   
+    $etal = array();
     foreach ($authors as $author) {
       // remove any form of "et al" from name field, because it confuses biblio_parse_author
       $author_cleaned = preg_replace("/et\.?\s+al\.?/",'',$author['name']);
       if ($author_cleaned != $author['name']) { // if "et al" was present:
-        $author['name'] = $author_cleaned;  // store cleaned name 
-        $etal[$author['auth_type']] = true; // mark it as "to be added" in $etal array 
+        $author['name'] = $author_cleaned;  // store cleaned name
+        $etal[$author['auth_type']] = true; // mark it as "to be added" in $etal array
       }
       $author['name'] = trim($author['name']);
       if (strlen($author['name'])) {
@@ -98,7 +98,7 @@ function biblio_save_contributors($node, $update = FALSE) {
 function _save_contributors($contributors, $nid, $vid, $update = FALSE) {
   $md5 = _loadMD5();
   db_query('DELETE FROM {biblio_contributor} WHERE nid = %d AND vid = %d', array($nid, $vid));
-  foreach ($contributors as $cat => $authors) { 
+  foreach ($contributors as $cat => $authors) {
     foreach ($authors as $key => $author) {
       if ($update && !empty($author['cid']))  $author['cid'] = null; // null out the cid so we don't do a global change
       if (empty ($author['cid']) && !empty ($md5))
@@ -117,7 +117,7 @@ function _save_contributors($contributors, $nid, $vid, $update = FALSE) {
         'auth_type' => $author['auth_type'],
         'auth_category' => $cat,
       );
-  
+
       if (!drupal_write_record('biblio_contributor', $link_array)) return false;
     }
   }
@@ -207,11 +207,12 @@ function biblio_parse_author($author_array, $cat = 0) {
     if (!empty ($prefix2))
     $prefix .= $prefix2;
     //var_dump($prefix);
-    $surname = $surname . ' ' . $appellation;
+    //$surname = $surname . ' ' . $appellation;
     $author_array['firstname'] = trim($firstname);
     $author_array['initials'] = trim($initials);
     $author_array['lastname'] = trim($surname);
     $author_array['prefix'] = trim($prefix);
+    $author_array['suffix'] = trim($appellation);
   }
   $author_array['md5'] =  _md5sum($author_array);
   return $author_array;

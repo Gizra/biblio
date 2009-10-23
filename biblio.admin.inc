@@ -95,9 +95,9 @@ function biblio_admin_settings() {
     '#title' => t('Retain bibtex\'s {Protected} capitalization in the title string, but hide the braces on display'),
     '#return_value' => 1,
     '#default_value' => variable_get('biblio_hide_bibtex_braces', 0),
-    '#description' =>'' 
+    '#description' =>''
   );
-  
+
   $form['block'] = array(
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
@@ -236,7 +236,7 @@ function biblio_admin_settings() {
     '#type' => 'textfield',
     '#title' => t('ISI Web of Knowledge URL'),
     '#size' => 128,
-    '#maxlength' => 512, 
+    '#maxlength' => 512,
     '#default_value' => variable_get('biblio_isi_url', 'http://apps.isiknowledge.com/InboundService.do?Func=Frame&product=WOS&action=retrieve&SrcApp=EndNote&Init=Yes&SrcAuth=ResearchSoft&mode=FullRecord&UT='),
     '#description' => t('Enter the URL which will replace the "Go to ISI" fake links imported from EndNote')
   );
@@ -335,7 +335,7 @@ function biblio_admin_settings() {
     '#default_value' => variable_get('biblio_google_link', 1),
     '#description' => t('Selecting this option will display a link to Google Scholar beside each entry.  Clicking this link searches Google Scholar using the title and first author of the current biblio entry.')
   );
-  
+
   $form['links']['biblio_links_target_new_window'] = array(
     '#type' => 'checkbox',
     '#title' => t('Links open in new browser'),
@@ -348,9 +348,9 @@ function biblio_admin_settings() {
       '#title' => t('Carry "inline" mode through to all links'),
       '#return_value' => 1,
       '#default_value' => variable_get('biblio_inlinemode_in_links', 0),
-      '#description' => t('This causes the "inline" mode to be applied to all links such as titles, authors and keywords') 
+      '#description' => t('This causes the "inline" mode to be applied to all links such as titles, authors and keywords')
   );
-  
+
   $form['links']['biblio_link_title_url'] = array(
     '#type' => 'checkbox',
     '#title' => t('Hyperlink titles using supplied URL if available'),

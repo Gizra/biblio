@@ -59,7 +59,7 @@ function biblio_style_vancouver_author_options() {
 
 function biblio_style_vancouver($node, $base = 'biblio', $inline = false) {
   $markupPatternsArray = array("italic-prefix" => '<i>',
-                               "italic-suffix" => '</i>',
+                               "italic-suffix" => '<\/i>',
                                "endash" => '-');
   $author_options = biblio_style_vancouver_author_options();
   $authors = theme('biblio_format_authors', $node->biblio_contributors[1], $author_options, $inline);
@@ -77,7 +77,7 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = false) {
     case 106: //Magazine Article
       if(!empty($authors)) {
         $output .= '<span class="biblio-authors">';
-        if (!ereg("\. *$", $authors)) {
+        if (!preg_match("/\.*$/", $authors)) {
           $output .= $authors . ".";
         }
         else {
@@ -88,13 +88,13 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = false) {
 
       if (!empty($node->title))      // title
       {
-        $output .= '<span class="biblio-title">';
+        $output .= '<span class="biblio-title-vancouver">';
         if (!empty($authors)) $output .= " ";
-        $output .= '<span class="biblio-title">';
+        $output .= '<span class="biblio-title-vancouver">';
         $url = biblio_get_title_url_info($node);
         $output .= l($node->title, $url['link'], $url['options']);
-        $output .= ". </span> \n";
-        if (!ereg("[?!.]$", $node->title)) $output .= ".";
+        $output .= "</span>";
+        if (!preg_match("/[?!.]$/", $node->title)) $output .= ".";
         $output .= '</span>';
       }
 
@@ -173,14 +173,14 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = false) {
         }
       }
 
-      if (!ereg("\. *$", $output) AND ($row['online_publication'] != "yes"))
+      if (!preg_match("/\. *$/", $output) AND ($row['online_publication'] != "yes"))
         $output .= "."; // NOTE: the examples in the above mentioned resources differ wildly w.r.t. whether the closing period should be omitted for online publications
       break;
     case 101: //Book Chapter
     case 103: //Conference Paper
       if(!empty($authors)) {
         $output .= '<span class="biblio-authors">';
-        if (!ereg("\. *$", $authors)) {
+        if (!preg_match("/\.*$/", $authors)) {
           $output .= $authors . ".";
         }
         else {
@@ -191,11 +191,11 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = false) {
       if (!empty($node->title))      // title
       {
         if (!empty($authors))  $output .= " ";
-        $output .= '<span class="biblio-title">';
+        $output .= '<span class="biblio-title-vancouver">';
         $url = biblio_get_title_url_info($node);
         $output .= l($node->title, $url['link'], $url['options']);
-        $output .= ". </span> \n";
-        if (!ereg("[?!.]$", $node->title)) $output .= ".";
+        $output .= "</span>";
+        if (!preg_match("/[?!.]$/", $node->title)) $output .= ".";
       }
 
 
@@ -225,30 +225,26 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = false) {
         $output .= "editor";
       }
 
-      $publication = ereg_replace("[ \r\n]*\(Eds?:[^\)\r\n]*\)", "", $node->biblio_secondary_title);
+      $publication = preg_replace("/[ \r\n]*\(Eds?:[^\)\r\n]*\)/", "", $node->biblio_secondary_title);
       if (!empty($publication))      // publication
       {
-        if (!ereg("[?!.] *$", $output))
-          $output .= ".";
+        if (!preg_match("/[?!.] *$/", $output)) $output .= ".";
 
-        if (empty($editor))
-          $output .= " In:";
+        if (empty($editor)) $output .= " In:";
 
         $output .= " " . $publication;
       }
 
       if (!empty($node->biblio_volume))      // volume
       {
-        if (!ereg("[?!.][ \"" . $markupPatternsArray["italic-suffix"] . "]*$", $output))
-          $output .= ".";
+        if (!preg_match("/[?!.][ \"" . $markupPatternsArray["italic-suffix"] . "]*$/", $output)) $output .= ".";
 
         $output .= " Vol " . $node->biblio_volume; // TODO: not sure whether this is correct
       }
 
       if (!empty($node->biblio_edition) && !preg_match("/^(1|1st|first|one)( ed\.?| edition)?$/i", $node->biblio_edition))      // edition
       {
-        if (!ereg("[?!.][ \"" . $markupPatternsArray["italic-suffix"] . "]*$", $output))
-          $output .= ".";
+        if (!preg_match("/[?!.][ \"" . $markupPatternsArray["italic-suffix"] . "]*$/", $output))  $output .= ".";
 
         if (preg_match("/^\d{1,3}$/", $node->biblio_edition)) // if the edition field contains a number of up to three digits, we assume it's an edition number (such as "2nd ed.")
         {
@@ -268,8 +264,7 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = false) {
         $output .= " " . $node->biblio_edition . $editionSuffix;
       }
 
-      if (!ereg("[?!.][ \"" . $markupPatternsArray["italic-suffix"] . "]*$", $output))
-        $output .= ".";
+      if (!preg_match("/[?!.][ \"" . $markupPatternsArray["italic-suffix"] . "]*$/", $output))  $output .= ".";
 
       if (!empty($node->biblio_place_published))      // place
       {
@@ -296,8 +291,7 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = false) {
 
       if (!empty($node->biblio_alternate_title) OR !empty($node->biblio_tertiary_title)) // if there's either a full or an abbreviated series title
       {
-        if (!ereg("[?!.][ \"" . $markupPatternsArray["italic-suffix"] . "]*$", $output))
-          $output .= ".";
+        if (!preg_match("/[?!.][ \"" . $markupPatternsArray["italic-suffix"] . "]*$/", $output)) $output .= ".";
 
         $output .= " (";
 
@@ -323,25 +317,26 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = false) {
         $output .= ")";
       }
 
-      if (!ereg("\. *$", $output))
-        $output .= ".";
+      if (!preg_match("/\. *$/", $output)) $output .= ".";
 
       break;
 
     default : // all other types
       //TODO
-      //        if (ereg("[ \r\n]*\(ed\)", $node->author)) // single editor
+      //        if (preg_match("[ \r\n]*\(ed\)", $node->author)) // single editor
       //          $author = $author . ", ed";
-      //        elseif (ereg("[ \r\n]*\(eds\)", $node->author)) // multiple editors
+      //        elseif (preg_match("[ \r\n]*\(eds\)", $node->author)) // multiple editors
       //          $author = $author . ", eds";
 
       if (!empty($authors))      // author
       {
         $output .= '<span class="biblio-authors">';
-        if (!ereg("\. *$", $authors))
-        $output .= $authors . ".";
-        else
-        $output .= $authors;
+        if (!preg_match("/\.*$/", $authors)) {
+          $output .= $authors . ".";
+        }
+        else{
+          $output .= $authors;
+        }
         $output .= '</span>';
       }
 
@@ -351,10 +346,10 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = false) {
         $output .= " ";
 
         // TODO: book/volume/report/etc titles should be formatted in heading caps, however, this doesn't yet work correctly if the publication title contains HTML entities
-          $output .= '<span class="biblio-title">';
+          $output .= '<span class="biblio-title-vancouver">';
           $url = biblio_get_title_url_info($node);
           $output .= l($node->title, $url['link'], $url['options']);
-          $output .= ". </span> \n";
+          $output .= "</span>";
        }
       if ($row['type'] == "Software") // for software, add software label
         $output .= " [computer program]";
@@ -364,16 +359,14 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = false) {
 
       if (!empty($node->biblio_volume) AND ($row['type'] != "Software"))      // volume
       {
-        if (!ereg("[?!.][ \"" . $markupPatternsArray["italic-suffix"] . "]*$", $output))
-          $output .= ".";
+        if (!preg_match("/[?!.][ \"" . $markupPatternsArray["italic-suffix"] . "]*$/", $output))  $output .= ".";
 
         $output .= " Vol " . $node->biblio_volume; // TODO: not sure whether this is correct
       }
 
       if (!empty($node->biblio_edition))      // edition
       {
-        if (!ereg("[?!.][ \"" . $markupPatternsArray["italic-suffix"] . "]*$", $output))
-          $output .= ".";
+        if (!preg_match("/[?!.][ \"" . $markupPatternsArray["italic-suffix"] . "]*$/", $output))  $output .= ".";
 
         if ($row['type'] == "Software")      // software edition (=version)
         {
@@ -419,7 +412,7 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = false) {
         );
 
         $editor = theme('biblio_format_authors', $node->biblio_contributors[2], $editor_options, $inline);
-        if (!ereg("[?!.][ \"" . $markupPatternsArray["italic-suffix"] . "]*$", $output))
+        if (!preg_match("[?!.][ \"" . $markupPatternsArray["italic-suffix"] . "]*$", $output))
         $output .= ".";
 
         $output .= " " . $editor;
@@ -440,8 +433,7 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = false) {
           $output .= "]";
       }
 
-      if (!ereg("[?!.][ \"" . $markupPatternsArray["italic-suffix"] . "]*$", $output))
-        $output .= ".";
+      if (!preg_match("/[?!.][ \"" . $markupPatternsArray["italic-suffix"] . "]*$/", $output))  $output .= ".";
 
       if (!empty($node->biblio_place_published))      // place
       {
@@ -479,8 +471,7 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = false) {
 
       if (!empty($node->biblio_alternate_title) OR !empty($node->biblio_tertiary_title)) // if there's either a full or an abbreviated series title
       {
-        if (!ereg("[?!.][ \"" . $markupPatternsArray["italic-suffix"] . "]*$", $output))
-          $output .= ".";
+        if (!preg_match("/[?!.][ \"" . $markupPatternsArray["italic-suffix"] . "]*$/", $output)) $output .= ".";
 
         $output .= " (";
 
@@ -512,16 +503,14 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = false) {
 
         if (!empty($row['online_citation']))      // online_citation
         {
-          if (!ereg("\. *$", $output))
-            $output .= ".";
+          if (!preg_match("/\. *$/", $output)) $output .= ".";
 
           $output .= $row['online_citation'];
         }
 
         if (!empty($row['doi']) || !empty($row['url']))      // doi OR url
         {
-          if (!ereg("\. *$", $output))
-            $output .= ".";
+          if (!preg_match("/\. *$/", $output))  $output .= ".";
 
           $output .= " Available from: " . $markupPatternsArray["underline-prefix"]; // NOTE: some of the above mentioned resources use "Available from: URL:http://..." instead
 
@@ -539,7 +528,7 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = false) {
         }
       }
 
-      if (!ereg("\. *$", $output) AND ($row['online_publication'] != "yes") AND ($row['type'] != "Software"))
+      if (!preg_match("/\. *$/", $output) AND ($row['online_publication'] != "yes") AND ($row['type'] != "Software"))
         $output .= "."; // NOTE: the examples in the above mentioned resources differ wildly w.r.t. whether the closing period should be omitted for online publications
       break;
   }

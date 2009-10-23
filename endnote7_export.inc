@@ -1,5 +1,5 @@
 <?php
-// $Id $
+// $Id$
 //
 function _endnote7_XML_export($results) {
   $xml = '<?xml version="1.0" encoding="UTF-8"?>';

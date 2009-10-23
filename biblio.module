@@ -1053,7 +1053,7 @@ function biblio_form($node, $form_state) {
       if ($have_pid) {
         $form['doi_lookup']['doi_register'] = array(
           '#prefix' => '<p><b>',
-          '#suffix' => '</b></p',
+          '#suffix' => '</b></p>',
           '#value' => l('You need to register with CrossRef', 'http://www.crossref.org/requestaccount/', array('attributes' => array('target' => '_blank'), 'absolue' => TRUE)). t(' and then enter your CrossRef UserID in the "<i>CrossRef Login Information</i>" section of your account profile '). l('here...',"user/$user->uid/edit"),
         );
       }
@@ -1407,7 +1407,6 @@ function biblio_contributors_js($tid, $auth_category, $other_fields = FALSE) {
   unset($contributor_form['#prefix'], $contributor_form['#suffix']); // Prevent duplicate wrappers.
   $contributor_form[$delta]['#attributes']['class'] = empty($contributor_form[$delta]['#attributes']['class']) ? 'ahah-new-content' : $contributor_form[$delta]['#attributes']['class'] .' ahah-new-content';
   $output = theme('status_messages') . drupal_render($contributor_form);
-
   print drupal_json(array('status' => TRUE, 'data' => $output));
   exit();
 }
@@ -1670,6 +1669,7 @@ function biblio_block($op = 'list', $delta = 0) {
       if ($num_rows) {
         $query = "SELECT n.nid, n.title
                     FROM {node} n
+                    LEFT JOIN {biblio} b  on n.vid=b.vid
                     WHERE n.type = 'biblio' AND n.status=1
                     ORDER BY $block_order DESC";
         $result = db_query_range(db_rewrite_sql($query), 0, $num_in_block);
@@ -2220,7 +2220,7 @@ function biblio_fix_isi_links(&$node) {
 }
 
 function biblio_get_allowed_tags() {
-  return array('a', 'b', 'i', 'u', 'sub', 'sup');
+  return array('a', 'b', 'i', 'u', 'sub', 'sup', 'span');
 }
 
 function biblio_get_title_url_info($node) {

@@ -588,7 +588,7 @@ function _biblio_filter_info_line($args) {
       array_shift($args);
       $value = db_escape_string($args[0]);
       if ($type == 'search') {
-        $search_content = '<em>'. array_shift($args).'</em>';
+        $search_content = array_shift($args);
         continue;
       }
       if ($type == 'term_id') {
@@ -634,7 +634,7 @@ function _biblio_filter_info_line($args) {
     }
     if ($search_content) {
       $content .= '<div class="biblio-current-filters"><b>'.t('Search results for ').'</b>';
-      $content .= check_plain($search_content);
+      $content .= '<em>'. check_plain($search_content) .'</em>';
       if ($filtercontent) {
         $content .= '<br><b>'.t('Filters').': </b>';
       }
@@ -1064,6 +1064,7 @@ function _biblio_keyword_links($keywords,$base='biblio') {
     $keywords = biblio_explode_keywords($keywords);
   }
 
+  $sep = variable_get('biblio_keyword_sep', ',');
   foreach($keywords as $kid => $keyword ) {
     $html .= (empty($html))? "" : "$sep ";
     $html .= l(trim($keyword), "$base/keyword/$kid" , $options);
@@ -1072,6 +1073,8 @@ function _biblio_keyword_links($keywords,$base='biblio') {
 }
 
 function biblio_author_page($filter = NULL) {
+  global $user;
+  $where = array();
   $style_name = biblio_get_style();
   module_load_include('inc', 'biblio', "biblio_style_$style_name");
 
@@ -1081,20 +1084,28 @@ function biblio_author_page($filter = NULL) {
     if ($menu == 'Biblio settings') $path = 'admin/settings/biblio/author/list/';
     if ($filter) {
       $filter = strtoupper($filter);
-      $query_ext =  " AND UPPER(SUBSTRING(lastname,1,1)) = '%s' ";
+      $where[] =  "UPPER(SUBSTRING(lastname,1,1)) = '%s' ";
       $header_ext = t(' (whose last name starts with the letter "@letter") ',array('@letter' => $filter ));
     }
     else {
       $query_ext =  NULL;
       $header_ext = NULL;
     }
+    if ($user->uid != 1 ) {
+      $where[] = 'n.status = 1 ';
+    }//show only published entries to everyone except admin
 
-     $db_result = db_query('SELECT bd.cid, bd.drupal_uid, bd.name, bd.lastname,
+    if (count($where)) {
+      $where_clause = count($where) > 1 ? 'WHERE ('. implode(') AND (', $where) .')': 'WHERE '. $where[0];
+    }
+
+    $db_result = db_query('SELECT bd.cid, bd.drupal_uid, bd.name, bd.lastname,
                               bd.firstname, bd.prefix, bd.suffix, bd.initials,
                               bd.affiliation, bd.md5, COUNT(*) AS cnt
-                            FROM {biblio_contributor} b,
-                                 {biblio_contributor_data} bd
-                            WHERE bd.cid=b.cid '. $query_ext.'
+                            FROM {biblio_contributor} b
+                                 LEFT JOIN {biblio_contributor_data} bd ON b.cid = bd.cid
+                                 LEFT JOIN {node} n on n.vid = b.vid
+                            '. $where_clause.'
                             GROUP BY bd.cid, bd.drupal_uid, bd.name, bd.lastname,
                                      bd.firstname, bd.prefix, bd.suffix,
                                      bd.initials, bd.affiliation, bd.md5
@@ -1142,9 +1153,12 @@ function _biblio_author_edit_links($author) {
 }
 
 function biblio_keyword_page($filter = NULL) {
+  global $user;
+  $where = array();
+
   if ($filter) {
     $filter = strtoupper($filter);
-    $query_ext =  " AND UPPER(SUBSTRING(word,1,1)) = '%s' ";
+    $where[] =  "UPPER(SUBSTRING(word,1,1)) = '%s' ";
     $header_ext = t(' (which start with the letter "@letter") ',array('@letter' => $filter ));
   }
   else {
@@ -1152,7 +1166,21 @@ function biblio_keyword_page($filter = NULL) {
     $header_ext = NULL;
   }
 
-  $db_result = db_query('SELECT bkd.kid, bkd.word, COUNT(*) AS cnt FROM {biblio_keyword} bk, {biblio_keyword_data} bkd WHERE bkd.kid=bk.kid '. $query_ext.' GROUP BY bkd.kid, bkd.word HAVING COUNT(*) > 0 ORDER BY  word ASC', $filter);
+  if ($user->uid != 1 ) {
+    $where[] = 'n.status = 1 ';
+  }//show only published entries to everyone except admin
+
+  if (count($where)) {
+    $where_clause = count($where) > 1 ? 'WHERE ('. implode(') AND (', $where) .')': 'WHERE '. $where[0];
+  }
+
+  $db_result = db_query('SELECT bkd.kid, bkd.word, COUNT(*) AS cnt
+                         FROM {biblio_keyword} bk
+                         LEFT JOIN {biblio_keyword_data} bkd ON bkd.kid = bk.kid
+                         LEFT JOIN {node} n ON n.vid = bk.vid
+                         '. $where_clause. '
+                         GROUP BY bkd.kid, bkd.word HAVING COUNT(*) > 0
+                         ORDER BY  word ASC', $filter);
 
   while ($keyword = db_fetch_object($db_result)){
     $keywords[] = $keyword;

@@ -59,7 +59,7 @@ function biblio_openURL($node) {
   //  global $hostInstitutionAbbrevName;
   $openURLResolver = !empty($user->biblio_baseopenurl)?$user->biblio_baseopenurl:'';
   if (empty($openURLResolver)) $openURLResolver = variable_get('biblio_baseopenurl', '');
-  if (empty($openURLResolver)) {
+  if (!empty($openURLResolver)) {
     $co = biblio_contextObject($node);
 
     $sid = "biblio:". variable_get('site_name', 'Drupal');
@@ -252,7 +252,7 @@ function theme_biblio_tabular($node, $base = 'biblio', $teaser = false) {
     }
     $rows[] = array(
       array(
-        'data' => $row['title'],
+        'data' => t($row['title']),
         'class' => 'biblio-row-title'
       ),
       array(
@@ -472,6 +472,7 @@ function theme_biblio_format_authors($contributors, $options, $inline = false)
 
     // if there is a surname prefix like "van", "von" etc, stick it back before the last name.
     if (!empty($author['prefix'])) $author['lastname'] = $author['prefix'] .' '. $author['lastname'];
+    if (!empty($author['suffix'])) $author['lastname'] = $author['lastname'] .', '. $author['suffix'];
 
     if (!empty($author['firstname'])) {
       if ($rank == 0) { // -> first author
