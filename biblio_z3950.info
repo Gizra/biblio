@@ -1,4 +1,0 @@
-; $Id$
-name = Biblio Z3950
-description = Lets users search metadata in z39.50 compliant servers.
-package = 
