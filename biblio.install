@@ -62,7 +62,7 @@ function biblio_uninstall(){
   }
 
   $result = db_query("SELECT * FROM {node} WHERE type='biblio' ");
-  while ($node = db_fetch_object($result)){
+  foreach  ($result as $node ){
     db_query('DELETE FROM {node} WHERE nid = %d', $node->nid);
     db_query('DELETE FROM {node_revisions} WHERE nid = %d', $node->nid);
 
@@ -75,7 +75,7 @@ function biblio_uninstall(){
   drupal_uninstall_schema('biblio');
 
   $vars = db_query("SELECT * FROM {variable} WHERE name LIKE 'biblio_%'");
-  while ($var = db_fetch_object($vars)) {
+  foreach ($vars as $var) {
     variable_del($var->name);
   }
 
@@ -84,7 +84,14 @@ function biblio_uninstall(){
 }
 
 function _set_system_weight() {
-  return update_sql("UPDATE {system} SET weight = 9 WHERE name = 'biblio'");
+      db_update('system')
+              ->fields(array(
+                'weight' => 9,
+              ))
+              ->condition('name', 'biblio')
+              ->execute();
+   return;
+   //return update_sql("UPDATE {system} SET weight = 9 WHERE name = 'biblio'");
 }
 
 function _enable_biblio_keyword_vocabulary(){
@@ -1074,7 +1081,14 @@ function _add_publication_types()
 
   foreach($types as $record)
   {
-    $result[] = update_sql("INSERT INTO {biblio_types} (tid, name, description, weight) VALUES ('" . implode("', '", $record) . "')");
+//    $result[] = update_sql("INSERT INTO {biblio_types} (tid, name, description, weight) VALUES ('" . implode("', '", $record) . "')");
+        db_insert('biblio_types')->fields(array(
+          'tid'           => $record[0],
+          'name'          => $record[1],
+          'description'   => $record[2],
+          'weight'        => $record[3],
+        ))->execute();
+
   }
  return $result;
 }
@@ -1185,23 +1199,55 @@ function _add_db_field_data() {
       $column = 0;
       // add link data for default biblio type (0) and all other defined types (100-130)
       foreach (array_merge(array(0), range(100,130)) as $t) {
-        $link_data = array($t,$row[0],$row[0],$row[0],$row[3],$row[4],$row[5],$row[6],$row[7]);
-        db_query("INSERT INTO {biblio_field_type} (". implode(", ", $field_type_fieldnames) . ")
-                  VALUES ('" . implode("', '", $link_data) . "')");
+//        $link_data = array($t,$row[0],$row[0],$row[0],$row[3],$row[4],$row[5],$row[6],$row[7]);
+//        db_query("INSERT INTO {biblio_field_type} (". implode(", ", $field_type_fieldnames) . ")
+//                  VALUES ('" . implode("', '", $link_data) . "')");
+        db_insert('biblio_field_type')->fields(array(
+          'tid'          => $t,
+          'fid'          => $row[0],
+          'ftdid'        => $row[0],
+          'cust_tdid'    => $row[0],
+          'common'       => $row[3],
+          'autocomplete' => $row[4],
+          'required'     => $row[5],
+          'weight'       => $row[6],
+          'visible'      => $row[7]
+        ))->execute();
       }
-      $ftd = array($row[0],$row[1],$row[2]);
-      db_query("INSERT INTO {biblio_field_type_data} (" . implode(", ", $field_type_data_fieldnames) . ")
-                  VALUES('" . implode("', '", $ftd) . "')");
-      $field_data = array($row[0],$row[8],$row[9],$row[10],$row[11]);
-      db_query("INSERT INTO {biblio_fields} (" . implode(", ", $fieldnames) . ")
-                  VALUES('" . implode("', '", $field_data) . "')");
+//      $ftd = array($row[0],$row[1],$row[2]);
+//      db_query("INSERT INTO {biblio_field_type_data} (" . implode(", ", $field_type_data_fieldnames) . ")
+//                  VALUES('" . implode("', '", $ftd) . "')");
+      db_insert('biblio_field_type_data')->fields(array(
+        'ftdid' => $row[0],
+        'title' => $row[1],
+        'hint'  => $row[2]
+      ))->execute();
+//      $field_data = array($row[0],$row[8],$row[9],$row[10],$row[11]);
+//      db_query("INSERT INTO {biblio_fields} (" . implode(", ", $fieldnames) . ")
+//                  VALUES('" . implode("', '", $field_data) . "')");
+      db_insert('biblio_fields')->fields(array(
+        'fid'     => $row[0],
+        'name'    => $row[8],
+        'type'    => $row[9],
+        'size'    => $row[10],
+        'maxsize' => $row[11]
+      ))->execute();
 
       // add contributor type data
       if ($row[9] == 'contrib_widget') {
       	// use field name without trailing 's' as initial guess for author type
         $auth_type = (substr($row[1],-1,1) == 's') ? substr($row[1],0,-1) : $row[1];
-        db_query("INSERT INTO {biblio_contributor_type_data} (auth_type, title) VALUES (%d, '%s' )", $row[0], $auth_type);
-        db_query("INSERT INTO {biblio_contributor_type} (auth_category, biblio_type, auth_type) VALUES (%d, %d, %d)", $row[0], 0, $row[0]);
+//        db_query("INSERT INTO {biblio_contributor_type_data} (auth_type, title) VALUES (%d, '%s' )", $row[0], $auth_type);
+        db_insert('biblio_contributor_type_data')->fields(array(
+          'auth_type' => $row[0],
+          'title'     => $auth_type
+        ))->execute();
+//        db_query("INSERT INTO {biblio_contributor_type} (auth_category, biblio_type, auth_type) VALUES (%d, %d, %d)", $row[0], 0, $row[0]);
+        db_insert('biblio_contributor_type')->fields(array(
+          'auth_category' => $row[0],
+          'biblio_type'   => 0,
+          'auth_type'     => $row[0]
+        ))->execute();
       }
     }
     fclose($handle);
@@ -1226,7 +1272,7 @@ function _add_custom_field_data() {
 
   $query = "SELECT fid, name FROM {biblio_fields} ";
   $res = db_query($query);
-  while ($row = db_fetch_object($res)){
+  foreach ($res as $row) {
     $fieldmap[$row->name] =  $row->fid;
   }
 
@@ -1241,7 +1287,7 @@ function _add_custom_field_data() {
     // map contributor field titles to field ids
     $res = db_query("SELECT fid,name FROM {biblio_fields} WHERE type='contrib_widget'");
     $contributor_categories = array();
-    while ($row = db_fetch_object($res)) {
+    foreach ($res as $row ) {
       $contributor_categories[$row->name] = $row->fid;
     }
     // process all rows of the file
@@ -1255,14 +1301,29 @@ function _add_custom_field_data() {
        	    $ftd[0] = ($existing_id = _id_by_name('biblio_field_type_data',$row[$column])) ? $existing_id : variable_get('biblio_last_ftdid', 100); // ftdid
        	    $ftd[1] = trim($row[$column]);                    // title
        	    $ftd[2] = "";                                     // hint
-       	    db_query("UPDATE {biblio_field_type}
-                      SET ftdid = %d, cust_tdid = %d, visible = %d
-                      WHERE tid = %d AND fid = %d ", $ftd[0], $ftd[0], 1, $row[1], $fieldmap[$field_name] );
+//       	    db_query("UPDATE {biblio_field_type}
+//                      SET ftdid = %d, cust_tdid = %d, visible = %d
+//                      WHERE tid = %d AND fid = %d ", $ftd[0], $ftd[0], 1, $row[1], $fieldmap[$field_name] );
+       	    $and = db_and()->condition('tid', $row[1])->condition('fid', $fieldmap[$field_name]);
+       	    db_update('biblio_field_type')
+       	      ->fields(array(
+       	        'ftdid' => $ftd[0],
+       	        'cust_tdid' => $ftd[0],
+       	        'visible'   => 1
+       	      ))
+       	      ->condition($and)
+       	      ->execute();
        	    if (!$existing_id){
        	      // if this title doesn't alreay exist, then insert it into the table
-       	      db_query("INSERT INTO {biblio_field_type_data} (" . implode(", ", $fieldnames) . ")
-                        VALUES (%d, '%s', '%s')", $ftd);
-              _id_by_name('biblio_field_type_data',$row[$column], $ftd[0]);  // cache the new id value for future use
+//       	      db_query("INSERT INTO {biblio_field_type_data} (" . implode(", ", $fieldnames) . ")
+//                        VALUES (%d, '%s', '%s')", $ftd);
+              db_insert('biblio_field_type_data')->fields(array(
+                'ftdid' => $ftd[0],
+                'title' => $ftd[1],
+                'hint'  => $ftd[2]
+              ))->execute();
+
+       	      _id_by_name('biblio_field_type_data',$row[$column], $ftd[0]);  // cache the new id value for future use
               variable_set('biblio_last_ftdid', $ftd[0] +1); //increment the field type data id by one.
        	    }
 
@@ -1272,23 +1333,50 @@ function _add_custom_field_data() {
               $title = trim($row[$column]);
               $biblio_type = $row[1];
               $ctdid = ($eid = _id_by_name('biblio_contributor_type_data',$title)) ? $eid :  $next_ctdid;
-              db_query("UPDATE {biblio_contributor_type} SET auth_type=%d where auth_category=%d and biblio_type=%d", $ctdid, $type, $biblio_type);
+         //     db_query("UPDATE {biblio_contributor_type} SET auth_type=%d where auth_category=%d and biblio_type=%d", $ctdid, $type, $biblio_type);
+              $and = db_and()->condition('auth_category', $type)->condition('biblio_type', $biblio_type);
+              db_update('biblio_contributor_type')
+                ->fields(array(
+                  'auth_type' => $ctdid,
+                ))
+                ->condition($and)
+                ->execute();
+
               if(!$eid) {
-                db_query("INSERT INTO {biblio_contributor_type_data} (auth_type, title) VALUES (%d, '%s')", $ctdid, $title);
+//                db_query("INSERT INTO {biblio_contributor_type_data} (auth_type, title) VALUES (%d, '%s')", $ctdid, $title);
+                db_insert('biblio_contributor_type_data')->fields(array(
+                  'auth_type' => $ctdid,
+                  'title' => $title,
+                ))->execute();
                 _id_by_name('biblio_contributor_type_data',$title, $ctdid);  // cache the new id value for future use
                 $next_ctdid++;
               }
        	    }
           } elseif ($row[$column] == "~" && isset($fieldmap[$field_name])) {
             // turn the visibility off for this (~) type
-            db_query("UPDATE {biblio_field_type}
-                      SET visible = 0
-                      WHERE tid = %d AND fid = %d ", $row[1], $fieldmap[$field_name] );
+//            db_query("UPDATE {biblio_field_type}
+//                      SET visible = 0
+//                      WHERE tid = %d AND fid = %d ", $row[1], $fieldmap[$field_name] );
+            $and = db_and()->condition('tid',$row[1])->condition('fid', $fieldmap[$field_name]);
+            db_update('biblio_field_type')
+              ->fields(array(
+                'visible' => 0,
+              ))
+              ->condition($and)
+              ->execute();
+
           } elseif (empty($row[$column]) && isset($fieldmap[$field_name])) {
             // use the default field title when the title is blank
-            db_query("UPDATE {biblio_field_type}
-                      SET visible = 1
-                      WHERE tid = %d AND fid = %d ", $row[1], $fieldmap[$field_name] );
+//            db_query("UPDATE {biblio_field_type}
+//                      SET visible = 1
+//                      WHERE tid = %d AND fid = %d ", $row[1], $fieldmap[$field_name] );
+            $and = db_and()->condition('tid',$row[1])->condition('fid', $fieldmap[$field_name]);
+            db_update('biblio_field_type')
+              ->fields(array(
+                'visible' => 1,
+              ))
+              ->condition($and)
+              ->execute();
           }
         }
         $column++;
@@ -1307,7 +1395,7 @@ function _id_by_name($table, $name, $id = NULL, $build = NULL) {
   if (!empty($build)) { //refresh cache from table
     unset($result[$build['tablename']]);
     $res = db_query("SELECT ".$build['name_column'].", ".$build['id_column']." FROM {".$build['tablename']."}");
-    while ($row = db_fetch_array($res)){
+    foreach ($res->fetchAssoc() as $row ){
       $result[$build['tablename']][$row[$build['name_column']]] = $row[$build['id_column']];
     }
     return;
@@ -1821,7 +1909,10 @@ function biblio_update_6022() {
       db_query("INSERT INTO {biblio_type_data} (fid, tid, format, name) VALUES ('%s', %d, '%s', '%s' )", $key, $value, $type, $names[$key]);
     }
   }
-  
+
   return $result;
 }
-*/  
+*/
+function biblio_update_7000() {
+
+}
