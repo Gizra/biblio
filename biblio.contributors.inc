@@ -294,7 +294,7 @@ function _grabSurname($input) {
 function _loadMD5() {
   static $md5 = array();
   static $count =0;
-  $db_count = db_result(db_query("SELECT COUNT(*) FROM {biblio_contributor_data"));
+  $db_count = db_result(db_query("SELECT COUNT(*) FROM {biblio_contributor_data}"));
   if ($db_count > $count){
     $count = $db_count;
     $result = db_query('SELECT md5,cid	FROM {biblio_contributor_data} ');

@@ -24,7 +24,7 @@
 function _biblio_get_auth_types($auth_category, $biblio_type) {
   static $auth_types = array();
   if (empty($auth_types)) {
-    $db_res = db_query("SELECT * FROM {biblio_contributor_type");
+    $db_res = db_query("SELECT * FROM {biblio_contributor_type}");
     while ($row = db_fetch_object($db_res)) {
       $auth_types[$row->auth_category][$row->biblio_type][] = $row->auth_type;
     }
