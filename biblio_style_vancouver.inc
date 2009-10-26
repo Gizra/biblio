@@ -88,14 +88,12 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = false) {
 
       if (!empty($node->title))      // title
       {
-        $output .= '<span class="biblio-title-vancouver">';
         if (!empty($authors)) $output .= " ";
         $output .= '<span class="biblio-title-vancouver">';
         $url = biblio_get_title_url_info($node);
         $output .= l($node->title, $url['link'], $url['options']);
         $output .= "</span>";
         if (!preg_match("/[?!.]$/", $node->title)) $output .= ".";
-        $output .= '</span>';
       }
 
       // From here on we'll assume that at least either the 'author' or the 'title' field did contain some contents
