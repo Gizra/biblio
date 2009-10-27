@@ -429,8 +429,8 @@ function biblio_export($format = "tagged", $nid = null, $popup = false, $version
     switch ($format) {
       case "tagged" :
         if (!$popup && $count == 1) {
-          drupal_set_header('Content-type:  application/x-endnote-refer');
-          drupal_set_header('Content-Disposition:  filename="Drupal-Biblio.enw"');
+          drupal_set_header('Content-type', 'application/x-endnote-refer');
+          drupal_set_header('Content-Disposition', 'filename="Drupal-Biblio.enw"');
         }
         if (!$popup) {
           print biblio_endnote_tagged_export($node);
@@ -441,16 +441,16 @@ function biblio_export($format = "tagged", $nid = null, $popup = false, $version
         break;
       case "xml" :
         if ($count == 1) {
-          drupal_set_header('Content-type: application/xml; charset=utf-8');
-          drupal_set_header('Content-Disposition: attachment; filename="Biblio-EndNote'. $version .'.xml"');
+          drupal_set_header('Content-type', 'application/xml; charset=utf-8');
+          drupal_set_header('Content-Disposition', 'attachment; filename="Biblio-EndNote'. $version .'.xml"');
           print _endnote8_XML_export('', 'begin');
         }
         print _endnote8_XML_export($node);
         break;
       case "bibtex" :
         if (!$popup && $count == 1) {
-          drupal_set_header('Content-type: 	application/text; charset=utf-8');
-          drupal_set_header('Content-Disposition:  filename="Biblio-Bibtex.bib"');
+          drupal_set_header('Content-type', 'application/text; charset=utf-8');
+          drupal_set_header('Content-Disposition', 'filename="Biblio-Bibtex.bib"');
         }
         if (!$popup) {
           print biblio_bibtex_export($node);
@@ -460,8 +460,8 @@ function biblio_export($format = "tagged", $nid = null, $popup = false, $version
         }
         break;
       case "csv" :
-        drupal_set_header('Content-Type: application/text; charset=utf-8');
-        drupal_set_header('Content-Disposition: attachment; filename=Biblio-export.csv');
+        drupal_set_header('Content-Type', 'application/text; charset=utf-8');
+        drupal_set_header('Content-Disposition', 'attachment; filename=Biblio-export.csv');
         print biblio_csv_export($node);
         break;
     }
@@ -1034,8 +1034,8 @@ function biblio_csv_export_2($result, $bfields) {
     }
     $csv .= substr($csv_line, 1) ."\n"; // cut off leading fieldsep and append EOL
   }
-  drupal_set_header('Content-Type: text/plain; charset=utf-8');
-  drupal_set_header('Content-Disposition: attachment; filename=biblio_export.csv');
+  drupal_set_header('Content-Type', 'text/plain; charset=utf-8');
+  drupal_set_header('Content-Disposition', 'attachment; filename=biblio_export.csv');
   return $csv;
 }
 //function _biblio_cck_join($biblio_fields = array()) {		// works not with php4
@@ -1073,8 +1073,8 @@ function biblio_backup() {
 
   $biblio_count = db_result(db_query($count_sql));
   if ($biblio_count) {
-    drupal_set_header('Content-Type: text/plain; charset=utf-8');
-    drupal_set_header('Content-Disposition: attachment; filename=Biblio-export.csv');
+    drupal_set_header('Content-Type', 'text/plain; charset=utf-8');
+    drupal_set_header('Content-Disposition', 'attachment; filename=Biblio-export.csv');
     $biblio_nodes = db_query($sql);
     while ($node = db_fetch_array($biblio_nodes)) {
       $results[] = $node;
@@ -1183,8 +1183,8 @@ function biblio_dump_db_data_for_pot() {
     $output .= "t(\"$string\"\);\n";
   }
 
-  drupal_set_header('Content-Type: text/plain; charset=utf-8');
-  drupal_set_header('Content-Disposition: attachment; filename=biblio_db_values.pot');
+  drupal_set_header('Content-Type', 'text/plain; charset=utf-8');
+  drupal_set_header('Content-Disposition', 'attachment; filename=biblio_db_values.pot');
   print $output;
 }
 
