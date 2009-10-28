@@ -410,7 +410,7 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = false) {
         );
 
         $editor = theme('biblio_format_authors', $node->biblio_contributors[2], $editor_options, $inline);
-        if (!preg_match("[?!.][ \"" . $markupPatternsArray["italic-suffix"] . "]*$", $output))
+        if (!preg_match("/[?!.][ \"" . $markupPatternsArray["italic-suffix"] . "]*$/", $output))
         $output .= ".";
 
         $output .= " " . $editor;
