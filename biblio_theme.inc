@@ -742,8 +742,9 @@ function theme_biblio_form_filter(& $form) {
  * @return unknown_type
  */
 function theme_biblio_admin_types_edit_form($form) {
-  drupal_add_tabledrag('field-table', 'order', 'sibling', 'weight',NULL,NULL,false);
+  $output = '';
 
+  drupal_add_tabledrag('field-table', 'order', 'sibling', 'weight',NULL,NULL,false);
   $base = variable_get('biblio_base', 'biblio');
   $tid = (!empty ($form['#parameters'][2])) ? $form['#parameters'][2] : FALSE;
   //  drupal_set_title($form['type_name'] ? $form['type_name']['#value'] : t('Common'));

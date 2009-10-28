@@ -37,7 +37,7 @@
 function _biblio_admin_build_user_select($my_uid) {
   $sql = 'SELECT DISTINCT u.uid, u.name, u.status, u.mail FROM {users} u  WHERE u.uid != 0 ';
   $result = db_query($sql);
-  while ($user = db_fetch_object($result)) {
+  foreach ($result as $user) {
     $users[$user->uid] = $user->name ." ($user->mail)";
   }
   asort($users);
@@ -419,7 +419,7 @@ function biblio_export($format = "tagged", $nid = null, $popup = false, $version
   }
   $result = db_query($query, $params);
   $count = 0;
-  while ($node = db_fetch_object($result)) {
+  foreach ($result as $node) {
     $node = node_load($node->nid, FALSE, TRUE);
 //    $node->biblio_contributors = biblio_load_contributors($node->vid);
 //    $node->biblio_keywords = biblio_load_keywords($node->vid);
@@ -979,7 +979,7 @@ function biblio_csv_export_2($result, $bfields) {
   $bfields = biblio_get_db_fields('all');
   $query_biblio_types = 'SELECT tid, name FROM {biblio_types}';
   $res_biblio_types = db_query($query_biblio_types);
-  while ($rec = db_fetch_object($res_biblio_types)) {
+  foreach ($res_biblio_types as $rec) {
     $btypes[$rec->tid] = $rec->name;
   }
   switch (variable_get('biblio_csv_field_sep', 'tab')) {
@@ -1000,7 +1000,7 @@ function biblio_csv_export_2($result, $bfields) {
   }
   $label = (variable_get('biblio_csv_col_head', 'label') == 'label' ? 1 : 0); // or 'col_name'
   $linebreak = variable_get('biblio_linebreak_exp', 1);
-  while ($rec = db_fetch_object($result)) {
+  foreach ($result as $rec) {
     $node_id = $rec->nid;
     $node_array[$node_id]['type'] = $btypes[$rec->biblio_type]; // there is no "label" for "type"
     $col_array['type'] = 'Type';
@@ -1044,7 +1044,7 @@ function _biblio_cck_join(& $biblio_fields) {
   $biblio_fields['nid'] = 'Node-ID'; // identify records for update operations
   $query_cck_fields = "SELECT field_name, label from {node_field_instance} where type_name='biblio' and not (widget_type='image')";
   $res_cck_fields = db_query($query_cck_fields);
-  while ($rec = db_fetch_object($res_cck_fields)) {
+  foreach ($$res_cck_fields as $rec) {
     $cck_table = 'content_'. $rec->field_name;
     $cck_field = $rec->field_name .'_value';
     $biblio_fields[$cck_field] = $rec->label;
@@ -1162,19 +1162,19 @@ function biblio_dump_db_data_for_pot() {
   $query = "SELECT name, description FROM {biblio_types} ";
   $result = db_query($query);
   $strings = array();
-  while ($type = db_fetch_object($result)) {
+  foreach ($result as $type) {
     $strings[] = $type->name;
     if (!empty($type->description)) $strings[] = $type->description;
   }
   $query = "SELECT title, hint FROM {biblio_field_type_data} ";
   $result = db_query($query);
-  while ($type_data = db_fetch_object($result)) {
+  foreach ($result as$type_data) {
     $strings[] = $type_data->title;
     if (!empty($type_data->hint)) $strings[] = $type_data->hint;
   }
   $query = "SELECT title, hint FROM {biblio_contributor_type_data} ";
   $result = db_query($query);
-  while ($type_data = db_fetch_object($result)) {
+  foreach ($result as $type_data ) {
     $strings[] = $type_data->title;
     if (!empty($type_data->hint)) $type_data->hint;
   }

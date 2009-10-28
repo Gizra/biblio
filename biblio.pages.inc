@@ -486,7 +486,7 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
   }
 
   $count = 0;
-
+//FIXME  use node_load_multiple()???
   while ($node = db_fetch_object($result)) {
     $count++;
     $node = node_load($node->nid);

@@ -138,8 +138,8 @@ function biblio_admin_settings() {
   $keys = array_keys($schema['fields']);
   $options = array();
   $options['nid'] =  t('Node ID');
-  while ($row = db_fetch_array($result)) {
-    $options[$row['name']] = $row['title'];
+  foreach ($result as $row) {
+    $options[$row->name] = $row->title;
   }
   $form['citekey'] = array(
     '#type' => 'fieldset',
@@ -589,7 +589,10 @@ function biblio_admin_settings_form_submit($form, $form_state) {
 function biblio_admin_types_edit_form() {
   $tid = 0;
   $arg_list = func_get_args();
-  $tid = is_numeric($arg_list[1]) ? $arg_list[1] : 0;
+  if (count($arg_list) > 2 && is_numeric($arg_list[2])) {
+    $tid = $arg_list[2];
+  }
+
   $msg = '<div>'. t('On this page you can set type specific "Titles" and "Hints" which will display on the input form. ');
   if ($tid) {
     $msg .= t('Checking the "Visible" box will add the field to the input form, checking "Required" will force the user to supply a value for this field and the weight value changes the order which it is rendered on the form with smaller values floating to the top of the form. ');
@@ -616,7 +619,7 @@ function biblio_admin_types_edit_form() {
   // get author types
   $result = db_query("SELECT * FROM {biblio_contributor_type_data} b");
   $contrib_options = array();
-  while($contrib_type = db_fetch_object($result)) {
+  foreach ($result as $contrib_type) {
       $contrib_options[$contrib_type->auth_type] = $contrib_type->title;
       $contrib_hints[$contrib_type->auth_type] = $contrib_type->hint;
   }
@@ -637,7 +640,7 @@ function biblio_admin_types_edit_form() {
                         INNER JOIN {biblio_field_type_data} AS bftd ON bftd.ftdid=bft.ftdid
                         WHERE bft.tid=$tid");
   }
-  while ($row = db_fetch_array($result)) {
+  while ($row = $result->fetchAssoc()) {
     $fields[$row['fid']] = $row;
   }
   $form['configured_flds'] = array('#tree' => 1);
