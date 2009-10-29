@@ -741,9 +741,8 @@ function theme_biblio_form_filter(& $form) {
  * @param $form
  * @return unknown_type
  */
-function theme_biblio_admin_types_edit_form($form) {
-  $output = '';
-
+function theme_biblio_admin_types_edit_form($variables) {
+  $form = $variables['form'];
   drupal_add_tabledrag('field-table', 'order', 'sibling', 'weight',NULL,NULL,false);
   $base = variable_get('biblio_base', 'biblio');
   $tid = (!empty ($form['#parameters'][2])) ? $form['#parameters'][2] : FALSE;
@@ -753,7 +752,7 @@ function theme_biblio_admin_types_edit_form($form) {
   // and customized fields if $tid is given
   $conf_table = array();
   foreach (element_children($form['configured_flds']) as $fld) {
-    $form['configured_flds'][$fld]['weight']['#attributes']['class'] = 'weight';
+    $form['configured_flds'][$fld]['weight']['#attributes']['class'] = array('weight');
 
     $conf_row = array();
     $conf_row[] = array('data' => drupal_render($form['configured_flds'][$fld]['name']));
@@ -764,7 +763,7 @@ function theme_biblio_admin_types_edit_form($form) {
       $conf_row[] = array('data' => drupal_render($form['configured_flds'][$fld]['auth_type']));
     } else {
       $form['configured_flds'][$fld]['hint']['#size'] = ($tid ? 38: 36);
-      $conf_row[] = array('data' => drupal_render($form['configured_flds'][$fld]['hint']), 'colspan' => 2);
+      $conf_row[] = array('data' => drupal_render($form['configured_flds'][$fld]['hint']), 'colspan' => array(2));
     }
     foreach (element_children($form['configured_flds'][$fld]['checkboxes']) as $oid) {
       if (is_array($form['configured_flds'][$fld]['checkboxes'])) {
@@ -774,7 +773,7 @@ function theme_biblio_admin_types_edit_form($form) {
       }
     }
     $conf_row[] = array('data' => drupal_render($form['configured_flds'][$fld]['weight']));
-    $conf_table[] = array('data' => $conf_row, 'class' => 'draggable');
+    $conf_table[] = array('data' => $conf_row, 'class' => array('draggable'));
   }
   if ($tid) {
     $header = array(t('Field Name'), t('Title'), t('Hint'), '', t('Visible'), t('Required'), t('Weight'));
@@ -782,12 +781,11 @@ function theme_biblio_admin_types_edit_form($form) {
   else {
     $header = array(t('Field Name'), t('Default Title'), t('Hint'), '', t('Common'), t('Required'), t('Autocomplete'), t('Weight'));
   }
-  $output .= '<p>';
-  $output .= '<h2>'. drupal_render($form['top_message']) .'</h2>';
+  $output = '<h2>'. drupal_render($form['top_message']) .'</h2>';
   $output .= drupal_render($form['help']);
-  $output .= theme('table', $header, $conf_table, array('id' => 'field-table'));
+  $output .= theme('table', array('header' => $header, 'rows' => $conf_table, 'attributes' => array('id' => 'field-table')));
   $output .= '<p><center>'. drupal_render($form['submit']) .'</center></p>';
-  $output .= drupal_render($form);
+
   return $output;
 }
 

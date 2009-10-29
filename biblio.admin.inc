@@ -586,12 +586,8 @@ function biblio_admin_settings_form_submit($form, $form_state) {
 
   menu_rebuild();
 }
-function biblio_admin_types_edit_form() {
-  $tid = 0;
-  $arg_list = func_get_args();
-  if (count($arg_list) > 2 && is_numeric($arg_list[2])) {
-    $tid = $arg_list[2];
-  }
+function biblio_admin_types_edit_form($form, $form_state, $tid = 0) {
+ // $form['#theme'] = 'biblio_admin_types_edit_form';
 
   $msg = '<div>'. t('On this page you can set type specific "Titles" and "Hints" which will display on the input form. ');
   if ($tid) {
@@ -631,16 +627,16 @@ function biblio_admin_types_edit_form() {
                         INNER JOIN {biblio_field_type} AS bft ON bft.fid=bf.fid
                         INNER JOIN {biblio_field_type_data} AS bftd ON bftd.ftdid=bft.ftdid
                         INNER JOIN {biblio_types} AS bt ON bt.tid=bft.tid
-                        WHERE bft.tid=$tid");
+                        WHERE bft.tid=$tid", array(), array('fetch' => PDO::FETCH_ASSOC));
   }
   else {
     $result = db_query("SELECT bf.*, bftd.*, bft.common, bft.visible, bft.autocomplete, bft.weight, bft.required
                         FROM {biblio_fields} AS bf
                         INNER JOIN {biblio_field_type} AS bft ON bft.fid=bf.fid
                         INNER JOIN {biblio_field_type_data} AS bftd ON bftd.ftdid=bft.ftdid
-                        WHERE bft.tid=$tid");
+                        WHERE bft.tid=$tid", array(), array('fetch' => PDO::FETCH_ASSOC));
   }
-  while ($row = $result->fetchAssoc()) {
+  foreach ($result as $row) {
     $fields[$row['fid']] = $row;
   }
   $form['configured_flds'] = array('#tree' => 1);
@@ -691,7 +687,7 @@ function biblio_admin_types_edit_form() {
     $disabled = $tid ? ($fld['common'] ? 1 : 0) : 0;
     $form['configured_flds'][$key]['name'] = array(
       '#type' => 'markup',
-      '#value' => $fld['name'],
+      '#markup' => $fld['name'],
       '#weight' => $fld['weight']
     );
     $form['configured_flds'][$key]['title'] = array(
@@ -830,7 +826,8 @@ function biblio_admin_types_edit_form_submit($form, & $form_state) {
 }
 
 function biblio_admin_type_mapper_page() {
-  $output .= '<h3>'.t('Choose a file format to modify').'</h3><p />';
+
+  $output = '<h3>'.t('Choose a file format to modify').'</h3><p />';
   $output .= l('BibTex', 'admin/settings/biblio/fields/typemap/bibtex').'<br>';
   $output .= l('RIS', 'admin/settings/biblio/fields/typemap/ris').'<br>';
   $output .= l('EndNote Tagged', 'admin/settings/biblio/fields/typemap/tagged').'<br>';
@@ -840,7 +837,7 @@ function biblio_admin_type_mapper_page() {
   return $output;
 }
 
-function biblio_admin_type_mapper_form($form_state, $format = 'bibtex', $op = 'map') {
+function biblio_admin_type_mapper_form($form, $form_state, $format = 'bibtex', $op = 'map') {
   module_load_include('inc', 'biblio', 'biblio.type.mapper');
   $names = biblio_get_type_names($format);
   $map = biblio_get_type_map($format);
@@ -861,7 +858,7 @@ function biblio_admin_type_mapper_form($form_state, $format = 'bibtex', $op = 'm
 
   if ($op == 'map') {
     $result = db_query('SELECT t.* FROM {biblio_types} as t WHERE t.tid > 0');
-    while ($type = db_fetch_object($result)) {
+    foreach ($result as $type) {
       $biblio_type_options[$type->tid] =  $type->name;
     }
     asort($biblio_type_options);
@@ -872,7 +869,7 @@ function biblio_admin_type_mapper_form($form_state, $format = 'bibtex', $op = 'm
     foreach ($names as $key => $value) {
       $biblio_type_select['#default_value'] = $map[$key];
       $form['type'][$key] = array(
-      'format' => array('#value' => "<b>$key</b> (<i>$value</i>)"),
+      'format' => array('#markup' => "<b>$key</b> (<i>$value</i>)"),
       'biblio' => $biblio_type_select,
       '#tree' => 1,
       );
@@ -898,7 +895,8 @@ function biblio_admin_type_mapper_form($form_state, $format = 'bibtex', $op = 'm
   return $form;
 }
 
-function theme_biblio_admin_type_mapper_form($form) {
+function theme_biblio_admin_type_mapper_form($variables) {
+  $form = $variables['form'];
   switch ($form['fileformat']['#value']) {
     case 'bibtex':
       $title = 'BibTex';
@@ -928,7 +926,7 @@ function theme_biblio_admin_type_mapper_form($form) {
     $title .' '.t('Publication Types'),
     t('Biblio Publication Type')
   );
-  $output .= theme('table', $header, $rows);
+  $output = theme('table', array('header' => $header, 'rows' => $rows));
   $output .= l('['.t('Add New'). " $title ".t('Publication Type').']','admin/settings/biblio/fields/typemap/'.$form['fileformat']['#value'].'/add').' ';
   $output .= l('['.t('Add New Biblio Publication Type').']','admin/settings/biblio/fields/type/new').'<br />';
   }
@@ -939,8 +937,7 @@ function theme_biblio_admin_type_mapper_form($form) {
   }
   $output .= drupal_render($form['submit']);
   $output .= drupal_render($form['reset']);
-  $output .= drupal_render($form);
-
+  
   return $output;
 }
 
@@ -966,9 +963,10 @@ function biblio_admin_type_mapper_form_submit($form, $form_state) {
 }
 
 function biblio_admin_types_form() {
+  $output = '';
   $result = db_query('SELECT t.* FROM {biblio_types} as t WHERE t.tid > 0');
   //$rows[] = array('',t('Fields Common To All Types'),l('edit', 'admin/settings/biblio/types/edit'),'');
-  while ($row = db_fetch_object($result)) {
+  foreach ($result as $row ) {
     if ($row->tid < 999) {
       $rows[] = array(
         $row->tid,
@@ -993,7 +991,7 @@ function biblio_admin_types_form() {
   );
   $output .= '<p>[ '. l(t('Add New Type'), 'admin/settings/biblio/fields/type/new') .' ]';
   $output .= ' [ '. l(t('Reset all types to defaults'), 'admin/settings/biblio/fields/type/reset') .' ]';
-  $output .= theme('table', $header, $rows);
+  $output .= theme('table', array('header' => $header, 'rows' => $rows));
   $output .= '<p>[ '. l(t('Add New Type'), 'admin/settings/biblio/fields/type/new') .' ]';
   $output .= ' [ '. l(t('Reset all types to defaults'), 'admin/settings/biblio/fields/type/reset') .' ]';
   return $output;

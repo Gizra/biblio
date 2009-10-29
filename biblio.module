@@ -28,13 +28,9 @@ function _biblio_get_auth_types($auth_category, $biblio_type) {
     foreach ($db_res as $row) {
       $auth_types[$row->auth_category][$row->biblio_type][] = $row->auth_type;
     }
-  print_r($auth_types);
-  print $auth_category;
-  print $biblio_type;
   }
-  $result = $auth_types[$auth_category][$biblio_type];
   // fall back to defaults, if no author types are defined for this biblio_type
-  if (empty($result)) $result = $auth_types[$auth_category][0];
+  $result = isset($auth_types[$auth_category][$biblio_type])?$auth_types[$auth_category][$biblio_type]:$auth_types[$auth_category][0];
   return $result;
 }
 function _biblio_get_auth_type($auth_category, $biblio_type) {
@@ -82,31 +78,32 @@ function biblio_theme() {
     ),
    'biblio_admin_author_types_form' => array(
         'file' => 'biblio.admin.inc',
-        'arguments' => array('form'),
+        'render element' => 'form',
+
     ),
    'biblio_admin_type_mapper_form' => array(
         'file' => 'biblio.admin.inc',
-        'arguments' => array('form'),
-    )    ,
+        'render element' => 'form',
+        )    ,
     'biblio_admin_types_edit_form' => array(
         'file' => 'biblio_theme.inc',
-        'arguments' => array('form'),
-    ),
+        'render element' => 'form',
+        ),
     'biblio_admin_types_form' => array(
       'file' => 'biblio_theme.inc',
-      'arguments' => array('form')
+      'render element' => 'form',
     ),
     'biblio_admin_author_edit_form' => array(
         'file' => 'biblio_theme.inc',
-        'arguments' => array('form'),
+        'render element' => 'form',
     ),
     'biblio_admin_orphans_form' => array(
         'file' => 'biblio_theme.inc',
-        'arguments' => array('form'),
+        'render element' => 'form',
     ),
     'biblio_admin_keyword_orphans_form' => array(
         'file' => 'biblio_theme.inc',
-        'arguments' => array('form'),
+        'render element' => 'form',
     ),
     'biblio_coin_button' => array(
         'file' => 'biblio_theme.inc',
@@ -171,11 +168,11 @@ function biblio_theme() {
     ),
     'biblio_filters' => array(
         'file' => 'biblio_theme.inc',
-        'arguments' => array('form'),
+        'render element' => 'form',
     ),
     'form_filter' => array(
         'file' => 'biblio_theme.inc',
-        'arguments' => array('form'),
+        'render element' => 'form',
     ),
     'biblio_export_links' => array(
         'file' => 'biblio_theme.inc',
@@ -187,7 +184,7 @@ function biblio_theme() {
     ),
     'biblio_contributors' => array(
         'file' => 'biblio_theme.inc',
-        'arguments' => array('form'),
+        'render element' => 'form',
     ),
   );
 }
@@ -221,7 +218,7 @@ function biblio_autocomplete($field, $string = '') {
 }
 function biblio_help_page() {
   $base = variable_get('biblio_base', 'biblio');
-  $text .= "<h3>". t('General:') ."</h3>";
+  $text = "<h3>". t('General:') ."</h3>";
   $text .= "<p>". t('By default, the !url page will list all of the entries in the database sorted by Year in descending order. If you wish to sort by "Title" or "Type",  you may do so by clicking on the appropriate links at the top of the page.  To reverse the sort order, simply click the link a second time.', array(
     '!url' => l('',
   $base
