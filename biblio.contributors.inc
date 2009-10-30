@@ -97,15 +97,18 @@ function biblio_save_contributors($node, $update = FALSE) {
  */
 function _save_contributors($contributors, $nid, $vid, $update = FALSE) {
   $md5 = _loadMD5();
-  db_query('DELETE FROM {biblio_contributor} WHERE nid = %d AND vid = %d', array($nid, $vid));
+  db_query('DELETE FROM {biblio_contributor} WHERE nid = :nid AND vid = :vid', array(':nid' => $nid, ':vid' => $vid));
   foreach ($contributors as $cat => $authors) {
     foreach ($authors as $key => $author) {
+      $auth_type = $author['auth_type'];
+      unset ($author['auth_type']);
       if ($update && !empty($author['cid']))  $author['cid'] = null; // null out the cid so we don't do a global change
       if (empty ($author['cid']) && !empty ($md5))
         $author['cid'] = array_search($author['md5'], $md5);
       if (empty ($author['cid'])) {
-        if (!drupal_write_record('biblio_contributor_data', $author)) return false;
-        $cid = db_last_insert_id('biblio_contributor_data', 'cid');
+      	unset ($author['cid']);
+      	$cid = db_insert('biblio_contributor_data')->fields($author)->execute();
+        if (!$cid) return false;
       } else {
         $cid = $author['cid'];
       }
@@ -114,7 +117,7 @@ function _save_contributors($contributors, $nid, $vid, $update = FALSE) {
         'vid' => $vid,
         'cid' => $cid,
         'rank' => (isset($author['rank']) && is_numeric($author['rank'])) ? $author['rank'] : $key,
-        'auth_type' => $author['auth_type'],
+        'auth_type' => $auth_type,
         'auth_category' => $cat,
       );
 
@@ -294,12 +297,12 @@ function _grabSurname($input) {
 function _loadMD5() {
   static $md5 = array();
   static $count =0;
-  $db_count = db_result(db_query("SELECT COUNT(*) FROM {biblio_contributor_data}"));
+  $db_count = db_query("SELECT COUNT(*) FROM {biblio_contributor_data}")->fetchCol();;
   if ($db_count > $count){
     $count = $db_count;
     $result = db_query('SELECT md5,cid	FROM {biblio_contributor_data} ');
-    while ($row = db_fetch_array($result)) {
-      $md5[$row['cid']] = $row['md5'];
+    foreach ($result as $row ) {
+      $md5[$row->cid] = $row->md5;
     }
   }
   return (count($md5)) ? $md5 : NULL;

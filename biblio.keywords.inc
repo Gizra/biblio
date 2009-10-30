@@ -29,7 +29,7 @@ function biblio_get_keyword_by_name($name) {
   static $keywords = array();
 
   if (!$kid = array_search($name, $keywords)) {
-    $term = db_fetch_object(db_query("SELECT * FROM {biblio_keyword_data} k WHERE LOWER(k.word) = LOWER('%s')", trim($name)));
+    $term = db_query("SELECT * FROM {biblio_keyword_data} k WHERE LOWER(k.word) = LOWER(':name')", array(':name' => trim($name)))->fetchAll();
     if ($term) {
       $keywords[$term->kid] = $term;
       return $keywords[$term->kid];
@@ -87,7 +87,7 @@ function biblio_save_keywords(&$node, $update = FALSE) {
     $typed_keywords = $node->biblio_keywords;
   }
 
-  if (!$update) db_query('DELETE FROM {biblio_keyword} WHERE nid = %d AND vid = %d', array($node->nid, $node->vid));
+  if (!$update) db_query('DELETE FROM {biblio_keyword} WHERE nid = :nid AND vid = :vid', array(':nid' => $node->nid, ':vid' => $node->vid));
   if (isset($node->taxonomy) && is_array($node->taxonomy) && variable_get('biblio_copy_taxo_terms_to_keywords', 0)) { //add any taxonomy terms to our keyword list
     foreach ($node->taxonomy as $vid => $term) {
       if ($vid == 'copy_to_biblio' && $term == 0 ) {// don't copy if user overrides the default to copy, just set the $taxo_terms to an empty array and break out of the for loop
@@ -126,9 +126,14 @@ function biblio_save_keywords(&$node, $update = FALSE) {
     }
     // Defend against duplicate, differently cased tags
     if (!isset($inserted[$kid])) {
-      if ($update) db_query('DELETE FROM {biblio_keyword} WHERE nid = %d AND vid = %d AND kid = %d', array($node->nid, $node->vid, $kid));
-      db_query('INSERT INTO {biblio_keyword} (kid, nid, vid) VALUES (%d, %d, %d)', $kid, $node->nid, $node->vid);
-      $inserted[$kid] = TRUE;
+      if ($update) db_query('DELETE FROM {biblio_keyword} WHERE nid = :nid AND vid = :vid AND kid = :kid', array(':nid' => $node->nid, ':vid' => $node->vid, ':kid' => $kid));
+      //db_query('INSERT INTO {biblio_keyword} (kid, nid, vid) VALUES (%d, %d, %d)', $kid, $node->nid, $node->vid);
+      $inserted[$kid] = db_insert('biblio_keyword')->fields(array(
+       'kid' => $kid,
+       'nid' => $node->nid,
+       'vid' => $node->vid))
+      ->execute();
+      
     }
   }
 

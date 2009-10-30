@@ -357,15 +357,15 @@ function biblio_permission() {
       ),
     'show filter tab'=> array(
       'title' => t('Show filter tab'),
-      'description' => t(),
+      'description' => t('This determines if the "Filter" tab on the Biblio list page will be shown to the user'),
       ),
     'show sort links'=> array(
       'title' => t('Show sort links'),
-      'description' => t(),
+      'description' => t('This determines if the "Sort" links on the Biblio list page will be shown to the user'),
       ),
     'view full text'=> array(
       'title' => t('Show full text'),
-      'description' => t(),
+      'description' => t('This determines if the user will be able to access the "Full Text" of the article if it is available'),
       ),
     );
 }
@@ -2116,7 +2116,7 @@ function biblio_hash($node) {
   static $sums = array();
   if (empty($sums)) {
     $res = db_query("SELECT nid, biblio_md5 FROM {biblio} ");
-    while ($md5 = db_fetch_object($res)) {
+    foreach ($res as $md5) {
       $sums[$md5->biblio_md5] = $md5->nid;
     }
   }

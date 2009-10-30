@@ -15,12 +15,12 @@ function biblio_install() {
 
   $result[] = _set_system_weight();
 
-  if (count($result) == count(array_filter($result))) {
-    drupal_set_message(t('The biblio module has successfully added its tables to the database.'));
-  }
-  else {
-    drupal_set_message(t('Drupal encountered some errors while attempting to install the database tables for the biblio module.'), 'error');
-  }
+//  if (count($result) == count(array_filter($result))) {
+//    drupal_set_message(t('The biblio module has successfully added its tables to the database.'));
+//  }
+//  else {
+//    drupal_set_message(t('Drupal encountered some errors while attempting to install the database tables for the biblio module.'), 'error');
+//  }
 }
 
 function biblio_enable() {
@@ -42,6 +42,7 @@ function _enable_biblio_vocabularies(){
 }
 
 function biblio_disable() {
+  $vids = array();
   if (module_exists('taxonomy')) {
     $voc = taxonomy_get_vocabularies();
     foreach ($voc as $vid => $vocabulary) {
@@ -1090,7 +1091,7 @@ function _add_publication_types()
         ))->execute();
 
   }
- return $result;
+ return;
 }
 
 function _add_db_field_data_XML() {

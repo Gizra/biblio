@@ -19,7 +19,8 @@
  *
  */
 function _ris_tagged_import($file, $terms = array(), $batch = FALSE, $session_id = NULL) {
-  if (!($fp = fopen($file->filepath, "r"))) {
+  
+	if (!($fp = fopen($file->uri, "r"))) {
     drupal_set_message("could not open RIS input file", 'error');
     return;
   }
@@ -106,7 +107,8 @@ function _ris_tagged_import($file, $terms = array(), $batch = FALSE, $session_id
         case 'T1' :
         case 'CT' :
         case 'BT' :
-          $node['title'] .= $value;
+  			$langcode = FIELD_LANGUAGE_NONE;
+        	$node['title'][$langcode][0]['value'] .= $value;
           break;
         case 'UR' :
           $node['biblio_url'] .= $value;

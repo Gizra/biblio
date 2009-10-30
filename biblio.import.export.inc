@@ -224,7 +224,7 @@ function biblio_import_form_submit($form, & $form_state) {
         $dummy = array();
         $content = biblio_import($import_file, $filetype, $userid, $terms, $batch_proc, $session_id, $dummy);
       }
-      file_delete($import_file->filepath);
+      file_delete($import_file);
     } else {
       drupal_set_message(t("File was NOT successfully uploaded"), 'error');
     }
@@ -374,8 +374,9 @@ function biblio_import($import_file, $type, $userid = 1, $terms = NULL, $batch =
   }
   if (!empty($node_ids) && !$batch ) {
     if (count($node_ids)) {
-      db_query('UPDATE {node} SET uid = %d WHERE nid IN(%s)', $userid, implode(',', $node_ids));
-      db_query('UPDATE {node_revisions} SET uid = %d WHERE nid IN(%s)', $userid, implode(',', $node_ids));
+//FIXME: check to see if this is still valid
+//      db_query('UPDATE {node} SET uid = %d WHERE nid IN(%s)', $userid, implode(',', $node_ids));
+//      db_query('UPDATE {node_revisions} SET uid = %d WHERE nid IN(%s)', $userid, implode(',', $node_ids));
       drupal_set_message(t("<i><b>%count</b></i> nodes were successfully imported.", array('%count' => count($node_ids))), 'status');
     }
 
