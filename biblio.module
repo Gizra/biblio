@@ -49,7 +49,7 @@ function _biblio_get_field_information($biblio_type, $only_visible = FALSE) {
                       INNER JOIN {biblio_types} as btt ON btt.tid = bt.tid
                       WHERE bt.tid = :tid $visible
                       ORDER BY bt.weight ASC", array(':tid' => $biblio_type), array('fetch' => PDO::FETCH_ASSOC));
-//FIXME DB
+
   foreach ($result as $row) {
     $fields[$row['fid']] = $row;
   }
@@ -76,7 +76,10 @@ function biblio_theme($existing, $type, $theme, $path) {
 //    ),
     'biblio_alpha_line' => array(
         'file' => 'biblio_theme.inc',
-        'arguments' => array('type'),
+        'variables' => array(
+          'type' => 'author',
+          'current' => NULL,
+          'path'  => NULL),
     ),
    'biblio_admin_author_types_form' => array(
         'file' => 'biblio.admin.inc',
@@ -156,7 +159,7 @@ function biblio_theme($existing, $type, $theme, $path) {
     'biblio_format_authors' => array(
       'file' => 'biblio_theme.inc',
       'variables' => array(
-        'contributors',
+        'contributors' => NULL,
         'options' => array(),
         'inline' => FALSE,),
     ),
@@ -456,9 +459,9 @@ function biblio_user($type, & $edit, & $user, $category = NULL) {
   }
   if ($type == 'update' && $category == 'account') {
     if (isset($edit['biblio_contributor_id'])) {
-//FIXME DB
-    	db_query("UPDATE {biblio_contributor_data} SET drupal_uid = 0 WHERE drupal_uid = %d", $user->uid);
-      db_query('UPDATE {biblio_contributor_data} set drupal_uid = %d WHERE cid = %d ', $user->uid, $edit['biblio_contributor_id']);
+
+    	db_query("UPDATE {biblio_contributor_data} SET drupal_uid = 0 WHERE drupal_uid = :uid", array(':uid' => $user->uid));
+      db_query('UPDATE {biblio_contributor_data} set drupal_uid = :uid WHERE cid = :cid ', array(':uid' => $user->uid, ':cid' => $edit['biblio_contributor_id']));
     }
   }
   if ($type == 'categories') {
@@ -1086,10 +1089,8 @@ function biblio_form($node, $form_state) {
   $param['options'] = array(
     "enctype" => "multipart/form-data"
     );
-//FIXME DB
     $result = db_query('SELECT t.* FROM {biblio_types} as t WHERE tid > -2 AND visible = 1');
-//FIXME DB
-    while ($option = db_fetch_object($result)) {
+    foreach ($result as $option) {
     $options["$option->tid"] = $option->name;
   }
   if (!isset($node->nid)) {// only show the doi lookup and paste boxes if this is a new entry
@@ -1173,13 +1174,12 @@ function biblio_form($node, $form_state) {
       '#weight' => -4
         );
     // Build the field array used to make the form
-//FIXME DB
         $result = db_query("SELECT * FROM {biblio_fields} b
     					INNER JOIN {biblio_field_type} bt ON b.fid = bt.fid
     					INNER JOIN {biblio_field_type_data} btd ON btd.ftdid=bt.ftdid
-    					WHERE bt.tid=%d ORDER BY bt.weight ASC", $tid);
-//FIXME DB
-    while ($row = db_fetch_array($result)) {
+    					WHERE bt.tid=:tid ORDER BY bt.weight ASC", array(':tid' => $tid), array('fetch' => PDO::FETCH_ASSOC));
+
+    foreach ($result as $row) {
       $fields[$row['name']] = $row;
     }
     $form['other_fields'] = array(
@@ -1316,8 +1316,8 @@ function _biblio_contributor_widget($node, $fld, $auth_category, $biblio_type, $
   if (!isset($ctypes)) return array();
   $ctypes = db_query('SELECT * FROM {biblio_contributor_type_data}
                       WHERE auth_type IN ('. implode(',', $ctypes) .')');
-//FIXME DB
-  while ($ctype = db_fetch_object($ctypes)) {
+
+  foreach ($ctypes as $ctype ) {
     $options[$ctype->auth_type] = $ctype->title;
   }
 
@@ -1425,8 +1425,8 @@ function biblio_contributors_js($tid, $auth_category, $other_fields = FALSE) {
   $ctypes = _biblio_get_auth_types($auth_category, $tid);
   $ctypes = db_query('SELECT * FROM {biblio_contributor_type_data}
                       WHERE auth_type IN ('. implode(',', $ctypes) .')');
-//FIXME DB
-  while ($ctype = db_fetch_object($ctypes)) {
+
+  foreach ($ctypes as $ctype ) {
     $options[$ctype->auth_type] = $ctype->title;
   }
 
@@ -1625,8 +1625,8 @@ function biblio_update($node) {
  */
 function biblio_delete($node) {
   //first remove data from the biblio table
-//FIXME DB
-  db_query('DELETE FROM {biblio} WHERE nid = %d', $node->nid);
+
+  db_query('DELETE FROM {biblio} WHERE nid = :nid', array(':nid' => $node->nid));
   //now remove the entries from the contributor linking table
   db_query('DELETE FROM {biblio_contributor} WHERE nid = %d', $node->nid);
   if (variable_get('biblio_auto_orphaned_author_delete', 0)) {
@@ -1642,7 +1642,7 @@ function biblio_delete($node) {
  *
  */
 function biblio_load($nodes) {
-  
+
   require_once(drupal_get_path('module', 'biblio') .'/biblio.contributors.inc');
   require_once(drupal_get_path('module', 'biblio') .'/biblio.keywords.inc');
   $result = db_query('SELECT b.*, bt.name as biblio_type_name
@@ -1654,10 +1654,11 @@ function biblio_load($nodes) {
   	foreach ($record as $key => $value) {
   		$nodes[$record['nid']]->$key = $value;
   	}
+  	$nodes[$record['nid']]->biblio_contributors = biblio_load_contributors($nodes[$record['nid']]->vid, $nodes[$record['nid']]->biblio_type);
   }
-  $additions->biblio_year = _biblio_text_year($additions->biblio_year);
-  $additions->biblio_contributors = biblio_load_contributors($node->vid, $additions->biblio_type);
-  $additions->biblio_keywords = biblio_load_keywords($node->vid);
+//  $additions->biblio_year = _biblio_text_year($additions->biblio_year);
+//  $additions->biblio_contributors = biblio_load_contributors($node->vid, $additions->biblio_type);
+//  $additions->biblio_keywords = biblio_load_keywords($node->vid);
   //return $nodes;
 }
 function biblio_citekey_generate($node) {
@@ -1693,11 +1694,11 @@ function biblio_view($node, $buildmode = 'full') {
 		switch (variable_get('biblio_node_layout', 'tabular')) {
 			case 'orig' :
 			case 'ft' :
-				$node->content['body']['#value'] = theme('biblio_long', $node, $base, $style);
+				$node->content['body']['#markup'] = theme('biblio_long', $node, $base, $style);
 				break;
 			case 'tabular' :
 			default :
-				$node->content['body']['#value'] = theme_biblio_tabular( $node, $base, $teaser);
+				$node->content['body']['#markup'] = theme('biblio_tabular', array('node' => $node, 'base' => $base));
 				break;
 		}
 		drupal_set_breadcrumb(array(l(t('Home'), NULL), l(drupal_ucfirst($base_title), $base)));
@@ -1710,6 +1711,7 @@ function biblio_view($node, $buildmode = 'full') {
 		$node->content['teaser']['#value'] = theme('biblio_style', $node, $base, $style);
 		break;
 }
+
 return $node;
 }
 /**
@@ -1776,8 +1778,8 @@ function biblio_recent_feed() {
   $channel['link'] = url($base, array('absolute' => TRUE));
   $channel['description'] = t("This feed lists the %num most recently added publications on %site", array('%num' => $numberInFeed, '%site' => $siteName));
   $nids = array();
-//FIXME DB
-  while ($row = db_fetch_object($result)) {
+
+  foreach ($result as $row) {
     $nids[] = $row->nid;
   }
   node_feed($nids, $channel);
@@ -1812,9 +1814,8 @@ function biblio_get_db_fields() {
   $fields[] = 'nid';
   $fields[] = 'vid';
   $fields[] = 'biblio_type';
-//FIXME DB
-  $result = db_query('SELECT name FROM {biblio_fields} ');
-  while ($field = db_fetch_array($result)) {
+  $result = db_query('SELECT name FROM {biblio_fields} ', array(), array('fetch' => PDO::FETCH_ASSOC));
+  foreach ($result as $field ) {
     $fields[] = $field['name'];
   }
   return $fields;
@@ -1826,8 +1827,8 @@ function biblio_get_db_fields() {
  *
  *******************************************/
 function _biblio_citekey_print($citekey) {
-//FIXME DB
-	$nid = db_fetch_object(db_query("SELECT nid FROM {biblio} WHERE biblio_citekey = '%s' ORDER BY vid DESC", $citekey));
+
+	$nid = db_query("SELECT nid FROM {biblio} WHERE biblio_citekey = :key ORDER BY vid DESC", array(':key' => $citekey))->fetchCol();
   if ($nid->nid > 0) {
     $style = biblio_get_style();
     $base = variable_get('biblio_base', 'biblio');
@@ -1998,24 +1999,22 @@ function biblio_term_path($term) {
 function biblio_coins_generate(& $node) {
   if ($node) {
     $node->biblio_coins = biblio_coins($node);
-//FIXME DB
     db_query("UPDATE {biblio}
-              SET biblio_coins = '%s'
-              WHERE vid = %d", $node->biblio_coins, $node->vid);
+              SET biblio_coins = :coins
+              WHERE vid = :vid", array(':coins' => $node->biblio_coins, ':vid' => $node->vid));
   }
   else {
-//FIXME DB
   	$result = db_query("SELECT nr.*, b.*
                         FROM {node} AS n
                         LEFT JOIN {node_revisions}  AS nr ON n.vid = nr.vid LEFT JOIN {biblio} AS b ON n.vid = b.vid
                         WHERE n.type = 'biblio'  ");
-//FIXME DB
-  	while ($node = db_fetch_object($result)) {
+
+  	foreach ($result as $node) {
       $node->biblio_coins = biblio_coins($node);
-//FIXME DB
+
       db_query("UPDATE {biblio}
-                SET biblio_coins = '%s'
-                WHERE vid = %d", $node->biblio_coins, $node->vid);
+                SET biblio_coins = :coins
+                WHERE vid = :vid",  array(':coins' => $node->biblio_coins, ':vid' => $node->vid));
     }
     drupal_goto('');
   }
@@ -2182,9 +2181,9 @@ function biblio_diff(&$old_node, &$new_node) {
   require_once(drupal_get_path('module', 'biblio') .'/biblio.contributors.inc');
 
   $result = array();
-//FIXME DB
-  $old_type = db_fetch_object(db_query('SELECT name FROM {biblio_types} where tid = %d', $old_node->biblio_type));
-  $new_type = db_fetch_object(db_query('SELECT name FROM {biblio_types} where tid = %d', $new_node->biblio_type));
+
+  $old_type = db_fetch_object(db_query('SELECT name FROM {biblio_types} where tid = :tid', array(':tid' => $old_node->biblio_type)));
+  $new_type = db_fetch_object(db_query('SELECT name FROM {biblio_types} where tid = %d', array(':tid' => $new_node->biblio_type)));
 
   $result['biblio_type'] = array(
     '#name' => 'Publication Type',
@@ -2198,14 +2197,13 @@ function biblio_diff(&$old_node, &$new_node) {
   $old_node->biblio_contributors = biblio_load_contributors($old_node->vid);
   $new_node->biblio_contributors = biblio_load_contributors($new_node->vid);
 
-//FIXME DB
   $db_result = db_query('SELECT b.name, btd.title, bt.weight
                       FROM {biblio_fields} b
                       INNER JOIN {biblio_field_type} bt ON bt.fid=b.fid
                       INNER JOIN {biblio_field_type_data} btd ON btd.ftdid=bt.ftdid
-                      WHERE bt.tid=%d ORDER BY weight',$old_node->biblio_type );
-//FIXME DB
-  while ($field = db_fetch_object($db_result)) {
+                      WHERE bt.tid=:tid ORDER BY weight', array(':tid' => $old_node->biblio_type));
+
+  foreach ($db_result as $field) {
     $name = $field->name;
     $old = $new = '';
     if ($field->type == 'contrib_widget') {
@@ -2245,8 +2243,7 @@ function biblio_token_values($type, $object = NULL) {
   switch ($type) {
     case 'node':
       if ($object->type == "biblio") {
-//FIXME DB
-      	$type = db_result(db_query('SELECT name FROM {biblio_types} as t WHERE t.tid = %d',$object -> biblio_type));
+      	$type = db_result(db_query('SELECT name FROM {biblio_types} as t WHERE t.tid = :tid', array(':tid' => $object -> biblio_type)));
         #$title = db_result(db_query("SELECT title FROM {node} WHERE nid = %d", $gid));
         $values['biblio_year'] = check_plain($object->biblio_year);
         $values['biblio_authors'] = check_plain($object->biblio_contributors[1][0][lastname]);

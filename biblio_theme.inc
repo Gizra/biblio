@@ -113,7 +113,8 @@ function theme_biblio_long($node, $base = 'biblio', $style = 'classic') {
     return $output;
   }
   foreach ((array)$node->biblio_contributors[1] as $auth) {
-    $authors[] = theme('biblio_author_link', $auth['name'], $auth['cid'], $base);
+
+    $authors[] = theme('biblio_author_link', array('author' => $auth['name'], 'authorID' => $auth['cid'], 'base' => $base));
   }
   $authors = implode('; ', (array)$authors);
   $openurl_base = variable_get('biblio_baseopenurl', '');
@@ -189,8 +190,9 @@ function theme_biblio_long($node, $base = 'biblio', $style = 'classic') {
  * @param $teaser
  * @return unknown_type
  */
-function theme_biblio_tabular($node, $base = 'biblio', $teaser = false) {
-
+function theme_biblio_tabular($variables) {
+  $node = $variables['node'];
+  $base = $variables['base'];
   if (module_exists('popups')){
      popups_add_popups();
   }
@@ -227,7 +229,8 @@ function theme_biblio_tabular($node, $base = 'biblio', $teaser = false) {
     if ($row['type'] == 'contrib_widget' && !empty($node->biblio_contributors[$row['fid']][0]['name']) ) {
       $author_options = $style_function();
       $author_options['numberOfAuthorsTriggeringEtAl'] = 100; //set really high so we see all authors
-      $data = theme('biblio_format_authors', $node->biblio_contributors[$row['fid']], $author_options, $inline);
+      $data = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[$row['fid']], 'options' => $author_options));
+      print_r($node->biblio_contributors[$row['fid']]);
     }
     else if (empty ($node->$row['name']) || $row['name'] == 'biblio_coins') continue;
     else {
@@ -261,7 +264,6 @@ function theme_biblio_tabular($node, $base = 'biblio', $teaser = false) {
     );
   }
 
-
   if (strlen(trim($node->body)) && user_access('view full text')) {
     $rows[] = array(
         array('data' => t('Full Text'),  'valign' => 'top'),
@@ -274,6 +276,7 @@ function theme_biblio_tabular($node, $base = 'biblio', $teaser = false) {
   $header = array();
   $output .= theme('table', array('header' => $header, 'rows' => $rows));
   $output .= '</div>';
+
   return $output;
 }
 
@@ -288,7 +291,7 @@ function theme_biblio_authors($contributors, $style = 'classic', $cat = 1, $inli
     }
     if (strlen($author['name'])) {
       $format = $author_style_function($author);
-      if ($author_links) $format = theme('biblio_author_link', $format, $author['cid'], $base, $inline);
+      if ($author_links) $format = theme('biblio_author_link', array('author' => $format, 'authorID' => $author['cid'], 'base' => $base, 'inline' => $inline));
       // add the auth_type as css id to allow later formatting
       $author_array[] = '<span id="'.$author['auth_type'].'">'.$format.'</span>';
     }
@@ -403,8 +406,12 @@ function _biblio_get_regex_patterns() {
     return _biblio_get_utf8_regex();
   }
 }
-function theme_biblio_format_authors($contributors, $options, $inline = false)
+function theme_biblio_format_authors($variables)
 {
+  $contributors = $variables['contributors'];
+  $options      = $variables['options'];
+  $inline       = $variables['inline'];
+
   if (empty($contributors)) return;
   list($alnum, $alpha, $cntrl, $dash, $digit, $graph, $lower,
        $print, $punct, $space, $upper, $word, $patternModifiers) = _biblio_get_regex_patterns();
@@ -496,7 +503,7 @@ function theme_biblio_format_authors($contributors, $options, $inline = false)
       $singleAuthorString = $author['lastname'];
     }
     if ($author_links) {
-      $singleAuthorString = theme('biblio_author_link',$singleAuthorString, $author['cid'], $base, $inline);
+      $singleAuthorString = theme('biblio_author_link', array('author' => $singleAuthorString, 'authorID' => $author['cid'], 'base' => $base, 'inline' => $inline));
     }
     else {
       $singleAuthorString = check_plain($singleAuthorString);
@@ -538,7 +545,12 @@ function theme_biblio_format_authors($contributors, $options, $inline = false)
   return $output;
 }
 
-function theme_biblio_author_link($author, $aid, $base='biblio', $inline = FALSE) {
+function theme_biblio_author_link($variables) {
+  $author = $variables['author'];
+  $aid    = $variables['authorID'];
+  $base   = $variables['base'];
+  $inline = $variables['inline'];
+
   $options = array();
   $inline = $inline ? "/inline" : "";
 
@@ -642,7 +654,12 @@ function theme_biblio_page_number($origPageInfo, $pageRangeDelim = "-", $singleP
  * @param $inline "inline" mode returns the raw HTML rather than letting drupal render the whole page.
  * @return A string containing the styled (HTML) node
  */
-function theme_biblio_style(& $node, $base = 'biblio', $style_name = 'classic', $inline = false) {
+function theme_biblio_style($variables ) {
+  $node       = $variables['node'];
+  $base       = $variables['base'];
+  $style_name = $variables['style_name'];
+  $inline     = $variables['inline'];
+
   module_load_include('inc','biblio',"biblio_style_$style_name");
 
   $style_function = "biblio_style_$style_name";
@@ -659,7 +676,12 @@ function theme_biblio_style(& $node, $base = 'biblio', $style_name = 'classic', 
  * @param $inline
  * @return unknown_type
  */
-function theme_biblio_entry($node, $base = 'biblio', $style = 'classic', $inline = false) {
+function theme_biblio_entry($variables) {
+  $node       = $variables['node'];
+  $base       = $variables['base'];
+  $style_name = $variables['style_name'];
+  $inline     = $variables['inline'];
+
   $output  = "\n".'<div class="biblio-entry">'."\n" ;
 
   // first add the styled entry...
@@ -701,7 +723,8 @@ function theme_biblio_entry($node, $base = 'biblio', $style = 'classic', $inline
  * @param $form
  * @return unknown_type
  */
-function theme_biblio_filters(& $form) {
+function theme_biblio_filters($variables) {
+  $form = $variables['form'];
   if (sizeof($form['current'])) {
     $output .= '<ul>';
     foreach (element_children($form['current']) as $key) {
@@ -729,7 +752,9 @@ function theme_biblio_filters(& $form) {
  * @param $form
  * @return unknown_type
  */
-function theme_biblio_form_filter(& $form) {
+function theme_biblio_form_filter($variables) {
+ $form = $variables['form'];
+
   $output .= '<div id="biblio-admin-filter">';
   $output .= drupal_render($form['filters']);
   $output .= '</div>';
@@ -789,7 +814,8 @@ function theme_biblio_admin_types_edit_form($variables) {
   return $output;
 }
 
-function theme_biblio_download_links($node = NULL) {
+function theme_biblio_download_links($variables) {
+  $node = $variables['node'];
   $files = '';
   if (!empty ($node->files) && count($node->files) > 0 && user_access('view uploaded files')) {
     $files .= '<span class="biblio_file_links">';
@@ -829,8 +855,9 @@ function theme_biblio_download_links($node = NULL) {
  * @param $nid the node id to export (if omitted, all nodes in the current view will be exported
  * @return an un-ordered list of class "biblio-export-buttons"
  */
-function theme_biblio_export_links($node = NULL) {
-  global $pager_total_items;
+function theme_biblio_export_links($variables) {
+  $node = $variables['node'];
+    global $pager_total_items;
   $base = variable_get('biblio_base', 'biblio');
   $show_link = variable_get('biblio_export_links', array('tagged' => TRUE, 'xml' => TRUE, 'bibtex' => TRUE));
   $show_link['google'] = variable_get('biblio_google_link', 1);
@@ -935,7 +962,8 @@ function _build_google_scholar_link($node) {
  * @param $form
  * @return unknown_type
  */
-function theme_biblio_contributors($form) {
+function theme_biblio_contributors($variables) {
+  $form = $variables['form'];
   $rows = array();
   if ($form['#hideRole']) $headers = array('', t('Name'), t('Weight'));
   else $headers = array('', t('Name'), t('Role'), t('Weight'));
@@ -958,7 +986,7 @@ function theme_biblio_contributors($form) {
     $row[] = drupal_render($form[$key]['rank']);
     $rows[] = array('data' => $row, 'class' => 'draggable');
   }
-  $output = theme('table', $headers, $rows, array('id' => $form['#id']));
+  $output = theme('table', array('header' => $headers, 'rows' => $rows), array('id' => $form['#id']));
   $output .= drupal_render($form);
   return $output;
 }
@@ -973,7 +1001,11 @@ function theme_biblio_contributors($form) {
  * @param $type either "author or title"
  * @return a chunk of HTML code as described above
  */
-function theme_biblio_alpha_line($type = 'author',$current = NULL, $path = NULL) {
+function theme_biblio_alpha_line($variables) {
+  $type    = $variables['type'];
+  $current = $variables['current'];
+  $path    = $variables['path'];
+
   $options = array();
   $base = variable_get('biblio_base', 'biblio');
   $all = '';
@@ -1032,7 +1064,8 @@ function theme_biblio_alpha_line($type = 'author',$current = NULL, $path = NULL)
  * @param $form
  * @return rendered form
  */
-function theme_biblio_admin_author_edit_form($form){
+function theme_biblio_admin_author_edit_form($variables){
+  $form = $variables['form'];
   $rows = array();
   $header = array();
   $rows[] = array(
@@ -1045,16 +1078,17 @@ function theme_biblio_admin_author_edit_form($form){
   $rows[] = array(array('data' => drupal_render($form['affiliation']), 'colspan' => 5));
   $rows[] = array(array('data' => drupal_render($form['drupal_uid']), 'colspan' => 5));
 
-  $output = theme('table', $header, $rows);
+  $output = theme('table', array('header' => $header, 'rows' => $rows));
   $output .= drupal_render($form['merge']);
   $output .= drupal_render($form['link']);
-  $output .= drupal_render($form);
+ // $output .= drupal_render($form);
 
   return $output;
 
 }
 
-function theme_biblio_admin_orphans_form($form) {
+function theme_biblio_admin_orphans_form($variables) {
+  $form = $variables['form'];
   // If there are any orphans, then $form['name'] contains a list of the author names
   $has_items = isset($form['name']) && is_array($form['name']);
   $select_header = $has_items ? theme('table_select_header_cell') : '';
@@ -1074,17 +1108,18 @@ function theme_biblio_admin_orphans_form($form) {
   else {
     $rows[] = array(array('data' => t('There are no orphaned authors in the database.'), 'colspan' => '3'));
   }
-  $output .= theme('table', $header, $rows);
+  $output .= theme('table', array('header' => $header, 'rows' => $rows));
 
   if ($form['pager']['#value']) {
     $output .= drupal_render($form['pager']);
   }
 
-  $output .= drupal_render($form);
+//  $output .= drupal_render($form);
 
   return $output;
 }
-function theme_biblio_admin_keyword_orphans_form($form) {
+function theme_biblio_admin_keyword_orphans_form($variables) {
+  $form = $variables['form'];
   // If there are any orphans, then $form['name'] contains a list of the author names
 
   $has_items = isset($form['keyword']) && is_array($form['keyword']);
@@ -1104,13 +1139,13 @@ function theme_biblio_admin_keyword_orphans_form($form) {
   else {
     $rows[] = array(array('data' => t('There are no orphaned keywords in the database.'), 'colspan' => '2'));
   }
-  $output .= theme('table', $header, $rows);
+  $output .= theme('table', array('header' => $header, 'rows' => $rows));
 
   if ($form['pager']['#value']) {
     $output .= drupal_render($form['pager']);
   }
 
-  $output .= drupal_render($form);
+//  $output .= drupal_render($form);
 
   return $output;
 }

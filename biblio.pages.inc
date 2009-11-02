@@ -1075,6 +1075,7 @@ function _biblio_keyword_links($keywords,$base='biblio') {
 function biblio_author_page($filter = NULL) {
   global $user;
   $where = array();
+  $header = array();
   $style_name = biblio_get_style();
   module_load_include('inc', 'biblio', "biblio_style_$style_name");
 
@@ -1084,7 +1085,7 @@ function biblio_author_page($filter = NULL) {
     if ($menu == 'Biblio settings') $path = 'admin/settings/biblio/author/list/';
     if ($filter) {
       $filter = strtoupper($filter);
-      $where[] =  "UPPER(SUBSTRING(lastname,1,1)) = '%s' ";
+      $where[] =  "UPPER(SUBSTRING(lastname,1,1)) = :filter ";
       $header_ext = t(' (whose last name starts with the letter "@letter") ',array('@letter' => $filter ));
     }
     else {
@@ -1111,12 +1112,12 @@ function biblio_author_page($filter = NULL) {
                                      bd.initials, bd.affiliation, bd.md5
                             HAVING COUNT(*) > 0
                             ORDER BY  lastname ASC, SUBSTRING(firstname,1,1) ASC,
-                            initials ASC', $filter);
+                            initials ASC', array(':filter' => $filter), array('fetch' => PDO::FETCH_ASSOC));
 
-    while ($author = db_fetch_array($db_result)){
+    foreach ($db_result as $author){
       $authors[] = $author;
     }
-    $rows[] = array(array('data' => theme(biblio_alpha_line, 'authors', $filter), 'colspan' => 3));
+    $rows[] = array(array('data' => theme('biblio_alpha_line', 'authors', $filter), 'colspan' => 3));
     if (count($authors)) {
       for ($i=0; $i < count($authors); $i+=3) {
         $rows[] = array( array('data' => _biblio_format_author($authors[$i]) ),
@@ -1125,7 +1126,7 @@ function biblio_author_page($filter = NULL) {
       }
     }
   //$header = array(array('data' => t('There are a total of @count authors !header_ext in the database',array('@count' => count($authors), '!header_ext' => $header_ext)), 'align' =>'center', 'colspan' => 3));
-  $output .= theme('table', $header, $rows);
+  $output = theme('table', array('header' => $header, 'rows' => $rows));
   return $output;
 }
 /*
@@ -1133,12 +1134,13 @@ function biblio_author_page($filter = NULL) {
  */
 function _biblio_format_author($author) {
   static $author_options = array();
+  $inline = FALSE;
   if (empty($author_options)) {
     $style_name = biblio_get_style();
     $style_function = "biblio_style_$style_name"."_author_options";
     $author_options = $style_function();
   }
-  $format = theme('biblio_format_authors', array($author), $author_options, $inline);
+  $format = theme('biblio_format_authors', array('contributors' => array($author), 'options' => $author_options, 'inline' => $inline));
   $format .= ' ('. $author['cnt'] . ') '. ((biblio_access('edit_author'))?_biblio_author_edit_links($author):'');
   return $format;
 }
