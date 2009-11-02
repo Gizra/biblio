@@ -7,7 +7,7 @@
 function biblio_get_contributor($aid) {
   static $contributor = array();
   if (!isset($contributor[$aid])) {
-    $contributor[$aid] = db_fetch_object(db_query('SELECT * FROM {biblio_contributor_data} WHERE cid = %d', $aid));
+    $contributor[$aid] = db_query('SELECT * FROM {biblio_contributor_data} WHERE cid = :cid', array(':cid' => $aid))->fetchAll();
   }
 
   return $contributor[$aid];
@@ -21,11 +21,11 @@ function biblio_load_contributors($vid) {
   $contributors = array();
   $query = "SELECT * FROM {biblio_contributor} bc
 			INNER JOIN {biblio_contributor_data} bcd ON bc.cid=bcd.cid
-			WHERE bc.vid=%d
+			WHERE bc.vid=:vid
 			ORDER BY bc.rank ASC"; // do not change order of presentation
 
-  $result = db_query($query, $vid);
-  while ($creator = db_fetch_array($result)) {
+  $result = db_query($query, array(':vid' => $vid), array('fetch' => PDO::FETCH_ASSOC));
+  foreach  ($result as $creator ) {
     $contributors[$creator['auth_category']][] = $creator;
   }
   return $contributors;

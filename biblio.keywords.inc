@@ -50,7 +50,7 @@ function biblio_get_keyword_by_id($kid) {
   static $keywords = array();
 
   if (!isset($keywords[$kid])) {
-    $keywords[$kid] = db_fetch_object(db_query('SELECT * FROM {biblio_keyword_data} WHERE kid = %d', $kid));
+    $keywords[$kid] = db_query('SELECT * FROM {biblio_keyword_data} WHERE kid = :kid', array(':kid' => $kid))->fetchAll();
   }
 
   return $keywords[$kid];
@@ -63,9 +63,9 @@ function biblio_get_keyword_by_id($kid) {
  */
 function biblio_load_keywords($vid) {
 
-  $result = db_query('SELECT bkd.* FROM {biblio_keyword} bk INNER JOIN {biblio_keyword_data} bkd ON bk.kid = bkd.kid  WHERE bk.vid = %d ORDER BY bkd.word ASC', $vid);
+  $result = db_query('SELECT bkd.* FROM {biblio_keyword} bk INNER JOIN {biblio_keyword_data} bkd ON bk.kid = bkd.kid  WHERE bk.vid = :vid ORDER BY bkd.word ASC', array(':vid' => $vid));
   $keywords[$vid] = '';
-  while ($keyword = db_fetch_object($result)) {
+  foreach ($result as $keyword) {
     $keywords[$vid][$keyword->kid] = $keyword->word;
   }
   return $keywords[$vid];
@@ -166,7 +166,7 @@ function biblio_save_keyword(&$form_values) {
  * @return none
  */
 function biblio_delete_node_keywords($node) {
-  db_query('DELETE FROM {biblio_keyword} WHERE nid = %d', $node->nid);
+  db_query('DELETE FROM {biblio_keyword} WHERE nid = :nid', array(':nid' => $node->nid));
 }
 
 /**
@@ -174,12 +174,12 @@ function biblio_delete_node_keywords($node) {
  * @return none
  */
 function biblio_delete_revision_keywords($node) {
-  db_query('DELETE FROM {biblio_keyword} WHERE vid = %d', $node->vid);
+  db_query('DELETE FROM {biblio_keyword} WHERE vid = :vid', array(':vid' => $node->vid));
 }
 
 function biblio_delete_keyword($keyword_id) {
-  db_query('DELETE FROM {biblio_keyword} WHERE kid = %d', $keyword_id);
-  db_query('DELETE FROM {biblio_keyword_data} WHERE kid = %d', $keyword_id);
+  db_query('DELETE FROM {biblio_keyword} WHERE kid = :kid', array(':kid' => $keyword_id));
+  db_query('DELETE FROM {biblio_keyword_data} WHERE kid = :kid', array(':kid' => $keyword_id));
 }
 
 function biblio_explode_keywords($string) {

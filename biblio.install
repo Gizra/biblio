@@ -64,8 +64,8 @@ function biblio_uninstall(){
 
   $result = db_query("SELECT * FROM {node} WHERE type='biblio' ");
   foreach  ($result as $node ){
-    db_query('DELETE FROM {node} WHERE nid = %d', $node->nid);
-    db_query('DELETE FROM {node_revisions} WHERE nid = %d', $node->nid);
+    db_query('DELETE FROM {node} WHERE nid = :nid', array(':nid' => $node->nid));
+    db_query('DELETE FROM {node_revision} WHERE nid = :nid', array(':nid' => $node->nid));
 
     // Remove this node from the search index if needed.
     if (function_exists('search_wipe')) {

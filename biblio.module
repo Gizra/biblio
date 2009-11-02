@@ -41,14 +41,16 @@ function _biblio_get_auth_type($auth_category, $biblio_type) {
 function _biblio_get_field_information($biblio_type, $only_visible = FALSE) {
   $fields = array();
   $visible = $only_visible ? ' AND (bt.common = 1 OR bt.visible=1) ' : '';
+
   $result = db_query("SELECT b.*, btd.*, btt.name AS type_name
                       FROM {biblio_fields} AS b
                       INNER JOIN {biblio_field_type} AS bt ON bt.fid = b.fid
                       INNER JOIN {biblio_field_type_data} AS btd ON btd.ftdid = bt.ftdid
                       INNER JOIN {biblio_types} as btt ON btt.tid = bt.tid
-                      WHERE bt.tid = %d $visible
-                      ORDER BY bt.weight ASC", $biblio_type);
-  while ($row = db_fetch_array($result)) {
+                      WHERE bt.tid = :tid $visible
+                      ORDER BY bt.weight ASC", array(':tid' => $biblio_type), array('fetch' => PDO::FETCH_ASSOC));
+//FIXME DB
+  foreach ($result as $row) {
     $fields[$row['fid']] = $row;
   }
 
@@ -65,7 +67,7 @@ function biblio_init() {
       $conf['cache'] = FALSE;
   }
 }
-function biblio_theme() {
+function biblio_theme($existing, $type, $theme, $path) {
   $path = drupal_get_path('module', 'biblio');
   return array(
 //   'views_view_unformatted__biblio_year' => array(
@@ -107,37 +109,37 @@ function biblio_theme() {
     ),
     'biblio_coin_button' => array(
         'file' => 'biblio_theme.inc',
-        'arguments' => array('element'),
+        'variables' => array('element'),
     ),
     'biblio_openurl' => array(
         'file' => 'biblio_theme.inc',
-        'arguments' => array('openURL'),
+        'variables' => array('openURL'),
     ),
     'biblio_style' => array(
         'file' => 'biblio_theme.inc',
-        'arguments' => array(
-          'node',
+        'variables' => array(
+          'node' => NULL,
           'base' => 'biblio',
           'style_name' => 'classic',
           'inline' => FALSE),
     ),
     'biblio_long' => array(
         'file' => 'biblio_theme.inc',
-        'arguments' => array(
-          'node',
+        'variables' => array(
+          'node'=> NULL,
           'base' => 'biblio',
           'style_name' => 'classic'),
     ),
     'biblio_tabular' => array(
         'file' => 'biblio_theme.inc',
-        'arguments' => array(
-          'node',
+        'variables' => array(
+          'node' => NULL,
           'base' => 'biblio',
           'teaser' => FALSE),
     ),
     'biblio_entry' => array(
         'file' => 'biblio_theme.inc',
-        'arguments' => array(
+        'variables' => array(
           'node',
           'base' => 'biblio',
           'style_name' => 'classic',
@@ -145,7 +147,7 @@ function biblio_theme() {
     ),
     'biblio_authors' => array(
       'file' => 'biblio_theme.inc',
-      'arguments' => array(
+      'variables' => array(
         'contributors',
         'style' => 'classic',
         'inline' => FALSE,
@@ -153,14 +155,14 @@ function biblio_theme() {
     ),
     'biblio_format_authors' => array(
       'file' => 'biblio_theme.inc',
-      'arguments' => array(
+      'variables' => array(
         'contributors',
         'options' => array(),
         'inline' => FALSE,),
     ),
     'biblio_author_link' => array(
       'file' => 'biblio_theme.inc',
-      'arguments' => array(
+      'variables' => array(
         'author',
         'authorID',
         'base' => 'biblio',
@@ -176,11 +178,11 @@ function biblio_theme() {
     ),
     'biblio_export_links' => array(
         'file' => 'biblio_theme.inc',
-        'arguments' => array('node'),
+        'variables' => array('node'),
     ),
     'biblio_download_links' => array(
         'file' => 'biblio_theme.inc',
-        'arguments' => array('node'),
+        'variables' => array('node'),
     ),
     'biblio_contributors' => array(
         'file' => 'biblio_theme.inc',
@@ -191,8 +193,10 @@ function biblio_theme() {
 function biblio_autocomplete($field, $string = '') {
   $matches = array();
   if ($field == 'contributor') {
-    $result = db_query_range("SELECT * FROM {biblio_contributor_data} WHERE LOWER(lastname) LIKE LOWER('%s%%') OR LOWER(firstname) LIKE LOWER('%s%%') ORDER BY lastname ASC ", array($string, $string), 0, 10);
-    while ($data = db_fetch_object($result)) {
+//FIXME DB
+  	$result = db_query_range("SELECT * FROM {biblio_contributor_data} WHERE LOWER(lastname) LIKE LOWER('%s%%') OR LOWER(firstname) LIKE LOWER('%s%%') ORDER BY lastname ASC ", array($string, $string), 0, 10);
+//FIXME DB
+  	while ($data = db_fetch_object($result)) {
       $matches[$data->name] = check_plain($data->name);
     }
   }elseif ($field == 'biblio_keywords') {
@@ -201,15 +205,19 @@ function biblio_autocomplete($field, $string = '') {
     $start   = trim(drupal_substr($string, 0, $sep_pos)); // first part of the string upto the last separator
     $end_sep = ($sep_pos) ? $sep_pos + 1 :$sep_pos;
     $end     = trim(drupal_substr($string, $end_sep));  // part of the string after the last separator
+//FIXME DB
     $result = db_query_range("SELECT * FROM {biblio_keyword_data} WHERE LOWER(word) LIKE LOWER('%s%%') ORDER BY word ASC ", array($end), 0, 10);
+//FIXME DB
     while ($data = db_fetch_object($result)) {
       // now glue the word found onto the end of the original string...
       $keywords = ($sep_pos) ? $start . ', ' . check_plain($data->word) : check_plain($data->word);
       $matches[$keywords] = $keywords;
     }
   }else{
-    $result = db_query_range("SELECT %s FROM {biblio} WHERE LOWER(%s) LIKE LOWER('%s%%') ORDER BY %s ASC", array($field, $field, $string, $field) , 0, 10);
-    while ($data = db_fetch_object($result)) {
+//FIXME DB
+  	$result = db_query_range("SELECT %s FROM {biblio} WHERE LOWER(%s) LIKE LOWER('%s%%') ORDER BY %s ASC", array($field, $field, $string, $field) , 0, 10);
+//FIXME DB
+  	while ($data = db_fetch_object($result)) {
       $matches[$data-> $field] = check_plain($data-> $field);
     }
   }
@@ -448,7 +456,8 @@ function biblio_user($type, & $edit, & $user, $category = NULL) {
   }
   if ($type == 'update' && $category == 'account') {
     if (isset($edit['biblio_contributor_id'])) {
-      db_query("UPDATE {biblio_contributor_data} SET drupal_uid = 0 WHERE drupal_uid = %d", $user->uid);
+//FIXME DB
+    	db_query("UPDATE {biblio_contributor_data} SET drupal_uid = 0 WHERE drupal_uid = %d", $user->uid);
       db_query('UPDATE {biblio_contributor_data} set drupal_uid = %d WHERE cid = %d ', $user->uid, $edit['biblio_contributor_id']);
     }
   }
@@ -957,7 +966,8 @@ function biblio_nodeapi(& $node, $op, $a3, $a4) {
   if ($node->type == 'biblio') {
     switch ($op) {
       case 'delete revision' :
-        db_query('DELETE FROM {biblio} WHERE vid = %d', $node->vid);
+//FIXME DB
+      	db_query('DELETE FROM {biblio} WHERE vid = %d', $node->vid);
         db_query('DELETE FROM {biblio_contributor} WHERE nid = %d AND vid = %d', array($node->nid, $node->vid));
         db_query('DELETE FROM {biblio_keyword} WHERE nid = %d AND vid = %d', array($node->nid, $node->vid));
         break;
@@ -1076,8 +1086,10 @@ function biblio_form($node, $form_state) {
   $param['options'] = array(
     "enctype" => "multipart/form-data"
     );
-  $result = db_query('SELECT t.* FROM {biblio_types} as t WHERE tid > -2 AND visible = 1');
-  while ($option = db_fetch_object($result)) {
+//FIXME DB
+    $result = db_query('SELECT t.* FROM {biblio_types} as t WHERE tid > -2 AND visible = 1');
+//FIXME DB
+    while ($option = db_fetch_object($result)) {
     $options["$option->tid"] = $option->name;
   }
   if (!isset($node->nid)) {// only show the doi lookup and paste boxes if this is a new entry
@@ -1161,10 +1173,12 @@ function biblio_form($node, $form_state) {
       '#weight' => -4
         );
     // Build the field array used to make the form
-    $result = db_query("SELECT * FROM {biblio_fields} b
+//FIXME DB
+        $result = db_query("SELECT * FROM {biblio_fields} b
     					INNER JOIN {biblio_field_type} bt ON b.fid = bt.fid
     					INNER JOIN {biblio_field_type_data} btd ON btd.ftdid=bt.ftdid
     					WHERE bt.tid=%d ORDER BY bt.weight ASC", $tid);
+//FIXME DB
     while ($row = db_fetch_array($result)) {
       $fields[$row['name']] = $row;
     }
@@ -1302,6 +1316,7 @@ function _biblio_contributor_widget($node, $fld, $auth_category, $biblio_type, $
   if (!isset($ctypes)) return array();
   $ctypes = db_query('SELECT * FROM {biblio_contributor_type_data}
                       WHERE auth_type IN ('. implode(',', $ctypes) .')');
+//FIXME DB
   while ($ctype = db_fetch_object($ctypes)) {
     $options[$ctype->auth_type] = $ctype->title;
   }
@@ -1410,6 +1425,7 @@ function biblio_contributors_js($tid, $auth_category, $other_fields = FALSE) {
   $ctypes = _biblio_get_auth_types($auth_category, $tid);
   $ctypes = db_query('SELECT * FROM {biblio_contributor_type_data}
                       WHERE auth_type IN ('. implode(',', $ctypes) .')');
+//FIXME DB
   while ($ctype = db_fetch_object($ctypes)) {
     $options[$ctype->auth_type] = $ctype->title;
   }
@@ -1609,6 +1625,7 @@ function biblio_update($node) {
  */
 function biblio_delete($node) {
   //first remove data from the biblio table
+//FIXME DB
   db_query('DELETE FROM {biblio} WHERE nid = %d', $node->nid);
   //now remove the entries from the contributor linking table
   db_query('DELETE FROM {biblio_contributor} WHERE nid = %d', $node->nid);
@@ -1624,17 +1641,24 @@ function biblio_delete($node) {
  * every time a node is loaded, and allows us to do some loading of our own.
  *
  */
-function biblio_load($node) {
+function biblio_load($nodes) {
+  
   require_once(drupal_get_path('module', 'biblio') .'/biblio.contributors.inc');
   require_once(drupal_get_path('module', 'biblio') .'/biblio.keywords.inc');
-  $additions = db_fetch_object(db_query('SELECT b.*, bt.name as biblio_type_name
+  $result = db_query('SELECT b.*, bt.name as biblio_type_name
                                          FROM {biblio} b
                                          LEFT JOIN {biblio_types} bt on b.biblio_type = bt.tid
-                                         WHERE b.vid = %d', $node->vid));
+                                         WHERE b.nid IN (:nids)', array(':nids' => array_keys($nodes)), array('fetch' => PDO::FETCH_ASSOC));
+  foreach ($result as $record) {
+//    $nodes[$record['nid']]->biblio = $record;
+  	foreach ($record as $key => $value) {
+  		$nodes[$record['nid']]->$key = $value;
+  	}
+  }
   $additions->biblio_year = _biblio_text_year($additions->biblio_year);
   $additions->biblio_contributors = biblio_load_contributors($node->vid, $additions->biblio_type);
   $additions->biblio_keywords = biblio_load_keywords($node->vid);
-  return $additions;
+  //return $nodes;
 }
 function biblio_citekey_generate($node) {
   $php = variable_get('biblio_citekey_phpcode', '');
@@ -1657,36 +1681,36 @@ function biblio_citekey_generate($node) {
  * Implementation of hook_view().
  *
  */
-function biblio_view(& $node, $teaser = FALSE, $page = FALSE) {
-  if (strlen(trim($node->body))) $node = node_prepare($node, $teaser);
+function biblio_view($node, $buildmode = 'full') {
+  //if (strlen(trim($node->body))) $node = node_prepare($node, $teaser);
   $style = biblio_get_style();
   $base  = variable_get('biblio_base', 'biblio');
   $base_title = variable_get('biblio_base_title', 'Biblio');
   if (variable_get('biblio_fix_isi_links', 0)) biblio_fix_isi_links($node);
 
-  if ($teaser) {
-    $node->content['teaser']['#value'] = theme('biblio_style', $node, $base, $style);
-  }
-  else {
-    switch (variable_get('biblio_node_layout', '0')) {
-      case 'orig' :
-      case 'ft' :
-        $node->content['body']['#value'] = theme('biblio_long', $node, $base, $style);
-        break;
-      case 'tabular' :
-      default :
-        $node->content['body']['#value'] = theme('biblio_tabular', $node, $base, $teaser);
-        break;
-    }
-  }
-  if ($page) {
-    drupal_set_breadcrumb(array(l(t('Home'), NULL), l(drupal_ucfirst($base_title), $base)));
-    if (variable_get('biblio_hide_bibtex_braces', 0) && !isset($node->view )) {
-      $node->title = biblio_remove_brace($node->title);
-      drupal_set_title(filter_xss($node->title, biblio_get_allowed_tags()));
-    }
-  }
-  return $node;
+  switch ($buildmode) {
+	case 'full':
+		switch (variable_get('biblio_node_layout', 'tabular')) {
+			case 'orig' :
+			case 'ft' :
+				$node->content['body']['#value'] = theme('biblio_long', $node, $base, $style);
+				break;
+			case 'tabular' :
+			default :
+				$node->content['body']['#value'] = theme_biblio_tabular( $node, $base, $teaser);
+				break;
+		}
+		drupal_set_breadcrumb(array(l(t('Home'), NULL), l(drupal_ucfirst($base_title), $base)));
+		if (variable_get('biblio_hide_bibtex_braces', 0) && !isset($node->view )) {
+			$node->title = biblio_remove_brace($node->title);
+			drupal_set_title(filter_xss($node->title, biblio_get_allowed_tags()));
+		}
+		break;
+	case 'teaser':
+		$node->content['teaser']['#value'] = theme('biblio_style', $node, $base, $style);
+		break;
+}
+return $node;
 }
 /**
  * Implementation of hook_block().
@@ -1707,6 +1731,7 @@ function biblio_block($op = 'list', $delta = 0) {
       $query = "SELECT COUNT(n.nid)
                   FROM {node} n
                   WHERE n.type = 'biblio' AND n.status=1";
+//FIXME DB
       $num_rows = db_result(db_query_range(db_rewrite_sql($query), 0, $num_in_block));
       if ($num_rows) {
         $query = "SELECT n.nid, n.title
@@ -1714,11 +1739,13 @@ function biblio_block($op = 'list', $delta = 0) {
                     LEFT JOIN {biblio} b  on n.vid=b.vid
                     WHERE n.type = 'biblio' AND n.status=1
                     ORDER BY $block_order DESC";
+//FIXME DB
         $result = db_query_range(db_rewrite_sql($query), 0, $num_in_block);
         $base = variable_get('biblio_base', 'biblio');
         $block['subject'] = t(variable_get('biblio_block_title', 'Recent Publications'));
         $block['content'] = '<div class="item-list"><ul>';
         $options['html'] = TRUE;
+//FIXME DB
         while ($pub = db_fetch_object($result)) {
           $block['content'] .= '<li >'. l(filter_xss($pub->title, biblio_get_allowed_tags()), "node/$pub->nid", $options) .'</li>';
         }
@@ -1743,11 +1770,13 @@ function biblio_recent_feed() {
   $numberInFeed = variable_get('biblio_rss_number_of_entries', 10);
   $siteName = variable_get('site_name', 'Drupal');
   $base = variable_get('biblio_base', 'biblio');
+//FIXME DB
   $result = db_query_range(db_rewrite_sql($query), 0, $numberInFeed);
   $channel['title'] = $siteName .' - '. t("Recently Added Publications");
   $channel['link'] = url($base, array('absolute' => TRUE));
   $channel['description'] = t("This feed lists the %num most recently added publications on %site", array('%num' => $numberInFeed, '%site' => $siteName));
   $nids = array();
+//FIXME DB
   while ($row = db_fetch_object($result)) {
     $nids[] = $row->nid;
   }
@@ -1765,11 +1794,13 @@ function biblio_recent_feed() {
  */
 function biblio_filter_feed($query, $terms = NULL, $rss_info = NULL) {
   $base = variable_get('biblio_base', 'biblio');
+//FIXME DB
   $result = db_query(db_rewrite_sql($query));
   $channel['title'] = $rss_info['title'];
   $channel['link'] = url($base . $rss_info['link'], array('absolute' => TRUE));
   $channel['description'] = $rss_info['description'];
   $nids = array();
+//FIXME DB
   $result = db_query($query, $terms);
   while ($row = db_fetch_object($result)) {
     $nids[] = $row->nid;
@@ -1781,6 +1812,7 @@ function biblio_get_db_fields() {
   $fields[] = 'nid';
   $fields[] = 'vid';
   $fields[] = 'biblio_type';
+//FIXME DB
   $result = db_query('SELECT name FROM {biblio_fields} ');
   while ($field = db_fetch_array($result)) {
     $fields[] = $field['name'];
@@ -1794,7 +1826,8 @@ function biblio_get_db_fields() {
  *
  *******************************************/
 function _biblio_citekey_print($citekey) {
-  $nid = db_fetch_object(db_query("SELECT nid FROM {biblio} WHERE biblio_citekey = '%s' ORDER BY vid DESC", $citekey));
+//FIXME DB
+	$nid = db_fetch_object(db_query("SELECT nid FROM {biblio} WHERE biblio_citekey = '%s' ORDER BY vid DESC", $citekey));
   if ($nid->nid > 0) {
     $style = biblio_get_style();
     $base = variable_get('biblio_base', 'biblio');
@@ -1965,17 +1998,21 @@ function biblio_term_path($term) {
 function biblio_coins_generate(& $node) {
   if ($node) {
     $node->biblio_coins = biblio_coins($node);
+//FIXME DB
     db_query("UPDATE {biblio}
               SET biblio_coins = '%s'
               WHERE vid = %d", $node->biblio_coins, $node->vid);
   }
   else {
-    $result = db_query("SELECT nr.*, b.*
+//FIXME DB
+  	$result = db_query("SELECT nr.*, b.*
                         FROM {node} AS n
                         LEFT JOIN {node_revisions}  AS nr ON n.vid = nr.vid LEFT JOIN {biblio} AS b ON n.vid = b.vid
                         WHERE n.type = 'biblio'  ");
-    while ($node = db_fetch_object($result)) {
+//FIXME DB
+  	while ($node = db_fetch_object($result)) {
       $node->biblio_coins = biblio_coins($node);
+//FIXME DB
       db_query("UPDATE {biblio}
                 SET biblio_coins = '%s'
                 WHERE vid = %d", $node->biblio_coins, $node->vid);
@@ -2145,6 +2182,7 @@ function biblio_diff(&$old_node, &$new_node) {
   require_once(drupal_get_path('module', 'biblio') .'/biblio.contributors.inc');
 
   $result = array();
+//FIXME DB
   $old_type = db_fetch_object(db_query('SELECT name FROM {biblio_types} where tid = %d', $old_node->biblio_type));
   $new_type = db_fetch_object(db_query('SELECT name FROM {biblio_types} where tid = %d', $new_node->biblio_type));
 
@@ -2160,11 +2198,13 @@ function biblio_diff(&$old_node, &$new_node) {
   $old_node->biblio_contributors = biblio_load_contributors($old_node->vid);
   $new_node->biblio_contributors = biblio_load_contributors($new_node->vid);
 
+//FIXME DB
   $db_result = db_query('SELECT b.name, btd.title, bt.weight
                       FROM {biblio_fields} b
                       INNER JOIN {biblio_field_type} bt ON bt.fid=b.fid
                       INNER JOIN {biblio_field_type_data} btd ON btd.ftdid=bt.ftdid
                       WHERE bt.tid=%d ORDER BY weight',$old_node->biblio_type );
+//FIXME DB
   while ($field = db_fetch_object($db_result)) {
     $name = $field->name;
     $old = $new = '';
@@ -2205,7 +2245,8 @@ function biblio_token_values($type, $object = NULL) {
   switch ($type) {
     case 'node':
       if ($object->type == "biblio") {
-        $type = db_result(db_query('SELECT name FROM {biblio_types} as t WHERE t.tid = %d',$object -> biblio_type));
+//FIXME DB
+      	$type = db_result(db_query('SELECT name FROM {biblio_types} as t WHERE t.tid = %d',$object -> biblio_type));
         #$title = db_result(db_query("SELECT title FROM {node} WHERE nid = %d", $gid));
         $values['biblio_year'] = check_plain($object->biblio_year);
         $values['biblio_authors'] = check_plain($object->biblio_contributors[1][0][lastname]);

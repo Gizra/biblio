@@ -272,7 +272,7 @@ function theme_biblio_tabular($node, $base = 'biblio', $teaser = false) {
   $output = '<div id="biblio-node">';
   $output .= filter_xss($node->biblio_coins, array('span'));
   $header = array();
-  $output .= theme('table', $header, $rows);
+  $output .= theme('table', array('header' => $header, 'rows' => $rows));
   $output .= '</div>';
   return $output;
 }

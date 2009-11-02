@@ -20,10 +20,11 @@
  */
 function _ris_tagged_import($file, $terms = array(), $batch = FALSE, $session_id = NULL) {
   
-	if (!($fp = fopen($file->uri, "r"))) {
+  if (!($fp = fopen($file->uri, "r"))) {
     drupal_set_message("could not open RIS input file", 'error');
     return;
   }
+  $tag = '';
   $incite = FALSE;
   $nids = array();
   $contributors = NULL;
