@@ -413,12 +413,11 @@ function biblio_export($format = "tagged", $nid = null, $popup = false, $version
     $params = $_SESSION['last_biblio_query_terms'];
   }
   elseif (!empty ($nid)) {
-    $query = db_rewrite_sql("SELECT DISTINCT(n.nid) FROM {node} n  WHERE n.nid=%d ");
-    $params[] = $nid;
+    $result = db_query("SELECT DISTINCT(n.nid) FROM {node} n  WHERE n.nid=:nid ", array(':nid' => $nid));
   } else {
     return;
   }
-  $result = db_query($query, $params);
+//  $result = db_query($query, $params);
   $count = 0;
   foreach ($result as $node) {
     $node = node_load($node->nid, FALSE, TRUE);
@@ -430,8 +429,8 @@ function biblio_export($format = "tagged", $nid = null, $popup = false, $version
     switch ($format) {
       case "tagged" :
         if (!$popup && $count == 1) {
-          drupal_set_header('Content-type', 'application/x-endnote-refer');
-          drupal_set_header('Content-Disposition', 'filename="Drupal-Biblio.enw"');
+          drupal_add_http_header('Content-type', 'application/x-endnote-refer');
+          drupal_add_http_header('Content-Disposition', 'filename="Drupal-Biblio.enw"');
         }
         if (!$popup) {
           print biblio_endnote_tagged_export($node);
@@ -442,16 +441,16 @@ function biblio_export($format = "tagged", $nid = null, $popup = false, $version
         break;
       case "xml" :
         if ($count == 1) {
-          drupal_set_header('Content-type', 'application/xml; charset=utf-8');
-          drupal_set_header('Content-Disposition', 'attachment; filename="Biblio-EndNote'. $version .'.xml"');
+          drupal_add_http_header('Content-type', 'application/xml; charset=utf-8');
+          drupal_add_http_header('Content-Disposition', 'attachment; filename="Biblio-EndNote'. $version .'.xml"');
           print _endnote8_XML_export('', 'begin');
         }
         print _endnote8_XML_export($node);
         break;
       case "bibtex" :
         if (!$popup && $count == 1) {
-          drupal_set_header('Content-type', 'application/text; charset=utf-8');
-          drupal_set_header('Content-Disposition', 'filename="Biblio-Bibtex.bib"');
+          drupal_add_http_header('Content-type', 'application/text; charset=utf-8');
+          drupal_add_http_header('Content-Disposition', 'filename="Biblio-Bibtex.bib"');
         }
         if (!$popup) {
           print biblio_bibtex_export($node);
@@ -461,8 +460,8 @@ function biblio_export($format = "tagged", $nid = null, $popup = false, $version
         }
         break;
       case "csv" :
-        drupal_set_header('Content-Type', 'application/text; charset=utf-8');
-        drupal_set_header('Content-Disposition', 'attachment; filename=Biblio-export.csv');
+        drupal_add_http_header('Content-Type', 'application/text; charset=utf-8');
+        drupal_add_http_header('Content-Disposition', 'attachment; filename=Biblio-export.csv');
         print biblio_csv_export($node);
         break;
     }
@@ -620,7 +619,7 @@ function biblio_bibtex_export($node) {
   }
   $bibtex .= '@'. $type .' {';
   $bibtex .= ($node->biblio_citekey) ? $node->biblio_citekey  : "";
-  $bibtex .= _bibtex_format_entry('title', $node->title);
+  $bibtex .= _bibtex_format_entry('title', $node->title['zxx'][0]['value']);
   $bibtex .= _bibtex_format_entry('journal', $journal);
   $bibtex .= _bibtex_format_entry('booktitle', $booktitle);
   $bibtex .= _bibtex_format_entry('series', $series);
@@ -667,10 +666,18 @@ function biblio_bibtex_export($node) {
   }
 
   $a = $e = array();
-  foreach ((array)$node->biblio_contributors[1] as $auth) $a[] = trim($auth['name']);
-  foreach ((array)$node->biblio_contributors[2] as $auth) $e[] = trim($auth['name']);
+  foreach ($node->biblio_contributors as $acat => $authors) {
+    if ($acat != 2){
+      foreach ($authors as $author)  $a[] = trim($author['name']);
+    }
+  }
+//  foreach ((array)$node->biblio_contributors[1] as $auth) $a[] = trim($auth['name']);
+  if (isset($node->biblio_contributors[2])) {
+    foreach ((array)$node->biblio_contributors[2] as $auth) $e[] = trim($auth['name']);
+    $e = implode(' and ', $e);
+  }
   $a = implode(' and ', $a);
-  $e = implode(' and ', $e);
+
   if (!empty ($a)) $bibtex .= _bibtex_format_entry('author', $a);
   if (!empty ($e)) $bibtex .= _bibtex_format_entry('editor', $e);
   $bibtex .= "\n}\n";
@@ -884,8 +891,8 @@ function biblio_endnote_tagged_export($node) {
   }
   if (isset($node->biblio_year) && $node->biblio_year < 9998)
   $tagged .= "%D ". trim($node->biblio_year) ."\r\n";
-  if (!empty($node->title))
-  $tagged .= "%T ". trim($node->title) ."\r\n";
+  if (!empty($node->title['zxx'][0]['value']))
+  $tagged .= "%T ". trim($node->title['zxx'][0]['value']) ."\r\n";
 
   foreach ((array)$node->biblio_contributors[1] as $auth) {
     $tagged .= "%A " . trim($auth['name']) ."\r\n";

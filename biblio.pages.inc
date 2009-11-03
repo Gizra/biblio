@@ -1075,7 +1075,7 @@ function _biblio_keyword_links($keywords,$base='biblio') {
 function biblio_author_page($filter = NULL) {
   global $user;
   $where = array();
-  $header = array();
+  $where_clause = '';
   $style_name = biblio_get_style();
   module_load_include('inc', 'biblio', "biblio_style_$style_name");
 
@@ -1117,7 +1117,7 @@ function biblio_author_page($filter = NULL) {
     foreach ($db_result as $author){
       $authors[] = $author;
     }
-    $rows[] = array(array('data' => theme('biblio_alpha_line', 'authors', $filter), 'colspan' => 3));
+    $rows[] = array(array('data' => theme('biblio_alpha_line', array('type' => 'authors', 'current' => $filter, 'path' => '')), 'colspan' => 3));
     if (count($authors)) {
       for ($i=0; $i < count($authors); $i+=3) {
         $rows[] = array( array('data' => _biblio_format_author($authors[$i]) ),
@@ -1126,7 +1126,7 @@ function biblio_author_page($filter = NULL) {
       }
     }
   //$header = array(array('data' => t('There are a total of @count authors !header_ext in the database',array('@count' => count($authors), '!header_ext' => $header_ext)), 'align' =>'center', 'colspan' => 3));
-  $output = theme('table', array('header' => $header, 'rows' => $rows));
+  $output = theme('table', array('rows' => $rows));
   return $output;
 }
 /*
@@ -1157,10 +1157,10 @@ function _biblio_author_edit_links($author) {
 function biblio_keyword_page($filter = NULL) {
   global $user;
   $where = array();
-
+  $where_clause = '';
   if ($filter) {
     $filter = strtoupper($filter);
-    $where[] =  "UPPER(SUBSTRING(word,1,1)) = '%s' ";
+    $where[] =  "UPPER(SUBSTRING(word,1,1)) = :filter ";
     $header_ext = t(' (which start with the letter "@letter") ',array('@letter' => $filter ));
   }
   else {
@@ -1182,19 +1182,19 @@ function biblio_keyword_page($filter = NULL) {
                          LEFT JOIN {node} n ON n.vid = bk.vid
                          '. $where_clause. '
                          GROUP BY bkd.kid, bkd.word HAVING COUNT(*) > 0
-                         ORDER BY  word ASC', $filter);
+                         ORDER BY  word ASC', array(':filter' => $filter));
 
-  while ($keyword = db_fetch_object($db_result)){
+  foreach ($db_result as $keyword){
     $keywords[] = $keyword;
   }
-  $rows[] = array(array('data' => theme(biblio_alpha_line, 'keywords', $filter), 'colspan' => 3));
+  $rows[] = array(array('data' => theme('biblio_alpha_line', array('type' => 'keywords', 'current' => $filter, 'path' =>'')), 'colspan' => 3));
   for ($i=0; $i < count($keywords); $i+=3) {
     $rows[] = array( array('data' => _biblio_format_keyword($keywords[$i]) ),
     array('data' => isset($keywords[$i+1])?_biblio_format_keyword($keywords[$i+1]):'' ),
     array('data' => isset($keywords[$i+2])?_biblio_format_keyword($keywords[$i+2]):'' ));
   }
   //$header = array(array('data' => t('There are a total of @count keywords !header_ext in the database',array('@count' => count($keywords), '!header_ext' => $header_ext)), 'align' =>'center', 'colspan' => 3));
-  $output .= theme('table', $header, $rows);
+  $output = theme('table', array('rows' => $rows));
   return $output;
 }
 function _biblio_format_keyword($keyword) {

@@ -399,14 +399,6 @@ function biblio_link($type, $node = NULL, $teaser = FALSE) {
       );
 
     }
-    if (biblio_access('export', $node)) {
-      $show_link = variable_get('biblio_export_links', array('tagged' => TRUE, 'xml' => TRUE, 'bibtex' => TRUE));
-      $show_link['google'] = variable_get('biblio_google_link', 1);
-      if ($show_link['tagged']) $links['biblio_tagged']         = _build_biblio_tagged_link($base, $node->nid);
-      if ($show_link['xml'])    $links['biblio_xml']            = _build_biblio_xml_link($base, $node->nid);
-      if ($show_link['bibtex']) $links['biblio_bibtex']         = _build_biblio_bibtex_link($base, $node->nid);
-      if ($show_link['google']) $links['biblio_google_scholar'] = _build_google_scholar_link($node);
-    }
 
 
   }
@@ -797,7 +789,7 @@ function biblio_menu() {
     'weight'            => -9
   );
   $items['admin/settings/biblio/author/type/%/edit'] = array(
-    'title'             => 'Add New Author Type',
+    'title'             => 'Edit Author Type',
     'page callback'     => 'drupal_get_form',
     'page arguments'    => array('biblio_admin_author_types_form_edit', 'edit', 5),
     'access arguments'  => array('administer biblio'),
@@ -1012,53 +1004,53 @@ function biblio_nodeapi(& $node, $op, $a3, $a4) {
 }
 function biblio_form_alter(&$form, $form_state, $form_id) {
 
-  if ($form_id == "biblio_node_form") { // this next bit is to remove all the form elements execpt the pub type select box the first time through
-    if (!isset($form_state['values']['biblio_type']) &&
-        empty($form_state['post']['biblio_type']) &&
-        empty($form_state['submitted']) &&
-        empty($form['vid']['#value'])) {
-
-      foreach (element_children($form) as $form_element) {
-        if ($form_element == 'doi_lookup') continue;
-        if ($form_element == 'cut_paste') continue;
-        if ($form[$form_element]['#type'] == 'fieldset' ||
-            $form_element == 'buttons' ||
-            $form_element == 'taxonomy' ||
-            strstr($form_element, 'field_')) {
-          $form[$form_element] = NULL;
-        }
-      }
-
-    }
-    else {
-      if (isset($form['menu']['#weight']) && $form['menu']['#weight'] < 20) $form['menu']['#weight'] = 20;
-      if (isset($form['book']['#weight']) && $form['book']['#weight'] < 20) $form['book']['#weight'] = 20;
-      if (isset($form['taxonomy'])) {
-        if (!isset($form['taxonomy']['#title'])) {
-          $form['taxonomy'] += array(
-            '#type' => 'fieldset',
-            '#title' => t('Vocabularies'),
-            '#collapsible' => TRUE,
-            '#collapsed' => FALSE,
-          );
-        }
-        $form['taxonomy']['#description'] = t('Select taxonomy terms which will be related to this ').variable_get('biblio_base_title', 'Biblio').t(' entry.');
-        $form['taxonomy']['copy_to_biblio'] = array(
-          '#type' => 'checkbox',
-          '#title' => t('Copy these terms to the biblio keyword database'),
-          '#return_value' => 1,
-          '#default_value' =>  variable_get('biblio_copy_taxo_terms_to_keywords', 0),
-          '#description' => t('If this option is selected, the selected taxonomy terms will be copied to the '.variable_get('biblio_base_title', 'Biblio').' keyword database and be displayed as keywords (as well as taxonomy terms) for this entry.')
-        );
-      }
-      $kw_vocab = variable_get('biblio_keyword_vocabulary', 0);
-      $freetagging = variable_get('biblio_keyword_freetagging', 0);
-      if ($freetagging && $kw_vocab && isset($form['taxonomy']['tags'][$kw_vocab])) {
-        unset($form['taxonomy']['tags'][$kw_vocab]);
-
-      }
-    }
-  }
+//  if ($form_id == "biblio_node_form") { // this next bit is to remove all the form elements execpt the pub type select box the first time through
+//    if (!isset($form_state['values']['biblio_type']) &&
+//        empty($form_state['post']['biblio_type']) &&
+//        empty($form_state['submitted']) &&
+//        empty($form['vid']['#value'])) {
+//
+//      foreach (element_children($form) as $form_element) {
+//        if ($form_element == 'doi_lookup') continue;
+//        if ($form_element == 'cut_paste') continue;
+//        if ($form[$form_element]['#type'] == 'fieldset' ||
+//            $form_element == 'buttons' ||
+//            $form_element == 'taxonomy' ||
+//            strstr($form_element, 'field_')) {
+//          $form[$form_element] = NULL;
+//        }
+//      }
+//
+//    }
+//    else {
+//      if (isset($form['menu']['#weight']) && $form['menu']['#weight'] < 20) $form['menu']['#weight'] = 20;
+//      if (isset($form['book']['#weight']) && $form['book']['#weight'] < 20) $form['book']['#weight'] = 20;
+//      if (isset($form['taxonomy'])) {
+//        if (!isset($form['taxonomy']['#title'])) {
+//          $form['taxonomy'] += array(
+//            '#type' => 'fieldset',
+//            '#title' => t('Vocabularies'),
+//            '#collapsible' => TRUE,
+//            '#collapsed' => FALSE,
+//          );
+//        }
+//        $form['taxonomy']['#description'] = t('Select taxonomy terms which will be related to this ').variable_get('biblio_base_title', 'Biblio').t(' entry.');
+//        $form['taxonomy']['copy_to_biblio'] = array(
+//          '#type' => 'checkbox',
+//          '#title' => t('Copy these terms to the biblio keyword database'),
+//          '#return_value' => 1,
+//          '#default_value' =>  variable_get('biblio_copy_taxo_terms_to_keywords', 0),
+//          '#description' => t('If this option is selected, the selected taxonomy terms will be copied to the '.variable_get('biblio_base_title', 'Biblio').' keyword database and be displayed as keywords (as well as taxonomy terms) for this entry.')
+//        );
+//      }
+//      $kw_vocab = variable_get('biblio_keyword_vocabulary', 0);
+//      $freetagging = variable_get('biblio_keyword_freetagging', 0);
+//      if ($freetagging && $kw_vocab && isset($form['taxonomy']['tags'][$kw_vocab])) {
+//        unset($form['taxonomy']['tags'][$kw_vocab]);
+//
+//      }
+//    }
+//  }
   return $form;
 }
 /**
@@ -1068,7 +1060,8 @@ function biblio_form_alter(&$form, $form_state, $form_id) {
  * specific to this node type. This hook requires us to return some HTML
  * that will be later placed inside the form.
  */
-function biblio_form($node, $form_state) {
+function biblio_form(stdClass $node, $form_state) {
+ print_r($form_state);
   global $user;
 
   if (isset($form_state['post']['biblio_type'])) {
@@ -1083,7 +1076,7 @@ function biblio_form($node, $form_state) {
   $show_fields = !empty($tid);
 
   $form['#validate'][] = 'biblio_form_validate';
-  $form['#cache'] = TRUE;
+  $form['#cache'] = FALSE;
 
   /* publication type */
   $param['options'] = array(
@@ -1093,65 +1086,65 @@ function biblio_form($node, $form_state) {
     foreach ($result as $option) {
     $options["$option->tid"] = $option->name;
   }
-  if (!isset($node->nid)) {// only show the doi lookup and paste boxes if this is a new entry
-    if(phpversion() > 5 && !isset($form_state['storage']['biblio_doi'])) {
-      $form['doi_lookup'] = array(
-        '#type' => 'fieldset',
-        '#title' => t('DOI Lookup'),
-        '#weight' => -20,
-        '#collapsible' => TRUE,
-        '#collapsed' => TRUE,
-      );
-      $have_pid  = (isset($user->biblio_crossref_pid) && !empty($user->biblio_crossref_pid)) ? FALSE : TRUE;
-      if ($have_pid) {
-        $form['doi_lookup']['doi_register'] = array(
-          '#prefix' => '<p><b>',
-          '#suffix' => '</b></p>',
-          '#value' => l('You need to register with CrossRef', 'http://www.crossref.org/requestaccount/', array('attributes' => array('target' => '_blank'), 'absolue' => TRUE)). t(' and then enter your CrossRef UserID in the "<i>CrossRef Login Information</i>" section of your account profile '). l('here...',"user/$user->uid/edit"),
-        );
-      }
-
-      $form['doi_lookup']['doi_data'] = array(
-        '#type' => 'textfield',
-        '#title' => t('DOI'),
-        '#required' => FALSE,
-        '#default_value' => '',
-        '#description' => t('Enter a DOI name in the form: <b>10.1000/123456</b>'),
-        '#disabled' => $have_pid,
-        '#size' => 60,
-        '#maxlength' => 255,
-        '#weight' => -4
-      );
-      $form['doi_lookup']['doi_submit'] = array(
-        '#type' => 'submit',
-        '#disabled' => $have_pid,
-        '#value' => t('Populate using DOI')
-      );
-    }
-    if(!isset($form_state['storage']['biblio_paste'])) {
-      $form['cut_paste'] = array(
-        '#type' => 'fieldset',
-        '#title' => t('Paste'),
-        '#weight' => -20,
-        '#collapsible' => TRUE,
-        '#collapsed' => TRUE,
-      );
-      $form['cut_paste']['paste_data'] = array(
-        '#type' => 'textarea',
-        '#title' => t('BibTex'),
-        '#required' => FALSE,
-        '#default_value' => '',
-        '#description' => t('Paste a BibTex entry here'),
-        '#size' => 60,
-        '#maxlength' => 2048,
-        '#weight' => -4
-      );
-      $form['cut_paste']['paste_submit'] = array(
-        '#type' => 'submit',
-        '#value' => t('Populate using BibTex')
-      );
-    }
-  }
+//  if (!isset($node->nid)) {// only show the doi lookup and paste boxes if this is a new entry
+//    if(phpversion() > 5 && !isset($form_state['storage']['biblio_doi'])) {
+//      $form['doi_lookup'] = array(
+//        '#type' => 'fieldset',
+//        '#title' => t('DOI Lookup'),
+//        '#weight' => -20,
+//        '#collapsible' => TRUE,
+//        '#collapsed' => TRUE,
+//      );
+//      $have_pid  = (isset($user->biblio_crossref_pid) && !empty($user->biblio_crossref_pid)) ? FALSE : TRUE;
+//      if ($have_pid) {
+//        $form['doi_lookup']['doi_register'] = array(
+//          '#prefix' => '<p><b>',
+//          '#suffix' => '</b></p>',
+//          '#value' => l('You need to register with CrossRef', 'http://www.crossref.org/requestaccount/', array('attributes' => array('target' => '_blank'), 'absolue' => TRUE)). t(' and then enter your CrossRef UserID in the "<i>CrossRef Login Information</i>" section of your account profile '). l('here...',"user/$user->uid/edit"),
+//        );
+//      }
+//
+//      $form['doi_lookup']['doi_data'] = array(
+//        '#type' => 'textfield',
+//        '#title' => t('DOI'),
+//        '#required' => FALSE,
+//        '#default_value' => '',
+//        '#description' => t('Enter a DOI name in the form: <b>10.1000/123456</b>'),
+//        '#disabled' => $have_pid,
+//        '#size' => 60,
+//        '#maxlength' => 255,
+//        '#weight' => -4
+//      );
+//      $form['doi_lookup']['doi_submit'] = array(
+//        '#type' => 'submit',
+//        '#disabled' => $have_pid,
+//        '#value' => t('Populate using DOI')
+//      );
+//    }
+//    if(!isset($form_state['storage']['biblio_paste'])) {
+//      $form['cut_paste'] = array(
+//        '#type' => 'fieldset',
+//        '#title' => t('Paste'),
+//        '#weight' => -20,
+//        '#collapsible' => TRUE,
+//        '#collapsed' => TRUE,
+//      );
+//      $form['cut_paste']['paste_data'] = array(
+//        '#type' => 'textarea',
+//        '#title' => t('BibTex'),
+//        '#required' => FALSE,
+//        '#default_value' => '',
+//        '#description' => t('Paste a BibTex entry here'),
+//        '#size' => 60,
+//        '#maxlength' => 2048,
+//        '#weight' => -4
+//      );
+//      $form['cut_paste']['paste_submit'] = array(
+//        '#type' => 'submit',
+//        '#value' => t('Populate using BibTex')
+//      );
+//    }
+//  }
   $form['biblio_type'] = array(
     '#type' => 'select',
     '#title' => t('Publication Type'),
@@ -1287,7 +1280,7 @@ function biblio_form($node, $form_state) {
     $form['body_field']['format'] = filter_form($node->format, 20);
   }
  // $form['format'] = filter_form($node->format, 20);
-
+//print_r($form);
   return $form;
 }
 
@@ -1477,8 +1470,9 @@ function biblio_contributors_js($tid, $auth_category, $other_fields = FALSE) {
  *
  * Errors should be signaled with form_set_error().
  */
-function biblio_form_validate($form, & $form_state) {
-  $op = $form['#post']['op'];
+function biblio_form_validate($form, &$form_state) {
+
+  $op = $form_state['values']['op'];
   switch ($op) {
     case t('Populate using DOI'):
       module_load_include('inc','biblio','biblio.import.export');
@@ -1508,9 +1502,11 @@ function biblio_form_validate($form, & $form_state) {
       }
       break;
     default:
+
       if ($form_state['storage']['biblio_type'] == $form_state['values']['biblio_type'] || (!empty($form['#node']->biblio_type) && $form['#node']->biblio_type == $form_state['values']['biblio_type'])) {
         $form_state['storage'] = array();
         $form_state['rebuild'] = FALSE;
+
       }
       else {
         $form_state['storage']['biblio_doi']   = TRUE;
@@ -1684,6 +1680,7 @@ function biblio_citekey_generate($node) {
  */
 function biblio_view($node, $buildmode = 'full') {
   //if (strlen(trim($node->body))) $node = node_prepare($node, $teaser);
+  $links = array();
   $style = biblio_get_style();
   $base  = variable_get('biblio_base', 'biblio');
   $base_title = variable_get('biblio_base_title', 'Biblio');
@@ -1699,6 +1696,21 @@ function biblio_view($node, $buildmode = 'full') {
 			case 'tabular' :
 			default :
 				$node->content['body']['#markup'] = theme('biblio_tabular', array('node' => $node, 'base' => $base));
+				if (biblio_access('export', $node)) {
+          $show_link = variable_get('biblio_export_links', array('tagged' => TRUE, 'xml' => TRUE, 'bibtex' => TRUE));
+          $show_link['google'] = variable_get('biblio_google_link', 1);
+          if ($show_link['tagged']) $links['biblio_tagged']         = _build_biblio_tagged_link($base, $node->nid);
+          if ($show_link['xml'])    $links['biblio_xml']            = _build_biblio_xml_link($base, $node->nid);
+          if ($show_link['bibtex']) $links['biblio_bibtex']         = _build_biblio_bibtex_link($base, $node->nid);
+          if ($show_link['google']) $links['biblio_google_scholar'] = _build_google_scholar_link($node);
+        }
+        $node->content['links']['biblio'] = array(
+          '#theme' => 'links',
+          '#links' => $links,
+          '#attributes' => array('class' => array('links', 'inline')),
+        );
+
+
 				break;
 		}
 		drupal_set_breadcrumb(array(l(t('Home'), NULL), l(drupal_ucfirst($base_title), $base)));

@@ -193,6 +193,7 @@ function theme_biblio_long($node, $base = 'biblio', $style = 'classic') {
 function theme_biblio_tabular($variables) {
   $node = $variables['node'];
   $base = $variables['base'];
+
   if (module_exists('popups')){
      popups_add_popups();
   }
@@ -203,7 +204,7 @@ function theme_biblio_tabular($variables) {
   $fields = _biblio_get_field_information($node->biblio_type, TRUE);
   $rows[] = array(
     array('data' => t('Title'), 'class' => 'biblio-row-title'),
-    array('data' => filter_xss($node->title, biblio_get_allowed_tags()))
+    array('data' => filter_xss($node->title['zxx'][0]['value'], biblio_get_allowed_tags()))
   );
   $rows[] = array(
     array('data' => t('Publication Type'), 'class' => 'biblio-row-title'),
@@ -230,7 +231,6 @@ function theme_biblio_tabular($variables) {
       $author_options = $style_function();
       $author_options['numberOfAuthorsTriggeringEtAl'] = 100; //set really high so we see all authors
       $data = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[$row['fid']], 'options' => $author_options));
-      print_r($node->biblio_contributors[$row['fid']]);
     }
     else if (empty ($node->$row['name']) || $row['name'] == 'biblio_coins') continue;
     else {
@@ -263,14 +263,14 @@ function theme_biblio_tabular($variables) {
       )
     );
   }
-
-  if (strlen(trim($node->body)) && user_access('view full text')) {
-    $rows[] = array(
-        array('data' => t('Full Text'),  'valign' => 'top'),
-        array('data' =>  check_markup($node->body, $node->format, FALSE))
-    );
-
-  }
+//FIXME figure out where the node body stuff is now...
+//  if (strlen(trim($node->body)) && user_access('view full text')) {
+//    $rows[] = array(
+//        array('data' => t('Full Text'),  'valign' => 'top'),
+//        array('data' =>  check_markup($node->body, $node->format, FALSE))
+//    );
+//
+//  }
   $output = '<div id="biblio-node">';
   $output .= filter_xss($node->biblio_coins, array('span'));
   $header = array();
@@ -948,7 +948,7 @@ function _build_biblio_xml_link($base, $nid = NULL) {
 }
 function _build_google_scholar_link($node) {
   $link  = 'http://scholar.google.com/scholar?as_q=';
-  $link .= '"'.str_replace(' ', '+', $node->title).'"';
+  $link .= '"'.str_replace(' ', '+', $node->title['zxx'][0]['value']).'"';
   $link .= '&btnG=Search+Scholar&as_epq=&as_oq=&as_eq=&as_occt=any&as_sauthors='.$node->biblio_contributors[1][0]['lastname'];
 
   return array(
@@ -1005,10 +1005,10 @@ function theme_biblio_alpha_line($variables) {
   $type    = $variables['type'];
   $current = $variables['current'];
   $path    = $variables['path'];
-
   $options = array();
   $base = variable_get('biblio_base', 'biblio');
   $all = '';
+
   switch ($type){
     case 'authors':
     case 'keywords':
@@ -1119,6 +1119,7 @@ function theme_biblio_admin_orphans_form($variables) {
   return $output;
 }
 function theme_biblio_admin_keyword_orphans_form($variables) {
+
   $form = $variables['form'];
   // If there are any orphans, then $form['name'] contains a list of the author names
 
@@ -1142,7 +1143,7 @@ function theme_biblio_admin_keyword_orphans_form($variables) {
   $output .= theme('table', array('header' => $header, 'rows' => $rows));
 
   if ($form['pager']['#value']) {
-    $output .= drupal_render($form['pager']);
+ //   $output .= drupal_render($form['pager']);
   }
 
 //  $output .= drupal_render($form);
