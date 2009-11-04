@@ -84,8 +84,8 @@ function biblio_db_search() {
   }
   else{
     //$count = db_result(db_query($query_info['count_query'],$query_info['query_terms']));
-    $result = pager_query($query_info['query'], variable_get('biblio_rowsperpage', 25),0,$query_info['count_query'],$query_info['query_terms']);
-    return biblio_show_results($result, $query_info['sort_attrib'], $query_info['args'],$inline);
+  //  $result = pager_query($query_info['query'], variable_get('biblio_rowsperpage', 25),0,$query_info['count_query'],$query_info['query_terms']);
+    return biblio_show_results($query_info['query'], $query_info['sort_attrib'], $query_info['args'],$inline);
   }
 
 }
@@ -104,18 +104,17 @@ function biblio_build_query($arg_list) {
   if ( !isset( $tcc ) ) $tcc = 0;
   $inline = $rss_info['feed'] = false;
   $joins = array();
+  $args = array();
   $selects = array();
   $count_selects = array();
   $count_limit = '';
 
-  $selects[] = "DISTINCT(n.nid)";
-  $count_selects[] = "DISTINCT(n.nid)";
-  //$selects[] = "n.*";
-  //$selects[] = "b.*";
-  $selects[] = "bt.name as biblio_type_name";
-
-  $joins[] = "left join {biblio} b  on n.vid=b.vid ";
-  $joins[] = "inner join {biblio_types} bt  on b.biblio_type=bt.tid ";
+  $query = db_select('node', 'n')->extend('PagerDefault');
+  $query->addField('n', 'nid');
+  $type_name = $query->addField('bt', 'name', 'biblio_type_name');
+  $query->leftJoin('biblio', 'b', 'n.vid=b.vid');
+  $query->innerJoin('biblio_types', 'bt', 'b.biblio_type=bt.tid');
+  $query->distinct();
 
   // POSIX regular expression matching, case insensitive
   $match_op = ($db_type == 'pgsql') ? '~*' : 'RLIKE';
@@ -148,29 +147,30 @@ function biblio_build_query($arg_list) {
   switch ($sort_attrib['sort']) {
     case 'type':
       //$sortby = "ORDER BY bt.name %s, b.biblio_year DESC ";
-      $sortby = "ORDER BY bt.name %s, $sort_title";
+      $query->orderBy($type_name, $sort_attrib['order']);
+      $query->orderBy($type_name, $sort_title);
       break;
     case 'title':
-      //$sortby = "ORDER BY SUBSTRING(n.title,1,3) %s, b.biblio_year DESC ";
-      $sortby = "ORDER BY $sort_title %s";
+      $query->orderBy($sort_title, $sort_attrib['order']);
       break;
     case 'author':
-      $sortby = "ORDER BY bcd.lastname %s ";
-      $where['bc-rank'] = "bc.rank=0";
-      $where['bc-auth-category'] = "bc.auth_category=1";
-      $joins['bc'] = '  INNER JOIN {biblio_contributor} as bc on b.vid = bc.vid ';
-      $joins['bcd'] = '  JOIN {biblio_contributor_data} as bcd on bc.cid = bcd.cid ';
+      $last_name = $query->addField('bcd', 'lastname');
+      $query->innerJoin('biblio_contributor', 'bc', 'b.vid = bc.vid');
+      $query->innerJoin('biblio_contributor_data', 'bcd', 'bc.cid = bcd.cid');
+      $query->orderBy($last_name, $sort_attrib['order']);
+      $query->condition('bc.rank', 0);
+      $query->condition('bc.auth_category', 1);
       break;
     case 'keyword': // added msh 070808
-      $sortby = "ORDER BY bkd.word %s ";
-      $joins['bk'] = '  JOIN {biblio_keyword} as bk on b.vid = bk.vid ';
-      $joins['bkd'] = '  JOIN {biblio_keyword_data} as bkd on bk.kid = bkd.kid ';
-      $selects[] = "bkd.word as biblio_keyword";
-      $count_selects[] = "bkd.word";
+      $word = $query->addField('bkd', 'word', 'biblio_keyword');
+      $query->orderBy($word, $sort_attrib['order']);
+      $query->innerJoin('biblio_keyword', 'bk', 'b.vid = bk.vid');
+      $query->innerJoin('biblio_keyword_data', 'bkd', 'bc.kid = bkd.kid');
       break;
     case 'year':
     default:
-      $sortby = "ORDER BY b.biblio_year %s, b.biblio_date %s";
+      $query->orderBy('biblio_year', $sort_attrib['order']);
+      $query->orderBy('biblio_date', $sort_attrib['order']);
   } //end switch
   if (!isset($_SESSION['biblio_filter']) || !is_array($_SESSION['biblio_filter'])) {
     $_SESSION['biblio_filter'] = array();
@@ -185,11 +185,11 @@ function biblio_build_query($arg_list) {
   }
 
   if (count($arg_list) ) {
-    $args = array();
+
     while ($arg_list) {
       $type = $arg_list[0];
       array_shift($arg_list);
-      $operator = ($operator)?$operator:" AND "; //defaults to AND
+     // $operator = ($operator)?$operator:" AND "; //defaults to AND
       switch ($type) {
         case 'no_filters':
           break;
@@ -213,22 +213,20 @@ function biblio_build_query($arg_list) {
         case 'aid':
           $bcc++;
           $term = explode("?",array_shift($arg_list));
-          $joins[] = "inner join {biblio_contributor} as bc". $bcc ." on n.vid = bc". $bcc .".vid";
-          $where[] = "bc". $bcc .".cid = '%d' ";
-          $terms[] = db_escape_string($term[0]);
+          $query->innerJoin('biblio_contributor', "bc$bcc", "n.vid = bc$bcc.vid");
+          $query->condition("bc$bcc.cid", $term[0]);
           array_push($args, $type, $term[0]);
           break;
         case 'term':
         case 'term_id':
           $term = explode("?",array_shift($arg_list));
-          $joins[] = "inner join {term_node} as tn". $tcc ." on n.vid = tn".$tcc.".vid";
+          $query->innerJoin('term_node', "tn$tcc", "n.vid = tn$tcc.vid");
           if ($type == 'term') {
-            $joins[] = "inner join  {term_data} as td on tn". $tcc .".tid= td.tid";
-            $where[] = "td.name = '%s' ";
+            $query->innerJoin('term_data', 'td', "tn$tcc.tid = td.tid");
+            $query->condition('td.name', $term[0]);
           }elseif ($type == 'term_id') {
-            $where[] = "tn". $tcc .".tid = '%d' ";
+            $query->condition("tn$tcc.tid", $term[0]);
           }
-          $terms[] = db_escape_string($term[0]);
           array_push($args, $type, $term[0]);
           $tcc++;
           break;
@@ -254,29 +252,26 @@ function biblio_build_query($arg_list) {
           $term = explode("?",array_shift($arg_list));
 
           if (is_numeric($term[0])){
+          $query->innerJoin('biblio_contributor', "bc$bcc", "n.vid = bc$bcc.vid");
             $joins[] = "inner join {biblio_contributor} as bc". $bcc ." on n.vid = bc". $bcc .".vid";
             //$where[] = "bc". $bcc .".cid = '%d' ";
 //
             $cids = db_query('SELECT cid FROM {biblio_contributor_data}
-                              WHERE cid = %d OR aka = (SELECT aka FROM {biblio_contributor_data} WHERE cid = %d)'
-                              ,$term[0],$term[0]);
-            while ($cid = db_fetch_object($cids) ){
-              $wr .= empty($wr)?'':' OR ';
-              $wr .= "bc". $bcc .".cid = $cid->cid ";
+                              WHERE cid = :cid OR aka = (SELECT aka FROM {biblio_contributor_data} WHERE cid = :cdid)'
+                              ,array(':cid' => $term[0], ':cdid' => $term[0]));
+            $cid_count = 0;
+            $or = db_or();
+            foreach ($cids as $cid)
+            {
+              $or->condition("bc$bcc.cid", $cid->cid);
+              $cid_count++;
             }
-
-            $where[] = (!empty($wr)) ? $wr : "bc". $bcc .".cid = -1 ";
-
-//             $where[] = 'bc'. $bcc .'.cid in ( (select cid from {biblio_contributor_data}
-//                                            where cid = %d
-//                                            or    aka = %d
-//                                            or cid = (select aka from {biblio_contributor_data} where cid = %d)
-//                                            or aka = (select aka from {biblio_contributor_data} where cid = %d)
-//                                            and biblio_contributor_data.aka > 0)) ';
-//            $terms[] = db_escape_string($term[0]);
-//            $terms[] = db_escape_string($term[0]);
-//            $terms[] = db_escape_string($term[0]);
-//            $terms[] = db_escape_string($term[0]);
+            if ($cid_count == 0) {
+              $query->condition("bc$bcc.cid", -1);
+            }
+            else {
+              $query->condition($or);
+            }
           }else{
             $where[] = " bcd". $bcc .'.name '. $match_op .' "[[:<:]]%s[[:>:]]" ';
             $joins[] = " JOIN {biblio_contributor} as bc". $bcc ." on b.vid = bc". $bcc .".vid ";
@@ -369,7 +364,7 @@ function biblio_build_query($arg_list) {
               $sortby = "ORDER BY b.biblio_year %s, b.biblio_date %s, $sort_title ASC, bt.name ASC ";
           } //end switch
           break;
-            case 'search':
+        case 'search':
               $term = explode("?",array_shift($arg_list));
               $result_nids = split(',', $term[0]);
               $where[] = "n.nid in (".db_placeholders($result_nids).")";
@@ -381,8 +376,8 @@ function biblio_build_query($arg_list) {
               $term = array_shift($arg_list);
               array_push($args, $type, $term);
               $operator = NULL;
-              break;
-            default:
+          break;
+         default:
               $fields = biblio_get_db_fields();
               $term = explode("?",array_shift($arg_list));
               if (in_array("biblio_$type",$fields))
@@ -396,7 +391,7 @@ function biblio_build_query($arg_list) {
       }
     }
   }
-  $where[] = "n.type='biblio' ";
+/*  $where[] = "n.type='biblio' ";
   if ($user->uid != 1 ) {
     $where[] = 'n.status = 1 ';
   }//show only published entries to everyone except admin
@@ -413,10 +408,9 @@ function biblio_build_query($arg_list) {
   $terms[] = $sort_attrib['order']; // this is either asc or desc to be inserted into the first term of the ORDER clause
   if($sort_attrib['sort'] == 'year') $terms[] = $sort_attrib['order']; // we need any extra order term when sorting by year since there are to date terms biblio_year and biblio_date
   $_SESSION['last_biblio_query_terms'] = $terms;
-
-  return (array('query'      => $query,
-               'query_terms' => $terms,
-               'count_query' => $count_query,
+*/
+  $result = $query->execute();
+  return (array('query'      => $result,
                'args'        => $args,
                'sort_attrib' => $sort_attrib,
                'rss'         => $rss_info
@@ -438,6 +432,7 @@ function biblio_build_query($arg_list) {
  */
 function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' => 'DESC'), $args = null,$inline=false) {
   global $pager_total_items;
+  $profile = false;
   module_load_include('inc','biblio','biblio.contributors');
   module_load_include('inc','biblio','biblio.keywords');
 
@@ -450,24 +445,25 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
   if (module_exists('popups')){
      popups_add_popups();
   }
+
   if (!$inline && !$profile) {
 
     if (variable_get('biblio_rss', 0)) {
       drupal_set_html_head('<link rel="alternate" type="application/rss+xml" title="'.variable_get('site_name', 'Drupal').' RSS" href="'.url("$base/rss.xml").'" />');
     }
     // Search box. Has same permissions as the filter tab.
-    $content .= '<div id="biblio-header" class="clear-block">';
+    $content = '<div id="biblio-header" class="clear-block">';
     if (variable_get('biblio_search',0) && user_access('show filter tab')) {
       $content .= drupal_get_form('biblio_search_form');
     }
     if ( biblio_access('export')) {
-      $content .= '<div class="biblio-export">'. theme('biblio_export_links'). '</div>';
+      $content .= '<div class="biblio-export">'. theme('biblio_export_links',array('node' => NULL)). '</div>';
     }else{
       $content .= '<div class="biblio-export">'.t('Found @count results', array('@count' => $pager_total_items[0])) .'</div><br />';
     }
     // Add some links to the top of the page to change the sorting/ordering...
     if (user_access('show sort links')) {
-      $content .= _biblio_sort_tabs($attrib, $options);
+      $content .= _biblio_sort_tabs($attrib);
     }
     $content .= '</div>';
 
@@ -482,12 +478,16 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
     if (strpos($_GET['q'],'ag') || strpos($_GET['q'],'tg')) {
       $value = substr($_GET['q'],strrpos($_GET['q'],'/')+1);
     }
-    $content .= theme(biblio_alpha_line,$_GET['sort'],$value);
+    else {
+      $value = '';
+    }
+    $content .= theme('biblio_alpha_line', array('type' => $_GET['sort'], 'current' => $value, 'path' =>''));
   }
 
   $count = 0;
+
 //FIXME  use node_load_multiple()???
-  while ($node = db_fetch_object($result)) {
+  foreach ($result as $node) {
     $count++;
     $node = node_load($node->nid);
 
@@ -500,10 +500,11 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
 
     $inline_links = ($inline && variable_get('biblio_inlinemode_in_links',0)) ? true : false;
 
-    $content .= theme('biblio_entry', $node,$base,$style,$inline_links);
+    $content .= theme('biblio_entry', array('node' => $node,'base' => $base, 'style_name' => $style, 'inline' =>$inline_links));
+
   } //end while
   if ($count) $content .= '</div><!-- end category-section -->';
-  $content .= theme('pager', 0, variable_get('biblio_rowsperpage', 25));
+  $content .= theme('pager', array('quantity' => variable_get('biblio_rowsperpage', 25)));
   if ($count == 0) {
     $content .= "<h3>".t("No items found")."</h3>";
     if (strstr($content, "Filters:")) {
@@ -520,7 +521,7 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
 
 }
 
-function _biblio_sort_tabs($attrib, $options) {
+function _biblio_sort_tabs($attrib) {
   global $base_path;
   $content = '';
   $sort_links = array();
@@ -539,7 +540,7 @@ function _biblio_sort_tabs($attrib, $options) {
     $sort_links['options']['html'] = TRUE;
     $title = t(ucfirst($link));
     if ($key === $link && $link == $attrib['sort']) {
-      $sort_links['options']['query'] = "sort=$link&order=$order";
+      $sort_links['options']['query'] = array('sort' => $link, 'order' => $order);
       $sort_links['class'] = 'class="active"';
       $sort_links['pfx'] = ' [ ';
       $sort_links['sfx'] = '] ';
@@ -548,7 +549,7 @@ function _biblio_sort_tabs($attrib, $options) {
 
     }
     elseif ($key === $link ) {
-      $sort_links['options']['query'] = "sort=$link&order=$cur_order";
+      $sort_links['options']['query'] = array('sort' => $link, 'order' => $cur_order);
       $sort_links['class'] = '';
       $sort_links['pfx'] = ' ';
       $sort_links['sfx'] = ' ';
@@ -565,13 +566,13 @@ function _biblio_sort_tabs($attrib, $options) {
 
 function _biblio_sort_tab($options,  $title, $tabs = FALSE) {
   if ($tabs) {
-    $content .= '<li '.$options['class'] .'>';
+    $content = '<li '.$options['class'] .'>';
     $content .= '<a title="'.$options['options']['attributes']['title'].'"';
     $content .= 'href="'.  url($_GET['q']).'&amp;'.$options['options']['query'].'"';
     $content .= $options['class'] .'>';
     $content .= '<span class="a"><span class="b">'. $title .$options['arrow'].'</span></span></a></li>';
   } else {
-    $content .= $options['pfx'].l($title ,$_GET['q'],$options['options']).$options['arrow'].$options['sfx'];
+    $content = $options['pfx'].l($title ,$_GET['q'],$options['options']).$options['arrow'].$options['sfx'];
   }
   return $content;
 }
@@ -586,7 +587,7 @@ function _biblio_filter_info_line($args) {
     while ($args) {
       $type = $args[0];
       array_shift($args);
-      $value = db_escape_string($args[0]);
+      $value = $args[0];
       if ($type == 'search') {
         $search_content = array_shift($args);
         continue;
@@ -666,6 +667,7 @@ function _biblio_filter_info_line($args) {
 
 function _biblio_category_separator_bar($attrib, $node) {
   static $_text = '';
+  $content = '';
 
   switch ($attrib['sort']) {
     case 'title':
@@ -733,7 +735,7 @@ function _biblio_category_separator_bar($attrib, $node) {
   return $content;
 }
 function theme_biblio_separator_bar($text) {
-  $content .= "\n".'<div class="biblio-separator-bar">' . check_plain($text) . "</div>\n";
+  $content = "\n".'<div class="biblio-separator-bar">' . check_plain($text) . "</div>\n";
   $content .= "\n".'<div class ="biblio-category-section">';
   return $content;
 }
