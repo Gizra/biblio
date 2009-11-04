@@ -474,7 +474,7 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
 
   if ($inline === true) print '<div class="biblio-inline">';
 
-  if ($_GET['sort'] == 'title' || $_GET['sort'] == 'author') {
+  if (isset($_GET['sort']) && ($_GET['sort'] == 'title' || $_GET['sort'] == 'author')) {
     if (strpos($_GET['q'],'ag') || strpos($_GET['q'],'tg')) {
       $value = substr($_GET['q'],strrpos($_GET['q'],'/')+1);
     }

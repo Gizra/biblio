@@ -33,7 +33,8 @@ function theme_biblio_coin_button($element) {
  * @param $openURL
  * @return unknown_type
  */
-function theme_biblio_openurl($openURL) {
+function theme_biblio_openurl($variables) {
+  $openURL = $variables['openURL'];
   $openurl_image = variable_get('biblio_openurlimage', '');
   if ($openurl_image != '') {
     $output .= '<div class="biblio-openurl-image"><a href="'. $openURL .'"target=_blank><img border="0" src="'. $openurl_image .'" /></a></div>';
@@ -555,11 +556,10 @@ function theme_biblio_author_link($variables) {
   $inline = $inline ? "/inline" : "";
 
   if (isset($_GET['sort'])) {
-    $options['query']  .= "sort=" . $_GET['sort'];
+    $options['query']['sort'] = $_GET['sort'];
   }
   if (isset($_GET['order'])) {
-    $options['query']   .= $options['query'] ? "&" : "" ;
-    $options['query']   .= "order=" . $_GET['order'];
+    $options['query']['order'] = $_GET['order'];
   }
 
   $html = l(trim($author), "$base/author/$aid".$inline,$options );
@@ -663,7 +663,9 @@ function theme_biblio_style($variables ) {
   module_load_include('inc','biblio',"biblio_style_$style_name");
 
   $style_function = "biblio_style_$style_name";
+
   $styled_node = $style_function ($node, $base, $inline);
+
   if (empty ($node->biblio_coins))
     biblio_coins_generate($node);
   return ($styled_node . filter_xss($node->biblio_coins, array('span')));
@@ -685,7 +687,7 @@ function theme_biblio_entry($variables) {
   $output  = "\n".'<div class="biblio-entry">'."\n" ;
 
   // first add the styled entry...
-  $output .= theme('biblio_style', $node, $base, $style, $inline);
+  $output .= theme('biblio_style', array('node' => $node, 'base' => $base, 'style_name' => $style_name, 'inline' => $inline));
 
   // now add the various links
   if ($node->biblio_abst_e) {
@@ -702,17 +704,17 @@ function theme_biblio_entry($variables) {
   $openurl_base = variable_get('biblio_baseopenurl', '');
 
   if ($openurl_base){
-    $output .= theme('biblio_openurl', biblio_openurl($node));
+    $output .= theme('biblio_openurl',array('openURL' => biblio_openurl($node)));
   }
 
   if (biblio_access('export', $node)) {
     $base = variable_get('biblio_base', 'biblio');
-    $output .= theme('biblio_export_links',$node);
+    $output .= theme('biblio_export_links',array('node' => $node));
   }
 
   if (biblio_access('download', $node)) {
     // add links to attached files (if any)
-    $output .= theme('biblio_download_links',$node);
+    $output .= theme('biblio_download_links',array('node' => $node));
   }
   $output .= "\n</div>";
 
@@ -884,15 +886,16 @@ function theme_biblio_export_links($variables) {
  * @return  a link (<a href=...>Tagged</a>)
  */
 function _build_biblio_link($base, $node = NULL, $type = NULL) {
+  $nid = ($node) ? $node->nid : NULL;
   switch ($type) {
     case 'bibtex':
-      $link = _build_biblio_bibtex_link($base, $node->nid);
+      $link = _build_biblio_bibtex_link($base, $nid);
       break;
     case 'tagged':
-      $link = _build_biblio_tagged_link($base, $node->nid);
+      $link = _build_biblio_tagged_link($base, $nid);
       break;
     case 'xml':
-      $link = _build_biblio_xml_link($base, $node->nid);
+      $link = _build_biblio_xml_link($base, $nid);
       break;
     case 'google':
       $link = _build_google_scholar_link($node);
@@ -1016,15 +1019,15 @@ function theme_biblio_alpha_line($variables) {
       $all = '['.l(t('Show ALL'), substr($_GET['q'], 0, -2)).']' ;
       break;
     case 'author':
-      $options['query'] .= 'sort=author';
+      $options['query'] = array('sort' => 'author');
       $path = "$base/ag/";
-      $all_query['query'] = 'sort=author'. ($_GET['order']?'&order='.$_GET['order']:'');
+      $all_query['query'] = array('sort' => 'author', 'order' => $_GET['order']);
       $all = '['.l(t('Show ALL'), $base,$all_query).']' ;
       break;
     case 'title':
-      $options['query'] .= 'sort=title';
+      $options['query'] = array('sort' => 'title');
       $path = "$base/tg/";
-      $all_query['query'] = 'sort=title'. ($_GET['order']?'&order='.$_GET['order']:'');
+      $all_query['query'] = array('sort' => 'title', 'order' => $_GET['order']);
       $all = '['.l(t('Show ALL'), $base,$all_query).']' ;
       break;
     default:
@@ -1032,7 +1035,7 @@ function theme_biblio_alpha_line($variables) {
       return;
       $inline = $inline ? "/inline" : "";
       if (isset ($_GET['sort'])) {
-        $options['query'] .= "sort=". $_GET['sort'];
+        $options['query'] .= array('sort' => $_GET['sort']);
         if ($_GET['sort'] == 'author')
         $path = "$base/ag/";
         if ($_GET['sort'] == 'title')
@@ -1041,8 +1044,7 @@ function theme_biblio_alpha_line($variables) {
 
   }
   if (isset ($_GET['order'])) {
-    $options['query'] .= $options['query'] ? "&" : "";
-    $options['query'] .= "order=". $_GET['order'];
+    $options['query'] = array('order' => $_GET['order']);
   }
   $output = '<div class="biblio-alpha-line">';
   for ($i = 65; $i <= 90; $i++) {
