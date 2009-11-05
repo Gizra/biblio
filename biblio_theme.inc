@@ -952,7 +952,7 @@ function _build_biblio_xml_link($base, $nid = NULL) {
 function _build_google_scholar_link($node) {
   $link  = 'http://scholar.google.com/scholar?as_q=';
   $link .= '"'.str_replace(' ', '+', $node->title['zxx'][0]['value']).'"';
-  $link .= '&btnG=Search+Scholar&as_epq=&as_oq=&as_eq=&as_occt=any&as_sauthors='.$node->biblio_contributors[1][0]['lastname'];
+  $link .= '&btnG=Search+Scholar&as_epq=&as_oq=&as_eq=&as_occt=any&as_sauthors='.biblio_get_first_contributor($node->vid)->lastname;
 
   return array(
         'title'      => t('Google Scholar'),
@@ -1069,7 +1069,6 @@ function theme_biblio_alpha_line($variables) {
 function theme_biblio_admin_author_edit_form($variables){
   $form = $variables['form'];
   $rows = array();
-  $header = array();
   $rows[] = array(
             array('data' => drupal_render($form['prefix'])),
             array('data' => drupal_render($form['firstname'])),
@@ -1080,11 +1079,10 @@ function theme_biblio_admin_author_edit_form($variables){
   $rows[] = array(array('data' => drupal_render($form['affiliation']), 'colspan' => 5));
   $rows[] = array(array('data' => drupal_render($form['drupal_uid']), 'colspan' => 5));
 
-  $output = theme('table', array('header' => $header, 'rows' => $rows));
+  $output = theme('table', array('rows' => $rows));
   $output .= drupal_render($form['merge']);
   $output .= drupal_render($form['link']);
- // $output .= drupal_render($form);
-
+  $output .= drupal_render_children($form);
   return $output;
 
 }

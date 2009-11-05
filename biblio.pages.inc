@@ -159,13 +159,13 @@ function biblio_build_query($arg_list) {
       $query->innerJoin('biblio_contributor_data', 'bcd', 'bc.cid = bcd.cid');
       $query->orderBy($last_name, $sort_attrib['order']);
       $query->condition('bc.rank', 0);
-      $query->condition('bc.auth_category', 1);
+     // $query->condition('bc.auth_category', 1);
       break;
     case 'keyword': // added msh 070808
       $word = $query->addField('bkd', 'word', 'biblio_keyword');
       $query->orderBy($word, $sort_attrib['order']);
       $query->innerJoin('biblio_keyword', 'bk', 'b.vid = bk.vid');
-      $query->innerJoin('biblio_keyword_data', 'bkd', 'bc.kid = bkd.kid');
+      $query->innerJoin('biblio_keyword_data', 'bkd', 'bk.kid = bkd.kid');
       break;
     case 'year':
     default:
@@ -407,7 +407,7 @@ function biblio_build_query($arg_list) {
   if($sort_attrib['sort'] == 'year') $terms[] = $sort_attrib['order']; // we need any extra order term when sorting by year since there are to date terms biblio_year and biblio_date
   $_SESSION['last_biblio_query_terms'] = $terms;
 */
-  
+
   $result = $query->execute();
   return (array('query'      => $result,
                'args'        => $args,
@@ -488,7 +488,9 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
 //FIXME  use node_load_multiple()???
   foreach ($result as $node) {
     $count++;
+    foreach($node as $key => $value) $node_input[$key] = $value; // save any incoming values such as type name or keyword
     $node = node_load($node->nid);
+    foreach($node_input as $key => $value) $node->$key = $value; // now add the incoming values back to the new node object
 
     if (variable_get('biblio_hide_bibtex_braces', 0)) $node->title = biblio_remove_brace($node->title);
     if (variable_get('biblio_fix_isi_links', 0)) biblio_fix_isi_links($node);
@@ -564,7 +566,7 @@ function _biblio_sort_tabs($attrib) {
 }
 
 function _biblio_sort_tab($options,  $title, $tabs = FALSE) {
-	
+
   if ($tabs) {
     $content = '<li '.$options['class'] .'>';
     $content .= '<a title="'.$options['options']['attributes']['title'].'"';

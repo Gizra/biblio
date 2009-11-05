@@ -13,6 +13,20 @@ function biblio_get_contributor($aid) {
   return $contributor[$aid];
 }
 
+function biblio_get_first_contributor($vid) {
+  static $contributor = array();
+  if (!isset($contributor[$vid])) {
+    $query = db_select('biblio_contributor', 'bc');
+    $query->join('biblio_contributor_data', 'bcd', 'bc.cid=bcd.cid');
+    $query->fields('bcd');
+    $query->condition('bc.vid', $vid);
+    $query->condition('bc.rank', 0);
+    $contributor[$vid] = $query->execute()->fetchObject();
+  }
+
+  return $contributor[$vid];
+}
+
 /**
  * @param $vid
  * @return unknown_type

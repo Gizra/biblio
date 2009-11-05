@@ -1572,34 +1572,35 @@ function biblio_admin_author_edit_form_submit($form, &$form_state) {
     $uid = $form_state['values']['drupal_uid'];
     $cid = $form_state['values']['cid'] ;
   }
-
-  db_query("UPDATE {biblio_contributor_data} SET drupal_uid = 0 WHERE drupal_uid = %d", $uid);
-  $data = unserialize(db_result(db_query('SELECT data FROM {users} WHERE uid = %d', $uid)));
-  $data['biblio_contributor_id'] = $cid;
-  $v[] = serialize($data);
-  db_query("UPDATE {users} SET data = '%s' WHERE uid = %d", array_merge($v, array($uid)));
-
+  db_query("UPDATE {biblio_contributor_data} SET drupal_uid = 0 WHERE drupal_uid = :uid", array(':uid' => $uid));
+  if ($uid){
+    $result = db_query('SELECT data FROM {users} WHERE uid = :uid', array(':uid' => $uid))->fetch();
+    $data = unserialize($result->data);
+    $data['biblio_contributor_id'] = $cid;
+    $v = serialize($data);
+    db_query("UPDATE {users} SET data = :data WHERE uid = :uid", array(':data' => $v, ':uid' => $uid));
+  }
   drupal_write_record('biblio_contributor_data', $form_state['values'], 'cid');
   // merge authors
   if (isset($form_state['values']['merge_authors']) && $op == t('Merge')) {
     $merge_authors = array_filter($form_state['values']['merge_authors']);
     if (count($merge_authors) ) {
       $authors = implode(',', $merge_authors);
-      db_query("UPDATE {biblio_contributor} SET cid={$form_state['values']['cid']} WHERE cid IN ($authors)");
-      db_query("DELETE FROM {biblio_contributor_data} WHERE cid IN ($authors)");
+      db_query("UPDATE {biblio_contributor} SET cid=:cid WHERE cid IN (:authors)", array(':cid' => $form_state['values']['cid'], ':authors' => $authors));
+      db_query("DELETE FROM {biblio_contributor_data} WHERE cid IN (:authors)", array(':authors' => $authors));
     }
   }
   if (isset($form_state['values']['linked_authors']) ) {
     foreach ($form_state['values']['linked_authors'] as $key => $value) {
       if ($value == 0) {
-        db_query("UPDATE {biblio_contributor_data} SET aka=$key WHERE cid=$key");
+        db_query("UPDATE {biblio_contributor_data} SET aka=:aka WHERE cid=:cid", array(':aka' => $key, ':cid' => $key));
       }
     }
   }
   if (isset($form_state['values']['link_authors']) ) {
     //db_query("UPDATE {biblio_contributor_data} SET aka=$form_state['values']['cid'] WHERE cid IN ($authors)");
     foreach ($form_state['values']['link_authors'] as $key => $value) {
-        db_query("UPDATE {biblio_contributor_data} SET aka={$form_state['values']['cid']} WHERE cid=$key");
+        db_query("UPDATE {biblio_contributor_data} SET aka=:aka WHERE cid=:cid",array(':aka' => $form_state['values']['cid'], ':cid' => $key) );
     }
   }
 }
@@ -1710,7 +1711,7 @@ function biblio_admin_keyword_edit_form($form, $form_state, $keyword_id) {
     '#required' => TRUE,
     '#maxlength' => 255
   );
-print drupal_substr($keyword->word,0,5);
+
   $keywords = db_query("SELECT * FROM {biblio_keyword_data} kd WHERE word LIKE :word AND kid!=:kid", array(':word' => '%%'.drupal_substr($keyword->word,0,5).'%%', ':kid' => $keyword_id));
 
   foreach($keywords as $kw) {
@@ -1776,9 +1777,9 @@ function biblio_admin_keyword_edit_form_submit($form, &$form_state) {
     drupal_write_record('biblio_keyword_data', $form_state['values'], 'kid');
 
     if (count($form_state['values']['merge_keywords'])) {
-      $kids = implode(',', $form_state['values']['merge_keywords']);
-      update_sql("UPDATE {biblio_keyword} SET kid={$form_state['values']['kid']} WHERE kid IN ($kids)");
-      update_sql("DELETE FROM {biblio_keyword_data} WHERE kid IN ($kids)");
+      $kids = implode(',', array_filter($form_state['values']['merge_keywords']));
+      db_query("UPDATE {biblio_keyword} SET kid=:kid WHERE kid IN (:kids)", array(':kid' => $form_state['values']['kid'], ':kids' => $kids) );
+      db_query("DELETE FROM {biblio_keyword_data} WHERE kid IN (:kids)",array(':kids' => $kids));
     }
   }
 }
