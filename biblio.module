@@ -930,14 +930,14 @@ function biblio_menu() {
   return $items;
 }
 function biblio_filter_clear() {
+  $options = array();
   $_SESSION['biblio_filter'] = array();
   $base = variable_get('biblio_base', 'biblio');
   if (isset($_GET['sort'])) {
-    $options .= "sort=". $_GET['sort'];
+    $options['sort'] = $_GET['sort'];
   }
   if (isset($_GET['order'])) {
-    $options .= $options['query'] ? "&" : "";
-    $options .= "order=". $_GET['order'];
+    $options['order'] = $_GET['order'];
   }
   drupal_goto($base, $options);
 }

@@ -232,18 +232,16 @@ function biblio_build_query($arg_list) {
           break;
         case 'tg':
           $term = explode("?",array_shift($arg_list));
-          $where[] = "substring($sort_title,1 ,1)" . $match_op . " LOWER('%s')";
-          $terms[] = db_escape_string($term[0]);
+          $query->where("substring(($sort_title),1 ,1) " . $match_op . " LOWER(:letter)", array(':letter' => $term[0]));
           array_push($args, $type, $term[0]);
           $operator = NULL;
           break;
         case 'ag': //selects entries whoose authors firstname starts with the letter provided
           $term = explode("?",array_shift($arg_list));
-          $where[] = " UPPER(substring(bcd.lastname,1,1)) = '%s' ";
+          $query->where(" UPPER(substring(bcd.lastname,1,1)) = :letter ",array(':letter' => $term[0]));
           //$where['bc-rank'] = "bc.rank=0";
-          $joins['bc'] = '  INNER JOIN {biblio_contributor} as bc on b.vid = bc.vid ';
-          $joins['bcd'] = '  JOIN {biblio_contributor_data} as bcd on bc.cid = bcd.cid ';
-          $terms[] = db_escape_string(strtoupper($term[0]));
+          $query->innerJoin('biblio_contributor', 'bc', 'b.vid = bc.vid');
+          $query->innerJoin('biblio_contributor_data', 'bcd', 'bc.cid = bcd.cid');
           array_push($args, $type, $term[0]);
           $operator = NULL;
           break;
@@ -409,6 +407,7 @@ function biblio_build_query($arg_list) {
   if($sort_attrib['sort'] == 'year') $terms[] = $sort_attrib['order']; // we need any extra order term when sorting by year since there are to date terms biblio_year and biblio_date
   $_SESSION['last_biblio_query_terms'] = $terms;
 */
+  
   $result = $query->execute();
   return (array('query'      => $result,
                'args'        => $args,
@@ -565,10 +564,11 @@ function _biblio_sort_tabs($attrib) {
 }
 
 function _biblio_sort_tab($options,  $title, $tabs = FALSE) {
+	
   if ($tabs) {
     $content = '<li '.$options['class'] .'>';
     $content .= '<a title="'.$options['options']['attributes']['title'].'"';
-    $content .= 'href="'.  url($_GET['q']).'&amp;'.$options['options']['query'].'"';
+    $content .= 'href="'.  l($_GET['q'], $options['options']);
     $content .= $options['class'] .'>';
     $content .= '<span class="a"><span class="b">'. $title .$options['arrow'].'</span></span></a></li>';
   } else {
@@ -579,6 +579,8 @@ function _biblio_sort_tab($options,  $title, $tabs = FALSE) {
 
 function _biblio_filter_info_line($args) {
   $content = '';
+  $filtercontent = '';
+  $search_content = '';
   $base =  variable_get('biblio_base', 'biblio');
   $session = &$_SESSION['biblio_filter'];
   // if there are any filters in place, print them at the top of the list
@@ -647,11 +649,10 @@ function _biblio_filter_info_line($args) {
 
     $link_options = array();
     if (isset($_GET['sort'])) {
-      $link_options['query']  .= "sort=" . $_GET['sort'];
+      $link_options['query']['sort'] = $_GET['sort'];
     }
     if (isset($_GET['order'])) {
-      $link_options['query']   .= $link_options['query'] ? "&" : "" ;
-      $link_options['query']   .= "order=" . $_GET['order'];
+      $link_options['query']['order'] = $_GET['order'];
     }
 
     if ($search_content) {

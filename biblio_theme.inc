@@ -245,7 +245,7 @@ function theme_biblio_tabular($variables) {
           // the l() function which does a check_plain
           $data = $node-> $row['name'];
           break;
-        default :
+        default:
           if ($row['type'] == 'textarea') {
             $data = check_markup($node-> $row['name'], $node->format, FALSE);
           }

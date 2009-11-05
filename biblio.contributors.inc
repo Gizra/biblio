@@ -7,7 +7,7 @@
 function biblio_get_contributor($aid) {
   static $contributor = array();
   if (!isset($contributor[$aid])) {
-    $contributor[$aid] = db_query('SELECT * FROM {biblio_contributor_data} WHERE cid = :cid', array(':cid' => $aid))->fetchAll();
+    $contributor[$aid] = db_query('SELECT * FROM {biblio_contributor_data} WHERE cid = :cid', array(':cid' => $aid))->fetchObject();
   }
 
   return $contributor[$aid];
