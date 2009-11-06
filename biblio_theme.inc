@@ -685,7 +685,10 @@ function theme_biblio_entry($variables) {
   $inline     = $variables['inline'];
 
   $output  = "\n".'<div class="biblio-entry">'."\n" ;
-
+  if (!$node->status) {
+    $output .= '<div id="node-'.$node->nid.'" class="node node-unpublished">';
+  }
+  
   // first add the styled entry...
   $output .= theme('biblio_style', array('node' => $node, 'base' => $base, 'style_name' => $style_name, 'inline' => $inline));
 
@@ -716,6 +719,10 @@ function theme_biblio_entry($variables) {
     // add links to attached files (if any)
     $output .= theme('biblio_download_links',array('node' => $node));
   }
+  if (!$node->status) {
+    $output .= '</div>';
+  }
+  
   $output .= "\n</div>";
 
   return $output;
@@ -1035,7 +1042,7 @@ function theme_biblio_alpha_line($variables) {
       return;
       $inline = $inline ? "/inline" : "";
       if (isset ($_GET['sort'])) {
-        $options['query'] .= array('sort' => $_GET['sort']);
+        $options['query']['sort'] = $_GET['sort'];
         if ($_GET['sort'] == 'author')
         $path = "$base/ag/";
         if ($_GET['sort'] == 'title')
@@ -1044,7 +1051,7 @@ function theme_biblio_alpha_line($variables) {
 
   }
   if (isset ($_GET['order'])) {
-    $options['query'] = array('order' => $_GET['order']);
+    $options['query']['order'] = $_GET['order'];
   }
   $output = '<div class="biblio-alpha-line">';
   for ($i = 65; $i <= 90; $i++) {

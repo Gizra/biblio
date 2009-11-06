@@ -156,9 +156,9 @@ function biblio_build_query($arg_list) {
     case 'author':
       $last_name = $query->addField('bcd', 'lastname');
       $query->innerJoin('biblio_contributor', 'bc', 'b.vid = bc.vid');
-      $query->innerJoin('biblio_contributor_data', 'bcd', 'bc.cid = bcd.cid');
-      $query->orderBy($last_name, $sort_attrib['order']);
+      $query->leftJoin('biblio_contributor_data', 'bcd', 'bc.cid = bcd.cid');
       $query->condition('bc.rank', 0);
+      $query->orderBy($last_name, $sort_attrib['order']);
      // $query->condition('bc.auth_category', 1);
       break;
     case 'keyword': // added msh 070808
