@@ -1061,7 +1061,7 @@ function biblio_form_alter(&$form, $form_state, $form_id) {
  * that will be later placed inside the form.
  */
 function biblio_form(stdClass $node, $form_state) {
- print_r($form_state);
+
   global $user;
 
   if (isset($form_state['post']['biblio_type'])) {
@@ -1161,7 +1161,7 @@ function biblio_form(stdClass $node, $form_state) {
       '#type' => 'textfield',
       '#title' => t('Title'),
       '#required' => TRUE,
-      '#default_value' => trim((($form_state['values']['title'])?$form_state['values']['title']:$node->title)),
+      '#default_value' => trim((($form_state['values']['title'])?$form_state['values']['title']: $node->title['zxx'][0]['value'])),
       '#size' => 60,
       '#maxlength' => 255,
       '#weight' => -4
@@ -1281,6 +1281,7 @@ function biblio_form(stdClass $node, $form_state) {
   }
  // $form['format'] = filter_form($node->format, 20);
 //print_r($form);
+
   return $form;
 }
 
