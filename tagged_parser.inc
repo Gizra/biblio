@@ -19,11 +19,12 @@
  *
  */
 function _endnote_tagged_import($file, $terms = array(), $batch = FALSE, $session_id = NULL) {
-  if (!($fp = fopen($file->filepath, "r"))) {
+  if (!($fp = fopen($file->uri, "r"))) {
     drupal_set_message("could not open EndNote Tagged input",'error');
     return;
   }
   $nids = array();
+  $node = new stdClass();
   $incite = false;
   $node_id = null;
   $contributors = null;
@@ -46,110 +47,111 @@ function _endnote_tagged_import($file, $terms = array(), $batch = FALSE, $sessio
       }
       switch ($tag) {
         case '%0' :
-          $node['biblio_type'] = tagged_type_map($value);
+          $node->biblio_type = tagged_type_map($value);
           break;
         case '%A' :
-          $node['biblio_contributors'][1][] = array(
+          $node->biblio_contributors[1][] = array(
             'name' => $value,
-            'auth_type' => _biblio_get_auth_type(1, $node['biblio_type']));
+            'auth_type' => _biblio_get_auth_type(1, $node->biblio_type));
           break;
         case '%B' :
-          $node['biblio_secondary_title'] = $value;
+          $node->biblio_secondary_title = $value;
           break;
         case '%C' :
-          $node['biblio_place_published'] = $value;
+          $node->biblio_place_published = $value;
           break;
         case '%D' :
-          $node['biblio_year'] = $value;
+          $node->biblio_year = $value;
           break;
         case '%E' :
-          $node['biblio_contributors'][2][] = array(
+          $node->biblio_contributors[2][] = array(
             'name' => $value,
-            'auth_type' => _biblio_get_auth_type(2, $node['biblio_type']));
+            'auth_type' => _biblio_get_auth_type(2, $node->biblio_type));
           break;
         case '%F' :
-          $node['biblio_label'] = $value;
+          $node->biblio_label = $value;
           break;
         case '%I' :
-          $node['biblio_publisher'] = $value;
+          $node->biblio_publisher = $value;
           break;
         case '%J' : // Journal
-          $node['biblio_secondary_title'] = $value;
+          $node->biblio_secondary_title = $value;
           break;
         case '%K' :
-          $node['biblio_keywords'][] = $value;
+          $node->biblio_keywords[] = $value;
           break;
         case '%L' :
-          $node['biblio_call_number'] = $value;
+          $node->biblio_call_number = $value;
           break;
         case '%M' : // accession_number
-          $node['biblio_accession_number'] = $value;
+          $node->biblio_accession_number = $value;
           break;
         case '%N' :
-          $node['biblio_issue'] = $value;
+          $node->biblio_issue = $value;
           break;
         case '%P' :
-          $node['biblio_pages'] = $value;
+          $node->biblio_pages = $value;
           break;
         case '%R' :
-          $node['biblio_doi'] = $value;
+          $node->biblio_doi = $value;
           break;
         case '%S' :
-          $node['biblio_tertiary_title'] = $value;
+          $node->biblio_tertiary_title = $value;
           break;
         case '%T' :
-          $node['title'] = $value;
+        	$langcode = FIELD_LANGUAGE_NONE;
+          $node->title[$langcode][0]['value'] = $value;
           break;
         case '%U' :
-          $node['biblio_url'] = $value;
+          $node->biblio_url = $value;
           break;
         case '%V' :
-          $node['biblio_volume'] = $value;
+          $node->biblio_volume = $value;
           break;
         case '%X' :
-          $node['biblio_abst_e'] .= $value;
+          $node->biblio_abst_e .= $value;
           break;
         case '%Y' :
-          $node['biblio_contributors'][3][] = array(
+          $node->biblio_contributors[3][] = array(
             'name' => $value,
-            'auth_type' => _biblio_get_auth_type(3, $node['biblio_type']));
+            'auth_type' => _biblio_get_auth_type(3, $node->biblio_type));
           break;
         case '%Z' :
-          $node['biblio_notes'] .= $value;
+          $node->biblio_notes .= $value;
           break;
         case '%1' : // CUSTOM 1
-          $node['biblio_custom1'] = $value;
+          $node->biblio_custom1 = $value;
           break;
         case '%2' : // CUSTOM 2
-          $node['biblio_custom2'] = $value;
+          $node->biblio_custom2 = $value;
           break;
         case '%3' : // CUSTOM 3
-          $node['biblio_custom3'] = $value;
+          $node->biblio_custom3 = $value;
           break;
         case '%4' : // CUSTOM 4
-          $node['biblio_custom4'] = $value;
+          $node->biblio_custom4 = $value;
           break;
         case '%#' : // CUSTOM 5
-          $node['biblio_custom5'] = $value;
+          $node->biblio_custom5 = $value;
           break;
         case '%$' : // CUSTOM 6
-          $node['biblio_custom6'] = $value;
+          $node->biblio_custom6 = $value;
           break;
         case '%6' :
           break;
         case '%7' :
-          $node['biblio_edition'] = $value;
+          $node->biblio_edition = $value;
           break;
         case '%8' :
-          $node['biblio_date'] = $value;
+          $node->biblio_date = $value;
           break;
         case '%9' :
-          $node['biblio_type_of_work'] = $value;
+          $node->biblio_type_of_work = $value;
           break;
         case '%?' :
           break;
         case '%@' :
-          $node['biblio_isbn'] = $value;
+          $node->biblio_isbn = $value;
           break;
         case '%!' :
           break;
@@ -171,14 +173,15 @@ function _endnote_tagged_import($file, $terms = array(), $batch = FALSE, $sessio
       $incite = false;
       if (!empty($node)) {
         if (!empty($terms)) {
-          if (!isset($node['taxonomy'])) $node['taxonomy'] = array();
-          $node['taxonomy'] = array_merge($terms,$node['taxonomy']);
+          if (!isset($node->taxonomy)) $node->taxonomy = array();
+          $node->taxonomy = array_merge($terms,$node->taxonomy);
         }
-        $nids[] = biblio_save_node($node, $batch, $session_id);
+        biblio_save_node($node, $batch, $session_id);
+        if (!empty($node->nid)) $nids[] = $node->nid;
       }
 
-      $node = array();
-
+      $node = new stdClass();
+      $node->biblio_contributors = array();
     } // end if ($start !== false)
   } // end while
   fclose($fp);

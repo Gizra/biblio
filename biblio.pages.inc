@@ -98,10 +98,9 @@ function biblio_db_search() {
  */
 function biblio_build_query($arg_list) {
   global $user, $db_type;
-  static $bcc; //biblio_contributor (bc) count , increase for every invocation
-  static $tcc; //term counter, increase for every invocation
-  if ( !isset( $bcc ) ) $bcc = 0;
-  if ( !isset( $tcc ) ) $tcc = 0;
+  static $bcc = 0; //biblio_contributor (bc) count , increase for every invocation
+  static $bkd = 0;
+  static $tcc = 0; //term counter, increase for every invocation
   $inline = $rss_info['feed'] = false;
   $joins = array();
   $args = array();
@@ -154,11 +153,11 @@ function biblio_build_query($arg_list) {
       $query->orderBy($sort_title, $sort_attrib['order']);
       break;
     case 'author':
-      $last_name = $query->addField('bcd', 'lastname');
+      //$last_name = $query->addField('bcd', 'lastname');
       $query->innerJoin('biblio_contributor', 'bc', 'b.vid = bc.vid');
-      $query->leftJoin('biblio_contributor_data', 'bcd', 'bc.cid = bcd.cid');
+      $query->join('biblio_contributor_data', 'bcd', 'bc.cid = bcd.cid');
       $query->condition('bc.rank', 0);
-      $query->orderBy($last_name, $sort_attrib['order']);
+      $query->orderBy('bcd.lastname', $sort_attrib['order']);
      // $query->condition('bc.auth_category', 1);
       break;
     case 'keyword': // added msh 070808
@@ -251,7 +250,7 @@ function biblio_build_query($arg_list) {
 
           if (is_numeric($term[0])){
           $query->innerJoin('biblio_contributor', "bc$bcc", "n.vid = bc$bcc.vid");
-            $joins[] = "inner join {biblio_contributor} as bc". $bcc ." on n.vid = bc". $bcc .".vid";
+//            $joins[] = "inner join {biblio_contributor} as bc". $bcc ." on n.vid = bc". $bcc .".vid";
             //$where[] = "bc". $bcc .".cid = '%d' ";
 //
             $cids = db_query('SELECT cid FROM {biblio_contributor_data}
@@ -290,8 +289,10 @@ function biblio_build_query($arg_list) {
           $operator = NULL;
           break;
         case 'year':
-          $term = db_escape_string(array_shift($arg_list));
+          $term = array_shift($arg_list);
+          
           $where[] = "b.biblio_year=%d ";
+          $query->condition('b.biblio_year', $term);
           //$limit .= " AND b.biblio_year=%d ";
           $terms[] = (int)$term;
           array_push($args, $type, (int)$term);
@@ -309,35 +310,29 @@ function biblio_build_query($arg_list) {
           $bkd++;
           $term = explode("?",array_shift($arg_list));
           if (is_numeric($term[0])){
-            $terms[] = db_escape_string($term[0]);
-            $joins[] = "inner join {biblio_keyword} as bk on n.vid = bk.vid";
-          //$joins[] = "inner join {biblio_keyword_data} as bkd on bk.kid= bkd.kid";
-            $where[] = "bk.kid = %d ";
+            $query->innerJoin('biblio_keyword', 'bk', 'n.vid = bk.vid');
+            $query->condition('bk.kid', $term[0]);
           }else{
             $where[] = " bkd". $bkd .'.word '. $match_op .' "[[:<:]]%s[[:>:]]" ';
             $joins[] = " JOIN {biblio_keyword} as bk". $bkd ." on b.vid = bk". $bkd .".vid ";
             $joins[] = " JOIN {biblio_keyword_data} as bkd". $bkd ." on bk". $bkd .".kid = bkd".$bkd .".kid ";
-            $terms[] = db_escape_string($term[0]);
+//            $terms[] = db_escape_string($term[0]);
             $operator = NULL;
             $rss_info['title'] = t("Keyword " . $term[0]);
             $rss_info['description'] = t("These publications, containing the keyword: %keyword, are part of the works listed at %sitename", array('%keyword' => $term[0], '%sitename' => variable_get('site_name', 'Drupal')));
             $rss_info['link'] = '/keyword/' . $term[0];
           }
           array_push($args, $type, $term[0]);
-          $operator = NULL;
           break;
         case 'citekey':
           $term = explode("?",array_shift($arg_list));
-          $terms[] = db_escape_string($term[0]);
-          $where[] = "b.biblio_citekey= '%s' ";
+          $query->condition('b.biblio_citekey', $term[0]);
           array_push($args, $type, $term[0]);
-          $operator = NULL;
           break;
         case 'type':
           $term = db_escape_string(array_shift($arg_list));
-          $where[] = "b.biblio_type=%d ";
+          $query->condition('b.biblio_type', $term[0]);
           //$limit .= $operator. "b.biblio_type=%d ";
-          $terms[] = (int)$term;
           array_push($args, $type, (int)$term);
           $operator = NULL;
           break;
@@ -380,8 +375,7 @@ function biblio_build_query($arg_list) {
               $term = explode("?",array_shift($arg_list));
               if (in_array("biblio_$type",$fields))
               {
-                $where[] = "b.biblio_$type ".$match_op ." '%s' ";
-                $terms[] = db_escape_string($term[0]);
+                $query->condition("b.biblio_$type ", $term[0], 'LIKE');
                 array_push($args, $type, $term[0]);
                 $operator = NULL;
               }
@@ -1161,6 +1155,7 @@ function _biblio_author_edit_links($author) {
 
 function biblio_keyword_page($filter = NULL) {
   global $user;
+  $keywords = array();
   $where = array();
   $where_clause = '';
   if ($filter) {
@@ -1192,6 +1187,8 @@ function biblio_keyword_page($filter = NULL) {
   foreach ($db_result as $keyword){
     $keywords[] = $keyword;
   }
+  if (!count($keywords)) return t('There are no keywords'); 
+  
   $rows[] = array(array('data' => theme('biblio_alpha_line', array('type' => 'keywords', 'current' => $filter, 'path' =>'')), 'colspan' => 3));
   for ($i=0; $i < count($keywords); $i+=3) {
     $rows[] = array( array('data' => _biblio_format_keyword($keywords[$i]) ),

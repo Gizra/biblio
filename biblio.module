@@ -1650,11 +1650,10 @@ function biblio_load($nodes) {
   	foreach ($record as $key => $value) {
   		$nodes[$record['nid']]->$key = $value;
   	}
+    $nodes[$record['nid']]->biblio_year = _biblio_text_year($nodes[$record['nid']]->biblio_year);
   	$nodes[$record['nid']]->biblio_contributors = biblio_load_contributors($nodes[$record['nid']]->vid, $nodes[$record['nid']]->biblio_type);
+    $nodes[$record['nid']]->biblio_keywords = biblio_load_keywords($nodes[$record['nid']]->vid);
   }
-//  $additions->biblio_year = _biblio_text_year($additions->biblio_year);
-//  $additions->biblio_contributors = biblio_load_contributors($node->vid, $additions->biblio_type);
-//  $additions->biblio_keywords = biblio_load_keywords($node->vid);
   //return $nodes;
 }
 function biblio_citekey_generate($node) {
@@ -2064,7 +2063,8 @@ function biblio_contextObject($node) {
   // Original Author:    Richard Karnesky <mailto:karnesky@gmail.com>  //
   // Adapted for biblio: Ron Jerome
   global $base_url;
-  // $openurl_base = variable_get('biblio_baseopenurl', '');
+  $i = 0;
+    // $openurl_base = variable_get('biblio_baseopenurl', '');
   $co = array();
   // rfr_id
 //  $co["rfr_id"] = "info:sid/". ereg_replace("http://", "", $base_url);
@@ -2077,16 +2077,17 @@ function biblio_contextObject($node) {
 //    elseif ($node->biblio_type == "Journal") $co["rft.genre"] = "journal";
 //  }
   // atitle, btitle, title (title, publication)
+  $langcode = FIELD_LANGUAGE_NONE;
   if (($node->biblio_type == 102) || ($node->biblio_type == 101)) {
-    if (!empty($node->title)) $co["rft.atitle"] = check_plain($node->title);
+    if (!empty($node->title[$langcode][0]['value'])) $co["rft.atitle"] = check_plain($node->title[$langcode][0]['value']);
     if (!empty($node->biblio_secondary_title)) {
       $co["rft.title"] = check_plain($node->biblio_secondary_title);
       if ($node->biblio_type == 101)
       $co["rft.btitle"] = check_plain($node->biblio_secondary_title);
     }
   }
-  elseif (!empty($node->title)) {
-   $co["rft.title"] = check_plain($node->title);
+  elseif (!empty($node->title[$langcode][0]['value'])) {
+   $co["rft.title"] = check_plain($node->title[$langcode][0]['value']);
   }
   if (($node->biblio_type == 100) && (!empty($node->biblio_secondary_title))) $co["rft.btitle"] = check_plain($node->biblio_secondary_title);
   // stitle (abbrev_journal)
@@ -2132,19 +2133,19 @@ function biblio_contextObject($node) {
     elseif (!empty($node->biblio_contributors[1][0]['initials'])) {
       $co["rft.auinit"] = check_plain($node->biblio_contributors[1][0]['initials']);
     }
-//    foreach((array)$node->biblio_contributors[1] as $author) {
-//      if (!empty($author['lastname'])) {
-//        $au = $author['lastname'];
-//        if (!empty($author['firstname']) || !empty($author['initials'])) $au .= ", ";
-//      }
-//      if (!empty($author['firstname'])) {
-//        $au .= $author['firstname'];
-//      }
-//      elseif (!empty($author['initials'])) {
-//        $au .= $author['initials'];
-//      }
-//      if (!empty($au)) $co["rft.au".$i++] = $au;
-//    }
+    foreach((array)$node->biblio_contributors[1] as $author) {
+      if (!empty($author['lastname'])) {
+        $au = $author['lastname'];
+        if (!empty($author['firstname']) || !empty($author['initials'])) $au .= ", ";
+      }
+      if (!empty($author['firstname'])) {
+        $au .= $author['firstname'];
+      }
+      elseif (!empty($author['initials'])) {
+        $au .= $author['initials'];
+      }
+      if (!empty($au)) $co["rft.au".$i++] = $au;
+    }
   }
   // pub (publisher)
   if (!empty($node->biblio_publisher)) $co["rft.pub"] = check_plain($node->biblio_publisher);
@@ -2162,6 +2163,7 @@ function biblio_contextObject($node) {
 }
 function biblio_hash($node) {
   static $sums = array();
+  $duplicate = NULL;
   if (empty($sums)) {
     $res = db_query("SELECT nid, biblio_md5 FROM {biblio} ");
     foreach ($res as $md5) {

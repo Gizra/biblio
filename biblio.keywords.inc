@@ -27,9 +27,8 @@
  */
 function biblio_get_keyword_by_name($name) {
   static $keywords = array();
-
   if (!$kid = array_search($name, $keywords)) {
-    $term = db_query("SELECT * FROM {biblio_keyword_data} k WHERE LOWER(k.word) = LOWER(':name')", array(':name' => trim($name)))->fetchAll();
+    $term = db_query("SELECT * FROM {biblio_keyword_data} k WHERE LOWER(k.word) = LOWER(:name)", array(':name' => trim($name)))->fetchObject();
     if ($term) {
       $keywords[$term->kid] = $term;
       return $keywords[$term->kid];
@@ -50,7 +49,7 @@ function biblio_get_keyword_by_id($kid) {
   static $keywords = array();
 
   if (!isset($keywords[$kid])) {
-    $keywords[$kid] = db_query('SELECT * FROM {biblio_keyword_data} WHERE kid = :kid', array(':kid' => $kid))->fetchAll();
+    $keywords[$kid] = db_query('SELECT * FROM {biblio_keyword_data} WHERE kid = :kid', array(':kid' => $kid))->fetchObject();
   }
 
   return $keywords[$kid];
@@ -76,7 +75,8 @@ function biblio_load_keywords($vid) {
  * @param $node
  * @return
  */
-function biblio_save_keywords(&$node, $update = FALSE) {
+function biblio_save_keywords($node, $update = FALSE) {
+	if (empty($node->biblio_keywords)) return;
   $kw_vocab = variable_get('biblio_keyword_vocabulary', 0);
   $freetagging = variable_get('biblio_keyword_freetagging', 0);
   $taxo_terms = $typed_keywords = array();

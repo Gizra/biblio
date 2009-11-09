@@ -490,7 +490,7 @@ function biblio_bibtex_import($file, $terms = array(), $batch = FALSE, $session_
     $bibtex->loadBibtexString($file);
   }
   else {
-    $bibtex->openBib($file->filepath);
+    $bibtex->openBib($file->uri);
   }
   $bibtex->extractEntries();
   if ($bibtex->count) {
@@ -501,64 +501,65 @@ function biblio_bibtex_import($file, $terms = array(), $batch = FALSE, $session_
 function biblio_marc_import($file, $terms, $batch, $session_id) {
   $nids = array();
   module_load_include('php', 'biblio', 'marcParse/php-marc');
-  $marcfile = new File($file->filepath);
+  $marcfile = new File($file->uri);
   while ($record = $marcfile->next() ) {
-    $node=array();
-    foreach($record->fields() as $fields) {
+    $node = new stdClass();
+    $node->biblio_contributors = array();
+  	foreach($record->fields() as $fields) {
       foreach ($fields as $field){
         switch ($field->tagno) {
           case '008':
             $data = $field->data();
-            $node['biblio_year'] = substr($data,7,4);
-            $node['biblio_lang'] = substr($data,35,3);
+            $node->biblio_year = substr($data,7,4);
+            $node->biblio_lang = substr($data,35,3);
             break;
           case '020':
-            $node['biblio_isbn'] = $field->subfield('a');
+            $node->biblio_isbn = $field->subfield('a');
             break;
           case '022':
-            $node['biblio_issn'] = $field->subfield('a');
+            $node->biblio_issn = $field->subfield('a');
             break;
           case '024':
-            $node['biblio_other_number'] = $field->subfield('a');
+            $node->biblio_other_number = $field->subfield('a');
             break;
           case '050': //LIBRARY OF CONGRESS CALL NUMBER
           case '055': //CLASSIFICATION NUMBERS ASSIGNED IN CANADA
           case '060': //NATIONAL LIBRARY OF MEDICINE CALL NUMBER
-            $node['biblio_call_number'] = $field->subfield('a');
+            $node->biblio_call_number = $field->subfield('a');
             break;
           case '130':
-            $node['title'] = str_replace(' /', '', $field->subfield('a'));
+            $node->title['zxx'][0]['value'] = str_replace(' /', '', $field->subfield('a'));
             break;
           case '210':
-            $node['biblio_short_title'] = str_replace(' /', '', $field->subfield('a'));
+            $node->biblio_short_title = str_replace(' /', '', $field->subfield('a'));
             break;
           case '245':
-            $node['title'] = str_replace(' /', '', $field->subfield('a')).' '.$field->subfield('b');
+            $node->title['zxx'][0]['value'] = str_replace(' /', '', $field->subfield('a')).' '.$field->subfield('b');
             break;
           case '250':
-            $node['biblio_edition'] = $field->subfield('a');
+            $node->biblio_edition = $field->subfield('a');
             break;
           case '260':
-            $node['biblio_place_published'] = str_replace(' :', '', $field->subfield('a'));
-            $node['biblio_publisher'] = $field->subfield('b');
-            $node['biblio_date'] = $field->subfield('c');
+            $node->biblio_place_published = str_replace(' :', '', $field->subfield('a'));
+            $node->biblio_publisher = $field->subfield('b');
+            $node->biblio_date = $field->subfield('c');
             break;
           case '300':
-            $node['biblio_pages'] = $field->subfield('a');
+            $node->biblio_pages = $field->subfield('a');
             break;
           case '490':
-            $node['biblio_volumne'] = $field->subfield('v');
+            $node->biblio_volumne = $field->subfield('v');
             break;
           case '100':
           case '700':
-            $node['biblio_contributors'][1][] = array(
+            $node->biblio_contributors[1][] = array(
               'name' => $field->subfield('a'),
               'auth_type' => 1
             );
             break;
           case '110':
           case '710':
-            $node['biblio_contributors'][5][] = array(
+            $node->biblio_contributors[5][] = array(
               'name' => $field->subfield('a'),
               'auth_type' => 5
             );
@@ -568,10 +569,11 @@ function biblio_marc_import($file, $terms, $batch, $session_id) {
     }
     if (!empty($node)) {
       if (!empty($terms)) {
-        if (!isset($node['taxonomy'])) $node['taxonomy'] = array();
-        $node['taxonomy'] = array_merge($terms,$node['taxonomy']);
+        if (!isset($node->taxonomy)) $node->taxonomy = array();
+        $node->taxonomy = array_merge($terms,$node->taxonomy);
       }
-      $nids[] = biblio_save_node($node, $batch, $session_id);
+      biblio_save_node($node, $batch, $session_id);
+      if (!empty($node->nid)) $nids[] = $node->nid;
     }
 
   }
@@ -727,21 +729,19 @@ function biblio_save_imported_nodes(& $node_array) {
   return $node_ids;
 }
 function biblio_save_node($node, $batch = FALSE, $session_id = NULL, $save_node = TRUE) {
-  $options = variable_get('node_options_biblio', array ('status'));
+	$options = variable_get('node_options_biblio', array ('status'));
   if (module_exists('i18n') && variable_get('i18n_node_biblio', 0) && variable_get('language_content_type_biblio', 0) ){
-    $node['language'] = module_invoke('i18n', 'default_language');
+    $node->language = module_invoke('i18n', 'default_language');
   }
-  $node_template = array (
-      'type' => 'biblio',
-      'comment' => variable_get('comment_biblio', 0),
-      'promote' => in_array('promote', $options),
-      'moderate' => in_array('moderate', $options),
-      'sticky' => in_array('sticky', $options),
-      'format' => 0,
-      'status' => in_array('status', $options),
-  );
+  $node->type = 'biblio';
+  $node->comment = variable_get('comment_biblio', 0);
+  $node->promote = in_array('promote', $options);
+  $node->moderate = in_array('moderate', $options);
+  $node->sticky = in_array('sticky', $options);
+  $node->format = 0;
+  $node->status = in_array('status', $options);
+  
 
-  $node = (object) array_merge($node, $node_template);
   if(!isset($node->biblio_type)) $node->biblio_type = 129; // default to misc if not set.
   if ($batch && $session_id){ // we are batch processing some import data
     $node = serialize($node);
@@ -750,7 +750,7 @@ function biblio_save_node($node, $batch = FALSE, $session_id = NULL, $save_node 
   }
   elseif ($save_node) { // $save_node = TRUE, the normal save path
     node_save($node);
-    return (isset($node->nid)) ? $node->nid : 0;
+    return; // (isset($node->nid)) ? $node->nid : 0;
   }
   else { // $save_node = FALSE, primarily used to parse data and return it to the input form
     return (array)$node;
@@ -810,7 +810,7 @@ function biblio_endnote_XML_import($xml_file, $taxo_terms = array(), $batch_proc
   global $user, $records, $rec_count, $node,  $terms, $batch_proc, $nids, $session_id;
   $terms = $taxo_terms;
   $nids = array();
-  if (!($fp = fopen($xml_file->filepath, "r"))) {
+  if (!($fp = fopen($xml_file->uri, "r"))) {
     drupal_set_message("could not open XML input",'error');
     return;
   }
@@ -830,8 +830,9 @@ function biblio_endnote_XML_import($xml_file, $taxo_terms = array(), $batch_proc
     set_time_limit(30);
     if(!xml_parse($xml_parser, $data, feof($fp))){
       drupal_set_message(sprintf("XML error: %s at line %d",
-      xml_error_string(xml_get_error_code($xml_parser)),
-      xml_get_current_line_number($xml_parser)),'error');
+          xml_error_string(xml_get_error_code($xml_parser)),
+          xml_get_current_line_number($xml_parser)),'error'
+      );
 
     }
   }

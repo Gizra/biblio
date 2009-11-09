@@ -28,7 +28,7 @@ function _ris_tagged_import($file, $terms = array(), $batch = FALSE, $session_id
   $incite = FALSE;
   $nids = array();
   $contributors = NULL;
-  $node=array();
+  $node = new stdClass();
   while (!feof($fp)) {
     $line = fgets($fp);
     $line_len = strlen($line);
@@ -46,106 +46,107 @@ function _ris_tagged_import($file, $terms = array(), $batch = FALSE, $session_id
       switch ($tag) {
         case 'ER' :
           if (!empty($node)) {
-            if (empty ($node['title'])) $node['title'] = t("Untitled");
+            if (empty ($node->title )) $node->title[FIELD_LANGUAGE_NONE][0]['value'] = t("Untitled");
             if (!empty($terms)) {
-              if (!isset($node['taxonomy'])) $node['taxonomy'] = array();
-              $node['taxonomy'] = array_merge($terms, $node['taxonomy']);
+              if (!isset($node->taxonomy)) $node->taxonomy = array();
+              $node->taxonomy = array_merge($terms, $node->taxonomy);
             }
-            $nids[] = biblio_save_node($node, $batch, $session_id);
+            biblio_save_node($node, $batch, $session_id);
+            if (!empty($node->nid)) $nids[] = $node->nid;
           }
-          $node = array();
+          $node = new stdClass();
+          $node->biblio_contributors = array();
           $incite = FALSE;
           break;
         case 'TY' :
-          $node['biblio_contributors'] = array();
           $incite = TRUE;
-          $node['biblio_type'] = ris_type_map($value);
+          $node->biblio_type = ris_type_map($value);
           break;
         case 'A1' :
         case 'AU' :
-          $node['biblio_contributors'][1][] = array(
+          $node->biblio_contributors[1][] = array(
                 'name' => $value,
-                'auth_type' => _biblio_get_auth_type(1, $node['biblio_type']));
+                'auth_type' => _biblio_get_auth_type(1, $node->biblio_type));
           break;
         case 'JF' :
-          $node['biblio_secondary_title'] .= $value;
+          $node->biblio_secondary_title .= $value;
           break;
         case 'CY' :
-          $node['biblio_place_published'] .= $value;
+          $node->biblio_place_published .= $value;
           break;
         case 'Y1' :
         case 'PY' :
-          $node['biblio_year'] = ($end = strpos($value, "/")) ? substr($value, 0, $end) : $value;
-          $node['biblio_date'] = $value;
+          $node->biblio_year = ($end = strpos($value, "/")) ? substr($value, 0, $end) : $value;
+          $node->biblio_date = $value;
           break;
         case 'A2' :
         case 'ED' :
-          $node['biblio_contributors'][2][] = array(
+          $node->biblio_contributors[2][] = array(
                 'name' => $value,
-                'auth_type' => _biblio_get_auth_type(2, $node['biblio_type']));
+                'auth_type' => _biblio_get_auth_type(2, $node->biblio_type));
           break;
         case 'PB' :
-          $node['biblio_publisher'] .= $value;
+          $node->biblio_publisher .= $value;
           break;
         case 'T2' :
-          $node['biblio_secondary_title'] .= $value;
+          $node->biblio_secondary_title .= $value;
           break;
         case 'KW' :
-          $node['biblio_keywords'][] = $value;
+          $node->biblio_keywords[] = $value;
           break;
         case 'IS' :
         case 'CP' :
-          $node['biblio_issue'] .= $value;
+          $node->biblio_issue .= $value;
           break;
         case 'SP' :
         case 'EP' :
-          $node['biblio_pages'] .= ($tag == "SP") ? $value : " - " . $value;
+          $node->biblio_pages .= ($tag == "SP") ? $value : " - " . $value;
           break;
         case 'T3' :
-          $node['biblio_tertiary_title'] .= $value;
+          $node->biblio_tertiary_title .= $value;
           break;
         case 'TI' :
         case 'T1' :
         case 'CT' :
         case 'BT' :
-  			$langcode = FIELD_LANGUAGE_NONE;
-        	$node['title'][$langcode][0]['value'] .= $value;
+          $langcode = FIELD_LANGUAGE_NONE;
+        	$node->title[FIELD_LANGUAGE_NONE][0]['value'] .= $value;
           break;
         case 'UR' :
-          $node['biblio_url'] .= $value;
+          $node->biblio_url .= $value;
           break;
         case 'VL' :
-          $node['biblio_volume'] .= $value;
+          $node->biblio_volume .= $value;
           break;
         case 'AB' :
         case 'N2' :
-          $node['biblio_abst_e'] .= $value;
+          $node->biblio_abst_e .= $value;
           break;
         case 'A3' :
-          $node['biblio_contributors'][5][] = array(
+          $node->biblio_contributors[5][] = array(
                 'name' => $value,
-                'auth_type' => _biblio_get_auth_type(5, $node['biblio_type']));
+                'auth_type' => _biblio_get_auth_type(5, $node->biblio_type));
           break;
         case 'N1' :
-          $node['biblio_notes'] .= $value;
+          $node->biblio_notes .= $value;
           break;
         case 'U1' : // CUSTOM 1
-          $node['biblio_custom1'] .= $value;
+          $node->biblio_custom1 .= $value;
           break;
         case 'U2' : // CUSTOM 2
-          $node['biblio_custom2'] .= $value;
+          $node->biblio_custom2 .= $value;
           break;
         case 'U3' : // CUSTOM 3
-          $node['biblio_custom3'] .= $value;
+          $node->biblio_custom3 .= $value;
           break;
         case 'U4' : // CUSTOM 4
-          $node['biblio_custom4'] .= $value;
+          $node->biblio_custom4 .= $value;
           break;
         case 'U5' : // CUSTOM 5
-          $node['biblio_custom5'] .= $value;
+          $node->biblio_custom5 .= $value;
           break;
         case 'SN' :
-          $node['biblio_isbn'] .= $value;
+          $node->biblio_isbn  .= $value;
           break;
         default :
           break;

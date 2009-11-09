@@ -4,8 +4,9 @@ function en8_startElement($parser, $name, $attrs) {
   global $node, $element, $contributors, $contrib_count, $titles, $periodical, $dates, $urls, $keyword_count, $font_attr;
   switch ($name) {
     case 'record' :
-      $node = array();
-      break;
+      $node = new stdClass();
+      $node->biblio_contributors = array();
+    	break;
     case 'style' :
       $font_attr = explode(' ',$attrs['face']);
       foreach ($font_attr as $fatt) {
@@ -42,6 +43,26 @@ function en8_startElement($parser, $name, $attrs) {
       if (!isset($contrib_count))
         $contrib_count = 0;
       break;
+    case 'author' :
+        switch ($contributors) {
+          case 'authors' :
+            if (!isset($node->biblio_contributors[1][$contrib_count]['name'])) $node->biblio_contributors[1][$contrib_count]['name'] = '';
+             break;
+          case 'secondary-authors' :
+            $node->biblio_contributors[2][$contrib_count]['name'] = '';
+            break;
+          case 'tertiary-authors' :
+            $node->biblio_contributors[3][$contrib_count]['name'] = '';
+            break;
+          case 'subsidiary-authors' :
+            $node->biblio_contributors[4][$contrib_count]['name'] = '';
+            break;
+          case 'translated-authors' :
+            $node->biblio_contributors[5][$contrib_count]['name'] = '';
+            break;
+        }
+      $element = $name;  
+      break;
     case 'year' :
     case 'pub-dates' :
     case 'copyright-dates' :
@@ -54,6 +75,16 @@ function en8_startElement($parser, $name, $attrs) {
     case 'image-urls' :
       $urls = $name;
       break;
+    case 'keyword':
+    	$node->biblio_keywords[$keyword_count] = '';
+    	$element = $name;  
+     break;
+    case 'title':
+      $langcode = FIELD_LANGUAGE_NONE;
+      $node->title[$langcode][0]['value'] = '';
+      $element = $name;
+      break;
+     
     default :
       $element = $name;
   }
@@ -64,10 +95,11 @@ function en8_endElement($parser, $name) {
     case 'record' :
       $element = $contributors = $contrib_count = $dates = $urls = '';
       if (!empty($terms)) {
-        if (!isset($node['taxonomy'])) $node['taxonomy'] = array();
-        $node['taxonomy'] = array_merge($terms,$node['taxonomy']);
+        if (!isset($node->taxonomy)) $node->taxonomy = array();
+        $node->taxonomy = array_merge($terms, $node->taxonomy);
       }
-      $nids[] = biblio_save_node($node, $batch_proc, $session_id);
+      biblio_save_node($node, $batch_proc, $session_id);
+      if (!empty($node->nid)) $nids[] = $node->nid;
       break;
     case 'authors' :
     case 'secondary-authors' :
@@ -95,7 +127,7 @@ function en8_endElement($parser, $name) {
       $urls = '';
       break;
     case 'ref-type':
-       $node['biblio_type'] = en8_parser_type_map($node['biblio_type']);
+       $node->biblio_type = en8_parser_type_map($node->biblio_type);
         $element = '';
        break;
     case 'style' :
@@ -136,41 +168,45 @@ function en8_characterData($parser, $data) {
       case 'author' :
         switch ($contributors) {
           case 'authors' :
-            $node['biblio_contributors'][1][$contrib_count]['name'] .= $data;
-            $node['biblio_contributors'][1][$contrib_count]['auth_type'] = _biblio_get_auth_type(1, $node['biblio_type']);
+            $node->biblio_contributors[1][$contrib_count]['name'] .= $data;
+            $node->biblio_contributors[1][$contrib_count]['auth_type'] = _biblio_get_auth_type(1, $node->biblio_type);
             break;
           case 'secondary-authors' :
-            $node['biblio_contributors'][2][$contrib_count]['name'] .= $data;
-            $node['biblio_contributors'][2][$contrib_count]['auth_type'] = _biblio_get_auth_type(2, $node['biblio_type']);
+            $node->biblio_contributors[2][$contrib_count]['name'] .= $data;
+            $node->biblio_contributors[2][$contrib_count]['auth_type'] = _biblio_get_auth_type(2, $node->biblio_type);
             break;
           case 'tertiary-authors' :
-            $node['biblio_contributors'][3][$contrib_count]['name'] .= $data;
-            $node['biblio_contributors'][3][$contrib_count]['auth_type'] = _biblio_get_auth_type(3, $node['biblio_type']);
+            $node->biblio_contributors[3][$contrib_count]['name'] .= $data;
+            $node->biblio_contributors[3][$contrib_count]['auth_type'] = _biblio_get_auth_type(3, $node->biblio_type);
             break;
           case 'subsidiary-authors' :
-            $node['biblio_contributors'][4][$contrib_count]['name'] .= $data;
-            $node['biblio_contributors'][4][$contrib_count]['auth_type'] = _biblio_get_auth_type(4, $node['biblio_type']);
+            $node->biblio_contributors[4][$contrib_count]['name'] .= $data;
+            $node->biblio_contributors[4][$contrib_count]['auth_type'] = _biblio_get_auth_type(4, $node->biblio_type);
             break;
           case 'translated-authors' :
-            $node['biblio_contributors'][5][$contrib_count]['name'] .= $data;
-            $node['biblio_contributors'][5][$contrib_count]['auth_type'] = _biblio_get_auth_type(5, $node['biblio_type']);
+            $node->biblio_contributors[5][$contrib_count]['name'] .= $data;
+            $node->biblio_contributors[5][$contrib_count]['auth_type'] = _biblio_get_auth_type(5, $node->biblio_type);
             break;
         }
         break;
       case 'keyword' :
-        $node['biblio_keywords'][$keyword_count] .= $data;
+        $node->biblio_keywords[$keyword_count] .= $data;
+        break;
+      case 'title':
+        $langcode = FIELD_LANGUAGE_NONE;
+        $node->title[$langcode][0]['value'] .= $data;
         break;
       case 'dates' :
         switch ($dates) {
           case 'year' :
-            $node['biblio_year'] .= $data;
+            $node->biblio_year .= $data;
             break;
         }
         break;
       case 'date' :
         switch ($dates) {
           case 'pub-dates' :
-            $node['biblio_date'] .= $data;
+            $node->biblio_date .= $data;
             break;
           case 'copyright-dates' :
             break;
@@ -185,14 +221,14 @@ function en8_characterData($parser, $data) {
           case 'image-urls' :
             break;
           case 'related-urls' :
-            $node['biblio_url'] .= $data;
+            $node->biblio_url .= $data;
             break;
         }
         break;
 
       default:
         if ($field = en8_parser_field_map(trim($element))) {
-          $node[$field] .= $data;
+          $node->$field .= $data;
         }
     }
   }

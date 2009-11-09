@@ -247,6 +247,7 @@ function theme_biblio_tabular($variables) {
           break;
         default:
           if ($row['type'] == 'textarea') {
+//FIXME where is format stored now???
             $data = check_markup($node-> $row['name'], $node->format, FALSE);
           }
           else {

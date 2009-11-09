@@ -1586,8 +1586,8 @@ function biblio_admin_author_edit_form_submit($form, &$form_state) {
     $merge_authors = array_filter($form_state['values']['merge_authors']);
     if (count($merge_authors) ) {
       $authors = implode(',', $merge_authors);
-      db_query("UPDATE {biblio_contributor} SET cid=:cid WHERE cid IN (:authors)", array(':cid' => $form_state['values']['cid'], ':authors' => $authors));
-      db_query("DELETE FROM {biblio_contributor_data} WHERE cid IN (:authors)", array(':authors' => $authors));
+      db_query("UPDATE {biblio_contributor} SET cid=".$form_state['values']['cid']." WHERE cid IN ($authors)");
+      db_query("DELETE FROM {biblio_contributor_data} WHERE cid IN ($authors)");
     }
   }
   if (isset($form_state['values']['linked_authors']) ) {
@@ -1778,8 +1778,8 @@ function biblio_admin_keyword_edit_form_submit($form, &$form_state) {
 
     if (count($form_state['values']['merge_keywords'])) {
       $kids = implode(',', array_filter($form_state['values']['merge_keywords']));
-      db_query("UPDATE {biblio_keyword} SET kid=:kid WHERE kid IN (:kids)", array(':kid' => $form_state['values']['kid'], ':kids' => $kids) );
-      db_query("DELETE FROM {biblio_keyword_data} WHERE kid IN (:kids)",array(':kids' => $kids));
+      db_query("UPDATE {biblio_keyword} SET kid=".$form_state['values']['kid']." WHERE kid IN ($kids)");
+      db_query("DELETE FROM {biblio_keyword_data} WHERE kid IN ($kids)");
     }
   }
 }

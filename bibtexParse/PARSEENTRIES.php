@@ -547,9 +547,11 @@ class PARSEENTRIES
     //list($preamble, $strings, $entries, $undefinedStrings) = $this->returnArrays();
     $limit = ($limit) ? $limit : count($this->entries);
     if (($start + $limit) > count($this->entries)) $limit = count($this->entries) - $start;
+    $langcode = FIELD_LANGUAGE_NONE;
     for ($i = $start; $i < $limit; $i++)
     {
-      $node = array();
+      $node = new stdClass();
+      $node->biblio_contributors = array();
       $entry = $this->entries[$i];
       if($this->removeDelimit || $this->expandMacro && $this->fieldExtract)
       {
@@ -561,14 +563,13 @@ class PARSEENTRIES
         }
       }
     //foreach($entries as $entry){
-      $node['biblio_contributors'] = array();
-      $node['biblio_type'] = $this->bibtex_type_map($entry['bibtexEntryType']);
+      $node->biblio_type = $this->bibtex_type_map($entry['bibtexEntryType']);
       switch ($entry['bibtexEntryType']){
-        case mastersthesis:
-          $node['biblio_type_of_work'] = 'masters';
+        case 'mastersthesis':
+          $node->biblio_type_of_work = 'masters';
           break;
-        case phdthesis:
-          $node['biblio_type_of_work'] = 'phd';
+        case 'phdthesis':
+          $node->biblio_type_of_work = 'phd';
           break;
       }
       if (!empty($entry['author'])){
@@ -576,52 +577,53 @@ class PARSEENTRIES
         $authorArray = preg_split("/\s(and|&)\s/i", trim($entry['author']));
         foreach ($authorArray as $key => $author)
         {
-          $node['biblio_contributors'][1][]= array('name' => $author, 'auth_type' => _biblio_get_auth_type(1, $node['biblio_type']));
+          $node->biblio_contributors[1][]= array('name' => $author, 'auth_type' => _biblio_get_auth_type(1, $node->biblio_type));
         }
       }
 
-      $node['biblio_citekey'] = (!empty($entry['bibtexCitation'])) ? $entry['bibtexCitation'] : NULL;
+      $node->biblio_citekey = (!empty($entry['bibtexCitation'])) ? $entry['bibtexCitation'] : NULL;
       if (!empty($entry['editor']))
       {
         $authorArray = preg_split("/\s(and|&)\s/i", trim($entry['editor']));
         foreach ($authorArray as $key => $author)
         {
-          $node['biblio_contributors'][2][]= array('name' => $author, 'auth_type' => _biblio_get_auth_type(2, $node['biblio_type']));
+          $node->biblio_contributors[2][]= array('name' => $author, 'auth_type' => _biblio_get_auth_type(2, $node->biblio_type));
         }
       }
 
-      $node['biblio_secondary_title'] = (!empty($entry['journal'])) ? $entry['journal'] : NULL;
-      if (!empty($entry['booktitle'])) $node['biblio_secondary_title'] =  $entry['booktitle'];
-      if (!empty($entry['series']))    $node['biblio_tertiary_title'] =  $entry['series'];
-      $node['biblio_volume']          = (!empty($entry['volume'])) ? $entry['volume'] : NULL;
-      $node['biblio_number']          = (!empty($entry['number'])) ? $entry['number'] : NULL;
-      $node['biblio_year']            = (!empty($entry['year'])) ? $entry['year'] : NULL;
-      $node['biblio_notes']           = (!empty($entry['note'])) ? $entry['note'] : NULL;
-      $node['biblio_date']            = (!empty($entry['month'])) ? $entry['month'] : NULL;
-      $node['biblio_pages']           = (!empty($entry['pages'])) ? $entry['pages'] : NULL;
-      $node['biblio_publisher']       = (!empty($entry['publisher'])) ? $entry['publisher'] : NULL;
-      if (!empty($entry['organization'])) $node['biblio_publisher'] = $entry['organization'];
-      if (!empty($entry['school']))       $node['biblio_publisher']       = $entry['school'];
-      if (!empty($entry['institution']))  $node['biblio_publisher']       = $entry['institution'];
-      $node['title']                  = (!empty($entry['title'])) ? $entry['title'] : NULL;
-      $node['biblio_type_of_work']    .= (!empty($entry['type'])) ? $entry['type'] : NULL;
-      $node['biblio_edition']         = (!empty($entry['edition'])) ? $entry['edition'] : NULL;
-      $node['biblio_section']         = (!empty($entry['chapter'])) ? $entry['chapter'] : NULL;
-      $node['biblio_place_published'] = (!empty($entry['address'])) ? $entry['address'] : NULL;
-      $node['biblio_abst_e']          = (!empty($entry['abstract'])) ? $entry['abstract'] : NULL;
+      $node->biblio_secondary_title = (!empty($entry['journal'])) ? $entry['journal'] : NULL;
+      if (!empty($entry['booktitle'])) $node->biblio_secondary_title =  $entry['booktitle'];
+      if (!empty($entry['series']))    $node->biblio_tertiary_title =  $entry['series'];
+      $node->biblio_volume          = (!empty($entry['volume'])) ? $entry['volume'] : NULL;
+      $node->biblio_number          = (!empty($entry['number'])) ? $entry['number'] : NULL;
+      $node->biblio_year            = (!empty($entry['year'])) ? $entry['year'] : NULL;
+      $node->biblio_notes           = (!empty($entry['note'])) ? $entry['note'] : NULL;
+      $node->biblio_date            = (!empty($entry['month'])) ? $entry['month'] : NULL;
+      $node->biblio_pages           = (!empty($entry['pages'])) ? $entry['pages'] : NULL;
+      $node->biblio_publisher       = (!empty($entry['publisher'])) ? $entry['publisher'] : NULL;
+      if (!empty($entry['organization'])) $node->biblio_publisher = $entry['organization'];
+      if (!empty($entry['school']))       $node->biblio_publisher       = $entry['school'];
+      if (!empty($entry['institution']))  $node->biblio_publisher       = $entry['institution'];
+      $node->title[$langcode][0]['value'] = (!empty($entry['title'])) ? $entry['title'] : NULL;
+      $node->biblio_type_of_work    .= (!empty($entry['type'])) ? $entry['type'] : NULL;
+      $node->biblio_edition         = (!empty($entry['edition'])) ? $entry['edition'] : NULL;
+      $node->biblio_section         = (!empty($entry['chapter'])) ? $entry['chapter'] : NULL;
+      $node->biblio_place_published = (!empty($entry['address'])) ? $entry['address'] : NULL;
+      $node->biblio_abst_e          = (!empty($entry['abstract'])) ? $entry['abstract'] : NULL;
       if (!empty($entry['keywords'])){
         if (strpos($entry['keywords'],';')) $entry['keywords'] = str_replace(';',',',$entry['keywords']);
-        $node['biblio_keywords'] = explode(',', $entry['keywords']);
+        $node->biblio_keywords = explode(',', $entry['keywords']);
       }
-      $node['biblio_isbn']            = (!empty($entry['isbn'])) ? $entry['isbn'] : NULL;
-      $node['biblio_issn']            = (!empty($entry['issn'])) ? $entry['issn'] : NULL;
-      $node['biblio_url']             = (!empty($entry['url'])) ? $entry['url'] : NULL;
-      $node['biblio_doi']             = (!empty($entry['doi'])) ? $entry['doi'] : NULL;
+      $node->biblio_isbn            = (!empty($entry['isbn'])) ? $entry['isbn'] : NULL;
+      $node->biblio_issn            = (!empty($entry['issn'])) ? $entry['issn'] : NULL;
+      $node->biblio_url             = (!empty($entry['url'])) ? $entry['url'] : NULL;
+      $node->biblio_doi             = (!empty($entry['doi'])) ? $entry['doi'] : NULL;
       if (!empty($terms)) {
-        if (!isset($node['taxonomy'])) $node['taxonomy'] = array();
-        $node['taxonomy'] = array_merge($terms,$node['taxonomy']);
+        if (!isset($node->taxonomy)) $node->taxonomy = array();
+        $node->taxonomy = array_merge($terms,$node->taxonomy);
       }
-      $nids[] = biblio_save_node($node, $batch, $session_id, $save);
+      biblio_save_node($node, $batch, $session_id, $save);
+      if (!empty($node->nid)) $nids[] = $node->nid;
     }
     return (!empty($nids)) ? $nids : NULL;
   }

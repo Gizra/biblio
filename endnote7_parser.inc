@@ -25,8 +25,9 @@ function en7_startElement($parser, $name, $attrs) {
   global $node, $element, $auth_count, $keyword_count;
   switch ($name) {
     case 'RECORD' :
-      $node = array();
-      $node['biblio_type'] = 102; // we set 102 here because the xml parser won't
+      $node = new stdClass();
+      $node->biblio_contributors = array();
+      $node->biblio_type = 102; // we set 102 here because the xml parser won't
       // process a value of 0 (ZERO) which is the
       // ref-type 102. if there is a non-zero value it will be overwritten
       $element = '';
@@ -50,17 +51,18 @@ function en7_endElement($parser, $name) {
   switch ($name) {
     case 'RECORD' :
       if (!empty($terms)) {
-        if (!isset($node['taxonomy'])) $node['taxonomy'] = array();
-        $node['taxonomy'] = array_merge($terms, $node['taxonomy']);
+        if (!isset($node->taxonomy)) $node->taxonomy = array();
+        $node->taxonomy = array_merge($terms, $node->taxonomy);
       }
-      $nids[] = biblio_save_node($node, $batch, $session_id);
+      biblio_save_node($node, $batch, $session_id);
+      if (!empty($node->nid)) $nids[] = $node->nid;
       break;
     case 'AUTHOR':
     case 'SECONDARY_AUTHOR':
     case 'TERTIARY_AUTHOR':
     case 'SUBSIDIARY_AUTHOR':
       $auth_category = en7_field_map($name);
-      $node['biblio_contributors'][$auth_category][$auth_count]['auth_type'] = _biblio_get_auth_type($auth_category, $node['biblio_type']);
+      $node->biblio_contributors[$auth_category][$auth_count]['auth_type'] = _biblio_get_auth_type($auth_category, $node->biblio_type);
       $auth_count++;
       break;
     case 'KEYWORD':
@@ -77,26 +79,30 @@ function en7_characterData($parser, $data) {
   if (trim($data)) {
     switch ($element) {
       case 'REFERENCE_TYPE':
-        $node['biblio_type'] = en7_type_map($data);
+        $node->biblio_type = en7_type_map($data);
         break;
       case 'AUTHOR':
-        $node['biblio_contributors'][1][$auth_count]['name'] .= $data;
+        $node->biblio_contributors[1][$auth_count]['name'] .= $data;
         break;
       case 'SECONDARY_AUTHOR':
-        $node['biblio_contributors'][2][$auth_count]['name'] .= $data;
+        $node->biblio_contributors[2][$auth_count]['name'] .= $data;
         break;
       case 'TERTIARY_AUTHOR':
-        $node['biblio_contributors'][3][$auth_count]['name'] .= $data;
+        $node->biblio_contributors[3][$auth_count]['name'] .= $data;
         break;
       case 'SUBSIDIARY_AUTHOR':
-        $node['biblio_contributors'][4][$auth_count]['name'] .= $data;
+        $node->biblio_contributors[4][$auth_count]['name'] .= $data;
         break;
       case 'KEYWORD':
-        $node['biblio_keywords'][$keyword_count] .= $data;
+        $node->biblio_keywords[$keyword_count] .= $data;
+        break;
+      case 'TITLE':
+        $langcode = FIELD_LANGUAGE_NONE;
+        $node->title[$langcode][0]['value'] .= $data;
         break;
       default:
         if ($field = en7_field_map(trim($element))) {
-          $node[$field] .= $data;
+          $node->$field .= $data;
         }
     }
   }
@@ -112,7 +118,6 @@ function en7_field_map($enfield) {
     'REFERENCE_TYPE'  => 'biblio_type',
     'REFNUM'          => '',
     'YEAR'            => 'biblio_year',
-    'TITLE'           => 'title',
     'SECONDARY_TITLE' => 'biblio_secondary_title',
     'PLACE_PUBLISHED' => 'biblio_place_published',
     'PUBLISHER'       => 'biblio_publisher',
