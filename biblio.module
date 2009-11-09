@@ -1587,8 +1587,8 @@ function biblio_insert($node) {
   require_once(drupal_get_path('module', 'biblio') .'/biblio.keywords.inc');
   _biblio_prepare_submit($node);
   drupal_write_record('biblio', $node);
-  biblio_save_contributors($node);
-  biblio_save_keywords($node);
+  biblio_insert_contributors($node);
+  biblio_insert_keywords($node);
 }
 /**
  * Implementation of hook_update().
@@ -1607,11 +1607,8 @@ function biblio_update($node) {
     drupal_write_record('biblio', $node, 'vid');
   }
 
-  biblio_save_contributors($node, TRUE);
-  if (variable_get('biblio_auto_orphaned_author_delete', 0)) {
-    db_query('DELETE FROM {biblio_contributor_data} WHERE cid NOT IN (SELECT DISTINCT(cid) FROM {biblio_contributor})');
-  }
-  biblio_save_keywords($node);
+  biblio_update_contributors($node);
+  biblio_update_keywords($node);
 
 }
 /**
@@ -1620,15 +1617,14 @@ function biblio_update($node) {
  * When a node is deleted, we need to clean up related tables.
  */
 function biblio_delete($node) {
+  require_once(drupal_get_path('module', 'biblio') .'/biblio.contributors.inc');
+  require_once(drupal_get_path('module', 'biblio') .'/biblio.keywords.inc');
   //first remove data from the biblio table
 
   db_query('DELETE FROM {biblio} WHERE nid = :nid', array(':nid' => $node->nid));
   //now remove the entries from the contributor linking table
-  db_query('DELETE FROM {biblio_contributor} WHERE nid = %d', $node->nid);
-  if (variable_get('biblio_auto_orphaned_author_delete', 0)) {
-    db_query('DELETE FROM {biblio_contributor_data} WHERE cid NOT IN (SELECT DISTINCT(cid) FROM {biblio_contributor})');
-  }
-  db_query('DELETE FROM {biblio_keyword} WHERE nid = %d', $node->nid);
+  biblio_delete_contributors($node);
+  biblio_delete_keywords($node);
 }
 /**
  * Implementation of hook_load().
@@ -1650,9 +1646,9 @@ function biblio_load($nodes) {
   	foreach ($record as $key => $value) {
   		$nodes[$record['nid']]->$key = $value;
   	}
-    $nodes[$record['nid']]->biblio_year = _biblio_text_year($nodes[$record['nid']]->biblio_year);
+    $nodes[$record['nid']]->biblio_year         = _biblio_text_year($nodes[$record['nid']]->biblio_year);
   	$nodes[$record['nid']]->biblio_contributors = biblio_load_contributors($nodes[$record['nid']]->vid, $nodes[$record['nid']]->biblio_type);
-    $nodes[$record['nid']]->biblio_keywords = biblio_load_keywords($nodes[$record['nid']]->vid);
+    $nodes[$record['nid']]->biblio_keywords     = biblio_load_keywords($nodes[$record['nid']]->vid);
   }
   //return $nodes;
 }

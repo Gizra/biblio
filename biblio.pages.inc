@@ -290,7 +290,7 @@ function biblio_build_query($arg_list) {
           break;
         case 'year':
           $term = array_shift($arg_list);
-          
+
           $where[] = "b.biblio_year=%d ";
           $query->condition('b.biblio_year', $term);
           //$limit .= " AND b.biblio_year=%d ";
@@ -668,12 +668,13 @@ function _biblio_category_separator_bar($attrib, $node) {
 
   switch ($attrib['sort']) {
     case 'title':
-      $first = drupal_substr(drupal_ucfirst(ltrim($node->title)), 0, 1);
-      if (drupal_substr(drupal_ucfirst(ltrim($node->title)), 0, 1) == '"' ) $first = drupal_ucfirst(drupal_substr(ltrim($node->title), 1, 1));
-      if (drupal_substr(drupal_ucfirst(ltrim($node->title)), 0, 1) == "'" ) $first = drupal_ucfirst(drupal_substr(ltrim($node->title), 1, 1));
-      if (drupal_substr(drupal_ucfirst(ltrim($node->title)), 0, 2) == "A " ) $first = drupal_ucfirst(drupal_substr(ltrim($node->title), 2, 1));
-      if (drupal_substr(drupal_ucfirst(ltrim($node->title)), 0, 3) == "An " ) $first = drupal_ucfirst(drupal_substr(ltrim($node->title), 3, 1));
-      if (drupal_substr(drupal_ucfirst(ltrim($node->title)), 0, 4) == "The " ) $first = drupal_ucfirst(drupal_substr(ltrim($node->title), 4, 1));
+      $title = $node->title['zxx'][0]['value'];
+      $first = drupal_substr(drupal_ucfirst(ltrim($title)), 0, 1);
+      if (drupal_substr(drupal_ucfirst(ltrim($title)), 0, 1) == '"' ) $first = drupal_ucfirst(drupal_substr(ltrim($title), 1, 1));
+      if (drupal_substr(drupal_ucfirst(ltrim($title)), 0, 1) == "'" ) $first = drupal_ucfirst(drupal_substr(ltrim($title), 1, 1));
+      if (drupal_substr(drupal_ucfirst(ltrim($title)), 0, 2) == "A " ) $first = drupal_ucfirst(drupal_substr(ltrim($title), 2, 1));
+      if (drupal_substr(drupal_ucfirst(ltrim($title)), 0, 3) == "An " ) $first = drupal_ucfirst(drupal_substr(ltrim($title), 3, 1));
+      if (drupal_substr(drupal_ucfirst(ltrim($title)), 0, 4) == "The " ) $first = drupal_ucfirst(drupal_substr(ltrim($title), 4, 1));
       if ( $first  != $_text) {
         if ($_text != '' ) {
           $content .= theme_biblio_end_category_section();
@@ -1187,8 +1188,8 @@ function biblio_keyword_page($filter = NULL) {
   foreach ($db_result as $keyword){
     $keywords[] = $keyword;
   }
-  if (!count($keywords)) return t('There are no keywords'); 
-  
+  if (!count($keywords)) return t('There are no keywords');
+
   $rows[] = array(array('data' => theme('biblio_alpha_line', array('type' => 'keywords', 'current' => $filter, 'path' =>'')), 'colspan' => 3));
   for ($i=0; $i < count($keywords); $i+=3) {
     $rows[] = array( array('data' => _biblio_format_keyword($keywords[$i]) ),

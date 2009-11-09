@@ -71,11 +71,26 @@ function biblio_load_keywords($vid) {
 
 }
 
+function biblio_delete_keywords($node) {
+  db_query('DELETE FROM {biblio_keyword} WHERE nid = :nid', array(':nid' => $node->nid));
+  biblio_delete_orphan_keywords();
+}
+
+function biblio_update_keywords($node) {
+  biblio_insert_keywords($node, TRUE);
+  biblio_delete_orphan_keywords();
+}
+
+function biblio_delete_orphan_keywords () {
+  if (variable_get('biblio_auto_orphaned_keyword_delete', 0)) {
+    db_query('DELETE FROM {biblio_keyword_data} WHERE kid NOT IN (SELECT DISTINCT(kid) FROM {biblio_keyword})');
+  }
+}
 /**
  * @param $node
  * @return
  */
-function biblio_save_keywords($node, $update = FALSE) {
+function biblio_insert_keywords($node, $update = FALSE) {
 	if (empty($node->biblio_keywords)) return;
   $kw_vocab = variable_get('biblio_keyword_vocabulary', 0);
   $freetagging = variable_get('biblio_keyword_freetagging', 0);
@@ -133,7 +148,7 @@ function biblio_save_keywords($node, $update = FALSE) {
        'nid' => $node->nid,
        'vid' => $node->vid))
       ->execute();
-      
+
     }
   }
 

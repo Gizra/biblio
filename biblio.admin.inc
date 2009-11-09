@@ -268,7 +268,7 @@ function biblio_admin_settings() {
     '#return_value' => 1,
     '#default_value' =>  module_exists('taxonomy') ? variable_get('biblio_copy_taxo_terms_to_keywords', 0) : 0,
     '#disabled' => (!module_exists('taxonomy')),
-    '#description' => module_exists('taxonomy') ? t('If this option is selected, the selected taxonomy terms will be copied to the '.variable_get('biblio_base_title', 'Biblio').' keyword database and be displayed as keywords (as well as taxonomy terms) for this entry.') : $taxo_mesg
+    '#description' => module_exists('taxonomy') ? t('If this option is selected, the selected taxonomy terms will be copied to the @base_title keyword database and be displayed as keywords (as well as taxonomy terms) for this entry.', array('@base_title',variable_get('biblio_base_title', 'Biblio'))) : $taxo_mesg
    );
   $form['keywords']['biblio_keyword_freetagging'] = array(
     '#type' => 'checkbox',
@@ -1572,8 +1572,8 @@ function biblio_admin_author_edit_form_submit($form, &$form_state) {
     $uid = $form_state['values']['drupal_uid'];
     $cid = $form_state['values']['cid'] ;
   }
-  db_query("UPDATE {biblio_contributor_data} SET drupal_uid = 0 WHERE drupal_uid = :uid", array(':uid' => $uid));
   if ($uid){
+    db_query("UPDATE {biblio_contributor_data} SET drupal_uid = 0 WHERE drupal_uid = :uid", array(':uid' => $uid));
     $result = db_query('SELECT data FROM {users} WHERE uid = :uid', array(':uid' => $uid))->fetch();
     $data = unserialize($result->data);
     $data['biblio_contributor_id'] = $cid;
@@ -1644,7 +1644,7 @@ function biblio_admin_orphans_form_submit($form, &$form_state) {
   // Filter out unchecked authors
   $authors = array_filter($form_state['values']['authors']);
   update_sql('DELETE FROM {biblio_contributor_data} WHERE cid IN ('.implode(',',$authors).')');
-  drupal_set_message(t('The orphaned authors ('.implode(',',$authors).') have been deleted.'));
+  drupal_set_message(t('The orphaned authors (@author_list) have been deleted.', array('@author_list', implode(',',$authors))));
 
 }
 function biblio_admin_keyword_orphans_form($form, $form_state) {

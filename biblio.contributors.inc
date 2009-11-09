@@ -91,13 +91,33 @@ function biblio_parse_contributors($contributors) {
   }
   return $result;
 }
+
+function biblio_delete_contributors($node) {
+  db_query('DELETE FROM {biblio_contributor} WHERE nid = :nid', array(':nid' => $node->nid));
+  biblio_delete_orphan_authors();
+  return;
+}
+
+function biblio_update_contributors($node) {
+  _save_contributors($node->biblio_contributors, $node->nid, $node->vid, TRUE);
+  biblio_delete_orphan_authors();
+  return;
+
+}
+
+function biblio_delete_orphan_authors() {
+  if (variable_get('biblio_auto_orphaned_author_delete', 0)) {
+    db_query('DELETE FROM {biblio_contributor_data} WHERE cid NOT IN (SELECT DISTINCT(cid) FROM {biblio_contributor})');
+  }
+}
+
 /**
  * Save $node->biblio_contributors to database
  * @param $node
  * @param $update
  * @return success of database operations
  */
-function biblio_save_contributors($node, $update = FALSE) {
+function biblio_insert_contributors($node, $update = FALSE) {
   if (empty ($node->biblio_contributors)) return true;
   return _save_contributors($node->biblio_contributors, $node->nid, $node->vid, $update);
 }

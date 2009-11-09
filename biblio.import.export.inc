@@ -203,7 +203,7 @@ function biblio_import_form_submit($form, & $form_state) {
       if ($batch_proc) {
         $session_id = microtime();
         $batch_op = array(
-          'title' => t('Importing '.$import_file->filename),
+          'title' => t('Importing @filename',array('@filename' =>$import_file->filename)),
           'operations' => array(
             array('biblio_import', array($import_file, $filetype, $userid, $terms, $batch_proc, $session_id)),
             array('biblio_import_batch_operations', array($session_id, $userid, $terms)),
@@ -740,7 +740,7 @@ function biblio_save_node($node, $batch = FALSE, $session_id = NULL, $save_node 
   $node->sticky = in_array('sticky', $options);
   $node->format = 0;
   $node->status = in_array('status', $options);
-  
+
 
   if(!isset($node->biblio_type)) $node->biblio_type = 129; // default to misc if not set.
   if ($batch && $session_id){ // we are batch processing some import data
