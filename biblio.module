@@ -1061,16 +1061,18 @@ function biblio_form_alter(&$form, $form_state, $form_id) {
  * that will be later placed inside the form.
  */
 function biblio_form(stdClass $node, $form_state) {
-
+//print_r($node);
+//print_r($form_state);die;
   global $user;
-
+  $tid = 0;
+  
   if (isset($form_state['post']['biblio_type'])) {
     $tid = $form_state['post']['biblio_type'];
   }
   elseif (isset($form_state['values']['biblio_type'])) {
     $tid = $form_state['values']['biblio_type'];
   }
-  else {
+  elseif (isset($node->biblio_type)){
     $tid = $node->biblio_type;
   }
   $show_fields = !empty($tid);
@@ -1086,65 +1088,65 @@ function biblio_form(stdClass $node, $form_state) {
     foreach ($result as $option) {
     $options["$option->tid"] = $option->name;
   }
-//  if (!isset($node->nid)) {// only show the doi lookup and paste boxes if this is a new entry
-//    if(phpversion() > 5 && !isset($form_state['storage']['biblio_doi'])) {
-//      $form['doi_lookup'] = array(
-//        '#type' => 'fieldset',
-//        '#title' => t('DOI Lookup'),
-//        '#weight' => -20,
-//        '#collapsible' => TRUE,
-//        '#collapsed' => TRUE,
-//      );
-//      $have_pid  = (isset($user->biblio_crossref_pid) && !empty($user->biblio_crossref_pid)) ? FALSE : TRUE;
-//      if ($have_pid) {
-//        $form['doi_lookup']['doi_register'] = array(
-//          '#prefix' => '<p><b>',
-//          '#suffix' => '</b></p>',
-//          '#value' => l('You need to register with CrossRef', 'http://www.crossref.org/requestaccount/', array('attributes' => array('target' => '_blank'), 'absolue' => TRUE)). t(' and then enter your CrossRef UserID in the "<i>CrossRef Login Information</i>" section of your account profile '). l('here...',"user/$user->uid/edit"),
-//        );
-//      }
-//
-//      $form['doi_lookup']['doi_data'] = array(
-//        '#type' => 'textfield',
-//        '#title' => t('DOI'),
-//        '#required' => FALSE,
-//        '#default_value' => '',
-//        '#description' => t('Enter a DOI name in the form: <b>10.1000/123456</b>'),
-//        '#disabled' => $have_pid,
-//        '#size' => 60,
-//        '#maxlength' => 255,
-//        '#weight' => -4
-//      );
-//      $form['doi_lookup']['doi_submit'] = array(
-//        '#type' => 'submit',
-//        '#disabled' => $have_pid,
-//        '#value' => t('Populate using DOI')
-//      );
-//    }
-//    if(!isset($form_state['storage']['biblio_paste'])) {
-//      $form['cut_paste'] = array(
-//        '#type' => 'fieldset',
-//        '#title' => t('Paste'),
-//        '#weight' => -20,
-//        '#collapsible' => TRUE,
-//        '#collapsed' => TRUE,
-//      );
-//      $form['cut_paste']['paste_data'] = array(
-//        '#type' => 'textarea',
-//        '#title' => t('BibTex'),
-//        '#required' => FALSE,
-//        '#default_value' => '',
-//        '#description' => t('Paste a BibTex entry here'),
-//        '#size' => 60,
-//        '#maxlength' => 2048,
-//        '#weight' => -4
-//      );
-//      $form['cut_paste']['paste_submit'] = array(
-//        '#type' => 'submit',
-//        '#value' => t('Populate using BibTex')
-//      );
-//    }
-//  }
+  if (!isset($node->nid)) {// only show the doi lookup and paste boxes if this is a new entry
+    if(phpversion() > 5 && !isset($form_state['storage']['biblio_doi'])) {
+      $form['doi_lookup'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('DOI Lookup'),
+        '#weight' => -20,
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE,
+      );
+      $have_pid  = (isset($user->biblio_crossref_pid) && !empty($user->biblio_crossref_pid)) ? FALSE : TRUE;
+      if ($have_pid) {
+        $form['doi_lookup']['doi_register'] = array(
+          '#prefix' => '<p><b>',
+          '#suffix' => '</b></p>',
+          '#value' => l('You need to register with CrossRef', 'http://www.crossref.org/requestaccount/', array('attributes' => array('target' => '_blank'), 'absolue' => TRUE)). t(' and then enter your CrossRef UserID in the "<i>CrossRef Login Information</i>" section of your account profile '). l('here...',"user/$user->uid/edit"),
+        );
+      }
+
+      $form['doi_lookup']['doi_data'] = array(
+        '#type' => 'textfield',
+        '#title' => t('DOI'),
+        '#required' => FALSE,
+        '#default_value' => '',
+        '#description' => t('Enter a DOI name in the form: <b>10.1000/123456</b>'),
+        '#disabled' => $have_pid,
+        '#size' => 60,
+        '#maxlength' => 255,
+        '#weight' => -4
+      );
+      $form['doi_lookup']['doi_submit'] = array(
+        '#type' => 'submit',
+        '#disabled' => $have_pid,
+        '#value' => t('Populate using DOI')
+      );
+    }
+    if(!isset($form_state['storage']['biblio_paste'])) {
+      $form['cut_paste'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Paste'),
+        '#weight' => -20,
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE,
+      );
+      $form['cut_paste']['paste_data'] = array(
+        '#type' => 'textarea',
+        '#title' => t('BibTex'),
+        '#required' => FALSE,
+        '#default_value' => '',
+        '#description' => t('Paste a BibTex entry here'),
+        '#size' => 60,
+        '#maxlength' => 2048,
+        '#weight' => -4
+      );
+      $form['cut_paste']['paste_submit'] = array(
+        '#type' => 'submit',
+        '#value' => t('Populate using BibTex')
+      );
+    }
+  }
   $form['biblio_type'] = array(
     '#type' => 'select',
     '#title' => t('Publication Type'),
@@ -1152,7 +1154,7 @@ function biblio_form(stdClass $node, $form_state) {
     '#options' => $options,
     '#description' => NULL,
     '#weight' => -15,
-    '#attributes' => array('onchange' => 'document.getElementById(\'node-form\').submit()'),
+    '#attributes' => array('onchange' => 'document.getElementById(\'edit-submit\').click()'),
     '#multiple' => FALSE,
     '#required' => TRUE
       );
@@ -1161,7 +1163,7 @@ function biblio_form(stdClass $node, $form_state) {
       '#type' => 'textfield',
       '#title' => t('Title'),
       '#required' => TRUE,
-      '#default_value' => trim((($form_state['values']['title'])?$form_state['values']['title']: $node->title['zxx'][0]['value'])),
+      '#default_value' => trim((isset($form_state['values']['title'])?$form_state['values']['title']: $node->title['zxx'][0]['value'])),
       '#size' => 60,
       '#maxlength' => 255,
       '#weight' => -4
@@ -1222,7 +1224,7 @@ function biblio_form(stdClass $node, $form_state) {
           $fld['hint'] = t('Separate keywords using the " @sep " character', array('@sep' => $sep));
         }
         $field_widget = array(
-            '#default_value' => ($form_state['values'][$key]?$form_state['values'][$key]:$node->$key),
+            '#default_value' => (isset($form_state['values'][$key])?$form_state['values'][$key]:$node->$key),
             '#type' => $fld['type'],
             '#title' => $fld['title'],
             '#size' => $fld['size'],
@@ -1297,10 +1299,10 @@ function _biblio_contributor_widget($node, $fld, $auth_category, $biblio_type, $
   $fldname = $fld['name'];
   $type = str_replace('_', '-', $fldname);
   if (is_object($node)) {
-    $contributors = (array) $node->biblio_contributors[$auth_category];
+    $contributors = isset($node->biblio_contributors[$auth_category]) ? $node->biblio_contributors[$auth_category] : '';
   }
   else {
-    $contributors = $node['biblio_contributors'][$auth_category];
+    $contributors = isset($node['biblio_contributors'][$auth_category]) ? $node['biblio_contributors'][$auth_category] : '';
   }
 
   $contributor_count = max(4, count($contributors));

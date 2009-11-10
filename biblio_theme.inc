@@ -204,11 +204,11 @@ function theme_biblio_tabular($variables) {
   module_load_include('inc','biblio',"biblio_style_$style_name");
   $fields = _biblio_get_field_information($node->biblio_type, TRUE);
   $rows[] = array(
-    array('data' => t('Title'), 'class' => 'biblio-row-title'),
+    array('data' => t('Title'), 'class' => array('biblio-row-title')),
     array('data' => filter_xss($node->title['zxx'][0]['value'], biblio_get_allowed_tags()))
   );
   $rows[] = array(
-    array('data' => t('Publication Type'), 'class' => 'biblio-row-title'),
+    array('data' => t('Publication Type'), 'class' => array('biblio-row-title')),
     array('data' => $node->biblio_type_name)
   );
 
@@ -258,7 +258,7 @@ function theme_biblio_tabular($variables) {
     $rows[] = array(
       array(
         'data' => t($row['title']),
-        'class' => 'biblio-row-title'
+        'class' => array('biblio-row-title')
       ),
       array(
         'data' => $data
@@ -984,18 +984,18 @@ function theme_biblio_contributors($variables) {
     // No need to print the field title every time.
     unset ($form[$key]['name']['#title'], $form[$key]['auth_type']['#title']);
     // Add class to group weight fields for drag and drop.
-    $form[$key]['rank']['#attributes']['class'] = 'rank';
+    $form[$key]['rank']['#attributes']['class'] = array('rank');
 
     // Build the table row.
     $row = array('');
     $row[] = array('data' => drupal_render($form[$key]['name']),
-              		 'attributes' => array('class' => 'biblio-contributor'));
+              		 'class' => array('biblio-contributor'));
     if (!$form['#hideRole']) {
       $row[] = array('data' => drupal_render($form[$key]['auth_type']),
-      							 'attributes' => array('class' => 'biblio-contributor-type'));
+      							 'class' => array('biblio-contributor-type'));
     }
     $row[] = drupal_render($form[$key]['rank']);
-    $rows[] = array('data' => $row, 'attributes' => array('class' => 'draggable'));
+    $rows[] = array('data' => $row, 'class' => array('draggable'));
   }
   $output = theme('table', array('header' => $headers, 'rows' => $rows, 'attributes' => array('id' => $form['#id'])));
   //$output .= drupal_render_children($form);
