@@ -478,6 +478,8 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
   }
 
   $count = 0;
+  // Reset separator bar status for repeated calls to biblio_db_search.
+  _biblio_category_separator_bar(NULL, NULL, TRUE);
 
 //FIXME  use node_load_multiple()???
   foreach ($result as $node) {
@@ -486,7 +488,7 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
     $node = node_load($node->nid);
     foreach($node_input as $key => $value) $node->$key = $value; // now add the incoming values back to the new node object
 
-    if (variable_get('biblio_hide_bibtex_braces', 0)) $node->title = biblio_remove_brace($node->title);
+    if (variable_get('biblio_hide_bibtex_braces', 0)) $node->title['zxx'][0]['value'] = biblio_remove_brace($node->title['zxx'][0]['value']);
     if (variable_get('biblio_fix_isi_links', 0)) biblio_fix_isi_links($node);
 
 
@@ -662,8 +664,9 @@ function _biblio_filter_info_line($args) {
   return $content;
 }
 
-function _biblio_category_separator_bar($attrib, $node) {
+function _biblio_category_separator_bar($attrib, $node, $reset = FALSE) {
   static $_text = '';
+  if ($reset) { $_text = ''; return;}
   $content = '';
 
   switch ($attrib['sort']) {

@@ -19,7 +19,7 @@
  *
  */
 function _ris_tagged_import($file, $terms = array(), $batch = FALSE, $session_id = NULL) {
-  
+
   if (!($fp = fopen($file->uri, "r"))) {
     drupal_set_message("could not open RIS input file", 'error');
     return;
@@ -46,7 +46,7 @@ function _ris_tagged_import($file, $terms = array(), $batch = FALSE, $session_id
       switch ($tag) {
         case 'ER' :
           if (!empty($node)) {
-            if (empty ($node->title )) $node->title[FIELD_LANGUAGE_NONE][0]['value'] = t("Untitled");
+            if (empty ($node->title['zxx'][0]['value'] )) $node->title[FIELD_LANGUAGE_NONE][0]['value'] = t("Untitled");
             if (!empty($terms)) {
               if (!isset($node->taxonomy)) $node->taxonomy = array();
               $node->taxonomy = array_merge($terms, $node->taxonomy);

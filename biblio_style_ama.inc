@@ -73,15 +73,15 @@ function biblio_style_ama($node, $base = 'biblio', $inline = false) {
         }
       }
 
-      if (!empty($node->title))      // title
+      if (!empty($node->title['zxx'][0]['value']))      // title
       {
         if (!empty($authors)) $output .= " ";
         $output .= '"' ;
         $output .= '<span class="biblio-title-ama">';
         $url = biblio_get_title_url_info($node);
-        $output .= l($node->title, $url['link'], $url['options']);
+        $output .= l($node->title['zxx'][0]['value'], $url['link'], $url['options']);
         $output .= "</span>";
-        if (!preg_match("/[?!.]$/", $node->title)) $output .= ".";
+        if (!preg_match("/[?!.]$/", $node->title['zxx'][0]['value'])) $output .= ".";
         $output .= '"';
       }
 
@@ -184,17 +184,17 @@ function biblio_style_ama($node, $base = 'biblio', $inline = false) {
           $output .= $authors;
         }
       }
-      if (!empty($node->title))      // title
+      if (!empty($node->title['zxx'][0]['value']))      // title
       {
         if (!empty($authors))  $output .= " ";
 
         $output .= '"<i>' ;
         $output .= '<span class="biblio-title-ama">';
         $url = biblio_get_title_url_info($node);
-        $output .= l($node->title, $url['link'], $url['options']);
+        $output .= l($node->title['zxx'][0]['value'], $url['link'], $url['options']);
         $output .= "</span>";
         $output .= '</i>';
-        if (!preg_match("/[?!.]$/", $node->title)) $output .= ".";
+        if (!preg_match("/[?!.]$/", $node->title['zxx'][0]['value'])) $output .= ".";
         $output .= '"';
       }
 
@@ -330,7 +330,7 @@ function biblio_style_ama($node, $base = 'biblio', $inline = false) {
         $output .= $authors;
       }
 
-      if (!empty($node->title))      // title
+      if (!empty($node->title['zxx'][0]['value']))      // title
       {
         if (!empty($authors))
         $output .= " ";
@@ -339,7 +339,7 @@ function biblio_style_ama($node, $base = 'biblio', $inline = false) {
         // TODO: book/volume/report/etc titles should be formatted in heading caps, however, this doesn't yet work correctly if the publication title contains HTML entities
         $output .= '<span class="biblio-title-ama">';
         $url = biblio_get_title_url_info($node);
-        $output .= l($node->title, $url['link'], $url['options']);
+        $output .= l($node->title['zxx'][0]['value'], $url['link'], $url['options']);
         $output .= "</span>";
         $output .= '</i>';
       }

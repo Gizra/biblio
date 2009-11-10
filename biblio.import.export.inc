@@ -239,18 +239,18 @@ function biblio_import_batch_operations($session_id, $userid, $terms, &$context)
     $context['sandbox']['progress'] = 0;
     $context['sandbox']['current_id'] = 0;
     $context['results']['nids'] = array();
-    $context['sandbox']['max'] = db_result(db_query("SELECT COUNT(DISTINCT(id)) FROM {biblio_import_cache} WHERE session_id = '%s'", $session_id));
+    $context['sandbox']['max'] = db_query("SELECT COUNT(DISTINCT(id)) FROM {biblio_import_cache} WHERE session_id = :sessid", array(':sessid' => $session_id))->fetchField();
   }
 
   // Process the next 20 nodes.
   $limit = 5;
-  $result = db_query_range("SELECT id, data FROM {biblio_import_cache} WHERE id > %d AND session_id = '%s' ORDER BY id ASC", $context['sandbox']['current_id'], $session_id, 0, $limit);
-  while ($row = db_fetch_array($result)) {
-    $node = unserialize($row['data']);
+  $result = db_query_range("SELECT id, data FROM {biblio_import_cache} WHERE id > :id AND session_id = :sessid ORDER BY id ASC", 0, $limit, array(':id' => $context['sandbox']['current_id'], ':sessid' => $session_id));
+  foreach ($result as $row) {
+    $node = unserialize($row->data);
     node_save($node);
     $context['results']['nids'][] = $node->nid;
     $context['sandbox']['progress']++;
-    $context['sandbox']['current_id'] = $row['id'];
+    $context['sandbox']['current_id'] = $row->id;
   }
 
   // Multistep processing : report progress.
@@ -270,11 +270,11 @@ function biblio_import_batch_finished($success, $results, $operations) {
   drupal_set_message($message, $type);
   foreach ($results['nids'] as $node_id) {
     if (count($results['terms'])) module_invoke('taxonomy', 'node_save', $node_id, $results['terms']);
-    db_query('UPDATE {node} SET uid = %d WHERE nid = %d', $results['userid'], $node_id);
-    db_query('UPDATE {node_revisions} SET uid = %d WHERE nid = %d', $results['userid'], $node_id);
+    db_query('UPDATE {node} SET uid = :uid WHERE nid = :nid', array(':uid' => $results['userid'], ':nid' => $node_id));
+    db_query('UPDATE {node_revision} SET uid = :uid WHERE nid = :nid', array(':uid' => $results['userid'], ':nid' => $node_id));
   }
   //clean up import cache...
-  db_query("DELETE FROM {biblio_import_cache} WHERE session_id = '%s'",$results['session_id']);
+  db_query("DELETE FROM {biblio_import_cache} WHERE session_id = :sessid", array(':sessid' => $results['session_id']));
 
 }
 
@@ -745,7 +745,7 @@ function biblio_save_node($node, $batch = FALSE, $session_id = NULL, $save_node 
   if(!isset($node->biblio_type)) $node->biblio_type = 129; // default to misc if not set.
   if ($batch && $session_id){ // we are batch processing some import data
     $node = serialize($node);
-    db_query("INSERT INTO {biblio_import_cache} (session_id, data) VALUES ('%s', %b)", $session_id, $node);
+    db_query("INSERT INTO {biblio_import_cache} (session_id, data) VALUES (:sessid, :node)", array(':sessid' => $session_id, ':node' => $node));
     return;
   }
   elseif ($save_node) { // $save_node = TRUE, the normal save path

@@ -134,6 +134,8 @@ function _save_contributors($contributors, $nid, $vid, $update = FALSE) {
   db_query('DELETE FROM {biblio_contributor} WHERE nid = :nid AND vid = :vid', array(':nid' => $nid, ':vid' => $vid));
   foreach ($contributors as $cat => $authors) {
     foreach ($authors as $key => $author) {
+      $rank = (isset($author['rank']) && is_numeric($author['rank'])) ? $author['rank'] : $key;
+      if (isset($author['rank'])) unset($author['rank']); //remove rank from author array because it's not in the biblio_contributor_data table
       $auth_type = $author['auth_type'];
       unset ($author['auth_type']);
       if ($update && !empty($author['cid']))  $author['cid'] = null; // null out the cid so we don't do a global change
@@ -150,7 +152,7 @@ function _save_contributors($contributors, $nid, $vid, $update = FALSE) {
         'nid' => $nid,
         'vid' => $vid,
         'cid' => $cid,
-        'rank' => (isset($author['rank']) && is_numeric($author['rank'])) ? $author['rank'] : $key,
+        'rank' => $rank,
         'auth_type' => $auth_type,
         'auth_category' => $cat,
       );

@@ -77,7 +77,7 @@ function biblio_style_apa($node, $base = 'biblio', $inline = FALSE) {
       }
       $output .= '<span class="biblio-title">';
       $url = biblio_get_title_url_info($node);
-      $output .= l($node->title, $url['link'], $url['options']);
+      $output .= l($node->title['zxx'][0]['value'], $url['link'], $url['options']);
       $output .= ". </span> \n";
       $output .= !empty ($node->biblio_contributors[2]) ? '(' . theme('biblio_authors', $node->biblio_contributors[2], 'apa', 2, $inline) . ', Ed.).' : "";
       $output .= ($node->biblio_secondary_title) ? '<u>' . check_plain($node->biblio_secondary_title) . '. ' : '<u>';

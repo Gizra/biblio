@@ -1055,6 +1055,8 @@ function theme_biblio_alpha_line($variables) {
     $options['query']['order'] = $_GET['order'];
   }
   $output = '<div class="biblio-alpha-line">';
+//TODO   for Cyrillic use 1040 to 1071... e.g. &#1068;
+
   for ($i = 65; $i <= 90; $i++) {
     if ($i == ord($current)){
       $output .= '<b>['.chr($i).']</b>&nbsp;';
