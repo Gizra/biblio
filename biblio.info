@@ -52,3 +52,6 @@ files[] = views/biblio_handler_filter_biblio_keyword_kid.inc
 files[] = views/biblio_handler_filter_biblio_type.inc
 files[] = views/biblio_handler_filter_contributor.inc
 files[] = views/biblio_handler_filter_contributor_uid.inc
+files[] = tests/biblio.test
+files[] = tests/keyword.test
+files[] = tests/contributor.test

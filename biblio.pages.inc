@@ -146,17 +146,21 @@ function biblio_build_query($arg_list) {
   switch ($sort_attrib['sort']) {
     case 'type':
       //$sortby = "ORDER BY bt.name %s, b.biblio_year DESC ";
+      $query->addField('n', 'title');
       $query->orderBy($type_name, $sort_attrib['order']);
-      $query->orderBy($type_name, $sort_title);
+      $query->orderBy('n', $sort_title);
       break;
     case 'title':
+      $query->addField('n', 'title');
       $query->orderBy($sort_title, $sort_attrib['order']);
+
       break;
     case 'author':
       //$last_name = $query->addField('bcd', 'lastname');
       $query->innerJoin('biblio_contributor', 'bc', 'b.vid = bc.vid');
       $query->join('biblio_contributor_data', 'bcd', 'bc.cid = bcd.cid');
       $query->condition('bc.rank', 0);
+      $query->addField('bcd', 'lastname');
       $query->orderBy('bcd.lastname', $sort_attrib['order']);
      // $query->condition('bc.auth_category', 1);
       break;
@@ -168,6 +172,8 @@ function biblio_build_query($arg_list) {
       break;
     case 'year':
     default:
+      $query->addField('b', 'biblio_year');
+      $query->addField('b', 'biblio_date');
       $query->orderBy('biblio_year', $sort_attrib['order']);
       $query->orderBy('biblio_date', $sort_attrib['order']);
   } //end switch

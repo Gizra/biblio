@@ -1,0 +1,53 @@
+<?php
+// $Id$
+/*
+ * @file
+ * Base class for all biblio tests
+ */
+class BiblioWebTestCase extends DrupalWebTestCase {
+  public $kids = array();  //keep a list of all keyword id's created
+  public $cids = array();  //keep a list of all contributor id's created
+  public $nids = array();  //keep a list of all node id's created
+  public $admin_user;
+
+ function tearDown() {
+    // remove any keywords created during the testing
+    if(!empty($this->kids)){
+      db_delete('biblio_keyword')
+        ->condition('kid', $this->kids, 'IN')
+        ->execute();
+
+      db_delete('biblio_keyword_data')
+        ->condition('kid', $this->kids, 'IN')
+        ->execute();
+
+    }
+    $this->kids = array();
+
+    foreach($this->nids as $nid) {
+      node_delete($nid);
+    }
+    $this->nids = array();
+
+    foreach($this->cids as $cid) {
+      biblio_delete_contributor($cid);
+    }
+    $this->cids = array();
+
+    parent::tearDown();
+  }
+
+  function createNode() {
+    $settings = array(
+      'type' => 'biblio', // This replaces the default type
+      'biblio_type' => 100, // This appends a new field.
+      'biblio_year' => 2009,
+      'biblio_contributors' => array()
+    );
+    $node =  $this->drupalCreateNode($settings);
+    $this->nids[] = $node->nid;
+
+    return $node;
+
+  }
+}

@@ -61,34 +61,46 @@ function biblio_get_keyword_by_id($kid) {
  * @return unknown_type
  */
 function biblio_load_keywords($vid) {
+	$keywords = array();
+	if (!isset($keywords[$vid])) {
+		$query = db_select('biblio_keyword', 'bk');
+		$query->join('biblio_keyword_data', 'bkd', 'bk.kid = bkd.kid');
+		$query->fields('bkd');
+		$query->condition('bk.vid', $vid)->orderBy('bkd.word', 'ASC');
 
-  $result = db_query('SELECT bkd.* FROM {biblio_keyword} bk INNER JOIN {biblio_keyword_data} bkd ON bk.kid = bkd.kid  WHERE bk.vid = :vid ORDER BY bkd.word ASC', array(':vid' => $vid));
-  $keywords[$vid] = '';
-  foreach ($result as $keyword) {
-    $keywords[$vid][$keyword->kid] = $keyword->word;
-  }
-  return $keywords[$vid];
+		$result = $query->execute();
 
+		$keywords[$vid] = array();
+		foreach ($result as $keyword) {
+			$keywords[$vid][$keyword->kid] = $keyword->word;
+		}
+	}
+	return $keywords[$vid];
 }
 
-function biblio_delete_keywords($node) {
-  db_query('DELETE FROM {biblio_keyword} WHERE nid = :nid', array(':nid' => $node->nid));
-  biblio_delete_orphan_keywords();
-}
 
-function biblio_update_keywords($node) {
-  biblio_insert_keywords($node, TRUE);
-  biblio_delete_orphan_keywords();
-}
-
-function biblio_delete_orphan_keywords () {
-  if (variable_get('biblio_auto_orphaned_keyword_delete', 0)) {
-    db_query('DELETE FROM {biblio_keyword_data} WHERE kid NOT IN (SELECT DISTINCT(kid) FROM {biblio_keyword})');
-  }
-}
 /**
- * @param $node
+ * Update the keyword database from the supplied node
+ *
+ * @param stdClass $node
  * @return
+ *   An array of keyword ID's
+ */
+function biblio_update_keywords($node) {
+  $kids = biblio_insert_keywords($node, TRUE);
+  biblio_delete_orphan_keywords();
+  return $kids;
+}
+
+/**
+ * Insert keywords into the database
+ *
+ * @param $node
+ *   A node with keywords attached
+ * @param $update
+ *   Set to true if you are updating an existing node
+ * @return
+ *   An array of keyword ID's from this node
  */
 function biblio_insert_keywords($node, $update = FALSE) {
 	if (empty($node->biblio_keywords)) return;
@@ -102,7 +114,13 @@ function biblio_insert_keywords($node, $update = FALSE) {
     $typed_keywords = $node->biblio_keywords;
   }
 
-  if (!$update) db_query('DELETE FROM {biblio_keyword} WHERE nid = :nid AND vid = :vid', array(':nid' => $node->nid, ':vid' => $node->vid));
+  if (!$update) {
+        $and = db_and()->condition('nid', $node->nid)
+                       ->condition('vid', $node->vid);
+         db_delete('biblio_keyword')
+            ->condition($and)
+            ->execute();
+  }
   if (isset($node->taxonomy) && is_array($node->taxonomy) && variable_get('biblio_copy_taxo_terms_to_keywords', 0)) { //add any taxonomy terms to our keyword list
     foreach ($node->taxonomy as $vid => $term) {
       if ($vid == 'copy_to_biblio' && $term == 0 ) {// don't copy if user overrides the default to copy, just set the $taxo_terms to an empty array and break out of the for loop
@@ -131,24 +149,30 @@ function biblio_insert_keywords($node, $update = FALSE) {
     if (!strlen(trim($word))) continue; //skip if we have a blank
     $kid = FALSE;
     // See if the term exists
-    if ( ($term = biblio_get_keyword_by_name($word)) ) {
-      $kid = $term->kid;
+    if ( ($kw = biblio_get_keyword_by_name($word)) ) {
+      $kid = $kw->kid;
     }
     if (!$kid) {
-      $term = array('word' => trim($word));
-      $status = biblio_save_keyword($term);
-      $kid = $term['kid'];
+      $kw = array('word' => trim($word));
+      $status = biblio_save_keyword($kw);
+      $kid = $kw['kid'];
     }
     // Defend against duplicate, differently cased tags
     if (!isset($inserted[$kid])) {
-      if ($update) db_query('DELETE FROM {biblio_keyword} WHERE nid = :nid AND vid = :vid AND kid = :kid', array(':nid' => $node->nid, ':vid' => $node->vid, ':kid' => $kid));
-      //db_query('INSERT INTO {biblio_keyword} (kid, nid, vid) VALUES (%d, %d, %d)', $kid, $node->nid, $node->vid);
-      $inserted[$kid] = db_insert('biblio_keyword')->fields(array(
-       'kid' => $kid,
-       'nid' => $node->nid,
-       'vid' => $node->vid))
-      ->execute();
-
+      if ($update) {
+      	$and = db_and()->condition('nid', $node->nid)
+      	               ->condition('vid', $node->vid)
+      	               ->condition('kid', $kid);
+      	 db_delete('biblio_keyword')
+            ->condition($and)
+            ->execute();
+      }
+      $inserted[$kid] = db_insert('biblio_keyword')->fields(
+        array(
+          'kid' => $kid,
+          'nid' => $node->nid,
+          'vid' => $node->vid
+        ))->execute();
     }
   }
 
@@ -158,43 +182,100 @@ function biblio_insert_keywords($node, $update = FALSE) {
     $node->taxonomy['tags'][$kw_vocab] =  biblio_implode_keywords($typed_keywords, ',');
   }
 
-  return count($inserted);
+  return array_keys($inserted);
 }
 /**
  * @param $word
  * @return
  */
-function biblio_save_keyword(&$form_values) {
-  if (!empty($form_values['kid']) && $form_values['word']) {
-    drupal_write_record('biblio_keyword_data', $form_values, 'kid');
+function biblio_save_keyword(&$keyword) {
+  if (!empty($keyword['kid']) && $keyword['word']) {
+    drupal_write_record('biblio_keyword_data', $keyword, 'kid');
     $status = SAVED_UPDATED;
   } else {
-    drupal_write_record('biblio_keyword_data', $form_values);
+    drupal_write_record('biblio_keyword_data', $keyword);
     $status = SAVED_NEW;
   }
 
   return $status;
 }
 
+function biblio_delete_orphan_keywords ($force = FALSE) {
+  if (variable_get('biblio_auto_orphaned_keyword_delete', 0) || $force) {
+//  	$sub_select = db_select('biblio_keyword', 'bk');
+//  	$sub_select->addField('bk', 'kid');
+//  	$sub_select->distinct();
+//  	return db_delete('biblio_keyword_data')
+//            ->condition('kid', $sub_select, 'NOT IN')
+//            ->execute();
+     db_query('DELETE FROM {biblio_keyword_data} WHERE kid NOT IN (SELECT DISTINCT(kid) FROM {biblio_keyword})');
+  }
+  return;
+}
 /**
+ * Delete all keywords references from a given node, but the actual keywords remain in the biblio_keyword_data table
+ * Also remove orphan keywords if this option is enabled.  Orphan keywords
+ * are keywords which remain in the biblio_keyword_data table but are not refferenced
+ * by any nodes through the biblio_keyword table.
+ *
  * @param $node
- * @return none
+ * @return
+ *   The number of links removed
  */
-function biblio_delete_node_keywords($node) {
-  db_query('DELETE FROM {biblio_keyword} WHERE nid = :nid', array(':nid' => $node->nid));
+function biblio_delete_keywords($node) {
+  $count = db_delete('biblio_keyword')
+            ->condition('nid', $node->nid)
+            ->execute();
+  biblio_delete_orphan_keywords();
+  return $count;
 }
 
 /**
+ * Delete "node revision to keyword" links from the biblio_keyword table
+ *
  * @param $node
- * @return none
+ * @return
+ *   The number of links removed
  */
 function biblio_delete_revision_keywords($node) {
-  db_query('DELETE FROM {biblio_keyword} WHERE vid = :vid', array(':vid' => $node->vid));
+  return db_delete('biblio_keyword')
+            ->condition('vid', $node->vid)
+            ->execute();
 }
 
+/**
+ * Delete multiple keywords from both the biblio_keyword and biblio_keyword_data tables
+ * This will remove the keywords referenced by the supplied ID's from ALL nodes which reference them.
+ *
+ * @param array $keywords
+ *   An array of keyword id's to delete
+ * @return
+ *   The number of keywords deleted
+ */
+function biblio_delete_multiple_keywords($keywords) {
+	$count = 0;
+	foreach ($keywords as $kid) {
+		$count += biblio_delete_keyword($kid);
+	}
+	return $count;
+}
+/**
+ * Delete a keyword from both the biblio_keyword and biblio_keyword_data tables
+ * This will remove the keyword referenced by the supplied ID from ALL nodes which reference them.
+ *
+ * @param $keyword_id
+ *   The keyword id to delete
+ * @return
+ *   The number of keywords deleted (should always be one)
+ */
 function biblio_delete_keyword($keyword_id) {
-  db_query('DELETE FROM {biblio_keyword} WHERE kid = :kid', array(':kid' => $keyword_id));
-  db_query('DELETE FROM {biblio_keyword_data} WHERE kid = :kid', array(':kid' => $keyword_id));
+	db_delete('biblio_keyword')
+      ->condition('kid', $keyword_id)
+      ->execute();
+
+  return db_delete('biblio_keyword_data')
+            ->condition('kid', $keyword_id)
+            ->execute();
 }
 
 function biblio_explode_keywords($string) {

@@ -764,8 +764,7 @@ function biblio_schema() {
         ),
       'aka' => array(
         'type' => 'int',
-        'not null' => TRUE,
-        'default'  => 0,
+        'not null' => FALSE,
         'unsigned' => TRUE,
         'description' =>'Also known as, links this author entry with others so you can have variation on the name, but listing by cid will find all other (aka) author entries',
         ),
@@ -832,7 +831,7 @@ function biblio_schema() {
         )
 
         ),
-      'primary key' => array('cid','aka'),
+      'primary key' => array('cid'),
       'indexes' => array(
           'lastname' => array('lastname'),
           'firstname' => array('firstname'),
@@ -1443,8 +1442,8 @@ function _id_by_name($table, $name, $id = NULL, $build = NULL) {
   static $result = NULL;
   if (!empty($build)) { //refresh cache from table
     unset($result[$build['tablename']]);
-    $res = db_query("SELECT ".$build['name_column'].", ".$build['id_column']." FROM {".$build['tablename']."}");
-    foreach ($res->fetchAssoc() as $row ){
+    $res = db_query("SELECT ".$build['name_column'].", ".$build['id_column']." FROM {".$build['tablename']."}",array(), array('fetch' => PDO::FETCH_ASSOC));
+    foreach ($res as $row ){
       $result[$build['tablename']][$row[$build['name_column']]] = $row[$build['id_column']];
     }
     return;
@@ -1963,5 +1962,11 @@ function biblio_update_6022() {
 }
 */
 function biblio_update_7000() {
+    $result = array();
+
+    db_drop_primary_key($result, 'biblio_contributor_data');
+    db_add_primary_key($result, 'biblio_contributor_data', array('cid', 'aka'));
+
+    return $result;
 
 }

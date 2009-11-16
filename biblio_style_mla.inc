@@ -52,9 +52,9 @@ function biblio_style_mla_author_options() {
  *   The styled biblio entry
  */
 function biblio_style_mla($node, $base = 'biblio', $inline = false) {
-
+  $output = '';
   $author_options = biblio_style_mla_author_options();
-  $authors = theme('biblio_format_authors', $node->biblio_contributors[1], $author_options, $inline);
+  $authors = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[1], 'options' => $author_options, 'inline' => $inline));
   //if (empty($authors)) $authors = theme('biblio_authors', $node->biblio_contributors[5], 'mla', 5, $inline);  // if no authors substitute corp author if available
   //if (empty($authors)) $authors = '[' . t('Anonymous') . ']';  // use anonymous if we still have nothing.
   //$output .= '<span class="biblio-authors">' . $authors . "</span>.&nbsp; \n";
@@ -109,7 +109,7 @@ function biblio_style_mla($node, $base = 'biblio', $inline = false) {
         $output .= " (".$node->biblio_year . ")";
       }
       // FIXME do something with the online pubs section
-      if ($node->online_publication == "yes") // this record refers to an online article
+      if (FALSE /*$node->online_publication == "yes"*/) // this record refers to an online article
       {
         // instead of any pages info (which normally doesn't exist for online publications) we append
         // an optional string (given in 'online_citation') plus the current date and the DOI (or URL):
@@ -213,7 +213,7 @@ function biblio_style_mla($node, $base = 'biblio', $inline = false) {
             'customStringAfterFirstAuthors' => ', et al.',//15
             'encodeHTML' => true
           );
-          $editor = theme('biblio_format_authors', $node->biblio_contributors[2], $editor_options, $inline);
+          $editor = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[2], 'options' => $editor_options, 'inline' => $inline));
           _period_if_needed($output);
 
           if (count($node->biblio_contributors[2]) > 1) { // there are at least two editors (separated by ';')
@@ -356,7 +356,7 @@ function biblio_style_mla($node, $base = 'biblio', $inline = false) {
           'customStringAfterFirstAuthors' => ', et al.',//15
           'encodeHTML' => true
         );
-        $editor = theme('biblio_format_authors', $node->biblio_contributors[2], $editor_options, $inline);
+        $editor = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[2], 'options' => $editor_options, 'inline' => $inline));
         _period_if_needed($output);
 
         if (count($node->biblio_contributors[2] > 1)) {// there are at least two editors (separated by ';')
