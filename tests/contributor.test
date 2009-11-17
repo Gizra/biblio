@@ -81,14 +81,6 @@ class BiblioContributorUnitTest extends BiblioContributorWebTestCase {
     $node = $this->createNode();
     $nid = $node->nid;
     $vid1 = $node->vid;
-    $node->biblio_contributors[1][] = array('name' => 'Ron J. Jeromezzzzzz',  'auth_type' => 1);
-    $node->biblio_contributors[1][] = array('name' => 'John Smithzzzzzz',     'auth_type' => 1);
-    $node->biblio_contributors[1][] = array('name' => 'George W. Bushzzzzzz', 'auth_type' => 1);
-    biblio_insert_contributors($node);
-    $node = node_load($nid, NULL, TRUE);
-    foreach($node->biblio_contributors[1] as $author) {
-      $this->cids[] = $author['cid'];
-    }
     $this->assertIdentical($node->biblio_contributors[1][2]['firstname'], 'George', 'Test biblio_insert_contributors($node), firstname');
     $this->assertIdentical($node->biblio_contributors[1][2]['lastname'], 'Bushzzzzzz', 'Test biblio_insert_contributors($node), lastname' );
     unset ($node->biblio_contributors[1][2]);

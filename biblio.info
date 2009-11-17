@@ -55,3 +55,4 @@ files[] = views/biblio_handler_filter_contributor_uid.inc
 files[] = tests/biblio.test
 files[] = tests/keyword.test
 files[] = tests/contributor.test
+files[] = tests/import.export.test

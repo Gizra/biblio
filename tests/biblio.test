@@ -37,14 +37,38 @@ class BiblioWebTestCase extends DrupalWebTestCase {
     parent::tearDown();
   }
 
-  function createNode() {
+  function createNode($type = 100) {
+    $schema = drupal_get_schema('biblio');
+    foreach($schema['fields'] as $name => $values) {
+      if ($values['type'] == 'int') continue;
+      switch ($values['type']) {
+        case 'varchar':
+          $length = $values['length'];
+          break;
+        case 'text':
+          $length = 1000;
+          break;
+      }
+      $biblio_fields["$name"] = $name;
+    }
     $settings = array(
+      'title' => array(FIELD_LANGUAGE_NONE => array(array('value' => 'Biblio Title'))),
       'type' => 'biblio', // This replaces the default type
-      'biblio_type' => 100, // This appends a new field.
+      'biblio_type' => $type, // This appends a new field.
       'biblio_year' => 2009,
-      'biblio_contributors' => array()
     );
-    $node =  $this->drupalCreateNode($settings);
+    $settings = array_merge($biblio_fields, $settings);
+
+    $node = $this->drupalCreateNode($settings);
+    $node->biblio_contributors[1][] = array('name' => 'Ron J. Jeromezzzzzz',  'auth_type' => 1);
+    $node->biblio_contributors[1][] = array('name' => 'John Smithzzzzzz',     'auth_type' => 1);
+    $node->biblio_contributors[1][] = array('name' => 'George W. Bushzzzzzz', 'auth_type' => 1);
+    biblio_insert_contributors($node);
+    $node = node_load($node->nid, NULL, TRUE);
+    foreach($node->biblio_contributors[1] as $author) {
+      $this->cids[] = $author['cid'];
+    }
+
     $this->nids[] = $node->nid;
 
     return $node;

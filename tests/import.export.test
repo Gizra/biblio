@@ -1,0 +1,29 @@
+<?php
+// $Id$
+class BiblioImportExportWebTestCase extends BiblioWebTestCase {
+  function setUp() {
+    require_once(drupal_get_path('module', 'biblio') .'/biblio.import.export.inc');
+  }
+}
+
+class BiblioImportExportUnitTest extends BiblioImportExportWebTestCase {
+
+  public static function getInfo() {
+    return array(
+      'name' => 'Biblio import/export unit tests',
+      'description' => 'Unit tests for import/export functions.',
+      'group' => 'Biblio',
+    );
+  }
+  function getTaggedString() {
+    return "%0 Book\r\n%B biblio_secondary_title\r\n%D 2009\r\n%T Biblio Title\r\n%A Ron J. Jeromezzzzzz\r\n%A John Smithzzzzzz\r\n%A George W. Bushzzzzzz\r\n%C biblio_place_published\r\n%I biblio_publisher\r\n%L biblio_call_number\r\n%M biblio_accession_number\r\n%N biblio_issue\r\n%P biblio_pages\r\n%R biblio_doi\r\n%S biblio_tertiary_title\r\n%U biblio_url\r\n%V biblio_volume\r\n%X biblio_abst_ebiblio_abst_f\r\n%Z biblio_notes\r\n%7 biblio_edition\r\n%8 biblio_date\r\n%9 biblio_type_of_work\r\n%@ biblio_isbn\r\n\r\n";
+
+  }
+  function testBiblioEndnoteTaggedExport() {
+
+    $node = $this->createNode();
+    $export_string = biblio_endnote_tagged_export($node);
+    $base_string = $this->getTaggedString();
+    $this->assertEqual($export_string, $base_string, 'Export a node in EndNote Tagged format');
+  }
+}
