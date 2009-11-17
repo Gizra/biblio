@@ -183,13 +183,13 @@ function biblio_update_contributor(&$author) {
  * @param $update
  * @return success of database operations
  */
-function _save_contributors($contributors, $nid, $vid, $update = FALSE) {
+function _save_contributors(&$contributors, $nid, $vid, $update = FALSE) {
   $md5 = _loadMD5();
   db_query('DELETE FROM {biblio_contributor} WHERE nid = :nid AND vid = :vid', array(':nid' => $nid, ':vid' => $vid));
   foreach ($contributors as $cat => $authors) {
     foreach ($authors as $key => $author) {
       if(empty($author['lastname'])) {
-        $author = biblio_parse_author($author, $cat);
+        $contributors[$cat][$key] = $author = biblio_parse_author($author, $cat);
       }
       if ($update && !empty($author['cid']))  $author['cid'] = null; // null out the cid so we don't do a global change
       if (empty ($author['cid']) && isset($author['md5']) && !empty ($md5)) {

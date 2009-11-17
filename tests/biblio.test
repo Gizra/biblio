@@ -74,4 +74,16 @@ class BiblioWebTestCase extends DrupalWebTestCase {
     return $node;
 
   }
+  function assertBiblioFields($node1, $node2, $skip_fields = array()) {
+    $fields = drupal_schema_fields_sql('biblio');
+    $fields = array_diff($fields, $skip_fields);
+    $count = 0;
+    foreach($fields as $field) {
+      if ($node1->$field != $node2->$field) {
+        $this->assertIdentical($node1->$field, $node2->$field);
+        $count++;
+      }
+    }
+    $this->assertEqual($count, 0, "There were $count differences between the two nodes");
+  }
 }

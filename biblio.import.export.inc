@@ -895,16 +895,19 @@ function biblio_endnote_tagged_export($node) {
   if (!empty($node->title['zxx'][0]['value']))
   $tagged .= "%T ". trim($node->title['zxx'][0]['value']) ."\r\n";
 
-  foreach ((array)$node->biblio_contributors[1] as $auth) {
+  foreach ($node->biblio_contributors[1] as $auth) {
     $tagged .= "%A " . trim($auth['name']) ."\r\n";
   }
-  foreach ((array)$node->biblio_contributors[2] as $auth) {
-    $tagged .= "%E " . trim($auth['name']) ."\r\n";
+  if(isset($node->biblio_contributors[2]) ) {
+    foreach ($node->biblio_contributors[2] as $auth) {
+      $tagged .= "%E " . trim($auth['name']) ."\r\n";
+    }
   }
-  foreach ((array)$node->biblio_contributors[3] as $auth) {
-    $tagged .= "%Y " . trim($auth['name']) ."\r\n";
+  if(isset($node->biblio_contributors[2]) ) {
+    foreach ($node->biblio_contributors[3] as $auth) {
+      $tagged .= "%Y " . trim($auth['name']) ."\r\n";
+    }
   }
-
   if (!empty($node->biblio_place_published))
   $tagged .= "%C ". trim($node->biblio_place_published) ."\r\n";
   if (!empty($node->biblio_publisher)) { $tagged .= "%I ". trim($node->biblio_publisher) ."\r\n"; }
@@ -926,22 +929,16 @@ function biblio_endnote_tagged_export($node) {
       $tagged .= "%K ". trim($term) ."\r\n";
     }
   }
-  if (!empty($node->biblio_call_number))
-  $tagged .= "%L ". trim($node->biblio_call_number) ."\r\n";
-  if (!empty($node->biblio_accession_number))
-  $tagged .= "%M ". trim($node->biblio_accession_number) ."\r\n";
-  if (!empty($node->biblio_issue))
-  $tagged .= "%N ". trim($node->biblio_issue) ."\r\n";
-  if (!empty($node->biblio_pages))
-  $tagged .= "%P ". trim($node->biblio_pages) ."\r\n";
-  if (!empty($node->biblio_doi))
-  $tagged .= "%R ". trim($node->biblio_doi) ."\r\n";
-  if (!empty($node->biblio_tertiary_title))
-  $tagged .= "%S ". trim($node->biblio_tertiary_title) ."\r\n";
-  if (!empty($node->biblio_url))
-  $tagged .= "%U ". trim($node->biblio_url) ."\r\n";
-  if (!empty($node->biblio_volume))
-  $tagged .= "%V ". trim($node->biblio_volume) ."\r\n";
+  if (!empty($node->biblio_call_number))      $tagged .= "%L ". trim($node->biblio_call_number) ."\r\n";
+  if (!empty($node->biblio_accession_number)) $tagged .= "%M ". trim($node->biblio_accession_number) ."\r\n";
+  if (!empty($node->biblio_issue))            $tagged .= "%N ". trim($node->biblio_issue) ."\r\n";
+  if (!empty($node->biblio_pages))            $tagged .= "%P ". trim($node->biblio_pages) ."\r\n";
+  if (!empty($node->biblio_doi))              $tagged .= "%R ". trim($node->biblio_doi) ."\r\n";
+  if (!empty($node->biblio_tertiary_title))   $tagged .= "%S ". trim($node->biblio_tertiary_title) ."\r\n";
+  if (!empty($node->biblio_url))              $tagged .= "%U ". trim($node->biblio_url) ."\r\n";
+  if (!empty($node->biblio_volume))           $tagged .= "%V ". trim($node->biblio_volume) ."\r\n";
+  if (!empty($node->biblio_number_of_volumes))$tagged .= "%6 ". trim($node->biblio_number_of_volumes) ."\r\n";
+  if (!empty($node->biblio_lang))             $tagged .= "%G ". trim($node->biblio_lang) ."\r\n";
   $abst = "";
   if (!empty($node->biblio_abst_e))
   $abst .= trim($node->biblio_abst_e);
@@ -953,16 +950,19 @@ function biblio_endnote_tagged_export($node) {
     $abst = preg_replace($search, $replace, $abst);
     $tagged .= "%X ". $abst ."\r\n";
   }
-  if (!empty($node->biblio_notes))
-  $tagged .= "%Z ". trim($node->biblio_notes) ."\r\n";
-  if (!empty($node->biblio_edition))
-  $tagged .= "%7 ". trim($node->biblio_edition) ."\r\n";
-  if (!empty($node->biblio_date))
-  $tagged .= "%8 ". trim($node->biblio_date) ."\r\n";
-  if (!empty($node->biblio_type_of_work))
-  $tagged .= "%9 ". trim($node->biblio_type_of_work) ."\r\n";
-  if (!empty($node->biblio_isbn))
-  $tagged .= "%@ ". trim($node->biblio_isbn) ."\r\n";
+  if (!empty($node->biblio_notes))        $tagged .= "%Z ". trim($node->biblio_notes) ."\r\n";
+  if (!empty($node->biblio_custom1))      $tagged .= "%1 ". trim($node->biblio_custom1) ."\r\n";
+  if (!empty($node->biblio_custom2))      $tagged .= "%2 ". trim($node->biblio_custom2) ."\r\n";
+  if (!empty($node->biblio_custom3))      $tagged .= "%3 ". trim($node->biblio_custom3) ."\r\n";
+  if (!empty($node->biblio_custom4))      $tagged .= "%4 ". trim($node->biblio_custom4) ."\r\n";
+  if (!empty($node->biblio_custom5))      $tagged .= "%# ". trim($node->biblio_custom5) ."\r\n";
+  if (!empty($node->biblio_custom6))      $tagged .= "%$ ". trim($node->biblio_custom6) ."\r\n";
+  if (!empty($node->biblio_custom7))      $tagged .= "%] ". trim($node->biblio_custom7) ."\r\n";
+  if (!empty($node->biblio_edition))      $tagged .= "%7 ". trim($node->biblio_edition) ."\r\n";
+  if (!empty($node->biblio_date))         $tagged .= "%8 ". trim($node->biblio_date) ."\r\n";
+  if (!empty($node->biblio_type_of_work)) $tagged .= "%9 ". trim($node->biblio_type_of_work) ."\r\n";
+  if (!empty($node->biblio_isbn))         $tagged .= "%@ ". trim($node->biblio_isbn) ."\r\n";
+  if (!empty($node->biblio_research_notes)) $tagged .= "%< ". trim($node->biblio_research_notes) ."\r\n";
   if (!empty ($node->files) && count($node->files)  && user_access('view uploaded files')) {
     foreach($node->files as $file) {
       $tagged .= "%> ". file_create_url($file->filepath) . "\r\n"; // insert file here.

@@ -139,6 +139,7 @@ class PARSEENTRIES
   function PARSEENTRIES()
   {
     require_once(drupal_get_path('module', 'biblio') . '/bibtexParse/transtab_latex_unicode.inc.php');
+    $this->transtab_latex_unicode = get_transtab_latex_unicode();
     $this->preamble = $this->strings = $this->undefinedStrings = $this->entries = array();
     $this->count = 0;
     $this->fieldExtract = TRUE;
@@ -489,7 +490,7 @@ class PARSEENTRIES
   // Return arrays of entries etc. to the calling process.
   function returnArrays()
   {
-    global $transtab_latex_unicode; // defined in 'transtab_latex_unicode.inc.php'
+ //   global $transtab_latex_unicode; // defined in 'transtab_latex_unicode.inc.php'
     foreach($this->preamble as $value)
     {
       preg_match("/.*?[{(](.*)/", $value, $matches);

@@ -61,7 +61,7 @@ function en8_startElement($parser, $name, $attrs) {
             $node->biblio_contributors[5][$contrib_count]['name'] = '';
             break;
         }
-      $element = $name;  
+      $element = $name;
       break;
     case 'year' :
     case 'pub-dates' :
@@ -77,14 +77,14 @@ function en8_startElement($parser, $name, $attrs) {
       break;
     case 'keyword':
     	$node->biblio_keywords[$keyword_count] = '';
-    	$element = $name;  
+    	$element = $name;
      break;
     case 'title':
       $langcode = FIELD_LANGUAGE_NONE;
       $node->title[$langcode][0]['value'] = '';
       $element = $name;
       break;
-     
+
     default :
       $element = $name;
   }
@@ -216,13 +216,13 @@ function en8_characterData($parser, $data) {
       case 'url' :
         switch ($urls) {
           case 'web-urls' :
+            $node->biblio_url .= $data;
+            break;
           case 'pdf-urls' :
           case 'text-urls' :
           case 'image-urls' :
             break;
           case 'related-urls' :
-            $node->biblio_url .= $data;
-            break;
         }
         break;
 
@@ -244,7 +244,7 @@ function en8_parser_field_map($enfield) {
        'auth-address'             => 'biblio_auth_address',
        'auth-affiliaton'          => '',
        'title'                    => 'title',
-       'secondary-title'          =>'biblio_secondary_title',
+       'secondary-title'          => 'biblio_secondary_title',
        'tertiary-title'           => 'biblio_tertiary_title',
        'alt-title'                => 'biblio_alternate_title',
        'short-title'              => 'biblio_short_title',

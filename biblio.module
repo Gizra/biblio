@@ -1571,11 +1571,6 @@ function _biblio_prepare_submit(&$node) {
   if (variable_get('biblio_auto_citekey', 1) && empty($node->biblio_citekey)) {
     $node->biblio_citekey = biblio_citekey_generate($node);
   }
-  $duplicate = biblio_hash($node);
-  if (isset($duplicate) && $duplicate != $node->nid) { // if this is a potential duplcate, write the nids of the pre-existing and new nodes
-    $dup_map = array('vid' => $duplicate, 'did' => $node->nid);
-    drupal_write_record('biblio_duplicates', $dup_map);
-  }
 }
 /**
  * Implementation of hook_insert().
@@ -1590,6 +1585,12 @@ function biblio_insert($node) {
   drupal_write_record('biblio', $node);
   biblio_insert_contributors($node);
   biblio_insert_keywords($node);
+  $duplicate = biblio_hash($node);
+  if (isset($duplicate) && $duplicate != $node->nid) { // if this is a potential duplcate, write the nids of the pre-existing and new nodes
+    $dup_map = array('vid' => $duplicate, 'did' => $node->nid);
+    drupal_write_record('biblio_duplicates', $dup_map);
+  }
+
 }
 /**
  * Implementation of hook_update().

@@ -8,7 +8,7 @@ function _endnote8_XML_export($node, $part = 'record'){
       $xml .= "<xml><records>";
       break;
     case 'record':
-      $xml .= "<record>";
+      $xml = "<record>";
       $xml .= '<source-app name="Biblio" version="6.x">Drupal-Biblio</source-app>';
       $xml .= "<ref-type>". _endnote8_type_map($node->biblio_type) ."</ref-type>";
       unset($node->biblio_type);
@@ -28,7 +28,7 @@ function _endnote8_XML_export($node, $part = 'record'){
       $xml .= "</record>";
       break;
     case 'end':
-      $xml .= '</records></xml>';
+      $xml = '</records></xml>';
       break;
   }
     return $xml;
@@ -54,7 +54,7 @@ function en8_encode_font_faces(&$node) {
 }
 
 function en8_add_titles(&$node) {
-  $xml .= '<titles>';
+  $xml = '<titles>';
   $xml .= (!empty ($node->title['zxx'][0]['value'])) ? '<title><style face="normal" font="default" size="100%">'.htmlspecialchars($node->title['zxx'][0]['value'])."</style></title>" :'';
   $xml .= (!empty ($node->biblio_secondary_title)) ? '<secondary-title><style face="normal" font="default" size="100%">'.htmlspecialchars($node->biblio_secondary_title)."</style></secondary-title>" :'';
   $xml .= (!empty ($node->biblio_tertiary_title)) ? '<tertiary-title><style face="normal" font="default" size="100%">'.htmlspecialchars($node->biblio_tertiary_title)."</style></tertiary-title>" :'';
@@ -129,7 +129,7 @@ function en8_add_keywords(&$node) {
 }
 
 function en8_add_contributors(&$node) {
-  $xml .= '<contributors>';
+  $xml = '<contributors>';
   if (count($node->biblio_contributors[1])) {
     $xml .= "<authors>";
     foreach((array)$node->biblio_contributors[1] as $auth) {
@@ -139,7 +139,7 @@ function en8_add_contributors(&$node) {
     }
     $xml .= "</authors>";
   }
-  if (count($node->biblio_contributors[2])) {
+  if (isset($node->biblio_contributors[2]) && count($node->biblio_contributors[2])) {
     $xml .= "<secondary-authors>";
     foreach((array)$node->biblio_contributors[2] as $auth) {
       $xml .= '<author><style face="normal" font="default" size="100%">';
@@ -148,7 +148,7 @@ function en8_add_contributors(&$node) {
     }
     $xml .= "</secondary-authors>";
   }
-  if (count($node->biblio_contributors[3])) {
+  if (isset($node->biblio_contributors[3]) && count($node->biblio_contributors[3])) {
     $xml .= "<tertiary-authors>";
     foreach((array)$node->biblio_contributors[3] as $auth) {
       $xml .= '<author><style face="normal" font="default" size="100%">';
@@ -157,7 +157,7 @@ function en8_add_contributors(&$node) {
     }
     $xml .= "</tertiary-authors>";
   }
-  if (count($node->biblio_contributors[4])) {
+  if (isset($node->biblio_contributors[4]) && count($node->biblio_contributors[4])) {
     $xml .= "<subsidiary-authors>";
     foreach((array)$node->biblio_contributors[4] as $auth) {
       $xml .= '<author><style face="normal" font="default" size="100%">';
@@ -166,7 +166,7 @@ function en8_add_contributors(&$node) {
     }
     $xml .= "</subsidiary-authors>";
   }
-  if (count($node->biblio_contributors[5])) {
+  if (isset($node->biblio_contributors[5]) && count($node->biblio_contributors[5])) {
     $xml .= "<translated-authors>";
     foreach((array)$node->biblio_contributors[5] as $auth) {
       $xml .= '<author><style face="normal" font="default" size="100%">';
@@ -189,7 +189,7 @@ function en8_field_map($biblio_field) {
        'ref-type'                 => 'biblio_type',
        'auth-address'             => 'biblio_auth_address',
        'auth-affiliaton'          => '',
-       'title'                    => 'title',
+       'title'                    => '',
        'secondary-title'          => 'biblio_secondary_title',
        'tertiary-title'           => 'biblio_tertiary_title',
        'alt-title'                => 'biblio_alternate_title',

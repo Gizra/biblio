@@ -51,8 +51,8 @@ class BiblioKeywordUnitTest extends BiblioKeywordWebTestCase {
   }
   function testBiblioGetKeywordById() {
     $keyword = $this->createKeyword();
-    $word = biblio_get_keyword_by_name($keyword['kid']);
-    $this->assertIdentical($keyword, $word, t('Loaded keyword by ID'));
+    $word = biblio_get_keyword_by_id($keyword['kid']);
+    $this->assertIdentical($keyword, $word);
   }
   function testBiblioGetKeywordByName() {
     $keyword = $this->createKeyword();
@@ -94,9 +94,7 @@ class BiblioKeywordUnitTest extends BiblioKeywordWebTestCase {
     node_save($node);
 
     $node = node_load($node->nid, NULL, TRUE);
-    foreach($node->biblio_contributors[1] as $author) {
-      $this->cids[] = $author['cid'];  // cache the cid's for later removal
-    }
+
     foreach($node->biblio_keywords as $kid => $value) {
       $this->assertEqual($value, $term1['word'].'xxx', 'Loaded updated keyword');
       $this->kids[] = $kid; // add the new kids to the global array so we can delete them on tear down.
