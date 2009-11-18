@@ -52,7 +52,7 @@ class BiblioKeywordUnitTest extends BiblioKeywordWebTestCase {
   function testBiblioGetKeywordById() {
     $keyword = $this->createKeyword();
     $word = biblio_get_keyword_by_id($keyword['kid']);
-    $this->assertIdentical($keyword, $word);
+    $this->assertEqual($keyword, $word, 'Get keyword by ID');
   }
   function testBiblioGetKeywordByName() {
     $keyword = $this->createKeyword();
@@ -104,11 +104,7 @@ class BiblioKeywordUnitTest extends BiblioKeywordWebTestCase {
       $this->assertEqual($value, $term1['word'], 'Loaded previous revision prior to update');
       $this->kids[] = $kid; // add the new kids to the global array so we can delete them on tear down.
     }
-    $num_deleted = 0;
-    foreach (array_unique($this->kids) as $kid) {
-      $num_deleted += biblio_delete_keyword($kid);
-    }
-    $this->assertEqual($num_deleted, count(array_unique($this->kids)), "Deleted $num_deleted of ".count(array_unique($this->kids))." keywords");
+    biblio_delete_keywords($node);
 
     $node = node_load($node->nid, NULL, TRUE);
     $this->assertFalse(count($node->biblio_keywords), "Loaded node which no longer has any keywords");
@@ -117,11 +113,11 @@ class BiblioKeywordUnitTest extends BiblioKeywordWebTestCase {
   function testBiblioDeleteOrphanKeywords() {
     $this->createKeyword();
     $this->createKeyword();
-    $count = count($this->kids);
+ //   $count = count($this->kids);
     $num_records_before = db_query('SELECT COUNT(*) FROM {biblio_keyword_data} WHERE kid NOT IN (SELECT DISTINCT(kid) FROM {biblio_keyword})')->fetchField();
     biblio_delete_orphan_keywords(TRUE);
     $num_records_after = db_query('SELECT COUNT(*) FROM {biblio_keyword_data} WHERE kid NOT IN (SELECT DISTINCT(kid) FROM {biblio_keyword})')->fetchField();
-    $this->assertEqual($num_records_before, $num_records_after+$count, "Deleted $num_records_before orphan keywords");
+    $this->assertEqual($num_records_before, $num_records_after+$num_records_before, "Deleted $num_records_before orphan keywords");
   }
 
   function testBiblioExplodeKeywords() {
@@ -142,7 +138,11 @@ class BiblioKeywordUnitTest extends BiblioKeywordWebTestCase {
     $words[] = '"'.'word1, word2'.'"';
     $string = implode($sep, $words);
     $exploded = biblio_explode_keywords($string);
-    $this->assertIdentical($words, $exploded);
+    $this->assertEqual($words, $exploded);
+  }
+
+  function testCleanUp() {
+    $this->cleanUp();
   }
 }
 

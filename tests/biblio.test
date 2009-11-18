@@ -10,32 +10,36 @@ class BiblioWebTestCase extends DrupalWebTestCase {
   public $nids = array();  //keep a list of all node id's created
   public $admin_user;
 
- function tearDown() {
-    // remove any keywords created during the testing
+  function cleanUp() {
     if(!empty($this->kids)){
       db_delete('biblio_keyword')
-        ->condition('kid', $this->kids, 'IN')
-        ->execute();
+      ->condition('kid', $this->kids, 'IN')
+      ->execute();
 
       db_delete('biblio_keyword_data')
-        ->condition('kid', $this->kids, 'IN')
-        ->execute();
+      ->condition('kid', $this->kids, 'IN')
+      ->execute();
 
     }
-    $this->kids = array();
 
     foreach($this->nids as $nid) {
       node_delete($nid);
     }
-    $this->nids = array();
 
-    foreach($this->cids as $cid) {
-      biblio_delete_contributor($cid);
+    if(!empty($this->cids)){
+//      db_delete('biblio_contributor')
+//      ->condition('cid', $this->cids, 'IN')
+//      ->execute();
+//
+//      db_delete('biblio_contributor_data')
+//      ->condition('cid', $this->cids, 'IN')
+//      ->execute();
+//
     }
-    $this->cids = array();
-
-    parent::tearDown();
+//    debug($this->cids);
+//    $this->cids = array();
   }
+
 
   function createNode($type = 100) {
     $schema = drupal_get_schema('biblio');
@@ -56,15 +60,19 @@ class BiblioWebTestCase extends DrupalWebTestCase {
       'type' => 'biblio', // This replaces the default type
       'biblio_type' => $type, // This appends a new field.
       'biblio_year' => 2009,
+      'biblio_contributors' => array(1 => array(0 => array('name' => 'Ron J. Jeromezzzzzz',  'auth_type' => 1),
+                                                1 => array('name' => 'John Smithzzzzzz',  'auth_type' => 1),
+                                                2 => array('name' => 'George W. Bushzzzzzz',  'auth_type' => 1)))
     );
     $settings = array_merge($biblio_fields, $settings);
 
     $node = $this->drupalCreateNode($settings);
-    $node->biblio_contributors[1][] = array('name' => 'Ron J. Jeromezzzzzz',  'auth_type' => 1);
-    $node->biblio_contributors[1][] = array('name' => 'John Smithzzzzzz',     'auth_type' => 1);
-    $node->biblio_contributors[1][] = array('name' => 'George W. Bushzzzzzz', 'auth_type' => 1);
-    biblio_insert_contributors($node);
+//    $node->biblio_contributors[1][] = array('name' => 'Ron J. Jeromezzzzzz',  'auth_type' => 1);
+//    $node->biblio_contributors[1][] = array('name' => 'John Smithzzzzzz',     'auth_type' => 1);
+//    $node->biblio_contributors[1][] = array('name' => 'George W. Bushzzzzzz', 'auth_type' => 1);
+   // node_save($node);
     $node = node_load($node->nid, NULL, TRUE);
+    debug($node->biblio_contributors);
     foreach($node->biblio_contributors[1] as $author) {
       $this->cids[] = $author['cid'];
     }

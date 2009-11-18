@@ -942,8 +942,8 @@ function biblio_endnote_tagged_export($node) {
   $abst = "";
   if (!empty($node->biblio_abst_e))
   $abst .= trim($node->biblio_abst_e);
-  if (!empty($node->biblio_abst_f))
-  $abst .= trim($node->biblio_abst_f);
+//  if (!empty($node->biblio_abst_f))
+//  $abst .= trim($node->biblio_abst_f);
   if ($abst) {
     $search = array("/\r/", "/\n/");
     $replace = " ";
