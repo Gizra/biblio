@@ -54,118 +54,30 @@ function _endnote_tagged_import($file, $terms = array(), $batch = FALSE, $sessio
             'name' => $value,
             'auth_type' => _biblio_get_auth_type(1, $node->biblio_type));
           break;
-        case '%B' :
-          $node->biblio_secondary_title = $value;
-          break;
-        case '%C' :
-          $node->biblio_place_published = $value;
-          break;
-        case '%D' :
-          $node->biblio_year = $value;
-          break;
         case '%E' :
           $node->biblio_contributors[2][] = array(
             'name' => $value,
             'auth_type' => _biblio_get_auth_type(2, $node->biblio_type));
           break;
-        case '%F' :
-          $node->biblio_label = $value;
-          break;
-        case '%I' :
-          $node->biblio_publisher = $value;
-          break;
-        case '%J' : // Journal
-          $node->biblio_secondary_title = $value;
-          break;
-        case '%K' :
-          $node->biblio_keywords[] = $value;
-          break;
-        case '%L' :
-          $node->biblio_call_number = $value;
-          break;
-        case '%M' : // accession_number
-          $node->biblio_accession_number = $value;
-          break;
-        case '%N' :
-          $node->biblio_issue = $value;
-          break;
-        case '%P' :
-          $node->biblio_pages = $value;
-          break;
-        case '%R' :
-          $node->biblio_doi = $value;
-          break;
-        case '%S' :
-          $node->biblio_tertiary_title = $value;
-          break;
         case '%T' :
         	$langcode = FIELD_LANGUAGE_NONE;
           $node->title[$langcode][0]['value'] = $value;
-          break;
-        case '%U' :
-          $node->biblio_url = $value;
-          break;
-        case '%V' :
-          $node->biblio_volume = $value;
-          break;
-        case '%X' :
-          $node->biblio_abst_e .= $value;
           break;
         case '%Y' :
           $node->biblio_contributors[3][] = array(
             'name' => $value,
             'auth_type' => _biblio_get_auth_type(3, $node->biblio_type));
           break;
+        case '%X' :
+          $node->biblio_abst_e .= $value;
+          break;
         case '%Z' :
           $node->biblio_notes .= $value;
           break;
-        case '%1' : // CUSTOM 1
-          $node->biblio_custom1 = $value;
-          break;
-        case '%2' : // CUSTOM 2
-          $node->biblio_custom2 = $value;
-          break;
-        case '%3' : // CUSTOM 3
-          $node->biblio_custom3 = $value;
-          break;
-        case '%4' : // CUSTOM 4
-          $node->biblio_custom4 = $value;
-          break;
-        case '%#' : // CUSTOM 5
-          $node->biblio_custom5 = $value;
-          break;
-        case '%$' : // CUSTOM 6
-          $node->biblio_custom6 = $value;
-          break;
-        case '%6' :
-          break;
-        case '%7' :
-          $node->biblio_edition = $value;
-          break;
-        case '%8' :
-          $node->biblio_date = $value;
-          break;
-        case '%9' :
-          $node->biblio_type_of_work = $value;
-          break;
-        case '%?' :
-          break;
-        case '%@' :
-          $node->biblio_isbn = $value;
-          break;
-        case '%!' :
-          break;
-        case '%&' :
-          break;
-        case '%(' :
-          break;
-        case '%)' :
-          break;
-        case '%*' :
-          break;
-        case '%+' :
-          break;
+
         default :
+          $field = tagged_parser_field_map($tag);
+          $node->$field = $value;
           break;
       } //end switch
     }
@@ -194,4 +106,48 @@ function tagged_type_map($type) {
     $map = biblio_get_type_map('tagged');
   }
   return (isset($map[$type]))?$map[$type]:129; //return the biblio type or 129 (Misc) if type not found
+}
+function tagged_parser_field_map($enfield) {
+  static $fmap = array();
+  if(empty($fmap)) {
+    $fmap = array(
+      '%B' => 'biblio_secondary_title',
+      '%C' => 'biblio_place_published',
+      '%D' => 'biblio_year',
+      '%F' => 'biblio_label',
+      '%G' => 'biblio_lang',
+      '%I' => 'biblio_publisher',
+      '%J' => 'biblio_secondary_title',
+      '%K' => 'biblio_keywords[]',
+      '%L' => 'biblio_call_number',
+      '%M' => 'biblio_accession_number',
+      '%N' => 'biblio_issue',
+      '%P' => 'biblio_pages',
+      '%R' => 'biblio_doi',
+      '%S' => 'biblio_tertiary_title',
+      '%U' => 'biblio_url',
+      '%V' => 'biblio_volume',
+      '%1' => 'biblio_custom1',
+      '%2' => 'biblio_custom2',
+      '%3' => 'biblio_custom3',
+      '%4' => 'biblio_custom4',
+      '%#' => 'biblio_custom5',
+      '%$' => 'biblio_custom6',
+      '%]' => 'biblio_custom7',
+      '%6' => 'biblio_number_of_volumes',
+      '%7' => 'biblio_edition',
+      '%8' => 'biblio_date',
+      '%9' => 'biblio_type_of_work',
+      '%?' => '',
+      '%@' => 'biblio_isbn',
+      '%<' => 'biblio_research_notes',
+      '%!' => '',
+      '%&' => '',
+      '%(' => '',
+      '%)' => '',
+      '%*' => '',
+      '%+' => '');
+  }
+  return (!empty($fmap[$enfield])) ? $fmap[$enfield] : '';
+
 }
