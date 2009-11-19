@@ -897,6 +897,7 @@ function biblio_admin_type_mapper_form($form, $form_state, $format = 'bibtex', $
 
 function theme_biblio_admin_type_mapper_form($variables) {
   $form = $variables['form'];
+  $title = '';
   switch ($form['fileformat']['#value']) {
     case 'bibtex':
       $title = 'BibTex';
@@ -912,6 +913,9 @@ function theme_biblio_admin_type_mapper_form($variables) {
       break;
     case 'endnote8':
       $title = 'EndNote 8 and later XML';
+      break;
+    case 'unixref':
+      $title = 'CrossRef XML';
       break;
   }
   if ($form['submit']['#value'] == t('Save')) {

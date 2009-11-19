@@ -166,37 +166,8 @@ function unixref_characterData($parser, $data) {
 function _unixref_field_map($field) {
   static $field_map = array();
   if (empty($field_map)) {
-    $field_map = array(
-      'publisher_place'     => 'biblio_place_published',
-      'publisher_name'      => 'biblio_publisher',
-      'volume'              => 'biblio_volume',
-      'number'              => 'biblio_number',
-      'issue'               => 'biblio_issue',
-      'edition_number'      => 'biblio_edition',
-      'section'             => 'biblio_section',
-      'doi'                 => 'doi',
-      'title'               => 'title',
-      'isbn'                => 'isbn',
-      'issn'                => 'issn',
-      'first_page'          => 'biblio_first_page',
-      'last_page'           => 'biblio_last_page',
-      // Journal metadata
-      'full_title'          => 'biblio_secondary_title',
-      'abbrev_title'        => 'biblio_short_title',
-      // Conference metadata
-      'conference_location' => 'biblio_place_published',
-      'conference_name'     => 'biblio_secondary_title',
-      'conference_acronym'  => 'biblio_short_title',
-      // Proceedings metadata
-      'proceedings_title'   => 'biblio_secondary_title',
-      'year'                => 'year',
-      'month'               => 'month',
-      'day'                 => 'day',
-      'degree'              => 'biblio_type_of_work',
-      'error'               => 'error',
-      'language'            => 'biblio_lang',
-    );
-
+    module_load_include('inc', 'biblio', 'biblio.type.mapper');
+    $field_map = biblio_get_field_map('unixref');
   }
   return (isset($field_map[$field])) ? $field_map[$field]: FALSE;
 }

@@ -19,6 +19,7 @@
  *
  */
 function _endnote_tagged_import($file, $terms = array(), $batch = FALSE, $session_id = NULL) {
+  module_load_include('inc', 'biblio', 'biblio.type.mapper');
   if (!($fp = fopen($file->uri, "r"))) {
     drupal_set_message("could not open EndNote Tagged input",'error');
     return;
@@ -102,7 +103,6 @@ function _endnote_tagged_import($file, $terms = array(), $batch = FALSE, $sessio
 function tagged_type_map($type) {
   static $map = array();
   if (empty($map)) {
-    module_load_include('inc', 'biblio', 'biblio.type.mapper');
     $map = biblio_get_type_map('tagged');
   }
   return (isset($map[$type]))?$map[$type]:129; //return the biblio type or 129 (Misc) if type not found
@@ -110,43 +110,7 @@ function tagged_type_map($type) {
 function tagged_parser_field_map($enfield) {
   static $fmap = array();
   if(empty($fmap)) {
-    $fmap = array(
-      '%B' => 'biblio_secondary_title',
-      '%C' => 'biblio_place_published',
-      '%D' => 'biblio_year',
-      '%F' => 'biblio_label',
-      '%G' => 'biblio_lang',
-      '%I' => 'biblio_publisher',
-      '%J' => 'biblio_secondary_title',
-      '%K' => 'biblio_keywords[]',
-      '%L' => 'biblio_call_number',
-      '%M' => 'biblio_accession_number',
-      '%N' => 'biblio_issue',
-      '%P' => 'biblio_pages',
-      '%R' => 'biblio_doi',
-      '%S' => 'biblio_tertiary_title',
-      '%U' => 'biblio_url',
-      '%V' => 'biblio_volume',
-      '%1' => 'biblio_custom1',
-      '%2' => 'biblio_custom2',
-      '%3' => 'biblio_custom3',
-      '%4' => 'biblio_custom4',
-      '%#' => 'biblio_custom5',
-      '%$' => 'biblio_custom6',
-      '%]' => 'biblio_custom7',
-      '%6' => 'biblio_number_of_volumes',
-      '%7' => 'biblio_edition',
-      '%8' => 'biblio_date',
-      '%9' => 'biblio_type_of_work',
-      '%?' => '',
-      '%@' => 'biblio_isbn',
-      '%<' => 'biblio_research_notes',
-      '%!' => '',
-      '%&' => '',
-      '%(' => '',
-      '%)' => '',
-      '%*' => '',
-      '%+' => '');
+    $fmap = biblio_get_field_map('tagged');
   }
   return (!empty($fmap[$enfield])) ? $fmap[$enfield] : '';
 

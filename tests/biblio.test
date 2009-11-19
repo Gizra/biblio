@@ -5,10 +5,10 @@
  * Base class for all biblio tests
  */
 class BiblioWebTestCase extends DrupalWebTestCase {
-  public $kids = array();  //keep a list of all keyword id's created
-  public $cids = array();  //keep a list of all contributor id's created
-  public $nids = array();  //keep a list of all node id's created
-  public $admin_user;
+  protected $kids = array();  //keep a list of all keyword id's created
+  protected $cids = array();  //keep a list of all contributor id's created
+  protected $nids = array();  //keep a list of all node id's created
+  protected $admin_user;
 
   function cleanUp() {
     if(!empty($this->kids)){
@@ -26,18 +26,17 @@ class BiblioWebTestCase extends DrupalWebTestCase {
       node_delete($nid);
     }
 
-    if(!empty($this->cids)){
-//      db_delete('biblio_contributor')
-//      ->condition('cid', $this->cids, 'IN')
-//      ->execute();
-//
-//      db_delete('biblio_contributor_data')
-//      ->condition('cid', $this->cids, 'IN')
-//      ->execute();
-//
+    if(!empty($this->cids)) {
+      db_delete('biblio_contributor')
+      ->condition('cid', $this->cids, 'IN')
+      ->execute();
+
+      db_delete('biblio_contributor_data')
+      ->condition('cid', $this->cids, 'IN')
+      ->execute();
+
     }
-//    debug($this->cids);
-//    $this->cids = array();
+    $this->cids = array();
   }
 
 
@@ -72,7 +71,6 @@ class BiblioWebTestCase extends DrupalWebTestCase {
 //    $node->biblio_contributors[1][] = array('name' => 'George W. Bushzzzzzz', 'auth_type' => 1);
    // node_save($node);
     $node = node_load($node->nid, NULL, TRUE);
-    debug($node->biblio_contributors);
     foreach($node->biblio_contributors[1] as $author) {
       $this->cids[] = $author['cid'];
     }
@@ -82,7 +80,7 @@ class BiblioWebTestCase extends DrupalWebTestCase {
     return $node;
 
   }
-  function assertBiblioFields($node1, $node2, $skip_fields = array()) {
+  function assertBiblioFields($node1, $node2, $skip_fields = array(), $known_diffs = 0) {
     $fields = drupal_schema_fields_sql('biblio');
     $fields = array_diff($fields, $skip_fields);
     $count = 0;
@@ -92,6 +90,6 @@ class BiblioWebTestCase extends DrupalWebTestCase {
         $count++;
       }
     }
-    $this->assertEqual($count, 0, "There were $count differences between the two nodes");
+    $this->assertEqual($count, $known_diffs, "There were $count differences between the two nodes");
   }
 }

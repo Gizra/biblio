@@ -110,50 +110,8 @@ function en7_characterData($parser, $data) {
 function en7_field_map($enfield) {
   static $fmap = array();
   if(empty($fmap)) {
-    $fmap = array(
-    'AUTHOR' => 1,            //
-    'SECONDARY_AUTHOR' => 2,  // The 4 author fields map back to the author category
-    'TERTIARY_AUTHOR' => 3,   // rather than a field name.
-    'SUBSIDIARY_AUTHOR' => 4, //
-    'REFERENCE_TYPE'  => 'biblio_type',
-    'REFNUM'          => '',
-    'YEAR'            => 'biblio_year',
-    'SECONDARY_TITLE' => 'biblio_secondary_title',
-    'PLACE_PUBLISHED' => 'biblio_place_published',
-    'PUBLISHER'       => 'biblio_publisher',
-    'VOLUME'          => 'biblio_volume',
-    'ISSUE'           => 'biblio_issue',
-    'NUMBER_OF_VOLUMES' => 'biblio_number_of_volumes',
-    'NUMBER'            => 'biblio_number',
-    'PAGES'             => 'biblio_pages',
-    'SECTION'           => 'biblio_section',
-    'TERTIARY_TITLE'    => 'biblio_tertiary_title',
-    'EDITION'           => 'biblio_edition',
-    'DATE'              => 'biblio_date',
-    'TYPE_OF_WORK'      => 'biblio_type_of_work',
-    'SHORT_TITLE'       => 'biblio_short_title',
-    'ALTERNATE_TITLE'   => 'biblio_alternate_title',
-    'ISBN'              => 'biblio_isbn',
-    'ORIGINAL_PUB'      => 'biblio_original_publication',
-    'REPRINT_EDITION'   => 'biblio_reprint_edition',
-    'REVIEWED_ITEM'     => '',
-    'CUSTOM1'           => 'biblio_custom1',
-    'CUSTOM2'           => 'biblio_custom2',
-    'CUSTOM3'           => 'biblio_custom3',
-    'CUSTOM4'           => 'biblio_custom4',
-    'CUSTOM5'           => 'biblio_custom5',
-    'CUSTOM6'           => 'biblio_custom6',
-    'ACCESSION_NUMBER'  => 'biblio_accession_number',
-    'CALL_NUMBER'       => 'biblio_call_number',
-    'LABEL'             => 'biblio_label',
-    'KEYWORD'           => 'biblio_keywords',
-    'ABSTRACT'          => 'biblio_abst_e',
-    'NOTES'             => 'biblio_notes',
-    'URL'               => 'biblio_url',
-    'AUTHOR_ADDRESS'    => '',
-    'IMAGE'             => '',
-    'CAPTION'           => '',
-    );
+    module_load_include('inc', 'biblio', 'biblio.type.mapper');
+    $fmap = biblio_get_field_map('endnote7');
   }
   return (!empty($fmap[$enfield])) ? $fmap[$enfield] : '';
 }

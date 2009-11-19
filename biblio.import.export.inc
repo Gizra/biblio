@@ -890,10 +890,8 @@ function biblio_endnote_tagged_export($node) {
       $tagged .= "%J ". trim($node->biblio_secondary_title) ."\r\n";
       break; // journal
   }
-  if (isset($node->biblio_year) && $node->biblio_year < 9998)
-  $tagged .= "%D ". trim($node->biblio_year) ."\r\n";
-  if (!empty($node->title['zxx'][0]['value']))
-  $tagged .= "%T ". trim($node->title['zxx'][0]['value']) ."\r\n";
+  if (isset($node->biblio_year) && $node->biblio_year < 9998)  $tagged .= "%D ". trim($node->biblio_year) ."\r\n";
+  if (!empty($node->title['zxx'][0]['value']))  $tagged .= "%T ". trim($node->title['zxx'][0]['value']) ."\r\n";
 
   foreach ($node->biblio_contributors[1] as $auth) {
     $tagged .= "%A " . trim($auth['name']) ."\r\n";
@@ -908,9 +906,6 @@ function biblio_endnote_tagged_export($node) {
       $tagged .= "%Y " . trim($auth['name']) ."\r\n";
     }
   }
-  if (!empty($node->biblio_place_published))
-  $tagged .= "%C ". trim($node->biblio_place_published) ."\r\n";
-  if (!empty($node->biblio_publisher)) { $tagged .= "%I ". trim($node->biblio_publisher) ."\r\n"; }
 
   $kw_array = array();
   if (!empty($node->terms)){
@@ -929,40 +924,22 @@ function biblio_endnote_tagged_export($node) {
       $tagged .= "%K ". trim($term) ."\r\n";
     }
   }
-  if (!empty($node->biblio_call_number))      $tagged .= "%L ". trim($node->biblio_call_number) ."\r\n";
-  if (!empty($node->biblio_accession_number)) $tagged .= "%M ". trim($node->biblio_accession_number) ."\r\n";
-  if (!empty($node->biblio_issue))            $tagged .= "%N ". trim($node->biblio_issue) ."\r\n";
-  if (!empty($node->biblio_pages))            $tagged .= "%P ". trim($node->biblio_pages) ."\r\n";
-  if (!empty($node->biblio_doi))              $tagged .= "%R ". trim($node->biblio_doi) ."\r\n";
-  if (!empty($node->biblio_tertiary_title))   $tagged .= "%S ". trim($node->biblio_tertiary_title) ."\r\n";
-  if (!empty($node->biblio_url))              $tagged .= "%U ". trim($node->biblio_url) ."\r\n";
-  if (!empty($node->biblio_volume))           $tagged .= "%V ". trim($node->biblio_volume) ."\r\n";
-  if (!empty($node->biblio_number_of_volumes))$tagged .= "%6 ". trim($node->biblio_number_of_volumes) ."\r\n";
-  if (!empty($node->biblio_lang))             $tagged .= "%G ". trim($node->biblio_lang) ."\r\n";
   $abst = "";
-  if (!empty($node->biblio_abst_e))
-  $abst .= trim($node->biblio_abst_e);
-//  if (!empty($node->biblio_abst_f))
-//  $abst .= trim($node->biblio_abst_f);
+  if (!empty($node->biblio_abst_e))  $abst .= trim($node->biblio_abst_e);
   if ($abst) {
     $search = array("/\r/", "/\n/");
     $replace = " ";
     $abst = preg_replace($search, $replace, $abst);
     $tagged .= "%X ". $abst ."\r\n";
   }
-  if (!empty($node->biblio_notes))        $tagged .= "%Z ". trim($node->biblio_notes) ."\r\n";
-  if (!empty($node->biblio_custom1))      $tagged .= "%1 ". trim($node->biblio_custom1) ."\r\n";
-  if (!empty($node->biblio_custom2))      $tagged .= "%2 ". trim($node->biblio_custom2) ."\r\n";
-  if (!empty($node->biblio_custom3))      $tagged .= "%3 ". trim($node->biblio_custom3) ."\r\n";
-  if (!empty($node->biblio_custom4))      $tagged .= "%4 ". trim($node->biblio_custom4) ."\r\n";
-  if (!empty($node->biblio_custom5))      $tagged .= "%# ". trim($node->biblio_custom5) ."\r\n";
-  if (!empty($node->biblio_custom6))      $tagged .= "%$ ". trim($node->biblio_custom6) ."\r\n";
-  if (!empty($node->biblio_custom7))      $tagged .= "%] ". trim($node->biblio_custom7) ."\r\n";
-  if (!empty($node->biblio_edition))      $tagged .= "%7 ". trim($node->biblio_edition) ."\r\n";
-  if (!empty($node->biblio_date))         $tagged .= "%8 ". trim($node->biblio_date) ."\r\n";
-  if (!empty($node->biblio_type_of_work)) $tagged .= "%9 ". trim($node->biblio_type_of_work) ."\r\n";
-  if (!empty($node->biblio_isbn))         $tagged .= "%@ ". trim($node->biblio_isbn) ."\r\n";
-  if (!empty($node->biblio_research_notes)) $tagged .= "%< ". trim($node->biblio_research_notes) ."\r\n";
+  $skip_fields = array('biblio_year',  'biblio_abst_e', 'biblio_abst_f', 'biblio_type' );
+  $fields = drupal_schema_fields_sql('biblio');
+  $fields = array_diff($fields, $skip_fields);
+  foreach($fields as $field) {
+    if (isset($node->$field)) {
+      $tagged .= _tagged_format_entry($field, $node->$field);
+    }
+  }
   if (!empty ($node->files) && count($node->files)  && user_access('view uploaded files')) {
     foreach($node->files as $file) {
       $tagged .= "%> ". file_create_url($file->filepath) . "\r\n"; // insert file here.
@@ -978,6 +955,18 @@ function _endnote_tagged_type_map($bibliotype) {
     $map = biblio_get_type_map('tagged');
   }
   return ($type = array_search($bibliotype, $map)) ? $type : 'Generic'; //return the biblio type or 129 (Misc) if type not found
+}
+function _tagged_format_entry($key, $value) {
+  static $fmap = array();
+  if(empty($fmap)) {
+    module_load_include('inc', 'biblio', 'biblio.type.mapper');
+    $fmap = biblio_get_field_map('tagged');
+  }
+  $tag = ($tag = array_search($key, $fmap)) ? $tag : '';
+  if (!empty($tag)) {
+    return "$tag ". trim($value) ."\r\n";
+  }
+
 }
 function biblio_csv_export_2($result, $bfields) {
   //  $query_biblio_fields = 'SELECT name, title FROM {biblio_fields}';

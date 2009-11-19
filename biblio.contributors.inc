@@ -383,11 +383,12 @@ function _grabSurname($input) {
  * @return unknown_type
  */
 function _loadMD5() {
-  static $md5 = array();
-  static $count =0;
+  static $md5   = array();
+  static $count = 0;
   $db_count = db_query("SELECT COUNT(*) FROM {biblio_contributor_data}")->fetchField();;
-  if ($db_count > $count){ //refresh the cached data as some new authors may have been added
+  if ($db_count != $count){ //refresh the cached data as some new authors may have been added or removed
     $count = $db_count;
+    $md5 = array();
     $result = db_query('SELECT md5,cid	FROM {biblio_contributor_data} ');
     foreach ($result as $row ) {
       $md5[$row->cid] = $row->md5;

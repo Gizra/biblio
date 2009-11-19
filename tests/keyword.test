@@ -86,6 +86,7 @@ class BiblioKeywordUnitTest extends BiblioKeywordWebTestCase {
   function testBiblioUpdateKeywords() {
     $term1 = $this->createKeyword();
     $node = $this->createNode();
+
     $node->biblio_keywords = array($term1['word']);
     $old_vid = $node->vid;
 
@@ -135,10 +136,12 @@ class BiblioKeywordUnitTest extends BiblioKeywordWebTestCase {
     $string = implode($wrong_sep, $words);
     $exploded = biblio_explode_keywords($string);
     $this->assertNotIdentical($words, $exploded, 'Tried to explode keyword string with incorrect separator');
-    $words[] = '"'.'word1, word2'.'"';
+    $words[] = '"'.'word1'.$sep.' word2'.'"';
     $string = implode($sep, $words);
     $exploded = biblio_explode_keywords($string);
-    $this->assertEqual($words, $exploded);
+    $words[4] =   trim(str_replace('""', '"', preg_replace('/^"(.*)"$/', '\1', $words[4]))); // strip the quotes becuase that's the way it comes back
+
+    $this->assertEqual($words, $exploded, "Exploded a keyword string which contains and escaped separator");
   }
 
   function testCleanUp() {

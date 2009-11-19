@@ -594,7 +594,7 @@ class PARSEENTRIES
 
       $node->biblio_secondary_title = (!empty($entry['journal'])) ? $entry['journal'] : NULL;
       if (!empty($entry['booktitle'])) $node->biblio_secondary_title =  $entry['booktitle'];
-      if (!empty($entry['series']))    $node->biblio_tertiary_title =  $entry['series'];
+      if (!empty($entry['series']))    $node->biblio_secondary_title =  $entry['series'];
       $node->biblio_volume          = (!empty($entry['volume'])) ? $entry['volume'] : NULL;
       $node->biblio_number          = (!empty($entry['number'])) ? $entry['number'] : NULL;
       $node->biblio_year            = (!empty($entry['year'])) ? $entry['year'] : NULL;
