@@ -61,7 +61,7 @@ class BiblioImportExportUnitTest extends BiblioImportExportWebTestCase {
 
   function testBiblioXMLFileImport() {
     $file = $this->createImportFile($this->getXMLString());
-    $nids = biblio_endnote_XML_import($file);
+    $nids = biblio_import($file, 'xml8', 1, NULL, FALSE, NULL, $context);
     $this->assertEqual(count($nids), 1, 'Imported 1 EndNote XML entry');
     file_delete($file);
     $node = $this->createNode();
@@ -77,7 +77,7 @@ class BiblioImportExportUnitTest extends BiblioImportExportWebTestCase {
   function testBiblioTaggedFileImport() {
     $file = $this->createImportFile($this->getTaggedString());
     module_load_include('inc', 'biblio', 'tagged_parser');
-    $nids = _endnote_tagged_import($file);
+    $nids = biblio_import($file, 'tagged', 1, NULL, FALSE, NULL, $context);
     $this->assertEqual(count($nids), 1, 'Imported 1 Tagged entry');
     file_delete($file);
     $node = $this->createNode();
@@ -93,7 +93,7 @@ class BiblioImportExportUnitTest extends BiblioImportExportWebTestCase {
   function testBiblioBibtexFileImport() {
     $file = $this->createImportFile($this->getBibTexString());
     module_load_include('inc', 'biblio', 'tagged_parser');
-    $nids = biblio_bibtex_import($file);
+    $nids = biblio_import($file, 'bib', 1, NULL, FALSE, NULL, $context);
     $this->assertEqual(count($nids), 1, 'Imported 1 Bibtex entry');
     file_delete($file);
     $node = $this->createNode();
