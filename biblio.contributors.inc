@@ -42,7 +42,7 @@ function biblio_load_contributors($vid) {
   $query = db_select('biblio_contributor', 'bc', array('fetch' => PDO::FETCH_ASSOC));
   $query->join('biblio_contributor_data', 'bcd', 'bc.cid = bcd.cid');
   $query->fields('bcd');
-  $query->fields('bc');
+  $query->fields('bc', array('auth_type', 'auth_category', 'rank'));
   $query->condition('bc.vid', $vid)->orderBy('bc.rank', 'ASC');
   $result = $query->execute();
 

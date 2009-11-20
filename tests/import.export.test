@@ -2,7 +2,9 @@
 // $Id$
 class BiblioImportExportWebTestCase extends BiblioWebTestCase {
   function setUp() {
-    require_once(drupal_get_path('module', 'biblio') .'/biblio.import.export.inc');
+    module_load_include('inc', 'biblio', 'biblio.import.export');
+    module_load_include('inc', 'biblio', 'biblio.type.mapper');
+
   }
 }
 
@@ -16,17 +18,34 @@ class BiblioImportExportUnitTest extends BiblioImportExportWebTestCase {
     );
   }
   function getTaggedString() {
-    return  "%0 Book\r\n%B biblio_secondary_title\r\n%D 2009\r\n%T Biblio Title\r\n%A Ron J. Jeromezzzzzz\r\n%A John Smithzzzzzz\r\n%A George W. Bushzzzzzz\r\n%X biblio_abst_e\r\n%B biblio_secondary_title\r\n%S biblio_tertiary_title\r\n%7 biblio_edition\r\n%I biblio_publisher\r\n%C biblio_place_published\r\n%V biblio_volume\r\n%P biblio_pages\r\n%8 biblio_date\r\n%@ biblio_isbn\r\n%G biblio_lang\r\n%U biblio_url\r\n%N biblio_issue\r\n%9 biblio_type_of_work\r\n%M biblio_accession_number\r\n%L biblio_call_number\r\n%1 biblio_custom1\r\n%2 biblio_custom2\r\n%3 biblio_custom3\r\n%4 biblio_custom4\r\n%# biblio_custom5\r\n%$ biblio_custom6\r\n%] biblio_custom7\r\n%< biblio_research_notes\r\n%6 biblio_number_of_volumes\r\n%R biblio_doi\r\n%F biblio_label\r\n\r\n";
+    return  "%0 Book\r\n%B biblio_secondary_title\r\n%D 2009\r\n%T Biblio Title\r\n%A Ron J. Jeromezzzzzz\r\n%A John Smithzzzzzz\r\n%A George W. Bushzzzzzz\r\n%K biblio_keywords\r\n%X biblio_abst_e\r\n%B biblio_secondary_title\r\n%S biblio_tertiary_title\r\n%7 biblio_edition\r\n%I biblio_publisher\r\n%C biblio_place_published\r\n%V biblio_volume\r\n%P biblio_pages\r\n%8 biblio_date\r\n%@ biblio_isbn\r\n%G biblio_lang\r\n%U biblio_url\r\n%N biblio_issue\r\n%9 biblio_type_of_work\r\n%M biblio_accession_number\r\n%L biblio_call_number\r\n%1 biblio_custom1\r\n%2 biblio_custom2\r\n%3 biblio_custom3\r\n%4 biblio_custom4\r\n%# biblio_custom5\r\n%$ biblio_custom6\r\n%] biblio_custom7\r\n%< biblio_research_notes\r\n%6 biblio_number_of_volumes\r\n%R biblio_doi\r\n%F biblio_label\r\n\r\n";
   }
 
   function getBibTexString() {
-    return "@book {biblio_citekey,\n\ttitle = {Biblio Title},\n\tseries = {biblio_secondary_title},\n\tvolume = {biblio_volume},\n\tnumber = {biblio_number},\n\tyear = {2009},\n\tnote = {biblio_notes},\n\tmonth = {biblio_date},\n\tpages = {biblio_pages},\n\tpublisher = {biblio_publisher},\n\torganization = {biblio_publisher},\n\ttype = {biblio_type_of_work},\n\tedition = {biblio_edition},\n\tchapter = {biblio_section},\n\taddress = {biblio_place_published},\n\tabstract = {biblio_abst_e},\n\tisbn = {biblio_isbn},\n\tissn = {biblio_issn},\n\tdoi = {biblio_doi},\n\turl = {biblio_url},\n\tauthor = {Ron J. Jeromezzzzzz and John Smithzzzzzz and George W. Bushzzzzzz}\n}\n";
+    return "@book {biblio_citekey,\n\ttitle = {Biblio Title},\n\tseries = {biblio_secondary_title},\n\tvolume = {biblio_volume},\n\tnumber = {biblio_number},\n\tyear = {2009},\n\tnote = {biblio_notes},\n\tmonth = {biblio_date},\n\tpages = {biblio_pages},\n\tpublisher = {biblio_publisher},\n\torganization = {biblio_publisher},\n\ttype = {biblio_type_of_work},\n\tedition = {biblio_edition},\n\tchapter = {biblio_section},\n\taddress = {biblio_place_published},\n\tabstract = {biblio_abst_e},\n\tkeywords = {biblio_keywords},\n\tisbn = {biblio_isbn},\n\tissn = {biblio_issn},\n\tdoi = {biblio_doi},\n\turl = {biblio_url},\n\tauthor = {Ron J. Jeromezzzzzz and John Smithzzzzzz and George W. Bushzzzzzz}\n}\n";
   }
 
   function getXMLString() {
-    return '<?xml version="1.0" encoding="UTF-8"?><xml><records><record><source-app name="Biblio" version="6.x">Drupal-Biblio</source-app><ref-type>6</ref-type><contributors><authors><author><style face="normal" font="default" size="100%">Ron J. Jeromezzzzzz</style></author><author><style face="normal" font="default" size="100%">John Smithzzzzzz</style></author><author><style face="normal" font="default" size="100%">George W. Bushzzzzzz</style></author></authors></contributors><titles><title><style face="normal" font="default" size="100%">Biblio Title</style></title><secondary-title><style face="normal" font="default" size="100%">biblio_secondary_title</style></secondary-title><tertiary-title><style face="normal" font="default" size="100%">biblio_tertiary_title</style></tertiary-title><alt-title><style face="normal" font="default" size="100%">biblio_alternate_title</style></alt-title><short-title><style face="normal" font="default" size="100%">biblio_short_title</style></short-title><translated-title><style face="normal" font="default" size="100%">biblio_translated_title</style></translated-title></titles><dates><year><style  face="normal" font="default" size="100%">2009</style></year><pub-dates><date><style  face="normal" font="default" size="100%">biblio_date</style></date></pub-dates></dates><urls><web-urls><url><style face="normal" font="default" size="100%">biblio_url</style></url></web-urls></urls><number><style face="normal" font="default" size="100%">biblio_number</style></number><edition><style face="normal" font="default" size="100%">biblio_edition</style></edition><publisher><style face="normal" font="default" size="100%">biblio_publisher</style></publisher><pub-location><style face="normal" font="default" size="100%">biblio_place_published</style></pub-location><volume><style face="normal" font="default" size="100%">biblio_volume</style></volume><pages><style face="normal" font="default" size="100%">biblio_pages</style></pages><isbn><style face="normal" font="default" size="100%">biblio_isbn</style></isbn><language><style face="normal" font="default" size="100%">biblio_lang</style></language><abstract><style face="normal" font="default" size="100%">biblio_abst_e</style></abstract><issue><style face="normal" font="default" size="100%">biblio_issue</style></issue><work-type><style face="normal" font="default" size="100%">biblio_type_of_work</style></work-type><accession-num><style face="normal" font="default" size="100%">biblio_accession_number</style></accession-num><call-num><style face="normal" font="default" size="100%">biblio_call_number</style></call-num><notes><style face="normal" font="default" size="100%">biblio_notes</style></notes><custom1><style face="normal" font="default" size="100%">biblio_custom1</style></custom1><custom2><style face="normal" font="default" size="100%">biblio_custom2</style></custom2><custom3><style face="normal" font="default" size="100%">biblio_custom3</style></custom3><custom4><style face="normal" font="default" size="100%">biblio_custom4</style></custom4><custom5><style face="normal" font="default" size="100%">biblio_custom5</style></custom5><custom6><style face="normal" font="default" size="100%">biblio_custom6</style></custom6><custom7><style face="normal" font="default" size="100%">biblio_custom7</style></custom7><research-notes><style face="normal" font="default" size="100%">biblio_research_notes</style></research-notes><num-vols><style face="normal" font="default" size="100%">biblio_number_of_volumes</style></num-vols><orig-pub><style face="normal" font="default" size="100%">biblio_original_publication</style></orig-pub><reprint-edition><style face="normal" font="default" size="100%">biblio_reprint_edition</style></reprint-edition><section><style face="normal" font="default" size="100%">biblio_section</style></section><auth-address><style face="normal" font="default" size="100%">biblio_auth_address</style></auth-address><remote-database-name><style face="normal" font="default" size="100%">biblio_remote_db_name</style></remote-database-name><remote-database-provider><style face="normal" font="default" size="100%">biblio_remote_db_provider</style></remote-database-provider><label><style face="normal" font="default" size="100%">biblio_label</style></label><access-date><style face="normal" font="default" size="100%">biblio_access_date</style></access-date></record></records></xml>';
+    return '<?xml version="1.0" encoding="UTF-8"?><xml><records><record><source-app name="Biblio" version="6.x">Drupal-Biblio</source-app><ref-type>6</ref-type><contributors><authors><author><style face="normal" font="default" size="100%">Ron J. Jeromezzzzzz</style></author><author><style face="normal" font="default" size="100%">John Smithzzzzzz</style></author><author><style face="normal" font="default" size="100%">George W. Bushzzzzzz</style></author></authors></contributors><titles><title><style face="normal" font="default" size="100%">Biblio Title</style></title><secondary-title><style face="normal" font="default" size="100%">biblio_secondary_title</style></secondary-title><tertiary-title><style face="normal" font="default" size="100%">biblio_tertiary_title</style></tertiary-title><alt-title><style face="normal" font="default" size="100%">biblio_alternate_title</style></alt-title><short-title><style face="normal" font="default" size="100%">biblio_short_title</style></short-title><translated-title><style face="normal" font="default" size="100%">biblio_translated_title</style></translated-title></titles><keywords><keyword><style  face="normal" font="default" size="100%">biblio_keywords</style></keyword></keywords><dates><year><style  face="normal" font="default" size="100%">2009</style></year><pub-dates><date><style  face="normal" font="default" size="100%">biblio_date</style></date></pub-dates></dates><urls><web-urls><url><style face="normal" font="default" size="100%">biblio_url</style></url></web-urls></urls><number><style face="normal" font="default" size="100%">biblio_number</style></number><edition><style face="normal" font="default" size="100%">biblio_edition</style></edition><publisher><style face="normal" font="default" size="100%">biblio_publisher</style></publisher><pub-location><style face="normal" font="default" size="100%">biblio_place_published</style></pub-location><volume><style face="normal" font="default" size="100%">biblio_volume</style></volume><pages><style face="normal" font="default" size="100%">biblio_pages</style></pages><isbn><style face="normal" font="default" size="100%">biblio_isbn</style></isbn><language><style face="normal" font="default" size="100%">biblio_lang</style></language><abstract><style face="normal" font="default" size="100%">biblio_abst_e</style></abstract><issue><style face="normal" font="default" size="100%">biblio_issue</style></issue><work-type><style face="normal" font="default" size="100%">biblio_type_of_work</style></work-type><accession-num><style face="normal" font="default" size="100%">biblio_accession_number</style></accession-num><call-num><style face="normal" font="default" size="100%">biblio_call_number</style></call-num><notes><style face="normal" font="default" size="100%">biblio_notes</style></notes><custom1><style face="normal" font="default" size="100%">biblio_custom1</style></custom1><custom2><style face="normal" font="default" size="100%">biblio_custom2</style></custom2><custom3><style face="normal" font="default" size="100%">biblio_custom3</style></custom3><custom4><style face="normal" font="default" size="100%">biblio_custom4</style></custom4><custom5><style face="normal" font="default" size="100%">biblio_custom5</style></custom5><custom6><style face="normal" font="default" size="100%">biblio_custom6</style></custom6><custom7><style face="normal" font="default" size="100%">biblio_custom7</style></custom7><research-notes><style face="normal" font="default" size="100%">biblio_research_notes</style></research-notes><num-vols><style face="normal" font="default" size="100%">biblio_number_of_volumes</style></num-vols><orig-pub><style face="normal" font="default" size="100%">biblio_original_publication</style></orig-pub><reprint-edition><style face="normal" font="default" size="100%">biblio_reprint_edition</style></reprint-edition><section><style face="normal" font="default" size="100%">biblio_section</style></section><auth-address><style face="normal" font="default" size="100%">biblio_auth_address</style></auth-address><remote-database-name><style face="normal" font="default" size="100%">biblio_remote_db_name</style></remote-database-name><remote-database-provider><style face="normal" font="default" size="100%">biblio_remote_db_provider</style></remote-database-provider><label><style face="normal" font="default" size="100%">biblio_label</style></label><access-date><style face="normal" font="default" size="100%">biblio_access_date</style></access-date></record></records></xml>';
   }
 
+  function createImportFile($contents) {
+   $file = array(
+      'uid' => 1,
+      'filename' => 'BiblioImportTest.txt',
+      'uri' => 'public://BiblioImportTest.txt',
+      'filemime' => 'text/plain',
+      'timestamp' => 1,
+      'status' => FILE_STATUS_PERMANENT,
+    );
+    $file = (object) $file;
+    file_put_contents($file->uri, $contents);
+
+    // Save it, inserting a new record.
+    $saved_file = file_save($file);
+
+    return $saved_file;
+  }
   function testBiblioNodeExport() {
     module_load_include('inc', 'biblio', 'endnote8_export');
 
@@ -41,86 +60,51 @@ class BiblioImportExportUnitTest extends BiblioImportExportWebTestCase {
   }
 
   function testBiblioXMLFileImport() {
-   $file = array(
-      'uid' => 1,
-      'filename' => 'EndNote10.xml',
-      'uri' => 'public://EndNote10.xml',
-      'filemime' => 'application/xml',
-      'timestamp' => 1,
-      'status' => FILE_STATUS_PERMANENT,
-    );
-    $file = (object) $file;
-    file_put_contents($file->uri, $this->getXMLString());
-
-    // Save it, inserting a new record.
-    $saved_file = file_save($file);
-    $nids = biblio_endnote_XML_import($saved_file);
+    $file = $this->createImportFile($this->getXMLString());
+    $nids = biblio_endnote_XML_import($file);
+    $this->assertEqual(count($nids), 1, 'Imported 1 EndNote XML entry');
     file_delete($file);
     $node = $this->createNode();
-    $skip_fields = array('vid', 'nid', 'biblio_abst_f', 'biblio_citekey', 'biblio_coins', 'biblio_md5', 'biblio_other_number', 'biblio_doi', 'biblio_issn');
+    $fields = array_filter(biblio_get_field_map('endnote8'));
+    $fields += array('title','biblio_contributors', 'biblio_keywords');
     foreach ($nids as $nid) {
       $this->nids[] = $nid;
       $imported_node = node_load($nid);
-      $this->assertBiblioFields($node, $imported_node, $skip_fields);
+      $this->assertBiblioFields($node, $imported_node, $fields);
     }
 
   }
   function testBiblioTaggedFileImport() {
-    $file = array(
-      'uid' => 1,
-      'filename' => 'EndNote.enl',
-      'uri' => 'public://EndNote.enl',
-      'filemime' => 'text/plain',
-      'timestamp' => 1,
-      'status' => FILE_STATUS_PERMANENT,
-    );
-    $file = (object) $file;
-    file_put_contents($file->uri, $this->getTaggedString());
-
-    // Save it, inserting a new record.
-    $saved_file = file_save($file);
+    $file = $this->createImportFile($this->getTaggedString());
     module_load_include('inc', 'biblio', 'tagged_parser');
-    $nids = _endnote_tagged_import($saved_file);
+    $nids = _endnote_tagged_import($file);
+    $this->assertEqual(count($nids), 1, 'Imported 1 Tagged entry');
     file_delete($file);
     $node = $this->createNode();
-    // the following fields are not captured by the tagged format...
-    $skip_fields = array('vid', 'nid', 'biblio_abst_f', 'biblio_citekey', 'biblio_coins', 'biblio_md5','biblio_access_date','biblio_label','biblio_remote_db_provider','biblio_remote_db_name','biblio_auth_address','biblio_issn','biblio_section','biblio_translated_title','biblio_reprint_edition','biblio_original_publication','biblio_alternate_title','biblio_short_title','biblio_other_number','biblio_number');
+    $fields = array_filter(biblio_get_field_map('tagged'));
+    $fields += array('title','biblio_contributors', 'biblio_keywords');
     foreach ($nids as $nid) {
       $this->nids[] = $nid;
       $imported_node = node_load($nid);
-      $this->assertBiblioFields($node, $imported_node, $skip_fields);
+      $this->assertBiblioFields($node, $imported_node, $fields);
     }
 
   }
   function testBiblioBibtexFileImport() {
-    $file = array(
-      'uid' => 1,
-      'filename' => 'bibtex.bib',
-      'uri' => 'public://bibtex.bib',
-      'filemime' => 'text/plain',
-      'timestamp' => 1,
-      'status' => FILE_STATUS_PERMANENT,
-    );
-    $file = (object) $file;
-    file_put_contents($file->uri, $this->getBibTexString());
-
-    // Save it, inserting a new record.
-    $saved_file = file_save($file);
+    $file = $this->createImportFile($this->getBibTexString());
     module_load_include('inc', 'biblio', 'tagged_parser');
-    $nids = biblio_bibtex_import($saved_file);
+    $nids = biblio_bibtex_import($file);
+    $this->assertEqual(count($nids), 1, 'Imported 1 Bibtex entry');
     file_delete($file);
     $node = $this->createNode();
-    // the following fields are not captured by the tagged format...
-    $skip_fields = array('vid', 'nid', 'biblio_abst_f', 'biblio_citekey', 'biblio_coins', 'biblio_md5','biblio_access_date','biblio_label','biblio_remote_db_provider','biblio_remote_db_name','biblio_auth_address','biblio_issn','biblio_section','biblio_translated_title','biblio_reprint_edition','biblio_original_publication','biblio_alternate_title','biblio_short_title','biblio_custom1','biblio_custom2','biblio_custom3','biblio_custom4','biblio_custom5','biblio_custom6','biblio_custom7');
+    $fields = array_filter(biblio_get_field_map('bibtex'));
+    $fields += array('title','biblio_contributors');
     foreach ($nids as $nid) {
       $this->nids[] = $nid;
       $imported_node = node_load($nid);
-      $this->assertBiblioFields($node, $imported_node, $skip_fields);
+      $this->assertBiblioFields($node, $imported_node, $fields);
     }
 
-  }
-  function testCleanUp() {
-    $this->cleanUp();
   }
 
 }

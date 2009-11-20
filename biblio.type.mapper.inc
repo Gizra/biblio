@@ -362,6 +362,32 @@ function biblio_get_field_map($file_format, $default = FALSE) {
   if ($default) {
     switch ($file_format) {
       case 'bibtex':
+        return array(
+                'journal'      => 'biblio_secondary_title',
+                'booktitle'    => 'biblio_secondary_title',
+                'series'       => 'biblio_secondary_title',
+                'volume'       => 'biblio_volume',
+                'number'       => 'biblio_number',
+                'year'         => 'biblio_year',
+                'note'         => 'biblio_notes',
+                'month'        => 'biblio_date',
+                'pages'        => 'biblio_pages',
+                'publisher'    => 'biblio_publisher',
+                'school'       => 'biblio_publisher',
+                'organization' => 'biblio_publisher',
+                'institution'  => 'biblio_publisher',
+                'type'         => 'biblio_type_of_work',
+                'edition'      => 'biblio_edition',
+                'chapter'      => 'biblio_section',
+                'address'      => 'biblio_place_published',
+                'abstract'     => 'biblio_abst_e',
+                'keywords'     => 'biblio_keywords',
+                'isbn'         => 'biblio_isbn',
+                'issn'         => 'biblio_issn',
+                'doi'          => 'biblio_doi',
+                'url'          => 'biblio_url',
+
+        );
       case 'tagged':
         return array(
                 '%B' => 'biblio_secondary_title',

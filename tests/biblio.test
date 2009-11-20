@@ -61,7 +61,8 @@ class BiblioWebTestCase extends DrupalWebTestCase {
       'biblio_year' => 2009,
       'biblio_contributors' => array(1 => array(0 => array('name' => 'Ron J. Jeromezzzzzz',  'auth_type' => 1),
                                                 1 => array('name' => 'John Smithzzzzzz',  'auth_type' => 1),
-                                                2 => array('name' => 'George W. Bushzzzzzz',  'auth_type' => 1)))
+                                                2 => array('name' => 'George W. Bushzzzzzz',  'auth_type' => 1))),
+      'biblio_keywords' => array('biblio_keywords')
     );
     $settings = array_merge($biblio_fields, $settings);
 
@@ -80,9 +81,9 @@ class BiblioWebTestCase extends DrupalWebTestCase {
     return $node;
 
   }
-  function assertBiblioFields($node1, $node2, $skip_fields = array(), $known_diffs = 0) {
-    $fields = drupal_schema_fields_sql('biblio');
-    $fields = array_diff($fields, $skip_fields);
+  function assertBiblioFields($node1, $node2, $fields = array()) {
+//    $fields = drupal_schema_fields_sql('biblio');
+//    $fields = array_diff($fields, $skip_fields);
     $count = 0;
     foreach($fields as $field) {
       if ($node1->$field != $node2->$field) {
@@ -90,6 +91,6 @@ class BiblioWebTestCase extends DrupalWebTestCase {
         $count++;
       }
     }
-    $this->assertEqual($count, $known_diffs, "There were $count differences between the two nodes");
+    $this->assertEqual($count, 0, "There were $count differences between the two nodes");
   }
 }

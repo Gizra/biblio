@@ -102,7 +102,7 @@ class BiblioKeywordUnitTest extends BiblioKeywordWebTestCase {
     }
     $node = node_load($node->nid, $old_vid, TRUE);
     foreach($node->biblio_keywords as $kid => $value) {
-      $this->assertEqual($value, $term1['word'], 'Loaded previous revision prior to update');
+      $this->assertEqual($value, 'biblio_keywords', 'Loaded previous revision prior to update');
       $this->kids[] = $kid; // add the new kids to the global array so we can delete them on tear down.
     }
     biblio_delete_keywords($node);
