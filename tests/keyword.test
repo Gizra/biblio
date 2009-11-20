@@ -144,9 +144,6 @@ class BiblioKeywordUnitTest extends BiblioKeywordWebTestCase {
     $this->assertEqual($words, $exploded, "Exploded a keyword string which contains and escaped separator");
   }
 
-  function testCleanUp() {
-    $this->cleanUp();
-  }
 }
 
 

@@ -10,7 +10,7 @@ class BiblioWebTestCase extends DrupalWebTestCase {
   protected $nids = array();  //keep a list of all node id's created
   protected $admin_user;
 
-  function cleanUp() {
+  function tearDown() {
     if(!empty($this->kids)){
       db_delete('biblio_keyword')
       ->condition('kid', $this->kids, 'IN')
@@ -67,10 +67,6 @@ class BiblioWebTestCase extends DrupalWebTestCase {
     $settings = array_merge($biblio_fields, $settings);
 
     $node = $this->drupalCreateNode($settings);
-//    $node->biblio_contributors[1][] = array('name' => 'Ron J. Jeromezzzzzz',  'auth_type' => 1);
-//    $node->biblio_contributors[1][] = array('name' => 'John Smithzzzzzz',     'auth_type' => 1);
-//    $node->biblio_contributors[1][] = array('name' => 'George W. Bushzzzzzz', 'auth_type' => 1);
-   // node_save($node);
     $node = node_load($node->nid, NULL, TRUE);
     foreach($node->biblio_contributors[1] as $author) {
       $this->cids[] = $author['cid'];
@@ -82,8 +78,6 @@ class BiblioWebTestCase extends DrupalWebTestCase {
 
   }
   function assertBiblioFields($node1, $node2, $fields = array()) {
-//    $fields = drupal_schema_fields_sql('biblio');
-//    $fields = array_diff($fields, $skip_fields);
     $count = 0;
     foreach($fields as $field) {
       if ($node1->$field != $node2->$field) {

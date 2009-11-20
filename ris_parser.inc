@@ -110,12 +110,15 @@ function _ris_tagged_import($file, $terms = array(), $batch = FALSE, $session_id
         case 'CT' :
         case 'BT' :
           $langcode = FIELD_LANGUAGE_NONE;
-        	$node->title[FIELD_LANGUAGE_NONE][0]['value'] .= $value;
+        	$node->title[FIELD_LANGUAGE_NONE][0]['value'] = $value;
           break;
         case 'UR' :
           $node->biblio_url .= $value;
           break;
-        case 'VL' :
+        case 'JO' :
+          $node->biblio_short_title .= $value;
+          break;
+          case 'VL' :
           $node->biblio_volume .= $value;
           break;
         case 'AB' :

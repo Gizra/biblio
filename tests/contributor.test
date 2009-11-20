@@ -124,8 +124,5 @@ class BiblioContributorUnitTest extends BiblioContributorWebTestCase {
     $this->assertEqual($orphan_count, $restored_count, "Restored $restored_count of $orphan_count original orphans");
 
   }
-  function testCleanUp() {
-    $this->cleanUp();
-  }
 
 }

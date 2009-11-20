@@ -1084,7 +1084,9 @@ function _biblio_keyword_links($keywords,$base='biblio') {
 function biblio_author_page($filter = NULL) {
   global $user;
   $where = array();
+  $authors = array();
   $where_clause = '';
+  $output = '';
   $style_name = biblio_get_style();
   module_load_include('inc', 'biblio', "biblio_style_$style_name");
 
@@ -1126,16 +1128,17 @@ function biblio_author_page($filter = NULL) {
     foreach ($db_result as $author){
       $authors[] = $author;
     }
-    $rows[] = array(array('data' => theme('biblio_alpha_line', array('type' => 'authors', 'current' => $filter, 'path' => '')), 'colspan' => 3));
     if (count($authors)) {
+      $rows[] = array(array('data' => theme('biblio_alpha_line', array('type' => 'authors', 'current' => $filter, 'path' => '')), 'colspan' => 3));
       for ($i=0; $i < count($authors); $i+=3) {
         $rows[] = array( array('data' => _biblio_format_author($authors[$i]) ),
         array('data' => isset($authors[$i+1])?_biblio_format_author($authors[$i+1]):'' ),
         array('data' => isset($authors[$i+2])?_biblio_format_author($authors[$i+2]):'' ));
       }
+      $output = theme('table', array('rows' => $rows));
     }
   //$header = array(array('data' => t('There are a total of @count authors !header_ext in the database',array('@count' => count($authors), '!header_ext' => $header_ext)), 'align' =>'center', 'colspan' => 3));
-  $output = theme('table', array('rows' => $rows));
+
   return $output;
 }
 /*
