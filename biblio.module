@@ -996,27 +996,31 @@ function biblio_nodeapi(& $node, $op, $a3, $a4) {
 
   }
 }
-function biblio_form_alter(&$form, $form_state, $form_id) {
+function biblio_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == "biblio_node_form") { // this next bit is to remove all the form elements execpt the pub type select box the first time through
 //print_r($form);
 //print_r($form_state); die;
-    if (!isset($form_state['values']['biblio_type']) &&
+    if (!isset($form_state['input']['biblio_type']) &&
         empty($form_state['post']['biblio_type']) &&
         empty($form_state['submitted']) &&
         empty($form['vid']['#value'])) {
-
-      foreach (element_children($form) as $form_element) {
+      $children = element_children($form);
+      foreach ($children as $form_element) {
         if ($form_element == 'doi_lookup') continue;
         if ($form_element == 'cut_paste') continue;
-        if ($form[$form_element]['#type'] == 'fieldset' ||
-            $form_element == 'buttons' ||
-            $form_element == 'taxonomy' ||
-//            $form_element == 'title' ||
-            strstr($form_element, 'field_')) {
+        if ($form_element == 'biblio_type') continue;
+        if ((isset($form[$form_element]['#type']))
+            || $form[$form_element]['#type'] == 'container'
+            || $form_element == 'buttons'
+            //|| $form_element == 'options'
+          //  || $form_element == 'taxonomy'
+         //   || $form_element == 'title'
+            //|| strstr($form_element, 'field_')
+            ) {
           $form[$form_element] = NULL;
         }
       }
-
+      $form_state['rebuild'] = TRUE;
     }
     else {
       if (isset($form['menu']['#weight']) && $form['menu']['#weight'] < 20) $form['menu']['#weight'] = 20;
@@ -1062,19 +1066,14 @@ function biblio_form(stdClass $node, $form_state) {
   global $user;
   $tid = 0;
 
-  if (isset($form_state['post']['biblio_type'])) {
-    $tid = $form_state['post']['biblio_type'];
-  }
-  elseif (isset($form_state['values']['biblio_type'])) {
-    $tid = $form_state['values']['biblio_type'];
-  }
-  elseif (isset($node->biblio_type)){
-    $tid = $node->biblio_type;
-  }
+  $tid = isset($form_state['input']['biblio_type']) ?
+               $form_state['input']['biblio_type']  :
+               ( isset($node->biblio_type) ? $node->biblio_type : '');
   $show_fields = !empty($tid);
 
   $form['#validate'][] = 'biblio_form_validate';
-  $form['#no_cache'] = 1;
+  $form['#tree'] = TRUE;
+  $form['cache'] = FALSE;
 
   /* publication type */
   $param['options'] = array(
@@ -1150,7 +1149,7 @@ function biblio_form(stdClass $node, $form_state) {
     '#options' => $options,
     '#description' => NULL,
     '#weight' => -15,
-    '#attributes' => array('onchange' => 'document.getElementById(\'edit-submit\').click()'),
+    '#attributes' => array('onchange' => 'document.getElementById(\'node-form\').submit()'),
     '#multiple' => FALSE,
     '#required' => TRUE
       );
@@ -1471,7 +1470,9 @@ function biblio_contributors_js($tid, $auth_category, $other_fields = FALSE) {
  */
 function biblio_form_validate($form, &$form_state) {
 
-  $op = $form_state['values']['op'];
+  $op = isset($form['#post']['op'])?$form['#post']['op'] :
+        ($form_state['input']['biblio_type'] > 0 ? 'Save' : '');
+ // $op = $form_state['values']['op'];
   switch ($op) {
     case t('Populate using DOI'):
       module_load_include('inc','biblio','biblio.import.export');
@@ -1512,6 +1513,8 @@ function biblio_form_validate($form, &$form_state) {
         $form_state['storage']['biblio_paste'] = TRUE;
         $form_state['storage']['biblio_type']  = $form_state['values']['biblio_type'];
         $form_state['rebuild'] = TRUE;
+        $form_state['submitted'] = TRUE;
+        $form_state['cache'] = TRUE;
 
         return;
       }
