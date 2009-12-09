@@ -16,7 +16,8 @@ $transtab_unicode_bibtex = array (
 
   "(?<!\\\\)#" => '$\\#$',
   "(?<!\\\\)%" => "\\%",
-  "(?<!\\\\)'" => "{\\textquoteright}",
+  "(?<!\\\\)&" => "\\&",
+"(?<!\\\\)'" => "{\\textquoteright}",
   "(?<!\\\\)`" => "{\\textquoteleft}",
   " " => "~",
   "¡" => "{\\textexclamdown}",

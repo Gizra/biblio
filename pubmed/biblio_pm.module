@@ -1,0 +1,105 @@
+<?php
+// $Id$
+/*
+ * @file pubmed.module
+ *
+ */
+
+function biblio_pm_form_biblio_node_form_alter(&$form, &$form_state) {
+  if(phpversion() > 5 && empty($form_state['storage']) && !isset($form['nid']['#value'])) {
+    $form['biblio_pubmed_lookup'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('PubMed Lookup'),
+        '#weight' => -20,
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE,
+    );
+
+    $form['biblio_pubmed_lookup']['PMID'] = array(
+        '#type' => 'textfield',
+        '#title' => t('PubMed ID'),
+        '#required' => FALSE,
+        '#default_value' => '',
+        '#description' => t('Enter a PubMed ID</b>'),
+        '#size' => 60,
+        '#maxlength' => 255,
+        '#weight' => -4
+    );
+    $form['biblio_pubmed_lookup']['pubmed_submit'] = array(
+        '#type' => 'submit',
+        '#value' => t('Populate using PubMed')
+    );
+    $form['#validate'] = array_merge(array('biblio_pm_form_biblio_node_form_validate'), $form['#validate']); // put my validator first
+  }
+  $biblio_pubmed_id  = isset($form_state['values']['biblio_pubmed_id']) ? $form_state['values']['biblio_pubmed_id'] : '';
+  $biblio_pubmed_md5 = isset($form_state['values']['biblio_pubmed_md5']) ? $form_state['values']['biblio_pubmed_md5'] : '';
+  $form['biblio_pubmed_id']  = array('#type' => 'value', '#value' => $biblio_pubmed_id);
+  $form['biblio_pubmed_md5'] = array('#type' => 'value', '#value' => $biblio_pubmed_md5);
+}
+
+function biblio_pm_form_biblio_node_form_validate($form, &$form_state) {
+  $node_data = array();
+  if (strlen($pmid = $form_state['values']['PMID'])) {
+    module_load_include('php','biblio','pubmed/EntrezClient');
+    module_load_include('php','biblio','pubmed/EntrezPubmedArticle');
+    $Eclient = new BiblioEntrezClient;
+    $result = $Eclient->fetch($pmid);
+    if(!isset($result->PubmedArticle)) {
+      unset($form_state['values']['biblio_type']);
+      unset($form_state['post']['biblio_type']);
+      form_set_error('PMID', 'No data available for PubMed ID: '.$pmid);
+      return;
+    }
+    $data = new BiblioEntrezPubmedArticle($result->PubmedArticle);
+    $node_data = $data->getBiblio();
+  }
+  if(!empty($node_data)) {
+    $form_state['values'] = array_merge($form_state['values'], $node_data);
+    $form_state['storage']['biblio_type']  = $node_data['biblio_type'];
+
+    return;
+  }
+
+}
+
+function biblio_pm_link($type, $node = NULL, $teaser = FALSE) {
+  if ($type == 'node' && $node->type == 'biblio' && !empty($node->biblio_pubmed_id)) {
+    $link  = 'http://www.ncbi.nlm.nih.gov/pubmed/' . $node->biblio_pubmed_id . '?dopt=Abstract';
+    return array('biblio_pubmed' => array(
+        'title'      => t('PubMed'),
+        'href'       => $link,
+        'attributes' => array('title' => t("Click to view the PubMed listing for this node")),
+    ));
+  }
+  return ;
+}
+
+
+function biblio_pm_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
+  if($node->type != 'biblio') return;
+  $callback = '_biblio_pm_' . str_replace(' ', '_', $op);
+  if (function_exists($callback)) {
+    $ret = $callback($node, $a3, $a4);
+  }
+  return $ret;
+}
+
+function _biblio_pm_delete($node) {
+  db_query('DELETE FROM {biblio_pubmed} WHERE nid = %d', $node->nid);
+}
+
+function _biblio_pm_view($node) {
+
+}
+
+function _biblio_pm_insert($node, $update = FALSE) {
+  drupal_write_record('biblio_pubmed', $node);
+}
+
+function _biblio_pm_load($node) {
+  static $result = array();
+  if (empty($result)) {
+    return $result = db_fetch_array(db_query('SELECT  biblio_pubmed_id  FROM {biblio_pubmed} WHERE nid = %d',$node->nid));
+  }
+  return $result ;
+}

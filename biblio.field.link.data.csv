@@ -51,3 +51,4 @@ fid,title,hint, common, autocomplete, required, weight, visible,field name,type,
 50,Remote Database Provider,,0,0,0,177,0,biblio_remote_db_provider,textfield,60,255
 51,Label,,0,0,0,178,0,biblio_label,textfield,60,255
 52,Access Date,,0,0,0,179,0,biblio_access_date,textfield,60,255
+53,Refereed Designation,,0,0,0,180,0,biblio_refereed,select,0,128

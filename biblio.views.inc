@@ -67,6 +67,9 @@ function biblio_views_handlers() {
       'biblio_handler_filter_contributor' => array(
         'parent' => 'views_handler_filter_many_to_one',
       ),
+      'biblio_handler_filter_contributor_lastname' => array(
+        'parent' => 'views_handler_filter_many_to_one',
+      ),
       'biblio_handler_filter_biblio_type' => array(
         'parent' => 'views_handler_filter_in_operator',
       ),
@@ -126,8 +129,8 @@ function biblio_views_data() {
       unset($data[$field['name']]['argument']);
     }
   }
-  $data['biblio_year']['argument']  = array('handler' => 'views_handler_argument_numeric');  // biblio_year is an int 
-  $data['biblio_year']['filter']    = array('handler' => 'views_handler_filter_numeric');  // biblio_year is an int 
+  $data['biblio_year']['argument']  = array('handler' => 'views_handler_argument_numeric');  // biblio_year is an int
+  $data['biblio_year']['filter']    = array('handler' => 'views_handler_filter_numeric');  // biblio_year is an int
   unset($data['biblio_keywords']); // keywords are in a separate table which has it's own handlers
 
   $data['table']['join'] = array(
@@ -249,10 +252,10 @@ function biblio_views_data() {
   );
   $data['lastname'] =  array(
     'sort'     => array('handler' => 'views_handler_sort'),
-    'filter'    => array('handler' => 'views_handler_filter'),
+    'filter'    => array('handler' => 'biblio_handler_filter_contributor_lastname'),
     'argument'  => array('handler' => 'views_handler_argument_string'),
     'title'     => t('Author Lastname'),
-    'help'      => t('')
+    'help'      => t('Author Lastname')
   );
 
   $viewsdata['biblio_contributor_data'] = $data;

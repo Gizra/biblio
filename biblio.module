@@ -998,29 +998,21 @@ function biblio_nodeapi(& $node, $op, $a3, $a4) {
 }
 function biblio_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == "biblio_node_form") { // this next bit is to remove all the form elements execpt the pub type select box the first time through
-//print_r($form);
-//print_r($form_state); die;
     if (!isset($form_state['input']['biblio_type']) &&
         empty($form_state['post']['biblio_type']) &&
         empty($form_state['submitted']) &&
         empty($form['vid']['#value'])) {
-      $children = element_children($form);
-      foreach ($children as $form_element) {
-        if ($form_element == 'doi_lookup') continue;
-        if ($form_element == 'cut_paste') continue;
-        if ($form_element == 'biblio_type') continue;
+
+      foreach (element_children($form) as $form_element) {
+        if (strstr($form_element, 'biblio_')) continue;
         if ((isset($form[$form_element]['#type']))
             || $form[$form_element]['#type'] == 'container'
             || $form_element == 'buttons'
-            //|| $form_element == 'options'
-          //  || $form_element == 'taxonomy'
-         //   || $form_element == 'title'
-            //|| strstr($form_element, 'field_')
-            ) {
+            )
+        {
           $form[$form_element] = NULL;
         }
       }
-      $form_state['rebuild'] = TRUE;
     }
     else {
       if (isset($form['menu']['#weight']) && $form['menu']['#weight'] < 20) $form['menu']['#weight'] = 20;
@@ -1064,7 +1056,7 @@ function biblio_form(stdClass $node, $form_state) {
 //print_r($node);
 //print_r($form_state);die;
   global $user;
-  $tid = 0;
+  $fields = array();
 
   $tid = isset($form_state['input']['biblio_type']) ?
                $form_state['input']['biblio_type']  :
@@ -1083,9 +1075,9 @@ function biblio_form(stdClass $node, $form_state) {
     foreach ($result as $option) {
     $options["$option->tid"] = $option->name;
   }
-  if (!isset($node->nid)) {// only show the doi lookup and paste boxes if this is a new entry
-    if($user->uid > 0 && phpversion() > 5 && !isset($form_state['storage']['biblio_doi'])) {
-      $form['doi_lookup'] = array(
+  if (!isset($node->nid) && !isset($form_state['storage']['biblio_type'])) {// only show the doi lookup and paste boxes if this is a new entry
+    if($user->uid > 0 && phpversion() > 5 && !isset($form_state['storage']['biblio_type'])) {
+      $form['biblio_doi_lookup'] = array(
         '#type' => 'fieldset',
         '#title' => t('DOI Lookup'),
         '#weight' => -20,
@@ -1094,14 +1086,14 @@ function biblio_form(stdClass $node, $form_state) {
       );
       $have_pid  = (isset($user->biblio_crossref_pid) && !empty($user->biblio_crossref_pid)) ? FALSE : TRUE;
       if ($have_pid) {
-        $form['doi_lookup']['doi_register'] = array(
+        $form['biblio_doi_lookup']['doi_register'] = array(
           '#prefix' => '<p><b>',
           '#suffix' => '</b></p>',
           '#value' => l('You need to register with CrossRef', 'http://www.crossref.org/requestaccount/', array('attributes' => array('target' => '_blank'), 'absolue' => TRUE)). t(' and then enter your CrossRef UserID in the "<i>CrossRef Login Information</i>" section of your account profile '). l('here...',"user/$user->uid/edit"),
         );
       }
 
-      $form['doi_lookup']['doi_data'] = array(
+      $form['biblio_doi_lookup']['doi_data'] = array(
         '#type' => 'textfield',
         '#title' => t('DOI'),
         '#required' => FALSE,
@@ -1112,21 +1104,21 @@ function biblio_form(stdClass $node, $form_state) {
         '#maxlength' => 255,
         '#weight' => -4
       );
-      $form['doi_lookup']['doi_submit'] = array(
+      $form['biblio_doi_lookup']['doi_submit'] = array(
         '#type' => 'submit',
         '#disabled' => $have_pid,
         '#value' => t('Populate using DOI')
       );
     }
-    if(!isset($form_state['storage']['biblio_paste'])) {
-      $form['cut_paste'] = array(
+    if(!isset($form_state['storage']['biblio_type'])) {
+      $form['biblio_cut_paste'] = array(
         '#type' => 'fieldset',
         '#title' => t('Paste'),
         '#weight' => -20,
         '#collapsible' => TRUE,
         '#collapsed' => TRUE,
       );
-      $form['cut_paste']['paste_data'] = array(
+      $form['biblio_cut_paste']['paste_data'] = array(
         '#type' => 'textarea',
         '#title' => t('BibTex'),
         '#required' => FALSE,
@@ -1136,7 +1128,7 @@ function biblio_form(stdClass $node, $form_state) {
         '#maxlength' => 2048,
         '#weight' => -4
       );
-      $form['cut_paste']['paste_submit'] = array(
+      $form['biblio_cut_paste']['paste_submit'] = array(
         '#type' => 'submit',
         '#value' => t('Populate using BibTex')
       );
@@ -1182,6 +1174,7 @@ function biblio_form(stdClass $node, $form_state) {
         );
     $max_visible_weight = -5;
     foreach ($fields as $key => $fld) {
+      $options = '';
       $main_area = $fld['common'] || $fld['visible'];
       if ($fld['type'] == 'contrib_widget') {
         $auth_category = $fld['fid'];
@@ -1228,7 +1221,18 @@ function biblio_form(stdClass $node, $form_state) {
             '#weight' => $fld['weight'] / 10,
             '#autocomplete_path' => ($fld['autocomplete']) ? 'biblio/autocomplete/'. $fld['name'] : '',
             '#description' => $fld['hint']
-              );
+          );
+         if ($key == 'biblio_refereed' ) {
+           $field_widget['#options'] = array(
+              '' => t('None'),
+              'Refereed' => t('Refereed'),
+              'Non-Refereed' => t('Non-Refereed'),
+              'Does Not Apply' => t('Does Not Apply'),
+              'Unknown' => t('Unknown'),
+            );
+           $field_widget['#description'] = t('If you are not sure, set this to Unknown or Does Not Apply');
+         }
+          //        '#options' => $options,
 
         if ($main_area && $fld['type'] == 'textarea') {
           /* wrap all textarea fields in collapsed field sets to save space on the page */
@@ -1501,16 +1505,13 @@ function biblio_form_validate($form, &$form_state) {
         return;
       }
       break;
-    default:
-
-      if ($form_state['storage']['biblio_type'] == $form_state['values']['biblio_type'] || (!empty($form['#node']->biblio_type) && $form['#node']->biblio_type == $form_state['values']['biblio_type'])) {
-        $form_state['storage'] = array();
-        $form_state['rebuild'] = FALSE;
-
+    case t('Save'):
+      if ($form_state['storage']['biblio_type'] == $form_state['values']['biblio_type'] ||
+         (!empty($form['#node']->biblio_type) && $form['#node']->biblio_type == $form_state['values']['biblio_type']))
+      {
+        unset ($form_state['storage']);
       }
       else {
-        $form_state['storage']['biblio_doi']   = TRUE;
-        $form_state['storage']['biblio_paste'] = TRUE;
         $form_state['storage']['biblio_type']  = $form_state['values']['biblio_type'];
         $form_state['rebuild'] = TRUE;
         $form_state['submitted'] = TRUE;
@@ -1520,19 +1521,10 @@ function biblio_form_validate($form, &$form_state) {
       }
   }
   if(!empty($node_data)) {
-    foreach($node_data[0] as $key => $value) {
-      $form_state['values'][$key] = $value;
-    }
-    $form_state['storage']['biblio_doi']   = TRUE;
-    $form_state['storage']['biblio_paste'] = TRUE;
+    $form_state['values'] = array_merge($form_state['values'], $node_data[0]);
     $form_state['storage']['biblio_type']  = $node_data[0]['biblio_type'];
-    $form_state['rebuild'] = TRUE;
     return;
   }
-//  $today = getdate();
-//  if (!is_numeric(_biblio_numeric_year($form_state['values']['biblio_year'])))  {
-//    form_set_error('biblio_year', t('Year of Publication must be a number between 1 and @thisyear or the words "In Press" or "Submitted" ', array('@thisyear' => $today['year'] + 1 )));
-//  }
   if (isset($form_state['values']['biblio_keywords'])) {
     require_once(drupal_get_path('module', 'biblio') .'/biblio.keywords.inc');
     if (!is_array($form_state['values']['biblio_keywords'])) {
@@ -1545,6 +1537,7 @@ function biblio_form_validate($form, &$form_state) {
     }
   }
 }
+
 function _biblio_numeric_year($year) {
   if (!is_numeric($year)) {
     if (drupal_strtoupper($year) == drupal_strtoupper(t("In Press")))  return 9998;
@@ -1772,7 +1765,7 @@ function biblio_block($op = 'list', $delta = 0) {
               'absolute' => TRUE
           )), t('Recently Added Publications'));
         }
-        $block['content'] .= l(t('more...'), $base, array('attributes' => array('style' => "float: right")));
+        $block['content'] .= l(t('More...'), $base);
         $block['content'] .= '</div>';
       }
       return $block;
@@ -1887,6 +1880,7 @@ function biblio_filter($op, $delta = 0, $format = -1, $text = '') {
   if ($op == 'list') {
     return array(
     0 => t('Biblio module references &lt;bib&gt; <i>or</i> [bib]'),
+    1 => t('Biblio module inline references &lt;ibib&gt; <i>or</i> [ibib]'),
     );
   }
   if ($op == 'no cache') {
@@ -1933,8 +1927,34 @@ function biblio_filter($op, $delta = 0, $format = -1, $text = '') {
           }
       }
       break;
+   case 1 :
+      switch ($op) {
+        // This description is shown in the administrative interface, unlike the
+        // filter tips which are shown in the content editing interface.
+        case 'description' :
+          return t('Use &lt;ibib&gt;citekey&lt;/ibib&gt; or [ibib]citebkey[/ibib]to insert inline references.');
+          // We don't need the "prepare" operation for this filter, but it's required
+          // to at least return the input text as-is.
+          //TODO: May need to escape <fn> if we use HTML filter too, but Footnotes could be first
+        case 'prepare' :
+          return $text;
+          // The actual filtering is performed here. The supplied text should be
+          // returned, once any necessary substitutions have taken place.
+        case 'process' :
+          $pattern = array('|\[ibib](.*?)\[/ibib]|s', '|<ibib>(.*?)</ibib>|s');
+          $text = preg_replace_callback($pattern, '_biblio_inline_filter_replace_callback', $text);
+          return $text;
+      }
+      break;
+
   }
 }
+
+function _biblio_inline_filter_replace_callback($matches) {
+    $text =  _biblio_citekey_print($matches[1]) ;
+  return $text;
+}
+
 function _biblio_filter_footnote_callback($matches, $square_brackets = FALSE) {
   if ($square_brackets)	{
     $text = '[fn]'. _biblio_citekey_print($matches[1]) ."</fn>";
@@ -1958,7 +1978,7 @@ function _biblio_filter_replace_callback($matches, $op = '') {
       $str = '<p><hr /></p><h3>'. t('References') .'</h3>';
       $str .= '<div class="references"><ol>';
       for ($m = 1; $m <= $n; $m++) {
-        $str .= '<li id="reference'. $m .'">'. _biblio_citekey_print($store_matches[$m -1]) ." </li>\n\n";
+        $str .= '<li id="reference'. $m .'"><a name="ref'.$m.'">'. _biblio_citekey_print($store_matches[$m -1]) ." </a></li>\n\n";
       }
       $str .= '</ol></div>';
     }
@@ -1967,8 +1987,15 @@ function _biblio_filter_replace_callback($matches, $op = '') {
     return $str;
   }
   //default op: act as called by preg_replace_callback()
-  array_push($store_matches, $matches[1]);
-  $n++;
+  $ref = array_search($matches[1],$store_matches);
+  if ($ref !== FALSE) {
+    $n++;
+    array_push($store_matches, $matches[1]);    //$stores_matches[$matches[1]] = $n;
+    $ref = $n;
+  }
+  else {
+    $ref++;
+  }
   $allowed_tags = array();
   $title = filter_xss($matches[1], $allowed_tags);
   //html attribute cannot contain quotes
@@ -1980,9 +2007,9 @@ function _biblio_filter_replace_callback($matches, $op = '') {
   //$text = '<span><a href="#reference'. $n .'">['. $n .']</a> </span>';
   //$text = '<span>['. $n .']</span>';
   //$text .= '<span class="hovertip">'._biblio_citekey_print($title) .'</span>';
-  $text = '<span hovertip="reference'. $n .'">['. $n .']</span>';
+  $text = '<span hovertip="reference'. $ref .'"><a href="#ref'.$ref.'">['. $ref .']</a></span>';
   if (module_exists('hovertip')) {
-    $text .= '<span id="reference'. $n .'" class="hovertip"><h1>Reference</h1>'. _biblio_citekey_print($title) .'</span>';
+    $text .= '<span id="reference'. $ref .'" class="hovertip"><h1>Reference</h1>'. _biblio_citekey_print($title) .'</span>';
   }
   return $text;
 }

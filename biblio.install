@@ -504,6 +504,12 @@ function biblio_schema() {
         'length' => '255',
         'description' =>'',
   ),
+		 'biblio_refereed' => array (
+        'type' => 'varchar',
+        'not null' => FALSE,
+		    'length' => '20',
+        'description' =>'',
+  ),
       'biblio_md5' => array (
         'type' => 'varchar',
         'not null' => FALSE,
@@ -1946,21 +1952,45 @@ function biblio_update_6022() {
                           OR name = 'biblio_issn' ");
   return $result;
 }
-/*function biblio_update_6023() {
+/* add the new field -refereed- on the biblio table
+*/
+function biblio_update_6024(){
   $result = array();
-  module_load_include('inc', 'biblio', 'biblio.type.mapper');
-  foreach (array('bibtex','ris','tagged','endnote7','endnote8') as $type)
-  {
-    $map = biblio_get_type_map($type, TRUE);
-    $names = biblio_get_type_names($type, TRUE);
-    foreach ($map as $key => $value) {
-      db_query("INSERT INTO {biblio_type_data} (fid, tid, format, name) VALUES ('%s', %d, '%s', '%s' )", $key, $value, $type, $names[$key]);
-    }
+
+  db_add_field($result, 'biblio', 'biblio_refereed', array('type' => 'varchar', 'length' => '20') );
+
+  /* add the field data for -refereed- on the biblo_fields table
+   you need to get the last inserted record from biblio_fields and increment it by one
+   so you don't step on customized fields added via the user online interface */
+
+  $sql = 'SELECT fid FROM {biblio_fields} ORDER BY fid DESC LIMIT 1';
+  $lastfid = db_result(db_query($sql));
+  $newfid  = $lastfid + 1;
+
+  $result[] = update_sql("INSERT INTO {biblio_fields} (fid, name, type, size, maxsize) VALUES
+                        ($newfid, 'biblio_refereed', 'select', 0, 125)");
+
+  /*use the same fid and insert an entry in the biblio_field_type_data */
+  $result[] = update_sql("INSERT INTO {biblio_field_type_data}
+	     (ftdid, title, hint) VALUES ($newfid, 'Refereed Designation', NULL)");
+
+  /* get a list of unique tids from the biblio_field_type table.  You want to
+   insert a tid,fid using the new fid for every available tid */
+
+  $newsql = "SELECT DISTINCT tid FROM {biblio_field_type} ORDER BY tid DESC";
+
+  $tidlist = db_query($newsql);
+  while ($db_result = db_fetch_array($tidlist)) {
+    $newtid = $db_result['tid'] ;
+    db_query('INSERT INTO {biblio_field_type}
+			 (tid, fid, ftdid, cust_tdid, common, autocomplete, required, weight, visible)
+			  VALUES (%d, %d, %d, %d, %d, %d, %d, %d, %d)',
+    $newtid, $newfid, $newfid, $newfid, 1, 1, 0, 1, 1);
   }
 
   return $result;
 }
-*/
+
 function biblio_update_7000() {
     $result = array();
 

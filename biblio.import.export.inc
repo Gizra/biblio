@@ -193,7 +193,7 @@ function biblio_import_form_submit($form, & $form_state) {
             }
           }
         }
-        if ($key == 'copy_to_biblio') $terms['copy_to_biblio'] = $form_state['values'][$key];
+        if (count($terms) && $key == 'copy_to_biblio') $terms['copy_to_biblio'] = $form_state['values'][$key];
       }
 
       // Added the $terms argument
@@ -498,7 +498,7 @@ function biblio_bibtex_import($file, $terms = array(), $batch = FALSE, $session_
   }
   return $nids;
 }
-function biblio_marc_import($file, $terms, $batch, $session_id) {
+function biblio_marc_import($file, $terms = array(), $batch = FALSE, $session_id = NULL) {
   $nids = array();
   module_load_include('php', 'biblio', 'marcParse/php-marc');
   $marcfile = new File($file->uri);

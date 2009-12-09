@@ -243,7 +243,7 @@ msgstr "Verwenden Sie Stichworte aus biblio als Einträge in ein \"freie Tags\" 
 
 #: biblio.admin.inc:257
 msgid "This option allows user to add keywords (free tags) to describe their documents. These keywords will be registered as taxonomy."
-msgstr "[fuzzy] Diese Option erlaubt dem Anwender die Schlagwörter (free Tags ) hinzuzufügen, um ihre Dokumente zu klassifizieren. Diese Schlüsselwörter werden in der Taxonomie registriert. Diese Schlüsselwörter werden in der Taxonomie registriert."
+msgstr "Diese Option erlaubt dem Anwender die Schlagwörter (free Tags ) hinzuzufügen, um ihre Dokumente zu klassifizieren. Diese Schlüsselwörter werden in der Taxonomie registriert. Diese Schlüsselwörter werden in der Taxonomie registriert."
 
 #: biblio.admin.inc:262;489
 msgid "none"
@@ -339,7 +339,7 @@ msgstr "OpenURL"
 
 #: biblio.admin.inc:351
 msgid "You can set an <a href=\"http://en.wikipedia.org/wiki/OpenURL\">openurl</a> link here"
-msgstr "Verlinken Sie auf<a href=\\\"http://en.wikipedia.org/wiki/OpenURL\\\">OpenURL</a>"
+msgstr "Verlinken Sie auf<a href=\"http://en.wikipedia.org/wiki/OpenURL\">OpenURL</a>"
 
 #: biblio.admin.inc:355
 msgid "OpenURL Base URL"
@@ -347,7 +347,7 @@ msgstr "OpenURL Basis URL"
 
 #: biblio.admin.inc:358
 msgid "This sets your institution's base <a href=\"http://en.wikipedia.org/wiki/OpenURL\">OpenURL</a> gateway, which is used to generate OpenURL links. To implement a \"Universal\" OpenURL system, try using OCLC's <a href=\"http://www.oclc.org/productworks/urlresolver.htm\">OpenURL Resolver Registry</a> gateway: <a href=\"http://worldcatlibraries.org/registry/gateway\">http://worldcatlibraries.org/registry/gateway</a>"
-msgstr "This sets your institution's base <a href=\"http://en.wikipedia.org/wiki/OpenURL\">OpenURL</a> gateway, which is used to generate OpenURL links. To implement a \"Universal\" OpenURL system, try using OCLC's <a href=\"http://www.oclc.org/productworks/urlresolver.htm\">OpenURL Resolver Registry</a> gateway: <a href=\"http://worldcatlibraries.org/registry/gateway\">http://worldcatlibraries.org/registry/gateway</a>"
+msgstr "Setzen Sie die Basis URL für das <a href=\"http://en.wikipedia.org/wiki/OpenURL\">OpenURL-Gateway,</a>  Ihrer Institution, um OpenURL-Links zu erzeugen. Für eine \"Universelle\" OpenURL versuchen Sie, OCLC's <a href=\"http://www.oclc.org/productworks/urlresolver.htm\">OpenURL Resolver Registry</a> - <a href=\"http://worldcatlibraries.org/registry/gateway\">gateway</a> zu implementieren"
 
 #: biblio.admin.inc:362
 msgid "OpenURL Image"
@@ -387,7 +387,7 @@ msgstr "Re-/Indexieren eines biblio Eintrags bei der Erstellung oder Aktualisier
 
 #: biblio.admin.inc:408
 msgid "A biblio node must be indexed for the drupal search to know its content. You need to check this option if you want to search for a biblio node that you just created or updated. Otherwise you must wait for the cron job to reindex nodes."
-msgstr "A biblio node must be indexed for the drupal search to know its content. You need to check this option if you want to search for a biblio node that you just created or updated. Otherwise you must wait for the cron job to reindex nodes."
+msgstr "Ein biblio-Eintrag wird für die Drupal-Suche indexiert. Biblio Einträge, die neu erstellt oder aktualisiert wurden, in die Suche einschließen. Ansonsten müssen Sie warten, bis der cron-Job die Einträge indiziert hat."
 
 #: biblio.admin.inc:414
 msgid "Sorting"
@@ -547,7 +547,7 @@ msgstr "RSS-Feed für neue biblio Einträge generieren"
 
 #: biblio.admin.inc:515
 msgid "This will create an rss feed of the 10 most recent biblio entries. It will be available at /biblio/rss.xml"
-msgstr "This will create an rss feed of the 10 most recent biblio entries. It will be available at /biblio/rss.xml"
+msgstr "Ein RSS-Feed der 10 neuesten Einträge vom Inhaltstyp Biblio. Verfügbar unter /biblio/rss.xml"
 
 #: biblio.admin.inc:519
 msgid "Number of items in the RSS feed."
@@ -559,23 +559,23 @@ msgstr "Begrenzt die Anzahl der Elemente für den Feed unter /biblio/rss.xml."
 
 #: biblio.admin.inc:548
 msgid "On this page you can set type specific \"Titles\" and \"Hints\" which will display on the input form. "
-msgstr "Setzen Sie den \"Titel\" und \"Tipps\" für den Inhaltstyp Biblio, die auf dem Eingabeformular angezeigt werden.  "
+msgstr "Setzen Sie den \"Titel\" und \"Tipps\" für den Inhaltstyp Biblio, die auf dem Eingabeformular angezeigt werden. "
 
 #: biblio.admin.inc:550
 msgid "Checking the \"Visible\" box will add the field to the input form, checking \"Required\" will force the user to supply a value for this field and the weight value changes the order which it is rendered on the form with smaller values floating to the top of the form. "
-msgstr "\"Sichtbar\"-Box wird das Feld mit dem Eingang Formular hinzuzufügen, Prüfung \"Required\" bewirkt, dass der Benutzer einen Wert für dieses Feld und das Gewicht Wert ändert sich die Reihenfolge, die es auf dem Formular mit kleineren Werten Floating auf das Angebot gemacht oberen Rand des Formulars.  "
+msgstr "\"Sichtbar\"-Box wird das Feld mit dem Eingang Formular hinzuzufügen, Prüfung \"Required\" bewirkt, dass der Benutzer einen Wert für dieses Feld und das Gewicht Wert ändert sich die Reihenfolge, die es auf dem Formular mit kleineren Werten Floating auf das Angebot gemacht oberen Rand des Formulars. "
 
 #: biblio.admin.inc:551
 msgid "Fields which are grayed out on this page have been set to \"common\" on the "
-msgstr "ausgegraute Felder, wurden zur \"allgemeinen\" Zusammenstellung bereits hinzugefügt auf dieser  "
+msgstr "ausgegraute Felder, wurden zur \"allgemeinen\" Zusammenstellung bereits hinzugefügt auf dieser "
 
 #: biblio.admin.inc:553
 msgid " page."
-msgstr "  Seite."
+msgstr " Seite."
 
 #: biblio.admin.inc:556
 msgid "Checking the \"Common\" box will add the field to all the different publication types. Checking \"Required\" will force the user to supply a value for the field, checking \"Autocomplete\" will enable AJAX type auto complete look up for the field when the user is entering data and the weight value changes the order which it is rendered on the form with smaller values floating to the top of the form. "
-msgstr "Checking the \"Common\" box will add the field to all the different publication types. Checking \"Required\" will force the user to supply a value for the field, checking \"Autocomplete\" will enable AJAX type auto complete look up for the field when the user is entering data and the weight value changes the order which it is rendered on the form with smaller values floating to the top of the form. "
+msgstr "MIt der Checkbox \"Allgemein\" wird das Feld in den allen Veröffentlichungen hinzugefügt. Mit \"Erforderlich\" wird der Benutzer gezwungen einen Wert für das Feld einzugeben. \"AutoVervollständigen\" wird mit AJAX Auto-Vervollständigen auf der Basis der vorhandenen Werte dieses Feldes durchführen. Die Gewichtung steuert die Reihenfolge der Darstellung von Feldern in Formularen, je kleiner der Wert, um so weiter oben im Formulars. "
 
 #: biblio.admin.inc:558
 msgid "Finally, for each author field you can choose a set of author roles. Assigning different roles to authors within the same field, e.g. primary and secondary authors within the authors field, allows to theme them differently."
@@ -653,7 +653,7 @@ msgstr "[fuzzy] Es gibt @ count biblio Einträge für diesen Typ, ändern Sie di
 
 #: biblio.admin.inc:894
 msgid "Are you sure you want to delete the custom biblio type:  %title ? "
-msgstr "Sind Sie sicher, dass Sie den benutzerdefinierten biblio Type:% title löschen wollen?  "
+msgstr "Sind Sie sicher, dass Sie den benutzerdefinierten biblio Type:% title löschen wollen? "
 
 #: biblio.admin.inc:896;1172;1541
 msgid "This action cannot be undone."
@@ -669,7 +669,7 @@ msgstr "Abbrechen"
 
 #: biblio.admin.inc:913
 msgid "Are you sure you want to reset ALL the field definitions to the defaults? "
-msgstr "Sind Sie sicher, dass Sie alle Feld-Definitionen auf die Standardeinstellungen setzen wollen?  "
+msgstr "Sind Sie sicher, dass Sie alle Feld-Definitionen auf die Standardeinstellungen setzen wollen? "
 
 #: biblio.admin.inc:913
 msgid "By doing this, you will loose all customizations you have made to the field titles, <b><u>this action cannot be undone</u></b>!"
