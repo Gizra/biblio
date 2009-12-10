@@ -1005,8 +1005,9 @@ function biblio_form_alter(&$form, &$form_state, $form_id) {
 
       foreach (element_children($form) as $form_element) {
         if (strstr($form_element, 'biblio_')) continue;
+        if (strstr($form_element, 'form_')) continue;
         if ((isset($form[$form_element]['#type']))
-            || $form[$form_element]['#type'] == 'container'
+           // || $form[$form_element]['#type'] == 'container'
             || $form_element == 'buttons'
             )
         {
@@ -1075,8 +1076,8 @@ function biblio_form(stdClass $node, $form_state) {
     foreach ($result as $option) {
     $options["$option->tid"] = $option->name;
   }
-  if (!isset($node->nid) && !isset($form_state['storage']['biblio_type'])) {// only show the doi lookup and paste boxes if this is a new entry
-    if($user->uid > 0 && phpversion() > 5 && !isset($form_state['storage']['biblio_type'])) {
+  if (!isset($node->nid) && !isset($form_state['input']['biblio_type'])) {// only show the doi lookup and paste boxes if this is a new entry
+    if($user->uid > 0 && phpversion() > 5 && !isset($form_state['input']['biblio_type'])) {
       $form['biblio_doi_lookup'] = array(
         '#type' => 'fieldset',
         '#title' => t('DOI Lookup'),
@@ -1110,7 +1111,7 @@ function biblio_form(stdClass $node, $form_state) {
         '#value' => t('Populate using DOI')
       );
     }
-    if(!isset($form_state['storage']['biblio_type'])) {
+    if(!isset($form_state['input']['biblio_type'])) {
       $form['biblio_cut_paste'] = array(
         '#type' => 'fieldset',
         '#title' => t('Paste'),
@@ -1512,10 +1513,10 @@ function biblio_form_validate($form, &$form_state) {
         unset ($form_state['storage']);
       }
       else {
-        $form_state['storage']['biblio_type']  = $form_state['values']['biblio_type'];
+        $form_state['input']['biblio_type']  = $form_state['values']['biblio_type'];
         $form_state['rebuild'] = TRUE;
         $form_state['submitted'] = TRUE;
-        $form_state['cache'] = TRUE;
+  //      $form_state['cache'] = TRUE;
 
         return;
       }

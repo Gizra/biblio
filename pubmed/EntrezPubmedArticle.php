@@ -60,7 +60,7 @@ class BiblioEntrezPubmedArticle
   {
     if (empty($this->biblio)) {
       $this->biblio = array(
-        'title' => (string)$this->article->ArticleTitle,
+        'title' => array( 'zxx' => array(array('value' => (string)$this->article->ArticleTitle))),
         'biblio_citekey' => $this->id,
         'biblio_pubmed_id' => $this->id,
         'biblio_pubmed_md5' => $this->md5,
