@@ -73,10 +73,10 @@ function biblio_style_chicago($node, $base = 'biblio', $inline = false) {
     case 105: //Newspaper Article
     case 106: //Magazine Article
       if(!empty($authors)) {
-        if (!preg_match("/\.*$/", $authors))
-        $output .= $authors . ".";
-        else
+        $output .= '<span class="biblio-authors">';
         $output .= $authors;
+        if (!preg_match("/\. *$/", $authors)) $output .= ".";
+        $output .= '</span>';
       }
 
       if (!empty($node->title['zxx'][0]['value']))      // title
@@ -166,12 +166,10 @@ function biblio_style_chicago($node, $base = 'biblio', $inline = false) {
     case 101: //Book Chapter
     case 103: //Conference Paper
       if(!empty($authors)) {
-        if (!preg_match("/\.*$/", $authors)) {
-          $output .= $authors . ".";
-        }
-        else {
-          $output .= $authors;
-        }
+        $output .= '<span class="biblio-authors">';
+        $output .= $authors;
+        if (!preg_match("/\. *$/", $authors)) $output .= ".";
+        $output .= '</span>';
       }
       if (!empty($node->title['zxx'][0]['value']))      // title
       {
@@ -301,12 +299,10 @@ function biblio_style_chicago($node, $base = 'biblio', $inline = false) {
 
       if (!empty($authors))      // author
       {
-        if (!preg_match("/\.*$/", $authors)) {
-          $output .= $authors . ".";
-        }
-        else {
-          $output .= $authors;
-        }
+        $output .= '<span class="biblio-authors">';
+        $output .= $authors;
+        if (!preg_match("/\. *$/", $authors)) $output .= ".";
+        $output .= '</span>';
       }
 
       if (!empty($node->title['zxx'][0]['value']))      // title

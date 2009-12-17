@@ -77,12 +77,8 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = false) {
     case 106: //Magazine Article
       if(!empty($authors)) {
         $output .= '<span class="biblio-authors">';
-        if (!preg_match("/\.*$/", $authors)) {
-          $output .= $authors . ".";
-        }
-        else {
-          $output .= $authors;
-        }
+        $output .= $authors;
+        if (!preg_match("/\. *$/", $authors)) $output .= ".";
         $output .=  "</span>";
       }
 
@@ -178,12 +174,8 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = false) {
     case 103: //Conference Paper
       if(!empty($authors)) {
         $output .= '<span class="biblio-authors">';
-        if (!preg_match("/\.*$/", $authors)) {
-          $output .= $authors . ".";
-        }
-        else {
-          $output .= $authors;
-        }
+        $output .= $authors;
+        if (!preg_match("/\. *$/", $authors)) $output .= ".";
         $output .= '</span>';
       }
       if (!empty($node->title['zxx'][0]['value']))      // title
@@ -329,12 +321,8 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = false) {
       if (!empty($authors))      // author
       {
         $output .= '<span class="biblio-authors">';
-        if (!preg_match("/\.*$/", $authors)) {
-          $output .= $authors . ".";
-        }
-        else{
           $output .= $authors;
-        }
+          if (!preg_match("/\. *$/", $authors))  $output .= ".";
         $output .= '</span>';
       }
 

@@ -67,9 +67,10 @@ function biblio_style_mla($node, $base = 'biblio', $inline = false) {
     case 105: //Newspaper Article
     case 106: //Magazine Article
       if(!empty($authors)) {
-        if (!preg_match("/\.*$/", $authors)) $output .= $authors . ".";
-        else
+        $output .= '<span class="biblio-authors">';
         $output .= $authors;
+        if (!preg_match("/\. *$/", $authors)) $output .= ".";
+        $output .= '</span>';
       }
 
       if (!empty($node->title['zxx'][0]['value']))      // title
@@ -168,13 +169,11 @@ function biblio_style_mla($node, $base = 'biblio', $inline = false) {
     case 101: //Book Chapter
     case 103: //Conference Paper
       if(!empty($authors)) {
-        if (!preg_match("/\.*$/", $authors)) {
-          $output .= $authors . ".";
-        }
-        else {
-          $output .= $authors;
-        }
-
+        $output .= '<span class="biblio-authors">';
+        $output .= $authors;
+        if (!preg_match("/\. *$/", $authors)) $output .= ".";
+        $output .= '</span>';
+      }
         if (!empty($node->title['zxx'][0]['value']))      // title
         {
           if (!empty($authors))  $output .= " ";
@@ -304,17 +303,17 @@ function biblio_style_mla($node, $base = 'biblio', $inline = false) {
           $output .= theme_biblio_page_number($node->biblio_pages);
         }
         if (!preg_match("/\. *$/", $output))  $output .= ".";
-      }
+
       break;
 
-    default : // all other types
+    default: // all other types
 
       if (!empty($authors))      // author
       {
-        if (!preg_match("/\.*$/", $authors))
-        $output .= $authors . ".";
-        else
+        $output .= '<span class="biblio-authors">';
         $output .= $authors;
+        if (!preg_match("/\. *$/", $authors)) $output .= ".";
+        $output .= '</span>';
       }
 
       if (!empty($node->title['zxx'][0]['value']))      // title
@@ -465,14 +464,14 @@ function biblio_style_mla($node, $base = 'biblio', $inline = false) {
 
         if (!empty($node->online_citation))      // online_citation
         {
-          if (!preg_match("/\.*$/", $output)) $output .= ".";
+          if (!preg_match("/\. *$/", $output)) $output .= ".";
 
           $output .= " " . $node->online_citation;
         }
 
         if (!empty($node->doi))      // doi
         {
-          if (!preg_match("/\.*$/", $output)) $output .= ".";
+          if (!preg_match("/\. *$/", $output)) $output .= ".";
 
           if ($encodeHTML) {
             $output .= " " . $today . encodeHTML(" <http://dx.doi.org/" . $node->doi . ">");
@@ -483,7 +482,7 @@ function biblio_style_mla($node, $base = 'biblio', $inline = false) {
         }
         elseif (!empty($node->url))      // url
         {
-          if (!preg_match("/\.*$/", $output)) $output .= ".";
+          if (!preg_match("/\. *$/", $output)) $output .= ".";
 
           if ($encodeHTML) {
             $output .= " " . $today . encodeHTML(" <" . $node->url . ">");

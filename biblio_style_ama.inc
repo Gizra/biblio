@@ -65,12 +65,10 @@ function biblio_style_ama($node, $base = 'biblio', $inline = false) {
     case 105: //Newspaper Article
     case 106: //Magazine Article
       if(!empty($authors)) {
-        if (!preg_match("/\.*$/", $authors)) {
-          $output .= $authors . ".";
-        }
-        else {
-          $output .= $authors;
-        }
+        $output .= '<span class="biblio-authors">';
+        $output .= $authors;
+        if (!preg_match("/\. *$/", $authors)) $output .= ".";
+        $output .=  "</span>";
       }
 
       if (!empty($node->title['zxx'][0]['value']))      // title
@@ -177,12 +175,10 @@ function biblio_style_ama($node, $base = 'biblio', $inline = false) {
     case 101: //Book Chapter
     case 103: //Conference Paper
       if(!empty($authors)) {
-        if (!preg_match("/\.*$/", $authors)) {
-          $output .= $authors . ".";
-        }
-        else {
-          $output .= $authors;
-        }
+        $output .= '<span class="biblio-authors">';
+        $output .= $authors;
+        if (!preg_match("/\. *$/", $authors)) $output .= ".";
+        $output .= '</span>';
       }
       if (!empty($node->title['zxx'][0]['value']))      // title
       {
@@ -268,7 +264,7 @@ function biblio_style_ama($node, $base = 'biblio', $inline = false) {
         $output .= " " . $node->biblio_edition . $editionSuffix;
       }
 
-      if (!preg_match("[?!.][ \"" . $markupPatternsArray["italic-suffix"] . "]*$", $output)) $output .= ".";
+      if (!preg_match("/[?!.][ \"" . $markupPatternsArray["italic-suffix"] . "]*$/", $output)) $output .= ".";
 
       if (!empty($node->biblio_place_published))      // place
       $output .= " " . $node->biblio_place_published;
@@ -310,8 +306,7 @@ function biblio_style_ama($node, $base = 'biblio', $inline = false) {
         $output .= "(" . $node->biblio_issue . ")"; // is it correct to format series issues similar to journal article issues?
       }
 
-      if (!preg_match("/\. *$/", $output))
-      $output .= ".";
+      if (!preg_match("/\. *$/", $output)) $output .= ".";
 
       break;
 
@@ -324,10 +319,10 @@ function biblio_style_ama($node, $base = 'biblio', $inline = false) {
 
       if (!empty($authors))      // author
       {
-        if (!preg_match("/\. *$/", $authors))
-        $output .= $authors . ".";
-        else
+        $output .= '<span class="biblio-authors">';
         $output .= $authors;
+        if (!preg_match("/\. *$/", $authors)) $output .= ".";
+        $output .= '</span>';
       }
 
       if (!empty($node->title['zxx'][0]['value']))      // title
