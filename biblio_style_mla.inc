@@ -178,13 +178,13 @@ function biblio_style_mla($node, $base = 'biblio', $inline = false) {
         {
           if (!empty($authors))  $output .= " ";
 
-          $output .= '"<i>' ;
+          //$output .= '"<i>' ;
           $output .= '<span class="biblio-title-mla">';
           $url = biblio_get_title_url_info($node);
           $output .= l($node->title['zxx'][0]['value'], $url['link'], $url['options']);
           $output .= "</span>";
-          $output .= '</i>';
-          if (!preg_match("/[?!.]$/", $node->title['zxx'][0]['value'])) $output .= ".";
+         // $output .= '</i>';
+          if (!preg_match("/[?!.]$/", $node->title)) $output .= ".";
           $output .= '"';
         }
 
@@ -261,7 +261,7 @@ function biblio_style_mla($node, $base = 'biblio', $inline = false) {
           $output .= " Vol. " . $node->biblio_volume;
         }
 
-        if (!empty($node->biblio_alternate_title) OR !empty($node->biblio_tertiary_title)) // if there's either a full or an abbreviated series title
+        if (!empty($node->biblio_alternate_title) || !empty($node->biblio_tertiary_title)) // if there's either a full or an abbreviated series title
         {
           _period_if_needed($output);
           $output .= " ";
@@ -291,18 +291,19 @@ function biblio_style_mla($node, $base = 'biblio', $inline = false) {
         if (!empty($node->biblio_publisher))      // publisher
         {
           if (!empty($node->biblio_place_published))  $output .= ":";
-          $output .= " " . $node->biblio_publisher;
+          $output .= " " . $node->biblio_publisher. ", " ;
         }
 
         if (!empty($node->biblio_year))      // year
         {
-          $output .= ", " . $node->biblio_year;
+          $output .= " " . $node->biblio_year .". ";
         }
-
+        _period_if_needed($output);
         if (!empty($node->biblio_pages)) {     // pages
           $output .= theme_biblio_page_number($node->biblio_pages);
         }
-        if (!preg_match("/\. *$/", $output))  $output .= ".";
+        _period_if_needed($output);
+        //if (!preg_match("/\. *$/", $output))  $output .= ".";
 
       break;
 
@@ -312,7 +313,7 @@ function biblio_style_mla($node, $base = 'biblio', $inline = false) {
       {
         $output .= '<span class="biblio-authors">';
         $output .= $authors;
-        if (!preg_match("/\. *$/", $authors)) $output .= ".";
+        if (!preg_match("/\.*$/", $authors)) $output .= ".";
         $output .= '</span>';
       }
 

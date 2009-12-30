@@ -686,6 +686,7 @@ function theme_biblio_entry($variables) {
   $inline     = $variables['inline'];
 
   $output  = "\n".'<div class="biblio-entry">'."\n" ;
+  $output  .= '<div class="biblio-style-'. $style . '">' . "\n" ;
   if (!$node->status) {
     $output .= '<div id="node-'.$node->nid.'" class="node node-unpublished">';
   }
@@ -724,7 +725,7 @@ function theme_biblio_entry($variables) {
     $output .= '</div>';
   }
 
-  $output .= "\n</div>";
+  $output .= "\n</div></div>";
 
   return $output;
 }

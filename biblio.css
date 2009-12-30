@@ -102,6 +102,11 @@ dl.bibliomultiselect .form-item {
 	margin: 1em 0 1em 0;
 }
 
+.biblio-style-mla {
+  text-indent: -25px;
+  padding-left: 25px;
+}
+
 .biblio-publisher {
 	font-style: oblique;
 	font-weight: bold;
