@@ -36,7 +36,7 @@ class BiblioImportExportUnitTest extends BiblioImportExportWebTestCase {
   function testBiblioNodeExport() {
     module_load_include('inc', 'biblio', 'endnote8_export');
     $node = $this->createNode();
-    $this->assertEqual(biblio_endnote_tagged_export($node), $this->getTaggedString(), 'Export a node in EndNote Tagged format');
+    $this->assertEqual(biblio_endnote_tagged_export($node), $this->getTaggedString());//, 'Export a node in EndNote Tagged format');
     $this->assertEqual(biblio_bibtex_export($node), $this->getBibTexString(), 'Export a node in BibTex format');
     $xml = _endnote8_XML_export('', 'begin');
     $xml .= _endnote8_XML_export($node);

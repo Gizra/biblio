@@ -97,8 +97,7 @@ function en7_characterData($parser, $data) {
         $node->biblio_keywords[$keyword_count] .= $data;
         break;
       case 'TITLE':
-        $langcode = FIELD_LANGUAGE_NONE;
-        $node->title[$langcode][0]['value'] .= $data;
+        $node->title .= $data;
         break;
       default:
         if ($field = en7_field_map(trim($element))) {

@@ -59,13 +59,13 @@ function biblio_style_ieee($node, $base = 'biblio', $inline = false) {
       $url = biblio_get_title_url_info($node);
       if (!empty ($node->biblio_secondary_title)) {
         $output .= '<span class="biblio-title">&quot;';
-        $output .= l($node->title['zxx'][0]['value'], $url['link'], $url['options']);
-          //$output .= $inline ? l("$node->title['zxx'][0]['value']", "$base/viewinline/$node->nid") : l("$node->title['zxx'][0]['value']", "node/$node->nid");
+        $output .= l($node->title, $url['link'], $url['options']);
+          //$output .= $inline ? l("$node->title", "$base/viewinline/$node->nid") : l("$node->title", "node/$node->nid");
         $output .= "&quot;, </span> \n";
         $output .= '<i>' . check_plain($node->biblio_secondary_title) . '</i>';
       } else {
         $output .= '<span class="biblio-title"><i>';
-        $output .= l($node->title['zxx'][0]['value'], $url['link'], $url['options']);
+        $output .= l($node->title, $url['link'], $url['options']);
         $output .= ", </i></span> \n";
       }
       if (!empty ($node->biblio_edition))

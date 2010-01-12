@@ -55,14 +55,14 @@ function en8_encode_font_faces(&$node) {
 
 function en8_add_titles(&$node) {
   $xml = '<titles>';
-  $xml .= (!empty ($node->title['zxx'][0]['value'])) ? '<title><style face="normal" font="default" size="100%">'.htmlspecialchars($node->title['zxx'][0]['value'])."</style></title>" :'';
+  $xml .= (!empty ($node->title)) ? '<title><style face="normal" font="default" size="100%">'.htmlspecialchars($node->title)."</style></title>" :'';
   $xml .= (!empty ($node->biblio_secondary_title)) ? '<secondary-title><style face="normal" font="default" size="100%">'.htmlspecialchars($node->biblio_secondary_title)."</style></secondary-title>" :'';
   $xml .= (!empty ($node->biblio_tertiary_title)) ? '<tertiary-title><style face="normal" font="default" size="100%">'.htmlspecialchars($node->biblio_tertiary_title)."</style></tertiary-title>" :'';
   $xml .= (!empty ($node->biblio_alternate_title)) ? '<alt-title><style face="normal" font="default" size="100%">'.htmlspecialchars($node->biblio_alternate_title)."</style></alt-title>" :'';
   $xml .= (!empty ($node->biblio_short_title)) ? '<short-title><style face="normal" font="default" size="100%">'.htmlspecialchars($node->biblio_short_title)."</style></short-title>" :'';
   $xml .= (!empty ($node->biblio_translated_title)) ? '<translated-title><style face="normal" font="default" size="100%">'.htmlspecialchars($node->biblio_translated_title)."</style></translated-title>" :'';
   $xml .= '</titles>';
-  unset($node->title['zxx'][0]['value']);
+  unset($node->title);
   unset($node->biblio_secondary_title);
   unset($node->biblio_tertiary_title);
   unset($node->biblio_alternate_title);

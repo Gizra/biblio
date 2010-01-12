@@ -61,8 +61,7 @@ function _endnote_tagged_import($file, $terms = array(), $batch = FALSE, $sessio
             'auth_type' => _biblio_get_auth_type(2, $node->biblio_type));
           break;
         case '%T' :
-        	$langcode = FIELD_LANGUAGE_NONE;
-          $node->title[$langcode][0]['value'] = $value;
+          $node->title = $value;
           break;
         case '%Y' :
           $node->biblio_contributors[3][] = array(

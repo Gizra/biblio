@@ -46,7 +46,7 @@ function _ris_tagged_import($file, $terms = array(), $batch = FALSE, $session_id
       switch ($tag) {
         case 'ER' :
           if (!empty($node)) {
-            if (empty ($node->title['zxx'][0]['value'] )) $node->title[FIELD_LANGUAGE_NONE][0]['value'] = t("Untitled");
+            if (empty ($node->title )) $node->title = t("Untitled");
             if (!empty($terms)) {
               if (!isset($node->taxonomy)) $node->taxonomy = array();
               $node->taxonomy = array_merge($terms, $node->taxonomy);
@@ -109,8 +109,7 @@ function _ris_tagged_import($file, $terms = array(), $batch = FALSE, $session_id
         case 'T1' :
         case 'CT' :
         case 'BT' :
-          $langcode = FIELD_LANGUAGE_NONE;
-        	$node->title[FIELD_LANGUAGE_NONE][0]['value'] = $value;
+        	$node->title = $value;
           break;
         case 'UR' :
           $node->biblio_url .= $value;

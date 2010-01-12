@@ -205,7 +205,7 @@ function theme_biblio_tabular($variables) {
   $fields = _biblio_get_field_information($node->biblio_type, TRUE);
   $rows[] = array(
     array('data' => t('Title'), 'class' => array('biblio-row-title')),
-    array('data' => filter_xss($node->title['zxx'][0]['value'], biblio_get_allowed_tags()))
+    array('data' => filter_xss($node->title, biblio_get_allowed_tags()))
   );
   $rows[] = array(
     array('data' => t('Publication Type'), 'class' => array('biblio-row-title')),
@@ -686,7 +686,7 @@ function theme_biblio_entry($variables) {
   $inline     = $variables['inline'];
 
   $output  = "\n".'<div class="biblio-entry">'."\n" ;
-  $output  .= '<div class="biblio-style-'. $style . '">' . "\n" ;
+  $output  .= '<div class="biblio-style-'. $style_name . '">' . "\n" ;
   if (!$node->status) {
     $output .= '<div id="node-'.$node->nid.'" class="node node-unpublished">';
   }
@@ -960,7 +960,7 @@ function _build_biblio_xml_link($base, $nid = NULL) {
 }
 function _build_google_scholar_link($node) {
   $link  = 'http://scholar.google.com/scholar?as_q=';
-  $link .= '"'.str_replace(' ', '+', $node->title['zxx'][0]['value']).'"';
+  $link .= '"'.str_replace(' ', '+', $node->title).'"';
   $link .= '&btnG=Search+Scholar&as_epq=&as_oq=&as_eq=&as_occt=any&as_sauthors='.biblio_get_first_contributor($node->vid)->lastname;
 
   return array(

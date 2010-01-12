@@ -73,15 +73,15 @@ function biblio_style_mla($node, $base = 'biblio', $inline = false) {
         $output .= '</span>';
       }
 
-      if (!empty($node->title['zxx'][0]['value']))      // title
+      if (!empty($node->title))      // title
       {
         if (!empty($authors)) $output .= " ";
         $output .= '"' ;
         $output .= '<span class="biblio-title-mla">';
         $url = biblio_get_title_url_info($node);
-        $output .= l($node->title['zxx'][0]['value'], $url['link'], $url['options']);
+        $output .= l($node->title, $url['link'], $url['options']);
         $output .= "</span>";
-        if (!preg_match("/[?!.]$/", $node->title['zxx'][0]['value'])) $output .= ".";
+        if (!preg_match("/[?!.]$/", $node->title)) $output .= ".";
         $output .= '"';
       }
 
@@ -174,14 +174,14 @@ function biblio_style_mla($node, $base = 'biblio', $inline = false) {
         if (!preg_match("/\. *$/", $authors)) $output .= ".";
         $output .= '</span>';
       }
-        if (!empty($node->title['zxx'][0]['value']))      // title
+        if (!empty($node->title))      // title
         {
           if (!empty($authors))  $output .= " ";
 
           //$output .= '"<i>' ;
           $output .= '<span class="biblio-title-mla">';
           $url = biblio_get_title_url_info($node);
-          $output .= l($node->title['zxx'][0]['value'], $url['link'], $url['options']);
+          $output .= l($node->title, $url['link'], $url['options']);
           $output .= "</span>";
          // $output .= '</i>';
           if (!preg_match("/[?!.]$/", $node->title)) $output .= ".";
@@ -317,7 +317,7 @@ function biblio_style_mla($node, $base = 'biblio', $inline = false) {
         $output .= '</span>';
       }
 
-      if (!empty($node->title['zxx'][0]['value']))      // title
+      if (!empty($node->title))      // title
       {
         $url = biblio_get_title_url_info($node);
         if (!empty($authors))
@@ -326,15 +326,15 @@ function biblio_style_mla($node, $base = 'biblio', $inline = false) {
         if (!empty($node->thesis))      // thesis
         {
           $output .= '<span class="biblio-title-mla">';
-          $output .= '"' . l($node->title['zxx'][0]['value'], $url['link'], $url['options']);
+          $output .= '"' . l($node->title, $url['link'], $url['options']);
           $output .= '</span>';
-          if (!preg_match("/[?!.]$/", $node->title['zxx'][0]['value'])) $output .= ".";
+          if (!preg_match("/[?!.]$/", $node->title)) $output .= ".";
           $output .= '"';
         }
         else // not a thesis
         $output .= '<i>';
         $output .= '<span class="biblio-title-mla">';
-        $output .= l($node->title['zxx'][0]['value'], $url['link'], $url['options']);
+        $output .= l($node->title, $url['link'], $url['options']);
         $output .= '</span>';
         $output .= '</i>';
       }

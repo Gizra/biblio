@@ -528,13 +528,13 @@ function biblio_marc_import($file, $terms = array(), $batch = FALSE, $session_id
             $node->biblio_call_number = $field->subfield('a');
             break;
           case '130':
-            $node->title['zxx'][0]['value'] = str_replace(' /', '', $field->subfield('a'));
+            $node->title = str_replace(' /', '', $field->subfield('a'));
             break;
           case '210':
             $node->biblio_short_title = str_replace(' /', '', $field->subfield('a'));
             break;
           case '245':
-            $node->title['zxx'][0]['value'] = str_replace(' /', '', $field->subfield('a')).' '.$field->subfield('b');
+            $node->title = str_replace(' /', '', $field->subfield('a')).' '.$field->subfield('b');
             break;
           case '250':
             $node->biblio_edition = $field->subfield('a');
@@ -621,7 +621,7 @@ function biblio_bibtex_export($node) {
   }
   $bibtex .= '@'. $type .' {';
   $bibtex .= ($node->biblio_citekey) ? $node->biblio_citekey  : "";
-  $bibtex .= _bibtex_format_entry('title', $node->title['zxx'][0]['value']);
+  $bibtex .= _bibtex_format_entry('title', $node->title);
   $bibtex .= _bibtex_format_entry('journal', $journal);
   $bibtex .= _bibtex_format_entry('booktitle', $booktitle);
   $bibtex .= _bibtex_format_entry('series', $series);
@@ -891,7 +891,7 @@ function biblio_endnote_tagged_export($node) {
       break; // journal
   }
   if (isset($node->biblio_year) && $node->biblio_year < 9998)  $tagged .= "%D ". trim($node->biblio_year) ."\r\n";
-  if (!empty($node->title['zxx'][0]['value']))  $tagged .= "%T ". trim($node->title['zxx'][0]['value']) ."\r\n";
+  if (!empty($node->title))  $tagged .= "%T ". trim($node->title) ."\r\n";
 
   foreach ($node->biblio_contributors[1] as $auth) {
     $tagged .= "%A " . trim($auth['name']) ."\r\n";

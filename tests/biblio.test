@@ -55,7 +55,7 @@ class BiblioWebTestCase extends DrupalWebTestCase {
       $biblio_fields["$name"] = $name;
     }
     $settings = array(
-      'title' => array(FIELD_LANGUAGE_NONE => array(array('value' => 'Biblio Title'))),
+      'title' => array('zxx' => array(array('value' => 'Biblio Title'))),
       'type' => 'biblio', // This replaces the default type
       'biblio_type' => $type, // This appends a new field.
       'biblio_year' => 2009,

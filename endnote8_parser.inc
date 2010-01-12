@@ -80,8 +80,7 @@ function en8_startElement($parser, $name, $attrs) {
     	$element = $name;
      break;
     case 'title':
-      $langcode = FIELD_LANGUAGE_NONE;
-      $node->title[$langcode][0]['value'] = '';
+      $node->title = '';
       $element = $name;
       break;
 
@@ -193,8 +192,7 @@ function en8_characterData($parser, $data) {
         $node->biblio_keywords[$keyword_count] .= $data;
         break;
       case 'title':
-        $langcode = FIELD_LANGUAGE_NONE;
-        $node->title[$langcode][0]['value'] .= $data;
+        $node->title .= $data;
         break;
       case 'dates' :
         switch ($dates) {

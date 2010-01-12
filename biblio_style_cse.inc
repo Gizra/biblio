@@ -70,8 +70,8 @@ function biblio_style_cse($node, $base = 'biblio', $inline = false) {
       }
       $output .= '<span class="biblio-title">';
       $url = biblio_get_title_url_info($node, $inline);
-      $output .= l($node->title['zxx'][0]['value'], $url['link'], $url['options']);
-      $output .= (strpos($node->title['zxx'][0]['value'], '?'))? " </span>" : ". </span>";  // if the title ends in a question mark, don't put a period after it.
+      $output .= l($node->title, $url['link'], $url['options']);
+      $output .= (strpos($node->title, '?'))? " </span>" : ". </span>";  // if the title ends in a question mark, don't put a period after it.
       $output .= (!empty ($node->biblio_secondary_title)) ? check_plain($node->biblio_secondary_title) . '. ' : '';
       $output .= (!empty ($node->biblio_volume))          ? check_plain($node->biblio_volume) : '';
       $output .= (!empty ($node->biblio_issue))           ? '(' . check_plain($node->biblio_issue) . ')' : '';

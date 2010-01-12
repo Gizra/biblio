@@ -548,7 +548,6 @@ class PARSEENTRIES
     //list($preamble, $strings, $entries, $undefinedStrings) = $this->returnArrays();
     $limit = ($limit) ? $limit : count($this->entries);
     if (($start + $limit) > count($this->entries)) $limit = count($this->entries) - $start;
-    $langcode = FIELD_LANGUAGE_NONE;
     for ($i = $start; $i < $limit; $i++)
     {
       $node = new stdClass();
@@ -612,7 +611,7 @@ class PARSEENTRIES
       if (!empty($entry['organization'])) $node->biblio_publisher = $entry['organization'];
       if (!empty($entry['school']))       $node->biblio_publisher       = $entry['school'];
       if (!empty($entry['institution']))  $node->biblio_publisher       = $entry['institution'];
-      $node->title[$langcode][0]['value'] = (!empty($entry['title'])) ? $entry['title'] : NULL;
+      $node->title = (!empty($entry['title'])) ? $entry['title'] : NULL;
       $node->biblio_type_of_work    .= (!empty($entry['type'])) ? $entry['type'] : NULL;
       $node->biblio_edition         = (!empty($entry['edition'])) ? $entry['edition'] : NULL;
       $node->biblio_section         = (!empty($entry['chapter'])) ? $entry['chapter'] : NULL;

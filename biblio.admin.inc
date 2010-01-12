@@ -105,14 +105,6 @@ function biblio_admin_settings() {
     '#title' => t('Block settings'),
     '#description' => ''
   );
-  $form['block']['biblio_block_title'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Title for the "New Publications" block'),
-    '#default_value' => variable_get('biblio_block_title', 'New Publications'),
-    '#size' => 40,
-    '#maxlength' => 40,
-    '#description' => ''
-  );
   $form['block']['biblio_rowsperblock'] = array(
     '#type' => 'textfield',
     '#title' => t('Number of results in the "New Publications" block'),

@@ -989,7 +989,7 @@ function biblio_nodeapi(& $node, $op, $a3, $a4) {
         break;
       case 'view':
         if ($node->type == 'biblio' && variable_get('biblio_hide_bibtex_braces', 0)) {
-          drupal_set_title(filter_xss($node->title['zxx'][0]['value'], biblio_get_allowed_tags()));
+          drupal_set_title(filter_xss($node->title, biblio_get_allowed_tags()));
         }
         break;
     }
@@ -1151,7 +1151,7 @@ function biblio_form(stdClass $node, $form_state) {
 //      '#type' => 'textfield',
 //      '#title' => t('Title'),
 //      '#required' => TRUE,
-//      '#default_value' => trim((isset($form_state['values']['title'])?$form_state['values']['title']: $node->title['zxx'][0]['value'])),
+//      '#default_value' => trim((isset($form_state['values']['title'])?$form_state['values']['title']: $node->title)),
 //      '#size' => 60,
 //      '#maxlength' => 255,
 //      '#weight' => -4
@@ -1712,12 +1712,12 @@ function biblio_view($node, $buildmode = 'full') {
 		}
 		drupal_set_breadcrumb(array(l(t('Home'), NULL), l(drupal_ucfirst($base_title), $base)));
 		if (variable_get('biblio_hide_bibtex_braces', 0) && !isset($node->view )) {
-			$node->title['zxx'][0]['value'] = biblio_remove_brace($node->title['zxx'][0]['value']);
-			drupal_set_title(filter_xss($node->title['zxx'][0]['value'], biblio_get_allowed_tags()));
+			$node->title = biblio_remove_brace($node->title);
+			drupal_set_title(filter_xss($node->title, biblio_get_allowed_tags()));
 		}
 		break;
 	case 'teaser':
-		$node->content['teaser']['#value'] = theme('biblio_style', $node, $base, $style);
+		$node->content['teaser']['#value'] = theme('biblio_style', array('node' => $node, 'base'=> $base, 'style_name' => $style));
 		break;
 }
 
@@ -1753,7 +1753,7 @@ function biblio_block($op = 'list', $delta = 0) {
 //FIXME DB
         $result = db_query_range(db_rewrite_sql($query), 0, $num_in_block);
         $base = variable_get('biblio_base', 'biblio');
-        $block['subject'] = t(variable_get('biblio_block_title', 'Recent Publications'));
+        $block['subject'] = t('Recent Publications');
         $block['content'] = '<div class="item-list"><ul>';
         $options['html'] = TRUE;
 //FIXME DB
@@ -2109,17 +2109,16 @@ function biblio_contextObject($node) {
 //    elseif ($node->biblio_type == "Journal") $co["rft.genre"] = "journal";
 //  }
   // atitle, btitle, title (title, publication)
-  $langcode = FIELD_LANGUAGE_NONE;
   if (($node->biblio_type == 102) || ($node->biblio_type == 101)) {
-    if (!empty($node->title[$langcode][0]['value'])) $co["rft.atitle"] = check_plain($node->title[$langcode][0]['value']);
+    if (!empty($node->title)) $co["rft.atitle"] = check_plain($node->title);
     if (!empty($node->biblio_secondary_title)) {
       $co["rft.title"] = check_plain($node->biblio_secondary_title);
       if ($node->biblio_type == 101)
       $co["rft.btitle"] = check_plain($node->biblio_secondary_title);
     }
   }
-  elseif (!empty($node->title[$langcode][0]['value'])) {
-   $co["rft.title"] = check_plain($node->title[$langcode][0]['value']);
+  elseif (!empty($node->title)) {
+   $co["rft.title"] = check_plain($node->title);
   }
   if (($node->biblio_type == 100) && (!empty($node->biblio_secondary_title))) $co["rft.btitle"] = check_plain($node->biblio_secondary_title);
   // stitle (abbrev_journal)
@@ -2203,7 +2202,7 @@ function biblio_hash($node) {
     }
   }
 //TODO title value??
-  $hash_string = str_replace(' ', '', drupal_strtolower($node->title['zxx'][0]['value']));
+  $hash_string = str_replace(' ', '', drupal_strtolower($node->title));
   if (isset($node->biblio_contributors[1][0])) {
     $hash_string .= str_replace(' ', '', drupal_strtolower($node->biblio_contributors[1][0]['lastname']));
   }
