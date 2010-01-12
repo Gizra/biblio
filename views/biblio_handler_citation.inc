@@ -43,7 +43,7 @@ class biblio_handler_citation extends views_handler_field {
     }
 
     if (count($vids)) {
-      $result = db_query('SELECT n.title, b.* FROM {node} n
+      $result = db_query('SELECT n.title, n.status, b.* FROM {node} n
                           LEFT JOIN {biblio} b on n.vid = b.vid
                           WHERE n.vid IN ('. implode(',', $vids) .')');
       while ($item = db_fetch_object($result)) {
