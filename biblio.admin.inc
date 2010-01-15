@@ -1193,7 +1193,7 @@ function _biblio_get_user_doi_form(&$form, $user) {
     '#title' => t('CrossRef OpenURL Account ID'),
     '#default_value' => $user->biblio_crossref_pid,
     '#return_value' => 1,
-    '#description' => t('Enter your CrossRef OpenURL account ID which you can obtain here ') .l('OpenURL Account Request Form', 'http://www.crossref.org/requestaccount/', $link_attrs)
+    '#description' => t('Enter your complimentary CrossRef OpenURL account ID which you can obtain here ') .l('OpenURL Account Request Form', 'http://www.crossref.org/requestaccount/', $link_attrs) . t(', OR enter your full CrossRef (colon separated) account:password combination.')
   );
   return $form;
 }
