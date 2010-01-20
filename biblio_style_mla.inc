@@ -339,7 +339,7 @@ function biblio_style_mla($node, $base = 'biblio', $inline = false) {
         $output .= '</i>';
       }
 
-      if (count($node->biblio_contributors[2]))      // editor (if different from author, see note above regarding the check for ' (ed)' or ' (eds)')
+      if (isset($node->biblio_contributors[2]) && count($node->biblio_contributors[2]))      // editor (if different from author, see note above regarding the check for ' (ed)' or ' (eds)')
       {
 
         $editor_options = array(
@@ -459,7 +459,7 @@ function biblio_style_mla($node, $base = 'biblio', $inline = false) {
         $output .= ", ".$node->biblio_year;
       }
 
-      if ($node->online_publication == "yes") // this record refers to an online article
+      if (isset($node->online_publication) && $node->online_publication == "yes") // this record refers to an online article
       {
         $today = date("j M. Y");
 

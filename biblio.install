@@ -504,10 +504,10 @@ function biblio_schema() {
         'length' => '255',
         'description' =>'',
   ),
-		 'biblio_refereed' => array (
+     'biblio_refereed' => array (
         'type' => 'varchar',
         'not null' => FALSE,
-		    'length' => '20',
+        'length' => '20',
         'description' =>'',
   ),
       'biblio_md5' => array (
@@ -1128,10 +1128,10 @@ function _add_publication_types()
   $types[] = array(124,'Unpublished',NULL,25);
   $types[] = array(125,'Database',NULL,26);
   $types[] = array(126,'Government Report',NULL,27);
-  $types[] = array(127,'Classical'	,NULL,28);
-  $types[] = array(128,'Legal Ruling'	,NULL,29);
-  $types[] = array(129,'Miscellaneous'	,NULL,30);
-  $types[] = array(130,'Miscellaneous Section'	,NULL,31);
+  $types[] = array(127,'Classical'  ,NULL,28);
+  $types[] = array(128,'Legal Ruling'  ,NULL,29);
+  $types[] = array(129,'Miscellaneous'  ,NULL,30);
+  $types[] = array(130,'Miscellaneous Section'  ,NULL,31);
 
   foreach($types as $record)
   {
@@ -1289,7 +1289,7 @@ function _add_db_field_data() {
 
       // add contributor type data
       if ($row[9] == 'contrib_widget') {
-      	// use field name without trailing 's' as initial guess for author type
+        // use field name without trailing 's' as initial guess for author type
         $auth_type = (substr($row[1],-1,1) == 's') ? substr($row[1],0,-1) : $row[1];
 //        db_query("INSERT INTO {biblio_contributor_type_data} (auth_type, title) VALUES (%d, '%s' )", $row[0], $auth_type);
         db_insert('biblio_contributor_type_data')->fields(array(
@@ -1352,24 +1352,24 @@ function _add_custom_field_data() {
       foreach ($header as $key => $field_name) {
         if (!empty($field_name) && $field_name != 'tid') {
           if (!empty($row[$column]) && $row[$column] != "~" && isset($fieldmap[$field_name])) {
-       	    $ftd[0] = ($existing_id = _id_by_name('biblio_field_type_data',$row[$column])) ? $existing_id : variable_get('biblio_last_ftdid', 100); // ftdid
-       	    $ftd[1] = trim($row[$column]);                    // title
-       	    $ftd[2] = "";                                     // hint
-//       	    db_query("UPDATE {biblio_field_type}
+             $ftd[0] = ($existing_id = _id_by_name('biblio_field_type_data',$row[$column])) ? $existing_id : variable_get('biblio_last_ftdid', 100); // ftdid
+             $ftd[1] = trim($row[$column]);                    // title
+             $ftd[2] = "";                                     // hint
+//             db_query("UPDATE {biblio_field_type}
 //                      SET ftdid = %d, cust_tdid = %d, visible = %d
 //                      WHERE tid = %d AND fid = %d ", $ftd[0], $ftd[0], 1, $row[1], $fieldmap[$field_name] );
-       	    $and = db_and()->condition('tid', $row[1])->condition('fid', $fieldmap[$field_name]);
-       	    db_update('biblio_field_type')
-       	      ->fields(array(
-       	        'ftdid' => $ftd[0],
-       	        'cust_tdid' => $ftd[0],
-       	        'visible'   => 1
-       	      ))
-       	      ->condition($and)
-       	      ->execute();
-       	    if (!$existing_id){
-       	      // if this title doesn't alreay exist, then insert it into the table
-//       	      db_query("INSERT INTO {biblio_field_type_data} (" . implode(", ", $fieldnames) . ")
+             $and = db_and()->condition('tid', $row[1])->condition('fid', $fieldmap[$field_name]);
+             db_update('biblio_field_type')
+               ->fields(array(
+                 'ftdid' => $ftd[0],
+                 'cust_tdid' => $ftd[0],
+                 'visible'   => 1
+               ))
+               ->condition($and)
+               ->execute();
+             if (!$existing_id){
+               // if this title doesn't alreay exist, then insert it into the table
+//               db_query("INSERT INTO {biblio_field_type_data} (" . implode(", ", $fieldnames) . ")
 //                        VALUES (%d, '%s', '%s')", $ftd);
               db_insert('biblio_field_type_data')->fields(array(
                 'ftdid' => $ftd[0],
@@ -1377,13 +1377,13 @@ function _add_custom_field_data() {
                 'hint'  => $ftd[2]
               ))->execute();
 
-       	      _id_by_name('biblio_field_type_data',$row[$column], $ftd[0]);  // cache the new id value for future use
+               _id_by_name('biblio_field_type_data',$row[$column], $ftd[0]);  // cache the new id value for future use
               variable_set('biblio_last_ftdid', $ftd[0] +1); //increment the field type data id by one.
-       	    }
+             }
 
-       	    // also populate biblio_contributor_type tables
-       	    if ((substr($field_name,-7,7) == 'authors') && $row[$column] != '~' ) {
-       	      $type = $contributor_categories[$field_name];
+             // also populate biblio_contributor_type tables
+             if ((substr($field_name,-7,7) == 'authors') && $row[$column] != '~' ) {
+               $type = $contributor_categories[$field_name];
               $title = trim($row[$column]);
               $biblio_type = $row[1];
               $ctdid = ($eid = _id_by_name('biblio_contributor_type_data',$title)) ? $eid :  $next_ctdid;
@@ -1405,7 +1405,7 @@ function _add_custom_field_data() {
                 _id_by_name('biblio_contributor_type_data',$title, $ctdid);  // cache the new id value for future use
                 $next_ctdid++;
               }
-       	    }
+             }
           } elseif ($row[$column] == "~" && isset($fieldmap[$field_name])) {
             // turn the visibility off for this (~) type
 //            db_query("UPDATE {biblio_field_type}
@@ -1564,15 +1564,15 @@ function _move_field_data(&$result)
 
   // add new field types from old biblio_type_details
   $db_result = db_query("SELECT old.*,f.fid as fidnew FROM
-		/* biblio_type_details augmented by field name (biblio_*) */
-		(SELECT otd.*,fo.name FROM {biblio_type_details} otd
-		 INNER JOIN {biblio_fields_old} fo ON otd.fid=fo.fid) old
-		/* left join: all entries from biblio_type_details are matched to existing entries in biblio_field_type_data */
-		LEFT JOIN {biblio_field_type_data} ftd ON old.title=ftd.title
-		/* add matching fids (fidnew) from new biblio_fields based on field name */
-		INNER JOIN {biblio_fields} f ON f.name=old.name
-		/* consider only those entries in biblio_type_details which have no match in biblio_field_type_data yet */
-		WHERE ftd.title IS NULL");
+    /* biblio_type_details augmented by field name (biblio_*) */
+    (SELECT otd.*,fo.name FROM {biblio_type_details} otd
+     INNER JOIN {biblio_fields_old} fo ON otd.fid=fo.fid) old
+    /* left join: all entries from biblio_type_details are matched to existing entries in biblio_field_type_data */
+    LEFT JOIN {biblio_field_type_data} ftd ON old.title=ftd.title
+    /* add matching fids (fidnew) from new biblio_fields based on field name */
+    INNER JOIN {biblio_fields} f ON f.name=old.name
+    /* consider only those entries in biblio_type_details which have no match in biblio_field_type_data yet */
+    WHERE ftd.title IS NULL");
   while ($row = db_fetch_array($db_result))
   {
     // check for presence of this field_type
@@ -1593,19 +1593,19 @@ function _move_field_data(&$result)
 
   // update biblio_field_type (linking table) with overrides from old biblio_type_details
   $result[] = update_sql("UPDATE {biblio_field_type} ft
-		INNER JOIN {biblio_field_type_data} ftd ON ft.ftdid=ftd.ftdid
-		/* link to old biblio_type_details based on field title and publication type */
-		INNER JOIN {biblio_type_details} otd ON otd.title=ftd.title AND otd.tid=ft.tid
-		SET ft.required=otd.required, ft.weight=otd.weight");
+    INNER JOIN {biblio_field_type_data} ftd ON ft.ftdid=ftd.ftdid
+    /* link to old biblio_type_details based on field title and publication type */
+    INNER JOIN {biblio_type_details} otd ON otd.title=ftd.title AND otd.tid=ft.tid
+    SET ft.required=otd.required, ft.weight=otd.weight");
   // update auth_type associated to (auth_category,biblio_type) from old biblio_type_details
   $result[] = update_sql("UPDATE {biblio_contributor_type} ct
-		INNER JOIN
-			/* select contributor fields from biblio_type_details (fid <= 4) and augment with new ctd.auth_type */
-			(SELECT tid,IF(fid=4,5,fid) AS auth_category,ctd.auth_type FROM {biblio_type_details} b
- 			 INNER JOIN {biblio_contributor_type_data} ctd ON b.title=ctd.title WHERE b.fid <= 4) otd
-			/* match on publication type and auth_category, fid=4 (corp. author) changed to catagory 5 */
-			ON otd.tid=ct.biblio_type AND otd.auth_category=ct.auth_category
-		SET ct.auth_type=otd.auth_type");
+    INNER JOIN
+      /* select contributor fields from biblio_type_details (fid <= 4) and augment with new ctd.auth_type */
+      (SELECT tid,IF(fid=4,5,fid) AS auth_category,ctd.auth_type FROM {biblio_type_details} b
+        INNER JOIN {biblio_contributor_type_data} ctd ON b.title=ctd.title WHERE b.fid <= 4) otd
+      /* match on publication type and auth_category, fid=4 (corp. author) changed to catagory 5 */
+      ON otd.tid=ct.biblio_type AND otd.auth_category=ct.auth_category
+    SET ct.auth_type=otd.auth_type");
 
   return $result;
 }
@@ -1686,22 +1686,22 @@ function _move_authors(&$result)
   }
   // change auth_type to match overrides set in old biblio_type_details
   update_sql("UPDATE {biblio_contributor} c
-		/* augment by biblio_type from biblio */
-		INNER JOIN {biblio} b ON c.nid=b.nid AND c.vid=b.vid
-		/* augment by old config settings */
-		INNER JOIN
-			(SELECT tid,if(fid=4,5,fid) as auth_type,title FROM
-				/* select (tid,fid) specific titles from 5.x: biblio_fields_old contains the defaults, biblio_type_details the overrides */
-				(SELECT tid,fid,title FROM {biblio_type_details} WHERE fid<=4
-				 UNION SELECT tid,fid,title FROM {biblio_fields_old}, {biblio_types} WHERE fid<=4 AND tid>=100) t
-			 /* grouping by tid,fid removes the duplicate default title if an override is available */
-			 GROUP BY tid,fid) otd
-		/* match old config (otd) and newly imported (with type 1,2,3,5 see above) on biblio_type and auth_type */
-		ON otd.tid=b.biblio_type AND otd.auth_type=c.auth_type
-		/* augment with new auth_type based on title */
-		INNER JOIN {biblio_contributor_type_data} ctd ON ctd.title=otd.title
-		/* update auth_type in biblio_contributor table */
-		SET c.auth_type=ctd.auth_type");
+    /* augment by biblio_type from biblio */
+    INNER JOIN {biblio} b ON c.nid=b.nid AND c.vid=b.vid
+    /* augment by old config settings */
+    INNER JOIN
+      (SELECT tid,if(fid=4,5,fid) as auth_type,title FROM
+        /* select (tid,fid) specific titles from 5.x: biblio_fields_old contains the defaults, biblio_type_details the overrides */
+        (SELECT tid,fid,title FROM {biblio_type_details} WHERE fid<=4
+         UNION SELECT tid,fid,title FROM {biblio_fields_old}, {biblio_types} WHERE fid<=4 AND tid>=100) t
+       /* grouping by tid,fid removes the duplicate default title if an override is available */
+       GROUP BY tid,fid) otd
+    /* match old config (otd) and newly imported (with type 1,2,3,5 see above) on biblio_type and auth_type */
+    ON otd.tid=b.biblio_type AND otd.auth_type=c.auth_type
+    /* augment with new auth_type based on title */
+    INNER JOIN {biblio_contributor_type_data} ctd ON ctd.title=otd.title
+    /* update auth_type in biblio_contributor table */
+    SET c.auth_type=ctd.auth_type");
   if ($count_success == $count) {
     $mesg = 'Moved authors from '.$count_success.' / '.$count.' publications to the new database structure';
     $contributors = array(
@@ -1827,8 +1827,8 @@ function biblio_update_6014() {
     $result[] = update_sql("UPDATE {biblio_field_type_data} f SET ftdid=ftdid + 4 WHERE ftdid>1 AND ftdid<100 ORDER BY ftdid DESC");
     // add new field titles from author type + appended 's'
     $result[] = update_sql("INSERT INTO {biblio_field_type_data}
-    												SELECT auth_type AS ftdid, CONCAT(TRIM(ctd.title),'s') AS title, NULL AS hint
-    												FROM {biblio_contributor_type_data} ctd WHERE auth_type>1 AND auth_type<6");
+                            SELECT auth_type AS ftdid, CONCAT(TRIM(ctd.title),'s') AS title, NULL AS hint
+                            FROM {biblio_contributor_type_data} ctd WHERE auth_type>1 AND auth_type<6");
     // create space for new fields in linking table
     $result[] = update_sql("UPDATE {biblio_field_type} ft SET fid=fid+4 WHERE fid>1 ORDER BY fid DESC");
     // shift ftdid and cust_tdid for non-custom ftids
@@ -1836,12 +1836,12 @@ function biblio_update_6014() {
     $result[] = update_sql("UPDATE {biblio_field_type} ft SET cust_tdid=cust_tdid+4 WHERE cust_tdid>1 AND ftdid<100");
     // add linking data for new fields
     $result[] = update_sql("INSERT INTO {biblio_field_type}
-    												SELECT tid,ftd.ftdid,ftd.ftdid,ftd.ftdid,1,1,1,2 AS weight,1
+                            SELECT tid,ftd.ftdid,ftd.ftdid,ftd.ftdid,1,1,1,2 AS weight,1
                             FROM {biblio_field_type} ft, {biblio_field_type_data} ftd
                             WHERE ft.fid=1 AND ftd.ftdid > 1 AND ftd.ftdid < 6");
     // add default linking for author categories => author types
     $result[] = update_sql("INSERT INTO {biblio_contributor_type}
-														SELECT auth_type,0,auth_type FROM {biblio_contributor_type_data} ctd WHERE auth_type<10");
+                            SELECT auth_type,0,auth_type FROM {biblio_contributor_type_data} ctd WHERE auth_type<10");
   }
   return $result;
 }
@@ -1972,7 +1972,7 @@ function biblio_update_6024(){
 
   /*use the same fid and insert an entry in the biblio_field_type_data */
   $result[] = update_sql("INSERT INTO {biblio_field_type_data}
-	     (ftdid, title, hint) VALUES ($newfid, 'Refereed Designation', NULL)");
+       (ftdid, title, hint) VALUES ($newfid, 'Refereed Designation', NULL)");
 
   /* get a list of unique tids from the biblio_field_type table.  You want to
    insert a tid,fid using the new fid for every available tid */
@@ -1983,8 +1983,8 @@ function biblio_update_6024(){
   while ($db_result = db_fetch_array($tidlist)) {
     $newtid = $db_result['tid'] ;
     db_query('INSERT INTO {biblio_field_type}
-			 (tid, fid, ftdid, cust_tdid, common, autocomplete, required, weight, visible)
-			  VALUES (%d, %d, %d, %d, %d, %d, %d, %d, %d)',
+       (tid, fid, ftdid, cust_tdid, common, autocomplete, required, weight, visible)
+        VALUES (%d, %d, %d, %d, %d, %d, %d, %d, %d)',
     $newtid, $newfid, $newfid, $newfid, 1, 1, 0, 1, 1);
   }
 

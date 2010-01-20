@@ -990,10 +990,10 @@ function theme_biblio_contributors($variables) {
     // Build the table row.
     $row = array('');
     $row[] = array('data' => drupal_render($form[$key]['name']),
-              		 'class' => array('biblio-contributor'));
+                   'class' => array('biblio-contributor'));
     if (!$form['#hideRole']) {
       $row[] = array('data' => drupal_render($form[$key]['auth_type']),
-      							 'class' => array('biblio-contributor-type'));
+                     'class' => array('biblio-contributor-type'));
     }
     $row[] = drupal_render($form[$key]['rank']);
     $rows[] = array('data' => $row, 'class' => array('draggable'));

@@ -389,7 +389,7 @@ function _loadMD5() {
   if ($db_count != $count){ //refresh the cached data as some new authors may have been added or removed
     $count = $db_count;
     $md5 = array();
-    $result = db_query('SELECT md5,cid	FROM {biblio_contributor_data} ');
+    $result = db_query('SELECT md5,cid  FROM {biblio_contributor_data} ');
     foreach ($result as $row ) {
       $md5[$row->cid] = $row->md5;
     }

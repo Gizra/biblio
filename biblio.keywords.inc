@@ -49,7 +49,7 @@ function biblio_get_keyword_by_id($kid) {
   static $keywords = array();
 
   if (!isset($keywords[$kid])) {
-    $keywords[$kid] = db_query('SELECT * FROM {biblio_keyword_data} WHERE kid = :kid', array(':kid' => $kid))->fetchAssoc();
+    $keywords[$kid] = db_query('SELECT * FROM {biblio_keyword_data} WHERE kid = :kid', array(':kid' => $kid))->fetchObject();
   }
 
   return $keywords[$kid];
@@ -61,21 +61,21 @@ function biblio_get_keyword_by_id($kid) {
  * @return unknown_type
  */
 function biblio_load_keywords($vid) {
-	$keywords = array();
-	if (!isset($keywords[$vid])) {
-		$query = db_select('biblio_keyword', 'bk');
-		$query->join('biblio_keyword_data', 'bkd', 'bk.kid = bkd.kid');
-		$query->fields('bkd');
-		$query->condition('bk.vid', $vid)->orderBy('bkd.word', 'ASC');
+  $keywords = array();
+  if (!isset($keywords[$vid])) {
+    $query = db_select('biblio_keyword', 'bk');
+    $query->join('biblio_keyword_data', 'bkd', 'bk.kid = bkd.kid');
+    $query->fields('bkd');
+    $query->condition('bk.vid', $vid)->orderBy('bkd.word', 'ASC');
 
-		$result = $query->execute();
+    $result = $query->execute();
 
-		$keywords[$vid] = array();
-		foreach ($result as $keyword) {
-			$keywords[$vid][$keyword->kid] = $keyword->word;
-		}
-	}
-	return $keywords[$vid];
+    $keywords[$vid] = array();
+    foreach ($result as $keyword) {
+      $keywords[$vid][$keyword->kid] = $keyword->word;
+    }
+  }
+  return $keywords[$vid];
 }
 
 
@@ -103,7 +103,7 @@ function biblio_update_keywords($node) {
  *   An array of keyword ID's from this node
  */
 function biblio_insert_keywords($node, $update = FALSE) {
-	if (empty($node->biblio_keywords)) return;
+  if (empty($node->biblio_keywords)) return;
   $kw_vocab = variable_get('biblio_keyword_vocabulary', 0);
   $freetagging = variable_get('biblio_keyword_freetagging', 0);
   $taxo_terms = $typed_keywords = array();
@@ -160,10 +160,10 @@ function biblio_insert_keywords($node, $update = FALSE) {
     // Defend against duplicate, differently cased tags
     if (!isset($inserted[$kid])) {
       if ($update) {
-      	$and = db_and()->condition('nid', $node->nid)
-      	               ->condition('vid', $node->vid)
-      	               ->condition('kid', $kid);
-      	 db_delete('biblio_keyword')
+        $and = db_and()->condition('nid', $node->nid)
+                       ->condition('vid', $node->vid)
+                       ->condition('kid', $kid);
+         db_delete('biblio_keyword')
             ->condition($and)
             ->execute();
       }
@@ -202,10 +202,10 @@ function biblio_save_keyword(&$keyword) {
 
 function biblio_delete_orphan_keywords ($force = FALSE) {
   if (variable_get('biblio_auto_orphaned_keyword_delete', 0) || $force) {
-//  	$sub_select = db_select('biblio_keyword', 'bk');
-//  	$sub_select->addField('bk', 'kid');
-//  	$sub_select->distinct();
-//  	return db_delete('biblio_keyword_data')
+//    $sub_select = db_select('biblio_keyword', 'bk');
+//    $sub_select->addField('bk', 'kid');
+//    $sub_select->distinct();
+//    return db_delete('biblio_keyword_data')
 //            ->condition('kid', $sub_select, 'NOT IN')
 //            ->execute();
      db_query('DELETE FROM {biblio_keyword_data} WHERE kid NOT IN (SELECT DISTINCT(kid) FROM {biblio_keyword})');
@@ -253,11 +253,11 @@ function biblio_delete_revision_keywords($node) {
  *   The number of keywords deleted
  */
 function biblio_delete_multiple_keywords($keywords) {
-	$count = 0;
-	foreach ($keywords as $kid) {
-		$count += biblio_delete_keyword($kid);
-	}
-	return $count;
+  $count = 0;
+  foreach ($keywords as $kid) {
+    $count += biblio_delete_keyword($kid);
+  }
+  return $count;
 }
 /**
  * Delete a keyword from both the biblio_keyword and biblio_keyword_data tables
@@ -269,7 +269,7 @@ function biblio_delete_multiple_keywords($keywords) {
  *   The number of keywords deleted (should always be one)
  */
 function biblio_delete_keyword($keyword_id) {
-	db_delete('biblio_keyword')
+  db_delete('biblio_keyword')
       ->condition('kid', $keyword_id)
       ->execute();
 

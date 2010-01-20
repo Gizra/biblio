@@ -66,10 +66,10 @@ require_once(drupal_get_path('module', 'biblio') . '/biblio.contributors.inc');
  // Parse a file
  $parse = NEW PARSEENTRIES();
  $parse->expandMacro = TRUE;
- //	$array = array("RMP" =>"Rev., Mod. Phys.");
- //	$parse->loadStringMacro($array);
- //	$parse->removeDelimit = FALSE;
- //	$parse->fieldExtract = FALSE;
+ //  $array = array("RMP" =>"Rev., Mod. Phys.");
+ //  $parse->loadStringMacro($array);
+ //  $parse->removeDelimit = FALSE;
+ //  $parse->fieldExtract = FALSE;
  $parse->openBib("bib.bib");
  $parse->extractEntries();
  $parse->closeBib();
@@ -115,8 +115,8 @@ require_once(drupal_get_path('module', 'biblio') . '/biblio.contributors.inc');
 
  $parse = NEW PARSEENTRIES();
  $parse->expandMacro = TRUE;
- //	$parse->removeDelimit = FALSE;
- //	$parse->fieldExtract = FALSE;
+ //  $parse->removeDelimit = FALSE;
+ //  $parse->fieldExtract = FALSE;
  $array = array("RMP" =>"Rev., Mod. Phys.");
  $parse->loadStringMacro($array);
  $parse->loadBibtexString($bibtex_data);
@@ -534,12 +534,12 @@ class PARSEENTRIES
     }
     // EZ: Remove this to be able to use the same instance for parsing several files,
     // e.g., parsing a entry file with its associated abbreviation file
-    //		if(empty($this->preamble))
-    //			$this->preamble = FALSE;
-    //		if(empty($this->strings))
-    //			$this->strings = FALSE;
-    //		if(empty($this->entries))
-    //			$this->entries = FALSE;
+    //    if(empty($this->preamble))
+    //      $this->preamble = FALSE;
+    //    if(empty($this->strings))
+    //      $this->strings = FALSE;
+    //    if(empty($this->entries))
+    //      $this->entries = FALSE;
     return array($this->preamble, $this->strings, $this->entries, $this->undefinedStrings);
   }
 

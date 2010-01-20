@@ -56,7 +56,7 @@ class biblio_handler_field_contributor extends biblio_handler_field {
       }
       $result = db_query('SELECT * FROM {biblio_contributor} bc
                           INNER JOIN {biblio_contributor_data} bcd ON bc.cid = bcd.cid
-													WHERE '. $vidstr .
+                          WHERE '. $vidstr .
                          ' AND auth_category='. $this->auth_category.
                          ' ORDER BY bc.rank');
       while ($item = db_fetch_array($result)) {

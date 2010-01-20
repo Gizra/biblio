@@ -87,10 +87,10 @@ This takes a BibTeX author or editor field and splits it into the component writ
 PARSEMONTH
 #############
 Split a bibtex month field into day and month components including date ranges.
-	list($startMonth, $startDay, $endMonth, $endDay) = $parseMonth->init($monthField);
+  list($startMonth, $startDay, $endMonth, $endDay) = $parseMonth->init($monthField);
 
 ################################################
 PARSEPAGE
 #############
 Split a bibtex pages field into page start and page end components.
-	list($start, $end) = $parsePage->init($pagesField);
+  list($start, $end) = $parsePage->init($pagesField);

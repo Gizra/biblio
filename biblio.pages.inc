@@ -371,7 +371,7 @@ function biblio_build_query($arg_list) {
                 $terms[] = db_escape_string($result_nid);
                 array_push($args, $type, $result_nid);
               }
-	      // Save search keyword to show in the filter list.
+        // Save search keyword to show in the filter list.
               $term = array_shift($arg_list);
               array_push($args, $type, $term);
               $operator = NULL;

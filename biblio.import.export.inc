@@ -505,7 +505,7 @@ function biblio_marc_import($file, $terms = array(), $batch = FALSE, $session_id
   while ($record = $marcfile->next() ) {
     $node = new stdClass();
     $node->biblio_contributors = array();
-  	foreach($record->fields() as $fields) {
+    foreach($record->fields() as $fields) {
       foreach ($fields as $field){
         switch ($field->tagno) {
           case '008':
@@ -729,7 +729,7 @@ function biblio_save_imported_nodes(& $node_array) {
   return $node_ids;
 }
 function biblio_save_node($node, $batch = FALSE, $session_id = NULL, $save_node = TRUE) {
-	$options = variable_get('node_options_biblio', array ('status'));
+  $options = variable_get('node_options_biblio', array ('status'));
   if (module_exists('i18n') && variable_get('i18n_node_biblio', 0) && variable_get('language_content_type_biblio', 0) ){
     $node->language = module_invoke('i18n', 'default_language');
   }
@@ -1036,7 +1036,7 @@ function biblio_csv_export_2($result, $bfields) {
   drupal_set_header('Content-Disposition', 'attachment; filename=biblio_export.csv');
   return $csv;
 }
-//function _biblio_cck_join($biblio_fields = array()) {		// works not with php4
+//function _biblio_cck_join($biblio_fields = array()) {    // works not with php4
 function _biblio_cck_join(& $biblio_fields) {
   $cck_join = '';
   $biblio_fields['nid'] = 'Node-ID'; // identify records for update operations

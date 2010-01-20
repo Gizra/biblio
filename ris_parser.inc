@@ -109,7 +109,7 @@ function _ris_tagged_import($file, $terms = array(), $batch = FALSE, $session_id
         case 'T1' :
         case 'CT' :
         case 'BT' :
-        	$node->title = $value;
+          $node->title = $value;
           break;
         case 'UR' :
           $node->biblio_url .= $value;

@@ -118,12 +118,12 @@ The information is exported in either EndNote "Tagged" format similar to this...
 Or Endnote 7 XML format which is similar to this...
 
               <XML>
-              	<RECORDS>
-              	  <RECORD>
+                <RECORDS>
+                  <RECORD>
                     <REFERENCE_TYPE>10</REFERENCE_TYPE>
                     <YEAR>1959</YEAR>
-              	    <TITLE>The Works of John Smith</TITLE>
-              	    <AUTHORS>
+                    <TITLE>The Works of John Smith</TITLE>
+                    <AUTHORS>
                       <AUTHOR>John Smith </AUTHOR>
                     </AUTHORS>
                   </RECORD>

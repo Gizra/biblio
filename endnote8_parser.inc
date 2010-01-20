@@ -6,7 +6,7 @@ function en8_startElement($parser, $name, $attrs) {
     case 'record' :
       $node = new stdClass();
       $node->biblio_contributors = array();
-    	break;
+      break;
     case 'style' :
       $font_attr = explode(' ',$attrs['face']);
       foreach ($font_attr as $fatt) {
@@ -76,8 +76,8 @@ function en8_startElement($parser, $name, $attrs) {
       $urls = $name;
       break;
     case 'keyword':
-    	$node->biblio_keywords[$keyword_count] = '';
-    	$element = $name;
+      $node->biblio_keywords[$keyword_count] = '';
+      $element = $name;
      break;
     case 'title':
       $node->title = '';

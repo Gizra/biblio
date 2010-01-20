@@ -179,10 +179,10 @@ function biblio_admin_settings() {
   // Allow only users to modify PHP code which have PHP block visibility permissions
   if (user_access('use PHP for block visibility')) {
     $form['citekey']['biblio_citekey_phpcode'] = array(
-     	'#type' => 'textarea',
-   		'#title' => t('PHP code for citekey generation'),
-    	'#default_value' => variable_get('biblio_citekey_phpcode', ''),
-    	'#description' => t('Advanced usage only: PHP code that returns the citekey. Should not include &lt;?php ?&gt; delimiters.')
+       '#type' => 'textarea',
+       '#title' => t('PHP code for citekey generation'),
+      '#default_value' => variable_get('biblio_citekey_phpcode', ''),
+      '#description' => t('Advanced usage only: PHP code that returns the citekey. Should not include &lt;?php ?&gt; delimiters.')
     );
   }
 
@@ -718,11 +718,11 @@ function biblio_admin_types_edit_form($form, $form_state, $tid = 0) {
       $cur = _biblio_get_auth_types($fld['fid'], $tid ? $tid : $fld['fid']);
       $form['configured_flds'][$key]['auth_type'] = array(
         '#type' => 'select',
-  			'#options' => $contrib_options,
+        '#options' => $contrib_options,
         '#size' => min(count($contrib_options), 4),
         '#multiple' => TRUE,
-      	'#default_value' => _biblio_get_auth_types($fld['fid'], $disabled ? 0 : $tid),
-      	'#disabled' => $disabled
+        '#default_value' => _biblio_get_auth_types($fld['fid'], $disabled ? 0 : $tid),
+        '#disabled' => $disabled
       );
     }
   }
@@ -1291,16 +1291,16 @@ function biblio_admin_author_types_form($form, $form_state, $op = NULL, $id = NU
       $form['hint'] = array(
         '#type' => 'textfield',
         '#title' => t('Description'),
-    		'#size' => 60,
-    		'#weight' => 2,
-    		'#default_value' => ($op == 'new' ? '' : $type->hint),
-    		'#maxlength' => 255
+        '#size' => 60,
+        '#weight' => 2,
+        '#default_value' => ($op == 'new' ? '' : $type->hint),
+        '#maxlength' => 255
       );
       $form['type_button'] = array(
-    		'#type' => 'submit',
-    		'#value' => ($op == 'new')? t('Create New Type') : t('Save'),
-    		'#weight' => 3,
-      	'#submit' => array('biblio_admin_author_types_form_submit')
+        '#type' => 'submit',
+        '#value' => ($op == 'new')? t('Create New Type') : t('Save'),
+        '#weight' => 3,
+        '#submit' => array('biblio_admin_author_types_form_submit')
       );
       $form['#redirect'] = 'admin/settings/biblio/author/type';
       return $form;
@@ -1411,7 +1411,7 @@ function biblio_admin_author_edit_form($form, $form_state, $author_id) {
   $form['drupal_uid'] = array(
     '#type' => 'select',
     '#title' => t('Drupal User ID'),
-		'#options' => $options,
+    '#options' => $options,
     '#default_value' => $author->drupal_uid,
     '#weight' => 12,
     '#required' => FALSE,
@@ -1509,7 +1509,7 @@ function biblio_admin_author_edit_form($form, $form_state, $author_id) {
     $form['merge']['merge_authors'] = array(
       '#type' => 'checkboxes',
       '#title' => t('Similar authors'),
-	    '#options' => $merge_options,
+      '#options' => $merge_options,
       '#weight' => 12,
       '#required' => FALSE,
     );
@@ -1725,7 +1725,7 @@ function biblio_admin_keyword_edit_form($form, $form_state, $keyword_id) {
     $form['merge']['merge_keywords'] = array(
       '#type' => 'checkboxes',
       '#title' => t('Similar keywords'),
-	    '#options' => $options,
+      '#options' => $options,
       '#weight' => 12,
       '#required' => FALSE,
       '#multiple' => TRUE,
