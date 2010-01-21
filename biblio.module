@@ -1065,8 +1065,8 @@ function biblio_form(stdClass $node, $form_state) {
   $show_fields = !empty($tid);
 
   $form['#validate'][] = 'biblio_form_validate';
-  $form['#tree'] = TRUE;
-  $form['cache'] = FALSE;
+//  $form['#tree'] = TRUE;
+//  $form['cache'] = FALSE;
 
   /* publication type */
   $param['options'] = array(
@@ -1805,8 +1805,6 @@ function biblio_recent_feed() {
  */
 function biblio_filter_feed($query, $terms = NULL, $rss_info = NULL) {
   $base = variable_get('biblio_base', 'biblio');
-//FIXME DB
-  $result = db_query(db_rewrite_sql($query));
   $channel['title'] = $rss_info['title'];
   $channel['link'] = url($base . $rss_info['link'], array('absolute' => TRUE));
   $channel['description'] = $rss_info['description'];
@@ -1989,7 +1987,7 @@ function _biblio_filter_replace_callback($matches, $op = '') {
   }
   //default op: act as called by preg_replace_callback()
   $ref = array_search($matches[1],$store_matches);
-  if ($ref !== FALSE) {
+  if ($ref === FALSE) {
     $n++;
     array_push($store_matches, $matches[1]);    //$stores_matches[$matches[1]] = $n;
     $ref = $n;
@@ -1998,7 +1996,7 @@ function _biblio_filter_replace_callback($matches, $op = '') {
     $ref++;
   }
   $allowed_tags = array();
-  $title = filter_xss($matches[1], $allowed_tags);
+  $title = filter_xss($matches[1], biblio_get_allowed_tags());
   //html attribute cannot contain quotes
   $title = str_replace('"', "&quot;", $title);
   //remove newlines. Browsers don't support them anyway and they'll confuse line break converter in filter.module

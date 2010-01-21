@@ -490,9 +490,7 @@ function biblio_show_results($result, $attrib = array("sort" => 'year', 'order' 
 //FIXME  use node_load_multiple()???
   foreach ($result as $node) {
     $count++;
-    foreach($node as $key => $value) $node_input[$key] = $value; // save any incoming values such as type name or keyword
     $node = node_load($node->nid);
-    foreach($node_input as $key => $value) $node->$key = $value; // now add the incoming values back to the new node object
 
     if (variable_get('biblio_hide_bibtex_braces', 0)) $node->title = biblio_remove_brace($node->title);
     if (variable_get('biblio_fix_isi_links', 0)) biblio_fix_isi_links($node);

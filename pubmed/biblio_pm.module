@@ -38,6 +38,7 @@ function biblio_pm_form_biblio_node_form_alter(&$form, &$form_state) {
 }
 
 function biblio_pm_form_biblio_node_form_validate($form, &$form_state) {
+  if (!isset($form_state['values']['PMID'])) return;
   $node_data = array();
   if (strlen($pmid = $form_state['input']['biblio_pubmed_lookup']['PMID'])) {
     module_load_include('php','biblio','pubmed/EntrezClient');
