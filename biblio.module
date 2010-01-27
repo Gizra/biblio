@@ -954,7 +954,7 @@ function biblio_remove_brace_callback($match){
 function biblio_nodeapi(& $node, $op, $a3, $a4) {
   if ($node->type == 'biblio') {
     switch ($op) {
-      case 'delete revision' :
+      case 'delete revision' ://TODO:  move to hook_node_delete
 //FIXME DB
         db_query('DELETE FROM {biblio} WHERE vid = %d', $node->vid);
         db_query('DELETE FROM {biblio_contributor} WHERE nid = %d AND vid = %d', array($node->nid, $node->vid));
@@ -971,13 +971,13 @@ function biblio_nodeapi(& $node, $op, $a3, $a4) {
          }
          break;
          */
-      case 'insert':
+      case 'insert': //TODO:  move to hook_node_insert
         if (variable_get('biblio_index', 0)) {
           _node_index_node($node);
           search_update_totals();
         }
         break;
-      case 'update':
+      case 'update': //TODO:  move to hook_node_update
         if (variable_get('biblio_index', 0)) {
           // _node_index_node performs a node_load without resetting the node_load cache,
           // so it would index the old version. We reset the cache here.
@@ -987,8 +987,8 @@ function biblio_nodeapi(& $node, $op, $a3, $a4) {
           search_update_totals();
         }
         break;
-      case 'view':
-        if ($node->type == 'biblio' && variable_get('biblio_hide_bibtex_braces', 0)) {
+      case 'view': //TODO:  move to hook_node_view
+        if ($node->type == 'biblio' && variable_get('biblio_hide_bibtex_braces', 0) && !empty($a4)) {
           drupal_set_title(filter_xss($node->title, biblio_get_allowed_tags()));
         }
         break;
