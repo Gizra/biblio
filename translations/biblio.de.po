@@ -21,10 +21,11 @@
 #  biblio.install,v 1.75 2009/06/01 01:25:11 rjerome
 #
 msgid ""
-msgstr "Project-Id-Version: Biblio 6.x\n"
+msgstr ""
+"Project-Id-Version: Biblio 6.x\n"
 "POT-Creation-Date: 2009-06-03 14:29-0400\n"
-"PO-Revision-Date: 2009-10-14 22:22+0100\n"
-"Last-Translator: Thomas Zahreddin <thomas@voicehero.com>\n"
+"PO-Revision-Date: 2010-01-28 00:16+0100\n"
+"Last-Translator: Niels Hackius <niels.hackius@tu-harburg.de>\n"
 "Language-Team: Language =de <tz@it-arts.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -86,7 +87,7 @@ msgstr "Einstellungen für BibTex"
 
 #: biblio.admin.inc:95
 msgid "Retain bibtex's {Protected} capitalization in the title string, but hide the braces on display"
-msgstr "Bibtex GROẞSCHREIBUNG für Titel beibehalten."
+msgstr "Bibtexs {geschützte} Großschreibung für die Titel beibehalten. Die Klammern werden bei der Darstellung versteckt."
 
 #: biblio.admin.inc:105
 msgid "Block settings"
@@ -94,19 +95,19 @@ msgstr "Blockeinstellungen"
 
 #: biblio.admin.inc:110
 msgid "Title for the \"New Publications\" block"
-msgstr "Titel für \"Neuzugänge\" Block"
+msgstr "Titel für \"Neue Publikationen\" Block"
 
 #: biblio.admin.inc:118
 msgid "Number of results in the \"New Publications\" block"
-msgstr " Zahl der Einträge im Block \"Neuzugänge\""
+msgstr " Zahl der Einträge im Block \"Neue Publikationen\""
 
 #: biblio.admin.inc:122
 msgid "This sets the number of results that will be displayed in the \"New Publications\" block."
-msgstr "Anzahl der Einträge für den Block \"Neuzugänge\"."
+msgstr "Anzahl der Einträge für den Block \"Neue Publikationen\"."
 
 #: biblio.admin.inc:126
 msgid "Order by"
-msgstr "sortieren nach"
+msgstr "Sortieren nach"
 
 #: biblio.admin.inc:129
 msgid "Date Created"
@@ -114,11 +115,11 @@ msgstr "Erstellungsdatum"
 
 #: biblio.admin.inc:130
 msgid "Year Published"
-msgstr "Veröffentlicht im Jahr"
+msgstr "Jahr der Veröffentlichung"
 
 #: biblio.admin.inc:140
 msgid "Node ID"
-msgstr "Beitrag ID"
+msgstr "Node ID"
 
 #: biblio.admin.inc:148
 msgid "Citekey"
@@ -355,7 +356,7 @@ msgstr "OpenURL Bild"
 
 #: biblio.admin.inc:365
 msgid "Enter a path to your image here, this image will be used as button which when clicked will find the entry via the OpenURL link"
-msgstr "Enter a path to your image here, this image will be used as button which when clicked will find the entry via the OpenURL link"
+msgstr "Geben Sie hier einen Pfad zu einem Bild an. Dieses wird als Schaltfläche für den OpenURL link verwendet."
 
 #: biblio.admin.inc:371;376;384
 msgid "Search"
@@ -379,7 +380,7 @@ msgstr "Biblio Suche"
 
 #: biblio.admin.inc:400
 msgid "This allows you to customize the text on the search button, it defaults to \"Biblio search\"."
-msgstr "This allows you to customize the text on the search button, it defaults to \"Biblio search\"."
+msgstr "Erlaubt den text der Schaltfläche für suchen anzupassen. Der Standard ist \"Biblio Suche\"."
 
 #: biblio.admin.inc:405
 msgid "Re-/Index a biblio node when creating or updating."
@@ -693,31 +694,31 @@ msgstr "Benutzer können diese Einstellungen auf ihren \"Mein Konto\"-Seiten üb
 
 #: biblio.admin.inc:941
 msgid "If this is selected, a form similar to this section will be available to the user when they edit their own account information.  This will allow them to override the global preferences set here."
-msgstr "If this is selected, a form similar to this section will be available to the user when they edit their own account information.  This will allow them to override the global preferences set here."
+msgstr "Falls diese Option gewählt wird erscheint eine Eingabemaske ähnlich dieser in den Benutzereinstellungen der einzelnen Benutzer. Diese können dort ihre eigenen Einstellungen wählen und so diese globalen Einstellungen überschreiben."
 
 #: biblio.admin.inc:947
 msgid "Show my publications on my profile page"
-msgstr "Show my publications on my profile page"
+msgstr "Meine Publikationen auf meiner Profil-Seite zeigen"
 
 #: biblio.admin.inc:947
 msgid "Show publications on users profile pages"
-msgstr "Show publications on users profile pages"
+msgstr "Zeige die Publikationen der Nutzer auf ihren Profil-Seiten"
 
 #: biblio.admin.inc:950
 msgid "Selecting this will create a listing of your publications on your profile page"
-msgstr "Selecting this will create a listing of your publications on your profile page"
+msgstr "Wählen Sie dies um eine Liste von Ihren Publikationen auf ihrer Profil-Seite zu erstellen."
 
 #: biblio.admin.inc:950
 msgid "This sets the site wide default, users may change this in their profile"
-msgstr "This sets the site wide default, users may change this in their profile"
+msgstr "Dies setzt die globale Einstellung. Die Nutzer können dies in ihrem Profil ändern."
 
 #: biblio.admin.inc:960
 msgid "Show \"My publications\" item in the navigation menu"
-msgstr "Show \"My publications\" item in the navigation menu"
+msgstr "\"Meine Publikationen\" im menu \"Navigation\" zeigen."
 
 #: biblio.admin.inc:975;1203
 msgid "(None)"
-msgstr "(None)"
+msgstr "(Keine)"
 
 #: biblio.admin.inc:982
 msgid "Link My Profile with this Author from the Biblio database"
@@ -725,11 +726,11 @@ msgstr "Link My Profile with this Author from the Biblio database"
 
 #: biblio.admin.inc:986
 msgid "This will link your profile to the selected author from the biblio database, then all publications containing this author to be displayed on your \"Publications\" tab."
-msgstr "This will link your profile to the selected author from the biblio database, then all publications containing this author to be displayed on your \"Publications\" tab."
+msgstr "Dies verknüpft den gewählten Autor aus der biblio-Datenbank mit Ihrem Profil. Alle Publikationen, welche diesen Autor enthalten erscheinen dann in ihrem \"Publikationen\" Reiter."
 
 #: biblio.admin.inc:989
 msgid "System default"
-msgstr "System default"
+msgstr "System Standard"
 
 #: biblio.admin.inc:1006
 msgid "CrossRef Login Information"
@@ -741,15 +742,15 @@ msgstr "CrossRef OpenURL Account ID"
 
 #: biblio.admin.inc:1015
 msgid "Enter your CrossRef OpenURL account ID which you can obtain here "
-msgstr "Enter your CrossRef OpenURL account ID which you can obtain here  "
+msgstr "Geben Sie hier ihre CrossRef OpenURL account ID ein, welche sie hier erhalten"
 
 #: biblio.admin.inc:1132
 msgid "Contributor Type"
-msgstr "Contributor Type"
+msgstr "Art der Mitwirkung"
 
 #: biblio.admin.inc:1170
 msgid "Are you sure you want to delete the author type: %title ?"
-msgstr "Are you sure you want to delete the author type: %title ?"
+msgstr "Möchten Sie den Autoren-Typ %title wirklich entfernen?"
 
 #: biblio.admin.inc:1209
 msgid "Drupal User ID"
@@ -757,7 +758,7 @@ msgstr "Drupal User ID"
 
 #: biblio.admin.inc:1217
 msgid "Complete Name"
-msgstr "Complete Name"
+msgstr "Vollständiger Name"
 
 #: biblio.admin.inc:1226
 msgid "Prefix"
@@ -765,7 +766,7 @@ msgstr "Prefix"
 
 #: biblio.admin.inc:1235
 msgid "First Name"
-msgstr "First Name"
+msgstr "Vorname"
 
 #: biblio.admin.inc:1244
 msgid "Initials"
@@ -773,7 +774,7 @@ msgstr "Initials"
 
 #: biblio.admin.inc:1253
 msgid "Last Name"
-msgstr "Last Name"
+msgstr "Nachname"
 
 #: biblio.admin.inc:1262
 msgid "Suffix"
@@ -782,27 +783,27 @@ msgstr "Suffix"
 #: biblio.admin.inc:1271
 #: biblio_theme.inc:1031
 msgid "Affiliation"
-msgstr "Affiliation"
+msgstr "Zugehörigkeit"
 
 #: biblio.admin.inc:1298
 msgid "Author Merge"
-msgstr "Author Merge"
+msgstr "Autoren Zusammenführung"
 
 #: biblio.admin.inc:1299
 msgid "Select other author names which will be merged.  Merging removes all the selected authors, then replaces any references to these authors with the author being edited above.  You should only do this if you are sure the other authors represent the same author as the one being edited. <B>THIS CANNOT BE UNDONE!</B>"
-msgstr "Select other author names which will be merged.  Merging removes all the selected authors, then replaces any references to these authors with the author being edited above.  You should only do this if you are sure the other authors represent the same author as the one being edited. <B>THIS CANNOT BE UNDONE!</B>"
+msgstr "Wählen Sie Autoren, welche zusammengeführt werden sollen. Zusammenführen entfernt alle ausgewählten Autoren. Alle Referenzen auf diese ausgewählten Autoren werden durch Referenzen auf den Autor ersetzt der oben bearbeitet wird. Sie sollten dies nur auswählen, wenn Sie sicher isnd, dass die anderen Autoren jenem gleichen den sie aktuell bearbeiten. <b>Dies kann nicht rückgängig gemacht werden.</b>"
 
 #: biblio.admin.inc:1307
 msgid "Similar authors"
-msgstr "Similar authors"
+msgstr "Ähnliche Autoren"
 
 #: biblio.admin.inc:1314;1376
 msgid "Merge"
-msgstr "Merge"
+msgstr "Zusammenführen"
 
 #: biblio.admin.inc:1320
 msgid "Author Link"
-msgstr "Author Link"
+msgstr "Autor Link"
 
 #: biblio.admin.inc:1321
 msgid "Select other author names which will be linked.  Linking relates all the selected authors to the author being edited above, and and keeps each instance in the database.  You should only do this if you are sure the other authors represent the same author as the one being edited. "
@@ -1335,17 +1336,15 @@ msgstr "Tagged"
 
 #: biblio_theme.inc:865
 msgid "Click to get the EndNote Tagged output "
-msgstr "Hier klicken, um für EndNote formatierten Text zu erhalten\n"
-"  "
+msgstr "Hier klicken, um für EndNote formatierten Text zu erhalten  "
 
 #: biblio_theme.inc:881
 msgid "Click to get the BibTEX output "
-msgstr "Hier klicken, um die für BibTEX formatierten Text zu erhalten\n"
-"  "
+msgstr "Hier klicken, um die für BibTEX formatierten Text zu erhalten"
 
 #: biblio_theme.inc:883
 msgid "Click to download the BibTEX formatted file"
-msgstr "Hier klicken, um die für  BibTEX formatierte Datei zu erhalten\n"
+msgstr "Hier klicken, um die für  BibTEX formatierte Datei zu erhalten"
 
 #: biblio_theme.inc:897;899
 msgid "XML"
@@ -1357,7 +1356,7 @@ msgstr "Hier klicken für XML formatierten Text zu erhalten  "
 
 #: biblio_theme.inc:899
 msgid "Click to download the XML formatted file"
-msgstr "Hier klicken, um die XML formatierte Datei zu erhalten\n"
+msgstr "Hier klicken, um die XML formatierte Datei zu erhalten"
 
 #: biblio_theme.inc:910;911
 #: biblio.module:1291
@@ -1436,7 +1435,8 @@ msgid ""
 "                  %D  1959\n"
 "                  %T  The Works of John Smith\n"
 "                  ..."
-msgstr "\n"
+msgstr ""
+"\n"
 "                  %0  Book\n"
 "                  %A  John Smith\n"
 "                  %D  1959\n"
@@ -2095,11 +2095,11 @@ msgstr "Session"
 
 #: translations/biblio.db.trans.inc:115
 msgid "History"
-msgstr "History"
+msgstr "Historie"
 
 #: translations/biblio.db.trans.inc:116
 msgid "Translator"
-msgstr "Translator"
+msgstr "Übersetzter"
 
 #: translations/biblio.db.trans.inc:117
 msgid "Abbreviation"
@@ -2111,11 +2111,11 @@ msgstr "Series Volume"
 
 #: translations/biblio.db.trans.inc:119
 msgid "Number of Pages"
-msgstr "Number of Pages"
+msgstr "Seitenanzahl"
 
 #: translations/biblio.db.trans.inc:120
 msgid "Book Title"
-msgstr "Book Title"
+msgstr "Buchtitel"
 
 #: translations/biblio.db.trans.inc:121
 msgid "Editor"
@@ -2123,7 +2123,7 @@ msgstr "Editor"
 
 #: translations/biblio.db.trans.inc:122
 msgid "Chapter"
-msgstr "Chapter"
+msgstr "Kapitel"
 
 #: translations/biblio.db.trans.inc:123
 msgid "Reporter"
@@ -2343,7 +2343,7 @@ msgstr "Folio Number"
 
 #: translations/biblio.db.trans.inc:177
 msgid "Scale"
-msgstr "Scale"
+msgstr "Maßstab"
 
 #: translations/biblio.db.trans.inc:178
 msgid "Newspaper"
@@ -2455,11 +2455,11 @@ msgstr "Advisor"
 
 #: translations/biblio.db.trans.inc:206
 msgid "University"
-msgstr "University"
+msgstr "Universität"
 
 #: translations/biblio.db.trans.inc:207
 msgid "Degree"
-msgstr "Degree"
+msgstr "Akademischer Grad"
 
 #: translations/biblio.db.trans.inc:208
 msgid "Thesis Type"
@@ -2467,11 +2467,11 @@ msgstr "Thesis Type"
 
 #: translations/biblio.db.trans.inc:209
 msgid "Access Year"
-msgstr "Access Year"
+msgstr "Zugriffsjahr"
 
 #: translations/biblio.db.trans.inc:210
 msgid "Last Update Date"
-msgstr "Last Update Date"
+msgstr "Datum der letzten Aktualisierung"
 
 #: translations/biblio.db.trans.inc:211
 msgid "Type of Medium"
@@ -2479,17 +2479,17 @@ msgstr "Type of Medium"
 
 #: translations/biblio.db.trans.inc:213
 msgid "Secondary Author"
-msgstr "Secondary Author"
+msgstr "Zweitautor"
 
 #: translations/biblio.db.trans.inc:214
 msgid "Tertiary Author"
-msgstr "Tertiary Author"
+msgstr "Drittautor"
 
 #: translations/biblio.db.trans.inc:215
 msgid "Subsidiary Author"
-msgstr "Subsidiary Author"
+msgstr "Nebenautor"
 
 #: translations/biblio.db.trans.inc:216
 msgid "Corporate Author"
-msgstr "Corporate Author"
+msgstr "Koautor"
 
