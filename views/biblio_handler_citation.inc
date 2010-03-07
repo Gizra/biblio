@@ -31,7 +31,7 @@ class biblio_handler_citation extends views_handler_field {
     module_load_include('inc','biblio','biblio.contributors');
     module_load_include('inc','biblio','biblio.keywords');
 
-    module_load_include('inc','biblio','biblio_style_'.$this->options['style_name']);
+    module_load_include('inc', 'biblio', 'styles/biblio_style_'.$this->options['style_name']);
     $author_options_func = 'biblio_style_'.$this->options['style_name'].'_author_options';
     $this->author_options = $author_options_func();
 
@@ -62,8 +62,9 @@ class biblio_handler_citation extends views_handler_field {
 
   function render($values) {
     $vid = $values->{$this->field_alias};
-//    print_r($this->items[$vid]);
     if (!isset($this->items[$vid])) return NULL;
+
+    $base = variable_get('biblio_base', 'biblio');
     return theme('biblio_entry', $this->items[$vid], $base, $this->options['style_name'], $inline);
   }
 
