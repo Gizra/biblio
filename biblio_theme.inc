@@ -834,10 +834,11 @@ function theme_biblio_download_links($variables) {
     $file_count = 0;
     foreach ($node->files as $file) {
       if ($file->list) {
-        $file_count++;
         $href = file_create_url($file->filepath);
         $text = $file->description ? $file->description : $file->filename;
+        if ($file_count) $files .= '; ';
         $files .= l($text, $href) .'&nbsp;('. format_size($file->filesize).')';
+        $file_count++;
       }
     }
     $files .= '</span>';
