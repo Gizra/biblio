@@ -2,6 +2,7 @@
 // $Id$
 class BiblioImportExportWebTestCase extends BiblioWebTestCase {
   function setUp() {
+    parent::setUp('biblio');
     module_load_include('inc', 'biblio', 'biblio.import.export');
     module_load_include('inc', 'biblio', 'biblio.type.mapper');
 

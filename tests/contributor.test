@@ -8,7 +8,8 @@
 
 class BiblioContributorWebTestCase extends BiblioWebTestCase {
   function setUp() {
-    require_once(drupal_get_path('module', 'biblio') .'/biblio.contributors.inc');
+  	parent::setUp('biblio');
+    require_once(drupal_get_path('module', 'biblio') .'/includes/biblio.contributors.inc');
   }
 
 

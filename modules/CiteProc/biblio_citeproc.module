@@ -1,0 +1,48 @@
+<?php
+// $Id$
+
+function biblio_citeproc_theme() {
+  return array(
+    'biblio_citeproc_style' => array(
+        'function' => 'theme_biblio_citeproc_style',
+        'file' => 'biblio_citeproc.module',
+        'arguments' => array(
+          'node',
+          'base' => 'biblio',
+          'style_name' => 'classic',
+          'inline' => FALSE),
+      ),
+    );
+}
+
+function biblio_citeproc_theme_registry_alter(&$theme_registry) {
+  $theme_registry['biblio_style'] = $theme_registry['biblio_citeproc_style'];
+}
+
+function theme_biblio_citeproc_style($node, $base = 'biblio', $style_name = 'classic', $inline = false) {
+  static $citeproc;
+  global $language;
+  $cached = NULL;
+
+  module_load_include('inc', 'biblio_citeproc', 'CSL');
+
+  if(!$citeproc) {
+    $csl_file_name = '/style/mla.csl';
+    $csl_file_contents = file_get_contents(drupal_get_path('module', 'biblio_citeproc') . "/style/mla.csl");
+    $cslid = $csl_file_name . '-' . $language->language;
+//    $cached = cache_get($cslid, 'cache_biblio_csl_object');
+    if(!$cached) {
+      $citeproc = new citeproc($csl_file_contents, $language->language);
+//      cache_set($cslid, $citeproc, 'cache_biblio_csl_object');
+    }
+    else {
+      $citeproc = $cached->data;
+    }
+
+  }
+  $styled_node = $citeproc->render($node);
+
+  if (empty ($node->biblio_coins))
+    biblio_coins_generate($node);
+  return ($styled_node . filter_xss($node->biblio_coins, array('span')));
+}

@@ -10,34 +10,34 @@ class BiblioWebTestCase extends DrupalWebTestCase {
   protected $nids = array();  //keep a list of all node id's created
   protected $admin_user;
 
-  function tearDown() {
-    if(!empty($this->kids)){
-      db_delete('biblio_keyword')
-      ->condition('kid', $this->kids, 'IN')
-      ->execute();
-
-      db_delete('biblio_keyword_data')
-      ->condition('kid', $this->kids, 'IN')
-      ->execute();
-
-    }
-
-    foreach($this->nids as $nid) {
-      node_delete($nid);
-    }
-
-    if(!empty($this->cids)) {
-      db_delete('biblio_contributor')
-      ->condition('cid', $this->cids, 'IN')
-      ->execute();
-
-      db_delete('biblio_contributor_data')
-      ->condition('cid', $this->cids, 'IN')
-      ->execute();
-
-    }
-    $this->cids = array();
-  }
+//  function tearDown() {
+//    if(!empty($this->kids)){
+//      db_delete('biblio_keyword')
+//      ->condition('kid', $this->kids, 'IN')
+//      ->execute();
+//
+//      db_delete('biblio_keyword_data')
+//      ->condition('kid', $this->kids, 'IN')
+//      ->execute();
+//
+//    }
+//
+//    foreach($this->nids as $nid) {
+//      node_delete($nid);
+//    }
+//
+//    if(!empty($this->cids)) {
+//      db_delete('biblio_contributor')
+//      ->condition('cid', $this->cids, 'IN')
+//      ->execute();
+//
+//      db_delete('biblio_contributor_data')
+//      ->condition('cid', $this->cids, 'IN')
+//      ->execute();
+//
+//    }
+//    $this->cids = array();
+//  }
 
 
   function createNode($type = 100) {
@@ -55,7 +55,7 @@ class BiblioWebTestCase extends DrupalWebTestCase {
       $biblio_fields["$name"] = $name;
     }
     $settings = array(
-      'title' => array('zxx' => array(array('value' => 'Biblio Title'))),
+      'title' => 'Biblio Title',
       'type' => 'biblio', // This replaces the default type
       'biblio_type' => $type, // This appends a new field.
       'biblio_year' => 2009,

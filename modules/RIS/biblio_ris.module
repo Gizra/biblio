@@ -1,0 +1,422 @@
+<?php
+// $Id$
+/*
+ * @file biblio_ris.module
+ *
+ */
+function biblio_ris_menu() {
+  global $user;
+  $items = array();
+  $base = variable_get('biblio_base', 'biblio');
+
+  $items["$base/export/ris"] = array(
+    'title'             => '',
+    'page callback'     => 'biblio_ris_biblio_export',
+    'access callback'   => 'user_access',
+    'access arguments'  => array('show export links'),
+    'type'              => MENU_CALLBACK
+  );
+
+  return $items;
+}
+/*
+ *   add the ris option to the option list of the biblio_import_form
+ *   the key is the module name use by module_invoke to call hook_biblio_import
+ *   module_invoke('biblio_ris', 'biblio_import',...)
+ */
+function biblio_ris_biblio_import_options() {
+  return array('biblio_ris' => t('RIS'));
+}
+
+/*
+function biblio_ris_form_biblio_node_form_alter(&$form, &$form_state) {
+  global $user;
+  if(phpversion() > 5 && !isset($form_state['storage']) && !isset($form['#node']->nid)) {
+    if(!isset($form_state['storage'])) {
+      $form['biblio_cut_paste'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Paste'),
+        '#weight' => -20,
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE,
+      );
+      $form['biblio_cut_paste']['paste_data'] = array(
+        '#type' => 'textarea',
+        '#title' => t('ris'),
+        '#required' => FALSE,
+        '#default_value' => '',
+        '#description' => t('Paste a ris entry here'),
+        '#size' => 60,
+        '#maxlength' => 2048,
+        '#weight' => -4
+      );
+      $form['biblio_cut_paste']['paste_submit'] = array(
+        '#type' => 'submit',
+        '#value' => t('Populate using ris')
+      );
+    }
+    $form['#validate'] = array_merge(array('biblio_ris_form_biblio_node_form_validate'), $form['#validate']); // put my validator first
+  }
+  $biblio_ris_id = (isset($form_state['values']['biblio_ris_id'])) ? $form_state['values']['biblio_ris_id'] : '';
+  $biblio_ris_md5 = (isset($form_state['values']['biblio_ris_md5'])) ? $form_state['values']['biblio_ris_md5'] : '';
+  $form['biblio_ris_id'] = array('#type' => 'value', '#value'  => $biblio_ris_id);
+  $form['biblio_ris_md5'] = array('#type' => 'value', '#value' => $biblio_ris_md5);
+}
+
+function biblio_ris_form_biblio_node_form_validate($form, &$form_state) {
+  global $user;
+  $node_data = array();
+  if (strlen($form_state['values']['paste_data'])) {
+    $node_data = biblio_ris_biblio_import($form_state['values']['paste_data'], array(), FALSE, NULL, FALSE, TRUE);
+  }
+  if(!empty($node_data)) {
+    $form_state['values'] = array_merge($form_state['values'], $node_data[0]);
+    $form_state['storage']['biblio_type']  = $node_data[0]['biblio_type'];
+    return;
+  }
+  return;
+}
+*/
+
+function biblio_ris_biblio_export_link_settings() {
+  return array('ris' => t('RIS'));
+}
+
+function biblio_ris_link($type, $node = NULL, $teaser = FALSE) {
+  if ($type != 'node' && $node->type != 'biblio') return;
+
+  return biblio_ris_biblio_export_link($node->nid);
+}
+
+/**
+ * Creates a link to export a node (or view) in ris format
+ *
+ * @param $base this is the base url (defaults to /biblio)
+ * @param $nid  the node id, if NULL then the current view is exported
+ * @return  a link (<a href=...>ris</a>)
+ */
+function biblio_ris_biblio_export_link($nid = NULL) {
+  $show_link = variable_get('biblio_export_links', array('ris' => TRUE));
+  if (!$show_link['ris'] ||!biblio_access('export') ) return array();
+  $base = variable_get('biblio_base', 'biblio');
+
+  if (module_exists('popups') && !empty($nid)) {
+    $link = array(
+        'attributes' => array(
+          'class' => 'popups',
+          'title' => t("Click to get the RIS output")));
+  }
+  else {
+    $link = array(
+        'attributes' => array(
+          'title' => t("Click to download the RIS formatted file")));
+  }
+  $link['href']  = "$base/export/ris/$nid";
+  $link['title'] = t('RIS');
+
+  return array('biblio_ris' => $link);
+}
+
+function biblio_ris_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
+  if ($node->type != 'biblio') return;
+  $callback = '_biblio_ris_'. str_replace(' ', '_', $op);
+  if (function_exists($callback)) {
+    return $callback($node, $a3, $a4);
+  }
+  return;
+}
+
+function biblio_ris_node_delete($node) {
+  if ($node->type != 'biblio') return;
+  db_delete('biblio_ris')
+    ->condition('nid', $node->nid)
+    ->execute();
+}
+
+function _biblio_ris_insert($node) {
+  if (!isset($node->biblio_ris_md5)) return;
+  drupal_write_record('biblio_ris', $node);
+}
+
+function biblio_ris_biblio_import($file, $terms = array(), $batch = FALSE, $session_id = NULL, $save = TRUE, $string = FALSE) {
+  $nids = array();
+  $dups = array();
+  list($nids, $dups) = _biblio_ris_import($file, $terms, $batch, $session_id);
+
+  return array($nids, $dups);
+}
+
+function biblio_ris_biblio_export($nid = null) {
+  if ($nid === null && isset ($_SESSION['last_biblio_query']) && !empty ($_SESSION['last_biblio_query'])) {
+    $query = $_SESSION['last_biblio_query'];
+    $params = $_SESSION['last_biblio_query_terms'];
+  }
+  elseif (!empty ($nid)) {
+    $query = db_rewrite_sql("SELECT DISTINCT(n.nid) FROM {node} n  WHERE n.nid=%d ");
+    $params[] = $nid;
+  }
+  else {
+    return;
+  }
+  $result = db_query($query, $params);
+  $count = 0;
+
+  if (module_exists('popups') && $nid) {
+    $popup = TRUE;
+  }
+  else {
+    drupal_add_http_header('Content-type', 'application/x-endnote-refer');
+    drupal_add_http_header('Content-Disposition', 'attachment; filename="Drupal-Biblio.ris"');
+  }
+
+  while ($node = db_fetch_object($result)) {
+
+    $node = node_load($node->nid, FALSE, TRUE);
+    if (variable_get('biblio_hide_bibtex_braces', 0) ) {
+      $node->title = biblio_remove_brace($node->title);
+    }
+
+    if (!$popup) {
+      print _biblio_ris_export($node);
+    }
+    else{
+      $popup_data .=  _biblio_ris_export($node);
+    }
+  }
+  if ($popup && !empty($popup_data)) return '<pre>'. $popup_data .'</pre>';
+
+}
+
+/**
+ * Export data in ris format.
+ *
+ * @param $result
+ *   a database result set pointer
+ * @return
+ *   none
+ */
+
+function _biblio_ris_import($file, $terms = array(), $batch = FALSE, $session_id = NULL) {
+  if (!($fp = fopen($file->uri, "r"))) {
+    drupal_set_message(t("Could not open RIS input file for reading."), 'error');
+    return;
+  }
+
+  $tag = '';
+  $nids = array();
+  $dups = array();
+  $node = new stdClass();
+
+  while (!feof($fp)) {
+    $line = fgets($fp);
+    $line_len = strlen($line);
+    if ($line_len > 3) {
+      $start = strpos($line, '  -'); // There could be some unprintables at the beginning of the line so fine the location of the %
+      if ($start !== FALSE) {
+        $tag = drupal_substr($line, $start -2, 2);
+        $value = trim(drupal_substr($line, $start +3));
+      }
+      else {
+        $value = $line;
+      }
+    }
+    if ($line_len > 3 && !empty($tag)) { // if this is not a blank line
+      switch ($tag) {
+        case 'ER' :
+          if (!empty($node)) {
+            $node->biblio_ris_md5 = md5(serialize($node));
+            if (empty ($node->title )) $node->title = t("Untitled");
+            if (!empty($terms)) {
+              if (!isset($node->taxonomy)) $node->taxonomy = array();
+              $node->taxonomy = array_merge($terms, $node->taxonomy);
+            }
+            if (! ($dup = biblio_ris_check_md5($node->biblio_ris_md5))) {
+              biblio_save_node($node, $batch, $session_id);
+              if (!empty($node->nid)) $nids[] = $node->nid;
+            }
+            else {
+              $dups[] = $dup;
+            }
+          }
+          $node = new stdClass();
+          $node->biblio_contributors = array();
+          break;
+        case 'TY' :
+          $node->biblio_type = _biblio_ris_type_map($value);
+          break;
+        case 'A1' :
+        case 'AU' :
+          $node->biblio_contributors[1][] = array(
+                'name' => $value,
+                'auth_type' => _biblio_get_auth_type(1, $node->biblio_type));
+          break;
+        case 'Y1' :
+        case 'PY' :
+          $node->biblio_year = ($end = strpos($value, "/")) ? substr($value, 0, $end) : $value;
+          $node->biblio_date = $value;
+          break;
+        case 'A2' :
+        case 'ED' :
+          $node->biblio_contributors[2][] = array(
+                'name' => $value,
+                'auth_type' => _biblio_get_auth_type(2, $node->biblio_type));
+          break;
+        case 'KW' :
+          $node->biblio_keywords[] = $value;
+          break;
+        case 'SP' :
+        case 'EP' :
+          $node->biblio_pages .= ($tag == "SP") ? $value : " - " . $value;
+          break;
+        case 'A3' :
+          $node->biblio_contributors[5][] = array(
+                'name' => $value,
+                'auth_type' => _biblio_get_auth_type(5, $node->biblio_type));
+          break;
+        case 'BT' :
+          if ($node->biblio_type == 100) {
+            $node->title = $value;
+          }
+          else {
+            $node->biblio_secondary_title = $value;
+          }
+          break;
+        default :
+          $field = _biblio_ris_field_map($tag);
+          if ($field) $node->$field .= $value;
+
+          break;
+      } //end switch
+    }
+  } // end while
+  fclose($fp);
+
+  return array($nids, $dups);
+}
+
+function _biblio_ris_export($node) {
+  $reverse = TRUE;
+  $ris = "";
+  $ris .= "TY  - ". _biblio_ris_type_map($node->biblio_type, $reverse) ."\r\n";
+  if (!empty($node->title))  $ris .= "T1  - ". trim($node->title) ."\r\n";
+  switch ($node->biblio_type) {
+    case 100 :
+    case 101 :
+    case 103 :
+    case 104 :
+    case 105 :
+    case 108 :
+    case 119 :
+      if (!empty($node->biblio_secondary_title))
+      $ris .= "T2  - ". trim($node->biblio_secondary_title) ."\r\n";
+      break;
+    case 102 :
+      if (!empty($node->biblio_secondary_title))
+      $ris .= "JF  - ". trim($node->biblio_secondary_title) ."\r\n";
+      unset($node->biblio_secondary_title);
+      break; // journal
+  }
+  if (isset($node->biblio_year) && $node->biblio_year < 9998) {
+      $ris .= "Y1  - ". trim($node->biblio_year) ."\r\n";
+  }
+
+  foreach ($node->biblio_contributors[1] as $auth) {
+    $ris .= "A1  - " . trim($auth['name']) ."\r\n";
+  }
+  if (isset($node->biblio_contributors[2]) ) {
+    foreach ($node->biblio_contributors[2] as $auth) {
+      $ris .= "ED  - " . trim($auth['name']) ."\r\n";
+    }
+  }
+
+  $kw_array = array();
+  if (!empty($node->terms)) {
+    foreach ($node->terms as $term) {
+      $kw_array[] = $term->name;
+    }
+  }
+  if (!empty($node->biblio_keywords)) {
+    foreach ($node->biblio_keywords as $term) {
+      $kw_array[] = $term;
+    }
+  }
+  if (!empty($kw_array)) {
+    $kw_array = array_unique($kw_array);
+    foreach ($kw_array as $term) {
+      $ris .= "KW  - ". trim($term) ."\r\n";
+    }
+  }
+  $abst = "";
+  if (!empty($node->biblio_abst_e))  $abst .= trim($node->biblio_abst_e);
+  if ($abst) {
+    $search = array("/\r/", "/\n/");
+    $replace = " ";
+    $abst = preg_replace($search, $replace, $abst);
+    $ris .= "AB  - ". $abst ."\r\n";
+  }
+  $skip_fields = array('biblio_year',  'biblio_abst_e', 'biblio_abst_f', 'biblio_type' );
+  $fields = drupal_schema_fields_sql('biblio');
+  $fields = array_diff($fields, $skip_fields);
+  foreach ($fields as $field) {
+    if (!empty($node->$field)) {
+      $ris .= _biblio_ris_format_entry($field, $node->$field);
+    }
+  }
+  $ris .= "ER  - \r\n\r\n";
+  return $ris;
+}
+
+function _biblio_ris_format_entry($key, $value) {
+  $reverse = TRUE;
+  $tag = _biblio_ris_field_map($key, $reverse);
+  if (!empty($tag)) {
+    return "$tag  - ". trim($value) ."\r\n";
+  }
+
+}
+
+function _biblio_ris_type_map($type, $reverse = FALSE) {
+  static $map = array();
+  if (empty($map)) {
+    $map = biblio_get_map('type_map', 'ris');
+  }
+
+  if ($reverse) {
+    return ($tag = array_search($type, $map)) ? $tag : 'Generic'; //return the biblio type or 129 (Misc) if type not found
+  }
+  return (isset($map[$type]))?$map[$type]:129; //return the biblio type or 129 (Misc) if type not found
+}
+
+function _biblio_ris_field_map($field, $reverse = FALSE) {
+  static $fmap = array();
+  if (empty($fmap)) {
+    $fmap = biblio_get_map('field_map', 'ris');
+  }
+  if ($reverse) {
+    return ($tag = array_search($field, $fmap)) ? $tag : '';
+
+  }
+  return (!empty($fmap[$field])) ? $fmap[$field] : '';
+
+}
+function biblio_ris_ris_map_reset($type = NULL) {
+  module_load_include('install', 'biblio_ris', 'biblio_ris');
+ _reset_ris_map($type);
+}
+
+function biblio_ris_check_md5($md5) {
+  static $ris_md5s = array();
+  if (empty($ris_md5s)) {
+    $result = db_query("SELECT * FROM {biblio_ris} ");
+    foreach ($result as $row) {
+      $ris_md5s[$row->biblio_ris_md5] = $row->nid;
+    }
+  }
+  if (isset($ris_md5s[$md5])) {
+    return $ris_md5s[$md5];
+  }
+  else {
+    $ris_md5s[$md5] = TRUE; // gaurd against duplicates in the same import
+    return;
+  }
+}

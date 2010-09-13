@@ -1,0 +1,9 @@
+; $Id$
+name = Biblio&nbsp;-&nbsp;MARC&nbsp;
+description = Provides MARC file import to the Biblio module.
+core = 7.x
+package = Biblio
+dependencies[] = biblio
+files[] = biblio_marc.install
+files[] = biblio_marc.module
+files[] = php-marc.php

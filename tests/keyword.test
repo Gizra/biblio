@@ -12,7 +12,8 @@
 class BiblioKeywordWebTestCase extends BiblioWebTestCase {
 
   function setUp() {
-    require_once(drupal_get_path('module', 'biblio') .'/biblio.keywords.inc');
+  	parent::setUp('biblio');
+    require_once(drupal_get_path('module', 'biblio') .'/includes/biblio.keywords.inc');
   }
 
   /**
@@ -51,7 +52,7 @@ class BiblioKeywordUnitTest extends BiblioKeywordWebTestCase {
   }
   function testBiblioGetKeywordById() {
     $keyword = $this->createKeyword();
-    $word = biblio_get_keyword_by_id($keyword['kid']);
+    $word = (array) biblio_get_keyword_by_id($keyword['kid']);
     $this->assertEqual($keyword, $word, 'Get keyword by ID');
   }
   function testBiblioGetKeywordByName() {

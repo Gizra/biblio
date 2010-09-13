@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?oxygen RNGSchema="http://xbiblio.svn.sourceforge.net/viewvc/*checkout*/xbiblio/csl/schema/trunk/csl.rnc" type="compact"?>
+<style xmlns="http://purl.org/net/xbiblio/csl" class="in-text" xml:lang="en">
+  <info>
+    <title>National Library of Medicine</title>
+    <id>http://www.zotero.org/styles/nlm</id>
+    <link href="http://www.zotero.org/styles/nlm"/>
+<link href="http://www.nlm.nih.gov/pubs/formats/recommendedformats1991-full.pdf" rel="documentation"/>
+    <author>
+      <name>Michael Berkowitz</name>
+      <email>mberkowi@gmu.edu</email>
+    </author>
+<contributor>
+<name>SebastianKarcher</name>
+</contributor>
+    <category term="generic-base"/>
+    <category term="numeric"/>
+    <updated>2009-09-13T01:57:47+00:00</updated>
+  </info>
+<terms>
+  <locale xml:lang="en">
+    <term name="no date" form="long">date unknown</term>
+  </locale>
+</terms>
+  <macro name="author">
+    <names variable="author" suffix=". ">
+      <name sort-separator=" " initialize-with="" name-as-sort-order="all" delimiter=", " delimiter-precedes-last="always"/>
+<label form="long" prefix=", " suffix="." text-case="lowercase"/> 
+<substitute>
+	<names variable="editor"/>
+	<names variable="translator"/>
+	      </substitute>    
+</names>
+  </macro>
+  <macro name="editor">
+    <names variable="editor">
+      <name sort-separator=" " initialize-with="" name-as-sort-order="all" delimiter=", " delimiter-precedes-last="always"/>
+<label form="long" prefix=", " suffix=". " text-case="lowercase"/> 
+    </names>
+  </macro>
+  <macro name="publisher">
+    <text variable="publisher-place" suffix=": "/>
+    <text variable="publisher" suffix="; "/>
+   <text macro="date"/>
+  </macro>
+<macro name="date">
+<choose>
+<if variable="issued">
+<choose>
+<if type="article-journal">
+ <date variable="issued">
+	    <date-part name="year" suffix=""/>
+	    <date-part name="month" form="short" prefix=" " suffix=""/>
+	  </date>
+</if>
+<else>
+<date variable="issued">
+	    <date-part name="year" suffix=""/>
+	  </date>
+</else>
+</choose>
+</if>
+<else>
+<text term="no date" prefix="[" suffix="]"/>
+</else>
+</choose>
+</macro>
+  <macro name="access">
+    <group delimiter=" ">
+      <group prefix="[" suffix="]" delimiter=" ">
+	<text term="cited" text-case="lowercase"/>
+	<date variable="accessed" suffix=" ">
+	  <date-part name="year"/>
+	  <date-part name="month" prefix=" " form="short"/>
+	  <date-part name="day" prefix=" "/>
+	</date>
+      </group>
+      <group>
+	<text value="Available from: "/>
+	<text variable="URL"/>
+      </group>
+    </group>
+  </macro>
+  <macro name="title">
+    <group delimiter=" ">
+      <text variable="title"/>
+      <choose>
+	<if variable="URL">
+	  <text term="internet" prefix="[" suffix="]" text-case="capitalize-first"/>
+	</if>
+      </choose>
+    </group>
+  </macro>
+  <macro name="edition">
+    <choose>
+      <if is-numeric="edition">
+	<group delimiter=" ">
+	  <number variable="edition" form="ordinal"/>
+	  <text term="edition" form="short" suffix="."/>
+	</group>
+      </if>
+      <else>
+	  <text variable="edition" suffix="."/>
+      </else>
+    </choose>
+  </macro>
+  <citation>
+    <option name="collapse" value="citation-number"/>
+    <sort>
+      <key variable="citation-number"/>
+    </sort>
+    <layout prefix="(" suffix=")" delimiter="; ">
+      <text variable="citation-number"/>
+    </layout>
+  </citation>
+  <bibliography>
+    <option name="second-field-align" value="true"/>
+    <layout>
+      <text variable="citation-number" suffix=". "/>
+      <text macro="author"/>
+      <text macro="title" suffix=". "/>
+      <choose>
+	<if type="book">
+	  <text macro="edition" prefix=" " suffix=" "/>
+	  <text macro="publisher" prefix=" " suffix="."/>
+	</if>
+	<else-if type="chapter">
+	  <group prefix=" " suffix=". ">
+	    <text term="in" suffix=": " text-case="capitalize-first"/>
+	    <text macro="editor"/>
+	    <text variable="container-title"/>
+	  </group>
+	  <text macro="publisher" prefix=" "/>
+	  <text variable="page" prefix=" p. " suffix="."/>
+	</else-if>
+	<else>
+	  <text variable="container-title" suffix=" " form="short"/>
+	  <text macro="date" suffix=";"/>
+	  <text variable="volume"/>
+	  <text variable="issue" prefix="(" suffix=")"/>
+	  <text variable="page" prefix=":" suffix="."/>
+	</else>
+      </choose>
+<text macro="access"/>
+          </layout>  
+</bibliography>
+</style>

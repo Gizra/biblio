@@ -1,0 +1,97 @@
+<?php
+// $Id$
+/*
+ * @file biblio_rtf.module
+ *
+ */
+function biblio_rtf_menu() {
+  global $user;
+  $items = array();
+  $base = variable_get('biblio_base', 'biblio');
+
+  $items["$base/export/rtf"] = array(
+    'title'             => '',
+    'page callback'     => 'biblio_rtf_biblio_export',
+    'access callback'   => 'user_access',
+    'access arguments'  => array('show export links'),
+    'type'              => MENU_CALLBACK
+  );
+
+  return $items;
+}
+
+function biblio_rtf_biblio_export_link_settings() {
+  return array('rtf' => t('RTF'));
+}
+
+function biblio_rtf_link($type, $node = NULL, $teaser = FALSE) {
+  if ($type != 'node' && $node->type != 'biblio') return;
+
+  return biblio_rtf_biblio_export_link($node->nid);
+}
+
+/**
+ * Creates a link to export a node (or view) in rtf format
+ *
+ * @param $base this is the base url (defaults to /biblio)
+ * @param $nid  the node id, if NULL then the current view is exported
+ * @return  a link (<a href=...>rtf</a>)
+ */
+function biblio_rtf_biblio_export_link($nid = NULL) {
+  $show_link = variable_get('biblio_export_links', array('rtf' => TRUE));
+  if (!$show_link['rtf'] || !biblio_access('export') ) return array();
+  $base = variable_get('biblio_base', 'biblio');
+
+  $link = array(
+      'attributes' => array(
+           'title' => t("Click to download the rtf formatted file")));
+
+  $link['href']  = "$base/export/rtf/$nid";
+  $link['title'] = t('RTF');
+
+  return array('biblio_rtf' => $link);
+}
+
+function biblio_rtf_biblio_export($nid = null) {
+  if ($nid === null && isset ($_SESSION['last_biblio_query']) && !empty ($_SESSION['last_biblio_query'])) {
+    $query = $_SESSION['last_biblio_query'];
+    $params = $_SESSION['last_biblio_query_terms'];
+    $result = db_query($query, $params);
+    foreach($result as $node) {
+      $nids[] = $node->nid;
+    }
+  }
+  elseif (!empty ($nid) && is_numeric($nid)) {
+    $nids[] = $nid;
+  }
+
+  $count = 0;
+
+  foreach ($nids as $nid) {
+    $node = node_load($nid, FALSE, TRUE);
+    if (variable_get('biblio_hide_bibtex_braces', 0) ) {
+      $node->title = biblio_remove_brace($node->title);
+    }
+    $count++;
+
+    if ($count == 1) {
+      $style_name = biblio_get_style();
+      module_load_include('inc','biblio',"styles/biblio_style_$style_name");
+      module_load_include('inc','biblio_rtf',"rtf_export");
+      $style_function = "biblio_style_$style_name";
+      $rtf = new rtf();
+      $rtf->setPaperSize(5);
+      $rtf->setPaperOrientation(1);
+      $rtf->setDefaultFontFace(1);
+      $rtf->setDefaultFontSize(24);
+      $rtf->setAuthor("Biblio");
+      $rtf->setOperator("");
+      $rtf->setTitle("Biblio RTF Export");
+      $rtf->addColour("#000000");
+    }
+
+    $rtf->addText(filter_xss($style_function ($node, $base, $inline).'<br><br>',array('i','b','br','u','p','strong','em','sub','sup','ul','li')));
+  }
+  if ($count > 0) $rtf->getDocument();
+}
+

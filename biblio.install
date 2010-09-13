@@ -2,8 +2,7 @@
 // $Id$
 function biblio_install() {
   $result = array();
-
-  drupal_install_schema('biblio');
+  set_time_limit(300);
 
   $result[] = _add_db_field_data();
 
@@ -73,7 +72,6 @@ function biblio_uninstall(){
     }
   }
 
-  drupal_uninstall_schema('biblio');
 
   $vars = db_query("SELECT * FROM {variable} WHERE name LIKE 'biblio_%'");
   foreach ($vars as $var) {
@@ -770,7 +768,8 @@ function biblio_schema() {
         ),
       'aka' => array(
         'type' => 'int',
-        'not null' => FALSE,
+        'not null' => TRUE,
+        'default'  => 0,
         'unsigned' => TRUE,
         'description' =>'Also known as, links this author entry with others so you can have variation on the name, but listing by cid will find all other (aka) author entries',
         ),
@@ -837,7 +836,7 @@ function biblio_schema() {
         )
 
         ),
-      'primary key' => array('cid'),
+      'primary key' => array('cid','aka'),
       'indexes' => array(
           'lastname' => array('lastname'),
           'firstname' => array('firstname'),
@@ -1072,6 +1071,32 @@ function biblio_schema() {
         ),
         'primary key' => array('id'));
 
+  $schema['biblio_type_maps'] = array(
+    'description' => 'Table used to store the mapping information between various file formats and the biblio schema',
+    'fields' => array(
+      'format' => array(
+        'description' => 'The import/export file format',
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE),
+      'type_map' => array(
+        'description' => 'The mapping between the publication types in the file format and biblio',
+        'type' => 'blob',
+        'not null' => FALSE,
+        'size' => 'big'),
+      'type_names' => array(
+        'description' => 'The human readable names of the publication types',
+        'type' => 'blob',
+        'not null' => FALSE,
+        'size' => 'big'),
+      'field_map' => array(
+        'description' => 'The mapping between the fields in the file format and biblio',
+        'type' => 'blob',
+        'not null' => FALSE,
+        'size' => 'big'),
+      ),
+    'primary key' => array('format'));
+
    return ($schema);
 
 }
@@ -1245,7 +1270,7 @@ function _add_db_field_data() {
   db_query("/*!40000 ALTER TABLE {biblio_field_type_data} DISABLE KEYS */;");
   db_query("/*!40000 ALTER TABLE {biblio_fields} DISABLE KEYS */;");
 
-  $csv_file = drupal_get_path('module', 'biblio') .'/biblio.field.link.data.csv';
+  $csv_file = drupal_get_path('module', 'biblio') .'/misc/biblio.field.link.data.csv';
 
   if ($handle = fopen($csv_file, "r")){
     $header = fgetcsv($handle, 10000, ","); // the first line has the field names
@@ -1330,7 +1355,7 @@ function _add_custom_field_data() {
     $fieldmap[$row->name] =  $row->fid;
   }
 
-  $csv_file = drupal_get_path('module', 'biblio') .'/biblio.field.type.data.csv';
+  $csv_file = drupal_get_path('module', 'biblio') .'/misc/biblio.field.type.data.csv';
 
   if ($handle = fopen($csv_file, "r")){
     $header = fgetcsv($handle, 10000, ","); // the first line has the field names
@@ -1671,7 +1696,7 @@ function _move_authors(&$result)
   drupal_get_schema('biblio_contributor_data', TRUE);
   // this update will move author information from existing biblio table to the new
   // biblio_contributor_data table and make the appropriate links in the biblio_contributor table
-  require_once(drupal_get_path('module', 'biblio') . '/biblio.contributors.inc');
+  require_once(drupal_get_path('module', 'biblio') . '/includes/biblio.contributors.inc');
   $res = db_query("SELECT nid,vid,biblio_authors, biblio_secondary_authors,biblio_tertiary_authors,biblio_corp_author FROM {biblio}  ");
   $count=0; $count_success=0;
   while ($biblio = db_fetch_array($res)) {
@@ -1846,7 +1871,7 @@ function biblio_update_6014() {
   return $result;
 }
 function biblio_update_6015() {
-  require_once(drupal_get_path('module', 'biblio') .'/biblio.keywords.inc');
+  require_once(drupal_get_path('module', 'biblio') .'/includes/biblio.keywords.inc');
   $result = array();
   if ($vid = variable_get('biblio_freetagging_vocab', 0)) {
     variable_set('biblio_keyword_vocabulary', $vid);
@@ -1990,7 +2015,29 @@ function biblio_update_6024(){
 
   return $result;
 }
+function biblio_update_6025() {
+  $result = array();
+  $schema = biblio_schema();
+  db_create_table($result, 'biblio_type_maps', $schema['biblio_type_maps']);
+  return $result;
+}
 
+function biblio_update_6026() {
+  $result = array();
+  // move custom block titles stored in variable "biblio_block_title" to the block table if the title has not already been overriden
+  $custom_title = variable_get('biblio_block_title', '');
+  if (!empty($custom_title)) {
+    $db_result = db_query("SELECT bid,title FROM {blocks} b where module='biblio' ");
+    while ($block = db_fetch_object($db_result)) {
+      if (empty ($block->title)) {
+        $block->title = $custom_title;
+        $result[] = update_sql("UPDATE {blocks} SET title='". $block->title ."' WHERE bid=". $block->bid);
+      }
+    }
+    variable_del('biblio_block_title');
+  }
+  return $result;
+}
 function biblio_update_7000() {
     $result = array();
 

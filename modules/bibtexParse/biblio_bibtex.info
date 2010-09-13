@@ -1,0 +1,11 @@
+; $Id$
+name = Biblio&nbsp;-&nbsp;BibTex&nbsp;
+description = Provides BibTex import and export to the Biblio module.
+core = 7.x
+package = Biblio
+dependencies[] = biblio
+files[] = biblio_bibtex.install
+files[] = biblio_bibtex.module
+files[] = PARSEENTRIES.php
+files[] = transtab_latex_unicode.inc.php
+files[] = transtab_unicode_bibtex.inc.php

@@ -1,0 +1,181 @@
+<?php
+// $Id$
+/*
+ * @file biblio_xml.module
+ *
+ */
+function biblio_xml_menu() {
+  global $user;
+  $items = array();
+  $base = variable_get('biblio_base', 'biblio');
+
+  $items["$base/export/xml"] = array(
+    'title'             => '',
+    'page callback'     => 'biblio_xml_biblio_export',
+    'access callback'   => 'user_access',
+    'access arguments'  => array('show export links'),
+    'type'              => MENU_CALLBACK
+  );
+
+  return $items;
+}
+/*
+ *   add the xml option to the option list of the biblio_import_form
+ *   the key is the module name use by module_invoke to call hook_biblio_import
+ *   module_invoke('biblio_xml', 'biblio_import',...)
+ */
+function biblio_xml_biblio_import_options() {
+  return array('biblio_xml' => t('EndNote XML'));
+}
+
+/*
+function biblio_xml_form_biblio_node_form_alter(&$form, &$form_state) {
+  global $user;
+  if(phpversion() > 5 && !isset($form_state['storage']) && !isset($form['#node']->nid)) {
+    if(!isset($form_state['storage'])) {
+      $form['biblio_cut_paste'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Paste'),
+        '#weight' => -20,
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE,
+      );
+      $form['biblio_cut_paste']['paste_data'] = array(
+        '#type' => 'textarea',
+        '#title' => t('xml'),
+        '#required' => FALSE,
+        '#default_value' => '',
+        '#description' => t('Paste a xml entry here'),
+        '#size' => 60,
+        '#maxlength' => 2048,
+        '#weight' => -4
+      );
+      $form['biblio_cut_paste']['paste_submit'] = array(
+        '#type' => 'submit',
+        '#value' => t('Populate using xml')
+      );
+    }
+    $form['#validate'] = array_merge(array('biblio_xml_form_biblio_node_form_validate'), $form['#validate']); // put my validator first
+  }
+  $biblio_xml_id = (isset($form_state['values']['biblio_xml_id'])) ? $form_state['values']['biblio_xml_id'] : '';
+  $biblio_xml_md5 = (isset($form_state['values']['biblio_xml_md5'])) ? $form_state['values']['biblio_xml_md5'] : '';
+  $form['biblio_xml_id'] = array('#type' => 'value', '#value'  => $biblio_xml_id);
+  $form['biblio_xml_md5'] = array('#type' => 'value', '#value' => $biblio_xml_md5);
+}
+
+function biblio_xml_form_biblio_node_form_validate($form, &$form_state) {
+  global $user;
+  $node_data = array();
+  if (strlen($form_state['values']['paste_data'])) {
+    $node_data = biblio_xml_biblio_import($form_state['values']['paste_data'], array(), FALSE, NULL, FALSE, TRUE);
+  }
+  if(!empty($node_data)) {
+    $form_state['values'] = array_merge($form_state['values'], $node_data[0]);
+    $form_state['storage']['biblio_type']  = $node_data[0]['biblio_type'];
+    return;
+  }
+  return;
+}
+*/
+
+function biblio_xml_biblio_export_link_settings() {
+  return array('xml'  => t('EndNote XML'));
+}
+
+function biblio_xml_link($type, $node = NULL, $teaser = FALSE) {
+  if ($type != 'node' && $node->type != 'biblio') return;
+
+  return biblio_xml_biblio_export_link($node->nid);
+}
+
+/**
+ * Creates a link to export a node (or view) in xml format
+ *
+ * @param $base this is the base url (defaults to /biblio)
+ * @param $nid  the node id, if NULL then the current view is exported
+ * @return  a link (<a href=...>xml</a>)
+ */
+function biblio_xml_biblio_export_link($nid = NULL) {
+  $show_link = variable_get('biblio_export_links', array('xml' => TRUE));
+  if (!$show_link['xml'] || !biblio_access('export')) return array();
+  $base = variable_get('biblio_base', 'biblio');
+
+  $link = array(
+        'attributes' => array(
+          'title' => t("Click to download the EndNote XML formatted file")));
+  $link['href']  = "$base/export/xml/$nid";
+  $link['title'] = t('XML');
+
+  return array('biblio_xml' => $link);
+}
+
+function biblio_xml_node_delete($node) {
+  if ($node->type != 'biblio') return;
+  db_delete('biblio_xml')
+    ->condition('nid', $node->nid)
+    ->execute();
+}
+
+function biblio_xml_node_insert($node) {
+  if ($node->type != 'biblio' || !isset($node->biblio_xml_md5)) return
+    drupal_write_record('biblio_xml', $node);
+}
+
+function biblio_xml_biblio_import($file, $terms = array(), $batch = FALSE, $session_id = NULL, $save = TRUE, $string = FALSE) {
+  module_load_include('inc', 'biblio_xml', 'endnote_xml_parser');
+
+  $nids = array();
+  $dups = array();
+
+  $parser = new EndNoteXMLParser;
+
+  list($nids, $dups) = $parser->parse($file, $terms, $batch, $session_id);
+
+  return array($nids, $dups);
+}
+
+function biblio_xml_biblio_export($nid = null) {
+  $nids = array();
+  if ($nid === null && isset ($_SESSION['last_biblio_query']) && !empty ($_SESSION['last_biblio_query'])) {
+    $query = $_SESSION['last_biblio_query'];
+    $params = $_SESSION['last_biblio_query_terms'];
+    $result = db_query($query, $params);
+    foreach ($result as $node) {
+      $nids[] = $node->nid;
+    }
+  }
+  elseif (!empty ($nid)) {
+    $nids[] = $nid;
+  }
+  elseif (!count($nids)){
+    return;
+  }
+  module_load_include('inc', 'biblio_xml', 'endnote8_export');
+
+  drupal_add_http_header('Content-type', 'application/xml; charset=utf-8');
+  drupal_add_http_header('Content-Disposition', 'attachment; filename="Biblio-EndNote'. $version .'.xml"');
+
+  print _endnote8_XML_export('', 'begin');
+
+  foreach ($nids as $nid) {
+    $node = node_load($nid, FALSE, TRUE);
+    if (variable_get('biblio_hide_bibtex_braces', 0) ) {
+      $node->title = biblio_remove_brace($node->title);
+    }
+    print _endnote8_XML_export($node);
+  }
+
+  print _endnote8_XML_export('', 'end');
+}
+
+function biblio_xml_endnote8_map_reset($type = NULL) {
+  module_load_include('install', 'biblio_xml', 'biblio_xml');
+  _reset_endnote_xml_map('endnote8', $type);
+}
+
+function biblio_xml_endnote7_map_reset($type = NULL) {
+  module_load_include('install', 'biblio_xml', 'biblio_xml');
+  _reset_endnote_xml_map('endnote7', $type);
+}
+
+
