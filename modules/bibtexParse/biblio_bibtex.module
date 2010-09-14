@@ -91,7 +91,9 @@ function biblio_bibtex_biblio_export_link_settings() {
 }
 
 function biblio_bibtex_link($type, $node = NULL, $teaser = FALSE) {
-  if ($type != 'node' && $node->type != 'biblio') return;
+  if ($type != 'node' && $node->type != 'biblio') {
+    return;
+  }
 
   return biblio_bibtex_biblio_export_link($node->nid);
 }
@@ -125,15 +127,21 @@ function biblio_bibtex_biblio_export_link($nid = NULL) {
 }
 
 function biblio_bibtex_node_delete($node) {
-  if ($node->type != 'biblio') return;
+  if ($node->type != 'biblio') {
+    return;
+  }
   db_delete('biblio_bibtex')
     ->condition('nid', $node->nid)
     ->execute();
 }
 
 function biblio_bibtex_node_insert($node) {
-  if ($node->type != 'biblio') return;
-  if(!isset($node->biblio_bibtex_md5)) return;
+  if ($node->type != 'biblio') {
+    return;
+  }
+  if(!isset($node->biblio_bibtex_md5)) {
+    return;
+  }
   drupal_write_record('biblio_bibtex', $node);
 }
 

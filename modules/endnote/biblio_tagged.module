@@ -83,8 +83,9 @@ function biblio_tagged_biblio_export_link_settings() {
 }
 
 function biblio_tagged_link($type, $node = NULL, $teaser = FALSE) {
-  if ($type != 'node' && $node->type != 'biblio') return;
-
+  if ($type != 'node' && $node->type != 'biblio') {
+    return;
+  }
   return biblio_tagged_biblio_export_link($node->nid);
 }
 
@@ -119,14 +120,18 @@ function biblio_tagged_biblio_export_link($nid = NULL) {
 
 
 function biblio_tagged_node_delete($node) {
-  if ($node->type != 'biblio') return;
+  if ($node->type != 'biblio') {
+    return;
+  }
   db_delete('biblio_tagged')
     ->condition('nid', $node->nid)
     ->execute();
 }
 
 function biblio_tagged_node_insert($node) {
-  if ($node->type != 'biblio' || !isset($node->biblio_tagged_md5)) return;
+  if ($node->type != 'biblio' || !isset($node->biblio_tagged_md5)) {
+    return;
+  }
   drupal_write_record('biblio_tagged', $node);
 }
 

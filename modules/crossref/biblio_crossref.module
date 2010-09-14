@@ -128,7 +128,7 @@ function biblio_crossref_node_insert($node) {
 }
 
 function biblio_crossref_node_load($nodes, $types) {
-  $result = db_query('SELECT  nid, biblio_crossref_id  FROM {biblio_crossref} WHERE nid IN(:nids)', array(':nid' => array_keys($nodes)));
+  $result = db_query('SELECT  nid, biblio_crossref_id  FROM {biblio_crossref} WHERE nid IN(:nids)', array(':nids' => array_keys($nodes)));
   foreach ($result as $record) {
     $nodes[$record->nid]->biblio_crossref_id = $record->biblio_crossref_id;
   }

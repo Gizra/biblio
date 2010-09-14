@@ -137,9 +137,7 @@ function _save_bibtex_maps() {
   $typenames = _get_bibtex_type_names();
   $fieldmap = _get_bibtex_field_map();
   $maps = array_merge($typemap, $typenames, $fieldmap);
-  db_query("INSERT INTO {biblio_type_maps} (format,type_map,type_names,field_map) VALUES ('%s','%s','%s','%s')",
-              array($maps['format'], $maps['type_map'], $maps['type_names'], $maps['field_map']));
-  //drupal_write_record('biblio_type_maps', $maps);
+  biblio_save_map($maps);
 }
 
 function _reset_bibtex_map($type) {

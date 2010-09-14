@@ -2426,9 +2426,25 @@ function biblio_get_title_url_info($node, $inline = false) {
  * @return array $map
  */
 function biblio_get_map($type, $format) {
-  return  unserialize(db_result(db_query("SELECT %s FROM {biblio_type_maps} WHERE format='%s'", array($type, $format))));
+  $result = db_select('biblio_type_maps', 'btm')
+          ->fields('btm', array($type))
+          ->condition('format', $format)
+          ->execute()
+          ->fetchField();
+  return  unserialize($result);
 }
 
+function biblio_save_map($maps) {
+    db_insert('biblio_type_maps')
+      ->fields(array(
+        'format' => $maps['format'],
+        'type_map' => $maps['type_map'],
+        'type_names' => $maps['type_names'],
+        'field_map' => $maps['field_map'],
+      ))
+      ->execute();
+
+}
 /**
  * @param string $type (can be one of "type_names", "type_map" or "field_map")
  * @param string $format (tagged, ris, endnote_xml8 etc...)

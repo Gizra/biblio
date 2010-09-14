@@ -52,10 +52,7 @@ function _save_crossref_maps() {
   $typenames = _get_crossref_type_names();
   $fieldmap = _get_crossref_field_map();
   $maps = array_merge($typemap, $typenames, $fieldmap);
-  db_query("INSERT INTO {biblio_type_maps} (format,type_map,type_names,field_map) VALUES ('%s','%s','%s','%s')",
-              array($maps['format'], $maps['type_map'], $maps['type_names'], $maps['field_map']));
-  //drupal_write_record('biblio_type_maps', $maps);
-
+  biblio_save_map($maps);
 }
 function _reset_crossref_map($type) {
   $count = db_result(db_query("SELECT COUNT(*) FROM {biblio_type_maps} WHERE format='crossref'"));

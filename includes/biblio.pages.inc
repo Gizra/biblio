@@ -291,7 +291,7 @@ function biblio_build_query($arg_list) {
             $where[] = " bcd". $bcc .'.name '. $match_op .' "[[:<:]]%s[[:>:]]" ';
             $joins[] = " JOIN {biblio_contributor} as bc". $bcc ." on b.vid = bc". $bcc .".vid ";
             $joins[] = " JOIN {biblio_contributor_data} as bcd". $bcc ." on bc". $bcc .".cid = bcd".$bcc .".cid ";
-            $terms[] = db_escape_string($term[0]);
+            $terms[] =$term[0];
             $operator = NULL;
             $rss_info['title'] = t("Publications by " . $term[0]);
             $rss_info['description'] = t("These publications by %author are part of the works listed at %sitename", array('%author' => $term[0], '%sitename' => variable_get('site_name', 'Drupal')));
@@ -302,7 +302,7 @@ function biblio_build_query($arg_list) {
         case 'publisher':
           $term = explode("?",array_shift($arg_list));
           $where[] = "b.biblio_publisher ". $match_op ." '%s' ";
-          $terms[] = db_escape_string($term[0]);
+          $terms[] = $term[0];
           array_push($args, $type, $term[0]);
           $operator = NULL;
           break;
@@ -317,7 +317,7 @@ function biblio_build_query($arg_list) {
           $operator = NULL;
           break;
         case 'uid':
-          $term = db_escape_string(array_shift($arg_list));
+          $term = array_shift($arg_list);
           $where[] = "n.uid=%d ";
           //$limit .= " AND b.biblio_year=%d ";
           $terms[] = (int)$term;
@@ -334,7 +334,7 @@ function biblio_build_query($arg_list) {
             $where[] = " bkd". $bkd .'.word '. $match_op .' "[[:<:]]%s[[:>:]]" ';
             $joins[] = " JOIN {biblio_keyword} as bk". $bkd ." on b.vid = bk". $bkd .".vid ";
             $joins[] = " JOIN {biblio_keyword_data} as bkd". $bkd ." on bk". $bkd .".kid = bkd".$bkd .".kid ";
-//            $terms[] = db_escape_string($term[0]);
+//            $terms[] = $term[0];
             $operator = NULL;
             $rss_info['title'] = t("Keyword " . $term[0]);
             $rss_info['description'] = t("These publications, containing the keyword: %keyword, are part of the works listed at %sitename", array('%keyword' => $term[0], '%sitename' => variable_get('site_name', 'Drupal')));
@@ -348,19 +348,19 @@ function biblio_build_query($arg_list) {
           array_push($args, $type, $term[0]);
           break;
         case 'type':
-          $term = db_escape_string(array_shift($arg_list));
+          $term = array_shift($arg_list);
           $query->condition('b.biblio_type', $term[0]);
           //$limit .= $operator. "b.biblio_type=%d ";
           array_push($args, $type, (int)$term);
           $operator = NULL;
           break;
         case 'order':
-          $term = (db_escape_string(array_shift($arg_list)) == 'desc')?'desc':'asc';
+          $term = (array_shift($arg_list) == 'desc')?'desc':'asc';
           $sort_attrib['order'] = $term;
           array_push($args, $type, $term);
           break;
         case 'sort':
-          $term = db_escape_string(array_shift($arg_list));
+          $term = array_shift($arg_list);
           $sort_attrib['sort'] = $term;
           array_push($args, $type, $term);
           switch ($term) {
@@ -380,7 +380,7 @@ function biblio_build_query($arg_list) {
               $result_nids = split(',', $term[0]);
               $where[] = "n.nid in (".db_placeholders($result_nids).")";
               foreach ($result_nids as $result_nid) {
-                $terms[] = db_escape_string($result_nid);
+                $terms[] = $result_nid;
                 array_push($args, $type, $result_nid);
               }
         // Save search keyword to show in the filter list.
@@ -602,7 +602,7 @@ function _biblio_filter_info_line($args) {
     while ($args) {
       $type = $args[0];
       array_shift($args);
-      $value = db_escape_string($args[0]);
+      $value = $args[0];
       if ($type == 'search') {
         $search_content = array_shift($args);
         continue;
@@ -1143,7 +1143,7 @@ function _biblio_get_authors($filter = NULL) {
     foreach ($db_result as $author){
       $authors[] = $author;
     }
-    
+
     return $authors;
 }
 

@@ -127,14 +127,18 @@ function biblio_ris_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
 }
 
 function biblio_ris_node_delete($node) {
-  if ($node->type != 'biblio') return;
+  if ($node->type != 'biblio') {
+    return;
+  }
   db_delete('biblio_ris')
     ->condition('nid', $node->nid)
     ->execute();
 }
 
 function _biblio_ris_insert($node) {
-  if (!isset($node->biblio_ris_md5)) return;
+  if (!isset($node->biblio_ris_md5)) {
+    return;
+  }
   drupal_write_record('biblio_ris', $node);
 }
 

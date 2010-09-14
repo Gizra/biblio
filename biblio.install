@@ -14,6 +14,7 @@ function biblio_install() {
 
   $result[] = _set_system_weight();
 
+  _biblio_helper_modules('install');
 //  if (count($result) == count(array_filter($result))) {
 //    drupal_set_message(t('The biblio module has successfully added its tables to the database.'));
 //  }
@@ -79,6 +80,36 @@ function biblio_uninstall(){
   }
 
   cache_clear_all();
+
+}
+
+function _biblio_helper_modules($mode) {
+
+  $modules = _biblio_get_helper_modules();
+  switch ($mode) {
+    case 'install':
+      module_enable($modules);
+      break;
+    case 'uninstall':
+      foreach($modules as $module) {
+        drupal_uninstall_modules($module);
+      }
+      break;
+  }
+}
+
+function _biblio_get_helper_modules() {
+  return array(
+    'biblio_bibtex',
+    'biblio_crossref',
+    'biblio_marc',
+    'biblio_pm',
+    'biblio_ris',
+    'biblio_tagged',
+    'biblio_xml',
+//    'biblio_citeproc',
+    'biblio_rtf',
+  );
 
 }
 

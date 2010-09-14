@@ -58,6 +58,10 @@ class BiblioEntrezPubmedArticle
     return $this->md5;
   }
 
+  public function getBiblioAsObject() {
+    return (object)$this->getBiblio();
+  }
+
   /**
    * Returns article elements as an associative array suitable for import into
    * a biblio node.
@@ -102,7 +106,7 @@ class BiblioEntrezPubmedArticle
       }
     }
 
-    return (object)$this->biblio;
+    return $this->biblio;
   }
 
   /**

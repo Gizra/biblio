@@ -2,10 +2,8 @@
 // $Id$
 class BiblioImportExportWebTestCase extends BiblioWebTestCase {
   function setUp() {
-    parent::setUp('biblio');
-    module_load_include('inc', 'biblio', 'biblio.import.export');
-    module_load_include('inc', 'biblio', 'biblio.type.mapper');
-
+    parent::setUp('biblio', 'biblio_ris', 'biblio_bibtex', 'biblio_tagged', 'biblio_xml', 'biblio_crossref');
+    require_once(drupal_get_path('module', 'biblio') .'/includes/biblio.import.export.inc');
   }
 }
 
@@ -35,10 +33,10 @@ class BiblioImportExportUnitTest extends BiblioImportExportWebTestCase {
   }
 
   function testBiblioNodeExport() {
-    module_load_include('inc', 'biblio', 'endnote8_export');
+    module_load_include('inc', 'biblio_xml', 'endnote8_export');
     $node = $this->createNode();
-    $this->assertEqual(biblio_endnote_tagged_export($node), $this->getTaggedString());//, 'Export a node in EndNote Tagged format');
-    $this->assertEqual(biblio_bibtex_export($node), $this->getBibTexString(), 'Export a node in BibTex format');
+    $this->assertEqual(_biblio_tagged_export($node), $this->getTaggedString());//, 'Export a node in EndNote Tagged format');
+    $this->assertEqual(_biblio_bibtex_export($node), $this->getBibTexString(), 'Export a node in BibTex format');
     $xml = _endnote8_XML_export('', 'begin');
     $xml .= _endnote8_XML_export($node);
     $xml .= _endnote8_XML_export('', 'end');
@@ -53,7 +51,7 @@ class BiblioImportExportUnitTest extends BiblioImportExportWebTestCase {
     $this->assertEqual(count($nids), 1, 'Imported 1 EndNote XML entry');
     file_delete($file);
     $node = $this->createNode();
-    $fields = array_filter(biblio_get_field_map('endnote8'));
+    $fields = array_filter(biblio_get_map('field_map', 'endnote8'));
     $fields += array('title','biblio_contributors', 'biblio_keywords');
     foreach ($nids as $nid) {
       $this->nids[] = $nid;
@@ -69,7 +67,7 @@ class BiblioImportExportUnitTest extends BiblioImportExportWebTestCase {
     $this->assertEqual(count($nids), 1, 'Imported 1 Tagged entry');
     file_delete($file);
     $node = $this->createNode();
-    $fields = array_filter(biblio_get_field_map('tagged'));
+    $fields = array_filter(biblio_get_map('field_map', 'tagged'));
     $fields += array('title','biblio_contributors', 'biblio_keywords');
     foreach ($nids as $nid) {
       $this->nids[] = $nid;
@@ -85,7 +83,7 @@ class BiblioImportExportUnitTest extends BiblioImportExportWebTestCase {
     $this->assertEqual(count($nids), 1, 'Imported 1 Bibtex entry');
     file_delete($file);
     $node = $this->createNode();
-    $fields = array_filter(biblio_get_field_map('bibtex'));
+    $fields = array_filter(biblio_get_map('field_map', 'bibtex'));
     $fields += array('title','biblio_contributors');
     foreach ($nids as $nid) {
       $this->nids[] = $nid;
@@ -101,7 +99,7 @@ class BiblioImportExportUnitTest extends BiblioImportExportWebTestCase {
     $this->assertEqual(count($nids), 1, 'Imported 1 RIS entry');
     file_delete($file);
     $node = $this->createNode();
-    $fields = array_unique(array_filter(biblio_get_field_map('ris')));
+    $fields = array_unique(array_filter(biblio_get_map('field_map', 'ris')));
     $fields += array('title','biblio_contributors');
     foreach ($nids as $nid) {
       $this->nids[] = $nid;

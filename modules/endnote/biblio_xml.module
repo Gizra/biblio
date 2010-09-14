@@ -110,14 +110,18 @@ function biblio_xml_biblio_export_link($nid = NULL) {
 }
 
 function biblio_xml_node_delete($node) {
-  if ($node->type != 'biblio') return;
+  if ($node->type != 'biblio') {
+    return;
+  }
   db_delete('biblio_xml')
     ->condition('nid', $node->nid)
     ->execute();
 }
 
 function biblio_xml_node_insert($node) {
-  if ($node->type != 'biblio' || !isset($node->biblio_xml_md5)) return
+  if ($node->type != 'biblio' || !isset($node->biblio_xml_md5)) {
+    return;
+  }
     drupal_write_record('biblio_xml', $node);
 }
 

@@ -111,7 +111,7 @@ function _biblio_pm_import($file, $terms, $batch, $session_id) {
   while (($result = $Eclient->fetchRecords($start)) && $start < $resmax ) {
     foreach ($result->xpath('//PubmedArticle') as $article) {
       //$data->setArticle($article);
-      $node = $data->setArticle($article)->getBiblio();
+      $node = $data->setArticle($article)->getBiblioAsObject();
       if (isset($node)) {
         if (!empty($terms)) {
           if (!isset($node->taxonomy)) $node->taxonomy = array();
@@ -161,7 +161,9 @@ function biblio_pm_link($type, $node = NULL, $teaser = FALSE) {
 }
 
 function biblio_pm_node_delete($node) {
-  if ($node->type != 'biblio') return;
+  if ($node->type != 'biblio') {
+    return;
+  }
   db_delete('biblio_pubmed')
     ->condition('nid', $node->nid)
     ->execute();

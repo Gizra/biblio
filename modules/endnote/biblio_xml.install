@@ -59,9 +59,7 @@ function _save_endnote7_maps() {
   $typenames = _get_endnote7_type_names();
   $fieldmap = _get_endnote7_field_map();
   $maps = array_merge($typemap, $typenames, $fieldmap);
-  db_query("INSERT INTO {biblio_type_maps} (format,type_map,type_names,field_map) VALUES ('%s','%s','%s','%s')",
-              array($maps['format'], $maps['type_map'], $maps['type_names'], $maps['field_map']));
- // drupal_write_record('biblio_type_maps', $maps);
+  biblio_save_map($maps);
 }
 
 function _save_endnote8_maps() {
@@ -69,10 +67,7 @@ function _save_endnote8_maps() {
   $typenames = _get_endnote8_type_names();
   $fieldmap = _get_endnote8_field_map();
   $maps = array_merge($typemap, $typenames, $fieldmap);
-  db_query("INSERT INTO {biblio_type_maps} (format,type_map,type_names,field_map) VALUES ('%s','%s','%s','%s')",
-              array($maps['format'], $maps['type_map'], $maps['type_names'], $maps['field_map']));
-  //drupal_write_record('biblio_type_maps', $maps);
-
+  biblio_save_map($maps);
 }
 
 function _reset_endnote_xml_map($version, $type) {

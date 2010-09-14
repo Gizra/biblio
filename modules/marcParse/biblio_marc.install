@@ -91,7 +91,7 @@ function _save_marc_maps() {
   );
 
   $maps['format'] = 'marc';
-  db_insert('biblio_type_maps')->fields($maps)->execute();
+  biblio_save_map($maps);
 
 
 }

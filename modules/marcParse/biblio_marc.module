@@ -18,7 +18,9 @@ function biblio_marc_biblio_import_options() {
 
 
 function biblio_marc_node_delete($node) {
-  if ($node->type != 'biblio') return;
+  if ($node->type != 'biblio') {
+    return;
+  }
   db_delete('biblio_marc')
     ->condition('nid', $node->nid)
     ->execute();
@@ -26,8 +28,12 @@ function biblio_marc_node_delete($node) {
 
 
 function biblio_marc_node_insert($node) {
-	if ($node->type != 'biblio') return;
-  if (!isset($node->biblio_marc_md5)) return;
+	if ($node->type != 'biblio') {
+	  return;
+	}
+  if (!isset($node->biblio_marc_md5)) {
+    return;
+  }
   drupal_write_record('biblio_marc', $node);
 }
 
