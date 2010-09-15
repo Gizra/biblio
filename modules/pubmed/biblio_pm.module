@@ -93,7 +93,7 @@ function biblio_pm_biblio_import($file, $terms = array(), $batch = FALSE, $sessi
 function _biblio_pm_import($file, $terms, $batch, $session_id) {
   module_load_include('php', 'biblio_pm', 'EntrezClient');
   module_load_include('php', 'biblio_pm', 'EntrezPubmedArticle');
-  $pmids = file($file->filepath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+  $pmids = file($file->uri, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
   if (empty($pmids)) {
     drupal_set_message("Could not open PubMed ID file", 'error');
     return;
