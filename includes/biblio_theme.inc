@@ -1161,3 +1161,25 @@ function theme_biblio_admin_keyword_orphans_form($variables) {
 
   return $output;
 }
+function _biblio_keyword_links($keywords,$base='biblio') {
+  $options = array();
+  if (isset($_GET['sort'])) {
+    $options['query']  .= "sort=" . $_GET['sort'];
+  }
+  if (isset($_GET['order'])) {
+    $options['query']  .= $options['query'] ? "&" : "";
+    $options['query']  .= "order=" . $_GET['order'];
+  }
+  $html = "";
+  if (!is_array($keywords)) {
+    require_once(drupal_get_path('module', 'biblio') .'/includes/biblio.keywords.inc');
+    $keywords = biblio_explode_keywords($keywords);
+  }
+
+  $sep = variable_get('biblio_keyword_sep', ',');
+  foreach($keywords as $kid => $keyword ) {
+    $html .= (empty($html))? "" : "$sep ";
+    $html .= l(trim($keyword), "$base/keyword/$kid" , $options);
+  }
+  return $html;
+}

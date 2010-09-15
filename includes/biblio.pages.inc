@@ -1068,28 +1068,6 @@ function biblio_citekey_view() {
  * @param $base
  * @return unknown_type
  */
-function _biblio_keyword_links($keywords,$base='biblio') {
-  $options = array();
-  if (isset($_GET['sort'])) {
-    $options['query']  .= "sort=" . $_GET['sort'];
-  }
-  if (isset($_GET['order'])) {
-    $options['query']  .= $options['query'] ? "&" : "";
-    $options['query']  .= "order=" . $_GET['order'];
-  }
-  $html = "";
-  if (!is_array($keywords)) {
-    require_once(drupal_get_path('module', 'biblio') .'/biblio.keywords.inc');
-    $keywords = biblio_explode_keywords($keywords);
-  }
-
-  $sep = check_plain(variable_get('biblio_keyword_sep', ','));
-  foreach($keywords as $kid => $keyword ) {
-    $html .= (empty($html))? "" : "$sep ";
-    $html .= l(trim($keyword), "$base/keyword/$kid" , $options);
-  }
-  return $html;
-}
 
 function biblio_author_page($filter = NULL) {
     $authors = _biblio_get_authors($filter);
