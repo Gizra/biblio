@@ -915,7 +915,7 @@ function biblio_admin_type_mapper_page() {
   return theme('table', array('header' => $header, 'rows' => $rows));
 }
 
-function biblio_admin_type_mapper_form($form_state, $format = 'bibtex', $op = 'map') {
+function biblio_admin_type_mapper_form($form, $form_state, $format = 'bibtex', $op = 'map') {
   $names = biblio_get_map('type_names', $format);
   $map   = biblio_get_map('type_map', $format);
   ksort($names);
@@ -1044,8 +1044,7 @@ function biblio_admin_type_mapper_form_submit($form, $form_state) {
   //drupal_goto('admin/settings/biblio/fields/typemap');
 }
 
-function biblio_admin_field_mapper_form($form_state, $format = 'bibtex', $op = 'map') {
-  module_load_include('inc', 'biblio', 'biblio.type.mapper');
+function biblio_admin_field_mapper_form($form, $form_state, $format = 'bibtex', $op = 'map') {
   $map = biblio_get_map('field_map', $format);
   $form['fileformat'] = array(
     '#type' => 'hidden',
@@ -1076,7 +1075,7 @@ function biblio_admin_field_mapper_form($form_state, $format = 'bibtex', $op = '
     foreach ($map as $key => $value) {
       $biblio_field_select['#default_value'] = $map[$key];
       $form['type'][$key] = array(
-      'format' => array('#value' => "<b>".$key."</b>"),
+      'format' => array('#markup' => "<b>".$key."</b>"),
       'biblio' => $biblio_field_select,
       '#tree' => 1,
       );
@@ -1102,7 +1101,8 @@ function biblio_admin_field_mapper_form($form_state, $format = 'bibtex', $op = '
   return $form;
 }
 
-function theme_biblio_admin_field_mapper_form($form) {
+function theme_biblio_admin_field_mapper_form($variables) {
+  $form = $variables['form'];
   switch ($form['fileformat']['#value']) {
     case 'bibtex':
       $title = 'BibTex';
@@ -1132,7 +1132,7 @@ function theme_biblio_admin_field_mapper_form($form) {
     $title .' '.t('field identifier'),
     t('Biblio schema field')
   );
-  $output .= theme('table', $header, $rows);
+  $output = theme('table', array('header'  => $header, 'rows' => $rows));
   //$output .= l('['.t('Add New'). " $title ".t('Publication Type').']','admin/settings/biblio/fields/typemap/'.$form['fileformat']['#value'].'/add').' ';
   //$output .= l('['.t('Add New Biblio Publication Type').']','admin/settings/biblio/fields/type/new').'<br />';
   }
@@ -1143,7 +1143,6 @@ function theme_biblio_admin_field_mapper_form($form) {
   }
   $output .= drupal_render($form['submit']);
   $output .= drupal_render($form['reset']);
-  $output .= drupal_render($form);
 
   return $output;
 }
@@ -1824,6 +1823,7 @@ function biblio_admin_author_edit_form_submit($form, &$form_state) {
 
 
 function biblio_admin_orphans_form($form_state) {
+  $form = array();
   $base = variable_get('biblio_base', 'biblio');
   $sub_query = db_select('biblio_contributor', 'bc');
   $sub_query->fields('bc', array('cid'));
@@ -1839,6 +1839,7 @@ function biblio_admin_orphans_form($form_state) {
     $form['name'][$author->cid] = array('#value' => l($author->name, $base.'/authors/'.$author->cid.'/edit'));
     $form['affiliation'][$author->cid] = array('#value' => check_plain($author->affiliation));
   }
+  if (!empty($authors)) {
   $form['authors'] = array('#type' => 'checkboxes', '#options' => $authors);
   $form['pager']   = array('#value' => theme('pager', NULL, 50, 0));
   $form['#theme'] = 'biblio_admin_orphans_form';
@@ -1848,6 +1849,7 @@ function biblio_admin_orphans_form($form_state) {
     '#disabled' => (!count($authors)),
     '#submit' => array('biblio_admin_orphans_form_submit'),
   );
+  }
   return $form;
 }
 function biblio_admin_orphans_form_validate($form, &$form_state) {

@@ -1121,7 +1121,7 @@ function theme_biblio_admin_orphans_form($variables) {
   }
   $output .= theme('table', array('header' => $header, 'rows' => $rows));
 
-  if ($form['pager']['#value']) {
+  if (isset($form['pager']['#value'])) {
     $output .= drupal_render($form['pager']);
   }
 
