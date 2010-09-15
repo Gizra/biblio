@@ -327,7 +327,7 @@ function biblio_admin_settings() {
   );
   $options = array();
   $export_defaults = array();
-  $options = module_invoke_all('biblio_export_link_settings');
+  $options = module_invoke_all('biblio_export_options');
   if (!empty($options)) {
     $export_defaults = array_combine(array_keys($options), array_keys($options));
   }

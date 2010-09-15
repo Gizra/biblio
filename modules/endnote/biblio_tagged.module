@@ -28,65 +28,19 @@ function biblio_tagged_biblio_import_options() {
   return array('biblio_tagged' => t('EndNote Tagged'));
 }
 
-/*
-function biblio_tagged_form_biblio_node_form_alter(&$form, &$form_state) {
-  global $user;
-  if(phpversion() > 5 && !isset($form_state['storage']) && !isset($form['#node']->nid)) {
-    if(!isset($form_state['storage'])) {
-      $form['biblio_cut_paste'] = array(
-        '#type' => 'fieldset',
-        '#title' => t('Paste'),
-        '#weight' => -20,
-        '#collapsible' => TRUE,
-        '#collapsed' => TRUE,
-      );
-      $form['biblio_cut_paste']['paste_data'] = array(
-        '#type' => 'textarea',
-        '#title' => t('tagged'),
-        '#required' => FALSE,
-        '#default_value' => '',
-        '#description' => t('Paste a tagged entry here'),
-        '#size' => 60,
-        '#maxlength' => 2048,
-        '#weight' => -4
-      );
-      $form['biblio_cut_paste']['paste_submit'] = array(
-        '#type' => 'submit',
-        '#value' => t('Populate using tagged')
-      );
-    }
-    $form['#validate'] = array_merge(array('biblio_tagged_form_biblio_node_form_validate'), $form['#validate']); // put my validator first
-  }
-  $biblio_tagged_id = (isset($form_state['values']['biblio_tagged_id'])) ? $form_state['values']['biblio_tagged_id'] : '';
-  $biblio_tagged_md5 = (isset($form_state['values']['biblio_tagged_md5'])) ? $form_state['values']['biblio_tagged_md5'] : '';
-  $form['biblio_tagged_id'] = array('#type' => 'value', '#value'  => $biblio_tagged_id);
-  $form['biblio_tagged_md5'] = array('#type' => 'value', '#value' => $biblio_tagged_md5);
+
+function biblio_tagged_biblio_export_options() {
+  return array('tagged' => t('EndNote Tagged'), 'module' => 'biblio_tagged');
 }
 
-function biblio_tagged_form_biblio_node_form_validate($form, &$form_state) {
-  global $user;
-  $node_data = array();
-  if (strlen($form_state['values']['paste_data'])) {
-    $node_data = biblio_tagged_biblio_import($form_state['values']['paste_data'], array(), FALSE, NULL, FALSE, TRUE);
+function biblio_tagged_node_view($node, $view_mode) {
+  if ($node->type == 'biblio') {
+    $node->content['links']['biblio_tagged'] = array(
+        '#theme' => 'links',
+        '#links' => biblio_tagged_biblio_export_link($node->nid),
+        '#attributes' => array('class' => array('links', 'inline')),
+    );
   }
-  if(!empty($node_data)) {
-    $form_state['values'] = array_merge($form_state['values'], $node_data[0]);
-    $form_state['storage']['biblio_type']  = $node_data[0]['biblio_type'];
-    return;
-  }
-  return;
-}
-*/
-
-function biblio_tagged_biblio_export_link_settings() {
-  return array('tagged' => t('EndNote Tagged'));
-}
-
-function biblio_tagged_link($type, $node = NULL, $teaser = FALSE) {
-  if ($type != 'node' && $node->type != 'biblio') {
-    return;
-  }
-  return biblio_tagged_biblio_export_link($node->nid);
 }
 
 /**
@@ -144,21 +98,28 @@ function biblio_tagged_biblio_import($file, $terms = array(), $batch = FALSE, $s
 }
 
 function biblio_tagged_biblio_export($nid = null) {
+  $nids = array();
   if ($nid === null && isset ($_SESSION['last_biblio_query']) && !empty ($_SESSION['last_biblio_query'])) {
     $query = $_SESSION['last_biblio_query'];
     $params = $_SESSION['last_biblio_query_terms'];
+    $result = db_query($query, $params);
+    foreach ($result as $node) {
+      $nids[] = $node->nid;
+    }
+
   }
-  elseif (!empty ($nid)) {
-    $query = db_rewrite_sql("SELECT DISTINCT(n.nid) FROM {node} n  WHERE n.nid=:nid ");
-    $params = array(':nid' => $nid);
+  elseif (!empty ($nid) && is_numeric($nid)) {
+     $nids[] = $nid;
   }
   else {
     return;
   }
-  $result = db_query($query, $params);
+  if (!count($nids)) {
+    return;
+  }
   $count = 0;
 
-  if (module_exists('popups') && $nid) {
+  if (module_exists('popups') && count($nids)) {
     $popup = TRUE;
   }
   else {
@@ -166,9 +127,9 @@ function biblio_tagged_biblio_export($nid = null) {
     drupal_add_http_header('Content-Disposition', 'attachment; filename="Drupal-Biblio.enw"');
   }
 
-  foreach ($result as $node) {
+  foreach ($nids as $nid) {
 
-    $node = node_load($node->nid, FALSE, TRUE);
+    $node = node_load($nid, FALSE, TRUE);
     if (variable_get('biblio_hide_bibtex_braces', 0) ) {
       $node->title = biblio_remove_brace($node->title);
     }

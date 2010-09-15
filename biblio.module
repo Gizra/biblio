@@ -644,7 +644,7 @@ function biblio_menu() {
  //   'type'              => MENU_LOCAL_TASK,
     'weight'            => 10,
   );
-  $items["$base/user/%biblio_user"] = array(
+  $items["$base/user/%"] = array(
     'title'             => 'My publications',
     'page callback'     => 'biblio_get_user_pubs',
     'page arguments'    => array(2),
@@ -2370,9 +2370,15 @@ function biblio_token_values($type, $object = NULL) {
 }
 
 function _biblio_profile_access($user, $type = 'profile') {
-  if ($type == 'profile') $key = 'biblio_show_profile';
-  else if ($type == 'menu' && $user->uid > 0) $key = 'biblio_my_pubs_menu';
-  else return false;
+  if ($type == 'profile') {
+    $key = 'biblio_show_profile';
+  }
+  elseif ($type == 'menu' && !empty($user) && $user->uid > 0) {
+    $key = 'biblio_my_pubs_menu';
+  }
+  else {
+    return false;
+  }
 
   // if user cannot override site settings or user hasn't yet made its selection, we use site default
   if (!variable_get('biblio_show_user_profile_form', '1') || !isset($user->$key))

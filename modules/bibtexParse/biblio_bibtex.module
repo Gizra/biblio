@@ -86,16 +86,18 @@ function biblio_bibtex_form_biblio_node_form_validate($form, &$form_state) {
   return;
 }
 
-function biblio_bibtex_biblio_export_link_settings() {
+function biblio_bibtex_biblio_export_options() {
   return array('bibtex'  => t('BibTex'));
 }
 
-function biblio_bibtex_link($type, $node = NULL, $teaser = FALSE) {
-  if ($type != 'node' && $node->type != 'biblio') {
-    return;
+function biblio_bibtex_node_view($node, $view_mode) {
+  if ($node->type == 'biblio') {
+    $node->content['links']['biblio_bibtex'] = array(
+        '#theme' => 'links',
+        '#links' => biblio_bibtex_biblio_export_link($node->nid),
+        '#attributes' => array('class' => array('links', 'inline')),
+    );
   }
-
-  return biblio_bibtex_biblio_export_link($node->nid);
 }
 
 /**

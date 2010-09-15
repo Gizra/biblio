@@ -20,10 +20,19 @@ function biblio_rtf_menu() {
   return $items;
 }
 
-function biblio_rtf_biblio_export_link_settings() {
+function biblio_rtf_biblio_export_options() {
   return array('rtf' => t('RTF'));
 }
 
+function biblio_rtf_node_view($node, $view_mode) {
+  if($node->type == 'biblio') {
+    $node->content['links']['biblio_rtf'] = array(
+        '#theme' => 'links',
+        '#links' => biblio_rtf_biblio_export_link($node->nid),
+        '#attributes' => array('class' => array('links', 'inline')),
+      );
+  }
+}
 function biblio_rtf_link($type, $node = NULL, $teaser = FALSE) {
   if ($type != 'node' && $node->type != 'biblio') return;
 

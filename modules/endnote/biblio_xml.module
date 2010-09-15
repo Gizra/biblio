@@ -28,64 +28,18 @@ function biblio_xml_biblio_import_options() {
   return array('biblio_xml' => t('EndNote XML'));
 }
 
-/*
-function biblio_xml_form_biblio_node_form_alter(&$form, &$form_state) {
-  global $user;
-  if(phpversion() > 5 && !isset($form_state['storage']) && !isset($form['#node']->nid)) {
-    if(!isset($form_state['storage'])) {
-      $form['biblio_cut_paste'] = array(
-        '#type' => 'fieldset',
-        '#title' => t('Paste'),
-        '#weight' => -20,
-        '#collapsible' => TRUE,
-        '#collapsed' => TRUE,
-      );
-      $form['biblio_cut_paste']['paste_data'] = array(
-        '#type' => 'textarea',
-        '#title' => t('xml'),
-        '#required' => FALSE,
-        '#default_value' => '',
-        '#description' => t('Paste a xml entry here'),
-        '#size' => 60,
-        '#maxlength' => 2048,
-        '#weight' => -4
-      );
-      $form['biblio_cut_paste']['paste_submit'] = array(
-        '#type' => 'submit',
-        '#value' => t('Populate using xml')
-      );
-    }
-    $form['#validate'] = array_merge(array('biblio_xml_form_biblio_node_form_validate'), $form['#validate']); // put my validator first
-  }
-  $biblio_xml_id = (isset($form_state['values']['biblio_xml_id'])) ? $form_state['values']['biblio_xml_id'] : '';
-  $biblio_xml_md5 = (isset($form_state['values']['biblio_xml_md5'])) ? $form_state['values']['biblio_xml_md5'] : '';
-  $form['biblio_xml_id'] = array('#type' => 'value', '#value'  => $biblio_xml_id);
-  $form['biblio_xml_md5'] = array('#type' => 'value', '#value' => $biblio_xml_md5);
-}
-
-function biblio_xml_form_biblio_node_form_validate($form, &$form_state) {
-  global $user;
-  $node_data = array();
-  if (strlen($form_state['values']['paste_data'])) {
-    $node_data = biblio_xml_biblio_import($form_state['values']['paste_data'], array(), FALSE, NULL, FALSE, TRUE);
-  }
-  if(!empty($node_data)) {
-    $form_state['values'] = array_merge($form_state['values'], $node_data[0]);
-    $form_state['storage']['biblio_type']  = $node_data[0]['biblio_type'];
-    return;
-  }
-  return;
-}
-*/
-
-function biblio_xml_biblio_export_link_settings() {
+function biblio_xml_biblio_export_options() {
   return array('xml'  => t('EndNote XML'));
 }
 
-function biblio_xml_link($type, $node = NULL, $teaser = FALSE) {
-  if ($type != 'node' && $node->type != 'biblio') return;
-
-  return biblio_xml_biblio_export_link($node->nid);
+function biblio_xml_node_view($node, $view_mode) {
+  if ($node->type == 'biblio') {
+    $node->content['links']['biblio_xml'] = array(
+        '#theme' => 'links',
+        '#links' => biblio_xml_biblio_export_link($node->nid),
+        '#attributes' => array('class' => array('links', 'inline')),
+    );
+  }
 }
 
 /**
