@@ -76,8 +76,8 @@ function biblio_authors_add_etal (&$authors, $type) {
  */
 function biblio_parse_contributors($contributors) {
   $result = array();
+  if (!count($contributors)) return;
   foreach ($contributors as $cat => $authors) {
-
     $etal = array();
     foreach ($authors as $author) {
       // remove any form of "et al" from name field, because it confuses biblio_parse_author
@@ -204,7 +204,7 @@ function _save_contributors(&$contributors, $nid, $vid, $update = FALSE) {
         'nid' => $nid,
         'vid' => $vid,
         'cid' => $author['cid'],
-        'rank' => ((isset($author['rank']) && is_numeric($author['rank'])) ? $author['rank'] : $key),
+        'rank' => $rank++, //((isset($author['rank']) && is_numeric($author['rank'])) ? $author['rank'] : $key),
         'auth_type' => $author['auth_type'],
         'auth_category' => $cat,
       );
