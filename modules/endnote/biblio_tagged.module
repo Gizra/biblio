@@ -4,7 +4,7 @@
  * @file biblio_tagged.module
  *
  */
-function biblio_tagged_menu() {
+/*function biblio_tagged_menu() {
   global $user;
   $items = array();
   $base = variable_get('biblio_base', 'biblio');
@@ -19,7 +19,7 @@ function biblio_tagged_menu() {
 
   return $items;
 }
-/*
+*//*
  *   add the tagged option to the option list of the biblio_import_form
  *   the key is the module name use by module_invoke to call hook_biblio_import
  *   module_invoke('biblio_tagged', 'biblio_import',...)
@@ -97,28 +97,7 @@ function biblio_tagged_biblio_import($file, $terms = array(), $batch = FALSE, $s
   return array($nids, $dups);
 }
 
-function biblio_tagged_biblio_export($nid = null) {
-  $nids = array();
-  if ($nid === null && isset ($_SESSION['last_biblio_query']) && !empty ($_SESSION['last_biblio_query'])) {
-    $query = $_SESSION['last_biblio_query'];
-    $params = $_SESSION['last_biblio_query_terms'];
-    $result = db_query($query, $params);
-    foreach ($result as $node) {
-      $nids[] = $node->nid;
-    }
-
-  }
-  elseif (!empty ($nid) && is_numeric($nid)) {
-     $nids[] = $nid;
-  }
-  else {
-    return;
-  }
-  if (!count($nids)) {
-    return;
-  }
-  $count = 0;
-
+function biblio_tagged_biblio_export($nids) {
   if (module_exists('popups') && count($nids)) {
     $popup = TRUE;
   }

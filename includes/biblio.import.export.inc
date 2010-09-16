@@ -391,17 +391,25 @@ function biblio_import($import_file, $type, $userid = 1, $terms = NULL, $batch =
  */
 function biblio_export($format = "tagged", $nid = null, $popup = false, $version = 8) {
   $params = array ();
+  $nids = array();
   if ($nid === null && isset ($_SESSION['last_biblio_query']) && !empty ($_SESSION['last_biblio_query'])) {
     $query = $_SESSION['last_biblio_query'];
     $params = $_SESSION['last_biblio_query_terms'];
+    $result = db_query($query, $params);
+    foreach ($result as $node) {
+      $nids[] = $node->nid;
+    }
   }
   elseif (!empty ($nid)) {
-    $result = db_query("SELECT DISTINCT(n.nid) FROM {node} n  WHERE n.nid=:nid ", array(':nid' => $nid));
-    } else {
+    $nids[] = $nid;
+  }
+  elseif (!count($nids)){
     return;
   }
+  module_invoke('biblio_' .$format, 'biblio_export', $nids);
+
 //  $result = db_query($query, $params);
-  $count = 0;
+/*  $count = 0;
   foreach ($result as $node) {
     $node = node_load($node->nid, FALSE, TRUE);
     $count++;
@@ -416,7 +424,7 @@ function biblio_export($format = "tagged", $nid = null, $popup = false, $version
   }
 
   if ($popup && !empty($popup_data)) return '<pre>' . $popup_data . '</pre>';
-
+*/
 }
 
 /**

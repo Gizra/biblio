@@ -4,7 +4,7 @@
  * @file biblio_rtf.module
  *
  */
-function biblio_rtf_menu() {
+/*function biblio_rtf_menu() {
   global $user;
   $items = array();
   $base = variable_get('biblio_base', 'biblio');
@@ -19,7 +19,7 @@ function biblio_rtf_menu() {
 
   return $items;
 }
-
+*/
 function biblio_rtf_biblio_export_options() {
   return array('rtf' => t('RTF'));
 }
@@ -61,19 +61,7 @@ function biblio_rtf_biblio_export_link($nid = NULL) {
   return array('biblio_rtf' => $link);
 }
 
-function biblio_rtf_biblio_export($nid = null) {
-  if ($nid === null && isset ($_SESSION['last_biblio_query']) && !empty ($_SESSION['last_biblio_query'])) {
-    $query = $_SESSION['last_biblio_query'];
-    $params = $_SESSION['last_biblio_query_terms'];
-    $result = db_query($query, $params);
-    foreach($result as $node) {
-      $nids[] = $node->nid;
-    }
-  }
-  elseif (!empty ($nid) && is_numeric($nid)) {
-    $nids[] = $nid;
-  }
-
+function biblio_rtf_biblio_export($nids) {
   $count = 0;
 
   foreach ($nids as $nid) {
