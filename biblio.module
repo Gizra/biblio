@@ -1746,21 +1746,6 @@ function biblio_view($node, $buildmode = 'full') {
       case 'tabular' :
       default :
         $node->content['body']['#markup'] = theme('biblio_tabular', array('node' => $node, 'base' => $base));
-        if (biblio_access('export', $node)) {
-          $show_link = variable_get('biblio_export_links', array('tagged' => TRUE, 'xml' => TRUE, 'bibtex' => TRUE));
-          $show_link['google'] = variable_get('biblio_google_link', 1);
-          if ($show_link['tagged']) $links['biblio_tagged']         = _build_biblio_tagged_link($base, $node->nid);
-          if ($show_link['xml'])    $links['biblio_xml']            = _build_biblio_xml_link($base, $node->nid);
-          if ($show_link['bibtex']) $links['biblio_bibtex']         = _build_biblio_bibtex_link($base, $node->nid);
-          if ($show_link['google']) $links['biblio_google_scholar'] = _build_google_scholar_link($node);
-        }
-        $node->content['links']['biblio'] = array(
-          '#theme' => 'links',
-          '#links' => $links,
-          '#attributes' => array('class' => array('links', 'inline')),
-        );
-
-
         break;
     }
     drupal_set_breadcrumb(array(l(t('Home'), NULL), l(drupal_ucfirst($base_title), $base)));

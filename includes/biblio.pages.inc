@@ -90,6 +90,8 @@ function biblio_db_search() {
   $inline = in_array('inline', $arg_list);
   $inline = in_array('profile', $arg_list)?'profile':$inline;
 
+  $_SESSION['last_biblio_query'] = $arg_list;
+
   $query_info = biblio_build_query($arg_list);
   if ($query_info['rss']['feed']){
     biblio_filter_feed($query_info['query'], $query_info['query_terms'], $query_info['rss']);

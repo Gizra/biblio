@@ -389,13 +389,21 @@ function biblio_import($import_file, $type, $userid = 1, $terms = NULL, $batch =
  * @return
  *   none
  */
-function biblio_export($format = "tagged", $nid = null, $popup = false, $version = 8) {
+function biblio_export($format = "tagged", $nid = null, $popup = false) {
   $params = array ();
   $nids = array();
-  if ($nid === null && isset ($_SESSION['last_biblio_query']) && !empty ($_SESSION['last_biblio_query'])) {
-    $query = $_SESSION['last_biblio_query'];
-    $params = $_SESSION['last_biblio_query_terms'];
-    $result = db_query($query, $params);
+  if ($nid === null && isset ($_SESSION['last_biblio_query']) ) {
+    module_load_include('inc','biblio','includes/biblio.pages');
+
+    $arg_list = $_SESSION['last_biblio_query'];
+    $query_info = biblio_build_query($arg_list);
+    if(isset($query_info['query'])) {
+      $result = $query_info['query'];
+    }
+    else {
+      $result = array();
+    }
+
     foreach ($result as $node) {
       $nids[] = $node->nid;
     }
@@ -406,25 +414,9 @@ function biblio_export($format = "tagged", $nid = null, $popup = false, $version
   elseif (!count($nids)){
     return;
   }
+
   module_invoke('biblio_' .$format, 'biblio_export', $nids);
 
-//  $result = db_query($query, $params);
-/*  $count = 0;
-  foreach ($result as $node) {
-    $node = node_load($node->nid, FALSE, TRUE);
-    $count++;
-    set_time_limit(30);
-    switch ($format) {
-      case "csv" :
-        drupal_add_http_header('Content-Type', 'application/text; charset=utf-8');
-        drupal_add_http_header('Content-Disposition', 'attachment; filename=Biblio-export.csv');
-        print biblio_csv_export($node);
-        break;
-    }
-  }
-
-  if ($popup && !empty($popup_data)) return '<pre>' . $popup_data . '</pre>';
-*/
 }
 
 /**

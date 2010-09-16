@@ -869,107 +869,51 @@ function theme_biblio_download_links($variables) {
  * @return an un-ordered list of class "biblio-export-buttons"
  */
 function theme_biblio_export_links($variables) {
+  global $pager_total_items;
   $node = $variables['node'];
-    global $pager_total_items;
-  $base = variable_get('biblio_base', 'biblio');
-  $show_link = variable_get('biblio_export_links', array('tagged' => TRUE, 'xml' => TRUE, 'bibtex' => TRUE));
-  $show_link['google'] = variable_get('biblio_google_link', 1);
+  $links = array();
+  $output = '';
 
-  $links = '';
-  if ($show_link['tagged']) $links .= '<li> '. _build_biblio_link($base, $node, 'tagged') .'</li>';
-  if ($show_link['xml'])    $links .= '<li> '. _build_biblio_link($base, $node, 'xml') .'</li>';
-  if ($show_link['bibtex']) $links .= '<li> '. _build_biblio_link($base, $node, 'bibtex') .'</li>';
-  if ($show_link['google'] && !empty($node))
-                            $links .= '<li> '. _build_biblio_link($base, $node, 'google') .'</li>';
-
-  if (!empty($links)) $links = '<ul class="biblio-export-buttons">' . $links . '</ul>';
+  if (biblio_access('export', $node)) {
+    $show_link = variable_get('biblio_lookup_links', array('google' => TRUE));
+    $lookup_links = module_invoke_all('biblio_lookup_link', $node);
+    if ($show_link['google'] && !empty($node)) {
+      $lookup_links['biblio_google_scholar'] = _build_google_scholar_link($node);
+    }
+    $nid = (isset($node->nid)) ? $node->nid : NULL;
+    $export_links = module_invoke_all('biblio_export_link', $nid);
+    $links = array_merge($lookup_links, $export_links);
+  }
   if (empty($node) && !empty($links)) {
-    $links = t('Export @count results', array('@count' => $pager_total_items[0])).':' . $links;
+    $output = t('Export @count results', array('@count' => $pager_total_items[0])).': ';
   }
-  return $links;
+  return $output . theme('links', array('links' => $links, 'attributes' => array('class' => "biblio-export-buttons")));
+
 }
 
-/**
- * Creates a link to export a node (or view) in EndNote Tagged format
- *
- * @param $base this is the base url (defaults to /biblio)
- * @param $nid  the node id, if NULL then the current view is exported
- * @return  a link (<a href=...>Tagged</a>)
- */
-function _build_biblio_link($base, $node = NULL, $type = NULL) {
-  $nid = ($node) ? $node->nid : NULL;
-  switch ($type) {
-    case 'bibtex':
-      $link = _build_biblio_bibtex_link($base, $nid);
-      break;
-    case 'tagged':
-      $link = _build_biblio_tagged_link($base, $nid);
-      break;
-    case 'xml':
-      $link = _build_biblio_xml_link($base, $nid);
-      break;
-    case 'google':
-      $link = _build_google_scholar_link($node);
-      break;
-  }
-  return  l($link['title'], $link['href'], $link);
-}
 
-function _build_biblio_tagged_link($base, $nid) {
-  if (module_exists('popups') && !empty($nid)) {
-    $link = array('href' => "$base/export/tagged/$nid/popup", 'attributes' => array('class' => 'popups', 'title' => t("Click to get the EndNote Tagged output ")));
-  } else {
-    $link = array('href' => "$base/export/tagged/$nid", 'attributes' => array('title' => t("Click to download the EndNote Tagged formatted file")));
-  }
-  $link['title'] = t('Tagged');
-
-  return $link;
-}
-/**
- * Creates a link to export a node (or view) in BibTEX format
- *
- * @param $base this is the base url (defaults to /biblio)
- * @param $nid  the node id, if NULL then the current view is exported
- * @return  a link (<a href=...>BibTEX</a>)
- */
-function _build_biblio_bibtex_link($base, $nid = NULL) {
-  if (module_exists('popups') && !empty($nid)) {
-    $link = array('href' => "$base/export/bibtex/$nid/popup", 'attributes' => array('class' => 'popups', 'title' => t("Click to get the BibTEX output ")));
-  } else {
-    $link = array('href' => "$base/export/bibtex/$nid", 'attributes' => array('title' => t("Click to download the BibTEX formatted file")));
-  }
-  $link['title'] = t('BibTex');
-
-  return $link;
-}
-
-/**
- * Creates a link to export a node (or view) in XML format
- *
- * @param $base this is the base url (defaults to /biblio)
- * @param $nid  the node id, if NULL then the current view is exported
- * @return  a link (<a href=...>XML</a>)
- */
-function _build_biblio_xml_link($base, $nid = NULL) {
-//  if (module_exists('popups') && !empty($nid)) {
-//    $link = array('href' => "$base/export/xml/$nid/popup", 'attributes' => array('class' => 'popups', 'title' => t("Click to get the XML output ")));
-//  } else {
-    $link = array('href' => "$base/export/xml/$nid", 'attributes' => array('title' => t("Click to download the XML formatted file")));
-//  }
-  $link['title'] = t('XML');
-
-  return $link;
-}
 function _build_google_scholar_link($node) {
-  $link  = 'http://scholar.google.com/scholar?as_q=';
-  $link .= '"'.str_replace(' ', '+', $node->title).'"';
-  $link .= '&btnG=Search+Scholar&as_epq=&as_oq=&as_eq=&as_occt=any&as_sauthors='.biblio_get_first_contributor($node->vid)->lastname;
+  $query = array();
+
+  $query['btnG'] = 'Search+Scholar';
+  $query['as_q'] = '"'.str_replace(' ', '+', $node->title).'"'; // as_q = all the words
+  $query['as_sauthors'] = $node->biblio_contributors[1][0]['lastname'];
+  $query['as_occt'] = 'any';
+  $query['as_epq'] = ''; // exact phrase
+  $query['as_oq'] = ''; // at least one of the words
+  $query['as_eq'] = ''; // without the words
+  $query['as_publication'] = ''; // published in
+  $query['as_ylo'] = ''; // lower date in date range
+  $query['as_yhi'] = ''; // upper date in date range
+  $query['as_sdtAAP'] = 1; //Search articles in all subject areas
+  $query['as_sdtp'] = 1; //include patents
 
   return array(
         'title'      => t('Google Scholar'),
-        'href'       => $link,
+        'href'       => 'http://scholar.google.com/scholar',
         'attributes' => array('title' => t("Click to search Google Scholar for this entry")),
-        );
+        'query'      => $query,
+  );
 }
 
 /**

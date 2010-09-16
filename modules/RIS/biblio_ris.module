@@ -94,12 +94,13 @@ function biblio_ris_biblio_import($file, $terms = array(), $batch = FALSE, $sess
   return array($nids, $dups);
 }
 
-function biblio_ris_biblio_export($nida) {
+function biblio_ris_biblio_export($nids) {
 
   if (module_exists('popups') && $nid) {
     $popup = TRUE;
   }
   else {
+    $popup = FALSE;
     drupal_add_http_header('Content-type', 'application/x-endnote-refer');
     drupal_add_http_header('Content-Disposition', 'attachment; filename="Drupal-Biblio.ris"');
   }
