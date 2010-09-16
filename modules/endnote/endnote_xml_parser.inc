@@ -30,7 +30,7 @@ class EndNoteXMLParser {
     $this->dups = array();
 
     if (!($fp = fopen($file->filepath, "r"))) {
-      drupal_set_message("could not open XML input", 'error');
+      drupal_set_message(t("could not open XML input"), 'error');
       return;
     }
     $data = fread($fp, 2048);
@@ -42,11 +42,11 @@ class EndNoteXMLParser {
     }
     if ($this->format) {
       $this->parser = drupal_xml_parser_create($data);
-      xml_parser_set_option($this->parser, XML_OPTION_CASE_FOLDING, false);
-      xml_parser_set_option($this->parser, XML_OPTION_SKIP_WHITE, true);
+      xml_parser_set_option($this->parser, XML_OPTION_CASE_FOLDING, FALSE);
+      xml_parser_set_option($this->parser, XML_OPTION_SKIP_WHITE, TRUE);
       xml_set_object($this->parser, $this);
-      xml_set_element_handler($this->parser, $this->format .'_startElement', $this->format .'_endElement');
-      xml_set_character_data_handler($this->parser, $this->format .'_characterData');
+      xml_set_element_handler($this->parser, $this->format . '_startElement', $this->format . '_endElement');
+      xml_set_character_data_handler($this->parser, $this->format . '_characterData');
 
       xml_parse($this->parser, $data, feof($fp));
 

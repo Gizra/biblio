@@ -102,6 +102,7 @@ function biblio_tagged_biblio_export($nids) {
     $popup = TRUE;
   }
   else {
+    $popup = FALSE;
     drupal_add_http_header('Content-type', 'application/x-endnote-refer');
     drupal_add_http_header('Content-Disposition', 'attachment; filename="Drupal-Biblio.enw"');
   }

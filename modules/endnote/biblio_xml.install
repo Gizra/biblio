@@ -72,14 +72,14 @@ function _save_endnote8_maps() {
 
 function _reset_endnote_xml_map($version, $type) {
   $count = db_result(db_query("SELECT COUNT(*) FROM {biblio_type_maps} WHERE format='%s'", $version));
-  if($count && $type) { //update
-    $function = '_get_'.$version.'_'.$type;
+  if ($count && $type) { //update
+    $function = '_get_'. $version . '_' . $type;
     $map = $function();
     drupal_write_record('biblio_type_maps', $map, 'format');
   }
   else { // install
-    db_query("DELETE FROM {biblio_type_maps} WHERE format=%s'", $version);
-    $save_maps = '_save_'.$version.'_maps';
+    db_query("DELETE FROM {biblio_type_maps} WHERE format='%s'", $version);
+    $save_maps = '_save_' . $version . '_maps';
     $save_maps();
   }
 }
