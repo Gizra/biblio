@@ -135,7 +135,7 @@ function biblio_insert_keywords($node, $update = FALSE) {
           }
         }
       }
-      else if ($term) {
+      elseif ($term) {
         $term_obj = taxonomy_get_term($term);
         $taxo_terms[$term_obj->tid] = $term_obj->name;
       }
@@ -192,7 +192,8 @@ function biblio_save_keyword(&$keyword) {
   if (!empty($keyword['kid']) && $keyword['word']) {
     drupal_write_record('biblio_keyword_data', $keyword, 'kid');
     $status = SAVED_UPDATED;
-  } else {
+  }
+  else {
     drupal_write_record('biblio_keyword_data', $keyword);
     $status = SAVED_NEW;
   }
@@ -200,7 +201,7 @@ function biblio_save_keyword(&$keyword) {
   return $status;
 }
 
-function biblio_delete_orphan_keywords ($force = FALSE) {
+function biblio_delete_orphan_keywords($force = FALSE) {
   if (variable_get('biblio_auto_orphaned_keyword_delete', 0) || $force) {
 //    $sub_select = db_select('biblio_keyword', 'bk');
 //    $sub_select->addField('bk', 'kid');
@@ -280,7 +281,7 @@ function biblio_delete_keyword($keyword_id) {
 
 function biblio_explode_keywords($string) {
   $sep = variable_get('biblio_keyword_sep', ',');
-  $regexp = '%(?:^|'.$sep.'\ *)("(?>[^"]*)(?>""[^"]* )*"|(?: [^"'.$sep.']*))%x';
+  $regexp = '%(?:^|' . $sep . '\ *)("(?>[^"]*)(?>""[^"]* )*"|(?: [^"' . $sep . ']*))%x';
   preg_match_all($regexp, $string, $matches);
   $keyword_array = array_unique($matches[1]);
 
@@ -303,7 +304,7 @@ function biblio_implode_keywords($keywords, $sep = '') {
   foreach ($keywords as $kid => $keyword) {
     $string .= strlen($string)?"$sep ":'';
     if (strpos($keyword, $sep) !== FALSE) {
-      $string .= '"'.$keyword.'"';
+      $string .= '"' . $keyword . '"';
     }
     else {
       $string .= $keyword;
