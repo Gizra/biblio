@@ -57,17 +57,19 @@ function biblio_load_contributors($vid) {
  *
  * @param $authors - author array to augment
  * @param $type - auth_type
- * @return true if author was added, false if "etal" was already there
+ * @return TRUE if author was added, FALSE if "etal" was already there
  */
-function biblio_authors_add_etal (&$authors, $type) {
+function biblio_authors_add_etal(&$authors, $type) {
   $etal = "et al"; $max_rank = 0;
   foreach ($authors as $author) { // et al author should be added only once per type
     if ($author['auth_type'] != $type) continue;
-    if ($author['name'] == $etal) return false;
+    if ($author['name'] == $etal) {
+      return FALSE;
+    }
     $max_rank = max($max_rank, $author['rank']);
   }
   $authors[] = biblio_parse_author(array('name' => $etal, 'auth_type' => $type, 'lastname' => $etal, 'rank' => $max_rank + 1));
-  return true;
+  return TRUE;
 }
 /**
  * Parse initial contributor array and augment with additional info
@@ -81,10 +83,10 @@ function biblio_parse_contributors($contributors) {
     $etal = array();
     foreach ($authors as $author) {
       // remove any form of "et al" from name field, because it confuses biblio_parse_author
-      $author_cleaned = preg_replace("/et\.?\s+al\.?/",'',$author['name']);
+      $author_cleaned = preg_replace("/et\.?\s+al\.?/", '', $author['name']);
       if ($author_cleaned != $author['name']) { // if "et al" was present:
         $author['name'] = $author_cleaned;  // store cleaned name
-        $etal[$author['auth_type']] = true; // mark it as "to be added" in $etal array
+        $etal[$author['auth_type']] = TRUE; // mark it as "to be added" in $etal array
       }
       $author['name'] = trim($author['name']);
       if (strlen($author['name'])) {
@@ -94,7 +96,7 @@ function biblio_parse_contributors($contributors) {
     // add "et al" authors for all neccessary author types
     foreach ($etal as $type => $dummy) {
       if (isset($result[$cat])) { // add "et al" only if plain authors exists
-        biblio_authors_add_etal ($result[$cat], $type);
+        biblio_authors_add_etal($result[$cat], $type);
       }
     }
   }
@@ -142,7 +144,7 @@ function biblio_count_orphan_authors() {
 function biblio_get_orphan_authors() {
   $authors = array();
   $result =  db_query('SELECT bcd.* FROM {biblio_contributor_data} bcd WHERE bcd.cid NOT IN (SELECT DISTINCT(bc.cid) FROM {biblio_contributor} bc )');
-  foreach($result as $author) {
+  foreach ($result as $author) {
     $authors[] = $author;
   }
   return $authors;
@@ -155,7 +157,7 @@ function biblio_delete_orphan_authors($force = FALSE) {
 }
 
 function biblio_insert_contributors($node) {
-  if (empty ($node->biblio_contributors)) return true;
+  if (empty ($node->biblio_contributors)) return TRUE;
   return _save_contributors($node->biblio_contributors, $node->nid, $node->vid);
 }
 
@@ -171,7 +173,7 @@ function biblio_save_contributor(&$author) {
 }
 
 function biblio_update_contributor(&$author) {
-  if (!isset($author['cid'])) return false;
+  if (!isset($author['cid'])) return FALSE;
   return drupal_write_record('biblio_contributor_data', $author, 'cid');
 }
 
@@ -185,19 +187,20 @@ function biblio_update_contributor(&$author) {
  */
 function _save_contributors(&$contributors, $nid, $vid, $update = FALSE) {
   $md5 = _loadMD5();
+  $rank = 0;
   db_query('DELETE FROM {biblio_contributor} WHERE nid = :nid AND vid = :vid', array(':nid' => $nid, ':vid' => $vid));
   foreach ($contributors as $cat => $authors) {
     foreach ($authors as $key => $author) {
-      if(empty($author['lastname'])) {
+      if (empty($author['lastname'])) {
         $contributors[$cat][$key] = $author = biblio_parse_author($author, $cat);
       }
-      if ($update && !empty($author['cid']))  $author['cid'] = null; // null out the cid so we don't do a global change
+      if ($update && !empty($author['cid']))  $author['cid'] = NULL; // null out the cid so we don't do a global change
       if (empty ($author['cid']) && isset($author['md5']) && !empty ($md5)) {
         $author['cid'] = array_search($author['md5'], $md5);
       }
       if (empty ($author['cid'])) {
         biblio_save_contributor($author);
-        if (empty ($author['cid'])) return false;
+        if (empty ($author['cid'])) return FALSE;
       }
 
       $link_array = array(
@@ -209,11 +212,11 @@ function _save_contributors(&$contributors, $nid, $vid, $update = FALSE) {
         'auth_category' => $cat,
       );
 
-      if (!drupal_write_record('biblio_contributor', $link_array)) return false;
+      if (!drupal_write_record('biblio_contributor', $link_array)) return FALSE;
     }
   }
   db_query("UPDATE {biblio_contributor_data} SET aka = cid WHERE aka = 0 OR aka IS NULL");
-  return true; // successfully saved all contributors
+  return TRUE; // successfully saved all contributors
 }
 /*
  Released through http://bibliophile.sourceforge.net under the GPL licence.
@@ -251,7 +254,7 @@ function _save_contributors(&$contributors, $nid, $vid, $update = FALSE) {
  */
 function biblio_parse_author($author_array, $cat = 0) {
 
-  if ($cat == 5){
+  if ($cat == 5) {
     $author_array['firstname'] = '';
     $author_array['initials'] = '';
     $author_array['lastname'] = trim($author_array['name']);
@@ -314,7 +317,7 @@ function biblio_parse_author($author_array, $cat = 0) {
  * @return unknown_type
  */
 function _md5sum($creator) {
-  $string = $creator['firstname'] . $creator['initials'] . $creator['prefix'] .$creator['lastname'];
+  $string = $creator['firstname'] . $creator['initials'] . $creator['prefix'] . $creator['lastname'];
   $string = str_replace(' ', '', drupal_strtolower($string));
   return md5($string);
 }
@@ -328,25 +331,27 @@ function _grabFirstnameInitials($remainder) {
   $firstname = $initials = '';
   $array = explode(" ", $remainder);
   foreach ($array as $value) {
-    $firstChar = drupal_substr($value, 0, 1);
-    if ((ord($firstChar) >= 97) && (ord($firstChar) <= 122)){
+    $first_char = drupal_substr($value, 0, 1);
+    if ((ord($first_char) >= 97) && (ord($first_char) <= 122)) {
     $prefix[] = $value;
-    } else if (preg_match("/[a-zA-Z]{2,}/", trim($value))){
-      $firstnameArray[] = trim($value);
-    } else {
-      $initialsArray[] = trim(str_replace(".", " ", trim($value)));
+    }
+    elseif (preg_match("/[a-zA-Z]{2,}/", trim($value))) {
+      $firstname_array[] = trim($value);
+    }
+    else {
+      $initials_array[] = trim(str_replace(".", " ", trim($value)));
     }
   }
-  if (isset ($initialsArray)) {
-    $initials = implode(" ", $initialsArray);
+  if (isset ($initials_array)) {
+    $initials = implode(" ", $initials_array);
   }
-  if (isset ($firstnameArray)) {
-    $firstname = implode(" ", $firstnameArray);
+  if (isset ($firstname_array)) {
+    $firstname = implode(" ", $firstname_array);
   }
-  if (!empty ($prefix)){
+  if (!empty ($prefix)) {
     $prefix = implode(" ", $prefix);
   }
-  return array($firstname,$initials,$prefix);
+  return array($firstname, $initials, $prefix);
 }
 // surname may have title such as 'den', 'von', 'de la' etc. - characterised by first character lowercased.  Any
 // uppercased part means lowercased parts following are part of the surname (e.g. Van den Bussche)
@@ -355,20 +360,20 @@ function _grabFirstnameInitials($remainder) {
  * @return unknown_type
  */
 function _grabSurname($input) {
-  $noPrefix = FALSE;
+  $no_prefix = FALSE;
   $surname = FALSE;
   $prefix  = FALSE;
 
-  $surnameArray = explode(" ", $input);
+  $surname_array = explode(" ", $input);
 
-  foreach ($surnameArray as $value) {
-    $firstChar = substr($value, 0, 1);
-    if (!$noPrefix && (ord($firstChar) >= 97) && (ord($firstChar) <= 122)) {
+  foreach ($surname_array as $value) {
+    $first_char = substr($value, 0, 1);
+    if (!$no_prefix && (ord($first_char) >= 97) && (ord($first_char) <= 122)) {
       $prefix[] = $value;
     }
     else {
       $surname[] = $value;
-      $noPrefix = TRUE;
+      $no_prefix = TRUE;
     }
   }
   if (!empty($surname)) {
@@ -386,7 +391,7 @@ function _loadMD5() {
   static $md5   = array();
   static $count = 0;
   $db_count = db_query("SELECT COUNT(*) FROM {biblio_contributor_data}")->fetchField();;
-  if ($db_count != $count){ //refresh the cached data as some new authors may have been added or removed
+  if ($db_count != $count) { //refresh the cached data as some new authors may have been added or removed
     $count = $db_count;
     $md5 = array();
     $result = db_query('SELECT md5,cid  FROM {biblio_contributor_data} ');
