@@ -6,7 +6,7 @@
  */
 
 function biblio_pm_form_biblio_node_form_alter(&$form, &$form_state, $form_id) {
-  if (phpversion() > 5 && !$form_state['submitted'] && !isset($form['#node']->nid)) {
+  if (phpversion() > 5 && !$form_state['submitted'] && !isset($form['node']->nid)) {
     $form['biblio_pubmed_lookup'] = array(
         '#type' => 'fieldset',
         '#title' => t('PubMed Lookup'),
@@ -19,7 +19,7 @@ function biblio_pm_form_biblio_node_form_alter(&$form, &$form_state, $form_id) {
         '#type' => 'textfield',
         '#title' => t('PubMed ID'),
         '#required' => FALSE,
-        '#default_value' => $form_state['values']['PMID'],
+        '#default_value' => $form_state['input']['PMID'],
         '#description' => t('Enter a PubMed ID</b>'),
         '#size' => 60,
         '#maxlength' => 255,
@@ -31,8 +31,12 @@ function biblio_pm_form_biblio_node_form_alter(&$form, &$form_state, $form_id) {
     );
     $form['#validate'] = array_merge(array('biblio_pm_form_biblio_node_form_validate'), $form['#validate']); // put my validator first
   }
-  $form['biblio_pubmed_id'] = array('#type' => 'value', '#value' => $form_state['values']['biblio_pubmed_id']);
-  $form['biblio_pubmed_md5'] = array('#type' => 'value', '#value' => $form_state['values']['biblio_pubmed_md5']);
+  if (isset($form_state['input']['biblio_pubmed_id'])) {
+    $form['biblio_pubmed_id'] = array('#type' => 'value', '#value' => $form_state['input']['biblio_pubmed_id']);
+  }
+  if (isset($form_state['values']['biblio_pubmed_md5'])) {
+    $form['biblio_pubmed_md5'] = array('#type' => 'value', '#value' => $form_state['values']['biblio_pubmed_md5']);
+  }
 }
 
 function biblio_pm_form_biblio_node_form_validate($form, &$form_state) {
@@ -66,16 +70,11 @@ function biblio_pm_form_biblio_node_form_validate($form, &$form_state) {
     }
   }
   if (!empty($node_data)) {
-    foreach($node_data as $key => $value) {
-      $element['#parents'] = array($key);
-      form_set_value($element, $value, $form_state);
-    }
-    $element['#parents'] = array('storage','biblio_type');
-    form_set_value($element, $node_data['biblio_type'], $form_state);
-
-    return;
+    $form_state['values'] = array_merge($form_state['values'], $node_data);
+    $form_state['storage']['biblio_type']  = $node_data['biblio_type'];
   }
 
+    return;
 }
 
 function biblio_pm_biblio_import_options() {
@@ -183,7 +182,12 @@ function biblio_pm_node_update($node) {
 }
 
 function biblio_pm_node_load($nodes, $types) {
-  $result = db_query('SELECT  biblio_pubmed_id  FROM {biblio_pubmed} WHERE nid IN(:nids)', array(':nids' => array_keys($nodes)));
+    $result = db_select('biblio_pubmed', 'bpm')
+          ->fields('bpm', array('nid','biblio_pubmed_id'))
+          ->condition('nid', array_keys($nodes))
+          ->execute();
+
+ // $result = db_query('SELECT  biblio_pubmed_id  FROM {biblio_pubmed} WHERE nid IN(:nids)', array(':nids' => array_keys($nodes)));
   foreach ($result as $record) {
     $nodes[$record->nid]->biblio_pubmed_id = $record->biblio_pubmed_id;
   }

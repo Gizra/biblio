@@ -68,14 +68,16 @@ function biblio_openURL($node) {
     $co["sid"] = !empty($user_sid) ? $user_sid : variable_get('biblio_openurl_sid', $sid);
 
     $openURL = $openURLResolver;
-    if (!ereg("\?", $openURLResolver))
-    $openURL .= "?";
-    else
-    $openURL .= "&amp;";
+    if (!preg_match("/\?/", $openURLResolver)) {
+      $openURL .= "?";
+    }
+    else {
+      $openURL .= "&amp;";
+    }
     $openURL .= "ctx_ver=Z39.88-2004";
     foreach ($co as $coKey => $coValue) {
-      $coKey = ereg_replace("rft.", "", $coKey);
-      $coKey = ereg_replace("au[0-9]*", "au", $coKey);
+      $coKey = preg_replace("/rft./", "", $coKey);
+      $coKey = preg_replace("/au[0-9]*/", "au", $coKey);
       $openURL .= "&amp;". $coKey ."=". rawurlencode($coValue);
     }
   }
@@ -457,9 +459,9 @@ function theme_biblio_format_authors($variables)
       //$author['initials'] = str_replace(' ', '',  $author['initials']);
 
       // within initials, add a space after a hyphen, but only if ...
-      if (ereg(" $", $options['betweenInitialsDelim'])) // ... the delimiter that separates initials ends with a space
-      $author['initials'] = preg_replace("/-(?=[$upper])/$patternModifiers", "- ", $author['initials']);
-
+      if (preg_match('/ $/', $options['betweenInitialsDelim'])) { // ... the delimiter that separates initials ends with a space
+        $author['initials'] = preg_replace("/-(?=[$upper])/$patternModifiers", "- ", $author['initials']);
+      }
       // then, separate initials with the specified delimiter:
       $delim = $options['betweenInitialsDelim'];
       $author['initials'] = preg_replace("/([$upper])(?=[^$lower]+|$)/$patternModifiers", "\\1$delim", $author['initials']);
@@ -521,9 +523,9 @@ function theme_biblio_format_authors($variables)
       // we'll append the string in '$customStringAfterFirstAuthors' to the number of authors given in '$includeNumberOfAuthors' if the total number of authors is greater than the number given in '$numberOfAuthorsTriggeringEtAl':
       if ((($rank + 1) == $options['includeNumberOfAuthors']) AND ($authorCount > $options['numberOfAuthorsTriggeringEtAl']))
       {
-        if (ereg("__NUMBER_OF_AUTHORS__", $options['customStringAfterFirstAuthors']))
-        $customStringAfterFirstAuthors = preg_replace("/__NUMBER_OF_AUTHORS__/", ($authorCount - $options['includeNumberOfAuthors']), $options['customStringAfterFirstAuthors']); // resolve placeholder
-
+        if (preg_match("/__NUMBER_OF_AUTHORS__/", $options['customStringAfterFirstAuthors'])) {
+          $customStringAfterFirstAuthors = preg_replace("/__NUMBER_OF_AUTHORS__/", ($authorCount - $options['includeNumberOfAuthors']), $options['customStringAfterFirstAuthors']); // resolve placeholder
+        }
         $includeStringAfterFirstAuthor = true;
         break;
       }

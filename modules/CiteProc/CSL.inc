@@ -515,7 +515,7 @@ class csl_name extends csl_format {
         // within initials, remove any spaces *between* initials:
         $name['initials'] = preg_replace("/(?<=[-$this->upper]) +(?=[-$this->upper])/$this->patternModifiers", "", $name['initials']);
         // within initials, add a space after a hyphen, but only if ...
-        if (ereg(" $", $initialize_with)) {// ... the delimiter that separates initials ends with a space
+        if (preg_match("/ $/", $initialize_with)) {// ... the delimiter that separates initials ends with a space
           $name['initials'] = preg_replace("/-(?=[$this->upper])/$this->patternModifiers", "- ", $name['initials']);
         }
         // then, separate initials with the specified delimiter:

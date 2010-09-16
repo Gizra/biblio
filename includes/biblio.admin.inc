@@ -1938,7 +1938,7 @@ function biblio_admin_keyword_edit_form($form, $form_state, $keyword_id) {
   foreach($keywords as $kw) {
     $options[$kw->kid] = l($kw->word,$base.'/keywords/'.$kw->kid.'/edit/');
   }
-  if ($options) {
+  if (isset($options) && !empty($options)) {
     $form['merge'] = array(
       '#type' => 'fieldset',
       '#title' => t('Keyword Merge'),

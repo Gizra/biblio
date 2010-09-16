@@ -2139,7 +2139,7 @@ function biblio_coins($node) {
   foreach ($co as $coKey => $coValue) {
     // 'urlencode()' differs from 'rawurlencode() (i.e., RFC1738 encoding)
     // in that spaces are encoded as plus (+) signs
-    $coKey = ereg_replace("au[0-9]*", "au", $coKey);
+    $coKey = preg_replace("/au[0-9]*/", "au", $coKey);
     $coins .= "&amp;". $coKey ."=". urlencode($coValue);
   }
   $coinsSpan = "<span class=\"Z3988\" title=\"". $coins ."\"></span>";
@@ -2194,7 +2194,7 @@ function biblio_contextObject($node) {
   // spage, epage, tpages (pages)
   // NOTE: lifted from modsxml.inc.php--should throw some into a new include file
   if (!empty($node->biblio_pages)) {
-    if (ereg("[0-9] *- *[0-9]", $node->biblio_pages)) {
+    if (preg_match("/[0-9] *- *[0-9]/", $node->biblio_pages)) {
       list ($pagestart, $pageend) = preg_split('/\s*[-]\s*/', $node->biblio_pages);
       if ($pagestart < $pageend) {
         $co["rft.spage"] = check_plain($pagestart);
