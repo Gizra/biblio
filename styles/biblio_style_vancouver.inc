@@ -58,12 +58,13 @@ function biblio_style_vancouver_author_options() {
 }
 
 function biblio_style_vancouver($node, $base = 'biblio', $inline = false) {
+  $output = '';
   $markupPatternsArray = array("italic-prefix" => '<i>',
                                "italic-suffix" => '<\/i>',
                                "endash" => '-');
   $author_options = biblio_style_vancouver_author_options();
-  $authors = theme('biblio_format_authors', $node->biblio_contributors[1], $author_options, $inline);
-  //$editors = theme('biblio_format_authors', $node->biblio_contributors[2], $author_options, $inline);
+  $authors = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[1], 'options' => $author_options, 'inline' => $inline));
+  //$editors = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[2], 'options' => $author_options, 'inline' => $inline));
   //if (empty($authors)) $authors = theme('biblio_authors', $node->biblio_contributors[5], 'mla', 5, $inline);  // if no authors substitute corp author if available
   //if (empty($authors)) $authors = '[' . t('Anonymous') . ']';  // use anonymous if we still have nothing.
   //$output .= '<span class="biblio-authors">' . $authors . "</span>.&nbsp; \n";
@@ -102,14 +103,14 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = false) {
       elseif (!empty($node->biblio_secondary_title))      // publication (= journal) name
         $output .= " " . $node->biblio_secondary_title;
 
-      if ($row['online_publication'] == "yes") // this record refers to an online publication
+      if (isset($node->online_publication)) // this record refers to an online publication
         $output .= " [Internet]"; // NOTE: some of the above mentioned resources use "[serial online]", "[serial on the Internet]" or just "[online]" instead
 
       // NOTE: the formatting of year/volume/issue is meant for journal articles (TODO: newspaper/magazine articles)
       if (!empty($node->biblio_year))      // year
         $output .= ". " . $node->biblio_year;
 
-      if ($row['online_publication'] == "yes") // append the current date if this record refers to an online publication
+      if (isset($node->online_publication)) // append the current date if this record refers to an online publication
         $output .= " [cited " . date("Y M j") . "]";
 
       if (!empty($node->biblio_volume) || !empty($node->biblio_issue))
@@ -129,7 +130,7 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = false) {
         $output .= theme_biblio_page_number($node->biblio_pages, $markupPatternsArray["endash"], "", "", "", "", "", "", true); // function 'formatPageInfo()' is defined in 'cite.inc.php'
       }
 
-      if ($row['online_publication'] == "yes") // this record refers to an online publication
+      if (isset($node->online_publication)) // this record refers to an online publication
       {
         // append an optional string (given in 'online_citation') plus the DOI (or URL):
 
@@ -167,7 +168,7 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = false) {
         }
       }
 
-      if (!preg_match("/\. *$/", $output) AND ($row['online_publication'] != "yes"))
+      if (!preg_match("/\. *$/", $output) AND (!isset($node->online_publication)))
         $output .= "."; // NOTE: the examples in the above mentioned resources differ wildly w.r.t. whether the closing period should be omitted for online publications
       break;
     case 101: //Book Chapter
@@ -206,7 +207,7 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = false) {
           'encodeHTML'                        => true
         );
 
-        $editor = theme('biblio_format_authors', $node->biblio_contributors[2], $editor_options, $inline);
+        $editor = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[2], 'options' => $editor_options, 'inline' => $inline));
 
         $output .= " In: " . $editor . ", ";
         if (count ($node->biblio_contributors[2]) > 1) // there are at least two editors (separated by ';')
@@ -397,7 +398,7 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = false) {
           'encodeHTML'                      => true
         );
 
-        $editor = theme('biblio_format_authors', $node->biblio_contributors[2], $editor_options, $inline);
+        $editor = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[2], 'options' => $editor_options, 'inline' => $inline));
         if (!preg_match("/[?!.][ \"" . $markupPatternsArray["italic-suffix"] . "]*$/", $output))
         $output .= ".";
 

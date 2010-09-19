@@ -47,8 +47,9 @@ function biblio_style_apa_author_options() {
  *   The styled biblio entry
  */
 function biblio_style_apa($node, $base = 'biblio', $inline = FALSE) {
+  $output = '';
   $author_options = biblio_style_apa_author_options();
-  $authors = theme('biblio_format_authors', $node->biblio_contributors[1], $author_options, $inline);
+  $authors = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[1], 'options' => $author_options, 'inline' => $inline));
   if (empty($authors) && count($node->biblio_contributors[5])) {// if no authors substitute corp author if available
     foreach ($node->biblio_contributors[5] as $rank => $author) {
       $authors .= (empty($authors)) ? '' : ', ';
@@ -79,7 +80,7 @@ function biblio_style_apa($node, $base = 'biblio', $inline = FALSE) {
       $url = biblio_get_title_url_info($node);
       $output .= l($node->title, $url['link'], $url['options']);
       $output .= ". </span> \n";
-      $output .= !empty ($node->biblio_contributors[2]) ? '(' . theme('biblio_authors', $node->biblio_contributors[2], 'apa', 2, $inline) . ', Ed.).' : "";
+      $output .= !empty ($node->biblio_contributors[2]) ? '(' . theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[2], 'options' => $author_options, 'inline' => $inline)) . ', Ed.).' : "";
       $output .= ($node->biblio_secondary_title) ? '<u>' . check_plain($node->biblio_secondary_title) . '. ' : '<u>';
       $output .= ($node->biblio_volume) ? check_plain($node->biblio_volume) . ($node->biblio_issue ? '</u>(' . check_plain($node->biblio_issue) . '),&nbsp;' : ',</u> ') : '</u> ';
       //  $output .= ($node->biblio_issue) ? '('. check_plain($node->biblio_issue).')' :'';

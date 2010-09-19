@@ -178,12 +178,15 @@ function biblio_theme($existing, $type, $theme, $path) {
           'current' => NULL,
           'path'  => NULL),
     ),
+   'biblio_admin_keyword_edit_form' => array(
+        'file' => '/includes/biblio.admin.inc',
+        'render element' => 'form',
+    ),
    'biblio_admin_author_types_form' => array(
         'file' => '/includes/biblio.admin.inc',
         'render element' => 'form',
-
     ),
-   'biblio_admin_type_mapper_form' => array(
+    'biblio_admin_type_mapper_form' => array(
         'file' => '/includes/biblio.admin.inc',
         'render element' => 'form',
         ),
@@ -1741,7 +1744,7 @@ function biblio_view($node, $buildmode = 'full') {
     switch (variable_get('biblio_node_layout', 'tabular')) {
       case 'orig' :
       case 'ft' :
-        $node->content['body']['#markup'] = theme('biblio_long', $node, $base, $style);
+        $node->content['body']['#markup'] = theme('biblio_long', array('node' => $node, 'base' => $base, 'style' => $style));
         break;
       case 'tabular' :
       default :
@@ -1878,7 +1881,7 @@ function _biblio_citekey_print($citekey) {
     $style = biblio_get_style();
     $base = variable_get('biblio_base', 'biblio');
     $node = node_load($nid->nid);
-    return theme('biblio_style', $node, $base, $style);
+    return theme('biblio_style', array('node' => $node, 'base' => $base, 'style' => $style));
   }
   else {
     return t("Citekey @cite not found", array('@cite' => $citekey));

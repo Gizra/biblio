@@ -111,7 +111,7 @@ function theme_biblio_long($node, $base = 'biblio', $style = 'classic') {
     }
     $output .= check_markup($node->body, $node->format, FALSE);
     if (biblio_access('export', $node)) {
-      $output .= theme('biblio_export_links', $node);
+      $output .= theme('biblio_export_links', array('node' => $node));
     }
     return $output;
   }
@@ -122,7 +122,7 @@ function theme_biblio_long($node, $base = 'biblio', $style = 'classic') {
   $authors = implode('; ', (array)$authors);
   $openurl_base = variable_get('biblio_baseopenurl', '');
   if ($openurl_base)
-    $output .= theme('biblio_openurl', biblio_openurl($node, $openurl_base));
+    $output .= theme('biblio_openurl', array('openURL' => biblio_openurl($node, $openurl_base)));
   $output .= '<div class="biblio_type"><h3>'. t("Publication Type") .":</h3> $node->biblio_type_name</div>\n";
   $output .= '<div class="biblio_authors"><h3>'. t("Authors") .':</h3> '. $authors ."</div>\n";
   $output .= '<div class="biblio_source"><h3>'. t("Source") .': </h3> ';
@@ -556,7 +556,7 @@ function theme_biblio_author_link($variables) {
   $inline = $variables['inline'];
 
   $options = array();
-  $inline = $inline ? "/inline" : "";
+  $options['query']['author'] = $aid;
 
   if (isset($_GET['sort'])) {
     $options['query']['sort'] = $_GET['sort'];
@@ -564,8 +564,11 @@ function theme_biblio_author_link($variables) {
   if (isset($_GET['order'])) {
     $options['query']['order'] = $_GET['order'];
   }
+  if ($inline) {
+    $options['query']['inline'] = 'true';
+  }
 
-  $html = l(trim($author), "$base/author/$aid".$inline,$options );
+  $html = l(trim($author), $base, $options );
 
   return $html;
 }
@@ -1032,7 +1035,7 @@ function theme_biblio_admin_author_edit_form($variables){
             array('data' => drupal_render($form['initials'])),
             array('data' => drupal_render($form['lastname'])),
             array('data' => drupal_render($form['suffix'])));
-  $rows[] = array(array('data' => drupal_render($form['name']), 'colspan' => 5));
+  $rows[] = array(array('data' => drupal_render($form['name']) . drupal_render($form['no_format']), 'colspan' => 5));
   $rows[] = array(array('data' => drupal_render($form['affiliation']), 'colspan' => 5));
   $rows[] = array(array('data' => drupal_render($form['drupal_uid']), 'colspan' => 5));
 
@@ -1107,7 +1110,7 @@ function theme_biblio_admin_keyword_orphans_form($variables) {
 
   return $output;
 }
-function _biblio_keyword_links($keywords,$base='biblio') {
+function _biblio_keyword_links($keywords, $base='biblio') {
   $options = array();
   if (isset($_GET['sort'])) {
     $options['query']  .= "sort=" . $_GET['sort'];

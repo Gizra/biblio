@@ -47,12 +47,13 @@ function biblio_style_ama_author_options() {
 }
 
 function biblio_style_ama($node, $base = 'biblio', $inline = false) {
+  $output = '';
   $markupPatternsArray = array("italic-prefix" => "<i>",
                                "italic-suffix" => "<\/i>",
                                "endash" => '-');
   $author_options = biblio_style_ama_author_options();
-  $authors = theme('biblio_format_authors', $node->biblio_contributors[1], $author_options, $inline);
-  //$editors = theme('biblio_format_authors', $node->biblio_contributors[2], $author_options, $inline);
+  $authors = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[1], 'options' => $author_options, 'inline' => $inline));
+  //$editors = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[2], 'options' => $author_options, 'inline' => $inline));
   //if (empty($authors)) $authors = theme('biblio_authors', $node->biblio_contributors[5], 'mla', 5, $inline);  // if no authors substitute corp author if available
   //if (empty($authors)) $authors = '[' . t('Anonymous') . ']';  // use anonymous if we still have nothing.
   //$output .= '<span class="biblio-authors">' . $authors . "</span>.&nbsp; \n";
@@ -87,11 +88,11 @@ function biblio_style_ama($node, $base = 'biblio', $inline = false) {
       // if this is not the case, the output string will begin with a space. However, any preceding/trailing whitespace will be removed at the cleanup stage (see below)
 
       if (!empty($node->biblio_alternate_title))      // abbreviated journal name
-      $output .= " " . $markupPatternsArray["italic-prefix"] . $node->biblio_alternate_title . $markupPatternsArray["italic-suffix"];
+      $output .= " <i>" . $node->biblio_alternate_title . "</i>";
 
       // if there's no abbreviated journal name, we'll use the full journal name
       elseif (!empty($node->biblio_secondary_title))      // publication (= journal) name
-      $output .= " " . $markupPatternsArray["italic-prefix"] . $node->biblio_secondary_title . $markupPatternsArray["italic-suffix"];
+      $output .= " <i>"  . $node->biblio_secondary_title . "</i>";
 
       if ($node->biblio_type == 105 || $node->biblio_type == 106 AND !preg_match("/^\d+$/", $node->biblio_volume)) // for newspaper articles (and magazine articles if w/o volume number), volume (=month) and issue (=day) information is printed before the year
       {
@@ -127,7 +128,7 @@ function biblio_style_ama($node, $base = 'biblio', $inline = false) {
         $output .= theme_biblio_page_number($node->biblio_pages, $markupPatternsArray["endash"]); // function 'formatPageInfo()' is defined in 'cite.inc.php'
       }
 
-      if ($row['online_publication'] == "yes") // this record refers to an online article
+      if (isset($node->online_publication)) // this record refers to an online article
       {
         // append an optional string (given in 'online_citation') plus the current date and the DOI (or URL):
 
@@ -212,7 +213,7 @@ function biblio_style_ama($node, $base = 'biblio', $inline = false) {
           'encodeHTML'                        => true
         );
 
-        $editor = theme('biblio_format_authors', $node->biblio_contributors[2], $editor_options, $inline);
+        $editor = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[2], 'options' => $editor_options, 'inline' => $inline));
 
         $output .= " In: " . $editor . ", ";
         if (count ($node->biblio_contributors[2]) > 1) // there are at least two editors (separated by ';')
@@ -230,7 +231,7 @@ function biblio_style_ama($node, $base = 'biblio', $inline = false) {
         $output .= " In:";
 
         // TODO: container titles should be formatted in heading caps, however, this doesn't yet work correctly if the publication title contains HTML entities
-        $output .= " " . $markupPatternsArray["italic-prefix"] . $publication . $markupPatternsArray["italic-suffix"];
+        $output .= " <i>" . $publication . "</i>";
         //        $output .= " " . $markupPatternsArray["italic-prefix"] . changeCase("heading", $publication) . $markupPatternsArray["italic-suffix"]; // function 'changeCase()' is defined in 'include.inc.php'
       }
 
@@ -397,7 +398,7 @@ function biblio_style_ama($node, $base = 'biblio', $inline = false) {
           'encodeHTML'                      => true
         );
 
-        $editor = theme('biblio_format_authors', $node->biblio_contributors[2], $editor_options, $inline);
+        $editor = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[2], 'options' => $editor_options, 'inline' => $inline));
         if (!preg_match("/[?!.][ \"" . $markupPatternsArray["italic-suffix"] . "]*$/", $output))  $output .= ".";
 
         $output .= " " . $editor;

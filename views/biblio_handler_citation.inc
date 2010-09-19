@@ -65,7 +65,7 @@ class biblio_handler_citation extends views_handler_field {
     if (!isset($this->items[$vid])) return NULL;
 
     $base = variable_get('biblio_base', 'biblio');
-    return theme('biblio_entry', $this->items[$vid], $base, $this->options['style_name'], $inline);
+    return theme('biblio_entry', array('node' => $this->items[$vid], 'base' => $base, 'style_name' => $this->options['style_name'], 'inline' => $inline));
   }
 
 }

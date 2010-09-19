@@ -55,12 +55,12 @@ function biblio_style_chicago_author_options() {
  *   The styled biblio entry
  */
 function biblio_style_chicago($node, $base = 'biblio', $inline = false) {
-
+  $output = '';
   $author_options = biblio_style_chicago_author_options();
   // $authors = theme('biblio_authors', $node->biblio_contributors[1], 'mla', 1, $inline);
 
-  $authors = theme('biblio_format_authors', $node->biblio_contributors[1], $author_options, $inline);
-  //$editors = theme('biblio_format_authors', $node->biblio_contributors[2], $author_options, $inline);
+  $authors = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[1], 'options' => $author_options, 'inline' => $inline));
+  //$editors = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[2], 'options' => $author_options, 'inline' => $inline));
   //if (empty($authors)) $authors = theme('biblio_authors', $node->biblio_contributors[5], 'mla', 5, $inline);  // if no authors substitute corp author if available
   //if (empty($authors)) $authors = '[' . t('Anonymous') . ']';  // use anonymous if we still have nothing.
   //$output .= '<span class="biblio-authors">' . $authors . "</span>.&nbsp; \n";
@@ -118,7 +118,7 @@ function biblio_style_chicago($node, $base = 'biblio', $inline = false) {
         $output .= theme_biblio_page_number($node->biblio_pages); // function 'formatPageInfo()' is defined in 'cite.inc.php'
       }
 
-      if ($node->online_publication == "yes") // this record refers to an online article
+      if (isset($node->online_publication)) // this record refers to an online article
       {
         // append an optional string (given in 'online_citation') plus the current date and the DOI (or URL):
 
@@ -210,7 +210,7 @@ function biblio_style_chicago($node, $base = 'biblio', $inline = false) {
           'encodeHTML'                      => true
         );
 
-        $editor = theme('biblio_format_authors', $node->biblio_contributors[2], $editor_options, $inline);
+        $editor = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[2], 'options' => $editor_options, 'inline' => $inline));
 
         $output .= ", edited by " . $editor;
       }
@@ -348,7 +348,7 @@ function biblio_style_chicago($node, $base = 'biblio', $inline = false) {
           'encodeHTML'                      => true
         );
 
-        $editor = theme('biblio_format_authors', $node->biblio_contributors[2], $editor_options, $inline);
+        $editor = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[2], 'options' => $editor_options, 'inline' => $inline));
         $output .= ", Edited by " . $editor;
       }
 

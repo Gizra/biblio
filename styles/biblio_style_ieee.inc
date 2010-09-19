@@ -49,7 +49,7 @@ function biblio_style_ieee_author_options() {
  */
 function biblio_style_ieee($node, $base = 'biblio', $inline = false) {
   $author_options = biblio_style_ieee_author_options();
-  $authors = theme('biblio_format_authors', $node->biblio_contributors[1], $author_options, $inline);
+  $authors = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[1], 'options' => $author_options, 'inline' => $inline));
   if (!empty ($node->biblio_citekey)&&(variable_get('biblio_display_citation_key',0))) {
     $output .= '[' . check_plain($node->biblio_citekey) . '] ';
   }

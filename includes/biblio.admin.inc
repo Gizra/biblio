@@ -1481,7 +1481,7 @@ function biblio_admin_get_query($name) {
 }
 
 
-function biblio_admin_author_types_form($form, $form_state, $op = NULL, $id = NULL) {
+function biblio_admin_author_types_form($form, &$form_state, $op = NULL, $id = NULL) {
 
   switch ($op) {
     case 'edit':
@@ -1514,7 +1514,7 @@ function biblio_admin_author_types_form($form, $form_state, $op = NULL, $id = NU
         '#weight' => 3,
         '#submit' => array('biblio_admin_author_types_form_submit')
       );
-      $form['#redirect'] = 'admin/settings/biblio/author/type';
+      $form_state['redirect'] = 'admin/settings/biblio/author/type';
       return $form;
       break;
     case 'hide':
@@ -1598,7 +1598,7 @@ function biblio_admin_author_type_delete_confirm_submit($form, &$form_state) {
   drupal_goto('admin/settings/biblio/author/type');
 }
 
-function biblio_admin_author_edit_form($form, $form_state, $author_id) {
+function biblio_admin_author_edit_form($form, &$form_state, $author_id) {
   $merge_options = $linked = array();
   $author = db_query('SELECT * FROM {biblio_contributor_data} b WHERE b.cid = :aid ', array(':aid' => $author_id))->fetchObject();
   if (!$author) {
@@ -1609,7 +1609,6 @@ function biblio_admin_author_edit_form($form, $form_state, $author_id) {
   $base = variable_get('biblio_base', 'biblio');
   $menu = menu_get_active_title();
   $path = (strpos($_GET['q'],'settings'))? 'admin/settings/biblio/author' : $base.'/authors';
-  $form['#redirect'] = $path;
 
   $form['cid'] = array(
     '#type' => 'value',
@@ -1627,6 +1626,7 @@ function biblio_admin_author_edit_form($form, $form_state, $author_id) {
     '#default_value' => $author->drupal_uid,
     '#weight' => 12,
     '#required' => FALSE,
+    '#description' => t('If this author has a an account (Drupal User ID) on this web site, you may select it here.  This will help to link the authors publications with other content.')
     );
   $form['name'] = array(
     '#type' => 'textfield',
@@ -1697,7 +1697,8 @@ function biblio_admin_author_edit_form($form, $form_state, $author_id) {
     '#size' => 100,
     '#weight' => 7,
     '#required' => FALSE,
-    '#maxlength' => 256
+    '#maxlength' => 256,
+    '#description' => t('University, Company or Organization that the author is affiliated with.')
   );
   $authors = db_query("SELECT * FROM {biblio_contributor_data} cd WHERE cid != :aid ORDER BY lastname", array(':aid' => $author_id), array('fetch' => PDO::FETCH_ASSOC));
   $base = variable_get('biblio_base', 'biblio');
@@ -1770,54 +1771,66 @@ function biblio_admin_author_edit_form($form, $form_state, $author_id) {
     '#type' => 'submit',
     '#value' => t('Save')
   );
+  $form['cancel'] = array(
+    '#type' => 'submit',
+    '#value' => t('Cancel')
+  );
 
   return $form;
 }
+
 function biblio_admin_author_edit_form_validate($form, &$form_state) {
   foreach($form_state['values'] as $key => $value) {
     if (is_string($value)) $form_state['values'][$key] = trim($value);
   }
 }
+
 function biblio_admin_author_edit_form_submit($form, &$form_state) {
   $op = $form_state['values']['op'];
-  if ($form_state['values']['drupal_uid'] == 0 ) {
-    $uid = $form['drupal_uid']['#default_value'];
-    $cid = 0;
-  }
-  else {
-    $uid = $form_state['values']['drupal_uid'];
-    $cid = $form_state['values']['cid'] ;
-  }
-  if ($uid){
-    db_query("UPDATE {biblio_contributor_data} SET drupal_uid = 0 WHERE drupal_uid = :uid", array(':uid' => $uid));
-    $result = db_query('SELECT data FROM {users} WHERE uid = :uid', array(':uid' => $uid))->fetch();
-    $data = unserialize($result->data);
-    $data['biblio_contributor_id'] = $cid;
-    $v = serialize($data);
-    db_query("UPDATE {users} SET data = :data WHERE uid = :uid", array(':data' => $v, ':uid' => $uid));
-  }
-  drupal_write_record('biblio_contributor_data', $form_state['values'], 'cid');
-  // merge authors
-  if (isset($form_state['values']['merge_authors']) && $op == t('Merge')) {
-    $merge_authors = array_filter($form_state['values']['merge_authors']);
-    if (count($merge_authors) ) {
-      $authors = implode(',', $merge_authors);
-      db_query("UPDATE {biblio_contributor} SET cid=".$form_state['values']['cid']." WHERE cid IN ($authors)");
-      db_query("DELETE FROM {biblio_contributor_data} WHERE cid IN ($authors)");
-    }
-  }
-  if (isset($form_state['values']['linked_authors']) ) {
-    foreach ($form_state['values']['linked_authors'] as $key => $value) {
-      if ($value == 0) {
-        db_query("UPDATE {biblio_contributor_data} SET aka=:aka WHERE cid=:cid", array(':aka' => $key, ':cid' => $key));
+  switch ($op) {
+    case t('Save'):
+      if ($form_state['values']['drupal_uid'] == 0 ) {
+        $uid = $form['drupal_uid']['#default_value'];
+        $cid = 0;
       }
-    }
-  }
-  if (isset($form_state['values']['link_authors']) ) {
-    //db_query("UPDATE {biblio_contributor_data} SET aka=$form_state['values']['cid'] WHERE cid IN ($authors)");
-    foreach ($form_state['values']['link_authors'] as $key => $value) {
-        db_query("UPDATE {biblio_contributor_data} SET aka=:aka WHERE cid=:cid",array(':aka' => $form_state['values']['cid'], ':cid' => $key) );
-    }
+      else {
+        $uid = $form_state['values']['drupal_uid'];
+        $cid = $form_state['values']['cid'] ;
+      }
+      if ($uid){
+        db_query("UPDATE {biblio_contributor_data} SET drupal_uid = 0 WHERE drupal_uid = :uid", array(':uid' => $uid));
+        $result = db_query('SELECT data FROM {users} WHERE uid = :uid', array(':uid' => $uid))->fetch();
+        $data = unserialize($result->data);
+        $data['biblio_contributor_id'] = $cid;
+        $v = serialize($data);
+        db_query("UPDATE {users} SET data = :data WHERE uid = :uid", array(':data' => $v, ':uid' => $uid));
+      }
+      drupal_write_record('biblio_contributor_data', $form_state['values'], 'cid');
+      // merge authors
+      if (isset($form_state['values']['merge_authors']) && $op == t('Merge')) {
+        $merge_authors = array_filter($form_state['values']['merge_authors']);
+        if (count($merge_authors) ) {
+          $authors = implode(',', $merge_authors);
+          db_query("UPDATE {biblio_contributor} SET cid=".$form_state['values']['cid']." WHERE cid IN ($authors)");
+          db_query("DELETE FROM {biblio_contributor_data} WHERE cid IN ($authors)");
+        }
+      }
+      if (isset($form_state['values']['linked_authors']) ) {
+        foreach ($form_state['values']['linked_authors'] as $key => $value) {
+          if ($value == 0) {
+            db_query("UPDATE {biblio_contributor_data} SET aka=:aka WHERE cid=:cid", array(':aka' => $key, ':cid' => $key));
+          }
+        }
+      }
+      if (isset($form_state['values']['link_authors']) ) {
+        //db_query("UPDATE {biblio_contributor_data} SET aka=$form_state['values']['cid'] WHERE cid IN ($authors)");
+        foreach ($form_state['values']['link_authors'] as $key => $value) {
+          db_query("UPDATE {biblio_contributor_data} SET aka=:aka WHERE cid=:cid",array(':aka' => $form_state['values']['cid'], ':cid' => $key) );
+        }
+      }
+      break;
+    case t('Cancel'):
+      break;
   }
 }
 
@@ -1841,7 +1854,7 @@ function biblio_admin_orphans_form($form_state) {
   }
   if (!empty($authors)) {
   $form['authors'] = array('#type' => 'checkboxes', '#options' => $authors);
-  $form['pager']   = array('#value' => theme('pager', NULL, 50, 0));
+  $form['pager']   = array('#value' => theme('pager', array('tags' => NULL, 'element' => 0)));
   $form['#theme'] = 'biblio_admin_orphans_form';
   $form['submit'] = array(
     '#type' => 'submit',
@@ -1873,7 +1886,7 @@ function biblio_admin_keyword_orphans_form($form, $form_state) {
   $sub_query->groupBy('kid');
   $query = db_select('biblio_keyword_data', 'bkd')->extend('PagerDefault')->limit(50);
   $query->fields('bkd'); // SELECT * FROM {biblio_contributor_data}
-  $query->condition('kid', $sub_query->execute(), 'NOT IN');
+  $query->condition('kid', $sub_query, 'NOT IN');
   $result = $query->execute(); //pager_query('SELECT * FROM {biblio_keyword_data} WHERE kid NOT IN (SELECT kid FROM {biblio_keyword} GROUP BY kid)', 50);
   $keywords = array();
   foreach ($result as $keyword) {
@@ -1882,7 +1895,7 @@ function biblio_admin_keyword_orphans_form($form, $form_state) {
   }
   $form['keywords'] = array('#type' => 'checkboxes', '#options' => $keywords);
 
- // $form['pager']   = array('#value' => theme('pager', NULL, 50, 0));
+  $form['pager']   = array('#value' => theme('pager', array('tags' => NULL, 'element' => 0)));
   $form['#theme'] = 'biblio_admin_keyword_orphans_form';
   $form['submit'] = array(
     '#type' => 'submit',
@@ -1908,14 +1921,14 @@ function biblio_admin_keyword_orphans_form_submit($form, &$form_state) {
 
 }
 
-function biblio_admin_keyword_edit_form($form, $form_state, $keyword_id) {
+function biblio_admin_keyword_edit_form($form, &$form_state, $keyword_id) {
   $base = variable_get('biblio_base', 'biblio');
   $options = NULL;
   $keyword = db_query('SELECT * FROM {biblio_keyword_data} bkd WHERE bkd.kid = :kid ', array(':kid' => $keyword_id))->fetchObject();
 
   $base = variable_get('biblio_base', 'biblio');
-  $path = (strpos($_GET['q'],'settings'))? 'admin/settings/biblio/keywords' : $base.'/keywords';
-  $form['#redirect'] = $path;
+  $path = (strpos($_GET['q'], 'settings')) ? 'admin/settings/biblio/keywords' : $base.'/keywords';
+  $form_state['redirect'] = $path;
 
   $form['kid'] = array(
     '#type' => 'value',
@@ -1936,7 +1949,7 @@ function biblio_admin_keyword_edit_form($form, $form_state, $keyword_id) {
   unset($options);
   $base = variable_get('biblio_base', 'biblio');
   foreach($keywords as $kw) {
-    $options[$kw->kid] = l($kw->word,$base.'/keywords/'.$kw->kid.'/edit/');
+    $options[$kw->kid] = l($kw->word, $base . '/keywords/' . $kw->kid . '/edit');
   }
   if (isset($options) && !empty($options)) {
     $form['merge'] = array(
@@ -1961,14 +1974,26 @@ function biblio_admin_keyword_edit_form($form, $form_state, $keyword_id) {
     '#type' => 'submit',
     '#value' => t('Save')
   );
-  $form['delete'] = array(
-    '#value' => l(t('Delete'), $base.'/keyword/'.$keyword_id.'/delete')
+    $form['delete'] = array(
+    '#type' => 'submit',
+    '#value' => t('Delete')
+    );
+  $form['cancel'] = array(
+    '#type' => 'submit',
+    '#value' => t('Cancel')
   );
 
   return $form;
 }
+function theme_biblio_admin_keyword_edit_form($variables) {
+  $form = $variables['form'];
+  $output = drupal_render($form['word']);
+  $output .= drupal_render($form['merge']);
+  $output .= drupal_render_children($form);
 
-function biblio_admin_keyword_delete_confirm(&$form_state, $keyword_id) {
+  return $output;
+}
+function biblio_admin_keyword_delete_confirm($form, &$form_state, $keyword_id) {
   $base = variable_get('biblio_base', 'biblio');
   $keyword = db_query('SELECT * FROM {biblio_keyword_data} bkd WHERE bkd.kid = :kid ', array(':kid' => $keyword_id))->fetchObject();
   $form['kid'] = array(
@@ -1977,7 +2002,7 @@ function biblio_admin_keyword_delete_confirm(&$form_state, $keyword_id) {
   );
 
   return confirm_form($form,
-    t('Are you sure you want to delete the keyword: %title from ALL publications?', array('%title' => $keyword->word)),
+    t('Are you sure you want to delete the keyword: %word from ALL publications?', array('%word' => $keyword->word)),
     isset($_GET['destination']) ? $_GET['destination'] : $base.'/keywords',
     t('This action cannot be undone.'),
     t('Delete'),
@@ -1994,13 +2019,27 @@ function biblio_admin_keyword_delete_confirm_submit($form, &$form_state) {
 }
 
 function biblio_admin_keyword_edit_form_submit($form, &$form_state) {
-  if ($form_state['values']['op'] == t('Save')) {
-    drupal_write_record('biblio_keyword_data', $form_state['values'], 'kid');
+  switch ($form_state['values']['op']) {
 
-    if (count($form_state['values']['merge_keywords'])) {
-      $kids = implode(',', array_filter($form_state['values']['merge_keywords']));
-      db_query("UPDATE {biblio_keyword} SET kid=".$form_state['values']['kid']." WHERE kid IN ($kids)");
-      db_query("DELETE FROM {biblio_keyword_data} WHERE kid IN ($kids)");
-    }
+    case t('Save'):
+      drupal_write_record('biblio_keyword_data', $form_state['values'], 'kid');
+      if (isset($form_state['values']['merge_keywords'])) {
+        $kids = array_filter($form_state['values']['merge_keywords']);
+        if (count($kids)) {
+          $kids = implode(',', $kids);
+          db_query("UPDATE {biblio_keyword} SET kid=".$form_state['values']['kid']." WHERE kid IN ($kids)");
+          db_query("DELETE FROM {biblio_keyword_data} WHERE kid IN ($kids)");
+        }
+      }
+      break;
+    case t('Delete'):
+      $base = variable_get('biblio_base', 'biblio');
+      unset($_GET['destination']);
+      drupal_goto("$base/keyword/". $form_state['values']['kid']. '/delete');
+      break;
+    case t('Cancel'):
+      $base = variable_get('biblio_base', 'biblio');
+      drupal_goto($base.'/keywords');
+      break;
   }
 }

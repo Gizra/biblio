@@ -71,6 +71,6 @@ class biblio_handler_field_contributor extends biblio_handler_field {
     parent::set_label($values);
     $vid = $values->{$this->field_alias};
     if (!isset($this->items[$vid])) return NULL;
-    return theme('biblio_format_authors', $this->items[$vid], $this->author_options);
+    return theme('biblio_format_authors', array('contributor' => $this->items[$vid], 'options' => $this->author_options));
   }
 }
