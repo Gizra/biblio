@@ -6,7 +6,7 @@
  */
 
 function biblio_pm_form_biblio_node_form_alter(&$form, &$form_state, $form_id) {
-  if (phpversion() > 5 && !$form_state['submitted'] && !isset($form_state['node']->nid)) {
+  if (!$form_state['submitted'] && !isset($form_state['values']) && !isset($form['#node']->nid)) {
     $form['biblio_pubmed_lookup'] = array(
         '#type' => 'fieldset',
         '#title' => t('PubMed Lookup'),
@@ -19,7 +19,7 @@ function biblio_pm_form_biblio_node_form_alter(&$form, &$form_state, $form_id) {
         '#type' => 'textfield',
         '#title' => t('PubMed ID'),
         '#required' => FALSE,
-        '#default_value' => $form_state['input']['PMID'],
+        '#default_value' => '',
         '#description' => t('Enter a PubMed ID</b>'),
         '#size' => 60,
         '#maxlength' => 255,
@@ -27,19 +27,20 @@ function biblio_pm_form_biblio_node_form_alter(&$form, &$form_state, $form_id) {
     );
     $form['biblio_pubmed_lookup']['pubmed_submit'] = array(
         '#type' => 'submit',
-        '#value' => t('Populate using PubMed')
+        '#value' => t('Populate using PubMed'),
+        '#submit' => array('biblio_pm_form_biblio_node_form_submit')
     );
-    $form['#validate'] = array_merge(array('biblio_pm_form_biblio_node_form_validate'), $form['#validate']); // put my validator first
+   // $form['#submit'] = array_merge(array('biblio_pm_form_biblio_node_form_submit'), isset($form['#submit'])?$form['#submit']:array()); // put my validator first
   }
-  if (isset($form_state['input']['biblio_pubmed_id'])) {
-    $form['biblio_pubmed_id'] = array('#type' => 'value', '#value' => $form_state['input']['biblio_pubmed_id']);
+  if (isset($form_state['values']['biblio_pubmed_id'])) {
+    $form['biblio_pubmed_id'] = array('#type' => 'value', '#value' => $form_state['values']['biblio_pubmed_id']);
   }
   if (isset($form_state['values']['biblio_pubmed_md5'])) {
     $form['biblio_pubmed_md5'] = array('#type' => 'value', '#value' => $form_state['values']['biblio_pubmed_md5']);
   }
 }
 
-function biblio_pm_form_biblio_node_form_validate($form, &$form_state) {
+function biblio_pm_form_biblio_node_form_submit($form, &$form_state) {
   $node_data = array();
   if (strlen($pmid = $form_state['values']['PMID'])) {
     if (!($dup = biblio_pm_check_pmid($pmid))) {
@@ -71,7 +72,8 @@ function biblio_pm_form_biblio_node_form_validate($form, &$form_state) {
   }
   if (!empty($node_data)) {
     $form_state['values'] = array_merge($form_state['values'], $node_data);
-    $form_state['storage']['biblio_type']  = $node_data['biblio_type'];
+    $form_state['input']['biblio_type'] = $node_data['biblio_type'];
+    $form_state['rebuild'] = TRUE;
   }
 
     return;
