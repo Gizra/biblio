@@ -85,7 +85,7 @@ function en8_add_urls(&$node) {
     $xml .= "<related-urls>";
     foreach($node->files as $file) {
       $xml .= '<url><style face="normal" font="default" size="100%">';
-      $xml .= file_create_url($file->filepath);
+      $xml .= file_create_url($file->uri);
       $xml .= "</style></url>";
     }
     $xml .= "</related-urls>";

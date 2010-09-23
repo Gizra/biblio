@@ -29,7 +29,7 @@ class EndNoteXMLParser {
     $this->nids = array();
     $this->dups = array();
 
-    if (!($fp = fopen($file->filepath, "r"))) {
+    if (!($fp = fopen($file->uri, "r"))) {
       drupal_set_message(t("could not open XML input"), 'error');
       return;
     }

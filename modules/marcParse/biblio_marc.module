@@ -41,7 +41,7 @@ function biblio_marc_biblio_import($file, $terms = array(), $batch = FALSE, $ses
   $nids = array();
   $dups = array();
   module_load_include('php', 'biblio_marc', 'php-marc');
-  $marcfile = new File($file->filepath);
+  $marcfile = new File($file->uri);
   while ($record = $marcfile->next() ) {
     $node = new stdClass();
     $node->biblio_contributors = array();

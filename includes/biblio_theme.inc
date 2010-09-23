@@ -840,7 +840,7 @@ function theme_biblio_download_links($variables) {
     foreach ($node->files as $file) {
       if ($file->list) {
         $file_count++;
-        $href = file_create_url($file->filepath);
+        $href = file_create_url($file->uri);
         $text = $file->description ? $file->description : $file->filename;
         $files .= l($text, $href) .'&nbsp;('. format_size($file->filesize).')';
       }

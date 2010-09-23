@@ -296,7 +296,7 @@ function _biblio_tagged_export($node) {
   }
   if (!empty ($node->files) && count($node->files)  && user_access('view uploaded files')) {
     foreach ($node->files as $file) {
-      $tagged .= "%> ". file_create_url($file->filepath) ."\r\n"; // insert file here.
+      $tagged .= "%> ". file_create_url($file->uri) ."\r\n"; // insert file here.
     }
   }
   $tagged .= "\r\n";
