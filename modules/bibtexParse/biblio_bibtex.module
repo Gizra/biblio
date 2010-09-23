@@ -30,8 +30,8 @@ function biblio_bibtex_biblio_import_options() {
 
 function biblio_bibtex_form_biblio_node_form_alter(&$form, &$form_state) {
   global $user;
-  if(phpversion() > 5 && !$form_state['submitted'] && !isset($form['#node']->nid) ) {
-    if(!$form_state['submitted']) {
+  if (!$form_state['submitted'] && !isset($form_state['values']) && !isset($form['#node']->nid)) {
+      if(!$form_state['submitted']) {
       $form['biblio_cut_paste'] = array(
         '#type' => 'fieldset',
         '#title' => t('Paste'),
@@ -43,7 +43,7 @@ function biblio_bibtex_form_biblio_node_form_alter(&$form, &$form_state) {
         '#type' => 'textarea',
         '#title' => t('BibTex'),
         '#required' => FALSE,
-        '#default_value' => $form_state['values']['paste_data'],
+        '#default_value' => isset($form_state['values']['paste_data']) ? $form_state['values']['paste_data'] : '',
         '#description' => t('Paste a BibTex entry here'),
         '#size' => 60,
         '#maxlength' => 2048,
@@ -51,10 +51,10 @@ function biblio_bibtex_form_biblio_node_form_alter(&$form, &$form_state) {
       );
       $form['biblio_cut_paste']['paste_submit'] = array(
         '#type' => 'submit',
-        '#value' => t('Populate using BibTex')
+        '#value' => t('Populate using BibTex'),
+        '#submit' => array('biblio_bibtex_form_biblio_node_form_submit')
       );
     }
-    $form['#validate'] = array_merge(array('biblio_bibtex_form_biblio_node_form_validate'), $form['#validate']); // put my validator first
   }
   $biblio_bibtex_id = (isset($form_state['values']['biblio_bibtex_id'])) ? $form_state['values']['biblio_bibtex_id'] : '';
   $biblio_bibtex_md5 = (isset($form_state['values']['biblio_bibtex_md5'])) ? $form_state['values']['biblio_bibtex_md5'] : '';
@@ -62,7 +62,7 @@ function biblio_bibtex_form_biblio_node_form_alter(&$form, &$form_state) {
   $form['biblio_bibtex_md5'] = array('#type' => 'value', '#value' => $biblio_bibtex_md5);
 }
 
-function biblio_bibtex_form_biblio_node_form_validate($form, &$form_state) {
+function biblio_bibtex_form_biblio_node_form_submit($form, &$form_state) {
   global $user;
   $node_data = array();
   $dups = array();
@@ -72,17 +72,17 @@ function biblio_bibtex_form_biblio_node_form_validate($form, &$form_state) {
   }
   if(!empty($node_data) && is_object($node_data[0])) {
     $form_state['values'] = array_merge($form_state['values'], (array)$node_data[0]);
-    $form_state['storage']['biblio_type']  = $node_data[0]->biblio_type;
-    return;
+    $form_state['input']['biblio_type'] = $node_data[0]->biblio_type;
+
+//    $form_state['storage']['biblio_type']  = $node_data[0]->biblio_type;
   }
   elseif (!empty($dups)) {
     $message = t('The bibtex node that you are trying to paste into the form already exists in the database, see ');
     $message .= l('node/'.$dups[0], 'node/'.$dups[0]);
     form_set_error('paste_data', $message);
-    $form_state['rebuild'] = TRUE;
-    $form_state['submitted'] = FALSE;
-    unset($form_state['values']['biblio_type']);
   }
+  $form_state['rebuild'] = TRUE;
+
   return;
 }
 
@@ -419,7 +419,7 @@ function biblio_bibtex_bibtex_map_reset($type = NULL) {
 function biblio_bibtex_check_md5($md5) {
   static $bibtex_md5s = array();
   if (empty($bibtex_md5s)) {
-    $result = _query("SELECT * FROM {biblio_bibtex} ");
+    $result = db_query("SELECT * FROM {biblio_bibtex} ");
     foreach ($result as $row ) {
       $bibtex_md5s[$row->biblio_bibtex_md5] = $row->nid;
     }
