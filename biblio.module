@@ -522,17 +522,14 @@ function biblio_link($type, $node = NULL, $teaser = FALSE) {
 /**
  * Implementation of hook_user().
  */
-function biblio_user($type, & $edit, & $account, $category = NULL) {
-  global $user;
-
-  if ($type == 'form' && $category == 'account' ) {
-    $form = array();
-    include_once drupal_get_path('module', 'biblio') .'/biblio.admin.inc';
+function biblio_form_user_profile_form_alter(&$form, &$form_state, $form_id) {
+   $account = $form['#user'];
+    include_once drupal_get_path('module', 'biblio') .'/includes/biblio.admin.inc';
     $show_form = variable_get('biblio_show_user_profile_form', '1')     ||
                  variable_get('biblio_show_crossref_profile_form', '1') ||
                  variable_get('biblio_show_openurl_profile_form', '1');
 
-    $admin_show_form = ($user->uid == 1 || (user_access('administer users') && user_access('administer biblio'))) ? TRUE : FALSE;
+    $admin_show_form = ($account->uid == 1 || (user_access('administer users') && user_access('administer biblio'))) ? TRUE : FALSE;
     if ($admin_show_form || $show_form) {
       $form['biblio_fieldset'] = array(
         '#type' => 'fieldset',
@@ -552,28 +549,7 @@ function biblio_user($type, & $edit, & $account, $category = NULL) {
       }
 
     }
-    return $form;
   }
-  if ($type == 'validate' && $category == 'account') { // TODO: this is not reached at all
-    if (($edit['biblio_my_pubs_menu'] || $edit['biblio_show_profile']) && $edit['biblio_contributor_id'] == 0) {
-      $message = t('You did not supply an associated biblio author.');
-      drupal_set_message($message, 'warning');
-    }
-  }
-  if ($type == 'after_update' && $category == 'account') {
-    menu_rebuild();
-  }
-  if ($type == 'update' && $category == 'account') {
-    if (isset($edit['biblio_contributor_id'])) {
-
-      db_query("UPDATE {biblio_contributor_data} SET drupal_uid = 0 WHERE drupal_uid = :uid", array(':uid' => $user->uid));
-      db_query('UPDATE {biblio_contributor_data} set drupal_uid = :uid WHERE cid = :cid ', array(':uid' => $user->uid, ':cid' => $edit['biblio_contributor_id']));
-    }
-  }
-  if ($type == 'categories') {
-    //  return array(array('name' => 'account', 'title' => t('Account settings'), 'weight' => 1));
-  }
-}
 function biblio_forms() {
   $forms['biblio_admin_author_types_form_new'] = array(
     'callback' => 'biblio_admin_author_types_form',
@@ -1160,13 +1136,6 @@ function biblio_form_alter(&$form, &$form_state, $form_id) {
       }
     }
     else {
- //     $handlers = $form_state['submit_handlers'];
-//      if (is_array($handlers)) {
-//        $form_state['submit_handlers'] = array_merge(array('biblio_form_submit'), $handlers);
-//      }
-//      else {
-//        $form_state['submit_handlers'] = array('biblio_form_submit');
-//      }
       if (isset($form['menu']['#weight']) && $form['menu']['#weight'] < 20) $form['menu']['#weight'] = 20;
       if (isset($form['book']['#weight']) && $form['book']['#weight'] < 20) $form['book']['#weight'] = 20;
       if (isset($form['taxonomy'])) {
@@ -1196,6 +1165,15 @@ function biblio_form_alter(&$form, &$form_state, $form_id) {
     }
   }
   return $form;
+}
+function biblio_user_presave(&$edit, $account, $catagory) {
+  $keys = array_keys($edit);
+  foreach ($keys as $key) {
+    if (strpos($key, 'biblio_') !== FALSE && isset($edit[$key])) {
+      $edit['data'][$key] = $edit[$key];
+    }
+  }
+
 }
 /**
  * Implementation of hook_form().
