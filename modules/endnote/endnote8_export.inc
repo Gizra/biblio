@@ -1,4 +1,4 @@
-<?PHP
+<?php
 // $Id$
 function _endnote8_XML_export($node, $part = 'record'){
   $style_attr = 'face="normal" font="default" size="100%"';

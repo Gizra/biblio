@@ -1,4 +1,4 @@
-<?PHP
+<?php
 // $Id$
 function biblio_install() {
   $result = array();

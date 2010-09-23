@@ -1,5 +1,5 @@
 ; $Id$
-name = Biblio&nbsp;-&nbsp;BibTex&nbsp;
+name = Biblio - BibTex
 description = Provides BibTex import and export to the Biblio module.
 core = 7.x
 package = Biblio

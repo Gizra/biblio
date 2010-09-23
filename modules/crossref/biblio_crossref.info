@@ -1,5 +1,5 @@
 ; $Id$
-name = Biblio&nbsp;-&nbsp;Crossref&nbsp;(DOI Lookup)
+name = Biblio - Crossref (DOI Lookup)
 description = Provides DOI import and search to the Biblio module.
 core = 7.x
 package = Biblio
