@@ -158,7 +158,7 @@ function biblio_bibtex_biblio_import($file, $terms = array(), $batch = FALSE, $s
     $bibtex->loadBibtexString($file);
   }
   else {
-    $bibtex->openBib($file->filepath);
+    $bibtex->openBib($file->uri);
   }
 
   $bibtex->extractEntries();
@@ -367,7 +367,7 @@ function _biblio_bibtex_export($node) {
   $bibtex .= _biblio_bibtex_format_entry('url', $node->biblio_url);
   if (!empty ($node->files) && count($node->files) && user_access('view uploaded files')) {
     foreach($node->files as $file) {
-      $attachments[] = file_create_url($file->filepath);
+      $attachments[] = file_create_url($file->uri);
     }
     $bibtex .= _biblio_bibtex_format_entry('attachments', implode(' , ', $attachments));
   }
