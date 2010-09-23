@@ -177,8 +177,11 @@ function biblio_import_form_submit($form, & $form_state) {
   global $batch_proc;
   global $session_id;
   global $user;
+    $extensions = 'xml bib enw mrc ris txt';
+    $validators['file_validate_extensions'] = array();
+    $validators['file_validate_extensions'][0] = $extensions;
   if ($form_state['values']['op'] == t('Import') && isset ($form_state['values']['filetype'])) {
-    if ($import_file = file_save_upload('biblio_import_file')) {
+    if ($import_file = file_save_upload('biblio_import_file', $validators)) {
       if($form_state['values']['batch_process'] == 1) $batch_proc = 1;  // we will use batch import for larger files.
 
       drupal_set_message(t("The file <i><b>@file</b></i> was successfully uploaded.", array ('@file' => $import_file->filename)), 'status');
@@ -345,11 +348,11 @@ function biblio_import($import_file, $type, $userid = 1, $terms = NULL, $batch =
   if(isset($context['message']))  $context['message'] = t('Parsing file');
   switch ($type) {
     case 'csv' : // comma separated variable file
-      //        $file_content = @ file_get_contents($import_file->filepath);
+      //        $file_content = @ file_get_contents($import_file->uri);
       //        $parsed = biblio_csv_import($file_content, $node_template, $node_array);
       break;
     case 'biblio_backup' : // a complete backup of all biblio information
-      $file_content = @ file_get_contents($import_file->filepath);
+      $file_content = @ file_get_contents($import_file->uri);
       $parsed = biblio_restore($file_content, $node_template, $node_array);
       break;
     default:
