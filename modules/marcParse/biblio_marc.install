@@ -37,7 +37,9 @@ function biblio_marc_requirements($phase) {
 }
 
 function biblio_marc_uninstall() {
-  db_query("DELETE FROM {biblio_type_maps} WHERE format = 'marc'");
+  if (db_table_exists('biblio_type_maps')) {
+    db_query("DELETE FROM {biblio_type_maps} WHERE format = 'marc'");
+  }
 }
 
 function biblio_marc_enable() {

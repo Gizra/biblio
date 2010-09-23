@@ -23,6 +23,7 @@ function biblio_xml_requirements($phase) {
         'description' => $t('The Biblio module must be installed first'),
         'severity' => REQUIREMENT_ERROR
       );
+      return $requirements;
     }
     if (!db_table_exists('biblio_type_maps')) {
       $requirements['biblio_xml_table'] = array(
@@ -37,8 +38,10 @@ function biblio_xml_requirements($phase) {
 }
 
 function biblio_xml_uninstall() {
-  db_query("DELETE FROM {biblio_type_maps} WHERE format = 'endnote_xml8'");
-  db_query("DELETE FROM {biblio_type_maps} WHERE format = 'endnote_xml7'");
+  if (db_table_exists('biblio_type_maps')) {
+    db_query("DELETE FROM {biblio_type_maps} WHERE format = 'endnote_xml8'");
+    db_query("DELETE FROM {biblio_type_maps} WHERE format = 'endnote_xml7'");
+  }
 }
 
 function biblio_xml_enable() {

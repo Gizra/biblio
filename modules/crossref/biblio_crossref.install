@@ -37,7 +37,9 @@ function biblio_crossref_requirements($phase) {
 }
 
 function biblio_crossref_uninstall() {
-  db_query("DELETE FROM {biblio_type_maps} WHERE format = 'crossref'");
+  if (db_table_exists('biblio_type_maps')) {
+    db_query("DELETE FROM {biblio_type_maps} WHERE format = 'crossref'");
+  }
 }
 
 function biblio_crossref_enable() {

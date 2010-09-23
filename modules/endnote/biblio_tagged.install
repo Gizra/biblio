@@ -13,7 +13,9 @@ function biblio_tagged_install() {
 }
 
 function biblio_tagged_uninstall() {
-  db_query("DELETE FROM {biblio_type_maps} WHERE format = 'tagged'");
+  if (db_table_exists('biblio_type_maps')) {
+    db_query("DELETE FROM {biblio_type_maps} WHERE format = 'tagged'");
+  }
 }
 
 function biblio_tagged_requirements($phase) {

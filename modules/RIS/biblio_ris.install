@@ -13,7 +13,9 @@ function biblio_ris_install() {
 }
 
 function biblio_ris_uninstall() {
-  db_query("DELETE FROM {biblio_type_maps} WHERE format = 'ris'");
+  if (db_table_exists('biblio_type_maps')) {
+    db_query("DELETE FROM {biblio_type_maps} WHERE format = 'ris'");
+  }
 }
 
 function biblio_ris_requirements($phase) {
