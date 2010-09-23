@@ -1,5 +1,5 @@
 ; $Id$
-name = Biblio - EndNote XML;
+name = Biblio - EndNote XML
 description = Provides EndNote XML file import and export to the Biblio module.
 core = 7.x
 package = Biblio
