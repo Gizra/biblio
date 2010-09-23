@@ -14,7 +14,6 @@ function biblio_install() {
 
   $result[] = _set_system_weight();
 
-  _biblio_helper_modules('install');
 //  if (count($result) == count(array_filter($result))) {
 //    drupal_set_message(t('The biblio module has successfully added its tables to the database.'));
 //  }
@@ -2071,6 +2070,8 @@ function biblio_update_6026() {
 }
 function biblio_update_7000() {
     $result = array();
+
+    _biblio_helper_modules('install');
 
     db_drop_primary_key($result, 'biblio_contributor_data');
     db_add_primary_key($result, 'biblio_contributor_data', array('cid', 'aka'));
