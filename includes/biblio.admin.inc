@@ -1318,8 +1318,7 @@ function biblio_admin_types_reset_form_submit($form, & $form_state) {
  * This functin is used by both the admin/settings/biblio page and user profile page
  *   - if $user is set, then it is being called from the user profile page
  */
-function _biblio_get_user_profile_form(& $form, $profile_user = FALSE) {
-  global $user;
+function _biblio_get_user_profile_form(&$form, $profile_user = FALSE) {
   $allow_edit = variable_get('biblio_show_user_profile_form', '1');
   $allow_edit = $allow_edit || user_access('administer biblio');
 
@@ -1346,7 +1345,7 @@ function _biblio_get_user_profile_form(& $form, $profile_user = FALSE) {
     '#description' => ($profile_user) ? t('Selecting this will create a listing of your publications on your profile page') : t('This sets the site wide default, users may change this in their profile')
   );
   if ($profile_user) {
-    $form['biblio_profile']['biblio_show_profile']['#default_value'] = (isset($profile_user->biblio_show_profile)) ? $profile_user->biblio_show_profile : variable_get('biblio_show_profile', '0');
+    $form['biblio_profile']['biblio_show_profile']['#default_value'] = (isset($profile_user->data['biblio_show_profile'])) ? $profile_user->data['biblio_show_profile'] : variable_get('biblio_show_profile', '0');
   }
   else {
     $form['biblio_profile']['biblio_show_profile']['#default_value'] = variable_get('biblio_show_profile', '0');
@@ -1359,7 +1358,7 @@ function _biblio_get_user_profile_form(& $form, $profile_user = FALSE) {
     '#description' => ''
   );
   if ($profile_user) {
-    $form['biblio_profile']['biblio_my_pubs_menu']['#default_value'] = ((isset($profile_user->biblio_my_pubs_menu)) ? $profile_user->biblio_my_pubs_menu : variable_get('biblio_my_pubs_menu', '0'));
+    $form['biblio_profile']['biblio_my_pubs_menu']['#default_value'] = ((isset($profile_user->data['biblio_my_pubs_menu'])) ? $profile_user->data['biblio_my_pubs_menu'] : variable_get('biblio_my_pubs_menu', '0'));
   }
   else {
     $form['biblio_profile']['biblio_my_pubs_menu']['#default_value'] = variable_get('biblio_my_pubs_menu', '0');
@@ -1376,7 +1375,7 @@ function _biblio_get_user_profile_form(& $form, $profile_user = FALSE) {
     $form['biblio_profile']['biblio_contributor_id'] = array(
     '#type' => 'select',
     '#title' => t('Link My Profile with this Author from the Biblio database'),
-    '#default_value' => $profile_user->biblio_contributor_id ,
+    '#default_value' => $profile_user->data['biblio_contributor_id'] ,
     '#disabled' => !$allow_edit,
     '#options' => $options,
     '#description' => t('This will link your profile to the selected author from the biblio database, then all publications containing this author to be displayed on your "Publications" tab.'),
@@ -1387,7 +1386,7 @@ function _biblio_get_user_profile_form(& $form, $profile_user = FALSE) {
     $form['biblio_profile']['biblio_user_style'] = array(
     '#type' => 'radios',
     '#title' => t('Style'),
-    '#default_value' => (isset($profile_user->biblio_user_style) ? $profile_user->biblio_user_style : 'system'),
+    '#default_value' => (isset($profile_user->data['biblio_user_style']) ? $profile_user->data['biblio_user_style'] : 'system'),
     '#options' => $options,
     '#description' => t('Set the bibliographic style of the "list" view.')
   );
@@ -1406,7 +1405,7 @@ function _biblio_get_user_doi_form(&$form, $user) {
   $form['biblio_doi']['biblio_crossref_pid'] = array(
     '#type' => 'textfield',
     '#title' => t('CrossRef OpenURL Account ID'),
-    '#default_value' => $user->biblio_crossref_pid,
+    '#default_value' => $user->data['biblio_crossref_pid'],
     '#return_value' => 1,
     '#description' => t('Enter your complimentary CrossRef OpenURL account ID which you can obtain here ') .l('OpenURL Account Request Form', 'http://www.crossref.org/requestaccount/', $link_attrs) . t(', OR enter your full CrossRef (colon separated) account:password combination.')
   );
@@ -1424,7 +1423,7 @@ function _biblio_get_user_openurl_form(&$form, $user) {
     '#type' => 'textfield',
     '#title' => t('OpenURL Base URL'),
     '#size' => 95,
-    '#default_value' => !empty($user->biblio_baseopenurl) ? $user->biblio_baseopenurl :  '',
+    '#default_value' => !empty($user->data['biblio_baseopenurl']) ? $user->data['biblio_baseopenurl'] :  '',
     '#description' => t('This sets your base <a href="http://en.wikipedia.org/wiki/OpenURL">OpenURL</a> gateway, which is used to generate OpenURL links. To implement a "Universal" OpenURL system, try using OCLC\'s <a href="http://www.oclc.org/productworks/urlresolver.htm">OpenURL Resolver Registry</a> gateway: <a href="http://worldcatlibraries.org/registry/gateway">http://worldcatlibraries.org/registry/gateway</a>')
   );
   $sid = "Biblio:". variable_get('site_name', 'Drupal');
@@ -1432,7 +1431,7 @@ function _biblio_get_user_openurl_form(&$form, $user) {
     '#type' => 'textfield',
     '#title' => t('OpenURL Site ID'),
     '#size' => 95,
-    '#default_value' => !empty($user->biblio_openurl_sid) ? $user->biblio_openurl_sid : '',
+    '#default_value' => !empty($user->data['biblio_openurl_sid']) ? $user->data['biblio_openurl_sid'] : '',
     '#description' => t('This sets your site name, some link resolvers will require a specific Site ID in order to process your requests.')
   );
   return $form;
