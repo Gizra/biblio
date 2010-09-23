@@ -167,8 +167,8 @@ function biblio_build_query($arg_list) {
     $arg_list[] = variable_get('biblio_sort', 'year');
   }
   if (array_search('order', $arg_list) === FALSE) {
-    $arg_list[] = 'order';
-    $arg_list[] = strtolower(variable_get('biblio_order', 'desc'));
+//    $arg_list[] = 'order';
+    $arg_list['order'] = strtolower(variable_get('biblio_order', 'desc'));
   }
 
 /*  switch ($sort_attrib['sort']) {
