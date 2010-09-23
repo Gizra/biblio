@@ -190,11 +190,11 @@ class BiblioCrossRefClient
         $this->node['biblio_doi']  = $this->node['doi'];
         break;
       case 'issn':
-        if($this->attribute == 'issn_print') $this->node['biblio_issn'] = $this->node['issn'];
+        if($this->attribute == 'issn_print' && isset($this->node['issn'])) $this->node['biblio_issn'] = $this->node['issn'];
         $this->node['issn'] = '';
         break;
       case 'isbn':
-        if($this->attribute == 'isbn_print') $this->node['biblio_isbn'] = $this->node['isbn'];
+        if($this->attribute == 'isbn_print' && isset($this->node['isbn'])) $this->node['biblio_isbn'] = $this->node['isbn'];
         $this->node['isbn'] = '';
         break;
       case 'i':  // HTML font style tags
@@ -213,19 +213,19 @@ class BiblioCrossRefClient
     if (trim($data)) {
       switch ($this->element) {
         case 'surname' :
-          $this->node['biblio_contributors'][$this->auth_category][$this->contrib_count]['lastname'] .= $data;
+          $this->node['biblio_contributors'][$this->auth_category][$this->contrib_count]['lastname'] = $data;
           break;
         case 'given_name' :
-          $this->node['biblio_contributors'][$this->auth_category][$this->contrib_count]['firstname'] .= $data;
+          $this->node['biblio_contributors'][$this->auth_category][$this->contrib_count]['firstname'] = $data;
           break;
         case 'suffix':
-          $this->node['biblio_contributors'][$this->auth_category][$this->contrib_count]['suffix'] .= $data;
+          $this->node['biblio_contributors'][$this->auth_category][$this->contrib_count]['suffix'] = $data;
           break;
         case 'affiliation' :
-          $this->node['biblio_contributors'][$this->auth_category][$this->contrib_count]['affiliation'] .= $data;
+          $this->node['biblio_contributors'][$this->auth_category][$this->contrib_count]['affiliation'] = $data;
           break;
         case 'organization':
-          $this->node['biblio_contributors'][5][$this->org_count]['name'] .= $data;
+          $this->node['biblio_contributors'][5][$this->org_count]['name'] = $data;
           break;
         case 'year':
           $this->node['year'] = $data;
@@ -238,7 +238,7 @@ class BiblioCrossRefClient
           break;
         default:
           if ($field = $this->_unixref_field_map(trim($this->element))) {
-            $this->node[$field] .= $data;
+            $this->node[$field] = $data;
           }
 
       }
