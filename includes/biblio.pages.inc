@@ -20,6 +20,7 @@
  *
  ****************************************************************************/
 
+
 function biblio_view_node($nid) {
   drupal_goto('node/'.(int)$nid, NULL, NULL, 301); // set a 301 response code
 }
@@ -30,14 +31,15 @@ function biblio_db_search() {
 
   $arg_list = array();
  // $arg_list = func_get_args();
-  foreach ($_GET as $key => $value) {
-    if ($key != 'q') {
-      $key = check_plain($key);
-      $value = check_plain($value);
-      $arg_list[$key] = $value;
-    }
-  }
-
+//  foreach ($_GET as $key => $value) {
+//    if ($key != 'q') {
+//      $key = check_plain($key);
+//      $value = check_plain($value);
+//      $arg_list[$key] = $value;
+//    }
+//  }
+ $uri = drupal_parse_url(request_uri());
+ $arg_list = array_merge($arg_list, $uri['query']);
 
   // Drupal search? It returns an array of search results. We store the nids
   // of the result nodes and make them a "where n.nid in {..}" filter.
@@ -106,6 +108,7 @@ function biblio_db_search() {
 
     foreach ($query_info['query'] as $node) {
       $nids[] = $node->nid;
+      if(isset($node->biblio_year)) unset($node->biblio_year);
       $extras[$node->nid] = $node;
     }
     $nodes = node_load_multiple($nids);
@@ -170,41 +173,7 @@ function biblio_build_query($arg_list) {
     $arg_list['order'] = strtolower(variable_get('biblio_order', 'desc'));
   }
 
-/*  switch ($sort_attrib['sort']) {
-    case 'type':
-      //$sortby = "ORDER BY bt.name %s, b.biblio_year DESC ";
-      $query->addField('n', 'title');
-      $query->orderBy($type_name, $sort_attrib['order']);
-      $query->orderBy('n', $sort_title);
-      break;
-    case 'title':
-      $query->addField('n', 'title');
-      $query->orderBy($sort_title, $sort_attrib['order']);
-
-      break;
-    case 'author':
-      //$last_name = $query->addField('bcd', 'lastname');
-      $query->innerJoin('biblio_contributor', 'bc', 'b.vid = bc.vid');
-      $query->join('biblio_contributor_data', 'bcd', 'bc.cid = bcd.cid');
-      $query->condition('bc.rank', 0);
-      $query->addField('bcd', 'lastname');
-      $query->orderBy('bcd.lastname', $sort_attrib['order']);
-     // $query->condition('bc.auth_category', 1);
-      break;
-    case 'keyword': // added msh 070808
-      $word = $query->addField('bkd', 'word', 'biblio_keyword');
-      $query->orderBy($word, $sort_attrib['order']);
-      $query->innerJoin('biblio_keyword', 'bk', 'b.vid = bk.vid');
-      $query->innerJoin('biblio_keyword_data', 'bkd', 'bk.kid = bkd.kid');
-      break;
-    case 'year':
-    default:
-      $query->addField('b', 'biblio_year');
-      $query->addField('b', 'biblio_date');
-      $query->orderBy('biblio_year', $sort_attrib['order']);
-      $query->orderBy('biblio_date', $sort_attrib['order']);
-  } //end switch
-*/  if (!isset($_SESSION['biblio_filter']) || !is_array($_SESSION['biblio_filter'])) {
+  if (!isset($_SESSION['biblio_filter']) || !is_array($_SESSION['biblio_filter'])) {
     $_SESSION['biblio_filter'] = array();
   }
 
@@ -215,10 +184,44 @@ function biblio_build_query($arg_list) {
       $arg_list = array_merge($arg_list, $filter);
     }
   }
+  switch ($arg_list['sort']) {
+    case 'type':
+      //$sortby = "ORDER BY bt.name %s, b.biblio_year DESC ";
+      $query->addField('n', 'title');
+      $query->orderBy($type_name, $arg_list['order']);
+      $query->orderBy('n', $sort_title);
+      break;
+    case 'title':
+      $query->addField('n', 'title');
+      $query->orderBy($sort_title, $arg_list['order']);
 
-  if (count($arg_list) ) {
+      break;
+    case 'author':
+      //$last_name = $query->addField('bcd', 'lastname');
+      $query->innerJoin('biblio_contributor', 'bc', 'b.vid = bc.vid');
+      $query->join('biblio_contributor_data', 'bcd', 'bc.cid = bcd.cid');
+      $query->condition('bc.rank', 0);
+      $query->addField('bcd', 'lastname');
+      $query->orderBy('bcd.lastname', $arg_list['order']);
+      // $query->condition('bc.auth_category', 1);
+      break;
+    case 'keyword': // added msh 070808
+      $word = $query->addField('bkd', 'word', 'biblio_keyword');
+      $query->orderBy($word, $arg_list['order']);
+      $query->innerJoin('biblio_keyword', 'bk', 'b.vid = bk.vid');
+      $query->innerJoin('biblio_keyword_data', 'bkd', 'bk.kid = bkd.kid');
+      break;
+    case 'year':
+    default:
+      $query->addField('b', 'biblio_year');
+      $query->addField('b', 'biblio_date');
+      $query->orderBy('biblio_year', $arg_list['order']);
+      $query->orderBy('biblio_date', $arg_list['order']);
+  } //end switch
+//  $filters = explode(' ', $arg_list['filters']);
+  if (isset($arg_list['filters']) && count($arg_list['filters']) ) {
     $args = array();
-    foreach ($arg_list as $type => $value) {
+    foreach ($arg_list['filters'] as $type => $value) {
 //      $type = $arg_list[0];
       array_shift($arg_list);
       // $operator = ($operator)?$operator:" AND "; //defaults to AND
@@ -297,7 +300,6 @@ function biblio_build_query($arg_list) {
             $rss_info['description'] = t("These publications by %author are part of the works listed at %sitename", array('%author' => $term[0], '%sitename' => variable_get('site_name', 'Drupal')));
             $rss_info['link'] = '/author/' . $term[0];
           }
-          array_push($args, $type, $term[0]);
           break;
         case 'publisher':
           $term = explode("?",array_shift($arg_list));
@@ -333,7 +335,6 @@ function biblio_build_query($arg_list) {
             $rss_info['description'] = t("These publications, containing the keyword: %keyword, are part of the works listed at %sitename", array('%keyword' => $term[0], '%sitename' => variable_get('site_name', 'Drupal')));
             $rss_info['link'] = '/keyword/' . $term[0];
           }
-          array_push($args, $type, $term[0]);
           break;
         case 'citekey':
           $query->condition('b.biblio_citekey', $value);
@@ -347,41 +348,6 @@ function biblio_build_query($arg_list) {
 //          array_push($args, $type, $term);
 //          break;
         case 'sort':
-          switch ($value) {
-            case 'type':
-              //$sortby = "ORDER BY bt.name %s, b.biblio_year DESC ";
-              $query->addField('n', 'title');
-              $query->orderBy($type_name, $arg_list['order']);
-              $query->orderBy('n', $sort_title);
-              break;
-            case 'title':
-              $query->addField('n', 'title');
-              $query->orderBy($sort_title, $arg_list['order']);
-
-              break;
-            case 'author':
-              //$last_name = $query->addField('bcd', 'lastname');
-              $query->innerJoin('biblio_contributor', 'bc', 'b.vid = bc.vid');
-              $query->join('biblio_contributor_data', 'bcd', 'bc.cid = bcd.cid');
-              $query->condition('bc.rank', 0);
-              $query->addField('bcd', 'lastname');
-              $query->orderBy('bcd.lastname', $arg_list['order']);
-              // $query->condition('bc.auth_category', 1);
-              break;
-            case 'keyword': // added msh 070808
-              $word = $query->addField('bkd', 'word', 'biblio_keyword');
-              $query->orderBy($word, $arg_list['order']);
-              $query->innerJoin('biblio_keyword', 'bk', 'b.vid = bk.vid');
-              $query->innerJoin('biblio_keyword_data', 'bkd', 'bk.kid = bkd.kid');
-              break;
-            case 'year':
-            default:
-              $query->addField('b', 'biblio_year');
-              $query->addField('b', 'biblio_date');
-              $query->orderBy('biblio_year', $arg_list['order']);
-              $query->orderBy('biblio_date', $arg_list['order']);
-          } //end switch
-          break;
         case 'search':
           $term = explode("?",array_shift($arg_list));
           $result_nids = split(',', $term[0]);
@@ -405,29 +371,11 @@ function biblio_build_query($arg_list) {
       }
     }
   }
-  /*  $where[] = "n.type='biblio' ";
-  if ($user->uid != 1 ) {
-    $where[] = 'n.status = 1 ';
-  }//show only published entries to everyone except admin
-
-  $select = implode(', ', $selects);
-  $count_select = implode(', ', $count_selects);
-  $join = implode(' ', $joins);
-
-  $where_clause = count($where) > 1 ? '('. implode(') AND (', $where) .')': $where[0];
-
-  $query = db_rewrite_sql("SELECT $select FROM {node} n $join  WHERE $where_clause $limit $sortby $count_limit");
-  $count_query = db_rewrite_sql("SELECT COUNT($count_select) FROM {node} n $join  WHERE $where_clause $limit $count_limit");
-  $_SESSION['last_biblio_query'] = $query;
-  $terms[] = $sort_attrib['order']; // this is either asc or desc to be inserted into the first term of the ORDER clause
-  if($sort_attrib['sort'] == 'year') $terms[] = $sort_attrib['order']; // we need any extra order term when sorting by year since there are to date terms biblio_year and biblio_date
-  $_SESSION['last_biblio_query_terms'] = $terms;
-*/
 
   $result = $query->execute();
   return (array('query'      => $result,
                'args'        => $args,
-               'sort_attrib' => $sort_attrib,
+              // 'sort_attrib' => $sort_attrib,
                'rss'         => $rss_info
   ));
 
@@ -448,7 +396,7 @@ function biblio_build_query($arg_list) {
 function biblio_show_results($nodes, $query_info, $inline=false) {
   global $pager_total_items;
   $profile = false;
-  $attrib = $query_info['sort_attrib'];
+//  $attrib = $query_info['sort_attrib'];
   $args   = $query_info['args'];
   $base =  variable_get('biblio_base', 'biblio');
   $style = biblio_get_style();
@@ -477,7 +425,7 @@ function biblio_show_results($nodes, $query_info, $inline=false) {
     }
     // Add some links to the top of the page to change the sorting/ordering...
     if (user_access('show sort links')) {
-      $content .= _biblio_sort_tabs($attrib);
+      $content .= _biblio_sort_tabs();
     }
     $content .= '</div>';
 
@@ -506,7 +454,7 @@ function biblio_show_results($nodes, $query_info, $inline=false) {
 
   $count = 0;
   // Reset separator bar status for repeated calls to biblio_db_search.
-  _biblio_category_separator_bar(NULL, NULL, TRUE);
+  _biblio_category_separator_bar(NULL, TRUE);
 
   foreach ($nodes as $node) {
     $count++;
@@ -516,7 +464,7 @@ function biblio_show_results($nodes, $query_info, $inline=false) {
 
 
     // output separator bar if needed
-    $content .= _biblio_category_separator_bar($attrib, $node);
+    $content .= _biblio_category_separator_bar($node);
 
     $inline_links = ($inline && variable_get('biblio_inlinemode_in_links',0)) ? true : false;
 
@@ -540,42 +488,58 @@ function biblio_show_results($nodes, $query_info, $inline=false) {
 
 }
 
-function _biblio_sort_tabs($attrib, $options = NULL) {
+function _biblio_sort_tabs() {
   global $base_path;
   $content = '';
   $sort_links = array();
   $tabs = variable_get('biblio_sort_tabs_style', 0);
-  $order = ($attrib['order'] == "desc" || $attrib['order'] == "DESC")?"asc":"desc";
-  $cur_order = ($attrib['order'] == "desc" || $attrib['order'] == "DESC")?"desc":"asc";
+  $uri = drupal_parse_url(request_uri());
+  if (substr($uri['path'], 0, 1) == '/') $uri['path'] = substr($uri['path'], 1);
+
+  if (isset($uri['query']['sort'])) {
+    $sort = $uri['query']['sort'];
+  }
+  else {
+    $sort = variable_get('biblio_sort', 'year');
+  }
+  if (isset($uri['query']['order'])) {
+    $order = ($uri['query']['order'] == 'desc' ||$uri['query']['order'] == 'DESC') ? 'asc' : 'desc';
+  }
+  else {
+    $order = strtolower(variable_get('biblio_order', 'desc'));
+    $order = ($order == 'desc' || $order == 'DESC') ? 'asc' : 'desc';
+  }
+
   $path = drupal_get_path('module','biblio');
-  $order_arrow = ($order == 'asc') ? '<img src ="'. $base_path . $path. '/misc/arrow-asc.png" alt =" (Desc)" />'
+  $order_arrow = ($order == 'asc') ? '<img src ="'. $base_path . $path . '/misc/arrow-asc.png" alt =" (Desc)" />'
                                    : '<img src ="'. $base_path . $path .'/misc/arrow-desc.png" alt = " (Asc)" />';
   $sort_links =  variable_get('biblio_sort_tabs', array('author'=>'author', 'title'=>'title', 'type'=>'type', 'year'=>'year', 'keyword'=>'keyword'));
   ksort($sort_links);
   $content .= $tabs ? '<ul class="tabs secondary ">':'';
 
   foreach($sort_links as $key => $title) {
-    $tab['path'] = $_GET['q'];
-    $tab['attributes'] = array("title"=>t("Click a second time to reverse the sort order"));
-    $tab['html'] = TRUE;
-    $tab['text'] = t(ucfirst($title));
-    if ($key === $title && $title == $attrib['sort']) {
-      $tab['query'] = array('sort' => $title, 'order' => $order);
-      $tab['attributes']['class'][] = "active";
-      $tab['active'] = TRUE;
-      $tab['pfx'] = ' [ ';
-      $tab['sfx'] = '] ';
-      $tab['arrow'] = $order_arrow;
-      $content .= _biblio_sort_tab($tab, $tabs);
+    $uri['attributes'] = array("title"=>t("Click a second time to reverse the sort order"));
+    $uri['html'] = TRUE;
+    $uri['text'] = t(ucfirst($title));
+    if ($key === $title && $title == $sort) {
+      $uri['query']['sort'] = $title;
+      $uri['query']['order'] = $order;
+      $uri['attributes']['class'][] = "active";
+      $uri['active'] = TRUE;
+      $uri['pfx'] = ' [ ';
+      $uri['sfx'] = '] ';
+      $uri['arrow'] = $order_arrow;
+      $content .= _biblio_sort_tab($uri, $tabs);
 
     }
     elseif ($key === $title ) {
-      $tab['query'] = array('sort' => $title, 'order' => $order);
-      $tab['active'] = FALSE;
-      $tab['pfx'] = ' ';
-      $tab['sfx'] = ' ';
-      $tab['arrow'] = '';
-      $content .= _biblio_sort_tab($tab, $tabs);
+      $uri['query']['sort'] = $title;
+      $uri['query']['order'] = $order;
+      $uri['active'] = FALSE;
+      $uri['pfx'] = ' ';
+      $uri['sfx'] = ' ';
+      $uri['arrow'] = '';
+      $content .= _biblio_sort_tab($uri, $tabs);
     }
 
   }
@@ -605,12 +569,11 @@ function _biblio_filter_info_line($args) {
   $base =  variable_get('biblio_base', 'biblio');
   $session = &$_SESSION['biblio_filter'];
   // if there are any filters in place, print them at the top of the list
-  if (count($args)) {
+  $uri = drupal_parse_url(request_uri());
+  $filters = isset($uri['query']['filters']) ? $uri['query']['filters'] : array();
+  if (count($filters)) {
     $i = 0;
-    while ($args) {
-      $type = $args[0];
-      array_shift($args);
-      $value = $args[0];
+    foreach ($filters as $type => $value) {
       if ($type == 'search') {
         $search_content = array_shift($args);
         continue;
@@ -630,7 +593,6 @@ function _biblio_filter_info_line($args) {
         elseif (is_string($value) && strlen($value) == 1) {
           $type = t("First letter of keyword ");
         }
-
       }
       if ($type == 'uid' ) {
         $user = user_load($value);
@@ -657,7 +619,6 @@ function _biblio_filter_info_line($args) {
           $type = t("Type");
         }
       }
-      array_shift($args);
       $params = array('%a' =>  check_plain(ucwords($type)) , '%b' =>  check_plain($value) );
       $filtercontent .= ($i++ ? t('<em> and</em> <strong>%a</strong> is <strong>%b</strong>', $params) : t('<strong>%a</strong> is <strong>%b</strong>', $params)) ;
     }
@@ -680,11 +641,11 @@ function _biblio_filter_info_line($args) {
     if (isset($_GET['order'])) {
       $link_options['query']['order'] = $_GET['order'];
     }
-
+    unset($uri['query']['filters']);
     if ($search_content) {
       $content .= '&nbsp;&nbsp;'.l('['.t('Reset Search').']',"$base/filter/clear", $link_options);
     } else {
-      $content .= '&nbsp;&nbsp;'.l('['.t('Clear All Filters').']',"$base/filter/clear", $link_options);
+      $content .= '&nbsp;&nbsp;'.l('['.t('Clear All Filters').']',"$base/filter/clear", $uri);
     }
     $content .= '</div>';
   }
@@ -692,12 +653,19 @@ function _biblio_filter_info_line($args) {
   return $content;
 }
 
-function _biblio_category_separator_bar($attrib, $node, $reset = FALSE) {
+function _biblio_category_separator_bar($node, $reset = FALSE) {
   static $_text = '';
   if ($reset) { $_text = ''; return;}
   $content = '';
 
-  switch ($attrib['sort']) {
+  if (isset($_GET['sort'])) {
+    $sort = $_GET['sort'];
+  }
+  else {
+    $sort = variable_get('biblio_sort', 'year');
+  }
+
+  switch ($sort) {
     case 'title':
       $title = $node->title;
       $first = drupal_substr(drupal_ucfirst(ltrim($title)), 0, 1);

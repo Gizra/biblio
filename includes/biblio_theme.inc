@@ -555,22 +555,17 @@ function theme_biblio_author_link($variables) {
   $base   = $variables['base'];
   $inline = $variables['inline'];
 
-  $options = array();
-  $options['query']['author'] = $aid;
+  $uri = drupal_parse_url(request_uri());
+  if (substr($uri['path'], 0, 1) == '/') $uri['path'] = substr($uri['path'], 1);
 
-  if (isset($_GET['sort'])) {
-    $options['query']['sort'] = $_GET['sort'];
-  }
-  if (isset($_GET['order'])) {
-    $options['query']['order'] = $_GET['order'];
-  }
+  $uri['query']['filters']['author'] = $aid;
+
   if ($inline) {
     $options['query']['inline'] = 'true';
   }
 
-  $html = l(trim($author), $base, $options );
+  return l(trim($author), $uri['path'], $uri );
 
-  return $html;
 }
 
 // Format page information:
@@ -969,7 +964,9 @@ function theme_biblio_alpha_line($variables) {
   $options = array();
   $base = variable_get('biblio_base', 'biblio');
   $all = '';
-
+  $uri = drupal_parse_url(request_uri());
+  if (substr($uri['path'], 0, 1) == '/') $uri['path'] = substr($uri['path'], 1);
+  $all_uri = $uri;
   switch ($type){
     case 'authors':
     case 'keywords':
@@ -977,16 +974,17 @@ function theme_biblio_alpha_line($variables) {
       $all = '['.l(t('Show ALL'), substr($_GET['q'], 0, -2)).']' ;
       break;
     case 'author':
-      $options['query'] = array('sort' => 'author');
-      $path = "$base/ag/";
-      $all_query['query'] = array('sort' => 'author', 'order' => $_GET['order']);
-      $all = '['.l(t('Show ALL'), $base,$all_query).']' ;
+      $current = isset($uri['query']['filters']['ag']) ? $uri['query']['filters']['ag'] : '';
+      $filter = 'ag';
+      if (!isset($uri['query']['sort'])) $uri['query']['sort'] = 'author';
+      unset($all_uri['query']['filters']['ag']);
+      $all = '['.l(t('Show ALL'), $all_uri['path'], $all_uri).']' ;
       break;
     case 'title':
-      $options['query'] = array('sort' => 'title');
-      $path = "$base/tg/";
-      $all_query['query'] = array('sort' => 'title', 'order' => $_GET['order']);
-      $all = '['.l(t('Show ALL'), $base,$all_query).']' ;
+      $current = isset($uri['query']['filters']['tg']) ? $uri['query']['filters']['tg'] : '';
+      $filter = 'tg';
+      unset($all_uri['query']['filters']['tg']);
+      $all = '['.l(t('Show ALL'), $all_uri['path'], $all_uri).']' ;
       break;
     default:
       if (!isset ($_GET['sort']) || $_GET['sort'] == 'year' || $_GET['sort'] == 'type')
@@ -1012,7 +1010,8 @@ function theme_biblio_alpha_line($variables) {
       $output .= '<b>['.chr($i).']</b>&nbsp;';
     }
     else{
-      $output .= l(chr($i), $path. chr($i), $options) .'&nbsp;';
+      $uri['query']['filters'][$filter] =  chr($i);
+      $output .= l(chr($i), $uri['path'], $uri) .'&nbsp;';
     }
   }
   if($current) $output .= '&nbsp;&nbsp;'.$all;
