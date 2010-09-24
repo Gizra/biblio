@@ -29,11 +29,12 @@ function biblio_view_node($nid) {
 function biblio_db_search() {
 
   $arg_list = array();
-  $arg_list = func_get_args();
+ // $arg_list = func_get_args();
   foreach ($_GET as $key => $value) {
     if ($key != 'q') {
-      $arg_list[] = check_plain($key);
-      $arg_list[] = check_plain($value);
+      $key = check_plain($key);
+      $value = check_plain($value);
+      $arg_list[$key] = $value;
     }
   }
 
@@ -162,12 +163,10 @@ function biblio_build_query($arg_list) {
     $limit .= " AND n.uid = $user->uid ";
   }
 
-  if (array_search('sort', $arg_list) === FALSE) {
-    $arg_list[] = 'sort';
-    $arg_list[] = variable_get('biblio_sort', 'year');
+  if (!isset($arg_list['sort'])) {
+    $arg_list['sort'] = variable_get('biblio_sort', 'year');
   }
-  if (array_search('order', $arg_list) === FALSE) {
-//    $arg_list[] = 'order';
+  if (!isset($arg_list['order'])) {
     $arg_list['order'] = strtolower(variable_get('biblio_order', 'desc'));
   }
 
@@ -219,8 +218,8 @@ function biblio_build_query($arg_list) {
 
   if (count($arg_list) ) {
     $args = array();
-    while ($arg_list) {
-      $type = $arg_list[0];
+    foreach ($arg_list as $type => $value) {
+//      $type = $arg_list[0];
       array_shift($arg_list);
       // $operator = ($operator)?$operator:" AND "; //defaults to AND
       switch ($type) {
@@ -245,51 +244,36 @@ function biblio_build_query($arg_list) {
         case 'cid':
         case 'aid':
           $bcc++;
-          $term = explode("?",array_shift($arg_list));
           $query->innerJoin('biblio_contributor', "bc$bcc", "n.vid = bc$bcc.vid");
-          $query->condition("bc$bcc.cid", $term[0]);
-          array_push($args, $type, $term[0]);
+          $query->condition("bc$bcc.cid", $value);
           break;
         case 'term':
         case 'term_id':
-          $term = explode("?",array_shift($arg_list));
           $query->innerJoin('term_node', "tn$tcc", "n.vid = tn$tcc.vid");
           if ($type == 'term') {
             $query->innerJoin('term_data', 'td', "tn$tcc.tid = td.tid");
-            $query->condition('td.name', $term[0]);
+            $query->condition('td.name', $value);
           }elseif ($type == 'term_id') {
-            $query->condition("tn$tcc.tid", $term[0]);
+            $query->condition("tn$tcc.tid", $value);
           }
-          array_push($args, $type, $term[0]);
           $tcc++;
           break;
         case 'tg':
-          $term = explode("?",array_shift($arg_list));
-          $query->where("substring(($sort_title),1 ,1) " . $match_op . " LOWER(:letter)", array(':letter' => $term[0]));
-          array_push($args, $type, $term[0]);
-          $operator = NULL;
+          $query->where("substring(($sort_title),1 ,1) " . $match_op . " LOWER(:letter)", array(':letter' => $value));
           break;
         case 'ag': //selects entries whoose authors firstname starts with the letter provided
-          $term = explode("?",array_shift($arg_list));
-          $query->where(" UPPER(substring(bcd.lastname,1,1)) = :letter ",array(':letter' => $term[0]));
+          $query->where(" UPPER(substring(bcd.lastname,1,1)) = :letter ",array(':letter' => $value));
           //$where['bc-rank'] = "bc.rank=0";
           $query->innerJoin('biblio_contributor', 'bc', 'b.vid = bc.vid');
           $query->innerJoin('biblio_contributor_data', 'bcd', 'bc.cid = bcd.cid');
-          array_push($args, $type, $term[0]);
-          $operator = NULL;
           break;
         case 'author':
           $bcc++;
-          $term = explode("?",array_shift($arg_list));
-
-          if (is_numeric($term[0])){
+          if (is_numeric($value)){
             $query->innerJoin('biblio_contributor', "bc$bcc", "n.vid = bc$bcc.vid");
-            //            $joins[] = "inner join {biblio_contributor} as bc". $bcc ." on n.vid = bc". $bcc .".vid";
-            //$where[] = "bc". $bcc .".cid = '%d' ";
-            //
             $cids = db_query('SELECT cid FROM {biblio_contributor_data}
                               WHERE cid = :cid OR aka = (SELECT aka FROM {biblio_contributor_data} WHERE cid = :cdid)'
-                              ,array(':cid' => $term[0], ':cdid' => $term[0]));
+                              ,array(':cid' => $value, ':cdid' => $value));
                               $cid_count = 0;
                               $or = db_or();
                               foreach ($cids as $cid)
@@ -323,14 +307,8 @@ function biblio_build_query($arg_list) {
           $operator = NULL;
           break;
         case 'year':
-          $term = array_shift($arg_list);
-
           $where[] = "b.biblio_year=%d ";
-          $query->condition('b.biblio_year', $term);
-          //$limit .= " AND b.biblio_year=%d ";
-          $terms[] = (int)$term;
-          array_push($args, $type, (int)$term);
-          $operator = NULL;
+          $query->condition('b.biblio_year', $value);
           break;
         case 'uid':
           $term = array_shift($arg_list);
@@ -342,10 +320,9 @@ function biblio_build_query($arg_list) {
           break;
         case 'keyword':
           $bkd++;
-          $term = explode("?",array_shift($arg_list));
-          if (is_numeric($term[0])){
+          if (is_numeric($value)){
             $query->innerJoin('biblio_keyword', 'bk', 'n.vid = bk.vid');
-            $query->condition('bk.kid', $term[0]);
+            $query->condition('bk.kid', $value);
           }else{
             $where[] = " bkd". $bkd .'.word '. $match_op .' "[[:<:]]%s[[:>:]]" ';
             $joins[] = " JOIN {biblio_keyword} as bk". $bkd ." on b.vid = bk". $bkd .".vid ";
@@ -359,27 +336,18 @@ function biblio_build_query($arg_list) {
           array_push($args, $type, $term[0]);
           break;
         case 'citekey':
-          $term = explode("?",array_shift($arg_list));
-          $query->condition('b.biblio_citekey', $term[0]);
-          array_push($args, $type, $term[0]);
+          $query->condition('b.biblio_citekey', $value);
           break;
         case 'type':
-          $term = array_shift($arg_list);
-          $query->condition('b.biblio_type', $term[0]);
-          //$limit .= $operator. "b.biblio_type=%d ";
-          array_push($args, $type, (int)$term);
-          $operator = NULL;
+          $query->condition('b.biblio_type', $value);
           break;
-        case 'order':
-          $term = (array_shift($arg_list) == 'desc')?'desc':'asc';
-          $sort_attrib['order'] = $term;
-          array_push($args, $type, $term);
-          break;
+//        case 'order':
+//          $term = (array_shift($arg_list) == 'desc')?'desc':'asc';
+//          $sort_attrib['order'] = $term;
+//          array_push($args, $type, $term);
+//          break;
         case 'sort':
-          $term = array_shift($arg_list);
-          $sort_attrib['sort'] = $term;
-          array_push($args, $type, $term);
-          switch ($term) {
+          switch ($value) {
             case 'type':
               //$sortby = "ORDER BY bt.name %s, b.biblio_year DESC ";
               $query->addField('n', 'title');
@@ -429,12 +397,9 @@ function biblio_build_query($arg_list) {
           break;
         default:
           $fields = biblio_get_db_fields();
-          $term = explode("?",array_shift($arg_list));
           if (in_array("biblio_$type",$fields))
           {
-            $query->condition("b.biblio_$type ", $term[0], 'LIKE');
-            array_push($args, $type, $term[0]);
-            $operator = NULL;
+            $query->condition("b.biblio_$type ", $value, 'LIKE');
           }
           break;
       }
