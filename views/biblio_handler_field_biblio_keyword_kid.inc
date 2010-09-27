@@ -27,7 +27,7 @@ class biblio_handler_field_biblio_keyword_kid extends views_handler_field_preren
       					  FROM {biblio_keyword_data} bkd
       					  INNER JOIN {biblio_keyword} bk ON bkd.kid = bk.kid
       					  WHERE bk.vid IN (:vids)
-                          ORDER BY  bkd.word", , array(':vids' => implode(', ', $vids)));
+                          ORDER BY  bkd.word",  array(':vids' => implode(', ', $vids)));
 
       foreach ($result as $term) {
 //        if (empty($this->options['link_to_taxonomy'])) {
