@@ -19,7 +19,10 @@ function biblio_pm_enable() {
 }
 
 function biblio_pm_set_system_weight() {
-  return db_query("UPDATE {system} SET weight = 19 WHERE name = 'biblio_pm'");
+  db_update('system')
+    ->fields(array('weight' => 19))
+    ->condition('name', 'biblio_pm')
+    ->execute();
 }
 
 /**

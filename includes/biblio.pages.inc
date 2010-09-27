@@ -189,8 +189,8 @@ function biblio_build_query($arg_list) {
       //$sortby = "ORDER BY bt.name %s, b.biblio_year DESC ";
       $query->addField('n', 'title');
       $query->orderBy($type_name, $arg_list['order']);
-      $query->orderBy('n', $sort_title);
-      break;
+      $query->orderBy($sort_title, $arg_list['order']);
+            break;
     case 'title':
       $query->addField('n', 'title');
       $query->orderBy($sort_title, $arg_list['order']);
@@ -223,7 +223,7 @@ function biblio_build_query($arg_list) {
     $args = array();
     foreach ($arg_list['filters'] as $type => $value) {
 //      $type = $arg_list[0];
-      array_shift($arg_list);
+//      array_shift($arg_list);
       // $operator = ($operator)?$operator:" AND "; //defaults to AND
       switch ($type) {
         case 'no_filters':
@@ -243,12 +243,6 @@ function biblio_build_query($arg_list) {
           break;
         case 'profile':
           $inline = "profile";
-          break;
-        case 'cid':
-        case 'aid':
-          $bcc++;
-          $query->innerJoin('biblio_contributor', "bc$bcc", "n.vid = bc$bcc.vid");
-          $query->condition("bc$bcc.cid", $value);
           break;
         case 'term':
         case 'term_id':
@@ -270,12 +264,19 @@ function biblio_build_query($arg_list) {
           $query->innerJoin('biblio_contributor', 'bc', 'b.vid = bc.vid');
           $query->innerJoin('biblio_contributor_data', 'bcd', 'bc.cid = bcd.cid');
           break;
+        case 'cid':
+        case 'aid':
+          $bcc++;
+          $query->innerJoin('biblio_contributor', "bc$bcc", "n.vid = bc$bcc.vid");
+          $query->condition("bc$bcc.cid", $value);
+          break;
         case 'author':
           $bcc++;
           if (is_numeric($value)){
             $query->innerJoin('biblio_contributor', "bc$bcc", "n.vid = bc$bcc.vid");
             $cids = db_query('SELECT cid FROM {biblio_contributor_data}
-                              WHERE cid = :cid OR aka = (SELECT aka FROM {biblio_contributor_data} WHERE cid = :cdid)'
+                              WHERE cid = :cid OR
+                              (aka = (SELECT aka FROM {biblio_contributor_data} WHERE cid = :cdid) AND aka != 0)'
                               ,array(':cid' => $value, ':cdid' => $value));
                               $cid_count = 0;
                               $or = db_or();
@@ -614,7 +615,7 @@ function _biblio_filter_info_line($args) {
         $type = t("First letter of title");
       }
       if ($type == 'type' && $value > 0) {
-        if (($pub_type = db_fetch_object(db_query('SELECT t.* FROM {biblio_types} as t WHERE t.tid=%d', $value)))) {
+        if (($pub_type = db_query('SELECT t.* FROM {biblio_types} as t WHERE t.tid=:tid',array(':tid' => $value))->fetchObject())) {
           $value = drupal_ucfirst(_biblio_localize_type($pub_type->tid, $pub_type->name));
           $type = t("Type");
         }
@@ -860,13 +861,13 @@ function _get_biblio_filters() {
 
   $fields = " b.biblio_year, t.name , t.tid ";
   $order = " b.biblio_year DESC";
-  $taxo_fields = "td.name as termname,td.tid as taxid, v.name as vocab_name";
+  $taxo_fields = "td.name as termname, td.tid as taxid, v.name as vocab_name";
   $taxo_order = "vocab_name ASC, termname ASC";
   $table = "{node} as n  inner join {biblio} as b on n.vid=b.vid ";
   $join = "left join {biblio_types} as t on b.biblio_type = t.tid";
-  $taxo_join = array("inner join {term_node} as tn on n.vid = tn.vid",
-                     "left join  {term_data} as td on tn.tid= td.tid",
-                     "left join  {vocabulary} as v on v.vid= td.vid");
+  $taxo_join = array("inner join {taxonomy_index} as ti on n.nid = ti.nid",
+                     "left join  {taxonomy_term_data} as td on ti.tid = td.tid",
+                     "left join  {taxonomy_vocabulary} as v on v.vid = td.vid");
 
   $taxo_joins = implode(' ',$taxo_join);
 
@@ -874,22 +875,26 @@ function _get_biblio_filters() {
   $authors = db_query("SELECT firstname, initials, lastname, cid FROM {biblio_contributor_data} ORDER BY lastname ASC");
   $keywords = db_query("SELECT word, kid FROM {biblio_keyword_data} ORDER BY word ASC");
   $taxoresult = db_query("SELECT $taxo_fields FROM $table $taxo_joins ORDER BY $taxo_order");
-
-  while ($option = db_fetch_object($result)) {
+  $pub_years[] = '';
+  $pub_type[]  = '';
+  $pub_authors[]  = '';
+  $pub_keywords[]  = '';
+  $pub_taxo[]  = '';
+  foreach ($result as $option) {
     if (isset ($option->biblio_year)) {
       $option->biblio_year = _biblio_text_year($option->biblio_year);
     }
-    $pub_years["$option->biblio_year"] = $option->biblio_year;
-    $pub_type["$option->tid"] = _biblio_localize_type($option->tid, $option->name);
+    $pub_years[$option->biblio_year] = $option->biblio_year;
+    $pub_type[$option->tid] = _biblio_localize_type($option->tid, $option->name);
   }
 
-  while($auth = db_fetch_object($authors)) {
+  foreach ($authors as $auth) {
     $pub_authors[$auth->cid] = $auth->lastname .((!empty($auth->firstname) || !empty($auth->initials))?', '.$auth->firstname.' '.$auth->initials :'');
   }
-  while($keyword = db_fetch_object($keywords)) {
+  foreach ($keywords as $keyword) {
     $pub_keywords[$keyword->kid] = $keyword->word;
   }
-  while ($tax = db_fetch_object($taxoresult)) {
+  foreach ($taxoresult as $tax) {
     $pub_taxo["$tax->taxid"] = "$tax->vocab_name - $tax->termname";
   }
   $author_select = isset($pub_authors) ? array('title' => t('Author'), 'options' => $pub_authors) : null;
@@ -948,7 +953,7 @@ function biblio_form_filter() {
     }
   }
 
-  $form['filters']['filter'] = array('#type' => 'radios', '#options' => $names, '#default_value' => 'author');
+  $form['filters']['filter'] = array('#type' => 'checkboxes', '#options' => $names, '#default_value' => 'author');
   $form['filters']['buttons']['submit'] = array('#type' => 'submit', '#value' => (count($session) ? t('Refine') : t('Filter')));
   if (count($session) && $type != 'search') {
     $form['filters']['buttons']['undo'] = array('#type' => 'submit', '#value' => t('Undo'));
@@ -974,19 +979,25 @@ function biblio_form_filter_submit($form, &$form_state) {
     case t('Filter'):
     case t('Refine'):
       if (isset($form_state['values']['filter'])) {
-        $filter = $form_state['values']['filter'];
-
-        // Flatten the options array to accommodate hierarchical/nested options.
-        if (isset($filters[$filter]['options'])) {
-          $flat_options = form_options_flatten($filters[$filter]['options']);
+        $uri = drupal_parse_url(request_uri());
+        $uri['path'] = variable_get('biblio_base', 'biblio');
+//        $filter = $form_state['values']['filter'];
+//
+//        // Flatten the options array to accommodate hierarchical/nested options.
+//        if (isset($filters[$filter]['options'])) {
+//          $flat_options = form_options_flatten($filters[$filter]['options']);
+//        }
+        foreach ($form_state['values']['filter'] as $filter => $value) {
+          if (!empty($value)) {
+            $uri['query']['filters'][$filter] = $form_state['values'][$filter];
+          }
         }
+ //       if (isset($flat_options[$form_state['values'][$filter]]) ) {
+ //         $_SESSION['biblio_filter'][] = array($filter, $form_state['values'][$filter]);
+ //         $base =  variable_get('biblio_base', 'biblio');
+          drupal_goto($uri['path'], $uri);
 
-        if (isset($flat_options[$form_state['values'][$filter]]) ) {
-          $_SESSION['biblio_filter'][] = array($filter, $form_state['values'][$filter]);
-          $base =  variable_get('biblio_base', 'biblio');
-          drupal_goto($base);
-
-        }
+  //      }
       }
       break;
     case t('Undo'):
@@ -1033,7 +1044,7 @@ function biblio_view_inline(&$node) {
  */
 function biblio_citekey_view() {
   $citekey = arg(2);
-  $nid = db_fetch_object(db_query("SELECT nid FROM {biblio} WHERE biblio_citekey = '%s' ORDER BY vid DESC", $citekey));
+  $nid = db_query("SELECT nid FROM {biblio} WHERE biblio_citekey = :citekey ORDER BY vid DESC", array(':citekey' => $citekey))->fetchObject();
   if ($nid->nid > 0) {
     $node = node_load($nid->nid);
     return node_page_view($node);
@@ -1049,9 +1060,11 @@ function biblio_citekey_view() {
  * @return unknown_type
  */
 
-function biblio_author_page($filter = NULL) {
-    $authors = _biblio_get_authors($filter);
-    return _biblio_format_author_page($filter, $authors);
+function biblio_author_page() {
+  $uri = drupal_parse_url(request_uri());
+  $filter = isset($uri['query']['filters']['author']) ? $uri['query']['filters']['author'] : '';
+  $authors = _biblio_get_authors($filter);
+  return _biblio_format_author_page($filter, $authors);
 }
 
 function _biblio_get_authors($filter = NULL) {
@@ -1146,9 +1159,11 @@ function _biblio_author_edit_links($author) {
   return l(' ['.t('edit').']', $path . $author['cid'] ."/edit", array('query' => $destination) );
 }
 
-function biblio_keyword_page($filter = NULL) {
+function biblio_keyword_page() {
+  $uri = drupal_parse_url(request_uri());
+  $filter = isset($uri['query']['filters']['keyword']) ? $uri['query']['filters']['keyword'] : '';
   $keywords = _biblio_get_keywords($filter);
-  return _biblio_format_keyword_page($filter, $keywords);
+  return _biblio_format_keyword_page($uri, $filter, $keywords);
 }
 
 function _biblio_get_keywords($filter = NULL) {
@@ -1188,20 +1203,22 @@ function _biblio_get_keywords($filter = NULL) {
   return $keywords;
 }
 
-function _biblio_format_keyword_page($filter, $keywords) {
+function _biblio_format_keyword_page($uri, $filter, $keywords) {
   $rows[] = array(array('data' => theme('biblio_alpha_line', array('type' => 'keywords', 'current' => $filter, 'path' =>'')), 'colspan' => 3));
   for ($i=0; $i < count($keywords); $i+=3) {
-    $rows[] = array( array('data' => _biblio_format_keyword($keywords[$i]) ),
-    array('data' => isset($keywords[$i+1])?_biblio_format_keyword($keywords[$i+1]):'' ),
-    array('data' => isset($keywords[$i+2])?_biblio_format_keyword($keywords[$i+2]):'' ));
+    $rows[] = array( array('data' => _biblio_format_keyword($uri, $keywords[$i]) ),
+    array('data' => isset($keywords[$i+1])?_biblio_format_keyword($uri, $keywords[$i+1]):'' ),
+    array('data' => isset($keywords[$i+2])?_biblio_format_keyword($uri, $keywords[$i+2]):'' ));
   }
   //$header = array(array('data' => t('There are a total of @count keywords !header_ext in the database',array('@count' => count($keywords), '!header_ext' => $header_ext)), 'align' =>'center', 'colspan' => 3));
   $output = theme('table', array('rows' => $rows));
   return $output;
 }
-function _biblio_format_keyword($keyword) {
+function _biblio_format_keyword($uri, $keyword) {
   $base      = variable_get('biblio_base', 'biblio');
-  $format    = l(trim($keyword->word), "$base/keyword/$keyword->kid" );
+  $uri['path'] = $base;
+  $uri['query']['filters']['keyword'] = $keyword->kid;
+  $format    = l(trim($keyword->word), $base, $uri);
   $format   .= ' ('. $keyword->cnt . ') ' ;
   $destination = drupal_get_destination();
   $path =  (ord(substr($_GET['q'],-1)) > 97) ? $_GET['q'] . "/" : substr($_GET['q'], 0, -1);

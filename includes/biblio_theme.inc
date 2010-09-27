@@ -556,7 +556,7 @@ function theme_biblio_author_link($variables) {
   $inline = $variables['inline'];
 
   $uri = drupal_parse_url(request_uri());
-  if (substr($uri['path'], 0, 1) == '/') $uri['path'] = substr($uri['path'], 1);
+  $uri['path'] = variable_get('biblio_base', 'biblio');
 
   $uri['query']['filters']['author'] = $aid;
 
@@ -736,14 +736,15 @@ function theme_biblio_entry($variables) {
  */
 function theme_biblio_filters($variables) {
   $form = $variables['form'];
-  if (sizeof($form['current'])) {
+  $output = '';
+  if (isset($form['current'])) {
     $output .= '<ul>';
     foreach (element_children($form['current']) as $key) {
       $output .= '<li>'. drupal_render($form['current'][$key]) .'</li>';
     }
     $output .= '</ul>';
   }
-  $output .= '<dl class="multiselect">'. (sizeof($form['current']) ? '<dt><em>'. t('and') .'</em> '. t('where') .'</dt>' : '') .'<dd class="a">';
+  $output .= '<dl class="multiselect">'. (isset($form['current']) ? '<dt><em>'. t('and') .'</em> '. t('where') .'</dt>' : '') .'<dd class="a">';
   foreach (element_children($form['filter']) as $key) {
     $output .= drupal_render($form['filter'][$key]);
   }
@@ -967,40 +968,29 @@ function theme_biblio_alpha_line($variables) {
   $uri = drupal_parse_url(request_uri());
   if (substr($uri['path'], 0, 1) == '/') $uri['path'] = substr($uri['path'], 1);
   $all_uri = $uri;
-  switch ($type){
+  switch ($type) {
     case 'authors':
+      $filter = 'author';
+      $current = isset($uri['query']['filters']['author']) ? $uri['query']['filters']['author'] : '';
+      unset($all_uri['query']['filters']['author']);
+      break;
     case 'keywords':
-      $path =  (ord(substr($_GET['q'],-1)) > 97) ? $_GET['q'] . "/" : substr($_GET['q'], 0, -1);
-      $all = '['.l(t('Show ALL'), substr($_GET['q'], 0, -2)).']' ;
+      $filter = 'keyword';
+      $current = isset($uri['query']['filters']['keyword']) ? $uri['query']['filters']['keyword'] : '';
+      unset($all_uri['query']['filters']['keyword']);
       break;
     case 'author':
       $current = isset($uri['query']['filters']['ag']) ? $uri['query']['filters']['ag'] : '';
       $filter = 'ag';
       if (!isset($uri['query']['sort'])) $uri['query']['sort'] = 'author';
       unset($all_uri['query']['filters']['ag']);
-      $all = '['.l(t('Show ALL'), $all_uri['path'], $all_uri).']' ;
       break;
     case 'title':
       $current = isset($uri['query']['filters']['tg']) ? $uri['query']['filters']['tg'] : '';
       $filter = 'tg';
       unset($all_uri['query']['filters']['tg']);
-      $all = '['.l(t('Show ALL'), $all_uri['path'], $all_uri).']' ;
       break;
     default:
-      if (!isset ($_GET['sort']) || $_GET['sort'] == 'year' || $_GET['sort'] == 'type')
-      return;
-      $inline = $inline ? "/inline" : "";
-      if (isset ($_GET['sort'])) {
-        $options['query']['sort'] = $_GET['sort'];
-        if ($_GET['sort'] == 'author')
-        $path = "$base/ag/";
-        if ($_GET['sort'] == 'title')
-        $path = "$base/tg/";
-      }
-
-  }
-  if (isset ($_GET['order'])) {
-    $options['query']['order'] = $_GET['order'];
   }
   $output = '<div class="biblio-alpha-line">';
 //TODO   for Cyrillic use 1040 to 1071... e.g. &#1068;
@@ -1014,7 +1004,10 @@ function theme_biblio_alpha_line($variables) {
       $output .= l(chr($i), $uri['path'], $uri) .'&nbsp;';
     }
   }
-  if($current) $output .= '&nbsp;&nbsp;'.$all;
+  if($current) {
+    if (empty($all_uri['query']['filters'])) unset($all_uri['query']['filters']);
+    $output .= '&nbsp;&nbsp;' . '['.l(t('Show ALL'), $all_uri['path'], $all_uri).']';
+  }
   $output .= '</div>';
   return $output;
 }

@@ -35,6 +35,9 @@ function biblio_rtf_enable() {
 }
 
 function biblio_rtf_set_system_weight() {
-  return db_query("UPDATE {system} SET weight = 22 WHERE name = 'biblio_rtf'");
+  db_update('system')
+    ->fields(array('weight' => 22))
+    ->condition('name', 'biblio_rtf')
+    ->execute();
 }
 

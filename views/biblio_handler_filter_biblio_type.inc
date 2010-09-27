@@ -15,7 +15,7 @@ class biblio_handler_filter_biblio_type extends views_handler_filter_in_operator
               ORDER by name");
       $this->value_title = t('Publication type');
       $options = array();
-      while ($row = db_fetch_object($result)) {
+      foreach ($result as $row) {
         $options[$row->tid] =  $row->name;
       }
       $this->value_options = $options;

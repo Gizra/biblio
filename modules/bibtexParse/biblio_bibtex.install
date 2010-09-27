@@ -38,7 +38,9 @@ function biblio_bibtex_requirements($phase) {
 
 function biblio_bibtex_uninstall() {
   if (db_table_exists('biblio_type_maps')) {
-    db_query("DELETE FROM {biblio_type_maps} WHERE format = 'bibtex'");
+    db_delete('biblio_type_maps')
+      ->condition('format', 'bibtex')
+      ->execute();
   }
 }
 
@@ -47,7 +49,10 @@ function biblio_bibtex_enable() {
 }
 
 function biblio_bibtex_set_system_weight() {
-  return db_query("UPDATE {system} SET weight = 22 WHERE name = 'biblio_bibtex'");
+  db_update('system')
+    ->fields(array('weight' => 22))
+    ->condition('name', 'biblio_bibtex')
+    ->execute();
 }
 
 
@@ -143,14 +148,19 @@ function _save_bibtex_maps() {
 }
 
 function _reset_bibtex_map($type) {
-  $count = db_result(db_query("SELECT COUNT(*) FROM {biblio_type_maps} WHERE format='bibtex'"));
+  $count = db_query("SELECT COUNT(*)  FROM {biblio_type_maps} WHERE format='bibtex'")->fetchField();
   if($count && $type) { //update
     $function = '_get_bibtex_'.$type;
     $map = $function();
-    drupal_write_record('biblio_type_maps', $map, 'format');
+    db_update('biblio_type_maps')
+      ->fields($map)
+      ->condition('format', 'bibtex')
+      ->execute();
   }
   else { // install
-    db_query("DELETE FROM {biblio_type_maps} WHERE format='bibtex'");
+    db_delete('biblio_type_maps')
+      ->condition('format', 'bibtex')
+      ->execute();
     _save_bibtex_maps();
   }
 }

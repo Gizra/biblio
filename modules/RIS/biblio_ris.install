@@ -14,7 +14,9 @@ function biblio_ris_install() {
 
 function biblio_ris_uninstall() {
   if (db_table_exists('biblio_type_maps')) {
-    db_query("DELETE FROM {biblio_type_maps} WHERE format = 'ris'");
+    db_delete('biblio_type_maps')
+      ->condition('format', 'ris')
+      ->execute();
   }
 }
 
@@ -46,7 +48,10 @@ function biblio_ris_enable() {
 }
 
 function biblio_ris_set_system_weight() {
-  return db_query("UPDATE {system} SET weight = 22 WHERE name = 'biblio_ris'");
+  db_update('system')
+    ->fields(array('weight' => 27))
+    ->condition('name', 'biblio_ris')
+    ->execute();
 }
 
 function _save_ris_maps() {
@@ -59,14 +64,20 @@ function _save_ris_maps() {
 
 }
 function _reset_ris_map($type) {
-  $count = db_result(db_query("SELECT COUNT(*) FROM {biblio_type_maps} WHERE format='ris'"));
+  $count = db_query("SELECT COUNT(*) FROM {biblio_type_maps} WHERE format='ris'")->fetchField();
   if($count && $type) { //update
     $function = '_get_ris_'.$type;
     $map = $function();
-    drupal_write_record('biblio_type_maps', $map, 'format');
+
+    db_update('biblio_type_maps')
+      ->fields($map)
+      ->condition('format', 'ris')
+      ->execute();
   }
   else { // install
-    db_query("DELETE FROM {biblio_type_maps} WHERE format='ris'");
+    db_delete('biblio_type_maps')
+      ->condition('format', 'ris')
+      ->execute();
     _save_ris_maps();
   }
 }

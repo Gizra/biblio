@@ -14,7 +14,8 @@ class biblio_handler_filter_biblio_contributor_auth_type extends views_handler_f
               ORDER by auth_type");
       $this->value_title = t('Author type');
       $options = array();
-      while ($row = db_fetch_object($result)) {
+
+      foreach ($result as $row) {
         $options[$row->auth_type] =  $row->title;
       }
       $this->value_options = $options;

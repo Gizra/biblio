@@ -807,13 +807,17 @@ function biblio_admin_types_edit_form_submit($form, & $form_state) {
       'tid' => $tid,
       'name' => $form_state['values']['type_name'],
     );
-    drupal_write_record('biblio_types', $type_name_record, 'tid');
+    db_update('biblio_types')
+      ->fields($type_name_record)
+      ->execute();
     biblio_locale_refresh_types($tid);
   }
 
   // save author types
   $link['biblio_type'] = $tid;
-  db_query('DELETE FROM {biblio_contributor_type} WHERE biblio_type=%d', $link['biblio_type']);
+  db_delete('biblio_contributor_type')
+    ->condition('biblio_type', $link['biblio_type'])
+    ->execute();
   for($i=1; $i<=5; $i++) {
     $link['auth_category'] = $i;
     $auth_types = (array)$form_state['values']['configured_flds'][$i]['auth_type'];
@@ -822,7 +826,9 @@ function biblio_admin_types_edit_form_submit($form, & $form_state) {
         (array_values($auth_types) == array_values((array)$form['configured_flds'][$i]['auth_type']['#default_value']))) continue;
     foreach ($auth_types as $type) {
       $link['auth_type'] = $type;
-      drupal_write_record('biblio_contributor_type', $link);
+      db_insert('biblio_contributor_type')
+        ->fields($link)
+        ->execute();
     }
   }
   variable_set('biblio_hide_other_fields', $form_state['values']['hide_other_fields']);
@@ -874,16 +880,28 @@ function biblio_admin_types_edit_form_submit($form, & $form_state) {
 
     if($tid == 0) {
       if ($link['common']) {
-        $query = "UPDATE {biblio_field_type} SET ftdid = %d, common = %d, visible = %d WHERE fid = %d";
-        db_query($query, array($fid, 1, 1, $fid));
+//        $query = "UPDATE {biblio_field_type} SET ftdid = %d, common = %d, visible = %d WHERE fid = %d";
+//        db_query($query, array($fid, 1, 1, $fid));
+        db_update('biblio_field_type')
+          ->fields(array('ftdid' => $fid, 'common' => 1, 'visible' => 1))
+          ->condition('fid', $fid)
+          ->execute();
       }
       else { // not common, so change pointer back to customizations if available
         $query = "UPDATE {biblio_field_type} SET ftdid = cust_tdid, common = %d WHERE fid = %d";
         db_query($query, array(0, $fid));
+//        db_update('biblio_field_type')
+//          ->fields(array('ftdid' => $fid, 'common' => 1, 'visible' => 1))
+//          ->condition('fid', $fid)
+//          ->execute();
       }
       // set the autocomplete bit on this field for all the types
-      $query = "UPDATE {biblio_field_type} SET autocomplete = %d WHERE fid = %d";
-      db_query($query, array($link['autocomplete'], $fid));
+//      $query = "UPDATE {biblio_field_type} SET autocomplete = %d WHERE fid = %d";
+//      db_query($query, array($link['autocomplete'], $fid));
+      db_update('biblio_field_type')
+        ->fields(array('autocomplete' => $link['autocomplete']))
+        ->condition('fid', $fid)
+        ->execute();
     }
   }
   drupal_set_message(t("The changes have been saved."));
@@ -1141,8 +1159,7 @@ function theme_biblio_admin_field_mapper_form($variables) {
    $output .= drupal_render($form['type_name']);
    $output .= drupal_render($form['type_desc']);
   }
-  $output .= drupal_render($form['submit']);
-  $output .= drupal_render($form['reset']);
+  $output .= drupal_render_children($form);
 
   return $output;
 }
@@ -1230,8 +1247,13 @@ function biblio_admin_types_add_form() {
 function biblio_admin_types_add_form_submit($form, & $form_state) {
   $values = $form_state['values'];
   $values['tid'] = variable_get('biblio_max_user_tid', '999') + 1;
-  drupal_write_record('biblio_types', $values);
+
+  db_insert('biblio_types')
+    ->fields($values)
+    ->execute();
+
   variable_set('biblio_max_user_tid', $values['tid']);
+
   for ($f = 1; $f <= 51; $f++) {
     $ft_vals = array(
       'tid'       => $values['tid'],
@@ -1241,7 +1263,10 @@ function biblio_admin_types_add_form_submit($form, & $form_state) {
       'weight'    => $f,
       'visible'    => 1,
     );
-    drupal_write_record('biblio_field_type', $ft_vals);
+
+    db_insert('biblio_field_type')
+      ->fields($ft_vals)
+      ->execute();
   }
   // Fill contributor types. Use the first 4 defaults.
   for ($type = 1; $type <= 4; $type++) {
@@ -1250,7 +1275,10 @@ function biblio_admin_types_add_form_submit($form, & $form_state) {
       'biblio_type' => $values['tid'],
       'auth_type' => $type,
       );
-    drupal_write_record('biblio_contributor_type', $ct_vals);
+
+    db_insert('biblio_contributor_type')
+      ->fields($ct_vals)
+      ->execute();
   }
 
   // Refresh publication type string for translation.
@@ -1261,23 +1289,30 @@ function biblio_admin_types_add_form_submit($form, & $form_state) {
 function biblio_admin_types_hide() {
   $args = func_get_args();
   if ($args[0] > 0 && is_numeric($args[0])) {
-    $result = db_query('UPDATE {biblio_types} SET visible = 0 WHERE tid = %d ', $args[0]);
+    db_update('biblio_types')
+      ->fields(array(
+        'visible' => 0))
+      ->condition('tid', $args[0])
+      ->execute();
   }
   drupal_goto('admin/settings/biblio/fields/type');
 }
 function biblio_admin_types_show() {
   $args = func_get_args();
   if ($args[0] > 0 && is_numeric($args[0])) {
-    $result = db_query('UPDATE {biblio_types} SET visible = 1 WHERE tid = %d ', $args[0]);
+    db_update('biblio_types')
+      ->fields(array(
+        'visible' => 1))
+      ->condition('tid', $args[0])
+      ->execute();
   }
   drupal_goto('admin/settings/biblio/fields/type');
 }
 function biblio_admin_types_delete_form() {
   $args = func_get_args();
   if ($args[1] > 0 && is_numeric($args[1])) {
-    $result = db_query('SELECT t.* FROM {biblio_types} as t WHERE t.tid = %d ', $args[1]);
-    $row = db_fetch_array($result);
-    $num_rows = db_result(db_query('SELECT COUNT(*) FROM {biblio} as b WHERE b.biblio_type = %d', $row['tid']));
+    $row = db_query('SELECT t.* FROM {biblio_types} as t WHERE t.tid = :tid ', array(':tid', $args[1]))->fetchObject();
+    $num_rows = db_query('SELECT COUNT(*) FROM {biblio} as b WHERE b.biblio_type = :btype', array(':btype', $row['tid']))->fetchField();
     if ($num_rows) {
       $existing_msg = t('There are @count biblio entries of this type, you should change the type of these entries before proceeding otherwise they will be deleted', array(
         '@count' => $num_rows
@@ -1285,10 +1320,10 @@ function biblio_admin_types_delete_form() {
     }
     $form['tid'] = array(
       '#type' => 'value',
-      '#value' => $row['tid']
+      '#value' => $row->tid
     );
     $output = confirm_form($form, t('Are you sure you want to delete the custom biblio type:  %title ? ', array(
-      '%title' => $row['name']
+      '%title' => $row->name
     )) . $existing_msg, $_GET['destination'] ? $_GET['destination'] : 'admin/settings/biblio/fields/type', t('This action cannot be undone.'), t('Delete'), t('Cancel'));
     return $output;
   }
@@ -1297,8 +1332,14 @@ function biblio_admin_types_delete_form() {
   }
 }
 function biblio_admin_types_delete_form_submit($form, & $form_state) {
-  db_query('DELETE FROM {biblio_types} WHERE tid = %d', $form_state['values']['tid']);
-  db_query('DELETE FROM {biblio_field_type} WHERE tid = %d', $form_state['values']['tid']);
+  db_delete('biblio_types')
+    ->condition('tid', $form_state['values']['tid'])
+    ->execute();
+
+  db_delete('biblio_field_type')
+    ->condition('tid', $form_state['values']['tid'])
+    ->execute();
+
   drupal_goto('admin/settings/biblio/fields/type');
 }
 function biblio_admin_types_reset_form() {
@@ -1591,8 +1632,13 @@ function biblio_admin_author_type_delete_confirm(&$form_state, $type_id) {
 }
 function biblio_admin_author_type_delete_confirm_submit($form, &$form_state) {
 
-  db_query("DELETE FROM {biblio_contributor_type_data} WHERE auth_type=%d", $form_state['values']['auth_type']);
-  db_query("DELETE FROM {biblio_contributor_type} WHERE auth_type=%d", $form_state['values']['auth_type']);
+  db_delete('biblio_contributor_type_data')
+    ->condition('auth_type', $form_state['values']['auth_type'])
+    ->execute();
+
+  db_delete('biblio_contributor_type')
+    ->condition('auth_type', $form_state['values']['auth_type'])
+    ->execute();
 
   drupal_goto('admin/settings/biblio/author/type');
 }
@@ -1797,34 +1843,56 @@ function biblio_admin_author_edit_form_submit($form, &$form_state) {
         $cid = $form_state['values']['cid'] ;
       }
       if ($uid){
-        db_query("UPDATE {biblio_contributor_data} SET drupal_uid = 0 WHERE drupal_uid = :uid", array(':uid' => $uid));
-        $result = db_query('SELECT data FROM {users} WHERE uid = :uid', array(':uid' => $uid))->fetch();
+        db_update('biblio_contributor_data')
+          ->fields(array('drupal_uid' => 0))
+          ->condition('drupal_uid', $uid)
+          ->execute();
+        $result = db_query('SELECT data FROM {users} WHERE uid = :uid', array(':uid' => $uid))->fetchField();
         $data = unserialize($result->data);
         $data['biblio_contributor_id'] = $cid;
         $v = serialize($data);
-        db_query("UPDATE {users} SET data = :data WHERE uid = :uid", array(':data' => $v, ':uid' => $uid));
+        db_update('users')
+          ->fields(array('data' => $v))
+          ->condition('uid', $uid)
+          ->execute();
       }
       drupal_write_record('biblio_contributor_data', $form_state['values'], 'cid');
+      db_update('biblio_contributor_data')
+          ->fields($form_state['values'])
+          ->execute();
       // merge authors
       if (isset($form_state['values']['merge_authors']) && $op == t('Merge')) {
         $merge_authors = array_filter($form_state['values']['merge_authors']);
         if (count($merge_authors) ) {
-          $authors = implode(',', $merge_authors);
-          db_query("UPDATE {biblio_contributor} SET cid=".$form_state['values']['cid']." WHERE cid IN ($authors)");
-          db_query("DELETE FROM {biblio_contributor_data} WHERE cid IN ($authors)");
+
+          db_update('biblio_contributor')
+            ->fields(array('cid', $form_state['values']['cid']))
+            ->condition('cid', $merge_authors, 'IN')
+            ->execute();
+
+          db_delete('biblio_contributor_data')
+            ->condition('cid', $merge_authors, 'IN')
+            ->execute();
         }
       }
       if (isset($form_state['values']['linked_authors']) ) {
         foreach ($form_state['values']['linked_authors'] as $key => $value) {
           if ($value == 0) {
-            db_query("UPDATE {biblio_contributor_data} SET aka=:aka WHERE cid=:cid", array(':aka' => $key, ':cid' => $key));
+            db_update('biblio_contributor_data')
+              ->fields(array('aka' => $key))
+              ->condition('cid', $key)
+              ->execute();
           }
         }
       }
       if (isset($form_state['values']['link_authors']) ) {
         //db_query("UPDATE {biblio_contributor_data} SET aka=$form_state['values']['cid'] WHERE cid IN ($authors)");
         foreach ($form_state['values']['link_authors'] as $key => $value) {
-          db_query("UPDATE {biblio_contributor_data} SET aka=:aka WHERE cid=:cid",array(':aka' => $form_state['values']['cid'], ':cid' => $key) );
+          db_update('biblio_contributor_data')
+              ->fields(array('aka' => $form_state['values']['cid']))
+              ->condition('cid', $key)
+              ->execute();
+
         }
       }
       break;
@@ -1874,7 +1942,9 @@ function biblio_admin_orphans_form_validate($form, &$form_state) {
 function biblio_admin_orphans_form_submit($form, &$form_state) {
   // Filter out unchecked authors
   $authors = array_filter($form_state['values']['authors']);
-  update_sql('DELETE FROM {biblio_contributor_data} WHERE cid IN ('.implode(',',$authors).')');
+  db_delete('biblio_contributor_data')
+    ->condition('cid', $authors, 'IN')
+    ->execute();
   drupal_set_message(t('The orphaned authors (@author_list) have been deleted.', array('@author_list', implode(',',$authors))));
 
 }
@@ -1914,7 +1984,9 @@ function biblio_admin_keyword_orphans_form_validate($form, &$form_state) {
 function biblio_admin_keyword_orphans_form_submit($form, &$form_state) {
 
   $keywords = array_filter($form_state['values']['keywords']);
-  update_sql('DELETE FROM {biblio_keyword_data} WHERE kid IN ('.implode(',',$keywords).')');
+  db_delete('biblio_keyword_data')
+    ->condition('kid', $keywords, 'IN')
+    ->execute();
   $count = count($keywords);
   drupal_set_message(t('%count orphaned keywords have been deleted.', array('%count' => $count)));
 
@@ -2025,9 +2097,14 @@ function biblio_admin_keyword_edit_form_submit($form, &$form_state) {
       if (isset($form_state['values']['merge_keywords'])) {
         $kids = array_filter($form_state['values']['merge_keywords']);
         if (count($kids)) {
-          $kids = implode(',', $kids);
-          db_query("UPDATE {biblio_keyword} SET kid=".$form_state['values']['kid']." WHERE kid IN ($kids)");
-          db_query("DELETE FROM {biblio_keyword_data} WHERE kid IN ($kids)");
+          db_update('biblio_keyword')
+            ->fields(array('kid' => $form_state['values']['kid']))
+            ->condition('kid', $kids, 'IN')
+            ->execute();
+
+          db_delete('biblio_keyword_data')
+            ->condition('kid', $kids, 'IN')
+            ->execute();
         }
       }
       break;

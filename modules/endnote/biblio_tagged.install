@@ -14,7 +14,9 @@ function biblio_tagged_install() {
 
 function biblio_tagged_uninstall() {
   if (db_table_exists('biblio_type_maps')) {
-    db_query("DELETE FROM {biblio_type_maps} WHERE format = 'tagged'");
+    db_delete('biblio_type_maps')
+      ->condition('format', 'tagged')
+      ->execute();
   }
 }
 
@@ -46,7 +48,10 @@ function biblio_tagged_enable() {
 }
 
 function biblio_tagged_set_system_weight() {
-  return db_query("UPDATE {system} SET weight = 22 WHERE name = 'biblio_tagged'");
+  db_update('system')
+    ->fields(array('weight' => 22))
+    ->condition('name', 'biblio_tagged')
+    ->execute();
 }
 
 function _get_tagged_type_map() {
@@ -177,14 +182,19 @@ function _save_tagged_maps() {
 }
 
 function _reset_tagged_map($type) {
-  $count = db_result(db_query("SELECT COUNT(*) FROM {biblio_type_maps} WHERE format='tagged'"));
+  $count = db_query("SELECT COUNT(*) FROM {biblio_type_maps} WHERE format='tagged'")->fetchField();
   if($count && $type) { //update
     $function = '_get_tagged_'.$type;
     $map = $function();
-    drupal_write_record('biblio_type_maps', $map, 'format');
+    db_update('biblio_type_maps')
+      ->fields($map)
+      ->condition('format', 'tagged')
+      ->execute();
   }
   else { // install
-    db_query("DELETE FROM {biblio_type_maps} WHERE format='tagged'");
+    db_delete('biblio_type_maps')
+      ->condition('format', 'tagged')
+      ->execute();
     _save_tagged_maps();
   }
 }

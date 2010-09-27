@@ -56,10 +56,11 @@ class biblio_handler_field_contributor extends biblio_handler_field {
       }
       $result = db_query('SELECT * FROM {biblio_contributor} bc
                           INNER JOIN {biblio_contributor_data} bcd ON bc.cid = bcd.cid
-                          WHERE '. $vidstr .
-                         ' AND auth_category='. $this->auth_category.
-                         ' ORDER BY bc.rank');
-      while ($item = db_fetch_array($result)) {
+                          WHERE vid IN (:vids}
+                          AND auth_category = :cat
+                          ORDER BY bc.rank ',
+                          array(':vids' => implode(',', $vids), ':cat' => $this->auth_category));
+      foreach ($result as $item) {
         // Clean up the $item from vid.
         $vid = $item['vid']; unset($item['vid']);
         $this->items[$vid][] = $item;

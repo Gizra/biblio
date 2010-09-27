@@ -8,10 +8,11 @@ class biblio_handler_field extends views_handler_field {
     $this->definition['click sortable'] = array('default' => TRUE);
 
     $result = db_query("SELECT bft.tid, bftd.title FROM {biblio_field_type} bft
-            INNER JOIN {biblio_fields} bf ON bft.fid=bf.fid AND bf.name='%s'
+            INNER JOIN {biblio_fields} bf ON bft.fid=bf.fid AND bf.name = :name
             INNER JOIN {biblio_field_type_data} bftd ON bftd.ftdid=bft.ftdid",
-                        $options['field']);
-    while($label = db_fetch_object($result)) {
+                        array(':name' => $options['field']))
+                        ;
+    foreach($result as $label) {
       $this->labels[$label->tid] = $label->title;
     }
   }

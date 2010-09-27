@@ -271,12 +271,22 @@ function biblio_import_batch_finished($success, $results, $operations) {
   $userid = $results['userid'];
 
   if (user_access('administer biblio') && count($nids) && $user->uid != $userid) {
-    db_query('UPDATE {node} SET uid = :uid WHERE nid IN(:nid)', array(':uid' => $results['userid'], ':nid' => implode(',', $nids)));
-    db_query('UPDATE {node_revision} SET uid = :uid WHERE nid IN(:nid)', array(':uid' => $results['userid'], ':nid' => implode(',', $nids)));
+//    db_query('UPDATE {node} SET uid = :uid WHERE nid IN(:nid)', array(':uid' => $results['userid'], ':nid' => implode(',', $nids)));
+    db_update('node')
+      ->fields(array('uid' => $results['userid']))
+      ->condition('nid', $nids, 'IN')
+      ->execute();
+  //  db_query('UPDATE {node_revision} SET uid = :uid WHERE nid IN(:nid)', array(':uid' => $results['userid'], ':nid' => implode(',', $nids)));
+    db_update('node_revision')
+      ->fields(array('uid' => $results['userid']))
+      ->condition('nid', $nids, 'IN')
+      ->execute();
   }
   //clean up import cache...
-  db_query("DELETE FROM {biblio_import_cache} WHERE session_id = :sessid", array(':sessid' => $results['session_id']));
-
+//  db_query("DELETE FROM {biblio_import_cache} WHERE session_id = :sessid", array(':sessid' => $results['session_id']));
+  db_delete('biblio_import_cache')
+    ->condition('session_id', $results['session_id'])
+    ->execute();
 }
 
 function biblio_import_from_url($URL) {
@@ -371,9 +381,16 @@ function biblio_import($import_file, $type, $userid = 1, $terms = NULL, $batch =
   else {
   // now reset the userid if privileged to do so and supplied $userid differs from the current user.
   if (user_access('administer biblio') && count($nids) && $user->uid != $userid) {
-    db_query('UPDATE {node} SET uid = :uid WHERE nid IN(:nid)', array(':uid' => $results['userid'], ':nid' => implode(',', $nids)));
-    db_query('UPDATE {node_revision} SET uid = :uid WHERE nid IN(:nid)', array(':uid' => $results['userid'], ':nid' => implode(',', $nids)));
-  }
+//    db_query('UPDATE {node} SET uid = :uid WHERE nid IN(:nid)', array(':uid' => $results['userid'], ':nid' => implode(',', $nids)));
+    db_update('node')
+      ->fields(array('uid' => $results['userid']))
+      ->condition('nid', $nids, "IN")
+      ->execute();
+//    db_query('UPDATE {node_revision} SET uid = :uid WHERE nid IN(:nid)', array(':uid' => $results['userid'], ':nid' => implode(',', $nids)));
+    db_update('node_revision')
+      ->condition('nid', $nids, "IN")
+      ->execute();
+    }
   }
   return $nids;
 }

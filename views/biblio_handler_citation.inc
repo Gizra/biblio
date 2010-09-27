@@ -45,8 +45,8 @@ class biblio_handler_citation extends views_handler_field {
     if (count($vids)) {
       $result = db_query('SELECT n.title, n.status, b.* FROM {node} n
                           LEFT JOIN {biblio} b on n.vid = b.vid
-                          WHERE n.vid IN ('. implode(',', $vids) .')');
-      while ($item = db_fetch_object($result)) {
+                          WHERE n.vid IN (:vids)',array(':vids' => implode(',', $vids)));
+      foreach ($result as $item) {
         // Clean up the $item from vid.
         $vid = $item->vid; //unset($item['vid']);
         if (isset($item->biblio_year)) $item->biblio_year = _biblio_text_year($item->biblio_year);

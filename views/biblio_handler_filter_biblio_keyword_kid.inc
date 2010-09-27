@@ -5,7 +5,7 @@ class biblio_handler_filter_biblio_keyword_kid extends views_handler_filter_many
 
   function get_value_options() {
     $result = db_query("SELECT kd.* FROM {biblio_keyword_data} kd ORDER BY kd.word");
-    while ($term = db_fetch_object($result)) {
+    foreach ($result as $term) {
       $this->value_options[$term->kid] = $term->word;
     }
 
@@ -39,8 +39,10 @@ class biblio_handler_filter_biblio_keyword_kid extends views_handler_filter_many
     if ($this->options['type'] == 'textfield') {
       $default = '';
       if ($this->value) {
-        $result = db_query("SELECT * FROM {biblio_keyword} bk WHERE bk.kid IN (" . implode(', ', $this->value) . ')');
-        while ($term = db_fetch_object($result)) {
+        $result = db_query("SELECT * FROM {biblio_keyword} bk WHERE bk.kid IN (:kids)",
+        array(':kids' => implode(', ', $this->value)));
+
+        foreach ($result as $term) {
           if ($default) {
             $default .= ', ';
           }
@@ -61,7 +63,7 @@ class biblio_handler_filter_biblio_keyword_kid extends views_handler_filter_many
     else {
       $options = array();
       $result = db_query("SELECT kd.* FROM {biblio_keyword_data} kd ORDER BY kd.word");
-      while ($term = db_fetch_object($result)) {
+      foreach ($result as $term) {
         $options[$term->kid] = $term->word;
       }
 

@@ -38,7 +38,9 @@ function biblio_crossref_requirements($phase) {
 
 function biblio_crossref_uninstall() {
   if (db_table_exists('biblio_type_maps')) {
-    db_query("DELETE FROM {biblio_type_maps} WHERE format = 'crossref'");
+    db_delete('biblio_type_maps')
+      ->condition('format', 'crossref')
+      ->execute();
   }
 }
 
@@ -47,7 +49,10 @@ function biblio_crossref_enable() {
 }
 
 function biblio_crossref_set_system_weight() {
-  return db_query("UPDATE {system} SET weight = 20 WHERE name = 'biblio_crossref'");
+  db_update('system')
+    ->fields(array('weight' => 20))
+    ->condition('name', 'biblio_crossref')
+    ->execute();
 }
 function _save_crossref_maps() {
   $typemap = _get_crossref_type_map();
@@ -57,15 +62,22 @@ function _save_crossref_maps() {
   biblio_save_map($maps);
 }
 function _reset_crossref_map($type) {
-  $count = db_result(db_query("SELECT COUNT(*) FROM {biblio_type_maps} WHERE format='crossref'"));
+  $count = db_query("SELECT COUNT(*) FROM {biblio_type_maps} WHERE format='crossref'")->fetchField();
   if($count && $type) { //update
     $function = '_get_crossref_'.$type;
     $map = $function();
     drupal_write_record('biblio_type_maps', $map, 'format');
+    db_update('biblio_type_maps')
+      ->fields($maps)
+      ->condition('format', 'crossref')
+      ->execute();
   }
   else { // install
-    db_query("DELETE FROM {biblio_type_maps} WHERE format='crossref'");
-    _save_crossref_maps();
+//    db_query("DELETE FROM {biblio_type_maps} WHERE format='crossref'");
+    db_delete('biblio_type_maps')
+      ->condition('format', 'crossref')
+      ->execute();
+      _save_crossref_maps();
   }
 }
 

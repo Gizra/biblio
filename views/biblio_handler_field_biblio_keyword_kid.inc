@@ -23,9 +23,13 @@ class biblio_handler_field_biblio_keyword_kid extends views_handler_field_preren
     }
     if ($vids) {
 
-      $result = db_query("SELECT bk.vid AS node_vid, bkd.* FROM {biblio_keyword_data} bkd INNER JOIN {biblio_keyword} bk ON bkd.kid = bk.kid WHERE bk.vid IN (" . implode(', ', $vids) . ") ORDER BY  bkd.word");
+      $result = db_query("SELECT bk.vid AS node_vid, bkd.*
+      					  FROM {biblio_keyword_data} bkd
+      					  INNER JOIN {biblio_keyword} bk ON bkd.kid = bk.kid
+      					  WHERE bk.vid IN (:vids)
+                          ORDER BY  bkd.word", , array(':vids' => implode(', ', $vids)));
 
-      while ($term = db_fetch_object($result)) {
+      foreach ($result as $term) {
 //        if (empty($this->options['link_to_taxonomy'])) {
           $this->items[$term->node_vid][$term->kid] = check_plain($term->word);
 //        }

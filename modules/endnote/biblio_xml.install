@@ -39,8 +39,14 @@ function biblio_xml_requirements($phase) {
 
 function biblio_xml_uninstall() {
   if (db_table_exists('biblio_type_maps')) {
-    db_query("DELETE FROM {biblio_type_maps} WHERE format = 'endnote_xml8'");
-    db_query("DELETE FROM {biblio_type_maps} WHERE format = 'endnote_xml7'");
+
+    db_delete('biblio_type_maps')
+      ->condition('format', 'endnote8')
+      ->execute();
+
+    db_delete('biblio_type_maps')
+      ->condition('format', 'endnote7')
+      ->execute();
   }
 }
 
@@ -49,7 +55,10 @@ function biblio_xml_enable() {
 }
 
 function biblio_xml_set_system_weight() {
-  return db_query("UPDATE {system} SET weight = 26 WHERE name = 'biblio_xml'");
+  db_update('system')
+    ->fields(array('weight' => 26))
+    ->condition('name', 'biblio_xml')
+    ->execute();
 }
 
 function _save_xml_maps() {
@@ -79,9 +88,15 @@ function _reset_endnote_xml_map($version, $type) {
     $function = '_get_'. $version . '_' . $type;
     $map = $function();
     drupal_write_record('biblio_type_maps', $map, 'format');
+    db_update('biblio_type_maps')
+      ->fields($map)
+      ->condition('format', $version)
+      ->execute();
   }
   else { // install
-    db_query("DELETE FROM {biblio_type_maps} WHERE format='%s'", $version);
+    db_delete('biblio_type_maps')
+      ->condition('format', $version)
+      ->execute();
     $save_maps = '_save_' . $version . '_maps';
     $save_maps();
   }

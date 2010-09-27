@@ -12,7 +12,7 @@ function biblio_views_plugins() {
         'base' => array('node'), // only works with 'node' as base.
         'uses options' => TRUE,
         'type' => 'normal',
-        ),     
+        ),
       ),
     'style' => array(
       // ... list of style plugins,
@@ -106,12 +106,12 @@ function biblio_views_data() {
   $result = db_query('SELECT f.name,f.type,ftd.title,ft.ftdid FROM {biblio_fields} f
                       INNER JOIN {biblio_field_type} AS ft ON ft.fid = f.fid
                       INNER JOIN {biblio_field_type_data} ftd ON ft.ftdid = ftd.ftdid
-                      WHERE ft.tid=0');
+                      WHERE ft.tid = 0');
 
-  while ($field = db_fetch_array($result)){
-    $data[$field['name']] = array(
-      'title'     => $field['title'],
-      'help'      => "Display the " . $field['title'],
+  foreach ($result as $field) {
+    $data[$field->name] = array(
+      'title'     => $field->title,
+      'help'      => "Display the " . $field->title,
       'field'     => array('handler' => 'biblio_handler_field'),
       'sort'      => array('handler' => 'views_handler_sort'),
       'filter'    => array('handler' => 'views_handler_filter_string'),
@@ -119,14 +119,14 @@ function biblio_views_data() {
     );
 
     // for contrib_widgets we use a special handler:
-    if ($field['type'] == 'contrib_widget') {
-      $data[$field['name']]['field'] = array(
+    if ($field->type == 'contrib_widget') {
+      $data[$field->name]['field'] = array(
         'handler' => 'biblio_handler_field_contributor',
-        'auth_category' => $field['ftdid'],
+        'auth_category' => $field->ftdid,
       );
-      unset($data[$field['name']]['sort']);
-      unset($data[$field['name']]['filter']);
-      unset($data[$field['name']]['argument']);
+      unset($data[$field->name]['sort']);
+      unset($data[$field->name]['filter']);
+      unset($data[$field->name]['argument']);
     }
   }
   $data['biblio_year']['argument']  = array('handler' => 'views_handler_argument_numeric');  // biblio_year is an int

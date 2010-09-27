@@ -9,7 +9,7 @@ class biblio_handler_filter_contributor_lastname extends views_handler_filter_ma
               FROM {biblio_contributor_data} cd
                   ORDER by lastname, firstname");
     $this->value_options = array();
-    while ($row = db_fetch_object($result)) {
+    foreach ($result as $row) {
       $this->value_options[$row->lastname] =  "$row->lastname, $row->firstname $row->initials";
     }
   }

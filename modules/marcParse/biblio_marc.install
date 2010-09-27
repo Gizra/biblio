@@ -38,7 +38,9 @@ function biblio_marc_requirements($phase) {
 
 function biblio_marc_uninstall() {
   if (db_table_exists('biblio_type_maps')) {
-    db_query("DELETE FROM {biblio_type_maps} WHERE format = 'marc'");
+    db_delete('biblio_type_maps')
+      ->condition('format', 'marc')
+      ->execute();
   }
 }
 
@@ -47,7 +49,10 @@ function biblio_marc_enable() {
 }
 
 function biblio_marc_set_system_weight() {
-  return db_query("UPDATE {system} SET weight = 24 WHERE name = 'biblio_marc'");
+  db_update('system')
+    ->fields(array('weight' => 24))
+    ->condition('name', 'biblio_marc')
+    ->execute();
 }
 
 function _save_marc_maps() {

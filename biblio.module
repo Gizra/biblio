@@ -120,14 +120,14 @@ function biblio_locale($op = 'groups', $group = NULL) {
 function biblio_locale_refresh_fields($tid = NULL) {
   if (module_exists('i18nstrings')) {
     if (isset($tid)) {
-      $result = db_query('SELECT d.* FROM {biblio_field_type} b INNER JOIN {biblio_field_type_data} d ON b.ftdid = d.ftdid WHERE tid = %d', $tid);
+      $result = db_query('SELECT d.* FROM {biblio_field_type} b INNER JOIN {biblio_field_type_data} d ON b.ftdid = d.ftdid WHERE tid = :tid', array(':tid' => $tid));
     }
     else {
       $result = db_query('SELECT * FROM {biblio_field_type_data}');
     }
-    while ($row = db_fetch_array($result)) {
-      tt("biblio:field:{$row['ftdid']}:title", $row['title'], NULL, TRUE);
-      tt("biblio:field:{$row['ftdid']}:hint", $row['hint'], NULL, TRUE);
+    foreach ($result as $row) {
+      tt("biblio:field:{$row->ftdid}:title", $row->title, NULL, TRUE);
+      tt("biblio:field:{$row->ftdid}:hint", $row->hint, NULL, TRUE);
     }
   }
 }
@@ -142,14 +142,14 @@ function biblio_locale_refresh_fields($tid = NULL) {
 function biblio_locale_refresh_types($tid = NULL) {
   if (module_exists('i18nstrings')) {
     if (isset($tid)) {
-      $result = db_query('SELECT * FROM {biblio_types} WHERE tid = %d', $tid);
+      $result = db_query('SELECT * FROM {biblio_types} WHERE tid = :tid', array(':tid', $tid));
     }
     else {
       $result = db_query('SELECT * FROM {biblio_types} WHERE tid > 0');
     }
-    while ($row = db_fetch_array($result)) {
-      tt("biblio:type:{$row['tid']}:name", $row['name'], NULL, TRUE);
-      tt("biblio:type:{$row['tid']}:description", $row['description'], NULL, TRUE);
+    foreach ($result as $row ) {
+      tt("biblio:type:{$row->tid}:name", $row->name, NULL, TRUE);
+      tt("biblio:type:{$row->tid}:description", $row->description, NULL, TRUE);
     }
   }
 }
@@ -1069,9 +1069,6 @@ function biblio_nodeapi(& $node, $op, $a3, $a4) {
     switch ($op) {
       case 'delete revision' ://TODO:  move to hook_node_delete
 //FIXME DB
-        db_query('DELETE FROM {biblio} WHERE vid = %d', $node->vid);
-        db_query('DELETE FROM {biblio_contributor} WHERE nid = %d AND vid = %d', array($node->nid, $node->vid));
-        db_query('DELETE FROM {biblio_keyword} WHERE nid = %d AND vid = %d', array($node->nid, $node->vid));
         break;
         /*   case 'presave':
          if ($node->type == 'biblio')
@@ -1085,28 +1082,51 @@ function biblio_nodeapi(& $node, $op, $a3, $a4) {
          break;
          */
       case 'insert': //TODO:  move to hook_node_insert
-        if (variable_get('biblio_index', 0)) {
-          _node_index_node($node);
-          search_update_totals();
-        }
         break;
       case 'update': //TODO:  move to hook_node_update
-        if (variable_get('biblio_index', 0)) {
-          // _node_index_node performs a node_load without resetting the node_load cache,
-          // so it would index the old version. We reset the cache here.
-          // Don't assign node_load to $node because node_load resets e.g. the menus mlid etc.
-          $mynode = node_load($node->nid, NULL, TRUE);
-          _node_index_node($mynode);
-          search_update_totals();
-        }
         break;
       case 'view': //TODO:  move to hook_node_view
-        if ($node->type == 'biblio' && variable_get('biblio_hide_bibtex_braces', 0) && !empty($a4)) {
-          drupal_set_title(filter_xss($node->title, biblio_get_allowed_tags()));
-        }
         break;
     }
 
+  }
+}
+
+function biblio_node_revision_delete($node){
+  if ($node->type == 'biblio') {
+    db_delete('biblio')
+      ->condition('vid', $node->vid)
+      ->execute();
+
+    db_delete('biblio_contributor')
+      ->condition(db_and()->condition('nid', $node->nid)->condition('vid', $node->vid))
+      ->execute();
+
+    db_delete('biblio_keyword')
+      ->condition(db_and()->condition('nid', $node->nid)->condition('vid', $node->vid))
+      ->execute();
+  }
+}
+
+function biblio_node_insert($node) {
+  if ($node->type == 'biblio') {
+    if (variable_get('biblio_index', 0)) {
+      _node_index_node($node);
+      search_update_totals();
+    }
+  }
+}
+
+function biblio_node_update($node) {
+  if ($node->type == 'biblio') {
+    if (variable_get('biblio_index', 0)) {
+      // _node_index_node performs a node_load without resetting the node_load cache,
+      // so it would index the old version. We reset the cache here.
+      // Don't assign node_load to $node because node_load resets e.g. the menus mlid etc.
+      $mynode = node_load($node->nid, NULL, TRUE);
+      _node_index_node($mynode);
+      search_update_totals();
+    }
   }
 }
 
@@ -1496,7 +1516,7 @@ function biblio_contributors_js($tid, $auth_category, $other_fields = FALSE) {
   // Build our new form element.
   $ctypes = _biblio_get_auth_types($auth_category, $tid);
   $ctypes = db_query('SELECT * FROM {biblio_contributor_type_data}
-                      WHERE auth_type IN ('. implode(',', $ctypes) .')');
+                      WHERE auth_type IN (:ctypes) ', array(':ctypes' =>  implode(',', $ctypes)));
 
   foreach ($ctypes as $ctype ) {
     $options[$ctype->auth_type] = $ctype->title;
@@ -1537,7 +1557,7 @@ function biblio_contributors_js($tid, $auth_category, $other_fields = FALSE) {
   unset($contributor_form['#prefix'], $contributor_form['#suffix']); // Prevent duplicate wrappers.
   $contributor_form[$delta]['#attributes']['class'] = empty($contributor_form[$delta]['#attributes']['class']) ? 'ahah-new-content' : $contributor_form[$delta]['#attributes']['class'] .' ahah-new-content';
   $output = theme('status_messages') . drupal_render($contributor_form);
-  print drupal_json(array('status' => TRUE, 'data' => $output));
+  print drupal_json_output(array('status' => TRUE, 'data' => $output));
   exit();
 }
 
@@ -1653,7 +1673,10 @@ function biblio_delete($node) {
   require_once(drupal_get_path('module', 'biblio') .'/includes/biblio.keywords.inc');
   //first remove data from the biblio table
 
-  db_query('DELETE FROM {biblio} WHERE nid = :nid', array(':nid' => $node->nid));
+//  db_query('DELETE FROM {biblio} WHERE nid = :nid', array(':nid' => $node->nid));
+  db_delete('biblio')
+    ->condition('nid', $node->nid)
+    ->execute();
   //now remove the entries from the contributor linking table
   biblio_delete_contributors($node);
   biblio_delete_keywords($node);
@@ -1757,25 +1780,22 @@ function biblio_block($op = 'list', $delta = 0) {
       // Retrieve the latest pubs
       $num_in_block = variable_get('biblio_rowsperblock', 4);
       $block_order = variable_get('biblio_block_order', 'n.created');
-      $query = "SELECT COUNT(n.nid)
-                  FROM {node} n
-                  WHERE n.type = 'biblio' AND n.status=1";
+
+        $result = db_select('node', 'n')
+            ->fields('n', array('nid', 'title'))
+            ->condition(db_and()
+                ->condition('n.type', 'biblio')
+                ->condition('n.status', 1))
+            ->orderBy($block_order, 'DESC')
+            ->execute();
 //FIXME DB
-      $num_rows = db_result(db_query_range(db_rewrite_sql($query), 0, $num_in_block));
-      if ($num_rows) {
-        $query = "SELECT n.nid, n.title
-                    FROM {node} n
-                    LEFT JOIN {biblio} b  on n.vid=b.vid
-                    WHERE n.type = 'biblio' AND n.status=1
-                    ORDER BY $block_order DESC";
-//FIXME DB
-        $result = db_query_range(db_rewrite_sql($query), 0, $num_in_block);
+     //  $result = db_query_range(db_rewrite_sql($query), 0, $num_in_block);
         $base = variable_get('biblio_base', 'biblio');
         $block['subject'] = t('Recent Publications');
         $block['content'] = '<div class="item-list"><ul>';
         $options['html'] = TRUE;
 //FIXME DB
-        while ($pub = db_fetch_object($result)) {
+        foreach ($result as $pub) {
           $block['content'] .= '<li >'. l(filter_xss($pub->title, biblio_get_allowed_tags()), "node/$pub->nid", $options) .'</li>';
         }
         $block['content'] .= '</ul>';
@@ -1786,7 +1806,7 @@ function biblio_block($op = 'list', $delta = 0) {
         }
         $block['content'] .= l(t('More...'), $base);
         $block['content'] .= '</div>';
-      }
+
       return $block;
     }
   }
@@ -2063,9 +2083,13 @@ function biblio_term_path($term) {
 function biblio_coins_generate(& $node) {
   if ($node) {
     $node->biblio_coins = biblio_coins($node);
-    db_query("UPDATE {biblio}
-              SET biblio_coins = :coins
-              WHERE vid = :vid", array(':coins' => $node->biblio_coins, ':vid' => $node->vid));
+//    db_query("UPDATE {biblio}
+//              SET biblio_coins = :coins
+//              WHERE vid = :vid", array(':coins' => $node->biblio_coins, ':vid' => $node->vid));
+    db_update('biblio')
+      ->fields(array('biblio_coins' => biblio_coins))
+      ->condition('vid', $node->vid)
+      ->execute();
   }
   else {
     $result = db_query("SELECT nr.*, b.*
@@ -2076,9 +2100,13 @@ function biblio_coins_generate(& $node) {
     foreach ($result as $node) {
       $node->biblio_coins = biblio_coins($node);
 
-      db_query("UPDATE {biblio}
-                SET biblio_coins = :coins
-                WHERE vid = :vid",  array(':coins' => $node->biblio_coins, ':vid' => $node->vid));
+//      db_query("UPDATE {biblio}
+//                SET biblio_coins = :coins
+//                WHERE vid = :vid",  array(':coins' => $node->biblio_coins, ':vid' => $node->vid));
+      db_update('biblio')
+        ->fields(array('biblio_coins' => biblio_coins))
+        ->condition('vid', $node->vid)
+        ->execute();
     }
     drupal_goto('');
   }
@@ -2407,14 +2435,8 @@ function biblio_get_map($type, $format) {
 
 function biblio_save_map($maps) {
     db_insert('biblio_type_maps')
-      ->fields(array(
-        'format' => $maps['format'],
-        'type_map' => $maps['type_map'],
-        'type_names' => $maps['type_names'],
-        'field_map' => $maps['field_map'],
-      ))
+      ->fields($maps)
       ->execute();
-
 }
 /**
  * @param string $type (can be one of "type_names", "type_map" or "field_map")

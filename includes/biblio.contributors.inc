@@ -152,7 +152,11 @@ function biblio_get_orphan_authors() {
 
 function biblio_delete_orphan_authors($force = FALSE) {
   if (variable_get('biblio_auto_orphaned_author_delete', 0) || $force) {
-    db_query('DELETE FROM {biblio_contributor_data} WHERE cid NOT IN (SELECT DISTINCT(cid) FROM {biblio_contributor})');
+//    db_query('DELETE FROM {biblio_contributor_data} WHERE cid NOT IN (SELECT DISTINCT(cid) FROM {biblio_contributor})');
+    $sub_select = db_select('biblio_contributor', 'bc')->fields('bc', array('cid'))->distinct();
+    db_delete('biblio_contributor_data')
+      ->condition('cid', $sub_select, 'NOT IN')
+      ->execute();
   }
 }
 
@@ -188,34 +192,42 @@ function biblio_update_contributor(&$author) {
 function _save_contributors(&$contributors, $nid, $vid, $update = FALSE) {
   $md5 = _loadMD5();
   $rank = 0;
-  db_query('DELETE FROM {biblio_contributor} WHERE nid = :nid AND vid = :vid', array(':nid' => $nid, ':vid' => $vid));
+  //  db_query('DELETE FROM {biblio_contributor} WHERE nid = :nid AND vid = :vid', array(':nid' => $nid, ':vid' => $vid));
+  db_delete('biblio_contributor')
+  ->condition(db_and()->condition('nid', $nid)->condition('vid', $vid))
+  ->execute();
   foreach ($contributors as $cat => $authors) {
     foreach ($authors as $key => $author) {
-      if (empty($author['lastname'])) {
-        $contributors[$cat][$key] = $author = biblio_parse_author($author, $cat);
-      }
-      if ($update && !empty($author['cid']))  $author['cid'] = NULL; // null out the cid so we don't do a global change
-      if (empty ($author['cid']) && isset($author['md5']) && !empty ($md5)) {
-        $author['cid'] = array_search($author['md5'], $md5);
-      }
-      if (empty ($author['cid'])) {
-        biblio_save_contributor($author);
-        if (empty ($author['cid'])) return FALSE;
-      }
+      if (!empty($author['name'])) {
+        if (empty($author['lastname'])) {
+          $contributors[$cat][$key] = $author = biblio_parse_author($author, $cat);
+        }
+        if ($update && !empty($author['cid']))  $author['cid'] = NULL; // null out the cid so we don't do a global change
+        if (empty ($author['cid']) && isset($author['md5']) && !empty ($md5)) {
+          $author['cid'] = array_search($author['md5'], $md5);
+        }
+        if (empty ($author['cid'])) {
+          biblio_save_contributor($author);
+          if (empty ($author['cid'])) return FALSE;
+        }
 
-      $link_array = array(
+        $link_array = array(
         'nid' => $nid,
         'vid' => $vid,
         'cid' => $author['cid'],
         'rank' => $rank++, //((isset($author['rank']) && is_numeric($author['rank'])) ? $author['rank'] : $key),
         'auth_type' => $author['auth_type'],
         'auth_category' => $cat,
-      );
+        );
 
-      if (!drupal_write_record('biblio_contributor', $link_array)) return FALSE;
+        if (!drupal_write_record('biblio_contributor', $link_array)) return FALSE;
+      }
     }
   }
-  db_query("UPDATE {biblio_contributor_data} SET aka = cid WHERE aka = 0 OR aka IS NULL");
+  //TODO  check if it is necessary to reset aka here...
+  //  db_query("UPDATE {biblio_contributor_data} SET aka = cid WHERE aka = 0 OR aka IS NULL");
+  //  db_update('biblio_contributor_data')
+  //    ->fields(array('aka', )
   return TRUE; // successfully saved all contributors
 }
 /*

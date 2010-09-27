@@ -134,7 +134,7 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = false) {
       {
         // append an optional string (given in 'online_citation') plus the DOI (or URL):
 
-        if (!empty($row['online_citation']))      // online_citation
+        if (!empty($node->online_citation))      // online_citation
         {
           if (!empty($node->biblio_year) || !empty($node->biblio_volume) || !empty($node->biblio_issue) || !empty($node->biblio_alternate_title) || !empty($node->biblio_secondary_title)) // only add ":" or "," if either year, volume, issue, abbrev_journal or publication isn't empty
           {
@@ -144,20 +144,20 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = false) {
               $output .= ";"; // append to pages (TODO: not sure whether this is correct)
           }
 
-          $output .= $row['online_citation'];
+          $output .= $node->online_citation;
         }
 
-        if (!empty($row['doi']) || !empty($row['url']))      // doi OR url
+        if (!empty($node->doi) || !empty($node->url))      // doi OR url
         {
-          if (!empty($row['online_citation']) OR (empty($row['online_citation']) AND (!empty($node->biblio_year) || !empty($node->biblio_volume) || !empty($node->biblio_issue) || !empty($node->biblio_alternate_title) || !empty($node->biblio_secondary_title)))) // only add "." if online_citation isn't empty, or else if either year, volume, issue, abbrev_journal or publication isn't empty
+          if (!empty($node->online_citation) OR (empty($node->online_citation) AND (!empty($node->biblio_year) || !empty($node->biblio_volume) || !empty($node->biblio_issue) || !empty($node->biblio_alternate_title) || !empty($node->biblio_secondary_title)))) // only add "." if online_citation isn't empty, or else if either year, volume, issue, abbrev_journal or publication isn't empty
             $output .= ".";
 
           $output .= " Available from: " . $markupPatternsArray["underline-prefix"]; // NOTE: some of the above mentioned resources use "Available from: URL:http://..." instead
 
-          if (!empty($row['doi']))      // doi
-            $uri = "http://dx.doi.org/" . $row['doi'];
+          if (!empty($node->doi))      // doi
+            $uri = "http://dx.doi.org/" . $node->doi;
           else      // url
-            $uri = $row['url'];
+            $uri = $node->url;
 
           if ($encodeHTML)
             $output .= encodeHTML($uri);
@@ -338,13 +338,13 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = false) {
           $output .= l($node->title, $url['link'], $url['options']);
           $output .= "</span>";
        }
-      if ($row['type'] == "Software") // for software, add software label
+      if ($node->type == "Software") // for software, add software label
         $output .= " [computer program]";
 
-      if (($row['online_publication'] == "yes") AND empty($row['thesis'])) // this record refers to an online publication (online theses will be handled further down below)
+      if (isset($node->online_publication) AND empty($node->thesis)) // this record refers to an online publication (online theses will be handled further down below)
         $output .= " [Internet]"; // NOTE: some of the above mentioned resources use "[monograph online]", "[monograph on the Internet]" or just "[online]" instead
 
-      if (!empty($node->biblio_volume) AND ($row['type'] != "Software"))      // volume
+      if (!empty($node->biblio_volume) AND ($node->type != "Software"))      // volume
       {
         if (!preg_match("/[?!.][ \"" . $markupPatternsArray["italic-suffix"] . "]*$/", $output))  $output .= ".";
 
@@ -355,7 +355,7 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = false) {
       {
         if (!preg_match("/[?!.][ \"" . $markupPatternsArray["italic-suffix"] . "]*$/", $output))  $output .= ".";
 
-        if ($row['type'] == "Software")      // software edition (=version)
+        if ($node->type == "Software")      // software edition (=version)
         {
           $output .= " Version " . $node->biblio_edition;
         }
@@ -409,12 +409,12 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = false) {
         $output .= ", editor";
       }
 
-      if (!empty($row['thesis']))      // thesis
+      if (!empty($node->thesis))      // thesis
       {
         // TODO: do we need to use the term "[dissertation]" instead of "[Ph.D. thesis]", etc? What about other thesis types then?
-        $output .= " [" . $row['thesis'];
+        $output .= " [" . $node->thesis;
 
-        if ($row['online_publication'] == "yes") // this record refers to an online thesis
+        if (isset($node->online_publication)) // this record refers to an online thesis
           $output .= " on the Internet]";
         else
           $output .= "]";
@@ -444,7 +444,7 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = false) {
       if (!empty($node->biblio_year))      // year
         $output .= " " . $node->biblio_year;
 
-      if ($row['type'] == "Software")      // for software, volume (=month) and issue (=day) information is printed after the year (TODO: not sure whether this is correct)
+      if ($node->type == "Software")      // for software, volume (=month) and issue (=day) information is printed after the year (TODO: not sure whether this is correct)
       {
         if (!empty($node->biblio_volume))      // volume (=month)
           $output .= " " . $node->biblio_volume;
@@ -453,7 +453,7 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = false) {
           $output .= " " . $node->biblio_issue;
       }
 
-      if ($row['online_publication'] == "yes") // append the current date if this record refers to an online publication
+      if (isset($node->online_publication)) // append the current date if this record refers to an online publication
         $output .= " [cited " . date("Y M j") . "]";
 
       if (!empty($node->biblio_alternate_title) OR !empty($node->biblio_tertiary_title)) // if there's either a full or an abbreviated series title
@@ -484,27 +484,27 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = false) {
         $output .= ")";
       }
 
-      if ($row['online_publication'] == "yes" || $row['type'] == "Software") // this record refers to an online publication, or a computer program/software
+      if (isset($node->online_publication) || $node->type == "Software") // this record refers to an online publication, or a computer program/software
       {
         // append an optional string (given in 'online_citation') plus the DOI (or URL):
 
-        if (!empty($row['online_citation']))      // online_citation
+        if (!empty($node->online_citation))      // online_citation
         {
           if (!preg_match("/\. *$/", $output)) $output .= ".";
 
-          $output .= $row['online_citation'];
+          $output .= $node->online_citation;
         }
 
-        if (!empty($row['doi']) || !empty($row['url']))      // doi OR url
+        if (!empty($node->doi) || !empty($node->url))      // doi OR url
         {
           if (!preg_match("/\. *$/", $output))  $output .= ".";
 
           $output .= " Available from: " . $markupPatternsArray["underline-prefix"]; // NOTE: some of the above mentioned resources use "Available from: URL:http://..." instead
 
-          if (!empty($row['doi']))      // doi
-            $uri = "http://dx.doi.org/" . $row['doi'];
+          if (!empty($node->doi))      // doi
+            $uri = "http://dx.doi.org/" . $node->doi;
           else      // url
-            $uri = $row['url'];
+            $uri = $node->url;
 
           if ($encodeHTML)
             $output .= encodeHTML($uri);
@@ -515,7 +515,7 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = false) {
         }
       }
 
-      if (!preg_match("/\. *$/", $output) AND ($row['online_publication'] != "yes") AND ($row['type'] != "Software"))
+      if (!preg_match("/\. *$/", $output) AND (!isset($node->online_publication)) AND ($node->type != "Software"))
         $output .= "."; // NOTE: the examples in the above mentioned resources differ wildly w.r.t. whether the closing period should be omitted for online publications
       break;
   }
