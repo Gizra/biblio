@@ -95,6 +95,8 @@ function biblio_db_search() {
 
   $_SESSION['last_biblio_query'] = $arg_list;
 
+  $arg_list['page_limit'] = variable_get('biblio_rowsperpage', 25);
+
   $query_info = biblio_build_query($arg_list);
 
   if ($query_info['rss']['feed']){
@@ -141,7 +143,16 @@ function biblio_build_query($arg_list) {
   $count_selects = array();
   $count_limit = '';
 
-  $query = db_select('node', 'n')->extend('PagerDefault');
+
+  if ($arg_list['page_limit'] > 0) {
+    $query = db_select('node', 'n')->extend('PagerDefault');
+    $query->limit($arg_list['page_limit']);
+  }
+  else {
+    $query = db_select('node', 'n');
+  }
+
+
   $query->addField('n', 'nid');
   $type_name = $query->addField('bt', 'name', 'biblio_type_name');
   $query->leftJoin('biblio', 'b', 'n.vid=b.vid');

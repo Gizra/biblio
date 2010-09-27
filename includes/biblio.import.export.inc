@@ -412,10 +412,13 @@ function biblio_import($import_file, $type, $userid = 1, $terms = NULL, $batch =
 function biblio_export($format = "tagged", $nid = null, $popup = false) {
   $params = array ();
   $nids = array();
+  $arg_list = array();
   if ($nid === null && isset ($_SESSION['last_biblio_query']) ) {
     module_load_include('inc','biblio','includes/biblio.pages');
 
-    $arg_list = $_SESSION['last_biblio_query'];
+    $uri = drupal_parse_url(request_uri());
+    $arg_list += $uri['query'];
+    $arg_list['page_limit'] = 0;
     $query_info = biblio_build_query($arg_list);
     if(isset($query_info['query'])) {
       $result = $query_info['query'];

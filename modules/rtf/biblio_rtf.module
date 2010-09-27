@@ -55,9 +55,12 @@ function biblio_rtf_biblio_export_link($nid = NULL) {
       'attributes' => array(
            'title' => t("Click to download the rtf formatted file")));
 
-  $link['href']  = "$base/export/rtf/$nid";
+  $link['href']  = (!empty($nid) ? "$base/export/rtf/$nid" : "$base/export/rtf");
   $link['title'] = t('RTF');
 
+  if (empty($nid)) { // add any filters which may be on the current page
+    $link += drupal_parse_url(request_uri());
+  }
   return array('biblio_rtf' => $link);
 }
 
@@ -87,7 +90,7 @@ function biblio_rtf_biblio_export($nids) {
       $rtf->addColour("#000000");
     }
 
-    $rtf->addText(filter_xss($style_function ($node, $base, $inline).'<br><br>',array('i','b','br','u','p','strong','em','sub','sup','ul','li')));
+    $rtf->addText(filter_xss($style_function ($node, '', false).'<br><br>',array('i','b','br','u','p','strong','em','sub','sup','ul','li')));
   }
   if ($count > 0) $rtf->getDocument();
 }

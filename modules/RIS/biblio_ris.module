@@ -58,6 +58,10 @@ function biblio_ris_biblio_export_link($nid = NULL) {
   $link['href']  = "$base/export/ris/$nid";
   $link['title'] = t('RIS');
 
+  if (empty($nid)) { // add any filters which may be on the current page
+    $link += drupal_parse_url(request_uri());
+  }
+
   return array('biblio_ris' => $link);
 }
 
