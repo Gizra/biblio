@@ -1856,7 +1856,7 @@ function biblio_admin_author_edit_form_submit($form, &$form_state) {
           ->condition('uid', $uid)
           ->execute();
       }
-      drupal_write_record('biblio_contributor_data', $form_state['values'], 'cid');
+//      drupal_write_record('biblio_contributor_data', $form_state['values'], 'cid');
       db_update('biblio_contributor_data')
           ->fields($form_state['values'])
           ->execute();
