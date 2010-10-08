@@ -485,7 +485,15 @@ function biblio_save_node($node, $batch = FALSE, $session_id = NULL, $save_node 
     return;
   }
   elseif ($save_node) { // $save_node = TRUE, the normal save path
-    node_save($node);
+    if(strlen($node->title) > 255) {
+      $node->title = substr($node->title, 0, 255);
+      node_save($node);
+      watchdog('biblio - import', t('Title value truncated to 255 characters'), array(), WATCHDOG_ALERT, l($node->title, 'node/' . $node->nid));
+    }
+    else {
+      node_save($node);
+    }
+
     return; // (isset($node->nid)) ? $node->nid : 0;
   }
   else { // $save_node = FALSE, primarily used to parse data and return it to the input form
