@@ -975,6 +975,7 @@ function theme_biblio_alpha_line($variables) {
       unset($all_uri['query']['filters']['author']);
       break;
     case 'keywords':
+    case 'keyword':
       $filter = 'keyword';
       $current = isset($uri['query']['filters']['keyword']) ? $uri['query']['filters']['keyword'] : '';
       unset($all_uri['query']['filters']['keyword']);
