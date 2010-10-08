@@ -28,7 +28,7 @@ function biblio_view_node($nid) {
  * @return unknown_type
  */
 function biblio_db_search() {
-
+  $nids = array();
   $arg_list = array();
  // $arg_list = func_get_args();
 //  foreach ($_GET as $key => $value) {
@@ -113,10 +113,12 @@ function biblio_db_search() {
       if(isset($node->biblio_year)) unset($node->biblio_year);
       $extras[$node->nid] = $node;
     }
-    $nodes = node_load_multiple($nids);
+    if (count($nids)) {
+      $nodes = node_load_multiple($nids);
 
-    foreach($nodes as $nid => $node) {
-      $nodes[$nid] = (object)array_merge((array)$node, (array)$extras[$nid]);
+      foreach($nodes as $nid => $node) {
+        $nodes[$nid] = (object)array_merge((array)$node, (array)$extras[$nid]);
+      }
     }
   }
 
@@ -338,14 +340,24 @@ function biblio_build_query($arg_list) {
             $query->innerJoin('biblio_keyword', 'bk', 'n.vid = bk.vid');
             $query->condition('bk.kid', $value);
           }else{
-            $where[] = " bkd". $bkd .'.word '. $match_op .' "[[:<:]]%s[[:>:]]" ';
-            $joins[] = " JOIN {biblio_keyword} as bk". $bkd ." on b.vid = bk". $bkd .".vid ";
-            $joins[] = " JOIN {biblio_keyword_data} as bkd". $bkd ." on bk". $bkd .".kid = bkd".$bkd .".kid ";
-            //            $terms[] = $term[0];
-            $operator = NULL;
-            $rss_info['title'] = t("Keyword " . $term[0]);
-            $rss_info['description'] = t("These publications, containing the keyword: %keyword, are part of the works listed at %sitename", array('%keyword' => $term[0], '%sitename' => variable_get('site_name', 'Drupal')));
-            $rss_info['link'] = '/keyword/' . $term[0];
+//            $where[] = " bkd". $bkd .'.word '. $match_op .' "[[:<:]]%s[[:>:]]" ';
+//            $joins[] = " JOIN {biblio_keyword} as bk". $bkd ." on b.vid = bk". $bkd .".vid ";
+//            $joins[] = " JOIN {biblio_keyword_data} as bkd". $bkd ." on bk". $bkd .".kid = bkd".$bkd .".kid ";
+            if(array_search('bk', array_keys($query->getTables())) === FALSE) {
+              $query->innerJoin('biblio_keyword', 'bk', 'n.vid = bk.vid');
+            }
+            if(array_search('bkd', array_keys($query->getTables())) === FALSE) {
+              $query->innerJoin('biblio_keyword_data', 'bkd', 'bkd.kid = bk.kid');
+            }
+            if (strlen($value) == 1) {
+              $query->condition('',  $value, 'SUBSTR(bkd.word, 1, 1) =');
+            }
+            else {
+              $query->condition('bkd.word', "[[:<:]]" . $value . "[:>:]]", 'LIKE');
+            }
+//            $rss_info['title'] = t("Keyword " . $term[0]);
+//            $rss_info['description'] = t("These publications, containing the keyword: %keyword, are part of the works listed at %sitename", array('%keyword' => $term[0], '%sitename' => variable_get('site_name', 'Drupal')));
+//            $rss_info['link'] = '/keyword/' . $term[0];
           }
           break;
         case 'citekey':
@@ -600,7 +612,9 @@ function _biblio_filter_info_line($args) {
         $type = t("Keyword");
         if (is_numeric($value)) {
           $term = biblio_get_keyword_by_id($value);
-          $value = $term->word;
+          if (isset($term->word)) {
+            $value = $term->word;
+          }
         }
         elseif (is_string($value) && strlen($value) == 1) {
           $type = t("First letter of keyword ");
