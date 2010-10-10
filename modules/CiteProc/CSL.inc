@@ -474,10 +474,9 @@ class csl_name extends csl_format {
     return $prefix . $open_quote . $text . $close_quote . $suffix;
   }
 
-  function author_link($author, $aid) {
+  function author_link($author) {
     $base = variable_get('biblio_base', 'biblio');
     $options = array();
-    $inline = $inline ? "/inline" : "";
 
     if (isset($_GET['sort'])) {
       $options['query']['sort'] = $_GET['sort'];
@@ -486,7 +485,7 @@ class csl_name extends csl_format {
       $options['query']['order'] = $_GET['order'];
     }
 
-    $html = l(trim($author), "$base/author/$aid".$inline,$options );
+    $html = l(trim($author['name']), "$base/author/" . $author['cid'],$options );
 
     return $html;
   }
@@ -1002,7 +1001,7 @@ class csl_text extends csl_format {
     }
 
     if (empty($text)) return;
-    if ($this->attributes['variable'] == 'title') {
+    if (isset($this->attributes['variable']) && $this->attributes['variable'] == 'title') {
       $url = biblio_get_title_url_info($data);
       $text = l($text, $url['link'], $url['options']);
     }
@@ -1422,7 +1421,7 @@ class csl_locale  {
 class csl_mapper {
 
   function map_field($field) {
-    if (!$this->field_map) {
+    if (!isset($this->field_map)) {
       $this->field_map = array ('title' => 'title',
                                 'container-title' => 'biblio_secondary_title',
                                 'collection-title' => 'biblio_secondary_title',
@@ -1499,7 +1498,7 @@ class csl_mapper {
   }
 
   function map_type($types) {
-    if (!$this->type_map) {
+    if (!isset($this->type_map)) {
       $this->type_map = array(
                         'article' => '',
                         'article-magazine'  => 106,

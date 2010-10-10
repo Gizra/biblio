@@ -19,10 +19,14 @@ function biblio_citeproc_theme_registry_alter(&$theme_registry) {
   $theme_registry['biblio_style'] = $theme_registry['biblio_citeproc_style'];
 }
 
-function theme_biblio_citeproc_style($node, $base = 'biblio', $style_name = 'classic', $inline = false) {
+function theme_biblio_citeproc_style($variables) {
   static $citeproc;
   global $language;
   $cached = NULL;
+  $node = $variables['node'];
+  $base = $variables['base'];
+  $style_name = $variables['style_name'];
+  $inline = $variables['inline'];
 
   module_load_include('inc', 'biblio_citeproc', 'CSL');
 
