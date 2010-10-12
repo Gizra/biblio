@@ -117,7 +117,7 @@ function theme_biblio_long($node, $base = 'biblio', $style = 'classic') {
   }
   foreach ((array)$node->biblio_contributors[1] as $auth) {
 
-    $authors[] = theme('biblio_author_link', array('author' => $auth['name'], 'authorID' => $auth['cid'], 'base' => $base));
+    $authors[] = theme('biblio_author_link', array('author' => $auth));
   }
   $authors = implode('; ', (array)$authors);
   $openurl_base = variable_get('biblio_baseopenurl', '');
@@ -488,37 +488,37 @@ function theme_biblio_format_authors($variables)
     if (!empty($author['firstname'])) {
       if ($rank == 0) { // -> first author
         if($options['initialsBeforeAuthorFirstAuthor']) {
-          $singleAuthorString = $author['firstname'].$options['AuthorsInitialsDelimFirstAuthor'].$author['lastname'];
+          $author['name'] = $author['firstname'].$options['AuthorsInitialsDelimFirstAuthor'].$author['lastname'];
         }
         else{
-          $singleAuthorString = $author['lastname'].$options['AuthorsInitialsDelimFirstAuthor'].$author['firstname'];
+          $author['name'] = $author['lastname'].$options['AuthorsInitialsDelimFirstAuthor'].$author['firstname'];
         }
       }
       else { // $rank > 0 // -> all authors except the first one
         if($options['initialsBeforeAuthorStandard']) {
-          $singleAuthorString = $author['firstname'].$options['AuthorsInitialsDelimStandard'].$author['lastname'];
+          $author['name'] = $author['firstname'].$options['AuthorsInitialsDelimStandard'].$author['lastname'];
         }
         else{
-          $singleAuthorString = $author['lastname'].$options['AuthorsInitialsDelimStandard'].$author['firstname'];
+          $author['name'] = $author['lastname'].$options['AuthorsInitialsDelimStandard'].$author['firstname'];
         }
       }
     }
     else {
-      $singleAuthorString = $author['lastname'];
+      $author['name'] = $author['lastname'];
     }
     if ($author_links) {
-      $singleAuthorString = theme('biblio_author_link', array('author' => $singleAuthorString, 'authorID' => $author['cid'], 'base' => $base, 'inline' => $inline));
+      $author['name'] = theme('biblio_author_link', array('author' => $author));
     }
     else {
-      $singleAuthorString = check_plain($singleAuthorString);
+      $author['name'] = check_plain($author['name']);
     }
     // append this author to the final author string:
     if (($rank == 0) OR ($rank + 1) < $authorCount) // -> first author, or (for multiple authors) all authors except the last one
     {
       if ($rank == 0) // -> first author
-      $output .= $singleAuthorString;
+      $output .= $author['name'];
       else // -> for multiple authors, all authors except the first or the last one
-      $output .= $options['BetweenAuthorsDelimStandard'] . $singleAuthorString;
+      $output .= $options['BetweenAuthorsDelimStandard'] . $author['name'];
 
       // we'll append the string in '$customStringAfterFirstAuthors' to the number of authors given in '$includeNumberOfAuthors' if the total number of authors is greater than the number given in '$numberOfAuthorsTriggeringEtAl':
       if ((($rank + 1) == $options['includeNumberOfAuthors']) AND ($authorCount > $options['numberOfAuthorsTriggeringEtAl']))
@@ -532,7 +532,7 @@ function theme_biblio_format_authors($variables)
     }
     elseif (($authorCount > 1) AND (($rank + 1) == $authorCount)) // -> last author (if multiple authors)
     {
-      $output .= $options['BetweenAuthorsDelimLastAuthor'] . $singleAuthorString;
+      $output .= $options['BetweenAuthorsDelimLastAuthor'] . $author['name'];
     }
   }
 
@@ -551,20 +551,20 @@ function theme_biblio_format_authors($variables)
 
 function theme_biblio_author_link($variables) {
   $author = $variables['author'];
-  $aid    = $variables['authorID'];
-  $base   = $variables['base'];
-  $inline = $variables['inline'];
+//  $aid    = $variables['authorID'];
+//  $base   = $variables['base'];
+//  $inline = $variables['inline'];
 
   $uri = drupal_parse_url(request_uri());
   $uri['path'] = variable_get('biblio_base', 'biblio');
 
-  $uri['query']['filters']['author'] = $aid;
+  $uri['query']['filters']['author'] = $author['cid'];
 
-  if ($inline) {
-    $options['query']['inline'] = 'true';
-  }
+//  if ($inline) {
+//    $options['query']['inline'] = 'true';
+//  }
 
-  return l(trim($author), $uri['path'], $uri );
+  return l(trim($author['name']), $uri['path'], $uri );
 
 }
 
@@ -1104,14 +1104,10 @@ function theme_biblio_admin_keyword_orphans_form($variables) {
   return $output;
 }
 function _biblio_keyword_links($keywords, $base='biblio') {
-  $options = array();
-  if (isset($_GET['sort'])) {
-    $options['query']  .= "sort=" . $_GET['sort'];
-  }
-  if (isset($_GET['order'])) {
-    $options['query']  .= $options['query'] ? "&" : "";
-    $options['query']  .= "order=" . $_GET['order'];
-  }
+  $uri = drupal_parse_url(request_uri());
+  $base      = variable_get('biblio_base', 'biblio');
+  $uri['path'] = $base;
+
   $html = "";
   if (!is_array($keywords)) {
     require_once(drupal_get_path('module', 'biblio') .'/includes/biblio.keywords.inc');
@@ -1120,8 +1116,8 @@ function _biblio_keyword_links($keywords, $base='biblio') {
 
   $sep = variable_get('biblio_keyword_sep', ',');
   foreach($keywords as $kid => $keyword ) {
-    $html .= (empty($html))? "" : "$sep ";
-    $html .= l(trim($keyword), "$base/keyword/$kid" , $options);
+    $uri['query']['filters']['keyword'] = $kid;
+    $linked_keywords [] = l(trim($keyword), $base , $uri);
   }
-  return $html;
+  return implode("$sep ", $linked_keywords);
 }

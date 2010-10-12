@@ -336,6 +336,9 @@ function biblio_build_query($arg_list) {
           break;
         case 'keyword':
           $bkd++;
+          if(array_search('bk', array_keys($query->getTables())) === FALSE) {
+            $query->innerJoin('biblio_keyword', 'bk', 'n.vid = bk.vid');
+          }
           if (is_numeric($value)){
             $query->innerJoin('biblio_keyword', 'bk', 'n.vid = bk.vid');
             $query->condition('bk.kid', $value);
@@ -343,9 +346,6 @@ function biblio_build_query($arg_list) {
 //            $where[] = " bkd". $bkd .'.word '. $match_op .' "[[:<:]]%s[[:>:]]" ';
 //            $joins[] = " JOIN {biblio_keyword} as bk". $bkd ." on b.vid = bk". $bkd .".vid ";
 //            $joins[] = " JOIN {biblio_keyword_data} as bkd". $bkd ." on bk". $bkd .".kid = bkd".$bkd .".kid ";
-            if(array_search('bk', array_keys($query->getTables())) === FALSE) {
-              $query->innerJoin('biblio_keyword', 'bk', 'n.vid = bk.vid');
-            }
             if(array_search('bkd', array_keys($query->getTables())) === FALSE) {
               $query->innerJoin('biblio_keyword_data', 'bkd', 'bkd.kid = bk.kid');
             }
