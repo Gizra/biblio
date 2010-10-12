@@ -68,19 +68,28 @@ function biblio_import_form() {
       '#default_value' => '',
       '#size' => 60
     );
-    $form['filetype'] = array (
-      '#type' => 'select',
-      '#title' => t('File Type'),
-      '#default_value' => 0,
-      '#options' => array (
-        '0'        => t('Select type'),
-        )
-    );
 
-    $other_options = module_invoke_all('biblio_import_options');
+    $import_options = module_invoke_all('biblio_import_options');
+    if (count($import_options) > 1) {
+      $form['filetype'] = array (
+        '#type' => 'select',
+        '#title' => t('File Type'),
+        '#default_value' => 0,
+        '#options' => array (
+          '0'        => t('Select type'),
+          )
+      );
 
-    $form['filetype']['#options'] = array_merge($form['filetype']['#options'], $other_options);
-    asort($form['filetype']['#options']);
+      $form['filetype']['#options'] = array_merge($form['filetype']['#options'], $import_options);
+      asort($form['filetype']['#options']);
+    }
+    elseif (count($import_options) == 1) {
+      $form['biblio_import_file']['#description'] = t('Import type: ') . current($import_options);
+      $form['filetype'] = array (
+        '#type' => 'value',
+        '#value' => key($import_options),
+      );
+    }
 
     $form['batch_process'] = array (
       '#type' => 'checkbox',
