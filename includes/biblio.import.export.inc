@@ -183,17 +183,16 @@ function biblio_import_form_validate($form, & $form_state) {
  * Implementation of hook_submit() for the biblio_import_form.
  */
 function biblio_import_form_submit($form, & $form_state) {
-  global $batch_proc;
-  global $session_id;
   global $user;
-    $extensions = 'xml bib enw mrc ris txt';
-    $validators['file_validate_extensions'] = array();
-    $validators['file_validate_extensions'][0] = $extensions;
+  $batch_proc = FALSE;
+  $extensions = 'xml bib enw mrc ris txt';
+  $validators['file_validate_extensions'] = array();
+  $validators['file_validate_extensions'][0] = $extensions;
   if ($form_state['values']['op'] == t('Import') && isset ($form_state['values']['filetype'])) {
     if ($import_file = file_save_upload('biblio_import_file', $validators)) {
-      if($form_state['values']['batch_process'] == 1) $batch_proc = 1;  // we will use batch import for larger files.
-
-      drupal_set_message(t("The file <i><b>@file</b></i> was successfully uploaded.", array ('@file' => $import_file->filename)), 'status');
+      if($form_state['values']['batch_process'] == 1) {
+        $batch_proc = TRUE;  // we will use batch import for larger files.
+      }
       // Concatenate all the terms of the different vocabularies
       // in a single array to be sent to biblio_import
       $terms = array ();
@@ -215,29 +214,32 @@ function biblio_import_form_submit($form, & $form_state) {
       // the array of terms to be attached to the node(s)
       $userid = (isset ($form_state['values']['userid'])) ? $form_state['values']['userid'] : $user->uid;
       $filetype = $form_state['values']['filetype'];
+      $filesize = sprintf("%01.1f", $import_file->filesize / 1000);
+      $filesize = " ($filesize KB)";
       if ($batch_proc) {
         $session_id = microtime();
         $batch_op = array(
-          'title' => t('Importing @filename',array('@filename' =>$import_file->filename)),
+          'title' => t('Importing @filename',array('@filename' =>$import_file->filename . $filesize)),
           'operations' => array(
-            array('biblio_import', array($import_file, $filetype, $userid, $terms, $batch_proc, $session_id)),
-            array('biblio_import_batch_operations', array($session_id, $user, $userid, $terms)),
-           ),
+        array('biblio_import', array($import_file, $filetype, $userid, $terms, $batch_proc, $session_id)),
+        array('biblio_import_batch_operations', array($session_id, $user, $userid, $terms)),
+        ),
           'progressive' => TRUE,
           'finished' => 'biblio_import_batch_finished',
           'init_message' => t('Parsing file...'),
           'progress_message' => t('Saving nodes...'),
           'file' => './'. drupal_get_path('module', 'biblio') .'/includes/biblio.import.export.inc'
-        );
-        batch_set($batch_op);
+          );
+          batch_set($batch_op);
 
-        $base = variable_get('biblio_base', 'biblio');
-        batch_process("$base/import");
+          $base = variable_get('biblio_base', 'biblio');
+          batch_process("$base/import");
 
       }else{ //not batch processing the file
         $session_id = microtime();
-        $dummy = array();
-        $content = biblio_import($import_file, $filetype, $userid, $terms, $batch_proc, $session_id, $dummy);
+        $context = array();
+        biblio_import($import_file, $filetype, $userid, $terms, $batch_proc, $session_id, $context);
+        biblio_import_finalize(TRUE,$context['results']);
       }
       file_delete($import_file);
     } else {
@@ -245,8 +247,10 @@ function biblio_import_form_submit($form, & $form_state) {
     }
   }
 }
+
 function biblio_import_batch_operations($session_id, $user, $userid, $terms, &$context) {
-  if (empty($context['sandbox'])) {
+ $limit = 10;
+ if (empty($context['sandbox'])) {
     // Initiate multistep processing.
     $context['results']['session_id'] = $session_id;
     $context['results']['userid']     = $userid;
@@ -256,26 +260,84 @@ function biblio_import_batch_operations($session_id, $user, $userid, $terms, &$c
     $context['sandbox']['current_id'] = 0;
     $context['results']['nids'] = array();
     $context['sandbox']['max'] = db_query("SELECT COUNT(DISTINCT(id)) FROM {biblio_import_cache} WHERE session_id = :sessid", array(':sessid' => $session_id))->fetchField();
+    $context['sandbox']['itters'] = $context['sandbox']['max'] / $limit;
+    $context['sandbox']['eta'] = 0;
   }
 
   // Process the next 20 nodes.
-  $limit = 5;
+  timer_start('biblio_import');
+
   $result = db_query_range("SELECT id, data FROM {biblio_import_cache} WHERE id > :id AND session_id = :sessid ORDER BY id ASC", 0, $limit, array(':id' => $context['sandbox']['current_id'], ':sessid' => $session_id));
   foreach ($result as $row) {
-    $node = unserialize($row->data);
-    node_save($node);
-    $context['results']['nids'][] = $node->nid;
+    if($node = unserialize(base64_decode($row->data))) {
+      biblio_save_node($node);
+      $context['results']['nids'][] = $node->nid;
+    }
     $context['sandbox']['progress']++;
     $context['sandbox']['current_id'] = $row->id;
   }
+  $looptime = timer_stop('biblio_import');
+  $context['sandbox']['eta'] += $looptime['time'];
+  $itters = $context['sandbox']['progress'] / $limit;
+  if ($itters) {
+    $average_time = $context['sandbox']['eta'] / $itters;
+    $eta = (($context['sandbox']['itters'] * $average_time) - ($average_time * $itters)) / 1000;
+    if ($eta >= 60) {
+      $min = (int) $eta / 60;
+    }
+    else {
+      $min = 0;
+    }
+    $sec = $eta % 60;
+    $eta = sprintf("%d:%02d", $min, $sec);
+    $progress = sprintf("%d / %d", $context['sandbox']['progress'],  $context['sandbox']['max'] );
+    $context['message'] = t('<br>Nodes saved: %progress <br> Time remaining: %eta min.<br>' , array('%progress' => $progress, '%eta' => $eta));
 
+  }
   // Multistep processing : report progress.
-  if ($context['sandbox']['progress'] != $context['sandbox']['max']) {
+  if ($context['sandbox']['progress'] <= $context['sandbox']['max']) {
     $context['finished'] = $context['sandbox']['progress'] / $context['sandbox']['max'];
   }
 }
 function biblio_import_batch_finished($success, $results, $operations) {
+
+  biblio_import_finalize($success, $results);
+  //clean up import cache...
+//  db_query("DELETE FROM {biblio_import_cache} WHERE session_id = :sessid", array(':sessid' => $results['session_id']));
+  db_delete('biblio_import_cache')
+    ->condition('session_id', $results['session_id'])
+    ->execute();
+}
+
+function biblio_import_finalize($success, $results) {
+  $format = $results['format'];
   $nids = $results['nids'];
+  $dups = $results['dups'];
+  $total = count($nids) + count($dups);
+  //    drupal_set_message(t("<i><b>%count</b></i> of <i><b>%total</b></i> nodes were successfully imported.", array('%count' => count($nids), '%total' => $total)), (count($nids) != $total)?'warning':'status');
+
+  if ($success && (count($nids) || count($dups))) {
+    $message = t("The file <i><b>@file</b></i> was successfully uploaded.", array ('@file' => $results['file']->filename));
+    drupal_set_message($message, 'status');
+    watchdog($format, $message);
+    $count = count($nids);
+    $message = format_plural($count, 'One of @total node imported.', '@count of @total nodes imported.', array('@total' => $total));
+    drupal_set_message($message, 'status');
+    watchdog($format, $message, array('@count' => $count, '@total' => $total), WATCHDOG_INFO);
+    if (count($dups)) {
+      $count = count($dups);
+      $message = format_plural($count, 'One duplicate node skipped.', '@count duplicate nodes skipped.');
+      drupal_set_message($message, 'status');
+      watchdog($format, $message, array('@count' => $count), WATCHDOG_INFO);
+    }
+  }
+  else {
+    $count = count($nids);
+    $message = t('Import finished with an error!  '). format_plural($count, 'One node imported.', '@count nodes imported.');
+    drupal_set_message($message, 'error');
+    watchdog($format, $message, array('@count' => $count), WATCHDOG_ERROR);
+  }
+
   $user = $results['user'];
   $userid = $results['userid'];
 
@@ -291,11 +353,7 @@ function biblio_import_batch_finished($success, $results, $operations) {
       ->condition('nid', $nids, 'IN')
       ->execute();
   }
-  //clean up import cache...
-//  db_query("DELETE FROM {biblio_import_cache} WHERE session_id = :sessid", array(':sessid' => $results['session_id']));
-  db_delete('biblio_import_cache')
-    ->condition('session_id', $results['session_id'])
-    ->execute();
+
 }
 
 function biblio_import_from_url($URL) {
@@ -354,12 +412,9 @@ function biblio_export_form_submit($form, & $form_state) {
  * @return
  *   An array the node id's of the items imported
  */
-function biblio_import($import_file, $type, $userid = 1, $terms = NULL, $batch = FALSE, $id = NULL, &$context ) {
+function biblio_import($import_file, $type, $userid = 1, $terms = NULL, $batch = FALSE, $session_id = NULL, &$context ) {
 
-  global $user, $batch_proc, $session_id, $biblio_uid;
-  $batch_proc = $batch;
-  $session_id = $id;
-  $biblio_uid = $userid;
+  global $user;
   $parsed = 0;
   $nids = array();
   $dups = array();
@@ -375,33 +430,17 @@ function biblio_import($import_file, $type, $userid = 1, $terms = NULL, $batch =
       $parsed = biblio_restore($file_content, $node_template, $node_array);
       break;
     default:
-      list($nids, $dups) = module_invoke($type, 'biblio_import', $import_file, $terms, $batch_proc, $session_id);
+      list($nids, $dups) = module_invoke($type, 'biblio_import', $import_file, $terms, $batch, $session_id);
       break;
   }
-  $total = count($nids) + count($dups);
-  drupal_set_message(t("<i><b>%count</b></i> of <i><b>%total</b></i> nodes were successfully imported.", array('%count' => count($nids), '%total' => $total)), (count($nids) != $total)?'warning':'status');
-  if (count($dups)) {
-    drupal_set_message(t("<i><b>%count</b></i> of <i><b>%total</b></i> nodes were skipped because they were duplicates of existing nodes.", array('%count' => count($dups), '%total' => $total)), 'warning');
-  }
-  if ($batch) {
-    $context['results']['nids'] = $nids;
-    $context['results']['dups'] = $dups;
-  }
-  else {
-  // now reset the userid if privileged to do so and supplied $userid differs from the current user.
-  if (user_access('administer biblio') && count($nids) && $user->uid != $userid) {
-//    db_query('UPDATE {node} SET uid = :uid WHERE nid IN(:nid)', array(':uid' => $results['userid'], ':nid' => implode(',', $nids)));
-    db_update('node')
-      ->fields(array('uid' => $results['userid']))
-      ->condition('nid', $nids, "IN")
-      ->execute();
-//    db_query('UPDATE {node_revision} SET uid = :uid WHERE nid IN(:nid)', array(':uid' => $results['userid'], ':nid' => implode(',', $nids)));
-    db_update('node_revision')
-      ->condition('nid', $nids, "IN")
-      ->execute();
-    }
-  }
-  return $nids;
+  $context['results']['nids']   = $nids;
+  $context['results']['dups']   = $dups;
+  $context['results']['format'] = $type;
+  $context['results']['userid'] = $userid;
+  $context['results']['user']   = $user;
+  $context['results']['file']   = $import_file;
+
+  return ;
 }
 /**
  * Export nodes in a given file format.
@@ -474,6 +513,12 @@ function biblio_save_imported_nodes(& $node_array) {
   return $node_ids;
 }
 function biblio_save_node($node, $batch = FALSE, $session_id = NULL, $save_node = TRUE) {
+  if ($batch && $session_id){ // we are batch processing some import data
+    $node = base64_encode(serialize($node));// base64_encode to avoid problems unserializing strings with embeded quotes.
+    db_query("INSERT INTO {biblio_import_cache} (session_id, data) VALUES (:sessid, :node)", array(':sessid' => $session_id, ':node' => $node));
+    return;
+  }
+
   $options = variable_get('node_options_biblio', array ('status'));
   if (module_exists('i18n') && variable_get('i18n_node_biblio', 0) && variable_get('language_content_type_biblio', 0) ){
     $node->language = module_invoke('i18n', 'default_language');
@@ -486,14 +531,11 @@ function biblio_save_node($node, $batch = FALSE, $session_id = NULL, $save_node 
   $node->format = 0;
   $node->status = in_array('status', $options);
 
-
-  if(!isset($node->biblio_type)) $node->biblio_type = 129; // default to misc if not set.
-  if ($batch && $session_id){ // we are batch processing some import data
-    $node = serialize($node);
-    db_query("INSERT INTO {biblio_import_cache} (session_id, data) VALUES (:sessid, :node)", array(':sessid' => $session_id, ':node' => $node));
-    return;
+  if (!isset($node->biblio_type)) {
+    $node->biblio_type = 129; // default to misc if not set.
   }
-  elseif ($save_node) { // $save_node = TRUE, the normal save path
+
+  if ($save_node) { // $save_node = TRUE, the normal save path
     if(strlen($node->title) > 255) {
       $node->title = substr($node->title, 0, 255);
       node_save($node);
