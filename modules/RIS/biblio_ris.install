@@ -20,29 +20,6 @@ function biblio_ris_uninstall() {
   }
 }
 
-function biblio_ris_requirements($phase) {
-  $requirements = array();
-  $t = get_t();
-
-  if ($phase == 'install') {
-    if (!module_exists('biblio')) {
-      $requirements['biblio_ris'] = array(
-        'title' => $t('Biblio'),
-        'description' => $t('The Biblio module must be installed first'),
-        'severity' => REQUIREMENT_ERROR
-      );
-    }
-    if (!db_table_exists('biblio_type_maps')) {
-      $requirements['biblio_ris_table'] = array(
-        'title' => $t('Biblio table '),
-        'description' => $t("Missing db table 'biblio_type_maps', you probably have to update your biblio module"),
-        'severity' => REQUIREMENT_ERROR
-      );
-    }
-  }
-
-  return $requirements;
-}
 function biblio_ris_enable() {
   biblio_ris_set_system_weight();
 }

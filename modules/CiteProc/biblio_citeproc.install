@@ -1,20 +1,4 @@
 <?php
 // $Id$
 
-function biblio_citeproc_requirements($phase) {
-  $requirements = array();
-  $t = get_t();
-
-  if ($phase == 'install') {
-    if (!module_exists('biblio')) {
-      $requirements['biblio_crossref'] = array(
-        'title' => $t('Biblio'),
-        'description' => $t('The Biblio module must be installed first'),
-        'severity' => REQUIREMENT_ERROR
-      );
-    }
-  }
-
-  return $requirements;
-}
 

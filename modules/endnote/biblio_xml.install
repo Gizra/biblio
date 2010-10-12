@@ -12,31 +12,6 @@ function biblio_xml_install() {
   _save_xml_maps();
 }
 
-function biblio_xml_requirements($phase) {
-  $requirements = array();
-  $t = get_t();
-
-  if ($phase == 'install') {
-    if (!module_exists('biblio')) {
-      $requirements['biblio_xml'] = array(
-        'title' => $t('Biblio'),
-        'description' => $t('The Biblio module must be installed first'),
-        'severity' => REQUIREMENT_ERROR
-      );
-      return $requirements;
-    }
-    if (!db_table_exists('biblio_type_maps')) {
-      $requirements['biblio_xml_table'] = array(
-        'title' => $t('Biblio table '),
-        'description' => $t("Missing db table 'biblio_type_maps', you probably have to update your biblio module"),
-        'severity' => REQUIREMENT_ERROR
-      );
-    }
-  }
-
-  return $requirements;
-}
-
 function biblio_xml_uninstall() {
   if (db_table_exists('biblio_type_maps')) {
 
