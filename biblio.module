@@ -270,10 +270,7 @@ function biblio_theme($existing, $type, $theme, $path) {
     'biblio_author_link' => array(
       'file' => '/includes/biblio_theme.inc',
       'variables' => array(
-        'author',
-        'authorID',
-        'base' => 'biblio',
-        'inline' => FALSE),
+        'author'),
     ),
     'biblio_filters' => array(
         'file' => '/includes/biblio_theme.inc',
@@ -288,6 +285,10 @@ function biblio_theme($existing, $type, $theme, $path) {
         'variables' => array('node'),
     ),
     'biblio_download_links' => array(
+        'file' => '/includes/biblio_theme.inc',
+        'variables' => array('node'),
+    ),
+    'google_scholar_link' => array(
         'file' => '/includes/biblio_theme.inc',
         'variables' => array('node'),
     ),
@@ -499,7 +500,7 @@ function biblio_link($type, $node = NULL, $teaser = FALSE) {
     }
     if (biblio_access('export', $node)) {
       $show_link = variable_get('biblio_lookup_links', array('google' => TRUE));
-      if ($show_link['google']) $links['biblio_google_scholar'] = _build_google_scholar_link($node);
+      if ($show_link['google']) $links['biblio_google_scholar'] = theme_google_scholar_link($node);
     }
   }
   return $links;

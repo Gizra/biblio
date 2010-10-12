@@ -877,7 +877,7 @@ function theme_biblio_export_links($variables) {
     $show_link = variable_get('biblio_lookup_links', array('google' => TRUE));
     $lookup_links = module_invoke_all('biblio_lookup_link', $node);
     if ($show_link['google'] && !empty($node)) {
-      $lookup_links['biblio_google_scholar'] = _build_google_scholar_link($node);
+      $lookup_links['biblio_google_scholar'] = theme_google_scholar_link($node);
     }
     $nid = (isset($node->nid)) ? $node->nid : NULL;
     $export_links = module_invoke_all('biblio_export_link', $nid);
@@ -891,7 +891,7 @@ function theme_biblio_export_links($variables) {
 }
 
 
-function _build_google_scholar_link($node) {
+function theme_google_scholar_link($node) {
   $query = array();
 
   $query['btnG'] = 'Search+Scholar';
