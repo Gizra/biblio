@@ -896,7 +896,9 @@ function theme_google_scholar_link($node) {
 
   $query['btnG'] = 'Search+Scholar';
   $query['as_q'] = '"'.str_replace(' ', '+', $node->title).'"'; // as_q = all the words
-  $query['as_sauthors'] = $node->biblio_contributors[1][0]['lastname'];
+  if (isset($node->biblio_contributors[1][0]['lastname'])) {
+    $query['as_sauthors'] = $node->biblio_contributors[1][0]['lastname'];
+  }
   $query['as_occt'] = 'any';
   $query['as_epq'] = ''; // exact phrase
   $query['as_oq'] = ''; // at least one of the words
