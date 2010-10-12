@@ -1,5 +1,5 @@
 ; $Id$
-name = Biblio_RTF
+name = Biblio - RTF
 description = Provides Rich Text Format file export to the Biblio module.
 core = 7.x
 package = Biblio

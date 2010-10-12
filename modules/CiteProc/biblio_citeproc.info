@@ -1,5 +1,5 @@
 ; $Id$
-name = Biblio_CiteProc
+name = Biblio - CiteProc
 description = Adds Citation Style Language (CSL) citation processing 
 core = 7.x
 package = Biblio
