@@ -523,9 +523,9 @@ class csl_name extends csl_format {
         //      $shortenInitials = (isset($options['numberOfInitialsToKeep'])) ? $options['numberOfInitialsToKeep'] : FALSE;
         //      if ($shortenInitials) $given = drupal_substr($given, 0, $shortenInitials);
 
-        if (isset($initialize_with) ) {
+        if (isset($initialize_with) && !empty($initialize_with)) {
           $name['firstname'] = $name['initials'];
-          if ($shortenInitials) $name['firstname'] = drupal_substr($name['firstname'], 0, $shortenInitials);
+         // if ($shortenInitials) $name['firstname'] = drupal_substr($name['firstname'], 0, $shortenInitials);
         }
         elseif(!empty($name['firstname'])) {
           $name['firstname'] = $name['firstname'].' '.$name['initials'];
@@ -553,7 +553,11 @@ class csl_name extends csl_format {
           }
         }
         $name['name'] = $text;
-        if (variable_get('biblio_author_links', 1)) $text = $this->author_link($name);
+        if (variable_get('biblio_author_links', 1)) {
+          $text = theme('biblio_author_link', array('author' => $name));
+          //$text = $this->author_link($name);
+        }
+
         $authors[] = $this->format($text);
 
       }
