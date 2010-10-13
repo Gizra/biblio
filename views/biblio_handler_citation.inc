@@ -28,8 +28,8 @@ class biblio_handler_citation extends views_handler_field {
     );
   }
   function pre_render($values) {
-    module_load_include('inc','biblio','biblio.contributors');
-    module_load_include('inc','biblio','biblio.keywords');
+    module_load_include('inc','biblio','includes/biblio.contributors');
+    module_load_include('inc','biblio','includes/biblio.keywords');
 
     module_load_include('inc', 'biblio', 'styles/biblio_style_'.$this->options['style_name']);
     $author_options_func = 'biblio_style_'.$this->options['style_name'].'_author_options';
