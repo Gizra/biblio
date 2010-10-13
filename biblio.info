@@ -5,7 +5,7 @@ core = 7.x
 dependencies[] = taxonomy
 package = Biblio
 
-configure = admin/settings/biblio
+configure = admin/config/biblio
 files[] = biblio.install
 files[] = biblio.module
 files[] = includes/biblio.admin.inc
