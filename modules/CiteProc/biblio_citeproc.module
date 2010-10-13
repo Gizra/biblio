@@ -31,9 +31,10 @@ function theme_biblio_citeproc_style($variables) {
   module_load_include('inc', 'biblio_citeproc', 'CSL');
 
   if(!$citeproc) {
-    $csl_file_name = '/style/mla.csl';
-    $csl_file_contents = file_get_contents(drupal_get_path('module', 'biblio_citeproc') . "/style/mla.csl");
-    $cslid = $csl_file_name . '-' . $language->language;
+    $csl_id = biblio_get_style();
+
+    $csl_file_contents = db_query('SELECT csl FROM biblio_citeproc_styles WHERE id = :id', array(':id' => $csl_id))->fetchField();
+//    $cslid = $csl_file_name . '-' . $language->language;
 //    $cached = cache_get($cslid, 'cache_biblio_csl_object');
     if(!$cached) {
       $citeproc = new citeproc($csl_file_contents, $language->language);
@@ -42,7 +43,6 @@ function theme_biblio_citeproc_style($variables) {
     else {
       $citeproc = $cached->data;
     }
-
   }
   $styled_node = $citeproc->render($node);
 

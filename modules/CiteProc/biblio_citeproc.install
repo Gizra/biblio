@@ -1,4 +1,65 @@
 <?php
 // $Id$
+function biblio_citeproc_install() {
+  biblio_citeproc_install_default_styles();
 
+}
 
+function biblio_citeproc_uninstall() {
+
+}
+
+function biblio_citeproc_schema() {
+  $schema['biblio_citeproc_styles'] = array(
+    'fields' => array(
+      'id' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => true,
+        'default' => ''
+       ),
+      'title' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => true,
+        'default' => ''
+       ),
+      'summary' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+        'default' => ''
+       ),
+       'csl' => array(
+        'type' => 'blob',
+        'not null' => TRUE
+       )
+       ),
+    'primary key' => array('id')
+  );
+
+  return $schema;
+}
+
+function biblio_citeproc_install_default_styles() {
+  $record = array();
+  $dir = drupal_get_path('module', 'biblio_citeproc') .'/style';
+  $files = file_scan_directory($dir, '/..*.csl$/');
+
+  $query = db_insert('biblio_citeproc_styles')->fields(array('id', 'title', 'summary', 'csl'));
+
+  foreach ($files as $file) {
+    $csl = file_get_contents($file->uri);
+    $xml = simplexml_load_string($csl);
+
+    $record  = array (
+      'id' => $xml->info->id,
+      'title' => $xml->info->title,
+      'summary' => $xml->info->summary,
+      'csl' => $csl,
+    );
+    $query->values($record);
+  }
+
+  $query->execute();
+}

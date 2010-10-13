@@ -547,15 +547,24 @@ function biblio_admin_settings() {
     '#default_value' => variable_get('biblio_inpress_year_text', t('In Press')),
     '#description' => t('The text that is displayed when the date of publication is deliberately set to <b>9998</b>, it defaults to "In Press".')
   );
-
-  $form['style']['biblio_style'] = array(
-    '#type' => 'radios',
-    '#title' => t('Style'),
-    '#default_value' => variable_get('biblio_style', 'cse'),
-    '#options' => _biblio_admin_get_styles(),
-    '#description' => t('Set the bibliographic style of the "list" view.')
-  );
-
+  if (module_exists('biblio_citeproc')) {
+    $form['style']['biblio_citeproc_style'] = array(
+      '#type' => 'select',
+      '#title' => t('Style'),
+      '#default_value' =>  variable_get('biblio_citeproc_style', 'http://www.zotero.org/styles/vancouver'),
+      '#options' => _biblio_admin_get_styles(),
+      '#description' => t('Set the bibliographic style of the "list" view.')
+    );
+  }
+  else {
+    $form['style']['biblio_style'] = array(
+      '#type' => 'select',
+      '#title' => t('Style'),
+      '#default_value' => variable_get('biblio_style', 'cse'),
+      '#options' => _biblio_admin_get_styles(),
+      '#description' => t('Set the bibliographic style of the "list" view.')
+    );
+  }
   $form['style']['biblio_node_layout'] = array(
     '#type' => 'radios',
     '#title' => t('Node Layout'),
@@ -1483,18 +1492,27 @@ function _biblio_get_user_openurl_form(&$form, $user) {
 */
 function _biblio_admin_get_styles() {
   $styles = array();
-
-  $dir = drupal_get_path('module', 'biblio') .'/styles';
-  $files = file_scan_directory($dir, '/biblio_style_..*.inc$/');
-  foreach ($files as $file) {
-    include_once $file->uri;
-    $function = $file->name .'_info';
-    if (function_exists($function)) {
-      $styles = array_merge($styles, call_user_func($function)); //build and array of the short and long names
-    }
+  if (module_exists('biblio_citeproc')) {
+    $result = db_select('biblio_citeproc_styles', 'csl')
+        ->fields('csl', array('id', 'title', 'summary'))
+        ->orderBy('title', 'ASC')
+        ->execute();
+     foreach($result as $style) {
+       $styles[$style->id] = $style->title;
+     }
   }
-  ksort($styles);
-
+  else {
+    $dir = drupal_get_path('module', 'biblio') .'/styles';
+    $files = file_scan_directory($dir, '/biblio_style_..*.inc$/');
+    foreach ($files as $file) {
+      include_once $file->uri;
+      $function = $file->name .'_info';
+      if (function_exists($function)) {
+        $styles = array_merge($styles, call_user_func($function)); //build and array of the short and long names
+      }
+    }
+    ksort($styles);
+  }
   return $styles;
 }
 function biblio_form_sort($a, $b) {
