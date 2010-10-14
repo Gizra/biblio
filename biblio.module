@@ -2390,7 +2390,7 @@ function _biblio_profile_access($user, $type = 'profile') {
 function biblio_get_style() {
   global $user;
   if (isset($user->biblio_user_style) && $user->biblio_user_style != "system") return $user->biblio_user_style;
-  return variable_get('biblio_style', 'cse');
+  return  module_exists('biblio_citeproc') ? variable_get('biblio_citeproc_style', 'http://www.zotero.org/styles/ama') : variable_get('biblio_style', 'cse');
 }
 /**
  * Implementation of hook_views_api().
