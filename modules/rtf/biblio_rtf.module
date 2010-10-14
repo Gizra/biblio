@@ -66,6 +66,11 @@ function biblio_rtf_biblio_export_link($nid = NULL) {
 
 function biblio_rtf_biblio_export($nids) {
   $count = 0;
+  $variables = array(
+    'base'       => 'biblio',
+    'style_name' => biblio_get_style(),
+    'inline'     => FALSE
+  );
 
   foreach ($nids as $nid) {
     $node = node_load($nid, FALSE, TRUE);
@@ -73,12 +78,9 @@ function biblio_rtf_biblio_export($nids) {
       $node->title = biblio_remove_brace($node->title);
     }
     $count++;
+    $variables['node'] = $node;
 
     if ($count == 1) {
-      $style_name = biblio_get_style();
-      module_load_include('inc','biblio',"styles/biblio_style_$style_name");
-      module_load_include('inc','biblio_rtf',"rtf_export");
-      $style_function = "biblio_style_$style_name";
       $rtf = new rtf();
       $rtf->setPaperSize(5);
       $rtf->setPaperOrientation(1);
@@ -90,7 +92,7 @@ function biblio_rtf_biblio_export($nids) {
       $rtf->addColour("#000000");
     }
 
-    $rtf->addText(filter_xss($style_function ($node, '', false).'<br><br>',array('i','b','br','u','p','strong','em','sub','sup','ul','li')));
+    $rtf->addText(filter_xss(theme('biblio_style', $variables).'<br><br>',array('i','b','br','u','p','strong','em','sub','sup','ul','li')));
   }
   if ($count > 0) $rtf->getDocument();
 }
