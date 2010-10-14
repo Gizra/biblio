@@ -1293,13 +1293,15 @@ function _add_db_field_data_XML() {
 }
 
 function _add_db_field_data() {
+  global $db_type;
   $schema = biblio_schema();
   $fieldnames = array_keys($schema['biblio_fields']['fields']);
   $field_type_fieldnames = array_keys($schema['biblio_field_type']['fields']);
   $field_type_data_fieldnames = array_keys($schema['biblio_field_type_data']['fields']);
-  db_query("/*!40000 ALTER TABLE {biblio_field_type_data} DISABLE KEYS */;");
-  db_query("/*!40000 ALTER TABLE {biblio_fields} DISABLE KEYS */;");
-
+  if ($db_type == 'mysql' or $db_type == 'mysqli') {
+    db_query("/*!40000 ALTER TABLE {biblio_field_type_data} DISABLE KEYS */;");
+    db_query("/*!40000 ALTER TABLE {biblio_fields} DISABLE KEYS */;");
+  }
   $csv_file = drupal_get_path('module', 'biblio') .'/misc/biblio.field.link.data.csv';
 
   if ($handle = fopen($csv_file, "r")){
@@ -1367,8 +1369,11 @@ function _add_db_field_data() {
   }
 
 
-  db_query("/*!40000 ALTER TABLE {biblio_field_type_data} ENABLE KEYS */;");
-  db_query("/*!40000 ALTER TABLE {biblio_fields} ENABLE KEYS */;");
+  if ($db_type == 'mysql' or $db_type == 'mysqli') {
+    db_query("/*!40000 ALTER TABLE {biblio_field_type_data} ENABLE KEYS */;");
+    db_query("/*!40000 ALTER TABLE {biblio_fields} ENABLE KEYS */;");
+
+  }
 
   return $result;
 }
