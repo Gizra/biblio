@@ -86,7 +86,7 @@ class citeproc {
   }
 
   function render_macro($name, $data, $mode) {
-    return $this->macros->render($name, $data, $mode);
+    return $this->macros->render_macro($name, $data, $mode);
   }
 
   function get_locale($type, $arg1, $arg2 = NULL, $arg3 = NULL) {
@@ -1064,7 +1064,7 @@ class csl_macros extends csl_collection{
     }
   }
 
-  function render($name, $data, $mode) {
+  function render_macro($name, $data, $mode) {
     return $this->elements[$name]->render($data, $mode);
   }
 }
@@ -1132,7 +1132,7 @@ class csl_citation extends csl_element{
     }
   }
 
-  function render($data) {
+  function render($data, $mode = NULL) {
     $text = $this->layout->render($data, 'citation');
 
     return $text;
@@ -1158,7 +1158,7 @@ class csl_bibliography  extends csl_element {
 
   }
 
-  function render($data) {
+  function render($data, $mode = NULL) {
     $text = $this->layout->render($data, 'bibliography');
     if($this->get_attributes('hanging-indent') == 'true') {
       $text = '<div style="  text-indent: -25px; padding-left: 25px;">' . $text . '</div>';
@@ -1260,7 +1260,7 @@ class csl_else_if extends csl_if {
 
 class csl_else extends csl_if {
 
-  function evaluate() {
+  function evaluate($data = NULL) {
     return TRUE; // the last else always returns true
   }
 }
