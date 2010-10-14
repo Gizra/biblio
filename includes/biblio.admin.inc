@@ -551,7 +551,7 @@ function biblio_admin_settings() {
     $form['style']['biblio_citeproc_style'] = array(
       '#type' => 'select',
       '#title' => t('Style'),
-      '#default_value' =>  variable_get('biblio_citeproc_style', 'http://www.zotero.org/styles/vancouver'),
+      '#default_value' =>  variable_get('biblio_citeproc_style', 'http://www.zotero.org/styles/ama'),
       '#options' => _biblio_admin_get_styles(),
       '#description' => t('Set the bibliographic style of the "list" view.')
     );
