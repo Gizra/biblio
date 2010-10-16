@@ -513,6 +513,7 @@ function biblio_save_imported_nodes(& $node_array) {
   return $node_ids;
 }
 function biblio_save_node($node, $batch = FALSE, $session_id = NULL, $save_node = TRUE) {
+  global $user;
   if ($batch && $session_id){ // we are batch processing some import data
     $node = base64_encode(serialize($node));// base64_encode to avoid problems unserializing strings with embeded quotes.
     db_query("INSERT INTO {biblio_import_cache} (session_id, data) VALUES (:sessid, :node)", array(':sessid' => $session_id, ':node' => $node));
@@ -523,6 +524,7 @@ function biblio_save_node($node, $batch = FALSE, $session_id = NULL, $save_node 
   if (module_exists('i18n') && variable_get('i18n_node_biblio', 0) && variable_get('language_content_type_biblio', 0) ){
     $node->language = module_invoke('i18n', 'default_language');
   }
+  $node->uid = $user->uid;
   $node->type = 'biblio';
   $node->comment = variable_get('comment_biblio', 0);
   $node->promote = in_array('promote', $options);
