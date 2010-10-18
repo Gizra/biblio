@@ -1658,7 +1658,7 @@ function biblio_update($node) {
   require_once(drupal_get_path('module', 'biblio') .'/includes/biblio.keywords.inc');
   _biblio_prepare_submit($node);
   // Update the node in the database:
-  if ($node->revision) {
+  if (!empty($node->revision)) {
     drupal_write_record('biblio', $node);
   }
   else {
