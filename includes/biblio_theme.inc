@@ -375,7 +375,7 @@ function _biblio_get_utf8_regex() {
   $graph = "^\p{C}\t\n\f\r\p{Z}"; // Unicode-aware equivalent of "[:graph:]"
 
   // Matches Unicode lower case letters:
-  $lower = "\p{Ll}"; // Unicode-aware equivalent of "[:lower:]"
+  $lower = "\p{Ll}\p{M}"; // Unicode-aware equivalent of "[:lower:]"
 
   // Matches Unicode printing characters (including space):
   $print = "\P{C}"; // same as "^\p{C}", Unicode-aware equivalent of "[:print:]"
