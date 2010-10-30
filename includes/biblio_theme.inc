@@ -250,7 +250,7 @@ function theme_biblio_tabular($variables) {
         default:
           if ($row['type'] == 'textarea') {
 //FIXME where is format stored now???
-            $data = check_markup($node-> $row['name'], $node->format, FALSE);
+            $data = filter_xss($node-> $row['name'], biblio_get_allowed_tags());
           }
           else {
             $data = check_plain($node-> $row['name']);
