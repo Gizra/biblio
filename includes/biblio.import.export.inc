@@ -263,6 +263,10 @@ function biblio_import_batch_operations($session_id, $user, $userid, $terms, &$c
     $context['sandbox']['itters'] = $context['sandbox']['max'] / $limit;
     $context['sandbox']['eta'] = 0;
   }
+  // Bail out if the cache is empty.
+  if ($context['sandbox']['max'] == 0) {
+    return;
+  }
 
   // Process the next 20 nodes.
   timer_start('biblio_import');
