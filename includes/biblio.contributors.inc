@@ -216,7 +216,7 @@ function _save_contributors(&$contributors, $nid, $vid, $update = FALSE) {
         'vid' => $vid,
         'cid' => $author['cid'],
         'rank' => $rank++, //((isset($author['rank']) && is_numeric($author['rank'])) ? $author['rank'] : $key),
-        'auth_type' => $author['auth_type'],
+        'auth_type' => !empty($author['auth_type']) ? $author['auth_type'] :  $cat,
         'auth_category' => $cat,
         );
 
