@@ -34,7 +34,7 @@ function biblio_bibtex_form_biblio_node_form_alter(&$form, &$form_state) {
       if(!$form_state['submitted']) {
       $form['biblio_cut_paste'] = array(
         '#type' => 'fieldset',
-        '#title' => t('Paste'),
+        '#title' => t('Paste BibTex Record'),
         '#weight' => -20,
         '#collapsible' => TRUE,
         '#collapsed' => TRUE,
