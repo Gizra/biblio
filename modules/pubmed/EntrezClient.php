@@ -228,7 +228,7 @@ class BiblioEntrezClient
 
     $minDate = date('Y/m/d', strtotime($minDate));
 
-    if ($maxDate <= $minDate) {
+    if ($maxDate < $minDate) {
       throw new Exception('First argument must be an earlier date.');
     }
 
