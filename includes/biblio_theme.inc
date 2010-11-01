@@ -106,10 +106,10 @@ function theme_biblio_long($node, $base = 'biblio', $style = 'classic') {
     $annotation_field = variable_get('biblio_annotations', 'none');
     if ($annotation_field != 'none' && $node-> $annotation_field) {
       $output .= '<div class="biblio-annotation">';
-      $output .= check_markup($node->$annotation_field, $node->format, FALSE);
+      $output .= filter_xss($node->$annotation_field, biblio_get_allowed_tags());
       $output .= '</div>';
     }
-    $output .= check_markup($node->body, $node->format, FALSE);
+    $output .= check_markup($node->body);
     if (biblio_access('export', $node)) {
       $output .= theme('biblio_export_links', array('node' => $node));
     }
@@ -176,13 +176,13 @@ function theme_biblio_long($node, $base = 'biblio', $style = 'classic') {
     $output .= '<h3>'. t("Keywords") .':</h3> '. _biblio_keyword_links( $node->biblio_keywords, $base) ."\n";
   }
   if ($node->biblio_abst_e)
-    $output .= '<h3>'. t("Abstract") .':</h3> '. check_markup($node->biblio_abst_e, $node->format, FALSE) ."\n";
+    $output .= '<h3>'. t("Abstract") .':</h3> '. check_markup($node->biblio_abst_e) ."\n";
   if ($node->biblio_abst_f)
-    $output .= '<p>'. check_markup($node->biblio_abst_f, $node->format, FALSE) ."\n";
+    $output .= '<p>'. check_markup($node->biblio_abst_f) ."\n";
   if ($node->biblio_notes)
-    $output .= '<h3>'. t("Notes") .': </h3>'. check_markup($node->biblio_notes, $node->format, FALSE) ."\n";
+    $output .= '<h3>'. t("Notes") .': </h3>'. check_markup($node->biblio_notes) ."\n";
   if ( strlen(trim($node->body)) && user_access('view full text') ) {
-       $output .= '<h3>'.t('Full Text').':</h3>'.check_markup($node->body, $node->format, FALSE);
+       $output .= '<h3>'.t('Full Text').':</h3>'.check_markup($node->body);
   }
 
   return $output;
@@ -250,10 +250,10 @@ function theme_biblio_tabular($variables) {
         default:
           if ($row['type'] == 'textarea') {
 //FIXME where is format stored now???
-            $data = filter_xss($node-> $row['name'], biblio_get_allowed_tags());
+            $data = check_markup($node->$row['name']);
           }
           else {
-            $data = check_plain($node-> $row['name']);
+            $data = check_plain($node->$row['name']);
           }
       }
     }
@@ -703,7 +703,7 @@ function theme_biblio_entry($variables) {
   $annotation_field = variable_get('biblio_annotations', 'none');
   if ($annotation_field != 'none' && $node-> $annotation_field) {
     $output .= '<div class="biblio-annotation">';
-    $output .= check_markup($node->$annotation_field, $node->format, FALSE);
+    $output .= filter_xss($node->$annotation_field, biblio_get_allowed_tags());
     $output .= '</div>';
   }
   $openurl_base = variable_get('biblio_baseopenurl', '');
