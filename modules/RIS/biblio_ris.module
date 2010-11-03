@@ -49,7 +49,6 @@ function biblio_ris_form_biblio_node_form_alter(&$form, &$form_state) {
         '#default_value' => isset($form_state['values']['paste_data']) ? $form_state['values']['paste_data'] : '',
         '#description' => t('Paste a RIS entry here'),
         '#size' => 60,
-        '#maxlength' => 2048,
         '#weight' => -4
       );
       $form['biblio_ris_paste']['paste_submit'] = array(
