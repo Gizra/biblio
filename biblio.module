@@ -1747,6 +1747,12 @@ function biblio_view($node, $buildmode = 'full') {
 
   switch ($buildmode) {
   case 'full':
+    drupal_set_breadcrumb(array(l(t('Home'), NULL), l(drupal_ucfirst($base_title), $base)));
+    if (variable_get('biblio_hide_bibtex_braces', 0) && !isset($node->view )) {
+      $node->title = biblio_remove_brace($node->title);
+      drupal_set_title(filter_xss($node->title, biblio_get_allowed_tags()));
+    }  // fall through...
+  case 'search_index':
     switch (variable_get('biblio_node_layout', 'tabular')) {
       case 'orig' :
       case 'ft' :
@@ -1756,11 +1762,6 @@ function biblio_view($node, $buildmode = 'full') {
       default :
         $node->content['body']['#markup'] = theme('biblio_tabular', array('node' => $node, 'base' => $base));
         break;
-    }
-    drupal_set_breadcrumb(array(l(t('Home'), NULL), l(drupal_ucfirst($base_title), $base)));
-    if (variable_get('biblio_hide_bibtex_braces', 0) && !isset($node->view )) {
-      $node->title = biblio_remove_brace($node->title);
-      drupal_set_title(filter_xss($node->title, biblio_get_allowed_tags()));
     }
     break;
   case 'teaser':
