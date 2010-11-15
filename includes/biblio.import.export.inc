@@ -531,11 +531,11 @@ function biblio_save_node($node, $batch = FALSE, $session_id = NULL, $save_node 
   $node->uid = $user->uid;
   $node->type = 'biblio';
   $node->comment = variable_get('comment_biblio', 0);
-  $node->promote = in_array('promote', $options);
-  $node->moderate = in_array('moderate', $options);
-  $node->sticky = in_array('sticky', $options);
+  $node->promote = (int) in_array('promote', $options);
+  $node->moderate = (int) in_array('moderate', $options);
+  $node->sticky = (int) in_array('sticky', $options);
   $node->format = 0;
-  $node->status = in_array('status', $options);
+  $node->status = (int) in_array('status', $options);
 
   if (!isset($node->biblio_type)) {
     $node->biblio_type = 129; // default to misc if not set.
