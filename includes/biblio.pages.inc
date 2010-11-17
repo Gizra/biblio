@@ -1161,15 +1161,22 @@ function _biblio_format_author_page($filter, $authors) {
  */
 function _biblio_format_author($author) {
   static $author_options = array();
-  $style_name = biblio_get_style();
-  module_load_include('inc', 'biblio', "styles/biblio_style_$style_name");
-  $inline = FALSE;
-  if (empty($author_options)) {
-    $style_name = biblio_get_style();
-    $style_function = "biblio_style_$style_name"."_author_options";
-    $author_options = $style_function();
+  if (module_exists('biblio_citeproc')) {
+    if (variable_get('biblio_author_links', 1)) {
+      $format = theme('biblio_author_link', array('author' => $author));
+    }
   }
-  $format = theme('biblio_format_authors', array('contributors' => array($author), 'options' => $author_options, 'inline' => $inline));
+  else {
+    $style_name = biblio_get_style();
+    module_load_include('inc', 'biblio', "styles/biblio_style_$style_name");
+    $inline = FALSE;
+    if (empty($author_options)) {
+      $style_name = biblio_get_style();
+      $style_function = "biblio_style_$style_name"."_author_options";
+      $author_options = $style_function();
+    }
+    $format = theme('biblio_format_authors', array('contributors' => array($author), 'options' => $author_options, 'inline' => $inline));
+  }
   $format .= ' ('. $author['cnt'] . ') '. ((biblio_access('edit_author'))?_biblio_author_edit_links($author):'');
   return $format;
 }

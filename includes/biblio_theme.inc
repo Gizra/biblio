@@ -231,9 +231,20 @@ function theme_biblio_tabular($variables) {
   foreach ($fields as $key => $row) {
     // handling the contributor categories like any other field orders them correctly by weight
     if ($row['type'] == 'contrib_widget' && !empty($node->biblio_contributors[$row['fid']][0]['name']) ) {
-      $author_options = $style_function();
-      $author_options['numberOfAuthorsTriggeringEtAl'] = 100; //set really high so we see all authors
-      $data = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[$row['fid']], 'options' => $author_options));
+      if (module_exists('biblio_citeproc')) {
+        foreach ($node->biblio_contributors[$row['fid']] as $author) {
+          if (variable_get('biblio_author_links', 1)) {
+            $author['name'] = theme('biblio_author_link', array('author' => $author));
+          }
+          $authors[] = $author['name'];
+        }
+        $data = implode('; ', $authors);
+      }
+      else {
+        $author_options = $style_function();
+        $author_options['numberOfAuthorsTriggeringEtAl'] = 100; //set really high so we see all authors
+        $data = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[$row['fid']], 'options' => $author_options));
+      }
     }
     else if (empty ($node->$row['name']) || $row['name'] == 'biblio_coins') continue;
     else {
