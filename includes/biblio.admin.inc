@@ -1770,7 +1770,7 @@ function biblio_admin_author_edit_form($form, &$form_state, $author_id) {
       $merge_options[$other_author['cid']] = l($other_author['name'],$base.'/authors/'.$other_author['cid'].'/edit/');
       if ($other_author['affiliation']) $merge_options[$other_author['cid']] .= ' (' . $other_author['affiliation'] . ')';
     }
-    if ($author->aka == $other_author['aka']) {
+    if ($author->aka != 0 && $author->aka == $other_author['aka']) {
       $linked[$other_author['cid']] = l($other_author['lastname']. ($other_author['firstname']?', '.$other_author['firstname']:($other_author['initials']?', '.$other_author['initials']:'')),$base.'/authors/'.$other_author['cid'].'/edit/');
       if ($other_author['affiliation']) $linked[$other_author['cid']] .= ' (' . $other_author['affiliation'] . ')';
       $linked_default_values[] = $other_author['cid'];
