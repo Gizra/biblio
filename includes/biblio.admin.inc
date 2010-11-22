@@ -1455,7 +1455,7 @@ function _biblio_get_user_doi_form(&$form, $user) {
   $form['biblio_doi']['biblio_crossref_pid'] = array(
     '#type' => 'textfield',
     '#title' => t('CrossRef OpenURL Account ID'),
-    '#default_value' => $user->data['biblio_crossref_pid'],
+    '#default_value' => isset($user->data['biblio_crossref_pid']) ? $user->data['biblio_crossref_pid'] : '',
     '#return_value' => 1,
     '#description' => t('Enter your complimentary CrossRef OpenURL account ID which you can obtain here ') .l('OpenURL Account Request Form', 'http://www.crossref.org/requestaccount/', $link_attrs) . t(', OR enter your full CrossRef (colon separated) account:password combination.')
   );
@@ -1700,10 +1700,10 @@ function biblio_admin_author_edit_form($form, &$form_state, $author_id) {
     '#required' => TRUE,
     '#maxlength' => 128
   );
-  $form['no_format'] = array(
+  $form['literal'] = array(
     '#type' => 'checkbox',
     '#title' => t('Do not reformat'),
-    '#default_value' => 0,
+    '#default_value' => $author->literal,
     '#weight' => 1.5,
     '#required' => false,
     '#description' => t('Selecting this will prevent the styles from trying to reformat the contributor name.  The text in the "Complete Name" field will be used as is.')
@@ -1770,7 +1770,7 @@ function biblio_admin_author_edit_form($form, &$form_state, $author_id) {
       $merge_options[$other_author['cid']] = l($other_author['name'],$base.'/authors/'.$other_author['cid'].'/edit/');
       if ($other_author['affiliation']) $merge_options[$other_author['cid']] .= ' (' . $other_author['affiliation'] . ')';
     }
-    if ($author->aka != 0 && $author->aka == $other_author['aka']) {
+    if ($other_author['aka'] != 0 && $author->cid == $other_author['aka'] || $author->aka == $other_author['cid']) {
       $linked[$other_author['cid']] = l($other_author['lastname']. ($other_author['firstname']?', '.$other_author['firstname']:($other_author['initials']?', '.$other_author['initials']:'')),$base.'/authors/'.$other_author['cid'].'/edit/');
       if ($other_author['affiliation']) $linked[$other_author['cid']] .= ' (' . $other_author['affiliation'] . ')';
       $linked_default_values[] = $other_author['cid'];
@@ -1850,8 +1850,24 @@ function biblio_admin_author_edit_form_validate($form, &$form_state) {
 
 function biblio_admin_author_edit_form_submit($form, &$form_state) {
   $op = $form_state['values']['op'];
+  $merge_authors = FALSE;
+  $link_authors = FALSE;
+  $linked_authors = FALSE;
   switch ($op) {
     case t('Save'):
+    case t('Merge'):
+      if (isset($form_state['values']['merge_authors']) && $op == t('Merge')) {
+        $merge_authors = array_filter($form_state['values']['merge_authors']);
+      }
+      if (isset($form_state['values']['linked_authors']) ) {
+        $linked_authors = $form_state['values']['linked_authors'];
+      }
+      if (isset($form_state['values']['link_authors']) ) {
+        $link_authors = $form_state['values']['link_authors'];
+      }
+      unset($form_state['values']['merge_authors']);
+      unset($form_state['values']['link_authors']);
+      unset($form_state['values']['linked_authors']);
       if ($form_state['values']['drupal_uid'] == 0 ) {
         $uid = $form['drupal_uid']['#default_value'];
         $cid = 0;
@@ -1866,7 +1882,7 @@ function biblio_admin_author_edit_form_submit($form, &$form_state) {
           ->condition('drupal_uid', $uid)
           ->execute();
         $result = db_query('SELECT data FROM {users} WHERE uid = :uid', array(':uid' => $uid))->fetchField();
-        $data = unserialize($result->data);
+        $data = unserialize($result);
         $data['biblio_contributor_id'] = $cid;
         $v = serialize($data);
         db_update('users')
@@ -1874,15 +1890,12 @@ function biblio_admin_author_edit_form_submit($form, &$form_state) {
           ->condition('uid', $uid)
           ->execute();
       }
-//      drupal_write_record('biblio_contributor_data', $form_state['values'], 'cid');
-      db_update('biblio_contributor_data')
-          ->fields($form_state['values'])
-          ->execute();
+      drupal_write_record('biblio_contributor_data', $form_state['values'], 'cid');
+//      db_update('biblio_contributor_data')
+//          ->fields($form_state['values'])
+//          ->execute();
       // merge authors
-      if (isset($form_state['values']['merge_authors']) && $op == t('Merge')) {
-        $merge_authors = array_filter($form_state['values']['merge_authors']);
-        if (count($merge_authors) ) {
-
+      if ($merge_authors && count($merge_authors)) {
           db_update('biblio_contributor')
             ->fields(array('cid', $form_state['values']['cid']))
             ->condition('cid', $merge_authors, 'IN')
@@ -1891,10 +1904,9 @@ function biblio_admin_author_edit_form_submit($form, &$form_state) {
           db_delete('biblio_contributor_data')
             ->condition('cid', $merge_authors, 'IN')
             ->execute();
-        }
       }
-      if (isset($form_state['values']['linked_authors']) ) {
-        foreach ($form_state['values']['linked_authors'] as $key => $value) {
+      if ($linked_authors)  {
+        foreach ($linked_authors as $key => $value) {
           if ($value == 0) {
             db_update('biblio_contributor_data')
               ->fields(array('aka' => $key))
@@ -1903,9 +1915,9 @@ function biblio_admin_author_edit_form_submit($form, &$form_state) {
           }
         }
       }
-      if (isset($form_state['values']['link_authors']) ) {
+      if ($link_authors ) {
         //db_query("UPDATE {biblio_contributor_data} SET aka=$form_state['values']['cid'] WHERE cid IN ($authors)");
-        foreach ($form_state['values']['link_authors'] as $key => $value) {
+        foreach ($link_authors as $key => $value) {
           db_update('biblio_contributor_data')
               ->fields(array('aka' => $form_state['values']['cid']))
               ->condition('cid', $key)

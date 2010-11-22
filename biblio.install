@@ -858,6 +858,13 @@ function biblio_schema() {
         'default' => '',
         'description' =>'Author affiliation or address',
         ),
+      'literal' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default'  => 0,
+        'unsigned' => TRUE,
+        'description' =>'Determines if the author name is allowed to be reformated by the variaous styles or should be used literally.',
+        ),
       'md5' => array (
         'type' => 'varchar',
         'length' => '32',
@@ -2051,13 +2058,26 @@ function biblio_update_6026() {
   return $result;
 }
 function biblio_update_7000() {
-    $result = array();
+  $result = array();
+  _biblio_helper_modules('install');
 
-    _biblio_helper_modules('install');
+  db_drop_primary_key($result, 'biblio_contributor_data');
+  db_add_primary_key($result, 'biblio_contributor_data', array('cid', 'aka'));
 
-    db_drop_primary_key($result, 'biblio_contributor_data');
-    db_add_primary_key($result, 'biblio_contributor_data', array('cid', 'aka'));
-
-    return $result;
-
+  return $result;
+}
+/*
+ * Add new column to biblio_contributor_data table
+ */
+function biblio_update_7001() {
+  $result = array();
+  $spec = array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default'  => 0,
+        'unsigned' => TRUE,
+        'description' =>'Determines if the author name is allowed to be reformated by the variaous styles or should be used literally.',
+        );
+  $result[] = db_add_field('biblio_contributor_data', 'literal', $spec);
+  return $result;
 }

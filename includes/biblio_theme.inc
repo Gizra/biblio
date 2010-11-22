@@ -1041,7 +1041,7 @@ function theme_biblio_admin_author_edit_form($variables){
             array('data' => drupal_render($form['initials'])),
             array('data' => drupal_render($form['lastname'])),
             array('data' => drupal_render($form['suffix'])));
-  $rows[] = array(array('data' => drupal_render($form['name']) . drupal_render($form['no_format']), 'colspan' => 5));
+  $rows[] = array(array('data' => drupal_render($form['name']) . drupal_render($form['literal']), 'colspan' => 5));
   $rows[] = array(array('data' => drupal_render($form['affiliation']), 'colspan' => 5));
   $rows[] = array(array('data' => drupal_render($form['drupal_uid']), 'colspan' => 5));
 
