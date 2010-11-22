@@ -34,10 +34,10 @@ class EndNoteXMLParser {
       return;
     }
     $data = fread($fp, 2048);
-    if (strpos($data, 'record') !== NULL && strpos($data, 'ref-type') !== NULL) {
+    if ((strpos($data, 'record') !== FALSE) && (strpos($data, 'ref-type') !== FALSE)) {
       $this->format = 'endnote8';
     }
-    elseif (strpos($data, 'RECORD') !== NULL && strpos($data, 'REFERENCE_TYPE') !== NULL) {
+    elseif (strpos($data, 'RECORD') !== FALSE && strpos($data, 'REFERENCE_TYPE') !== FALSE) {
       $this->format = 'endnote7';
     }
     if ($this->format) {
