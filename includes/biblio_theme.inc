@@ -906,7 +906,7 @@ function theme_google_scholar_link($node) {
   $query = array();
 
   $query['btnG'] = 'Search+Scholar';
-  $query['as_q'] = '"'.str_replace(' ', '+', $node->title).'"'; // as_q = all the words
+  $query['as_q'] = '"'.str_replace(array(' ', '(', ')'), array('+'), $node->title).'"'; // as_q = all the words
   if (isset($node->biblio_contributors[1][0]['lastname'])) {
     $query['as_sauthors'] = $node->biblio_contributors[1][0]['lastname'];
   }
