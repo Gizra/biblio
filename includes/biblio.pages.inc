@@ -1104,7 +1104,7 @@ function _biblio_get_authors($filter = NULL) {
     $base = variable_get('biblio_base', 'biblio');
     $menu = menu_get_active_title();
     if ($menu == 'Authors') $path = $base.'/authors/';
-    if ($menu == 'Biblio settings') $path = 'admin/settings/biblio/author/list/';
+    if ($menu == 'Biblio settings') $path = 'admin/config/biblio/author/list/';
     if ($filter) {
       $filter = strtoupper($filter);
       $where[] =  "UPPER(SUBSTRING(lastname,1,1)) = :filter ";

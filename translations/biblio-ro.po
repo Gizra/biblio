@@ -903,8 +903,8 @@ msgid "<b>NOTE:</b> Keyword \"free tagging\" is turned on, consequently all inco
 msgstr "Cuvintele cheie vor fi adăugate la vocabularul <b>@name</b> specificat în secţiunea Taxonomie de pe pagina !url."
 
 #: biblio.import.export.inc:103;105
-msgid "admin/settings/biblio"
-msgstr "admin/settings/biblio"
+msgid "admin/config/biblio"
+msgstr "admin/config/biblio"
 
 #: biblio.import.export.inc:105
 #, fuzzy

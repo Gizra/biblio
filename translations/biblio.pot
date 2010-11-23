@@ -866,7 +866,7 @@ msgid "<b>NOTE:</b> Keyword \"free tagging\" is turned on, consequently all inco
 msgstr ""
 
 #: biblio.import.export.inc:103;105
-msgid "admin/settings/biblio"
+msgid "admin/config/biblio"
 msgstr ""
 
 #: biblio.import.export.inc:105

@@ -906,8 +906,8 @@ msgid "<b>NOTE:</b> Keyword \"free tagging\" is turned on, consequently all inco
 msgstr ""
 
 #: biblio.import.export.inc:103;105
-msgid "admin/settings/biblio"
-msgstr "admin/settings/biblio"
+msgid "admin/config/biblio"
+msgstr "admin/config/biblio"
 
 #: biblio.import.export.inc:105
 msgid "<b>NOTE:</b> Keyword \"free tagging\" is turned off, consequently keywords will <b>NOT</b> be added to the vocabulary as specified in the Taxonomy section of the !url page."

@@ -642,7 +642,7 @@ function biblio_admin_types_edit_form($form, $form_state, $tid = 0) {
   $msg = '<div>'. t('On this page you can set type specific "Titles" and "Hints" which will display on the input form. ');
   if ($tid) {
     $msg .= t('Checking the "Visible" box will add the field to the input form, checking "Required" will force the user to supply a value for this field and the weight value changes the order which it is rendered on the form with smaller values floating to the top of the form.
-    <p> Fields which are grayed out on this page have been set to "common" on the !linktobiblioadmin page.</p>',array('!linktobiblioadmin' => l("admin/settings/biblio/fields", "admin/settings/biblio/fields")));
+    <p> Fields which are grayed out on this page have been set to "common" on the !linktobiblioadmin page.</p>',array('!linktobiblioadmin' => l("admin/config/biblio/fields", "admin/config/biblio/fields")));
 
   }
   else {
@@ -650,7 +650,7 @@ function biblio_admin_types_edit_form($form, $form_state, $tid = 0) {
   }
   $msg .= t('Finally, for each author field you can choose a set of author roles. Assigning different roles to authors within the same field, e.g. primary and secondary authors within the authors field, allows to theme them differently.');
   $msg .= '</div>';
-  $form['#redirect'] = 'admin/settings/biblio/fields/type';
+  $form['#redirect'] = 'admin/config/biblio/fields/type';
   $form['help'] = array(
     '#type' => 'fieldset',
     '#title' => t('Help'),
@@ -934,8 +934,8 @@ function biblio_admin_type_mapper_page() {
   foreach ($formats as $key => $value) {
     $rows[] = array(
       $key,
-      l('edit', 'admin/settings/biblio/fields/typemap/'. $value),
-      l('edit', 'admin/settings/biblio/fields/fieldmap/'. $value)
+      l('edit', 'admin/config/biblio/fields/typemap/'. $value),
+      l('edit', 'admin/config/biblio/fields/fieldmap/'. $value)
     );
   }
   $header = array(t('Format'), t('Publication Types'), t('Data Fields'));
@@ -958,7 +958,7 @@ function biblio_admin_type_mapper_form($form, $form_state, $format = 'bibtex', $
     '#type' => 'submit',
     '#value' => t('Reset to Defaults'),
   );
-  $form['#redirect'] = 'admin/settings/biblio/fields/typemap';
+  $form['#redirect'] = 'admin/config/biblio/fields/typemap';
 
   if ($op == 'map') {
     $result = db_query('SELECT t.* FROM {biblio_types} as t WHERE t.tid > 0');
@@ -993,7 +993,7 @@ function biblio_admin_type_mapper_form($form, $form_state, $format = 'bibtex', $
     );
     $form['submit']['#value'] = t('Add');
     unset($form['reset']);
-    $form['#redirect'] = 'admin/settings/biblio/fields/typemap/'.$format;
+    $form['#redirect'] = 'admin/config/biblio/fields/typemap/'.$format;
   }
 
   return $form;
@@ -1035,8 +1035,8 @@ function theme_biblio_admin_type_mapper_form($variables) {
     t('Biblio Publication Type')
   );
   $output = theme('table', array('header' => $header, 'rows' => $rows));
-  $output .= l('['.t('Add New'). " $title ".t('Publication Type').']','admin/settings/biblio/fields/typemap/'.$form['fileformat']['#value'].'/add').' ';
-  $output .= l('['.t('Add New Biblio Publication Type').']','admin/settings/biblio/fields/type/new').'<br />';
+  $output .= l('['.t('Add New'). " $title ".t('Publication Type').']','admin/config/biblio/fields/typemap/'.$form['fileformat']['#value'].'/add').' ';
+  $output .= l('['.t('Add New Biblio Publication Type').']','admin/config/biblio/fields/type/new').'<br />';
   }
   elseif($form['submit']['#value'] == t('Add')) {
    drupal_set_title(t('Add new publication type to '). $title.' '.t('file type'));
@@ -1061,14 +1061,14 @@ function biblio_admin_type_mapper_form_submit($form, $form_state) {
   elseif ($form_state['values']['op'] == t('Reset to Defaults')) {
     biblio_reset_map('type_map', $form_state['values']['fileformat']);
     biblio_reset_map('type_names', $form_state['values']['fileformat']);
-    drupal_goto('admin/settings/biblio/fields/typemap/'.$form_state['values']['fileformat']);
+    drupal_goto('admin/config/biblio/fields/typemap/'.$form_state['values']['fileformat']);
   }
   elseif ($form_state['values']['op'] == t('Add')) {
     $names = biblio_get_map('type_names', $form_state['values']['fileformat']);
     $names[$form_state['values']['type_name']] = $form_state['values']['type_desc'];
     biblio_set_map('type_names', $form_state['values']['fileformat'], $names);
   }
-  //drupal_goto('admin/settings/biblio/fields/typemap');
+  //drupal_goto('admin/config/biblio/fields/typemap');
 }
 
 function biblio_admin_field_mapper_form($form, $form_state, $format = 'bibtex', $op = 'map') {
@@ -1085,7 +1085,7 @@ function biblio_admin_field_mapper_form($form, $form_state, $format = 'bibtex', 
     '#type' => 'submit',
     '#value' => t('Reset to Defaults'),
   );
-  $form['#redirect'] = 'admin/settings/biblio/fields/fieldmap';
+  $form['#redirect'] = 'admin/config/biblio/fields/fieldmap';
 
   if ($op == 'map') {
     $schema = drupal_get_schema('biblio');
@@ -1122,7 +1122,7 @@ function biblio_admin_field_mapper_form($form, $form_state, $format = 'bibtex', 
     );
     $form['submit']['#value'] = t('Add');
     unset($form['reset']);
-    $form['#redirect'] = 'admin/settings/biblio/fields/typemap/'.$format;
+    $form['#redirect'] = 'admin/config/biblio/fields/typemap/'.$format;
   }
 
   return $form;
@@ -1160,8 +1160,8 @@ function theme_biblio_admin_field_mapper_form($variables) {
     t('Biblio schema field')
   );
   $output = theme('table', array('header'  => $header, 'rows' => $rows));
-  //$output .= l('['.t('Add New'). " $title ".t('Publication Type').']','admin/settings/biblio/fields/typemap/'.$form['fileformat']['#value'].'/add').' ';
-  //$output .= l('['.t('Add New Biblio Publication Type').']','admin/settings/biblio/fields/type/new').'<br />';
+  //$output .= l('['.t('Add New'). " $title ".t('Publication Type').']','admin/config/biblio/fields/typemap/'.$form['fileformat']['#value'].'/add').' ';
+  //$output .= l('['.t('Add New Biblio Publication Type').']','admin/config/biblio/fields/type/new').'<br />';
   }
   elseif($form['submit']['#value'] == t('Add')) {
    drupal_set_title(t('Add new publication type to '). $title.' '.t('file type'));
@@ -1181,11 +1181,11 @@ function biblio_admin_field_mapper_form_submit($form, $form_state) {
       }
     }
     biblio_set_map('field_map', $form_state['values']['fileformat'], $map);
-    drupal_goto('admin/settings/biblio/fields/typemap');
+    drupal_goto('admin/config/biblio/fields/typemap');
   }
   elseif ($form_state['values']['op'] == t('Reset to Defaults')) {
     biblio_reset_map('field_map', $form_state['values']['fileformat']);
-    drupal_goto('admin/settings/biblio/fields/fieldmap/'.$form_state['values']['fileformat']);
+    drupal_goto('admin/config/biblio/fields/fieldmap/'.$form_state['values']['fileformat']);
   }
 //  elseif ($form_state['values']['op'] == t('Add')) {
 //    $names = biblio_get_map('type_names', $form_state['values']['fileformat']);
@@ -1199,20 +1199,20 @@ function biblio_admin_field_mapper_form_submit($form, $form_state) {
 function biblio_admin_types_form() {
   $output = '';
   $result = db_query('SELECT t.* FROM {biblio_types} as t WHERE t.tid > 0');
-  //$rows[] = array('',t('Fields Common To All Types'),l('edit', 'admin/settings/biblio/types/edit'),'');
+  //$rows[] = array('',t('Fields Common To All Types'),l('edit', 'admin/config/biblio/types/edit'),'');
   foreach ($result as $row ) {
     if ($row->tid < 999) {
       $rows[] = array(
         $row->tid,
         check_plain($row->name),
-        ($row->visible) ? l(t('edit'), 'admin/settings/biblio/fields/type/edit/'. $row->tid) : '', ($row->visible) ? l(t('hide'), 'admin/settings/biblio/fields/type/hide/'. $row->tid) : l(t('show'), 'admin/settings/biblio/fields/type/show/'. $row->tid)
+        ($row->visible) ? l(t('edit'), 'admin/config/biblio/fields/type/edit/'. $row->tid) : '', ($row->visible) ? l(t('hide'), 'admin/config/biblio/fields/type/hide/'. $row->tid) : l(t('show'), 'admin/config/biblio/fields/type/show/'. $row->tid)
       );
     }
     else {
       $rows[] = array(
         $row->tid,
         check_plain($row->name),
-        l(t('edit'), 'admin/settings/biblio/fields/type/edit/'. $row->tid), l(t('delete'), 'admin/settings/biblio/fields/type/delete/'. $row->tid)
+        l(t('edit'), 'admin/config/biblio/fields/type/edit/'. $row->tid), l(t('delete'), 'admin/config/biblio/fields/type/delete/'. $row->tid)
       );
     }
   }
@@ -1223,11 +1223,11 @@ function biblio_admin_types_form() {
       'colspan' => '2'
     )
   );
-  $output .= '<p>[ '. l(t('Add New Type'), 'admin/settings/biblio/fields/type/new') .' ]';
-  $output .= ' [ '. l(t('Reset all types to defaults'), 'admin/settings/biblio/fields/type/reset') .' ]';
+  $output .= '<p>[ '. l(t('Add New Type'), 'admin/config/biblio/fields/type/new') .' ]';
+  $output .= ' [ '. l(t('Reset all types to defaults'), 'admin/config/biblio/fields/type/reset') .' ]';
   $output .= theme('table', array('header' => $header, 'rows' => $rows));
-  $output .= '<p>[ '. l(t('Add New Type'), 'admin/settings/biblio/fields/type/new') .' ]';
-  $output .= ' [ '. l(t('Reset all types to defaults'), 'admin/settings/biblio/fields/type/reset') .' ]';
+  $output .= '<p>[ '. l(t('Add New Type'), 'admin/config/biblio/fields/type/new') .' ]';
+  $output .= ' [ '. l(t('Reset all types to defaults'), 'admin/config/biblio/fields/type/reset') .' ]';
   return $output;
 }
 function biblio_admin_types_add_form() {
@@ -1293,7 +1293,7 @@ function biblio_admin_types_add_form_submit($form, & $form_state) {
   // Refresh publication type string for translation.
   biblio_locale_refresh_types($values['tid']);
 
-  drupal_goto('admin/settings/biblio/fields/type');
+  drupal_goto('admin/config/biblio/fields/type');
 }
 function biblio_admin_types_hide() {
   $args = func_get_args();
@@ -1304,7 +1304,7 @@ function biblio_admin_types_hide() {
       ->condition('tid', $args[0])
       ->execute();
   }
-  drupal_goto('admin/settings/biblio/fields/type');
+  drupal_goto('admin/config/biblio/fields/type');
 }
 function biblio_admin_types_show() {
   $args = func_get_args();
@@ -1315,7 +1315,7 @@ function biblio_admin_types_show() {
       ->condition('tid', $args[0])
       ->execute();
   }
-  drupal_goto('admin/settings/biblio/fields/type');
+  drupal_goto('admin/config/biblio/fields/type');
 }
 function biblio_admin_types_delete_form() {
   $args = func_get_args();
@@ -1333,11 +1333,11 @@ function biblio_admin_types_delete_form() {
     );
     $output = confirm_form($form, t('Are you sure you want to delete the custom biblio type:  %title ? ', array(
       '%title' => $row->name
-    )) . $existing_msg, $_GET['destination'] ? $_GET['destination'] : 'admin/settings/biblio/fields/type', t('This action cannot be undone.'), t('Delete'), t('Cancel'));
+    )) . $existing_msg, $_GET['destination'] ? $_GET['destination'] : 'admin/config/biblio/fields/type', t('This action cannot be undone.'), t('Delete'), t('Cancel'));
     return $output;
   }
   else {
-    drupal_goto('admin/settings/biblio/fields/type');
+    drupal_goto('admin/config/biblio/fields/type');
   }
 }
 function biblio_admin_types_delete_form_submit($form, & $form_state) {
@@ -1349,23 +1349,23 @@ function biblio_admin_types_delete_form_submit($form, & $form_state) {
     ->condition('tid', $form_state['values']['tid'])
     ->execute();
 
-  drupal_goto('admin/settings/biblio/fields/type');
+  drupal_goto('admin/config/biblio/fields/type');
 }
 function biblio_admin_types_reset_form() {
   $form['reset'] = array(
     '#type' => 'value',
     '#value' => 'reset'
   );
-  $output = confirm_form($form, t('Are you sure you want to reset ALL the field definitions to the defaults? '), $_GET['destination'] ? $_GET['destination'] : 'admin/settings/biblio/fields/type', t('By doing this, you will loose all customizations you have made to the field titles, <b><u>this action cannot be undone</u></b>!'), t('Reset!'), t('Cancel'));
+  $output = confirm_form($form, t('Are you sure you want to reset ALL the field definitions to the defaults? '), $_GET['destination'] ? $_GET['destination'] : 'admin/config/biblio/fields/type', t('By doing this, you will loose all customizations you have made to the field titles, <b><u>this action cannot be undone</u></b>!'), t('Reset!'), t('Cancel'));
   return $output;
 }
 function biblio_admin_types_reset_form_submit($form, & $form_state) {
   module_load_include('install', 'biblio');
   biblio_reset_types();
-  drupal_goto("admin/settings/biblio/fields/type");
+  drupal_goto("admin/config/biblio/fields/type");
 }
 /*
- * This functin is used by both the admin/settings/biblio page and user profile page
+ * This functin is used by both the admin/config/biblio page and user profile page
  *   - if $user is set, then it is being called from the user profile page
  */
 function _biblio_get_user_profile_form(&$form, $profile_user = FALSE) {
@@ -1572,7 +1572,7 @@ function biblio_admin_author_types_form($form, &$form_state, $op = NULL, $id = N
         '#weight' => 3,
         '#submit' => array('biblio_admin_author_types_form_submit')
       );
-      $form_state['redirect'] = 'admin/settings/biblio/author/type';
+      $form_state['redirect'] = 'admin/config/biblio/author/type';
       return $form;
       break;
     case 'hide':
@@ -1587,10 +1587,10 @@ function theme_biblio_admin_author_types_form($form) {
                          LEFT JOIN {biblio_contributor} c ON ctd.auth_type = c.auth_type
                          GROUP BY ctd.auth_type");
   foreach  ($db_result as $row) {
-    $ops = l(t('edit'), 'admin/settings/biblio/author/type/'.$row->auth_type.'/edit' );
+    $ops = l(t('edit'), 'admin/config/biblio/author/type/'.$row->auth_type.'/edit' );
     if (!isset($row->cid) && $row->auth_type >= 10) { // allow delete only if type not in use
       $ops .= '&nbsp;&nbsp;';
-      $ops .= l(t('delete'), 'admin/settings/biblio/author/type/'.$row->auth_type.'/delete/');
+      $ops .= l(t('delete'), 'admin/config/biblio/author/type/'.$row->auth_type.'/delete/');
     }
     $rows[] = array(
       $row->auth_type,
@@ -1605,10 +1605,10 @@ function theme_biblio_admin_author_types_form($form) {
     t('Description'),
     array('data' => t('Operations'),'colspan' => '2')
   );
-  $output = '<p>[ '. l(t('Add New Type'), 'admin/settings/biblio/author/type/new') .' ]';
+  $output = '<p>[ '. l(t('Add New Type'), 'admin/config/biblio/author/type/new') .' ]';
   $output .= theme('table', array('header' => $header, 'rows' => $rows));
-  $output .= '<p>[ '. l(t('Add New Type'), 'admin/settings/biblio/author/type/new') .' ]';
- // $output .= ' [ '. l(t('Reset all types to defaults'), 'admin/settings/biblio/authors/reset') .' ]';
+  $output .= '<p>[ '. l(t('Add New Type'), 'admin/config/biblio/author/type/new') .' ]';
+ // $output .= ' [ '. l(t('Reset all types to defaults'), 'admin/config/biblio/authors/reset') .' ]';
 
   return $output;
 }
@@ -1641,7 +1641,7 @@ function biblio_admin_author_type_delete_confirm(&$form_state, $type_id) {
 
   return confirm_form($form,
     t('Are you sure you want to delete the author type: %title ?', array('%title' => $type_data->title)),
-    isset($_GET['destination']) ? $_GET['destination'] : 'admin/settings/biblio/author/type',
+    isset($_GET['destination']) ? $_GET['destination'] : 'admin/config/biblio/author/type',
     t('This action cannot be undone.'),
     t('Delete'),
     t('Cancel')
@@ -1658,7 +1658,7 @@ function biblio_admin_author_type_delete_confirm_submit($form, &$form_state) {
     ->condition('auth_type', $form_state['values']['auth_type'])
     ->execute();
 
-  drupal_goto('admin/settings/biblio/author/type');
+  drupal_goto('admin/config/biblio/author/type');
 }
 
 function biblio_admin_author_edit_form($form, &$form_state, $author_id) {
@@ -1671,7 +1671,7 @@ function biblio_admin_author_edit_form($form, &$form_state, $author_id) {
 
   $base = variable_get('biblio_base', 'biblio');
   $menu = menu_get_active_title();
-  $path = (strpos($_GET['q'],'settings'))? 'admin/settings/biblio/author' : $base.'/authors';
+  $path = (strpos($_GET['q'],'settings'))? 'admin/config/biblio/author' : $base.'/authors';
 
   $form['cid'] = array(
     '#type' => 'value',
@@ -2028,7 +2028,7 @@ function biblio_admin_keyword_edit_form($form, &$form_state, $keyword_id) {
   $keyword = db_query('SELECT * FROM {biblio_keyword_data} bkd WHERE bkd.kid = :kid ', array(':kid' => $keyword_id))->fetchObject();
 
   $base = variable_get('biblio_base', 'biblio');
-  $path = (strpos($_GET['q'], 'settings')) ? 'admin/settings/biblio/keywords' : $base.'/keywords';
+  $path = (strpos($_GET['q'], 'settings')) ? 'admin/config/biblio/keywords' : $base.'/keywords';
   $form_state['redirect'] = $path;
 
   $form['kid'] = array(

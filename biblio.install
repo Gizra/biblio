@@ -1761,7 +1761,7 @@ function _move_authors(&$result)
   }
   else {
     $count_fail = $count - $count_success;
-    $mesg = 'There was a problem moving authors from '. $count_fail .' / '. $count .' publications to the new database structure. The existing author fields have been retained in the database, go to the "admin/settings/biblio/author" page to try again.';
+    $mesg = 'There was a problem moving authors from '. $count_fail .' / '. $count .' publications to the new database structure. The existing author fields have been retained in the database, go to the "admin/config/biblio/author" page to try again.';
   }
   $result[] = array('success' => ($count_success == $count),
                     'query' => $mesg);
