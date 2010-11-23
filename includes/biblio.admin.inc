@@ -636,8 +636,9 @@ function biblio_admin_settings_form_submit($form, $form_state) {
 
   menu_rebuild();
 }
-function biblio_admin_types_edit_form($form, $form_state, $tid = 0) {
+function biblio_admin_types_edit_form($form, &$form_state, $tid = 0) {
  // $form['#theme'] = 'biblio_admin_types_edit_form';
+  $form['#tree'] = TRUE;
 
   $msg = '<div>'. t('On this page you can set type specific "Titles" and "Hints" which will display on the input form. ');
   if ($tid) {
@@ -658,8 +659,7 @@ function biblio_admin_types_edit_form($form, $form_state, $tid = 0) {
     '#collapsed' => TRUE
   );
   $form['help']['message'] = array(
-    '#type' => 'markup',
-    '#value' => $msg
+    '#markup' => $msg
   );
   if (!$tid) {
     $form['options'] = array(
@@ -807,8 +807,7 @@ function biblio_admin_types_edit_form($form, $form_state, $tid = 0) {
 }
 
 function biblio_admin_types_edit_form_submit($form, & $form_state) {
-  $tid = $form_state['values']['type_id'];
-  if (empty($tid)) $tid = 0;
+  $tid = isset($form_state['values']['type_id']) ? $form_state['values']['type_id'] : 0;
 
   if ($tid) {
     // save publication type name
@@ -816,9 +815,11 @@ function biblio_admin_types_edit_form_submit($form, & $form_state) {
       'tid' => $tid,
       'name' => $form_state['values']['type_name'],
     );
-    db_update('biblio_types')
-      ->fields($type_name_record)
-      ->execute();
+    drupal_write_record('biblio_types', $type_name_record, 'tid');
+
+//    db_update('biblio_types')
+//      ->fields($type_name_record)
+//      ->execute();
     biblio_locale_refresh_types($tid);
   }
 
@@ -840,7 +841,9 @@ function biblio_admin_types_edit_form_submit($form, & $form_state) {
         ->execute();
     }
   }
-  variable_set('biblio_hide_other_fields', $form_state['values']['hide_other_fields']);
+  $hide_other_fields = isset($form_state['values']['hide_other_fields']) ? $form_state['values']['hide_other_fields'] : 0;
+  variable_set('biblio_hide_other_fields', $hide_other_fields);
+
   // save other field data
   foreach ($form_state['values']['configured_flds'] as $fid => $values) {
     $update = FALSE;
@@ -849,7 +852,8 @@ function biblio_admin_types_edit_form_submit($form, & $form_state) {
     $link['fid'] = $fid;
     $link['tid'] = $tid;
     foreach ($values as $name => $value) {
-      if (!$form['configured_flds'][$fid][$name]['#disabled']) {
+      $disabled = isset($form['configured_flds'][$fid][$name]['#disabled']) ? $form['configured_flds'][$fid][$name]['#disabled'] : 0;
+      if (!$disabled) {
         $default_value = $form['configured_flds'][$fid][$name]['#default_value'];
         if ($name == 'checkboxes') {
           $link['visible']      = (!empty($value['visible'])) ? 1 : 0;
@@ -859,7 +863,7 @@ function biblio_admin_types_edit_form_submit($form, & $form_state) {
             $link['autocomplete'] = (!empty($value['autocomplete'])) ? 1 : 0;
           }
         }
-        elseif ($name == weight) {
+        elseif ($name == 'weight') {
           $link['weight'] = $value;
         } else {
           $val[$name] = $value;
@@ -897,10 +901,10 @@ function biblio_admin_types_edit_form_submit($form, & $form_state) {
           ->execute();
       }
       else { // not common, so change pointer back to customizations if available
-        $query = "UPDATE {biblio_field_type} SET ftdid = cust_tdid, common = %d WHERE fid = %d";
-        db_query($query, array(0, $fid));
+        $query = "UPDATE {biblio_field_type} SET ftdid = cust_tdid, common = :comm WHERE fid = :fid";
+        db_query($query, array(':comm' => 0, ':fid' => $fid));
 //        db_update('biblio_field_type')
-//          ->fields(array('ftdid' => $fid, 'common' => 1, 'visible' => 1))
+//          ->fields(array('ftdid' => $fid, 'common' => 0, 'visible' => 1))
 //          ->condition('fid', $fid)
 //          ->execute();
       }
@@ -1046,6 +1050,7 @@ function theme_biblio_admin_type_mapper_form($variables) {
   $output .= drupal_render($form['submit']);
   $output .= drupal_render($form['reset']);
 
+  $output .= drupal_render_children($form);
   return $output;
 }
 
@@ -1177,7 +1182,7 @@ function biblio_admin_field_mapper_form_submit($form, $form_state) {
   if ($form_state['values']['op'] == t('Save')) {
     foreach($form_state['values'] as $key => $value) {
       if (is_array($value)) {
-        $map[$key]=$value['biblio'];
+        $map[$key] = $value['biblio'];
       }
     }
     biblio_set_map('field_map', $form_state['values']['fileformat'], $map);

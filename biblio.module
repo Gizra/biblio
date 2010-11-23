@@ -2451,8 +2451,8 @@ function biblio_save_map($maps) {
  * @param array  $map
  */
 function biblio_set_map($type, $format, $map) {
-    $map['format'] = $format;
     $map[$type] = serialize($map);
+    $map['format'] = $format;
     drupal_write_record('biblio_type_maps', $map, 'format');
 }
 
