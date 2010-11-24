@@ -1902,7 +1902,7 @@ function biblio_admin_author_edit_form_submit($form, &$form_state) {
       // merge authors
       if ($merge_authors && count($merge_authors)) {
           db_update('biblio_contributor')
-            ->fields(array('cid', $form_state['values']['cid']))
+            ->fields(array('cid' => $form_state['values']['cid']))
             ->condition('cid', $merge_authors, 'IN')
             ->execute();
 
