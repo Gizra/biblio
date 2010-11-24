@@ -2379,18 +2379,22 @@ function _biblio_profile_access($user, $type = 'profile') {
   else {
     return false;
   }
-
   // if user cannot override site settings or user hasn't yet made its selection, we use site default
-  if (!variable_get('biblio_show_user_profile_form', '1') || !isset($user->$key))
+  if (!variable_get('biblio_show_user_profile_form', '1') || !isset($user->data[$key])) {
     return variable_get($key, '0'); // return site default
-  else return $user->$key; // return user setting
+  }
+  else {
+    return $user->data[$key]; // return user setting
+  }
 }
 /*
  * Helper function to get either the user or system style
  */
 function biblio_get_style() {
   global $user;
-  if (isset($user->biblio_user_style) && $user->biblio_user_style != "system") return $user->biblio_user_style;
+  if (isset($user->data['biblio_user_style']) && $user->data['biblio_user_style'] != "system") {
+    return $user->data['biblio_user_style'];
+  }
   return  module_exists('biblio_citeproc') ? variable_get('biblio_citeproc_style', 'http://www.zotero.org/styles/ama') : variable_get('biblio_style', 'cse');
 }
 /**

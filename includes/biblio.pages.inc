@@ -27,9 +27,9 @@ function biblio_view_node($nid) {
 /**
  * @return unknown_type
  */
-function biblio_db_search() {
+function biblio_db_search($arg_list = array()) {
   $nids = array();
-  $arg_list = array();
+ // $arg_list = array();
  // $arg_list = func_get_args();
 //  foreach ($_GET as $key => $value) {
 //    if ($key != 'q') {
@@ -47,8 +47,8 @@ function biblio_db_search() {
 
   // When called manually, search takes one parameter, i.e.
   // biblio_db_search('search', 'bla blu')
-  $search = array_search('search', $arg_list);
-  if ($search !== FALSE) {
+  $search = array_keys($arg_list, 'search');
+  if (!empty($search)) {
     $keys = $arg_list[$search+1];
 
     // Special case: if search is activated via URL, i.e., biblio/search/...,
@@ -1040,8 +1040,8 @@ function biblio_form_filter_submit($form, &$form_state) {
  * @return unknown_type
  */
 function biblio_get_user_pubs($user, $profile='', $nofilters=''){
-  if (isset($user->biblio_contributor_id) && $user->biblio_contributor_id > 0 ){
-    $pubs = biblio_db_search('author', $user->biblio_contributor_id, $profile, $nofilters);
+  if (isset($user->data['biblio_contributor_id']) && $user->data['biblio_contributor_id'] > 0 ){
+    $pubs = biblio_db_search(array('filters' => array('author' => $user->data['biblio_contributor_id']),'profile' => 1));
   }else{
     $pubs = biblio_db_search('uid', $user->uid, $profile, $nofilters);
   }

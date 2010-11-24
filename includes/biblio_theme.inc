@@ -58,13 +58,13 @@ function biblio_openURL($node) {
   // Adapted for biblio: Ron Jerome
   //  global $openURLResolver; // these variables are defined in 'ini.inc.php'
   //  global $hostInstitutionAbbrevName;
-  $openURLResolver = !empty($user->biblio_baseopenurl)?$user->biblio_baseopenurl:'';
+  $openURLResolver = !empty($user->data['biblio_baseopenurl']) ? $user->data['biblio_baseopenurl'] : '';
   if (empty($openURLResolver)) $openURLResolver = variable_get('biblio_baseopenurl', '');
   if (!empty($openURLResolver)) {
     $co = biblio_contextObject($node);
 
     $sid = "biblio:". variable_get('site_name', 'Drupal');
-    $user_sid = !empty($user->biblio_openurl_sid)?$user->biblio_openurl_sid:'';
+    $user_sid = !empty($user->data['biblio_openurl_sid']) ? $user->data['biblio_openurl_sid'] : '';
     $co["sid"] = !empty($user_sid) ? $user_sid : variable_get('biblio_openurl_sid', $sid);
 
     $openURL = $openURLResolver;
@@ -833,7 +833,7 @@ function theme_biblio_admin_types_edit_form($variables) {
   $output .= drupal_render($form['help']);
   $output .= drupal_render($form['type_name']);
   $output .= drupal_render($form['options']);
-  
+
   $output .= theme('table', array('header' => $header, 'rows' => $conf_table, 'attributes' => array('id' => 'field-table')));
   $output .= '<p><center>'. drupal_render($form['submit']) .'</center></p>';
   $output .= drupal_render_children($form);
