@@ -29,17 +29,9 @@ function biblio_view_node($nid) {
  */
 function biblio_db_search($arg_list = array()) {
   $nids = array();
- // $arg_list = array();
- // $arg_list = func_get_args();
-//  foreach ($_GET as $key => $value) {
-//    if ($key != 'q') {
-//      $key = check_plain($key);
-//      $value = check_plain($value);
-//      $arg_list[$key] = $value;
-//    }
-//  }
- $uri = drupal_parse_url(request_uri());
- $arg_list = array_merge($arg_list, $uri['query']);
+
+  $uri = drupal_parse_url(request_uri());
+  $arg_list = array_merge($arg_list, $uri['query']);
 
   // Drupal search? It returns an array of search results. We store the nids
   // of the result nodes and make them a "where n.nid in {..}" filter.
@@ -62,7 +54,7 @@ function biblio_db_search($arg_list = array()) {
     $keys = _get_biblio_search_filter();
   }
 
-  if ($keys) {
+/*  if ($keys) {
     // Only search in biblio nodes. If we use a SESSION filter and have a list of
     // nids stored there, don't re-search. List is reset when submitting a new search.
     if ($search !== FALSE || !_get_biblio_search_filter('nodelist')) {
@@ -89,7 +81,7 @@ function biblio_db_search($arg_list = array()) {
       else $_SESSION['biblio_filter'] = array();
     }
   }
-
+*/
   $inline = in_array('inline', $arg_list);
   $inline = in_array('profile', $arg_list)?'profile':$inline;
 
@@ -231,13 +223,11 @@ function biblio_build_query($arg_list) {
       $query->orderBy('biblio_year', $arg_list['order']);
       $query->orderBy('biblio_date', $arg_list['order']);
   } //end switch
-//  $filters = explode(' ', $arg_list['filters']);
+
+
   if (isset($arg_list['filters']) && count($arg_list['filters']) ) {
     $args = array();
     foreach ($arg_list['filters'] as $type => $value) {
-//      $type = $arg_list[0];
-//      array_shift($arg_list);
-      // $operator = ($operator)?$operator:" AND "; //defaults to AND
       switch ($type) {
         case 'no_filters':
           break;
@@ -285,54 +275,51 @@ function biblio_build_query($arg_list) {
           break;
         case 'author':
           $bcc++;
+          if(array_search('bc', array_keys($query->getTables())) === FALSE) {
+            $query->innerJoin('biblio_contributor', 'bc', 'n.vid = bc.vid');
+          }
           if (is_numeric($value)){
-            $query->innerJoin('biblio_contributor', "bc$bcc", "n.vid = bc$bcc.vid");
             $cids = db_query('SELECT cid FROM {biblio_contributor_data}
                               WHERE cid = :cid OR
                               (aka = (SELECT aka FROM {biblio_contributor_data} WHERE cid = :cdid) AND aka != 0)'
                               ,array(':cid' => $value, ':cdid' => $value));
-                              $cid_count = 0;
-                              $or = db_or();
-                              foreach ($cids as $cid)
-                              {
-                                $or->condition("bc$bcc.cid", $cid->cid);
-                                $cid_count++;
-                              }
-                              if ($cid_count == 0) {
-                                $query->condition("bc$bcc.cid", -1);
-                              }
-                              else {
-                                $query->condition($or);
-                              }
-          }else{
-            $where[] = " bcd". $bcc .'.name '. $match_op .' "[[:<:]]%s[[:>:]]" ';
-            $joins[] = " JOIN {biblio_contributor} as bc". $bcc ." on b.vid = bc". $bcc .".vid ";
-            $joins[] = " JOIN {biblio_contributor_data} as bcd". $bcc ." on bc". $bcc .".cid = bcd".$bcc .".cid ";
-            $terms[] =$term[0];
-            $operator = NULL;
-            $rss_info['title'] = t("Publications by " . $term[0]);
-            $rss_info['description'] = t("These publications by %author are part of the works listed at %sitename", array('%author' => $term[0], '%sitename' => variable_get('site_name', 'Drupal')));
-            $rss_info['link'] = '/author/' . $term[0];
+
+            $cid_count = 0;
+            $or = db_or();
+
+            foreach ($cids as $cid)
+            {
+              $or->condition("bc.cid", $cid->cid);
+              $cid_count++;
+            }
+
+            if ($cid_count == 0) {
+              $query->condition("bc.cid", -1);
+            }
+            else {
+              $query->condition($or);
+            }
+
+          }
+          else {
+            if(array_search('bcd', array_keys($query->getTables())) === FALSE) {
+              $query->innerJoin('biblio_contributor_data', 'bcd', 'bcd.cid = bc.cid');
+            }
+            $query->condition('bcd.name', "[[:<:]]".$value."[[:>:]]", $match_op);
+            $rss_info['title'] = t("Publications by ") . $value;
+            $rss_info['description'] = t("These publications by %author are part of the works listed at %sitename", array('%author' => $value, '%sitename' => variable_get('site_name', 'Drupal')));
+            $rss_info['link'] = '/author/' . $value;
           }
           break;
         case 'publisher':
-          $term = explode("?",array_shift($arg_list));
-          $where[] = "b.biblio_publisher ". $match_op ." '%s' ";
-          $terms[] = $term[0];
-          array_push($args, $type, $term[0]);
-          $operator = NULL;
+          $query->condition('b.biblio_publisher', "[[:<:]]".$value."[[:>:]]", $match_op);
           break;
         case 'year':
-          $where[] = "b.biblio_year=%d ";
           $query->condition('b.biblio_year', $value);
           break;
         case 'uid':
-          $term = array_shift($arg_list);
-          $where[] = "n.uid=%d ";
-          //$limit .= " AND b.biblio_year=%d ";
-          $terms[] = (int)$term;
-          array_push($args, $type, (int)$term);
-          $operator = NULL;
+          $query->addField('n', 'uid');
+          $query->condition('n.uid', $value);
           break;
         case 'keyword':
           $bkd++;
@@ -340,12 +327,8 @@ function biblio_build_query($arg_list) {
             $query->innerJoin('biblio_keyword', 'bk', 'n.vid = bk.vid');
           }
           if (is_numeric($value)){
-            $query->innerJoin('biblio_keyword', 'bk', 'n.vid = bk.vid');
             $query->condition('bk.kid', $value);
           }else{
-//            $where[] = " bkd". $bkd .'.word '. $match_op .' "[[:<:]]%s[[:>:]]" ';
-//            $joins[] = " JOIN {biblio_keyword} as bk". $bkd ." on b.vid = bk". $bkd .".vid ";
-//            $joins[] = " JOIN {biblio_keyword_data} as bkd". $bkd ." on bk". $bkd .".kid = bkd".$bkd .".kid ";
             if(array_search('bkd', array_keys($query->getTables())) === FALSE) {
               $query->innerJoin('biblio_keyword_data', 'bkd', 'bkd.kid = bk.kid');
             }
@@ -355,9 +338,9 @@ function biblio_build_query($arg_list) {
             else {
               $query->condition('bkd.word', "[[:<:]]" . $value . "[:>:]]", 'LIKE');
             }
-//            $rss_info['title'] = t("Keyword " . $term[0]);
-//            $rss_info['description'] = t("These publications, containing the keyword: %keyword, are part of the works listed at %sitename", array('%keyword' => $term[0], '%sitename' => variable_get('site_name', 'Drupal')));
-//            $rss_info['link'] = '/keyword/' . $term[0];
+            $rss_info['title'] = t("Keyword ") . $value;
+            $rss_info['description'] = t("These publications, containing the keyword: %keyword, are part of the works listed at %sitename", array('%keyword' => $value, '%sitename' => variable_get('site_name', 'Drupal')));
+            $rss_info['link'] = '/keyword/' . $value;
           }
           break;
         case 'citekey':
@@ -366,12 +349,6 @@ function biblio_build_query($arg_list) {
         case 'type':
           $query->condition('b.biblio_type', $value);
           break;
-//        case 'order':
-//          $term = (array_shift($arg_list) == 'desc')?'desc':'asc';
-//          $sort_attrib['order'] = $term;
-//          array_push($args, $type, $term);
-//          break;
-        case 'sort':
         case 'search':
           $term = explode("?",array_shift($arg_list));
           $result_nids = split(',', $term[0]);
@@ -417,7 +394,7 @@ function biblio_build_query($arg_list) {
  * @param $inline
  * @return unknown_type
  */
-function biblio_show_results($nodes, $query_info, $inline=false) {
+function biblio_show_results($nodes, $query_info = array(), $inline = false) {
   global $pager_total_items;
   $profile = false;
 //  $attrib = $query_info['sort_attrib'];
@@ -440,7 +417,7 @@ function biblio_show_results($nodes, $query_info, $inline=false) {
     // Search box. Has same permissions as the filter tab.
     $content = '<div id="biblio-header" class="clear-block">';
     if (variable_get('biblio_search',0) && user_access('show filter tab')) {
-      $content .= drupal_get_form('biblio_search_form');
+      $content .= drupal_render(drupal_get_form('biblio_search_form'));
     }
     if ( biblio_access('export')) {
       $content .= '<div class="biblio-export">'. theme('biblio_export_links',array('node' => NULL)). '</div>';
@@ -774,7 +751,7 @@ function theme_biblio_end_category_section() {
  * @param $form_state
  * @return unknown_type
  */
-function biblio_search_form(&$form_state) {
+function biblio_search_form($form, &$form_state) {
   $form['biblio_search'] = array(
     '#prefix' => '<div class="container-inline biblio-search clear-block">',
     '#suffix' => '</div>',
@@ -788,6 +765,7 @@ function biblio_search_form(&$form_state) {
   );
   $button_text = variable_get('biblio_search_button_text', 'Biblio search');
   $form['biblio_search']['submit'] = array('#type' => 'submit', '#value' => t($button_text));
+  $form['#cache'] = FALSE;
   return $form;
 }
 
@@ -850,21 +828,50 @@ function biblio_build_search_query($keys = '') {
  * @return unknown_type
  */
 function biblio_search_form_submit($form, &$form_state) {
-  $keys = $form_state['values']['keys'];
-  if ($keys != '')  {
-    $_SESSION['biblio_filter'] = array(array('search','',$keys));
-    $base =  variable_get('biblio_base', 'biblio');
-    $form_state['redirect'] = $base;
-  }
-  else {
-    // No keywords. Remove former search keys if any. Leaves other filters intact.
-    if (_get_biblio_search_filter()){
-      $_SESSION['biblio_filter'] = array();
-    }
-  }
+  static $keys = '';
 }
 
-/**
+function biblio_search_query($keys) {
+  if (empty($keys)) {
+    $keys = $form_state['values']['keys'];
+
+
+    $query = db_select('search_index', 'i', array('target' => 'slave'))->extend('SearchQuery')->extend('PagerDefault');
+    $query->join('node', 'n', 'n.nid = i.sid');
+    $query
+    ->condition('n.status', 1)
+    ->addTag('node_access')
+    ->searchExpression($keys, 'node');
+
+    // Insert special keywords.
+    $query->setOption('type', 'n.type');
+    $query->setOption('language', 'n.language');
+    if ($query->setOption('term', 'ti.tid')) {
+      $query->join('taxonomy_index', 'ti', 'n.nid = ti.nid');
+    }
+    // Only continue if the first pass query matches.
+    if (!$query->executeFirstPass()) {
+      return array();
+    }
+
+    // Add the ranking expressions.
+    _node_rankings($query);
+
+    // Load results.
+    $find = $query
+    ->limit(10)
+    ->execute();
+    $results = array();
+    foreach ($find as $item) {
+      // Build the node body.
+      $results[] = node_load($item->sid);
+    }
+    return biblio_show_results($results);
+  }
+
+}
+
+  /**
  * @param $arg
  * @return unknown_type
  */
@@ -1040,13 +1047,32 @@ function biblio_form_filter_submit($form, &$form_state) {
  * @return unknown_type
  */
 function biblio_get_user_pubs($user, $profile='', $nofilters=''){
+  $args = array();
   if (isset($user->data['biblio_contributor_id']) && $user->data['biblio_contributor_id'] > 0 ){
-    $pubs = biblio_db_search(array('filters' => array('author' => $user->data['biblio_contributor_id']),'profile' => 1));
-  }else{
-    $pubs = biblio_db_search('uid', $user->uid, $profile, $nofilters);
+    $args += array(
+      'filters' => array(
+        'author' => $user->data['biblio_contributor_id'],
+      ),
+    );
+  }
+  elseif (isset($user->data['biblio_lastname']) && !empty($user->data['biblio_lastname'])) {
+    $args += array(
+      'filters' => array(
+        'author' => $user->data['biblio_lastname'],
+      ),
+    );
+  }
+  else {
+    $args += array(
+      'filters' => array(
+        'uid' => $user->uid
+      ),
+    );
   }
 
-  return $pubs;
+  $args += array('profile' => 1);
+
+  return  biblio_db_search($args);;
 }
 
 /**
