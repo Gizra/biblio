@@ -2397,6 +2397,32 @@ function biblio_get_style() {
   }
   return  module_exists('biblio_citeproc') ? variable_get('biblio_citeproc_style', 'http://www.zotero.org/styles/ama') : variable_get('biblio_style', 'cse');
 }
+function biblio_get_styles() {
+  $styles = array();
+  if (module_exists('biblio_citeproc')) {
+    $result = db_select('biblio_citeproc_styles', 'csl')
+        ->fields('csl', array('id', 'title', 'summary'))
+        ->orderBy('title', 'ASC')
+        ->execute();
+     foreach($result as $style) {
+       $styles[$style->id] = $style->title;
+     }
+  }
+  else {
+    $dir = drupal_get_path('module', 'biblio') .'/styles';
+    $files = file_scan_directory($dir, '/biblio_style_..*.inc$/');
+    foreach ($files as $file) {
+      include_once $file->uri;
+      $function = $file->name .'_info';
+      if (function_exists($function)) {
+        $styles = array_merge($styles, call_user_func($function)); //build and array of the short and long names
+      }
+    }
+    ksort($styles);
+  }
+  return $styles;
+}
+
 /**
  * Implementation of hook_views_api().
  */

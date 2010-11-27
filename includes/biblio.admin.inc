@@ -552,7 +552,7 @@ function biblio_admin_settings() {
       '#type' => 'select',
       '#title' => t('Style'),
       '#default_value' =>  variable_get('biblio_citeproc_style', 'http://www.zotero.org/styles/ama'),
-      '#options' => _biblio_admin_get_styles(),
+      '#options' => biblio_get_styles(),
       '#description' => t('Set the bibliographic style of the "list" view.')
     );
   }
@@ -561,7 +561,7 @@ function biblio_admin_settings() {
       '#type' => 'select',
       '#title' => t('Style'),
       '#default_value' => variable_get('biblio_style', 'cse'),
-      '#options' => _biblio_admin_get_styles(),
+      '#options' => biblio_get_styles(),
       '#description' => t('Set the bibliographic style of the "list" view.')
     );
   }
@@ -1437,7 +1437,7 @@ function _biblio_get_user_profile_form(&$form, $profile_user = FALSE) {
     );
     $options = array();
     $options['system'] = t('System default');
-    $options = array_merge($options, _biblio_admin_get_styles() );
+    $options = array_merge($options, biblio_get_styles() );
     $form['biblio_profile']['biblio_user_style'] = array(
     '#type' => 'radios',
     '#title' => t('Style'),
@@ -1495,31 +1495,6 @@ function _biblio_get_user_openurl_form(&$form, $user) {
  *  calls the info fuction to get some basic information like the short and long
  *  names of the style
 */
-function _biblio_admin_get_styles() {
-  $styles = array();
-  if (module_exists('biblio_citeproc')) {
-    $result = db_select('biblio_citeproc_styles', 'csl')
-        ->fields('csl', array('id', 'title', 'summary'))
-        ->orderBy('title', 'ASC')
-        ->execute();
-     foreach($result as $style) {
-       $styles[$style->id] = $style->title;
-     }
-  }
-  else {
-    $dir = drupal_get_path('module', 'biblio') .'/styles';
-    $files = file_scan_directory($dir, '/biblio_style_..*.inc$/');
-    foreach ($files as $file) {
-      include_once $file->uri;
-      $function = $file->name .'_info';
-      if (function_exists($function)) {
-        $styles = array_merge($styles, call_user_func($function)); //build and array of the short and long names
-      }
-    }
-    ksort($styles);
-  }
-  return $styles;
-}
 function biblio_form_sort($a, $b) {
   $a_weight = (is_array($a) && isset($a['weight'])) ? $a['weight'] : 0;
   $b_weight = (is_array($b) && isset($b['weight'])) ? $b['weight'] : 0;
