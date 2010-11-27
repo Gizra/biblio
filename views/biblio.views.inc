@@ -31,57 +31,6 @@ function biblio_views_plugins() {
       ),
    );
 }
-/**
- * Implementation of hook_views_handlers().
- */
-function biblio_views_handlers() {
-  return array(
-    'info' => array(
-      'path' => drupal_get_path('module', 'biblio') . '/views',
-    ),
-    'handlers' => array(
-/*
- * Fields
- */
-      'biblio_handler_field' => array(
-        'parent' => 'views_handler_field',
-      ),
-      'biblio_handler_citation' => array(
-        'parent' => 'views_handler_field',
-      ),
-      'biblio_handler_field_contributor' => array(
-        'parent' => 'biblio_handler_field',
-      ),
-      'biblio_handler_field_biblio_type' => array(
-        'parent' => 'biblio_handler_field',
-      ),
-      'biblio_handler_field_biblio_keyword_kid' => array(
-        'parent' => 'views_handler_field_prerender_list',
-      ),
-      'biblio_handler_field_biblio_keyword_data_word' => array(
-        'parent' => 'biblio_handler_field',
-      ),
-/*
- * Filters
- */
-      'biblio_handler_filter_contributor' => array(
-        'parent' => 'views_handler_filter_many_to_one',
-      ),
-      'biblio_handler_filter_contributor_lastname' => array(
-        'parent' => 'views_handler_filter_many_to_one',
-      ),
-      'biblio_handler_filter_biblio_type' => array(
-        'parent' => 'views_handler_filter_in_operator',
-      ),
-      'biblio_handler_filter_biblio_contributor_auth_type' => array(
-        'parent' => 'views_handler_filter_in_operator',
-      ),
-      'biblio_handler_filter_biblio_keyword_kid' => array(
-        'parent' => 'views_handler_filter_many_to_one',
-      ),
-      )
-  );
-}
 
 /**
  * Implementation of hook_views_data().
