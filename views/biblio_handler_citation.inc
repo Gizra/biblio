@@ -3,7 +3,8 @@
 class biblio_handler_citation extends views_handler_field {
   function init(&$view, $options) {
     parent::init($view, $options);
-    $this->additional_fields['vid'] = array('table' => 'biblio', 'field' => 'vid');
+    $this->additional_fields['nid'] = array('table' => 'node', 'field' => 'nid');
+    $this->additional_fields['vid'] = array('table' => 'node', 'field' => 'vid');
 
   }
   function query() {
@@ -23,49 +24,34 @@ class biblio_handler_citation extends views_handler_field {
       '#type' => 'radios',
       '#title' => t('Style'),
       '#default_value' => $this->options['style_name'],
-      '#options' => _biblio_admin_get_styles(),
+      '#options' => biblio_get_styles(),
       '#description' => t('Define the layout of author lists.')
     );
   }
-  function pre_render($values) {
-    module_load_include('inc','biblio','includes/biblio.contributors');
-    module_load_include('inc','biblio','includes/biblio.keywords');
 
-    module_load_include('inc', 'biblio', 'styles/biblio_style_'.$this->options['style_name']);
-    $author_options_func = 'biblio_style_'.$this->options['style_name'].'_author_options';
-    $this->author_options = $author_options_func();
+  function render($values) {
+    if (module_exists('biblio_citeproc')) {
 
-    $vids = array();
-    $this->items = array();
-
-    foreach ($values as $result) {
-      $vids[] = $result->{$this->aliases['vid']};
+    }
+    else {
+      module_load_include('inc', 'biblio', 'styles/biblio_style_'.$this->options['style_name']);
+      if (empty($this->author_options)) {
+        $author_options_func = 'biblio_style_'.$this->options['style_name'].'_author_options';
+        $this->author_options = $author_options_func();
+      }
+    }
+    if (empty($this->biblio_base)) {
+      $this->biblio_base = variable_get('biblio_base', 'biblio');
     }
 
-    if (count($vids)) {
-      $result = db_query('SELECT n.title, n.status, b.* FROM {node} n
-                          LEFT JOIN {biblio} b on n.vid = b.vid
-                          WHERE n.vid IN (:vids)',array(':vids' => implode(',', $vids)));
-      foreach ($result as $item) {
-        // Clean up the $item from vid.
-        $vid = $item->vid; //unset($item['vid']);
+    $item = node_load($values->nid);
+    if ($item->type != 'biblio') return;
+
         if (isset($item->biblio_year)) $item->biblio_year = _biblio_text_year($item->biblio_year);
-        $item->biblio_contributors = biblio_load_contributors($item->vid);
         if (variable_get('biblio_hide_bibtex_braces', 0)) {
           $item->title = biblio_remove_brace($item->title);
         }
-
-        $this->items[$vid] = $item;
-      }
-    }
-  }
-
-  function render($values) {
-    $vid = $values->{$this->field_alias};
-    if (!isset($this->items[$vid])) return NULL;
-
-    $base = variable_get('biblio_base', 'biblio');
-    return theme('biblio_entry', array('node' => $this->items[$vid], 'base' => $base, 'style_name' => $this->options['style_name'], 'inline' => $inline));
+    return theme('biblio_entry', array('node' => $item,'base' => $this->biblio_base, 'style_name' => $this->options['style_name'], 'inline' => $inline));
   }
 
 }
