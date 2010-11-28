@@ -19,7 +19,7 @@ class biblio_handler_field_contributor extends biblio_handler_field {
       '#type' => 'radios',
       '#title' => t('Style'),
       '#default_value' => $this->options['style_name'],
-      '#options' => _biblio_admin_get_styles(),
+      '#options' => biblio_get_styles(),
       '#description' => t('Define the layout of author lists.')
     );
   }

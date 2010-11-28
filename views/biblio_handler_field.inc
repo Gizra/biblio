@@ -39,7 +39,7 @@ class biblio_handler_field extends views_handler_field {
     );
     parent::options_form($form, $form_state);
     $form['label'] += array(
-      '#process' => array('views_process_dependency'),
+      '#process' => array('ctools_dependent_process'),
       '#dependency' => array(
         'edit-options-biblio-label' => array(0),
       ),

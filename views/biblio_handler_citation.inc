@@ -4,19 +4,18 @@ class biblio_handler_citation extends views_handler_field {
   function init(&$view, $options) {
     parent::init($view, $options);
     $this->additional_fields['nid'] = array('table' => 'node', 'field' => 'nid');
-    $this->additional_fields['vid'] = array('table' => 'node', 'field' => 'vid');
-
   }
+
   function query() {
     $this->add_additional_fields();
-    $this->field_alias = $this->aliases['vid'];
-    // add the biblio_type field as tid
   }
+
   function option_definition() {
     $options = parent::option_definition();
     $options['style_name'] = array('default' => biblio_get_style());
     return $options;
   }
+
   function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
     module_load_include('inc','biblio','biblio.admin');
@@ -44,7 +43,7 @@ class biblio_handler_citation extends views_handler_field {
       $this->biblio_base = variable_get('biblio_base', 'biblio');
     }
 
-    $item = node_load($values->nid);
+    $item = node_load($values->{$this->aliases['nid']});
     if ($item->type != 'biblio') return;
 
         if (isset($item->biblio_year)) $item->biblio_year = _biblio_text_year($item->biblio_year);

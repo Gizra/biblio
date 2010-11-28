@@ -224,10 +224,9 @@ function biblio_views_data() {
       'left_field' => 'vid',
       'field' => 'vid',
     ),
-    // This is provided for many_to_one argument
-    'biblio' => array(
-      'field' => 'vid',
-      'left_field' => 'vid',
+    'biblio_keyword_data' => array(
+      'field' => 'kid',
+      'left_field' => 'kid',
     ),
   );
   $data['kid'] = array(
@@ -253,6 +252,18 @@ function biblio_views_data() {
     );
 
   $viewsdata['biblio_keyword'] = $data;
+  
+  $viewsdata['biblio_keyword']['nid'] = array(
+    'title' => t('Node'),
+    'help' => t('Get all nodes tagged with a keyword.'),
+    'relationship' => array(
+      'handler' => 'views_handler_relationship',
+      'base' => 'node',
+      'base field' => 'nid',
+      'label' => t('node'),
+    ),
+  );
+
 
 /***************** Describe the keyword_data table ***********/
 
