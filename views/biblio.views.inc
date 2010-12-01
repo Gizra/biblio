@@ -117,10 +117,18 @@ function biblio_views_data() {
   $data['name'] =  array(
     'field'   => array('handler' => 'views_handler_field'),
     'sort'    => array('handler' => 'views_handler_sort'),
+    'argument'  => array('handler' => 'views_handler_argument_string'),
     'title'   => t('Type of Publication'),
     'help'    => t('The type of publication: Journal, Book, Conference Paper, etc.')
   );
   $data['tid'] =  array(
+    'argument' => array(
+      'handler' => 'biblio_handler_argument_many_to_one',
+      'name table' => 'biblio_types',
+      'name field' => 'name',
+      'empty name field' => t('No Type'),
+      'numeric' => TRUE,
+    ),
     'filter'  => array('handler' => 'biblio_handler_filter_biblio_type'),
     'title'   => t('Type of Publication'),
     'help'    => t('The type of publication: Journal, Book, Conference Paper, etc.')
@@ -136,6 +144,7 @@ function biblio_views_data() {
     'node' => array(
       'left_field' => 'vid',
       'field' => 'vid',
+      'type'       => 'inner',
     ),
     'node_revision' => array(
       'left_field' => 'vid',
@@ -145,13 +154,19 @@ function biblio_views_data() {
     'biblio' => array(
       'field' => 'vid',
       'left_field' => 'vid',
+      'type'       => 'inner',
+    ),
+    'users' => array(
+      'left_table' => 'biblio_contributor_data',
+      'field' => 'cid',
+      'left_field' => 'cid',
     ),
   );
   $data['cid'] = array(
     'title' => t('Author ID'),
     'help' => t('Filter by author id.'),
     'argument' => array(
-      'handler'    => 'views_handler_argument_many_to_one',
+      'handler'    => 'biblio_handler_argument_many_to_one',
       'name table' => 'biblio_contributor_data',
       'name field' => 'lastname',
       'empty name field' => t('No Author'),
@@ -191,16 +206,27 @@ function biblio_views_data() {
       'left_field' => 'cid',
       'field' => 'cid',
     ),
+    'users' => array(
+      'left_field' => 'uid',
+      'field' => 'drupal_uid',
+    ),
     );
   $data['drupal_uid'] =  array(
     'field'     => array('handler' => 'views_handler_field'),
     'filter'    => array('handler' => 'views_handler_filter'),
     'argument'  => array('handler' => 'views_handler_argument_numeric'),
+    'relationship' => array(
+      'handler' => 'views_handler_relationship',
+      'base' => 'users',
+      'base field' => 'uid',
+      'label' => t('user'),
+    ),
+
     'title'     => t('Drupal UserID'),
     'help'      => t('This is the Drupal user associated with the Biblio Author.')
   );
   $data['lastname'] =  array(
-    'sort'     => array('handler' => 'views_handler_sort'),
+    'sort'      => array('handler' => 'biblio_handler_sort_contributor_lastname'),
     'filter'    => array('handler' => 'biblio_handler_filter_contributor_lastname'),
     'argument'  => array('handler' => 'views_handler_argument_string'),
     'title'     => t('Author Lastname'),
@@ -238,7 +264,7 @@ function biblio_views_data() {
       'handler' => 'biblio_handler_field_biblio_keyword_kid',
     ),
     'argument' => array(
-      'handler' => 'views_handler_argument_many_to_one',
+      'handler' => 'biblio_handler_argument_many_to_one',
       'name table' => 'biblio_keyword_data',
       'name field' => 'word',
       'empty name field' => t('No Keyword'),
@@ -292,8 +318,8 @@ function biblio_views_data() {
     );
   $data['word'] =  array(
     'field'     => array('handler' => 'biblio_handler_field_biblio_keyword_data_word'),
-    'filter'    => array('handler' => 'views_handler_filter'),
-    'argument'  => array('handler' => 'views_handler_argument'),
+    'filter'    => array('handler' => 'views_handler_filter_string'),
+    'argument'  => array('handler' => 'views_handler_argument_string'),
     'sort'      => array('handler' => 'views_handler_sort'),
     'title'     => t('Keyword'),
     'skip base' => array('node', 'node_revision'),
