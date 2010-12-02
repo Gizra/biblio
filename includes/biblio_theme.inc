@@ -569,7 +569,7 @@ function theme_biblio_author_link($variables) {
   $uri = drupal_parse_url(request_uri());
   $uri['path'] = variable_get('biblio_base', 'biblio');
 
-  $uri['query']['filters']['author'] = $author['cid'];
+  $uri['query']['f']['author'] = $author['cid'];
 
 //  if ($inline) {
 //    $options['query']['inline'] = 'true';
@@ -987,25 +987,25 @@ function theme_biblio_alpha_line($variables) {
   switch ($type) {
     case 'authors':
       $filter = 'author';
-      $current = isset($uri['query']['filters']['author']) ? $uri['query']['filters']['author'] : '';
-      unset($all_uri['query']['filters']['author']);
+      $current = isset($uri['query']['f']['author']) ? $uri['query']['f']['author'] : '';
+      unset($all_uri['query']['f']['author']);
       break;
     case 'keywords':
     case 'keyword':
       $filter = 'keyword';
-      $current = isset($uri['query']['filters']['keyword']) ? $uri['query']['filters']['keyword'] : '';
-      unset($all_uri['query']['filters']['keyword']);
+      $current = isset($uri['query']['f']['keyword']) ? $uri['query']['f']['keyword'] : '';
+      unset($all_uri['query']['f']['keyword']);
       break;
     case 'author':
-      $current = isset($uri['query']['filters']['ag']) ? $uri['query']['filters']['ag'] : '';
+      $current = isset($uri['query']['f']['ag']) ? $uri['query']['f']['ag'] : '';
       $filter = 'ag';
-      if (!isset($uri['query']['sort'])) $uri['query']['sort'] = 'author';
-      unset($all_uri['query']['filters']['ag']);
+      if (!isset($uri['query']['s'])) $uri['query']['s'] = 'author';
+      unset($all_uri['query']['f']['ag']);
       break;
     case 'title':
-      $current = isset($uri['query']['filters']['tg']) ? $uri['query']['filters']['tg'] : '';
+      $current = isset($uri['query']['f']['tg']) ? $uri['query']['f']['tg'] : '';
       $filter = 'tg';
-      unset($all_uri['query']['filters']['tg']);
+      unset($all_uri['query']['f']['tg']);
       break;
     default:
   }
@@ -1017,12 +1017,12 @@ function theme_biblio_alpha_line($variables) {
       $output .= '<b>['.chr($i).']</b>&nbsp;';
     }
     else{
-      $uri['query']['filters'][$filter] =  chr($i);
+      $uri['query']['f'][$filter] =  chr($i);
       $output .= l(chr($i), $uri['path'], $uri) .'&nbsp;';
     }
   }
   if($current) {
-    if (empty($all_uri['query']['filters'])) unset($all_uri['query']['filters']);
+    if (empty($all_uri['query']['f'])) unset($all_uri['query']['f']);
     $output .= '&nbsp;&nbsp;' . '['.l(t('Show ALL'), $all_uri['path'], $all_uri).']';
   }
   $output .= '</div>';
@@ -1132,7 +1132,7 @@ function _biblio_keyword_links($keywords, $base='biblio') {
 
   $sep = variable_get('biblio_keyword_sep', ',');
   foreach($keywords as $kid => $keyword ) {
-    $uri['query']['filters']['keyword'] = $kid;
+    $uri['query']['f']['keyword'] = $kid;
     $linked_keywords [] = l(trim($keyword), $base , $uri);
   }
   return implode("$sep ", $linked_keywords);

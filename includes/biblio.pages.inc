@@ -32,6 +32,13 @@ function biblio_db_search($arg_list = array()) {
 
   $uri = drupal_parse_url(request_uri());
   $arg_list = array_merge($arg_list, $uri['query']);
+  $saved_filters = &$_SESSION['biblio_filter'];
+
+  foreach($saved_filters as $filter) {
+    $type = key($filter);
+    $value = $filter[$type];
+    $arg_list['f'][$type] = $value;
+  }
 
   // Drupal search? It returns an array of search results. We store the nids
   // of the result nodes and make them a "where n.nid in {..}" filter.
@@ -171,11 +178,11 @@ function biblio_build_query($arg_list) {
     $limit .= " AND n.uid = $user->uid ";
   }
 
-  if (!isset($arg_list['sort'])) {
-    $arg_list['sort'] = variable_get('biblio_sort', 'year');
+  if (!isset($arg_list['s'])) {
+    $arg_list['s'] = variable_get('biblio_sort', 'year');
   }
-  if (!isset($arg_list['order'])) {
-    $arg_list['order'] = strtolower(variable_get('biblio_order', 'desc'));
+  if (!isset($arg_list['o'])) {
+    $arg_list['o'] = strtolower(variable_get('biblio_order', 'desc'));
   }
 
   if (!isset($_SESSION['biblio_filter']) || !is_array($_SESSION['biblio_filter'])) {
@@ -189,16 +196,16 @@ function biblio_build_query($arg_list) {
       $arg_list = array_merge($arg_list, $filter);
     }
   }
-  switch ($arg_list['sort']) {
+  switch ($arg_list['s']) {
     case 'type':
       //$sortby = "ORDER BY bt.name %s, b.biblio_year DESC ";
       $query->addField('n', 'title');
-      $query->orderBy($type_name, $arg_list['order']);
-      $query->orderBy($sort_title, $arg_list['order']);
+      $query->orderBy($type_name, $arg_list['o']);
+      $query->orderBy($sort_title, $arg_list['o']);
             break;
     case 'title':
       $query->addField('n', 'title');
-      $query->orderBy($sort_title, $arg_list['order']);
+      $query->orderBy($sort_title, $arg_list['o']);
 
       break;
     case 'author':
@@ -207,12 +214,12 @@ function biblio_build_query($arg_list) {
       $query->join('biblio_contributor_data', 'bcd', 'bc.cid = bcd.cid');
       $query->condition('bc.rank', 0);
       $query->addField('bcd', 'lastname');
-      $query->orderBy('bcd.lastname', $arg_list['order']);
+      $query->orderBy('bcd.lastname', $arg_list['o']);
       // $query->condition('bc.auth_category', 1);
       break;
     case 'keyword': // added msh 070808
       $word = $query->addField('bkd', 'word', 'biblio_keyword');
-      $query->orderBy($word, $arg_list['order']);
+      $query->orderBy($word, $arg_list['o']);
       $query->innerJoin('biblio_keyword', 'bk', 'b.vid = bk.vid');
       $query->innerJoin('biblio_keyword_data', 'bkd', 'bk.kid = bkd.kid');
       break;
@@ -220,14 +227,14 @@ function biblio_build_query($arg_list) {
     default:
       $query->addField('b', 'biblio_year');
       $query->addField('b', 'biblio_date');
-      $query->orderBy('biblio_year', $arg_list['order']);
-      $query->orderBy('biblio_date', $arg_list['order']);
+      $query->orderBy('biblio_year', $arg_list['o']);
+      $query->orderBy('biblio_date', $arg_list['o']);
   } //end switch
 
 
-  if (isset($arg_list['filters']) && count($arg_list['filters']) ) {
+  if (isset($arg_list['f']) && count($arg_list['f']) ) {
     $args = array();
-    foreach ($arg_list['filters'] as $type => $value) {
+    foreach ($arg_list['f'] as $type => $value) {
       switch ($type) {
         case 'no_filters':
           break;
@@ -437,10 +444,10 @@ function biblio_show_results($nodes, $query_info = array(), $inline = false) {
 
   if ($inline === true) print '<div class="biblio-inline">';
 
-  if (isset($_GET['sort'])) {
-    if ( $_GET['sort'] == 'title' ||
-    $_GET['sort'] == 'author' ||
-    $_GET['sort'] == 'keyword') {
+  if (isset($_GET['s'])) {
+    if ( $_GET['s'] == 'title' ||
+    $_GET['s'] == 'author' ||
+    $_GET['s'] == 'keyword') {
       if (strpos($_GET['q'],'ag') ||
       strpos($_GET['q'],'tg') ||
       strpos($_GET['q'],'keyword')) {
@@ -449,7 +456,7 @@ function biblio_show_results($nodes, $query_info = array(), $inline = false) {
       else {
         $value = '';
       }
-      $content .= theme('biblio_alpha_line', array('type' => $_GET['sort'], 'current' => $value, 'path' =>''));
+      $content .= theme('biblio_alpha_line', array('type' => $_GET['s'], 'current' => $value, 'path' =>''));
     }
   }
 
@@ -497,14 +504,14 @@ function _biblio_sort_tabs() {
   $uri = drupal_parse_url(request_uri());
   if (substr($uri['path'], 0, 1) == '/') $uri['path'] = substr($uri['path'], 1);
 
-  if (isset($uri['query']['sort'])) {
-    $sort = $uri['query']['sort'];
+  if (isset($uri['query']['s'])) {
+    $sort = $uri['query']['s'];
   }
   else {
     $sort = variable_get('biblio_sort', 'year');
   }
-  if (isset($uri['query']['order'])) {
-    $order = ($uri['query']['order'] == 'desc' ||$uri['query']['order'] == 'DESC') ? 'asc' : 'desc';
+  if (isset($uri['query']['o'])) {
+    $order = ($uri['query']['o'] == 'desc' ||$uri['query']['o'] == 'DESC') ? 'asc' : 'desc';
   }
   else {
     $order = strtolower(variable_get('biblio_order', 'desc'));
@@ -523,8 +530,8 @@ function _biblio_sort_tabs() {
     $uri['html'] = TRUE;
     $uri['text'] = t(ucfirst($title));
     if ($key === $title && $title == $sort) {
-      $uri['query']['sort'] = $title;
-      $uri['query']['order'] = $order;
+      $uri['query']['s'] = $title;
+      $uri['query']['o'] = $order;
       $uri['attributes']['class'][] = "active";
       $uri['active'] = TRUE;
       $uri['pfx'] = ' [ ';
@@ -534,8 +541,8 @@ function _biblio_sort_tabs() {
 
     }
     elseif ($key === $title ) {
-      $uri['query']['sort'] = $title;
-      $uri['query']['order'] = $order;
+      $uri['query']['s'] = $title;
+      $uri['query']['o'] = $order;
       $uri['active'] = FALSE;
       $uri['pfx'] = ' ';
       $uri['sfx'] = ' ';
@@ -571,7 +578,7 @@ function _biblio_filter_info_line($args) {
   $session = &$_SESSION['biblio_filter'];
   // if there are any filters in place, print them at the top of the list
   $uri = drupal_parse_url(request_uri());
-  $filters = isset($uri['query']['filters']) ? $uri['query']['filters'] : array();
+  $filters = isset($uri['query']['f']) ? $uri['query']['f'] : array();
   if (count($filters)) {
     $i = 0;
     foreach ($filters as $type => $value) {
@@ -638,13 +645,13 @@ function _biblio_filter_info_line($args) {
     $content .= $filtercontent;
 
     $link_options = array();
-    if (isset($_GET['sort'])) {
-      $link_options['query']['sort'] = $_GET['sort'];
+    if (isset($_GET['s'])) {
+      $link_options['query']['s'] = $_GET['s'];
     }
-    if (isset($_GET['order'])) {
-      $link_options['query']['order'] = $_GET['order'];
+    if (isset($_GET['o'])) {
+      $link_options['query']['o'] = $_GET['o'];
     }
-    unset($uri['query']['filters']);
+    unset($uri['query']['f']);
     if ($search_content) {
       $content .= '&nbsp;&nbsp;'.l('['.t('Reset Search').']',"$base/filter/clear", $link_options);
     } else {
@@ -661,8 +668,8 @@ function _biblio_category_separator_bar($node, $reset = FALSE) {
   if ($reset) { $_text = ''; return;}
   $content = '';
 
-  if (isset($_GET['sort'])) {
-    $sort = $_GET['sort'];
+  if (isset($_GET['s'])) {
+    $sort = $_GET['s'];
   }
   else {
     $sort = variable_get('biblio_sort', 'year');
@@ -961,7 +968,9 @@ function biblio_form_filter() {
     '#theme' => 'exposed_filters__node',
   );
   foreach ($session as $filter) {
-    list($type, $value) = $filter;
+    $type = key($filter);
+    $value = $filter[$type];
+   // list($type, $value) = $filter;
     if ($type == 'search') {
       $session = array ();
       break;
@@ -1038,6 +1047,23 @@ function biblio_form_filter_submit($form, &$form_state) {
   switch ($op) {
     case t('Filter'):
     case t('Refine'):
+        $uri = drupal_parse_url(request_uri());
+        $uri['path'] = variable_get('biblio_base', 'biblio');
+      foreach ($filters as $filter => $options) {
+        if (isset($form_state['values'][$filter]) && $form_state['values'][$filter] != '[any]') {
+          // Flatten the options array to accommodate hierarchical/nested options.
+          $flat_options = form_options_flatten($filters[$filter]['options']);
+          // Only accept valid selections offered on the dropdown, block bad input.
+          if (isset($flat_options[$form_state['values'][$filter]])) {
+            $_SESSION['biblio_filter'][] = array($filter => $form_state['values'][$filter]);
+            $uri['query']['f'][$filter] = $form_state['values'][$filter];
+          }
+        }
+      }
+      drupal_goto($uri['path'], $uri);
+      $base =  variable_get('biblio_base', 'biblio');
+      drupal_goto($base);
+
       if (isset($form_state['values']['filter'])) {
         $uri = drupal_parse_url(request_uri());
         $uri['path'] = variable_get('biblio_base', 'biblio');
@@ -1049,13 +1075,11 @@ function biblio_form_filter_submit($form, &$form_state) {
 //        }
         foreach ($form_state['values']['filter'] as $filter => $value) {
           if (!empty($value)) {
-            $uri['query']['filters'][$filter] = $form_state['values'][$filter];
           }
         }
  //       if (isset($flat_options[$form_state['values'][$filter]]) ) {
  //         $_SESSION['biblio_filter'][] = array($filter, $form_state['values'][$filter]);
  //         $base =  variable_get('biblio_base', 'biblio');
-          drupal_goto($uri['path'], $uri);
 
   //      }
       }
@@ -1078,21 +1102,21 @@ function biblio_get_user_pubs($user, $profile='', $nofilters=''){
   $args = array();
   if (isset($user->data['biblio_contributor_id']) && $user->data['biblio_contributor_id'] > 0 ){
     $args += array(
-      'filters' => array(
+      'f' => array(
         'author' => $user->data['biblio_contributor_id'],
       ),
     );
   }
   elseif (isset($user->data['biblio_lastname']) && !empty($user->data['biblio_lastname'])) {
     $args += array(
-      'filters' => array(
+      'f' => array(
         'author' => $user->data['biblio_lastname'],
       ),
     );
   }
   else {
     $args += array(
-      'filters' => array(
+      'f' => array(
         'uid' => $user->uid
       ),
     );
@@ -1141,7 +1165,7 @@ function biblio_citekey_view() {
 
 function biblio_author_page() {
   $uri = drupal_parse_url(request_uri());
-  $filter = isset($uri['query']['filters']['author']) ? $uri['query']['filters']['author'] : '';
+  $filter = isset($uri['query']['f']['author']) ? $uri['query']['f']['author'] : '';
   $authors = _biblio_get_authors($filter);
   return _biblio_format_author_page($filter, $authors);
 }
@@ -1247,7 +1271,7 @@ function _biblio_author_edit_links($author) {
 
 function biblio_keyword_page() {
   $uri = drupal_parse_url(request_uri());
-  $filter = isset($uri['query']['filters']['keyword']) ? $uri['query']['filters']['keyword'] : '';
+  $filter = isset($uri['query']['f']['keyword']) ? $uri['query']['f']['keyword'] : '';
   $keywords = _biblio_get_keywords($filter);
   return _biblio_format_keyword_page($uri, $filter, $keywords);
 }
@@ -1303,7 +1327,7 @@ function _biblio_format_keyword_page($uri, $filter, $keywords) {
 function _biblio_format_keyword($uri, $keyword) {
   $base      = variable_get('biblio_base', 'biblio');
   $uri['path'] = $base;
-  $uri['query']['filters']['keyword'] = $keyword->kid;
+  $uri['query']['f']['keyword'] = $keyword->kid;
   $format    = l(trim($keyword->word), $base, $uri);
   $format   .= ' ('. $keyword->cnt . ') ' ;
   $destination = drupal_get_destination();
