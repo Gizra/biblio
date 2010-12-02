@@ -39,14 +39,13 @@ function biblio_bibtex_form_biblio_node_form_alter(&$form, &$form_state) {
         '#collapsible' => TRUE,
         '#collapsed' => TRUE,
       );
-      $form['biblio_cut_paste']['paste_data'] = array(
+      $form['biblio_cut_paste']['paste_data_bibtex'] = array(
         '#type' => 'textarea',
         '#title' => t('BibTex'),
         '#required' => FALSE,
-        '#default_value' => isset($form_state['values']['paste_data']) ? $form_state['values']['paste_data'] : '',
+        '#default_value' => isset($form_state['values']['paste_data_bibtex']) ? $form_state['values']['paste_data_bibtex'] : '',
         '#description' => t('Paste a BibTex entry here'),
         '#size' => 60,
-        '#maxlength' => 2048,
         '#weight' => -4
       );
       $form['biblio_cut_paste']['paste_submit'] = array(
@@ -67,8 +66,8 @@ function biblio_bibtex_form_biblio_node_form_submit($form, &$form_state) {
   $node_data = array();
   $dups = array();
 
-  if (strlen($form_state['values']['paste_data'])) {
-    list($node_data, $dups) = biblio_bibtex_biblio_import($form_state['values']['paste_data'], array(), FALSE, NULL, FALSE, TRUE);
+  if (strlen($form_state['values']['paste_data_bibtex'])) {
+    list($node_data, $dups) = biblio_bibtex_biblio_import($form_state['values']['paste_data_bibtex'], array(), FALSE, NULL, FALSE, TRUE);
   }
   if(!empty($node_data) && is_object($node_data[0])) {
     $form_state['values'] = array_merge($form_state['values'], (array)$node_data[0]);
@@ -79,7 +78,7 @@ function biblio_bibtex_form_biblio_node_form_submit($form, &$form_state) {
   elseif (!empty($dups)) {
     $message = t('The bibtex node that you are trying to paste into the form already exists in the database, see ');
     $message .= l('node/'.$dups[0], 'node/'.$dups[0]);
-    form_set_error('paste_data', $message);
+    form_set_error('paste_data_bibtex', $message);
   }
   $form_state['rebuild'] = TRUE;
 

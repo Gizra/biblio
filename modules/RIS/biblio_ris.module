@@ -42,11 +42,11 @@ function biblio_ris_form_biblio_node_form_alter(&$form, &$form_state) {
         '#collapsible' => TRUE,
         '#collapsed' => TRUE,
       );
-      $form['biblio_ris_paste']['paste_data'] = array(
+      $form['biblio_ris_paste']['paste_data_ris'] = array(
         '#type' => 'textarea',
         '#title' => t('RIS'),
         '#required' => FALSE,
-        '#default_value' => isset($form_state['values']['paste_data']) ? $form_state['values']['paste_data'] : '',
+        '#default_value' => isset($form_state['values']['paste_data_ris']) ? $form_state['values']['paste_data_ris'] : '',
         '#description' => t('Paste a RIS entry here'),
         '#size' => 60,
         '#weight' => -4
@@ -69,8 +69,8 @@ function biblio_ris_form_biblio_node_form_submit($form, &$form_state) {
   $node_data = array();
   $dups = array();
 
-  if (strlen($form_state['values']['paste_data'])) {
-    $node_data = _biblio_ris_import_string($form_state['values']['paste_data']);
+  if (strlen($form_state['values']['paste_data_ris'])) {
+    $node_data = _biblio_ris_import_string($form_state['values']['paste_data_ris']);
   }
   if(!empty($node_data) && is_object($node_data)) {
     $form_state['values'] = array_merge($form_state['values'], (array)$node_data);
@@ -202,7 +202,7 @@ function _biblio_ris_import_string($string) {
           else {
             $message = t('The RIS node that you are trying to paste into the form already exists in the database, see ');
             $message .= l('node/'.$dup, 'node/'.$dup);
-            form_set_error('paste_data', $message);
+            form_set_error('paste_data_ris', $message);
             return;
           }
         }
