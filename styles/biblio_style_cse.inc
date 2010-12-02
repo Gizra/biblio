@@ -30,7 +30,7 @@ function biblio_style_cse_author_options() {
   $author_options = array(
     'BetweenAuthorsDelimStandard'     =>', ',      //4
     'BetweenAuthorsDelimLastAuthor'   => ', ', //5
-    'AuthorsInitialsDelimFirstAuthor' => ', ',     //7
+    'AuthorsInitialsDelimFirstAuthor' => ' ',     //7
     'AuthorsInitialsDelimStandard'    => ' ',      //8
     'betweenInitialsDelim'            => '',     //9
     'initialsBeforeAuthorFirstAuthor' => false,    //10
