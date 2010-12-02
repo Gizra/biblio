@@ -907,11 +907,11 @@ function _get_biblio_filters() {
   $authors = db_query("SELECT firstname, initials, lastname, cid FROM {biblio_contributor_data} ORDER BY lastname ASC");
   $keywords = db_query("SELECT word, kid FROM {biblio_keyword_data} ORDER BY word ASC");
   $taxoresult = db_query("SELECT $taxo_fields FROM $table $taxo_joins ORDER BY $taxo_order");
-  $pub_years[] = '';
-  $pub_type[]  = '';
-  $pub_authors[]  = '';
-  $pub_keywords[]  = '';
-  $pub_taxo[]  = '';
+  $pub_years['[any]'] = t('any');
+  $pub_type['[any]']  = t('any');
+  $pub_authors['[any]']  = t('any');
+  $pub_keywords['[any]']  = t('any');
+  $pub_taxo['[any]']  = t('any');
   foreach ($result as $option) {
     if (isset ($option->biblio_year)) {
       $option->biblio_year = _biblio_text_year($option->biblio_year);
@@ -936,11 +936,11 @@ function _get_biblio_filters() {
   $keyword_select = isset($pub_keywords) ? array('title' => t('Keyword'), 'options' => $pub_keywords) : null;
 
   $filters = array(
-    'author'     => $author_select,
-    'type'    => $type_select,
-    'term_id' => $tax_select,
-    'year'    => $years_select,
-    'keyword'     => $keyword_select,
+    'author'    => $author_select,
+    'type'      => $type_select,
+    'term_id'   => $tax_select,
+    'year'      => $years_select,
+    'keyword'   => $keyword_select,
   );
 
   return $filters;
@@ -950,19 +950,18 @@ function _get_biblio_filters() {
  * @return unknown_type
  */
 function biblio_form_filter() {
-  // No longer use &$_SESSION so that we can alter $session in case of the search filter.
   $session = $_SESSION['biblio_filter'];
   $session = is_array($session) ? $session : array();
   $filters = _get_biblio_filters();
 
   $i = 0;
-  $form['filters'] = array('#type' => 'fieldset',
+  $form['filters'] = array(
+    '#type' => 'fieldset',
     '#title' => t('Show only items where'),
-    '#theme' => 'biblio_filters',
+    '#theme' => 'exposed_filters__node',
   );
   foreach ($session as $filter) {
     list($type, $value) = $filter;
-    // Don't show the search filter. Reset $session because of the $count(session) below.
     if ($type == 'search') {
       $session = array ();
       break;
@@ -974,26 +973,55 @@ function biblio_form_filter() {
     }else {
       $value = $filters[$type]['options'][$value];
     }
-    $string = ($i++ ? '<em>and</em> where <strong>%a</strong> is <strong>%b</strong>' : '<strong>%a</strong> is <strong>%b</strong>');
-    $form['filters']['current'][] = array('#value' => t($string, array('%a' => $filters[$type]['title'] , '%b' => $value)));
-  }
-
-  foreach ($filters as $key => $filter) {
-    if (count ($filter['options'])) {
-      $names[$key] = check_plain($filter['title']);
-      $form['filters']['status'][$key] = array('#type' => 'select', '#options' => $filter['options']);
+    $t_args = array('%property' => $filters[$type]['title'], '%value' => $value);
+    if ($i++) {
+      $form['filters']['current'][] = array('#markup' => t('and where %property is %value', $t_args));
+    }
+    else {
+      $form['filters']['current'][] = array('#markup' => t('where %property is %value', $t_args));
+    }
+    if (in_array($type, array('type', 'language'))) {
+      // Remove the option if it is already being filtered on.
+      unset($filters[$type]);
     }
   }
 
-  $form['filters']['filter'] = array('#type' => 'checkboxes', '#options' => $names, '#default_value' => 'author');
-  $form['filters']['buttons']['submit'] = array('#type' => 'submit', '#value' => (count($session) ? t('Refine') : t('Filter')));
-  if (count($session) && $type != 'search') {
-    $form['filters']['buttons']['undo'] = array('#type' => 'submit', '#value' => t('Undo'));
-    $form['filters']['buttons']['reset'] = array('#type' => 'submit', '#value' => t('Reset'));
+  $form['filters']['status'] = array(
+    '#type' => 'container',
+    '#attributes' => array('class' => array('clearfix')),
+    '#prefix' => ($i ? '<div class="additional-filters">' . t('and where') . '</div>' : ''),
+  );
+  $form['filters']['status']['filters'] = array(
+    '#type' => 'container',
+    '#attributes' => array('class' => array('filters')),
+  );
+  foreach ($filters as $key => $filter) {
+    $form['filters']['status']['filters'][$key] = array(
+      '#type' => 'select',
+      '#options' => $filter['options'],
+      '#title' => $filter['title'],
+      '#default_value' => '[any]',
+    );
   }
 
-  return  $form;
+  $form['filters']['status']['actions'] = array(
+    '#type' => 'actions',
+    '#attributes' => array('class' => array('container-inline')),
+  );
+  $form['filters']['status']['actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => count($session) ? t('Refine') : t('Filter'),
+  );
+  if (count($session)) {
+    $form['filters']['status']['actions']['undo'] = array('#type' => 'submit', '#value' => t('Undo'));
+    $form['filters']['status']['actions']['reset'] = array('#type' => 'submit', '#value' => t('Reset'));
+  }
+
+  drupal_add_js('misc/form.js');
+
+  return $form;
 }
+
 
 /**
  * @param $form
