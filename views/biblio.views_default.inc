@@ -239,7 +239,7 @@ function biblio_views_default_views() {
   $handler->override_option('style_options', array(
   'grouping' => 'biblio_year',
   ));
-  $handler->override_option('path', 'biblio/year');
+  $handler->override_option('path', 'view/biblio/year');
   $handler->override_option('menu', array(
   'type' => 'none',
   'title' => '',
@@ -326,7 +326,7 @@ function biblio_views_default_views() {
     'relationship' => 'none',
   ),
   ));
-  $handler->override_option('path', 'biblio/type');
+  $handler->override_option('path', 'view/biblio/type');
   $handler->override_option('menu', array(
   'type' => 'none',
   'title' => '',
@@ -420,7 +420,7 @@ function biblio_views_default_views() {
   $handler->override_option('style_options', array(
   'grouping' => 'biblio_year',
   ));
-  $handler->override_option('path', 'biblio/title');
+  $handler->override_option('path', 'view/biblio/title');
   $handler->override_option('menu', array(
   'type' => 'none',
   'title' => '',
@@ -494,7 +494,7 @@ function biblio_views_default_views() {
     'validate_argument_php' => '',
   ),
   ));
-  $handler->override_option('path', 'biblio/keyword');
+  $handler->override_option('path', 'view/biblio/keyword');
   $handler->override_option('menu', array(
   'type' => 'none',
   'title' => '',
@@ -568,7 +568,7 @@ function biblio_views_default_views() {
     'validate_argument_php' => '',
   ),
   ));
-  $handler->override_option('path', 'biblio/author');
+  $handler->override_option('path', 'view/biblio/author');
   $handler->override_option('menu', array(
   'type' => 'none',
   'title' => '',
@@ -623,7 +623,7 @@ function biblio_views_default_views() {
   'columns' => '4',
   'alignment' => 'horizontal',
   ));
-  $handler->override_option('path', 'biblio/years');
+  $handler->override_option('path', 'view/biblio/years');
   $handler->override_option('menu', array(
   'type' => 'none',
   'title' => '',
