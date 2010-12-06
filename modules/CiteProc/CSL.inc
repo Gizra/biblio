@@ -1474,7 +1474,7 @@ class csl_mapper {
 
                                 'issued' => 'biblio_year',
                                 'event' => 'biblio_date',
-                                'accessed' => 'biblio_date',
+                                'accessed' => 'biblio_accessed',
                                 'container' => 'biblio_date',
                                 'original-date' => 'biblio_date',
 
