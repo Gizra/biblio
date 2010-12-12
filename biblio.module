@@ -300,28 +300,34 @@ function biblio_theme($existing, $type, $theme, $path) {
 }
 function biblio_autocomplete($field, $string = '') {
   $matches = array();
-  if ($field == 'contributor') {
-    $result = db_query_range("SELECT * FROM {biblio_contributor_data} WHERE LOWER(lastname) LIKE LOWER(:name) OR LOWER(firstname) LIKE LOWER(:firstname) ORDER BY lastname ASC ", 0, 10 ,array(':name' => $string.'%', ':firstname' => $string.'%'));
-    foreach ($result as $data ) {
-      $matches[$data->name] = check_plain($data->name);
-    }
-  }elseif ($field == 'biblio_keywords') {
-    $sep = check_plain(variable_get('biblio_keyword_sep', ','));
-    $sep_pos = strrpos($string, $sep); //find the last separator
-    $start   = trim(drupal_substr($string, 0, $sep_pos)); // first part of the string upto the last separator
-    $end_sep = ($sep_pos) ? $sep_pos + 1 :$sep_pos;
-    $end     = trim(drupal_substr($string, $end_sep)).'%';  // part of the string after the last separator
-    $result = db_query_range("SELECT * FROM {biblio_keyword_data} WHERE LOWER(word) LIKE LOWER(:end) ORDER BY word ASC ", 0, 10,  array(':end' => $end));
-    foreach ($result as $data) {
-      // now glue the word found onto the end of the original string...
-      $keywords = ($sep_pos) ? $start . ', ' . check_plain($data->word) : check_plain($data->word);
-      $matches[$keywords] = $keywords;
-    }
-  }else{
-    $result = db_query_range("SELECT :sfield FROM {biblio} WHERE LOWER(:fieldv) LIKE LOWER(:value) ORDER BY :ofield ASC", 0, 10, array(':sfield' => $field, ':ofield' => $field, ':fieldv' => $field, ':value' => $string.'%') );
-    foreach ($result as $data) {
-      $matches[$data-> $field] = check_plain($data-> $field);
-    }
+  switch ($field) {
+    case 'contributor':
+    case 'a':
+      $result = db_query_range("SELECT name FROM {biblio_contributor_data} WHERE LOWER(lastname) LIKE LOWER(:name) OR LOWER(firstname) LIKE LOWER(:firstname) ORDER BY lastname ASC ", 0, 10 ,array(':name' => $string.'%', ':firstname' => $string.'%'));
+      foreach ($result as $data ) {
+        $matches[$data->name] = check_plain($data->name);
+      }
+      break;
+    case 'biblio_keywords':
+    case 'k':
+      $sep = check_plain(variable_get('biblio_keyword_sep', ','));
+      $sep_pos = strrpos($string, $sep); //find the last separator
+      $start   = trim(drupal_substr($string, 0, $sep_pos)); // first part of the string upto the last separator
+      $end_sep = ($sep_pos) ? $sep_pos + 1 :$sep_pos;
+      $end     = trim(drupal_substr($string, $end_sep)).'%';  // part of the string after the last separator
+      $result = db_query_range("SELECT * FROM {biblio_keyword_data} WHERE LOWER(word) LIKE LOWER(:end) ORDER BY word ASC ", 0, 10,  array(':end' => $end));
+      foreach ($result as $data) {
+        // now glue the word found onto the end of the original string...
+        $keywords = ($sep_pos) ? $start . ', ' . check_plain($data->word) : check_plain($data->word);
+        $matches[$keywords] = $keywords;
+      }
+      break;
+
+    default:
+      $result = db_query_range("SELECT :sfield FROM {biblio} WHERE LOWER(:fieldv) LIKE LOWER(:value) ORDER BY :ofield ASC", 0, 10, array(':sfield' => $field, ':ofield' => $field, ':fieldv' => $field, ':value' => $string.'%') );
+      foreach ($result as $data) {
+        $matches[$data->$field] = check_plain($data->$field);
+      }
   }
   print drupal_json_encode($matches);
   exit();
@@ -1208,7 +1214,7 @@ function biblio_user_presave(&$edit, $account, $catagory) {
  * specific to this node type. This hook requires us to return some HTML
  * that will be later placed inside the form.
  */
-function biblio_form($node, $form_state) {
+function biblio_form($node, &$form_state) {
   global $user;
   $fields = array();
   $tid = isset($form_state['values']['biblio_type']) ?
@@ -1282,7 +1288,7 @@ function biblio_form($node, $form_state) {
         $auth_category = $fld['fid'];
         if ($main_area) {
           if(isset($form_state['values'])) {
-            $form += _biblio_contributor_widget($form_state['values'], $fld, $auth_category, $tid);
+            $form += _biblio_contributor_widget($form_state, $fld, $auth_category, $tid);
           }
           else {
             $form += _biblio_contributor_widget($node, $fld, $auth_category, $tid);
@@ -1290,7 +1296,7 @@ function biblio_form($node, $form_state) {
         }
         else {
           if(isset($form_state['values']) && !variable_get('biblio_hide_other_fields', 0)) {
-            $form['other_fields'] += _biblio_contributor_widget($form_state['values'], $fld, $auth_category, $tid, TRUE);
+            $form['other_fields'] += _biblio_contributor_widget($form_state, $fld, $auth_category, $tid, TRUE);
           }
           elseif (!variable_get('biblio_hide_other_fields', 0)) {
             $form['other_fields'] += _biblio_contributor_widget($node, $fld, $auth_category, $tid, TRUE);
@@ -1400,14 +1406,17 @@ function biblio_form($node, $form_state) {
 function _biblio_contributor_widget($node, $fld, $auth_category, $biblio_type, $other_fieldset = FALSE) {
   $fldname = $fld['name'];
   $type = str_replace('_', '-', $fldname);
+  $init_count = variable_get('biblio_init_auth_count', 4);
   if (is_object($node)) {
     $contributors = isset($node->biblio_contributors[$auth_category]) ? $node->biblio_contributors[$auth_category] : '';
+    $contributor_count = max($init_count, count($contributors));
   }
   else {
-    $contributors = isset($node['biblio_contributors'][$auth_category]) ? $node['biblio_contributors'][$auth_category] : '';
+    $contributors = isset($node['values']['biblio_contributors'][$auth_category]) ? $node['biblio_contributors'][$auth_category] : '';
+    $contributor_count = max($init_count, count($contributors));
+    $state_count = $node['biblio_auth_count'][$auth_category];
+    $contributor_count = max($contributor_count, $state_count);
   }
-
-  $contributor_count = max(4, count($contributors));
 
   $ctypes = _biblio_get_auth_types($auth_category, $biblio_type);
   // if no author types are available skip this widget
@@ -1461,9 +1470,9 @@ function _biblio_contributor_widget($node, $fld, $auth_category, $biblio_type, $
     '#value' => t('More @title', array('@title' => $fld['title'])),
     '#description' => t("If there aren't enough boxes above, click here to add more."),
     '#weight' => 1,
-    '#submit' => array('biblio_more_contributors_submit'), // If no javascript action.
+    '#submit' => array('biblio_contributors_add_more'), // If no javascript action.
     '#ajax' => array(
-      'callback' => 'biblio_contributors_js',
+      'callback' => 'biblio_contributors_add_more_callback',
       'wrapper' => $type,
       'method' => 'replace',
       'effect' => 'fade'
@@ -1517,6 +1526,16 @@ function _biblio_contributor_form($delta, $auth_category, $values, $types = NULL
   );
   return $form;
 }
+
+function biblio_contributors_add_more_callback($form, &$form_state) {
+  return $form['names_fieldset'];
+}
+
+function biblio_contributors_add_more($form, &$form_state) {
+  $form_state['num_names']++;
+  $form_state['rebuild'] = TRUE;
+}
+
 function biblio_contributors_js($tid, $auth_category, $other_fields = FALSE) {
   $delta = count($_POST['biblio_contributors'][$auth_category]);
   // Build our new form element.
