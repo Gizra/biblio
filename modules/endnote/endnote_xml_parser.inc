@@ -80,19 +80,19 @@ class EndNoteXMLParser {
             case 'normal':
               break;
             case 'bold':
-              en8_characterData(NULL, '<b>');
+              $this->endnote8_characterData(NULL, '<b>');
               break;
             case 'italic':
-              en8_characterData(NULL, '<i>');
+              $this->endnote8_characterData(NULL, '<i>');
               break;
             case 'underline':
-              en8_characterData(NULL, '<u>');
+              $this->endnote8_characterData(NULL, '<u>');
               break;
             case 'superscript':
-              en8_characterData(NULL, '<sup>');
+              $this->endnote8_characterData(NULL, '<sup>');
               break;
             case 'subscript':
-              en8_characterData(NULL, '<sub>');
+              $this->endnote8_characterData(NULL, '<sub>');
               break;
           }
         }
@@ -204,19 +204,19 @@ class EndNoteXMLParser {
             case 'normal':
               break;
             case 'bold':
-              en8_characterData(NULL, '</b>');
+              $this->endnote8_characterData(NULL, '</b>');
               break;
             case 'italic':
-              en8_characterData(NULL, '</i>');
+              $this->endnote8_characterData(NULL, '</i>');
               break;
             case 'underline':
-              en8_characterData(NULL, '</u>');
+              $this->endnote8_characterData(NULL, '</u>');
               break;
             case 'superscript':
-              en8_characterData(NULL, '</sup>');
+              $this->endnote8_characterData(NULL, '</sup>');
               break;
             case 'subscript':
-              en8_characterData(NULL, '</sub>');
+              $this->endnote8_characterData(NULL, '</sub>');
               break;
           }
         }
