@@ -84,7 +84,7 @@ class biblio_handler_filter_biblio_keyword_kid extends views_handler_filter_many
           if (!empty($this->options['expose']['optional']) && (empty($default_value) || !empty($this->options['expose']['reduce']))) {
             $default_value = 'All';
           }
-          else if (empty($default_value)) {
+          elseif (empty($default_value)) {
             $keys = array_keys($options);
             $default_value = array_shift($keys);
           }

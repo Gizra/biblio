@@ -12,8 +12,8 @@
 class BiblioKeywordWebTestCase extends BiblioWebTestCase {
 
   function setUp() {
-  	parent::setUp('biblio');
-    require_once(drupal_get_path('module', 'biblio') .'/includes/biblio.keywords.inc');
+    parent::setUp('biblio');
+    require_once(drupal_get_path('module', 'biblio') . '/includes/biblio.keywords.inc');
   }
 
   /**
@@ -97,12 +97,12 @@ class BiblioKeywordUnitTest extends BiblioKeywordWebTestCase {
 
     $node = node_load($node->nid, NULL, TRUE);
 
-    foreach($node->biblio_keywords as $kid => $value) {
-      $this->assertEqual($value, $term1['word'].'xxx', 'Loaded updated keyword');
+    foreach ($node->biblio_keywords as $kid => $value) {
+      $this->assertEqual($value, $term1['word'] . 'xxx', 'Loaded updated keyword');
       $this->kids[] = $kid; // add the new kids to the global array so we can delete them on tear down.
     }
     $node = node_load($node->nid, $old_vid, TRUE);
-    foreach($node->biblio_keywords as $kid => $value) {
+    foreach ($node->biblio_keywords as $kid => $value) {
       $this->assertEqual($value, 'biblio_keywords', 'Loaded previous revision prior to update');
       $this->kids[] = $kid; // add the new kids to the global array so we can delete them on tear down.
     }
@@ -128,7 +128,7 @@ class BiblioKeywordUnitTest extends BiblioKeywordWebTestCase {
     $words = array();
     $sep = variable_get('biblio_keyword_sep', ',');
     $wrong_sep = ($sep == ',') ? ';' : ',';
-    for($i=0; $i < 4; $i++){
+    for ($i=0; $i < 4; $i++) {
       $words[] = $this->randomName();
     }
     $string = implode($sep, $words);
@@ -137,7 +137,7 @@ class BiblioKeywordUnitTest extends BiblioKeywordWebTestCase {
     $string = implode($wrong_sep, $words);
     $exploded = biblio_explode_keywords($string);
     $this->assertNotIdentical($words, $exploded, 'Tried to explode keyword string with incorrect separator');
-    $words[] = '"'.'word1'.$sep.' word2'.'"';
+    $words[] = '"' . 'word1' . $sep . ' word2' . '"';
     $string = implode($sep, $words);
     $exploded = biblio_explode_keywords($string);
     $words[4] =   trim(str_replace('""', '"', preg_replace('/^"(.*)"$/', '\1', $words[4]))); // strip the quotes becuase that's the way it comes back

@@ -30,13 +30,13 @@ function theme_biblio_citeproc_style($variables) {
 
   module_load_include('inc', 'biblio_citeproc', 'CSL');
 
-  if(!$citeproc) {
+  if (!$citeproc) {
     $csl_id = biblio_get_style();
 
-    $csl_file_contents = db_query('SELECT csl FROM biblio_citeproc_styles WHERE id = :id', array(':id' => $csl_id))->fetchField();
+    $csl_file_contents = db_query('SELECT csl FROM {biblio_citeproc_styles} WHERE id = :id', array(':id' => $csl_id))->fetchField();
 //    $cslid = $csl_file_name . '-' . $language->language;
 //    $cached = cache_get($cslid, 'cache_biblio_csl_object');
-    if(!$cached) {
+    if (!$cached) {
       $citeproc = new citeproc($csl_file_contents, $language->language);
 //      cache_set($cslid, $citeproc, 'cache_biblio_csl_object');
     }
@@ -46,7 +46,8 @@ function theme_biblio_citeproc_style($variables) {
   }
   $styled_node = $citeproc->render($node);
 
-  if (empty ($node->biblio_coins))
+  if (empty ($node->biblio_coins)) {
     biblio_coins_generate($node);
+  }
   return ($styled_node . filter_xss($node->biblio_coins, array('span')));
 }

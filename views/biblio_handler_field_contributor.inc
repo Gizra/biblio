@@ -14,7 +14,7 @@ class biblio_handler_field_contributor extends biblio_handler_field {
   }
   function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
-    module_load_include('inc','biblio','biblio.admin');
+    module_load_include('inc', 'biblio', 'biblio.admin');
     $form['style_name'] = array(
       '#type' => 'radios',
       '#title' => t('Style'),
@@ -32,8 +32,8 @@ class biblio_handler_field_contributor extends biblio_handler_field {
   }
 
   function pre_render($values) {
-    module_load_include('inc', 'biblio', 'styles/biblio_style_'.$this->options['style_name']);
-    $author_options_func = 'biblio_style_'.$this->options['style_name'].'_author_options';
+    module_load_include('inc', 'biblio', 'styles/biblio_style_' . $this->options['style_name']);
+    $author_options_func = 'biblio_style_' . $this->options['style_name'] . '_author_options';
     $this->author_options = $author_options_func();
 
     $vids = array();
@@ -48,11 +48,11 @@ class biblio_handler_field_contributor extends biblio_handler_field {
 
     if (count($vids)) {
       // Optimize query if $vids has only 1 item in the array, to use '=' instead of 'IN'.
-      if (count($vids) > 1){
-        $vidstr = 'vid IN ('. implode(',', $vids) .')';
+      if (count($vids) > 1) {
+        $vidstr = 'vid IN (' . implode(',', $vids) . ')';
       }
       else {
-        $vidstr = 'vid = '. $vids[0];
+        $vidstr = 'vid = ' . $vids[0];
       }
       $result = db_query('SELECT * FROM {biblio_contributor} bc
                           INNER JOIN {biblio_contributor_data} bcd ON bc.cid = bcd.cid

@@ -4,5 +4,3 @@ description = Provides EndNote tagged file import and export to the Biblio modul
 core = 7.x
 package = Biblio
 dependencies[] = biblio
-files[] = biblio_tagged.install
-files[] = biblio_tagged.module

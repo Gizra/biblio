@@ -53,7 +53,7 @@ class BiblioCrossRefClient
   }
 
   public function fetch() {
-    $this->query = $this->url . '?pid='. $this->pid .'&noredirect=true&format=unixref&id=doi%3A'. $this->doi;
+    $this->query = $this->url . '?pid=' . $this->pid . '&noredirect=true&format=unixref&id=doi%3A' . $this->doi;
     if (!($fp = fopen($this->query, "r"))) {
       drupal_set_message(t('Could not open crossref.org for XML input'),'error');
       return;
@@ -62,17 +62,17 @@ class BiblioCrossRefClient
     $xml = fread($fp, 2048);
     $this->parser = drupal_xml_parser_create($xml);
     // use case-folding so we are sure to find the tag in
-    xml_parser_set_option($this->parser, XML_OPTION_CASE_FOLDING, false);
-    xml_parser_set_option($this->parser, XML_OPTION_SKIP_WHITE, true);
+    xml_parser_set_option($this->parser, XML_OPTION_CASE_FOLDING, FALSE);
+    xml_parser_set_option($this->parser, XML_OPTION_SKIP_WHITE, TRUE);
 
     xml_set_object($this->parser, $this);
     xml_set_element_handler($this->parser, 'unixref_startElement', 'unixref_endElement');
     xml_set_character_data_handler($this->parser, 'unixref_characterData');
 
     xml_parse($this->parser, $xml);
-    while ($xml = fread($fp, 2048)){
+    while ($xml = fread($fp, 2048)) {
       set_time_limit(30);
-      if(!xml_parse($this->parser, $xml, feof($fp))){
+      if (!xml_parse($this->parser, $xml, feof($fp))) {
         drupal_set_message(sprintf("XML error: %s at line %d",
         xml_error_string(xml_get_error_code($this->parser)),
         xml_get_current_line_number($this->parser)),'error');
@@ -135,7 +135,7 @@ class BiblioCrossRefClient
       case 'u':
       case 'sub':
       case 'sup':
-        $this->unixref_characterData(NULL, ' <'.$name.'>');
+        $this->unixref_characterData(NULL, ' <' . $name . '>');
         break;
       default :
         $this->element = $name;
@@ -177,7 +177,7 @@ class BiblioCrossRefClient
 
         break;
       case 'journal_issue':
-        $this->node['biblio_date'] = (!empty($this->node['month'])?$this->node['month'].'/':'').$this->node['year'];
+        $this->node['biblio_date'] = (!empty($this->node['month']) ? $this->node['month'] . '/':'') . $this->node['year'];
         break;
       case 'journal_article':
       case 'conference_paper':
@@ -190,11 +190,11 @@ class BiblioCrossRefClient
         $this->node['biblio_doi']  = $this->node['doi'];
         break;
       case 'issn':
-        if($this->attribute == 'issn_print' && isset($this->node['issn'])) $this->node['biblio_issn'] = $this->node['issn'];
+        if ($this->attribute == 'issn_print' && isset($this->node['issn'])) $this->node['biblio_issn'] = $this->node['issn'];
         $this->node['issn'] = '';
         break;
       case 'isbn':
-        if($this->attribute == 'isbn_print' && isset($this->node['isbn'])) $this->node['biblio_isbn'] = $this->node['isbn'];
+        if ($this->attribute == 'isbn_print' && isset($this->node['isbn'])) $this->node['biblio_isbn'] = $this->node['isbn'];
         $this->node['isbn'] = '';
         break;
       case 'i':  // HTML font style tags
@@ -202,7 +202,7 @@ class BiblioCrossRefClient
       case 'u':
       case 'sub':
       case 'sup':
-        $this->unixref_characterData(NULL, '</'.$name.'> ');
+        $this->unixref_characterData(NULL, '</' . $name . '> ');
         break;
       default :
     }
@@ -254,7 +254,7 @@ class BiblioCrossRefClient
     return (isset($this->field_map[$field])) ? $this->field_map[$field]: FALSE;
   }
 
-  function _unixref_type_map($type){
+  function _unixref_type_map($type) {
     if (empty($this->type_map)) {
       $this->type_map = unserialize(db_query("SELECT type_map FROM {biblio_type_maps} WHERE format='crossref'")->fetchField());
     }

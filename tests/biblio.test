@@ -11,7 +11,7 @@ class BiblioWebTestCase extends DrupalWebTestCase {
   protected $admin_user;
 
 //  function tearDown() {
-//    if(!empty($this->kids)){
+//    if (!empty($this->kids)) {
 //      db_delete('biblio_keyword')
 //      ->condition('kid', $this->kids, 'IN')
 //      ->execute();
@@ -22,11 +22,11 @@ class BiblioWebTestCase extends DrupalWebTestCase {
 //
 //    }
 //
-//    foreach($this->nids as $nid) {
+//    foreach ($this->nids as $nid) {
 //      node_delete($nid);
 //    }
 //
-//    if(!empty($this->cids)) {
+//    if (!empty($this->cids)) {
 //      db_delete('biblio_contributor')
 //      ->condition('cid', $this->cids, 'IN')
 //      ->execute();
@@ -42,7 +42,7 @@ class BiblioWebTestCase extends DrupalWebTestCase {
 
   function createNode($type = 100) {
     $schema = drupal_get_schema('biblio');
-    foreach($schema['fields'] as $name => $values) {
+    foreach ($schema['fields'] as $name => $values) {
       if ($values['type'] == 'int') continue;
       switch ($values['type']) {
         case 'varchar':
@@ -68,7 +68,7 @@ class BiblioWebTestCase extends DrupalWebTestCase {
 
     $node = $this->drupalCreateNode($settings);
     $node = node_load($node->nid, NULL, TRUE);
-    foreach($node->biblio_contributors[1] as $author) {
+    foreach ($node->biblio_contributors[1] as $author) {
       $this->cids[] = $author['cid'];
     }
 
@@ -79,7 +79,7 @@ class BiblioWebTestCase extends DrupalWebTestCase {
   }
   function assertBiblioFields($node1, $node2, $fields = array()) {
     $count = 0;
-    foreach($fields as $field) {
+    foreach ($fields as $field) {
       if ($node1->$field != $node2->$field) {
         $this->assertIdentical($node1->$field, $node2->$field);
         $count++;

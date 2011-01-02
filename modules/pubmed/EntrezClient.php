@@ -197,8 +197,8 @@ class BiblioEntrezClient
   public function setTerm($term)
   {
     $this->term = $term;
-    $this->webEnvironment = null;
-    $this->count = null;
+    $this->webEnvironment = NULL;
+    $this->count = NULL;
   }
 
   /**
@@ -459,7 +459,7 @@ class BiblioEntrezClient
     }
     $result = @simplexml_load_file($this->query);
 
-    if(isset($result->body->pre->ERROR)) return FALSE;
+    if (isset($result->body->pre->ERROR)) return FALSE;
 
     return $result;
   }

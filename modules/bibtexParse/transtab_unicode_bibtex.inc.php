@@ -12,7 +12,7 @@
 // Adopted from 'transtab' by Markus Kuhn
 // (transtab.utf v1.8 2000-10-12 11:01:28+01 mgk25 Exp); see <http://www.cl.cam.ac.uk/~mgk25/unicode.html> for more info about Unicode and transtab.
 
-$transtab_unicode_bibtex = array (
+$transtab_unicode_bibtex = array(
 
   "(?<!\\\\)#" => '$\\#$',
   "(?<!\\\\)%" => "\\%",

@@ -33,20 +33,20 @@ class PARSEMONTH
   {
     $startMonth = $this->startDay = $endMonth = $this->endDay = FALSE;
     $date = split("#", $monthField);
-    foreach($date as $field)
+    foreach ($date as $field)
     {
       $field = ucfirst(strtolower(trim($field)));
-      if($month = array_search($field, $this->monthToLongName()))
+      if ($month = array_search($field, $this->monthToLongName()))
       {
-        if(!$startMonth)
+        if (!$startMonth)
           $startMonth = $month;
         else
           $endMonth = $month;
         continue;
       }
-      else if($month = array_search($field, $this->monthToShortName()))
+      else if ($month = array_search($field, $this->monthToShortName()))
       {
-        if(!$startMonth)
+        if (!$startMonth)
           $startMonth = $month;
         else
           $endMonth = $month;
@@ -54,7 +54,7 @@ class PARSEMONTH
       }
       $this->parseDay($field);
     }
-    if($this->endDay && !$endMonth)
+    if ($this->endDay && !$endMonth)
       $endMonth = $startMonth;
     return array($startMonth, $this->startDay, $endMonth, $this->endDay);
   }
@@ -62,18 +62,18 @@ class PARSEMONTH
   function parseDay($dayField)
   {
     preg_match("/([0-9]+).*([0-9]+)|([0-9]+)/", $dayField, $array);
-    if(array_key_exists(3, $array))
+    if (array_key_exists(3, $array))
     {
-      if(!$this->startDay)
+      if (!$this->startDay)
         $this->startDay = $array[3];
-      else if(!$this->endDay)
+      else if (!$this->endDay)
         $this->endDay = $array[3];
     }
     else
     {
-      if(array_key_exists(1, $array))
+      if (array_key_exists(1, $array))
         $this->startDay = $array[1];
-      if(array_key_exists(2, $array))
+      if (array_key_exists(2, $array))
         $this->endDay = $array[2];
     }
   }

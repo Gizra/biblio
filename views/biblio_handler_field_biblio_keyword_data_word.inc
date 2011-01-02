@@ -39,7 +39,7 @@ class biblio_handler_field_biblio_keyword_data_word extends views_handler_field 
     if (!empty($this->options['link_to_keyword']) && !empty($values->{$this->aliases['kid']}) && $data !== NULL && $data !== '') {
       $kid = $values->{$this->aliases['kid']};
       $this->options['alter']['make_link'] = TRUE;
-      $this->options['alter']['path'] = 'biblio/keyword/'. $kid;
+      $this->options['alter']['path'] = 'biblio/keyword/' . $kid;
     }
     return $data;
   }

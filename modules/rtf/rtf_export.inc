@@ -346,5 +346,3 @@ class rtf {
     return $doc_buffer;
   }
 }
-
-?>

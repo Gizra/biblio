@@ -132,10 +132,10 @@ Class File {
 	 * @return array|string Return either Array of all warnings or specific warning
 	 */
 	function warnings($id = "") {
-		if(!$id) {
+		if (!$id) {
 			return $this->warn;
 		} else {
-			if(array_key_exists($id, $this->warn)) {
+			if (array_key_exists($id, $this->warn)) {
 				return $this->warn[$id];
 			} else {
 				return "Invalid warning ID: $id";
@@ -152,7 +152,7 @@ Class File {
 	 * 
 	 * Returns th nexts raw MARC record from the read file, unless all
 	 * records already have been read.
-	 * @return string|false Either a raw record or False
+	 * @return string|FALSE Either a raw record or False
 	 */
 	function _next() {
 		/**
@@ -194,7 +194,7 @@ Class File {
 	 * @return string Returns warning if issued during read
 	 */
 	function file($in) {
-		if(file_exists($in)) {
+		if (file_exists($in)) {
 			$input = file($in);
 			$recs = explode(END_OF_RECORD, join("", $input));
 			// Append END_OF_RECORD as we lost it when splitting
@@ -216,7 +216,7 @@ Class File {
 	 * @return Record A Record object
 	 */
 	function next() {
-		if($raw = $this->_next()) {
+		if ($raw = $this->_next()) {
 			return $this->decode($raw);
 		} else {
 			return FALSE;
@@ -233,7 +233,7 @@ Class File {
 	 * @return Record Decoded MARC Record object
 	 */
 	function decode($text) {
-		if(!preg_match("/^\d{5}/", $text, $matches)) {
+		if (!preg_match("/^\d{5}/", $text, $matches)) {
 			$this->_croak('Record length "'.substr( $text, 0, 5 ).'" is not numeric');
 		}
 		
@@ -242,7 +242,7 @@ Class File {
 		// Store record length
 		$reclen = $matches[0];
 		
-		if($reclen != strlen($text)) {
+		if ($reclen != strlen($text)) {
 			$this->_croak( "Invalid record length: Leader says $reclen bytes, but it's actually ".strlen($text));
 		}
 		
@@ -443,7 +443,7 @@ Class Record {
 	 * @return string|null Return leader in case requested.
 	 */
 	function leader($ldr = "") {
-		if($ldr) {
+		if ($ldr) {
 			$this->ldr = $ldr;
 		} else {
 			return $this->ldr;
@@ -458,7 +458,7 @@ Class Record {
 	 * @param Field The field to append
 	 */
 	function append_fields($field) {
-		if(strtolower(get_class($field)) == "field") {
+		if (strtolower(get_class($field)) == "field") {
 			$this->fields[$field->tagno][] = $field;
 		} else {
 			$this->_croak(sprintf("Given argument must be Field object, but was '%s'", get_class($field)));
@@ -537,13 +537,13 @@ Class Record {
 	 *
 	 * Search for field in Record fields based on field name, e.g. 020
 	 * @param string Field name
-	 * @return Field|false Return Field if found, otherwise false
+	 * @return Field|FALSE Return Field if found, otherwise FALSE
 	 */
 	function field($spec) {
-		if(array_key_exists($spec, $this->fields)) {
+		if (array_key_exists($spec, $this->fields)) {
 			return $this->fields[$spec][0];
 		} else {
-			return false;
+			return FALSE;
 		}
 	}
 	
@@ -553,11 +553,11 @@ Class Record {
 	 * Returns the value of a specific subfield of a given Field object
 	 * @param string Name of field
 	 * @param string Name of subfield
-	 * @return string|false Return value of subfield if Field exists, otherwise false
+	 * @return string|FALSE Return value of subfield if Field exists, otherwise FALSE
 	 */
 	function subfield($field, $subfield) {
-		if(!$field = $this->field($field)) {
-			return false;
+		if (!$field = $this->field($field)) {
+			return FALSE;
 		} else {
 			return $field->subfield($subfield);
 		}
@@ -603,19 +603,19 @@ Class Record {
 	 * codes are the names of the subfields of the Field.
 	 * @param string Field name
 	 * @param string Format string
-	 * @return string|false Return formatted string if Field exists, otherwise False
+	 * @return string|FALSE Return formatted string if Field exists, otherwise False
 	 */
 	function ffield($tag, $format) {
 		$result = "";
-		if($field = $this->field($tag)) {
+		if ($field = $this->field($tag)) {
 			for ($i=0; $i<strlen($format); $i++) {
 				$curr = $format[$i];
-				if($curr != "%") {
+				if ($curr != "%") {
 					$result[] = $curr;
 				} else {
 					$i++;
 					$curr = $format[$i];
-					if($curr == "%") {
+					if ($curr == "%") {
 						$result[] = $curr;
 					} else {
 						$result[] = $field->subfield($curr);
@@ -624,7 +624,7 @@ Class Record {
 			}
 			return implode("", $result);
 		} else {
-			return false;
+			return FALSE;
 		}
 	}
 	
@@ -654,8 +654,8 @@ Class Record {
 	function formatted() {
 		$formatted = "";
 		foreach ($this->fields as $field_group) {
-			foreach($field_group as $field) {
-				$formatted .= $field->formatted()."\n";
+			foreach ($field_group as $field) {
+				$formatted .= $field->formatted(). "\n";
 			}
 		}
 		return $formatted;
@@ -761,19 +761,19 @@ Class Field {
 		$this->tagno = $tagno;
 		
 		// Check if valid tag
-		if(!preg_match("/^[0-9A-Za-z]{3}$/", $tagno)) {
+		if (!preg_match("/^[0-9A-Za-z]{3}$/", $tagno)) {
 			return $this->_warn("Tag \"$tagno\" is not a valid tag.");
 		}
 		
 		// Check if field is Control field
 		$this->is_control = (preg_match("/^\d+$/", $tagno) && $tagno < 10);
-		if($this->is_control) {
+		if ($this->is_control) {
 			$this->data = array_shift($args);
 		} else {
 			foreach (array("ind1", "ind2") as $indcode) {
 				$indicator = array_shift($args);
-				if(!preg_match("/^[0-9A-Za-z ]$/", $indicator)) {
-					if($indicator != "") {
+				if (!preg_match("/^[0-9A-Za-z ]$/", $indicator)) {
+					if ($indicator != "") {
 						$this->_warn("Illegal indicator '$indicator' in field '$tagno' forced to blank");
 					}
 					$indicator = " ";
@@ -783,7 +783,7 @@ Class Field {
 			
 			$subfields = array_shift($args);
 			
-			if(count($subfields) < 1) {
+			if (count($subfields) < 1) {
 				return $this->_warn("Field $tagno must have at least one subfield");
 			} else {
 				$this->add_subfields($subfields);
@@ -801,7 +801,7 @@ Class Field {
 	function add_subfields() {
 		// Process arguments
 		$args = func_get_args();
-		if(count($args) == 1 && is_array($args[0])) {
+		if (count($args) == 1 && is_array($args[0])) {
 			$args = $args[0];
 		}
 		// Add subfields, is appropriate
@@ -829,10 +829,10 @@ Class Field {
 	 * @return string Data of Control field if argument not given
 	 */
 	function data($data = "") {
-		if(!$this->is_control) {
+		if (!$this->is_control) {
 			$this->_croak("data() is only allowed for tags bigger or equal to 10");
 		}
-		if($data) {
+		if ($data) {
 			$this->data = $data;
 		} else {
 			return $this->data;
@@ -845,7 +845,7 @@ Class Field {
 	 * @param string Indicator number
 	 */
 	function indicator($ind) {
-		if($ind == 1) {
+		if ($ind == 1) {
 			return $this->ind1;
 		} elseif ($ind == 2) {
 			return $this->ind2;
@@ -868,10 +868,10 @@ Class Field {
 	 *
 	 * Return of the value of the given subfield, if exists
 	 * @param string Name of subfield
-	 * @return string|false Value of the subfield if exists, otherwise false
+	 * @return string|FALSE Value of the subfield if exists, otherwise FALSE
 	 */
 	function subfield($code, $repeatable = FALSE) {
-		if(array_key_exists($code, $this->subfields)) {
+		if (array_key_exists($code, $this->subfields)) {
 			return $repeatable ? $this->subfields[$code] : $this->subfields[$code][0];
 		} else {
 			return $repeatable ? array(): FALSE;
@@ -896,14 +896,14 @@ Class Field {
 	function update() {
 		// Process arguments
 		$args = func_get_args();
-		if(count($args) == 1 && is_array($args[0])) {
+		if (count($args) == 1 && is_array($args[0])) {
 			$args = $args[0];
 		}
-		if($this->is_control) {
+		if ($this->is_control) {
 			$this->data = array_shift($args);
 		} else {
 			foreach ($args as $subfield => $value) {
-				if($subfield == "ind1") {
+				if ($subfield == "ind1") {
 					$this->ind1 = $value;
 				} elseif ($subfield == "ind2") {
 					$this->ind2 = $value;
@@ -920,7 +920,7 @@ Class Field {
 	 * @param Field Field to replace with
 	 */
 	function replace_with($obj) {
-		if(strtolower(get_class($obj)) == "field") {
+		if (strtolower(get_class($obj)) == "field") {
 			$this->tagno = $obj->tagno;
 			$this->ind1 = $obj->ind1;
 			$this->ind2 = $obj->ind2;
@@ -939,7 +939,7 @@ Class Field {
 	 * @return Field Cloned Field object
 	 */
 	function make_clone() {
-		if($this->is_control) {
+		if ($this->is_control) {
 			return new Field($this->tagno, $this->data);
 		} else {
 			return new Field($this->tagno, $this->ind1, $this->ind2, $this->subfields);
@@ -961,7 +961,7 @@ Class Field {
 		// Variables
 		$lines = array();
 		// Process
-		if($this->is_control) {
+		if ($this->is_control) {
 			return sprintf("%3s     %s", $this->tagno, $this->data);
 		} else {
 			$pre = sprintf("%3s %1s%1s", $this->tagno, $this->ind1, $this->ind2);
@@ -982,7 +982,7 @@ Class Field {
 	 * @return string Raw MARC
 	 */
 	function raw() {
-		if($this->is_control) {
+		if ($this->is_control) {
 			return $this->data.END_OF_FIELD;
 		} else {
 			$subfields = array();
@@ -1002,9 +1002,9 @@ Class Field {
 	 */
 	function string($fields = "") {
 		$matches = array();
-		if($fields) {
+		if ($fields) {
 			for($i=0; $i<strlen($fields); $i++) {
-				if(array_key_exists($fields[$i], $this->subfields)) {
+				if (array_key_exists($fields[$i], $this->subfields)) {
 					$matches[] = $this->subfields[$fields[$i]];
 				}
 			}

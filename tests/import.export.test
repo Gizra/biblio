@@ -3,7 +3,7 @@
 class BiblioImportExportWebTestCase extends BiblioWebTestCase {
   function setUp() {
     parent::setUp('biblio', 'biblio_ris', 'biblio_bibtex', 'biblio_tagged', 'biblio_xml', 'biblio_crossref');
-    require_once(drupal_get_path('module', 'biblio') .'/includes/biblio.import.export.inc');
+    require_once(drupal_get_path('module', 'biblio') . '/includes/biblio.import.export.inc');
   }
 }
 
@@ -52,7 +52,7 @@ class BiblioImportExportUnitTest extends BiblioImportExportWebTestCase {
     file_delete($file);
     $node = $this->createNode();
     $fields = array_filter(biblio_get_map('field_map', 'endnote8'));
-    $fields += array('title','biblio_contributors', 'biblio_keywords');
+    $fields += array('title', 'biblio_contributors', 'biblio_keywords');
     foreach ($nids as $nid) {
       $this->nids[] = $nid;
       $imported_node = node_load($nid);
@@ -68,7 +68,7 @@ class BiblioImportExportUnitTest extends BiblioImportExportWebTestCase {
     file_delete($file);
     $node = $this->createNode();
     $fields = array_filter(biblio_get_map('field_map', 'tagged'));
-    $fields += array('title','biblio_contributors', 'biblio_keywords');
+    $fields += array('title', 'biblio_contributors', 'biblio_keywords');
     foreach ($nids as $nid) {
       $this->nids[] = $nid;
       $imported_node = node_load($nid);
@@ -84,7 +84,7 @@ class BiblioImportExportUnitTest extends BiblioImportExportWebTestCase {
     file_delete($file);
     $node = $this->createNode();
     $fields = array_filter(biblio_get_map('field_map', 'bibtex'));
-    $fields += array('title','biblio_contributors');
+    $fields += array('title', 'biblio_contributors');
     foreach ($nids as $nid) {
       $this->nids[] = $nid;
       $imported_node = node_load($nid);
@@ -100,7 +100,7 @@ class BiblioImportExportUnitTest extends BiblioImportExportWebTestCase {
     file_delete($file);
     $node = $this->createNode();
     $fields = array_unique(array_filter(biblio_get_map('field_map', 'ris')));
-    $fields += array('title','biblio_contributors');
+    $fields += array('title', 'biblio_contributors');
     foreach ($nids as $nid) {
       $this->nids[] = $nid;
       $imported_node = node_load($nid);

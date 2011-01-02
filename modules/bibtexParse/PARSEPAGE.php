@@ -31,10 +31,10 @@ class PARSEPAGE
   function init($item)
   {
     $item = trim($item);
-    if($this->type1($item))
+    if ($this->type1($item))
       return $this->return;
 // else, return first number we can find
-    if(preg_match("/(\d+|[ivx]+)/i", $item, $array))
+    if (preg_match("/(\d+|[ivx]+)/i", $item, $array))
       return array($array[1], FALSE);
 // No valid page numbers found
     return array(FALSE, FALSE);;
@@ -44,17 +44,17 @@ class PARSEPAGE
   {
     $start = $end = FALSE;
     $array = preg_split("/--|-/", $item);
-    if(sizeof($array) > 1)
+    if (sizeof($array) > 1)
     {
-      if(is_numeric(trim($array[0])))
+      if (is_numeric(trim($array[0])))
         $start = trim($array[0]);
       else
         $start = strtolower(trim($array[0]));
-      if(is_numeric(trim($array[1])))
+      if (is_numeric(trim($array[1])))
         $end = trim($array[1]);
       else
         $end = strtolower(trim($array[1]));
-      if($end && !$start)
+      if ($end && !$start)
         $this->return = array($end, $start);
       else
         $this->return = array($start, $end);

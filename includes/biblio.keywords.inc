@@ -98,7 +98,7 @@ function biblio_update_keywords($node) {
  * @param $node
  *   A node with keywords attached
  * @param $update
- *   Set to true if you are updating an existing node
+ *   Set to TRUE if you are updating an existing node
  * @return
  *   An array of keyword ID's from this node
  */

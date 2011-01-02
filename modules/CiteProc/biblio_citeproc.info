@@ -4,6 +4,4 @@ description = Adds Citation Style Language (CSL) citation processing
 core = 7.x
 package = Biblio
 dependencies[] = biblio
-files[] = biblio_citeproc.install
-files[] = biblio_citeproc.module
 files[] = CSL.inc

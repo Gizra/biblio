@@ -38,10 +38,10 @@ function _biblio_admin_build_user_select($my_uid) {
   $sql = 'SELECT DISTINCT u.uid, u.name, u.status, u.mail FROM {users} u  WHERE u.uid != 0 ';
   $result = db_query($sql);
   foreach ($result as $user) {
-    $users[$user->uid] = $user->name ." ($user->mail)";
+    $users[$user->uid] = $user->name . " ($user->mail)";
   }
   asort($users);
-  $select = array (
+  $select = array(
     '#type' => 'select',
     '#title' => t("Set user ID of entries in this file to"),
     '#options' => $users,
@@ -62,7 +62,7 @@ function biblio_import_form() {
 
   if (biblio_access('import')) { // && !user_access('administer nodes')) {
     $form['#attributes']['enctype'] = 'multipart/form-data';
-    $form['biblio_import_file'] = array (
+    $form['biblio_import_file'] = array(
       '#type' => 'file',
       '#title' => t('Import file'),
       '#default_value' => '',
@@ -71,11 +71,11 @@ function biblio_import_form() {
 
     $import_options = module_invoke_all('biblio_import_options');
     if (count($import_options) > 1) {
-      $form['filetype'] = array (
+      $form['filetype'] = array(
         '#type' => 'select',
         '#title' => t('File Type'),
         '#default_value' => 0,
-        '#options' => array (
+        '#options' => array(
           '0'        => t('Select type'),
           )
       );
@@ -84,14 +84,14 @@ function biblio_import_form() {
       asort($form['filetype']['#options']);
     }
     elseif (count($import_options) == 1) {
-      $form['biblio_import_file']['#description'] = t('Import type: ') . current($import_options);
-      $form['filetype'] = array (
+      $form['biblio_import_file']['#description'] = t('Import type: @option', array('@option' => current($import_options)));
+      $form['filetype'] = array(
         '#type' => 'value',
         '#value' => key($import_options),
       );
     }
 
-    $form['batch_process'] = array (
+    $form['batch_process'] = array(
       '#type' => 'checkbox',
       '#title' => t('Batch Process'),
       '#default_value' => 1,
@@ -101,7 +101,7 @@ function biblio_import_form() {
     // Get the vocabularies  attached to the biblio node type ...
     $vocabularies = module_invoke('taxonomy', 'get_vocabularies', 'biblio');
     // ... and print a form to select the terms in each of them
-    $form['import_taxonomy'] = array (
+    $form['import_taxonomy'] = array(
       '#type' => 'fieldset',
       '#collapsible' => TRUE,
       '#collapsed' => TRUE,
@@ -111,42 +111,46 @@ function biblio_import_form() {
       if (variable_get('biblio_keyword_freetagging', 0)) {
         $freetag_vocab = $vocabularies[variable_get('biblio_keyword_vocabulary', 0)];
         unset($vocabularies[variable_get('biblio_keyword_vocabulary', 0)]);
-        $msg = t('<b>NOTE:</b> Keyword "free tagging" is turned on, consequently all incomming keywords will be added to the <b>@name</b> vocabulary as specified in the "Keyword" section of the !url page.', array ('@name' => $freetag_vocab->name, '!url' => l(t('admin/config/biblio'), 'admin/config/biblio')));
-      } else {
-        $msg = t('<b>NOTE:</b> Keyword "free tagging" is turned off, consequently keywords will <b>NOT</b> be added to the vocabulary as specified in the Taxonomy section of the !url page.', array ('!url' => l(t('admin/config/biblio'), 'admin/config/biblio')));
+        $msg = t('<b>NOTE:</b> Keyword "free tagging" is turned on, consequently all incomming keywords will be added to the <b>@name</b> vocabulary as specified in the "Keyword" section of the !url page.', array('@name' => $freetag_vocab->name, '!url' => l(t('admin/config/biblio'), 'admin/config/biblio')));
+      }
+      else {
+        $msg = t('<b>NOTE:</b> Keyword "free tagging" is turned off, consequently keywords will <b>NOT</b> be added to the vocabulary as specified in the Taxonomy section of the !url page.', array('!url' => l(t('admin/config/biblio'), 'admin/config/biblio')));
       }
       $i = 0;
       foreach ($vocabularies as $vocabulary) {
-        $form['import_taxonomy']['vocabulary'. $i] = module_invoke('taxonomy', 'form', $vocabulary->vid, 0);
-        $form['import_taxonomy']['vocabulary'. $i]['#weight'] = $vocabulary->weight;
-        $form['import_taxonomy']['vocabulary'. $i++]['#description'] = t("Select taxonomy term to be assigned to imported entries");
+        $form['import_taxonomy']['vocabulary' . $i] = module_invoke('taxonomy', 'form', $vocabulary->vid, 0);
+        $form['import_taxonomy']['vocabulary' . $i]['#weight'] = $vocabulary->weight;
+        $form['import_taxonomy']['vocabulary' . $i++]['#description'] = t("Select taxonomy term to be assigned to imported entries");
       }
       $form['import_taxonomy']['copy_to_biblio'] = array(
         '#type' => 'checkbox',
         '#title' => t('Copy these terms to the biblio keyword database'),
         '#return_value' => 1,
         '#default_value' =>  variable_get('biblio_copy_taxo_terms_to_keywords', 0),
-        '#description' => t('If this option is selected, the selected taxonomy terms will be copied to the '.check_plain(variable_get('biblio_base_title', 'Biblio')).' keyword database and be displayed as keywords (as well as taxonomy terms) for this entry.')
+        '#description' => t('If this option is selected, the selected taxonomy terms will be copied to the ' . check_plain(variable_get('biblio_base_title', 'Biblio')) . ' keyword database and be displayed as keywords (as well as taxonomy terms) for this entry.')
       );
 
-    } else {
-      if (module_exists('taxonomy')){
-        $vocab_msg = t('There are currently no vocabularies assigned to the biblio node type, please go the the !url page to fix this', array ('!url' => l(t('admin/content/taxonomy'), 'admin/content/taxonomy')));
-      }else{
-        $vocab_msg = '<div class="admin-dependencies">'. t('Depends on') .': '. t('Taxonomy') .' (<span class="admin-disabled">'. t('disabled') .'</span>)</div>';
+    }
+    else {
+      if (module_exists('taxonomy')) {
+        $vocab_msg = t('There are currently no vocabularies assigned to the biblio node type, please go the the !url page to fix this', array('!url' => l(t('admin/content/taxonomy'), 'admin/content/taxonomy')));
+      }
+      else{
+        $vocab_msg = '<div class="admin-dependencies">' . t('Depends on') . ': ' . t('Taxonomy') . ' (<span class="admin-disabled">' . t('disabled') . '</span>)</div>';
 
       }
-      $form['import_taxonomy']['vocabulary_message'] = array (
-        '#value' => '<p><div>'. $vocab_msg .'</div></p>'
+      $form['import_taxonomy']['vocabulary_message'] = array(
+        '#value' => '<p><div>' . $vocab_msg . '</div></p>'
       );
     }
-    $form['import_taxonomy']['freetagging_information'] = array (
-      '#value' => '<p><div>'. $msg .'</div></p>'
+    $form['import_taxonomy']['freetagging_information'] = array(
+      '#value' => '<p><div>' . $msg . '</div></p>'
     );
-    $form['button'] = array ('#type' => 'submit', '#value' => t('Import'));
+    $form['button'] = array('#type' => 'submit', '#value' => t('Import'));
     return $form;
-  } else {
-    drupal_set_message("You are not authorized to access the biblio import page", 'error');
+  }
+  else {
+    drupal_set_message(t("You are not authorized to access the biblio import page"), 'error');
     print theme('page', '');
   }
 }
@@ -158,7 +162,7 @@ function biblio_import_form_validate($form, & $form_state) {
   $op = $form_state['values']['op'];
   $filetype = $form_state['values']['filetype'];
   if ($error = $_FILES['files']['error']['biblio_import_file']) {
-    switch ($error){
+    switch ($error) {
       case 1: form_set_error('biblio_import_form', t("The uploaded file exceeds the upload_max_filesize directive in php.ini."));
       break;
       case 2: form_set_error('biblio_import_form', t("The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form."));
@@ -190,15 +194,15 @@ function biblio_import_form_submit($form, & $form_state) {
   $validators['file_validate_extensions'][0] = $extensions;
   if ($form_state['values']['op'] == t('Import') && isset ($form_state['values']['filetype'])) {
     if ($import_file = file_save_upload('biblio_import_file', $validators)) {
-      if($form_state['values']['batch_process'] == 1) {
+      if ($form_state['values']['batch_process'] == 1) {
         $batch_proc = TRUE;  // we will use batch import for larger files.
       }
       // Concatenate all the terms of the different vocabularies
       // in a single array to be sent to biblio_import
-      $terms = array ();
+      $terms = array();
       foreach (array_keys($form_state['values']) as $key) {
         if (preg_match('/(vocabulary[0-9]+)/', $key)) {
-          if (!empty($form_state['values'][$key])){
+          if (!empty($form_state['values'][$key])) {
             if (is_array($form_state['values'][$key])) {
               $terms[] = $form_state['values'][$key];
             }
@@ -212,37 +216,39 @@ function biblio_import_form_submit($form, & $form_state) {
 
       // Added the $terms argument
       // the array of terms to be attached to the node(s)
-      $userid = (isset ($form_state['values']['userid'])) ? $form_state['values']['userid'] : $user->uid;
+      $userid = (isset($form_state['values']['userid'])) ? $form_state['values']['userid'] : $user->uid;
       $filetype = $form_state['values']['filetype'];
       $filesize = sprintf("%01.1f", $import_file->filesize / 1000);
       $filesize = " ($filesize KB)";
       if ($batch_proc) {
         $session_id = microtime();
         $batch_op = array(
-          'title' => t('Importing @filename',array('@filename' =>$import_file->filename . $filesize)),
+          'title' => t('Importing @filename', array('@filename' => $import_file->filename . $filesize)),
           'operations' => array(
-        array('biblio_import', array($import_file, $filetype, $userid, $terms, $batch_proc, $session_id)),
-        array('biblio_import_batch_operations', array($session_id, $user, $userid, $terms)),
-        ),
+            array('biblio_import', array($import_file, $filetype, $userid, $terms, $batch_proc, $session_id)),
+            array('biblio_import_batch_operations', array($session_id, $user, $userid, $terms))
+          ),
           'progressive' => TRUE,
           'finished' => 'biblio_import_batch_finished',
           'init_message' => t('Parsing file...'),
           'progress_message' => t('Saving nodes...'),
-          'file' => './'. drupal_get_path('module', 'biblio') .'/includes/biblio.import.export.inc'
-          );
-          batch_set($batch_op);
+          'file' => './' . drupal_get_path('module', 'biblio') . '/includes/biblio.import.export.inc'
+        );
+        batch_set($batch_op);
 
-          $base = variable_get('biblio_base', 'biblio');
-          batch_process("$base/import");
+        $base = variable_get('biblio_base', 'biblio');
+        batch_process("$base/import");
 
-      }else{ //not batch processing the file
+      }
+      else{ //not batch processing the file
         $session_id = microtime();
         $context = array();
         biblio_import($import_file, $filetype, $userid, $terms, $batch_proc, $session_id, $context);
-        biblio_import_finalize(TRUE,$context['results']);
+        biblio_import_finalize(TRUE, $context['results']);
       }
       file_delete($import_file);
-    } else {
+    }
+    else {
       drupal_set_message(t("File was NOT successfully uploaded"), 'error');
     }
   }
@@ -273,7 +279,7 @@ function biblio_import_batch_operations($session_id, $user, $userid, $terms, &$c
 
   $result = db_query_range("SELECT id, data FROM {biblio_import_cache} WHERE id > :id AND session_id = :sessid ORDER BY id ASC", 0, $limit, array(':id' => $context['sandbox']['current_id'], ':sessid' => $session_id));
   foreach ($result as $row) {
-    if($node = unserialize(base64_decode($row->data))) {
+    if ($node = unserialize(base64_decode($row->data))) {
       biblio_save_node($node);
       $context['results']['nids'][] = $node->nid;
     }
@@ -321,7 +327,7 @@ function biblio_import_finalize($success, $results) {
   //    drupal_set_message(t("<i><b>%count</b></i> of <i><b>%total</b></i> nodes were successfully imported.", array('%count' => count($nids), '%total' => $total)), (count($nids) != $total)?'warning':'status');
 
   if ($success && (count($nids) || count($dups))) {
-    $message = t("The file <i><b>@file</b></i> was successfully uploaded.", array ('@file' => $results['file']->filename));
+    $message = t("The file <i><b>@file</b></i> was successfully uploaded.", array('@file' => $results['file']->filename));
     drupal_set_message($message, 'status');
     watchdog($format, $message);
     $count = count($nids);
@@ -337,7 +343,7 @@ function biblio_import_finalize($success, $results) {
   }
   else {
     $count = count($nids);
-    $message = t('Import finished with an error!  '). format_plural($count, 'One node imported.', '@count nodes imported.');
+    $message = t('Import finished with an error!  ') . format_plural($count, 'One node imported.', '@count nodes imported.');
     drupal_set_message($message, 'error');
     watchdog($format, $message, array('@count' => $count), WATCHDOG_ERROR);
   }
@@ -363,17 +369,14 @@ function biblio_import_finalize($success, $results) {
 function biblio_import_from_url($URL) {
   $handle = fopen($URL, "r"); // fetch data from URL in read mode
   $data = "";
-  if ($handle)
-  {
-    while (!feof($handle))
-    {
+  if ($handle) {
+    while (!feof($handle)) {
       $data .= fread($handle, 4096); // read data in chunks
     }
     fclose($handle);
   }
-  else
-  {
-    $errorMessage = t("Error occurred: Failed to open ") . check_plain($URL); // network error
+  else {
+    $errorMessage = t("Error occurred: Failed to open %url", array('%url', $URL)); // network error
     drupal_set_message($errorMessage, 'error');
   }
 
@@ -381,14 +384,14 @@ function biblio_import_from_url($URL) {
 }
 
 function biblio_export_form() {
-  $form['pot'] = array (
+  $form['pot'] = array(
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
     '#title' => t('POT Export'),
     '#description' => t('Here you may export a ".pot" file which contains the titles and hints from the database which are not normally captured by translation extractors)')
   );
-  $form['pot']['button'] = array (
+  $form['pot']['button'] = array(
     '#type' => 'submit',
     '#value' => t('Export translation data')
   );
@@ -423,7 +426,7 @@ function biblio_import($import_file, $type, $userid = 1, $terms = NULL, $batch =
   $nids = array();
   $dups = array();
 
-  if(isset($context['message']))  $context['message'] = t('Parsing file');
+  if (isset($context['message']))  $context['message'] = t('Parsing file');
   switch ($type) {
     case 'csv' : // comma separated variable file
       //        $file_content = @ file_get_contents($import_file->uri);
@@ -461,18 +464,18 @@ function biblio_import($import_file, $type, $userid = 1, $terms = NULL, $batch =
  * @return
  *   none
  */
-function biblio_export($format = "tagged", $nid = null, $popup = false) {
-  $params = array ();
+function biblio_export($format = "tagged", $nid = NULL, $popup = FALSE) {
+  $params = array();
   $nids = array();
   $arg_list = array();
-  if ($nid === null && isset ($_SESSION['last_biblio_query']) ) {
-    module_load_include('inc','biblio','includes/biblio.pages');
+  if ($nid === NULL && isset ($_SESSION['last_biblio_query']) ) {
+    module_load_include('inc', 'biblio', 'includes/biblio.pages');
 
     $uri = drupal_parse_url(request_uri());
     $arg_list += $uri['query'];
     $arg_list['page_limit'] = 0;
     $query_info = biblio_build_query($arg_list);
-    if(isset($query_info['query'])) {
+    if (isset($query_info['query'])) {
       $result = $query_info['query'];
     }
     else {
@@ -486,11 +489,11 @@ function biblio_export($format = "tagged", $nid = null, $popup = false) {
   elseif (!empty ($nid)) {
     $nids[] = $nid;
   }
-  elseif (!count($nids)){
+  elseif (!count($nids)) {
     return;
   }
 
-  module_invoke('biblio_' .$format, 'biblio_export', $nids);
+  module_invoke('biblio_' . $format, 'biblio_export', $nids);
 
 }
 
@@ -510,22 +513,22 @@ function biblio_save_imported_nodes(& $node_array) {
     }
   }
 /*  if ($dup_count)
-    drupal_set_message(t("Detected @dupcount duplicate node(s) when importing", array ('@dupcount' => $dup_count)), 'error');
+    drupal_set_message(t("Detected @dupcount duplicate node(s) when importing", array('@dupcount' => $dup_count)), 'error');
 
-  drupal_set_message(t("Succesfully imported @count entries.", array ('@count' => count($node_ids))), 'status');
+  drupal_set_message(t("Succesfully imported @count entries.", array('@count' => count($node_ids))), 'status');
 */
   return $node_ids;
 }
 function biblio_save_node($node, $batch = FALSE, $session_id = NULL, $save_node = TRUE) {
   global $user;
-  if ($batch && $session_id){ // we are batch processing some import data
+  if ($batch && $session_id) { // we are batch processing some import data
     $node = base64_encode(serialize($node));// base64_encode to avoid problems unserializing strings with embeded quotes.
     db_query("INSERT INTO {biblio_import_cache} (session_id, data) VALUES (:sessid, :node)", array(':sessid' => $session_id, ':node' => $node));
     return;
   }
 
-  $options = variable_get('node_options_biblio', array ('status'));
-  if (module_exists('i18n') && variable_get('i18n_node_biblio', 0) && variable_get('language_content_type_biblio', 0) ){
+  $options = variable_get('node_options_biblio', array('status'));
+  if (module_exists('i18n') && variable_get('i18n_node_biblio', 0) && variable_get('language_content_type_biblio', 0) ) {
     $node->language = module_invoke('i18n', 'default_language');
   }
   $node->uid = $user->uid;
@@ -542,10 +545,10 @@ function biblio_save_node($node, $batch = FALSE, $session_id = NULL, $save_node 
   }
 
   if ($save_node) { // $save_node = TRUE, the normal save path
-    if(strlen($node->title) > 255) {
+    if (strlen($node->title) > 255) {
       $node->title = substr($node->title, 0, 255);
       node_save($node);
-      watchdog('biblio - import', t('Title value truncated to 255 characters'), array(), WATCHDOG_ALERT, l($node->title, 'node/' . $node->nid));
+      watchdog('biblio - import', 'Title value truncated to 255 characters', array(), WATCHDOG_ALERT, l($node->title, 'node/' . $node->nid));
     }
     else {
       node_save($node);
@@ -564,7 +567,7 @@ function biblio_save_node($node, $batch = FALSE, $session_id = NULL, $save_node 
 function biblio_csv_export_2($result, $bfields) {
   //  $query_biblio_fields = 'SELECT name, title FROM {biblio_fields}';
   //  $res_biblio_fields = db_query($query_biblio_fields);
-  //  while ($rec = db_fetch_object($res_biblio_fields)){
+  //  while ($rec = db_fetch_object($res_biblio_fields)) {
   //    $bfields[$rec->name] = $rec->title;
   //  }
   $bfields = biblio_get_db_fields('all');
@@ -596,7 +599,7 @@ function biblio_csv_export_2($result, $bfields) {
     $node_array[$node_id]['type'] = $btypes[$rec->biblio_type]; // there is no "label" for "type"
     $col_array['type'] = 'Type';
     foreach (array_keys($bfields) as $fieldname) {
-      if (!empty ($rec-> $fieldname) && !in_array($fieldname, array (
+      if (!empty ($rec-> $fieldname) && !in_array($fieldname, array(
           'biblio_citekey',
           'biblio_coins'
         ))) {
@@ -610,20 +613,21 @@ function biblio_csv_export_2($result, $bfields) {
     }
   } //end while
   if ($label) { // head line containing column names
-    $csv = $textsep . join("$textsep$filedsep$textsep", array_values($col_array)) ."$textsep\n";
-  } else { // original DB field names
-    $csv = $textsep . join("$textsep$filedsep$textsep", array_keys($col_array)) ."$textsep\n";
+    $csv = $textsep . join("$textsep$filedsep$textsep", array_values($col_array)) . "$textsep\n";
+  }
+  else { // original DB field names
+    $csv = $textsep . join("$textsep$filedsep$textsep", array_keys($col_array)) . "$textsep\n";
   }
   // Enclosing text in "<text>" is neccessary to enshure
   // multi line fields (like author) are handled correctly.
   // Therefore existing " must be excaped before.
-  $csv = '"'. join("\"\t\"", array_keys($col_array)) ."\"\n";
+  $csv = '"' . join("\"\t\"", array_keys($col_array)) . "\"\n";
   foreach ($node_array as $line_array) {
     $csv_line = '';
     foreach (array_keys($col_array) as $col) {
-      $csv_line .= "$filedsep$textsep". $line_array[$col] . $textsep;
+      $csv_line .= "$filedsep$textsep" . $line_array[$col] . $textsep;
     }
-    $csv .= substr($csv_line, 1) ."\n"; // cut off leading fieldsep and append EOL
+    $csv .= substr($csv_line, 1) . "\n"; // cut off leading fieldsep and append EOL
   }
   drupal_add_http_header('Content-Type', 'text/plain; charset=utf-8');
   drupal_add_http_header('Content-Disposition', 'attachment; filename=biblio_export.csv');
@@ -636,10 +640,10 @@ function _biblio_cck_join(& $biblio_fields) {
   $query_cck_fields = "SELECT field_name, label from {node_field_instance} where type_name='biblio' and not (widget_type='image')";
   $res_cck_fields = db_query($query_cck_fields);
   foreach ($$res_cck_fields as $rec) {
-    $cck_table = 'content_'. $rec->field_name;
-    $cck_field = $rec->field_name .'_value';
+    $cck_table = 'content_' . $rec->field_name;
+    $cck_field = $rec->field_name . '_value';
     $biblio_fields[$cck_field] = $rec->label;
-    $cck_join .= ' left join {'. $cck_table .'} on b.vid='. $cck_table .'.vid';
+    $cck_join .= ' left join {' . $cck_table . '} on b.vid=' . $cck_table . '.vid';
   }
   return $cck_join;
 }
@@ -706,10 +710,11 @@ function biblio_csv_export($results) {
   $csv = '';
   if (!is_array($results)) {
     $result_array[] = (array) $results;
-  } else {
+  }
+  else {
     $result_array = $results;
   }
-  $fieldnames = null;
+  $fieldnames = NULL;
   foreach ((array)$result_array as $rec) {
     if (empty($fieldnames)) {
       $fieldnames = array_keys($rec);
@@ -717,31 +722,34 @@ function biblio_csv_export($results) {
     }
     $csv .= biblio_strcsv($rec);
   }
-  return($csv);
+  return $csv;
 }
 
 function biblio_strcsv($fields = array(), $delimiter = ',', $enclosure = '"') {
   $str = '';
   $escape_char = '\\';
   foreach ($fields as $value) {
-    if (strpos($value, $delimiter) !== false || strpos($value, $enclosure) !== false || strpos($value, "\n") !== false || strpos($value, "\r") !== false || strpos($value, "\t") !== false || strpos($value, ' ') !== false) {
+    if (strpos($value, $delimiter) !== FALSE || strpos($value, $enclosure) !== FALSE || strpos($value, "\n") !== FALSE || strpos($value, "\r") !== FALSE || strpos($value, "\t") !== FALSE || strpos($value, ' ') !== FALSE) {
       $str2 = $enclosure;
       $escaped = 0;
       $len = strlen($value);
       for ($i = 0; $i < $len; $i++) {
         if ($value[$i] == $escape_char) {
           $escaped = 1;
-        } else
+        }
+        else
           if (!$escaped && $value[$i] == $enclosure) {
             $str2 .= $enclosure;
-          } else {
+          }
+          else {
             $escaped = 0;
           }
         $str2 .= $value[$i];
       }
       $str2 .= $enclosure;
       $str .= $str2 . $delimiter;
-    } else {
+    }
+    else {
       $str .= $value . $delimiter;
     }
   }

@@ -14,9 +14,6 @@ function biblio_marc_biblio_import_options() {
   return array('biblio_marc' => t('MARC'));
 }
 
-
-
-
 function biblio_marc_node_delete($node) {
   if ($node->type != 'biblio') {
     return;
@@ -26,11 +23,10 @@ function biblio_marc_node_delete($node) {
     ->execute();
 }
 
-
 function biblio_marc_node_insert($node) {
-	if ($node->type != 'biblio') {
-	  return;
-	}
+  if ($node->type != 'biblio') {
+    return;
+  }
   if (!isset($node->biblio_marc_md5)) {
     return;
   }
@@ -51,7 +47,7 @@ function biblio_marc_biblio_import($file, $terms = array(), $batch = FALSE, $ses
     $pubtype .= $leader[7];
     $node->biblio_type = _biblio_marc_type_map($pubtype);
     foreach ($record->fields() as $fields) {
-      foreach ($fields as $field){
+      foreach ($fields as $field) {
         $tagnum = $field->tagno;
         switch ($tagnum) {
           case '008':
@@ -80,7 +76,7 @@ function biblio_marc_biblio_import($file, $terms = array(), $batch = FALSE, $ses
             $node->biblio_short_title = str_replace(' /', '', $field->subfield('a'));
             break;
           case '245':
-            $node->title = str_replace(' /', '', $field->subfield('a')) .' '. $field->subfield('b');
+            $node->title = str_replace(' /', '', $field->subfield('a')) . ' ' . $field->subfield('b');
             break;
           case '250':
             $node->biblio_edition = $field->subfield('a');
@@ -130,11 +126,9 @@ function biblio_marc_biblio_import($file, $terms = array(), $batch = FALSE, $ses
               $node->biblio_url = $value;
             }
             break;
-
         }
       }
     }
-
     if (!empty($node)) {
       $node->biblio_marc_md5 = md5(serialize($node));
 
@@ -154,11 +148,12 @@ function biblio_marc_biblio_import($file, $terms = array(), $batch = FALSE, $ses
   }
   return array($nids, $dups);
 }
+
 function biblio_marc_check_md5($md5) {
   static $marc_md5s = array();
   if (empty($marc_md5s)) {
     $result = db_query("SELECT * FROM {biblio_marc} ");
-    foreach($result as $row) {
+    foreach ($result as $row) {
       $marc_md5s[$row->biblio_marc_md5] = $row->nid;
     }
   }

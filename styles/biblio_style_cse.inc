@@ -8,7 +8,7 @@
  *   The name of the style
  */
 function biblio_style_cse_info() {
-  return array (
+  return array(
     'cse' => 'Council of Science Editors (CSE)'
   );
 }
@@ -22,7 +22,7 @@ function biblio_style_cse_info() {
  *   The base URL of the biblio module (defaults to /biblio)
  * @param $inline
  *   A logical value indicating if this is being rendered within the
- *   Drupal framwork (false) or we are just passing back the html (true)
+ *   Drupal framwork (FALSE) or we are just passing back the html (TRUE)
  * @return
  *   The styled biblio entry
  */
@@ -33,18 +33,18 @@ function biblio_style_cse_author_options() {
     'AuthorsInitialsDelimFirstAuthor' => ' ',     //7
     'AuthorsInitialsDelimStandard'    => ' ',      //8
     'betweenInitialsDelim'            => '',     //9
-    'initialsBeforeAuthorFirstAuthor' => false,    //10
+    'initialsBeforeAuthorFirstAuthor' => FALSE,    //10
     'initialsBeforeAuthorStandard'    => FALSE,     //11
     'shortenGivenNames'               => TRUE,    //12
     'numberOfAuthorsTriggeringEtAl'   => 10,       //13
     'includeNumberOfAuthors'          => 10,       //14
     'customStringAfterFirstAuthors'   => ' et al.',//15
-    'encodeHTML'                      => true
+    'encodeHTML'                      => TRUE
   );
   return $author_options;
 }
 
-function biblio_style_cse($node, $base = 'biblio', $inline = false) {
+function biblio_style_cse($node, $base = 'biblio', $inline = FALSE) {
   $output = '';
   $author_options = biblio_style_cse_author_options();
   $authors = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[1], 'options' => $author_options, 'inline' => $inline));

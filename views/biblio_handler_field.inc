@@ -12,7 +12,7 @@ class biblio_handler_field extends views_handler_field {
             INNER JOIN {biblio_field_type_data} bftd ON bftd.ftdid=bft.ftdid",
                         array(':name' => $options['field']))
                         ;
-    foreach($result as $label) {
+    foreach ($result as $label) {
       $this->labels[$label->tid] = $label->title;
     }
   }
@@ -34,7 +34,7 @@ class biblio_handler_field extends views_handler_field {
       '#type' => 'checkbox',
       '#title' => t('Use label specific to biblio type'),
       '#description' => 'Check this option to use the type-specific field labels as defined in '
-      .l(t('biblio settings'),'admin/config/biblio/fields/type'),
+      . l(t('biblio settings'), 'admin/config/biblio/fields/type'),
       '#default_value' => $this->options['biblio_label'],
     );
     parent::options_form($form, $form_state);

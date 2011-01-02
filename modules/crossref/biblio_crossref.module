@@ -15,12 +15,12 @@ function biblio_crossref_form_biblio_node_form_alter(&$form, &$form_state) {
         '#collapsible' => TRUE,
         '#collapsed' => TRUE,
     );
-    $have_pid  = (isset($user->data['biblio_crossref_pid']) && !empty($user->data['biblio_crossref_pid'])) ? FALSE : TRUE;
-    if ($have_pid) {
+    $have_pid  = (isset($user->data['biblio_crossref_pid']) && !empty($user->data['biblio_crossref_pid'])) ? TRUE : FALSE;
+    if (!$have_pid) {
       $form['biblio_doi_lookup']['doi_register'] = array(
           '#prefix' => '<p><b>',
           '#suffix' => '</b></p>',
-          '#markup' => l('You need to register with CrossRef', 'http://www.crossref.org/requestaccount/', array('attributes' => array('target' => '_blank'), 'absolue' => TRUE)) . t(' and then enter your CrossRef UserID in the "<i>CrossRef Login Information</i>" section of your account profile ') . l('here...', "user/$user->uid/edit"),
+          '#markup' => t('!url1 and then enter your CrossRef UserID in the "<i>CrossRef Login Information</i>" section of your account profile !url2', array('!url1' => l('You need to register with CrossRef', 'http://www.crossref.org/requestaccount/', array('attributes' => array('target' => '_blank'), 'absolue' => TRUE)), '!url2' => l('here...', "user/$user->uid/edit"))),
       );
     }
 
@@ -30,14 +30,14 @@ function biblio_crossref_form_biblio_node_form_alter(&$form, &$form_state) {
         '#required' => FALSE,
         '#default_value' => (isset($form_state['values']['doi_data']) ? $form_state['values']['doi_data'] : ''),
         '#description' => t('Enter a DOI name in the form: <b>10.1000/123456</b>'),
-        '#disabled' => $have_pid,
+        '#disabled' => !$have_pid,
         '#size' => 60,
         '#maxlength' => 255,
         '#weight' => -4
     );
     $form['biblio_doi_lookup']['doi_submit'] = array(
         '#type' => 'submit',
-        '#disabled' => $have_pid,
+        '#disabled' => !$have_pid,
         '#value' => t('Populate using DOI'),
         '#submit' => array('biblio_crossref_form_biblio_node_form_submit')
     );
@@ -55,7 +55,7 @@ function biblio_crossref_form_biblio_node_form_submit($form, &$form_state) {
     if (($doi_start = strpos($form_state['values']['doi_data'], '10.')) !== FALSE) {
       if (!($dup = biblio_crossref_check_doi($doi))) {
         if (!isset($user->data['biblio_crossref_pid']) || empty($user->data['biblio_crossref_pid']) ) {
-          form_set_error('doi_data', t(l('You need to register with CrossRef', 'http://www.crossref.org/requestaccount/', array('attributes' => array('target' => '_blank'), 'absolue' => TRUE)). t(' and then enter your CrossRef UserID in the "<i>CrossRef Login Information</i>" section of your account profile ') . l('here...', "user/$user->uid/edit")));
+          form_set_error('doi_data', t(l('You need to register with CrossRef', 'http://www.crossref.org/requestaccount/', array('attributes' => array('target' => '_blank'), 'absolue' => TRUE)). t(' and then enter your CrossRef UserID in the "<i>CrossRef Login Information</i>" section of your account profile !url', array('!url' => l('here...', "user/$user->uid/edit")))));
           return;
         }
         module_load_include('php', 'biblio_crossref', 'biblio.crossref.client');
@@ -68,13 +68,12 @@ function biblio_crossref_form_biblio_node_form_submit($form, &$form_state) {
         }
       }
       else {
-        $message = t('The DOI that you are trying to import already exists in the database, see ');
-        $message .= l('node/'. $dup, 'node/'. $dup);
+        $message = t('The DOI that you are trying to import already exists in the database, see !url', array('!url' => l('node/' . $dup, 'node/' . $dup)));
         form_set_error('doi_data', $message);
       }
     }
     else {
-      form_set_error('doi_data', t('This does not appear to be a valid DOI name, it should start with "10." '));
+      form_set_error('doi_data', t('This does not appear to be a valid DOI name, it should start with "10."'));
     }
   }
   $form_state['rebuild'] = TRUE;
@@ -99,7 +98,7 @@ function biblio_crossref_link($type, $node = NULL, $teaser = FALSE) {
     return array();
   }
   if ($type == 'node' && $node->type == 'biblio') {
-    $link  = 'http://dx.doi.org/'. $node->biblio_crossref_id;
+    $link  = 'http://dx.doi.org/' . $node->biblio_crossref_id;
     return array('biblio_crossref' => array(
         'title'      => t('DOI'),
         'href'       => $link,

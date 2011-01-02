@@ -27,7 +27,7 @@ function biblio_style_apa_author_options() {
     'numberOfAuthorsTriggeringEtAl'   =>  6,         //13
     'includeNumberOfAuthors'          =>  6,         //14
     'customStringAfterFirstAuthors'   =>  ', et al.',//15
-    'encodeHTML'                      =>  true
+    'encodeHTML'                      =>  TRUE
   );
   return $author_options;
 }
@@ -42,7 +42,7 @@ function biblio_style_apa_author_options() {
  *   The base URL of the biblio module (defaults to /biblio)
  * @param $inline
  *   A logical value indicating if this is being rendered within the
- *   Drupal framwork (FALSE) or we are just passing back the html (true)
+ *   Drupal framwork (FALSE) or we are just passing back the html (TRUE)
  * @return
  *   The styled biblio entry
  */

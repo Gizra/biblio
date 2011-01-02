@@ -4,5 +4,3 @@ description = Provides RIS file import and export to the Biblio module.
 core = 7.x
 package = Biblio
 dependencies[] = biblio
-files[] = biblio_ris.install
-files[] = biblio_ris.module

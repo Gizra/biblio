@@ -1,7 +1,7 @@
 
                            biblio.module
 
-Author:  Ron Jerome (ron dot jerome at nrc dot ca)
+Author:  Ron Jerome 
 Released under the GPL
 
 
@@ -23,7 +23,7 @@ The lists can be sorted, filtered and ordered in many different ways.
 
 Requirements:
 =============
-Drupal 6.x
+Drupal 7.x, Upgrades supported from any Biblio version after 6.x-1.9
 
 
 

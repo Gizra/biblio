@@ -4,7 +4,7 @@ class biblio_handler_filter_biblio_contributor_auth_type extends views_handler_f
 
   function construct() {
     parent::construct();
-    $this->definition['numeric'] = true;
+    $this->definition['numeric'] = TRUE;
   }
 
   function get_value_options() {

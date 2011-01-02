@@ -286,7 +286,7 @@ function biblio_parse_author($author_array, $cat = 0) {
       // 2006.02.11 DR: in the last case, any NESTED curly braces should also be taken into account! so second
       // clause rules out things such as author="a{\"{o}}"
       //
-      if (preg_match("/(.*){([^\\\].*)}/", $value, $matches) && !(preg_match("/(.*){\\\.{.*}.*}/", $value, $matches2))) {
+      if (preg_match("/(.*) {([^\\\].*)}/", $value, $matches) && !(preg_match("/(.*) {\\\.{.*}.*}/", $value, $matches2))) {
         $author = explode(" ", $matches[1]);
         $surname = $matches[2];
       }

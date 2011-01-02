@@ -156,7 +156,7 @@ class PARSEENTRIES
    */
   function openBib($file)
   {
-    if(!is_file($file))
+    if (!is_file($file))
     die;
     $this->fid = fopen ($file,'r');
     $this->parseFile = TRUE;
@@ -164,8 +164,8 @@ class PARSEENTRIES
   // Load a bibtex string to parse it
   function loadBibtexString($bibtex_string)
   {
-    if(is_string($bibtex_string)) {
-      //$bibtex_string = $this->searchReplaceText($this->transtab_latex_unicode, $bibtex_string, false);
+    if (is_string($bibtex_string)) {
+      //$bibtex_string = $this->searchReplaceText($this->transtab_latex_unicode, $bibtex_string, FALSE);
       $this->bibtexString = explode("\n",$bibtex_string);
     } else {
       $this->bibtexString = $bibtex_string;
@@ -199,9 +199,9 @@ class PARSEENTRIES
   // Get a non-empty line from the bib file or from the bibtexString
   function getLine()
   {
-    if($this->parseFile)
+    if ($this->parseFile)
     {
-      if(!feof($this->fid))
+      if (!feof($this->fid))
       {
         do
         {
@@ -241,7 +241,7 @@ class PARSEENTRIES
     $array = preg_split("/,\s*([-_.:,a-zA-Z0-9]+)\s*={1}\s*/U", $seg, PREG_SPLIT_DELIM_CAPTURE);
     // echo "**** ";print_r($array);echo "<BR>";
     //$array = preg_split("/,\s*(\w+)\s*={1}\s*/U", $seg, PREG_SPLIT_DELIM_CAPTURE);
-    if(!array_key_exists(1, $array))
+    if (!array_key_exists(1, $array))
     return array($array[0], FALSE);
     return array($array[0], $array[1]);
   }
@@ -251,7 +251,7 @@ class PARSEENTRIES
     // 03/05/2005 G. Gardey. Do not remove all occurences, juste one
     // * correctly parse an entry ended by: somefield = {aValue}}
     $lg = strlen($oldString);
-    if($oldString[$lg-1] == "}" || $oldString[$lg-1] == ")" || $oldString[$lg-1] == ",")
+    if ($oldString[$lg-1] == "}" || $oldString[$lg-1] == ")" || $oldString[$lg-1] == ",")
     $oldString = substr($oldString,0,$lg-1);
     // $oldString = rtrim($oldString, "}),");
     $split = preg_split("/=/", $oldString, 2);
@@ -261,27 +261,27 @@ class PARSEENTRIES
       list($entry, $string) = $this->fieldSplit($string);
       $values[] = $entry;
     }
-    foreach($values as $value)
+    foreach ($values as $value)
     {
       $pos = strpos($oldString, $value);
       $oldString = substr_replace($oldString, '', $pos, strlen($value));
     }
     $rev = strrev(trim($oldString));
-    if($rev{0} != ',')
+    if ($rev{0} != ',')
     $oldString .= ',';
     $keys = preg_split("/=,/", $oldString);
     // 22/08/2004 - Mark Grimshaw
     // I have absolutely no idea why this array_pop is required but it is.  Seems to always be
     // an empty key at the end after the split which causes problems if not removed.
     array_pop($keys);
-    foreach($keys as $key)
+    foreach ($keys as $key)
     {
       $value = trim(array_shift($values));
       $rev = strrev($value);
       // remove any dangling ',' left on final field of entry
-      if($rev{0} == ',')
+      if ($rev{0} == ',')
       $value = rtrim($value, ",");
-      if(!$value)
+      if (!$value)
       continue;
       // 21/08/2004 G.Gardey -> expand macro
       // Don't remove delimiters now needs to know if the value is a string macro
@@ -299,7 +299,7 @@ class PARSEENTRIES
     $matches = preg_split("/@(.*)[{(](.*),/U", $entry, 2, PREG_SPLIT_DELIM_CAPTURE);
     $this->entries[$this->count]['bibtexEntryType'] = strtolower(trim($matches[1]));
     // sometimes a bibtex entry will have no citation key
-    if(preg_match("/=/", $matches[2])) // this is a field
+    if (preg_match("/=/", $matches[2])) // this is a field
     $matches = preg_split("/@(.*)\s*[{(](.*)/U", $entry, 2, PREG_SPLIT_DELIM_CAPTURE);
     // print_r($matches); print "<P>";
     $this->entries[$this->count]['bibtexCitation'] = $matches[2];
@@ -310,21 +310,21 @@ class PARSEENTRIES
   function parseEntry($entry)
   {
     set_time_limit(30); // reset the script timer to avoid timeouts
-    $entry = $this->translate_latex ? $this->searchReplaceText($this->transtab_latex_unicode, $entry, false) : $entry;
+    $entry = $this->translate_latex ? $this->searchReplaceText($this->transtab_latex_unicode, $entry, FALSE) : $entry;
     $count = 0;
     $lastLine = FALSE;
-    if(preg_match("/@(.*)([{(])/U", preg_quote($entry), $matches))
+    if (preg_match("/@(.*)([{(])/U", preg_quote($entry), $matches))
     {
-      if(!array_key_exists(1, $matches))
+      if (!array_key_exists(1, $matches))
       return $lastLine;
-      if(preg_match("/string/i", trim($matches[1])))
+      if (preg_match("/string/i", trim($matches[1])))
       $this->strings[] = $entry;
-      else if(preg_match("/preamble/i", trim($matches[1])))
+      else if (preg_match("/preamble/i", trim($matches[1])))
       $this->preamble[] = $entry;
-      else if(preg_match("/comment/i", $matches[1])); // MG (31/Jan/2006) -- ignore @comment
+      else if (preg_match("/comment/i", $matches[1])); // MG (31/Jan/2006) -- ignore @comment
       else
       {
-        if($this->fieldExtract)
+        if ($this->fieldExtract)
         $this->fullSplit($entry);
         else
         $this->entries[$this->count] = $entry;
@@ -337,20 +337,20 @@ class PARSEENTRIES
   // Remove delimiters from a string
   function removeDelimiters($string)
   {
-    if($string  && ($string{0} == "\""))
+    if ($string  && ($string{0} == "\""))
     {
       $string = substr($string, 1);
       $string = substr($string, 0, -1);
     }
-    else if($string && ($string{0} == "{"))
+    else if ($string && ($string{0} == "{"))
     {
-      if(strlen($string) > 0 && $string[strlen($string)-1] == "}")
+      if (strlen($string) > 0 && $string[strlen($string)-1] == "}")
       {
         $string = substr($string, 1);
         $string = substr($string, 0, -1);
       }
     }
-    else if(!is_numeric($string) && !array_key_exists($string, $this->strings)
+    else if (!is_numeric($string) && !array_key_exists($string, $this->strings)
     && (array_search($string, $this->undefinedStrings) === FALSE))
     {
       $this->undefinedStrings[] = $string; // Undefined string that is not a year etc.
@@ -416,7 +416,7 @@ class PARSEENTRIES
   function removeDelimitersAndExpand($string, $inpreamble = FALSE)
   {
     // only expand the macro if flag set, if strings defined and not in preamble
-    if(!$this->expandMacro || empty($this->strings) || $inpreamble)
+    if (!$this->expandMacro || empty($this->strings) || $inpreamble)
     $string = $this->removeDelimiters($string);
     else
     {
@@ -447,15 +447,15 @@ class PARSEENTRIES
     $entry="";
     while($line=$this->getLine())
     {
-      if($possibleEntryStart)
+      if ($possibleEntryStart)
       $line = $possibleEntryStart . $line;
       if (!$inside && strchr($line,"@"))
       {
         // throw all characters before the '@'
         $line=strstr($line,'@');
-        if(!strchr($line, "{") && !strchr($line, "("))
+        if (!strchr($line, "{") && !strchr($line, "("))
         $possibleEntryStart = $line;
-        elseif(preg_match("/@.*([{(])/U", preg_quote($line), $matches))
+        elseif (preg_match("/@.*([{(])/U", preg_quote($line), $matches))
         {
           $inside = TRUE;
           if ($matches[1] == '{')
@@ -491,22 +491,22 @@ class PARSEENTRIES
   function returnArrays()
   {
  //   global $transtab_latex_unicode; // defined in 'transtab_latex_unicode.inc.php'
-    foreach($this->preamble as $value)
+    foreach ($this->preamble as $value)
     {
       preg_match("/.*?[{(](.*)/", $value, $matches);
       $preamble = substr($matches[1], 0, -1);
       $preambles['bibtexPreamble'] = trim($this->removeDelimitersAndExpand(trim($preamble), TRUE));
     }
-    if(isset($preambles))
+    if (isset($preambles))
     $this->preamble = $preambles;
-    if($this->fieldExtract)
+    if ($this->fieldExtract)
     {
       // Next lines must take into account strings defined by previously-defined strings
       $strings = $this->strings;
       // $this->strings is initialized with strings provided by user if they exists
       // it is supposed that there are no substitutions to be made in the user strings, i.e., no #
       $this->strings = isset($this->userStrings) ? $this->userStrings : array() ;
-      foreach($strings as $value)
+      foreach ($strings as $value)
       {
         // changed 21/08/2004 G. Gardey
         // 23/08/2004 Mark G. account for comments on same line as @string - count delimiters in string value
@@ -521,37 +521,37 @@ class PARSEENTRIES
     // changed 21/08/2004 G. Gardey
     // 22/08/2004 Mark Grimshaw - stopped useless looping.
     // removeDelimit and expandMacro have NO effect if !$this->fieldExtract
-    if($this->removeDelimit || $this->expandMacro && $this->fieldExtract)
+    if ($this->removeDelimit || $this->expandMacro && $this->fieldExtract)
     {
       for($i = 0; $i < count($this->entries); $i++)
       {
-        foreach($this->entries[$i] as $key => $value)
+        foreach ($this->entries[$i] as $key => $value)
         // 02/05/2005 G. Gardey don't expand macro for bibtexCitation
         // and bibtexEntryType
-        if($key != 'bibtexCitation' && $key != 'bibtexEntryType')
+        if ($key != 'bibtexCitation' && $key != 'bibtexEntryType')
         $this->entries[$i][$key] = trim($this->removeDelimitersAndExpand($this->entries[$i][$key]));
       }
     }
     // EZ: Remove this to be able to use the same instance for parsing several files,
     // e.g., parsing a entry file with its associated abbreviation file
-    //    if(empty($this->preamble))
+    //    if (empty($this->preamble))
     //      $this->preamble = FALSE;
-    //    if(empty($this->strings))
+    //    if (empty($this->strings))
     //      $this->strings = FALSE;
-    //    if(empty($this->entries))
+    //    if (empty($this->entries))
     //      $this->entries = FALSE;
     return array($this->preamble, $this->strings, $this->entries, $this->undefinedStrings);
   }
 
   function &getEntries() {
-    if($this->removeDelimit || $this->expandMacro && $this->fieldExtract)
+    if ($this->removeDelimit || $this->expandMacro && $this->fieldExtract)
     {
       for($i = 0; $i < count($this->entries); $i++)
       {
-        foreach($this->entries[$i] as $key => $value)
+        foreach ($this->entries[$i] as $key => $value)
         // 02/05/2005 G. Gardey don't expand macro for bibtexCitation
         // and bibtexEntryType
-        if($key != 'bibtexCitation' && $key != 'bibtexEntryType')
+        if ($key != 'bibtexCitation' && $key != 'bibtexEntryType')
         $this->entries[$i][$key] = trim($this->removeDelimitersAndExpand($this->entries[$i][$key]));
       }
     }

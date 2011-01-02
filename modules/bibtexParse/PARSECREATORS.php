@@ -6,7 +6,7 @@ class Creators extends PARSECREATORS
     protected    $typeMap            = array();
     private   $md5                = array();
 
-  function Creators($init = null)
+  function Creators($init = NULL)
   {
     $this->buildTypeMap();
     if (is_array($init))
@@ -41,7 +41,7 @@ class Creators extends PARSECREATORS
 
   function getCreatorString()
   {
-    foreach($this->authors as $key => $author)
+    foreach ($this->authors as $key => $author)
     {
       $author_array[$author['rank']] =  $author['firstname'] .' '. $author['initials'].' '.$author['lastname'];
     }
@@ -89,7 +89,7 @@ class Creators extends PARSECREATORS
     {
       $this->loadMD5();
       db_query('DELETE FROM {biblio_contributor} WHERE nid = %d AND vid = %d', $nid, $vid);
-      foreach($this->authors as $rank => $author)
+      foreach ($this->authors as $rank => $author)
       {
         if (empty($author['cid']) && !empty($this->md5)) $author['cid'] = array_search($author['md5'], $this->md5);
       if (empty($author['cid']) )
@@ -132,7 +132,7 @@ class Creators extends PARSECREATORS
  */
   function setCreators($authors)
   {
-    foreach($authors as $author){
+    foreach ($authors as $author) {
       if (strlen(trim($author['name'])))
       {
         $this->authors[] = $this->parseAuthor($author['name'], $author['type']);
@@ -191,7 +191,7 @@ class PARSECREATORS
 
   function parseArray($authorArray, $type = 'author')
   {
-    foreach($authorArray as $author)
+    foreach ($authorArray as $author)
     {
       $this->authors[]  = $this->parseAuthor($author, $type);
     }
@@ -209,15 +209,15 @@ class PARSECREATORS
     $author = explode(",", preg_replace("/\s{2,}/", ' ', trim($value)));
     $size = sizeof($author);
 // No commas therefore something like Mark Grimshaw, Mark Nicholas Grimshaw, M N Grimshaw, Mark N. Grimshaw
-    if($size == 1)
+    if ($size == 1)
     {
 // Is complete surname enclosed in {...}, unless the string starts with a backslash (\) because then it is
 // probably a special latex-sign..
 // 2006.02.11 DR: in the last case, any NESTED curly braces should also be taken into account! so second
 // clause rules out things such as author="a{\"{o}}"
 //
-            if(preg_match("/(.*){([^\\\].*)}/", $value, $matches) &&
-         !(preg_match("/(.*){\\\.{.*}.*}/", $value, $matches2)))
+            if (preg_match("/(.*) {([^\\\].*)}/", $value, $matches) &&
+         !(preg_match("/(.*) {\\\.{.*}.*}/", $value, $matches2)))
       {
         $author = split(" ", $matches[1]);
         $surname = $matches[2];
@@ -230,7 +230,7 @@ class PARSECREATORS
       }
     }
 // Something like Grimshaw, Mark or Grimshaw, Mark Nicholas  or Grimshaw, M N or Grimshaw, Mark N.
-    else if($size == 2)
+    else if ($size == 2)
     {
 // first of array is surname (perhaps with prefix)
       list($surname, $prefix) = $this->grabSurname(array_shift($author));
@@ -245,11 +245,11 @@ class PARSECREATORS
     }
     $remainder = join(" ", $author);
     list($firstname, $initials) = $this->grabFirstnameInitials($remainder);
-    if(!empty($this->prefix))
+    if (!empty($this->prefix))
       $prefix = join(' ', $this->prefix);
     $surname = $surname . ' ' . $appellation;
     $creator = array('firstname' => utf8_encode(trim($firstname)), 'initials' => utf8_encode(trim($initials)), 'lastname' => utf8_encode(trim($surname)), 'prefix' => trim($prefix));
-    if(isset($creator))
+    if (isset($creator))
     {
       $creator['type'] = $this->typeMap[$type];
       $creator['md5']  = $this->md5sum($creator);
@@ -270,22 +270,22 @@ class PARSECREATORS
   {
     $firstname = $initials = '';
     $array = split(" ", $remainder);
-    foreach($array as $value)
+    foreach ($array as $value)
     {
       $firstChar = substr($value, 0, 1);
-      if((ord($firstChar) >= 97) && (ord($firstChar) <= 122))
+      if ((ord($firstChar) >= 97) && (ord($firstChar) <= 122))
         $this->prefix[] = $value;
-      else if(preg_match("/[a-zA-Z]{2,}/", trim($value)))
+      else if (preg_match("/[a-zA-Z]{2,}/", trim($value)))
         $firstnameArray[] = trim($value);
       else
         $initialsArray[] = str_replace(".", " ", trim($value));
     }
-    if(isset($initialsArray))
+    if (isset($initialsArray))
     {
-      foreach($initialsArray as $initial)
+      foreach ($initialsArray as $initial)
         $initials .= ' ' . trim($initial);
     }
-    if(isset($firstnameArray))
+    if (isset($firstnameArray))
       $firstname = join(" ", $firstnameArray);
     return array($firstname, $initials);
   }
@@ -295,10 +295,10 @@ class PARSECREATORS
   {
     $surnameArray = split(" ", $input);
     $noPrefix = $surname = FALSE;
-    foreach($surnameArray as $value)
+    foreach ($surnameArray as $value)
     {
       $firstChar = substr($value, 0, 1);
-      if(!$noPrefix && (ord($firstChar) >= 97) && (ord($firstChar) <= 122))
+      if (!$noPrefix && (ord($firstChar) >= 97) && (ord($firstChar) <= 122))
         $prefix[] = $value;
       else
       {
@@ -306,9 +306,9 @@ class PARSECREATORS
         $noPrefix = TRUE;
       }
     }
-    if($surname)
+    if ($surname)
       $surname = join(" ", $surname);
-    if(isset($prefix))
+    if (isset($prefix))
     {
       $prefix = join(" ", $prefix);
       return array($surname, $prefix);

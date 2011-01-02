@@ -23,7 +23,7 @@
  *   The name of the style
  */
 function biblio_style_ama_info() {
-  return array (
+  return array(
     'ama' => 'American Medical Association (AMA)'
     );
 }
@@ -40,13 +40,13 @@ function biblio_style_ama_author_options() {
     'numberOfAuthorsTriggeringEtAl'     => 6,
     'includeNumberOfAuthors'            => 3,
     'customStringAfterFirstAuthors'     => ', et al.',
-    'encodeHTML'                        => true
+    'encodeHTML'                        => TRUE
   );
 
   return $author_options;
 }
 
-function biblio_style_ama($node, $base = 'biblio', $inline = false) {
+function biblio_style_ama($node, $base = 'biblio', $inline = FALSE) {
   $output = '';
   $markupPatternsArray = array("italic-prefix" => "<i>",
                                "italic-suffix" => "<\/i>",
@@ -65,7 +65,7 @@ function biblio_style_ama($node, $base = 'biblio', $inline = false) {
     case 102: //Journal Article
     case 105: //Newspaper Article
     case 106: //Magazine Article
-      if(!empty($authors)) {
+      if (!empty($authors)) {
         $output .= '<span class="biblio-authors">';
         $output .= $authors;
         if (!preg_match("/\. *$/", $authors)) $output .= ".";
@@ -125,7 +125,7 @@ function biblio_style_ama($node, $base = 'biblio', $inline = false) {
         if (!empty($node->biblio_year) || !empty($node->biblio_volume) || !empty($node->biblio_issue) || !empty($node->biblio_alternate_title) || !empty($node->biblio_secondary_title)) // only add ": " if either year, volume, issue, abbrev_journal or publication isn't empty
         $output .= ":";
 
-        $output .= theme_biblio_page_number($node->biblio_pages, $markupPatternsArray["endash"]); // function 'formatPageInfo()' is defined in 'cite.inc.php'
+        $output .= theme('biblio_page_number', array('orig_page_info' => $node->biblio_pages, 'page_range_delim' => $markupPatternsArray["endash"])); // function 'formatPageInfo()' is defined in 'cite.inc.php'
       }
 
       if (isset($node->online_publication)) // this record refers to an online article
@@ -175,7 +175,7 @@ function biblio_style_ama($node, $base = 'biblio', $inline = false) {
       break;
     case 101: //Book Chapter
     case 103: //Conference Paper
-      if(!empty($authors)) {
+      if (!empty($authors)) {
         $output .= '<span class="biblio-authors">';
         $output .= $authors;
         if (!preg_match("/\. *$/", $authors)) $output .= ".";
@@ -210,7 +210,7 @@ function biblio_style_ama($node, $base = 'biblio', $inline = false) {
           'numberOfAuthorsTriggeringEtAl'     => 6,
           'includeNumberOfAuthors'            => 3,
           'customStringAfterFirstAuthors'     => ' et al.',
-          'encodeHTML'                        => true
+          'encodeHTML'                        => TRUE
         );
 
         $editor = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[2], 'options' => $editor_options, 'inline' => $inline));
@@ -395,7 +395,7 @@ function biblio_style_ama($node, $base = 'biblio', $inline = false) {
           'numberOfAuthorsTriggeringEtAl'   => 6,
           'includeNumberOfAuthors'          => 3,
           'customStringAfterFirstAuthors'   => ' et al.',
-          'encodeHTML'                      => true
+          'encodeHTML'                      => TRUE
         );
 
         $editor = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[2], 'options' => $editor_options, 'inline' => $inline));

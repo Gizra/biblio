@@ -55,15 +55,14 @@ function biblio_pm_form_biblio_node_form_submit($form, &$form_state) {
       if (!isset($result->PubmedArticle)) {
         unset($form_state['values']['biblio_type']);
         unset($form_state['post']['biblio_type']);
-        form_set_error('PMID', 'No data available for PubMed ID: '. check_plain($pmid));
+        form_set_error('PMID', 'No data available for PubMed ID: ' . check_plain($pmid));
         return;
       }
       $data = new BiblioEntrezPubmedArticle($result->PubmedArticle);
       $node_data = $data->getBiblio();
     }
     else {
-      $message = t('The PubMed ID that you are trying to import already exists in the database, see ');
-      $message .= l('node/'. $dup, 'node/'. $dup);
+      $message = t('The PubMed ID that you are trying to import already exists in the database, see !url', array('!url' => l('node/' . $dup, 'node/' . $dup)));
       form_set_error('PMID', $message);
       $form_state['rebuild'] = TRUE;
       $form_state['submitted'] = FALSE;
@@ -96,7 +95,7 @@ function _biblio_pm_import($file, $terms, $batch, $session_id) {
   module_load_include('php', 'biblio_pm', 'EntrezPubmedArticle');
   $pmids = file($file->uri, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
   if (empty($pmids)) {
-    drupal_set_message("Could not open PubMed ID file", 'error');
+    drupal_set_message(t("Could not open PubMed ID file"), 'error');
     return;
   }
   $retmax = 100;
@@ -125,7 +124,7 @@ function _biblio_pm_import($file, $terms, $batch, $session_id) {
         else {
           $dups[] = $dup;
         }
-        $node = null;
+        $node = NULL;
       }
       $start++;
     }
@@ -153,7 +152,7 @@ function biblio_pm_link($type, $node = NULL, $teaser = FALSE) {
   }
 
   if ($type == 'node' && $node->type == 'biblio' ) {
-    $link  = 'http://www.ncbi.nlm.nih.gov/pubmed/'. $node->biblio_pubmed_id .'?dopt=Abstract';
+    $link  = 'http://www.ncbi.nlm.nih.gov/pubmed/' . $node->biblio_pubmed_id . '?dopt=Abstract';
     return array('biblio_pubmed' => array(
         'title'      => t('PubMed'),
         'href'       => $link,
@@ -187,7 +186,7 @@ function biblio_pm_node_update($node) {
 
 function biblio_pm_node_load($nodes, $types) {
     $result = db_select('biblio_pubmed', 'bpm')
-          ->fields('bpm', array('nid','biblio_pubmed_id'))
+          ->fields('bpm', array('nid', 'biblio_pubmed_id'))
           ->condition('nid', array_keys($nodes))
           ->execute();
 
@@ -201,7 +200,7 @@ function biblio_pm_check_md5($md5) {
   static $pm_md5s = array();
   if (empty($pm_md5s)) {
     $result = db_query("SELECT * FROM {biblio_pubmed} ");
-    foreach($result as $row ) {
+    foreach ($result as $row ) {
       $pm_md5s[$row->biblio_pubmed_md5] = $row->nid;
     }
   }

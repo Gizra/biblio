@@ -14,7 +14,7 @@
  *   The name of the style
  */
 function biblio_style_mla_info() {
-  return array (
+  return array(
     'mla' => 'Modern Language Association (MLA)'
     );
 }
@@ -23,15 +23,15 @@ function biblio_style_mla_author_options() {
     'BetweenAuthorsDelimStandard' =>', ',         //4
     'BetweenAuthorsDelimLastAuthor' => ', and ',  //5
     'AuthorsInitialsDelimFirstAuthor' => ', ',     //7
-    'AuthorsInitialsDelimStandard'=> ' ',         //8
+    'AuthorsInitialsDelimStandard' => ' ',         //8
     'betweenInitialsDelim' => '. ',               //9
-    'initialsBeforeAuthorFirstAuthor' => false,   //10
-    'initialsBeforeAuthorStandard' => true,       //11
+    'initialsBeforeAuthorFirstAuthor' => FALSE,   //10
+    'initialsBeforeAuthorStandard' => TRUE,       //11
     'shortenGivenNames' => FALSE,                 //12
     'numberOfAuthorsTriggeringEtAl' => 3,         //13
     'includeNumberOfAuthors' => 1,                //14
     'customStringAfterFirstAuthors' => ', et al.',//15
-    'encodeHTML' => true
+    'encodeHTML' => TRUE
   );
 
   return $author_options;
@@ -47,11 +47,11 @@ function biblio_style_mla_author_options() {
  *   The base URL of the biblio module (defaults to /biblio)
  * @param $inline
  *   A logical value indicating if this is being rendered within the
- *   Drupal framwork (false) or we are just passing back the html (true)
+ *   Drupal framwork (FALSE) or we are just passing back the html (TRUE)
  * @return
  *   The styled biblio entry
  */
-function biblio_style_mla($node, $base = 'biblio', $inline = false) {
+function biblio_style_mla($node, $base = 'biblio', $inline = FALSE) {
   $output = '';
   $author_options = biblio_style_mla_author_options();
   $authors = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[1], 'options' => $author_options, 'inline' => $inline));
@@ -66,7 +66,7 @@ function biblio_style_mla($node, $base = 'biblio', $inline = false) {
     case 102: //Journal Article
     case 105: //Newspaper Article
     case 106: //Magazine Article
-      if(!empty($authors)) {
+      if (!empty($authors)) {
         $output .= '<span class="biblio-authors">';
         $output .= $authors;
         if (!preg_match("/\. *$/", $authors)) $output .= ".";
@@ -159,7 +159,7 @@ function biblio_style_mla($node, $base = 'biblio', $inline = false) {
             $output .= ": ";
           }
           // TODO: FIXME $output .= formatPageInfo($node->biblio_pages, $markupPatternsArray["endash"]); // function 'formatPageInfo()' is defined in 'cite.inc.php'
-          $output .= theme_biblio_page_number($node->biblio_pages);
+          $output .= theme('biblio_page_number', array('orig_page_info' => $node->biblio_pages));
         }
       }
 
@@ -168,7 +168,7 @@ function biblio_style_mla($node, $base = 'biblio', $inline = false) {
       break;
     case 101: //Book Chapter
     case 103: //Conference Paper
-      if(!empty($authors)) {
+      if (!empty($authors)) {
         $output .= '<span class="biblio-authors">';
         $output .= $authors;
         if (!preg_match("/\. *$/", $authors)) $output .= ".";
@@ -202,15 +202,15 @@ function biblio_style_mla($node, $base = 'biblio', $inline = false) {
             'BetweenAuthorsDelimStandard' =>', ',         //4
             'BetweenAuthorsDelimLastAuthor' => ', and ',  //5
             'AuthorsInitialsDelimFirstAuthor' => ' ',     //7
-            'AuthorsInitialsDelimStandard'=> ' ',         //8
+            'AuthorsInitialsDelimStandard' => ' ',         //8
             'betweenInitialsDelim' => '. ',               //9
-            'initialsBeforeAuthorFirstAuthor' => true,   //10
-            'initialsBeforeAuthorStandard' => true,       //11
-            'shortenGivenNames' => false,                 //12
+            'initialsBeforeAuthorFirstAuthor' => TRUE,   //10
+            'initialsBeforeAuthorStandard' => TRUE,       //11
+            'shortenGivenNames' => FALSE,                 //12
             'numberOfAuthorsTriggeringEtAl' => 3,         //13
             'includeNumberOfAuthors' => 1,                //14
             'customStringAfterFirstAuthors' => ', et al.',//15
-            'encodeHTML' => true
+            'encodeHTML' => TRUE
           );
           $editor = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[2], 'options' => $editor_options, 'inline' => $inline));
           _period_if_needed($output);
@@ -300,7 +300,7 @@ function biblio_style_mla($node, $base = 'biblio', $inline = false) {
         }
         _period_if_needed($output);
         if (!empty($node->biblio_pages)) {     // pages
-          $output .= theme_biblio_page_number($node->biblio_pages);
+          $output .= theme('biblio_page_number', array('orig_page_info' => $node->biblio_pages));
         }
         _period_if_needed($output);
         //if (!preg_match("/\. *$/", $output))  $output .= ".";
@@ -346,15 +346,15 @@ function biblio_style_mla($node, $base = 'biblio', $inline = false) {
           'BetweenAuthorsDelimStandard' =>', ',         //4
           'BetweenAuthorsDelimLastAuthor' => ', and ',  //5
           'AuthorsInitialsDelimFirstAuthor' => ' ',     //7
-          'AuthorsInitialsDelimStandard'=> ' ',         //8
+          'AuthorsInitialsDelimStandard' => ' ',         //8
           'betweenInitialsDelim' => '. ',               //9
-          'initialsBeforeAuthorFirstAuthor' => true,   //10
-          'initialsBeforeAuthorStandard' => true,       //11
-          'shortenGivenNames' => false,                 //12
+          'initialsBeforeAuthorFirstAuthor' => TRUE,   //10
+          'initialsBeforeAuthorStandard' => TRUE,       //11
+          'shortenGivenNames' => FALSE,                 //12
           'numberOfAuthorsTriggeringEtAl' => 3,         //13
           'includeNumberOfAuthors' => 1,                //14
           'customStringAfterFirstAuthors' => ', et al.',//15
-          'encodeHTML' => true
+          'encodeHTML' => TRUE
         );
         $editor = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[2], 'options' => $editor_options, 'inline' => $inline));
         _period_if_needed($output);

@@ -4,6 +4,4 @@ description = Provides DOI import and search to the Biblio module.
 core = 7.x
 package = Biblio
 dependencies[] = biblio
-files[] = biblio_crossref.install
-files[] = biblio_crossref.module
 files[] = biblio.crossref.client.php

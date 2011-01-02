@@ -8,8 +8,8 @@
 
 class BiblioContributorWebTestCase extends BiblioWebTestCase {
   function setUp() {
-  	parent::setUp('biblio');
-    require_once(drupal_get_path('module', 'biblio') .'/includes/biblio.contributors.inc');
+    parent::setUp('biblio');
+    require_once(drupal_get_path('module', 'biblio') . '/includes/biblio.contributors.inc');
   }
 
 
@@ -39,28 +39,28 @@ class BiblioContributorUnitTest extends BiblioContributorWebTestCase {
   function testGrabFirstnameInitials() {
 
     $string = "Ron";
-    list($firstname,$initials,$prefix) = _grabFirstnameInitials($string);
+    list($firstname, $initials, $prefix) = _grabFirstnameInitials($string);
     $this->assertIdentical($firstname, 'Ron' );
     $this->assertIdentical($initials, '' );
     $string = "Ron J.";
-    list($firstname,$initials,$prefix) = _grabFirstnameInitials($string);
+    list($firstname, $initials, $prefix) = _grabFirstnameInitials($string);
     $this->assertIdentical($firstname, 'Ron' );
     $this->assertIdentical($initials, 'J' );
     $string = "sir Ron J.";
-    list($firstname,$initials,$prefix) = _grabFirstnameInitials($string);
+    list($firstname, $initials, $prefix) = _grabFirstnameInitials($string);
     $this->assertIdentical($firstname, 'Ron' );
     $this->assertIdentical($initials, 'J' );
     $this->assertIdentical($prefix, 'sir' );
     $string = "R J";
-    list($firstname,$initials,$prefix) = _grabFirstnameInitials($string);
+    list($firstname, $initials, $prefix) = _grabFirstnameInitials($string);
     $this->assertIdentical($firstname, '' );
     $this->assertIdentical($initials, 'R J' );
     $string = "R. J.";
-    list($firstname,$initials,$prefix) = _grabFirstnameInitials($string);
+    list($firstname, $initials, $prefix) = _grabFirstnameInitials($string);
     $this->assertIdentical($firstname, '' );
     $this->assertIdentical($initials, 'R J' );
     $string = "R.J.";
-    list($firstname,$initials,$prefix) = _grabFirstnameInitials($string);
+    list($firstname, $initials, $prefix) = _grabFirstnameInitials($string);
     $this->assertIdentical($firstname, '' );
     $this->assertIdentical($initials, 'R J' );
 
@@ -84,12 +84,12 @@ class BiblioContributorUnitTest extends BiblioContributorWebTestCase {
     $vid1 = $node->vid;
     $this->assertIdentical($node->biblio_contributors[1][2]['firstname'], 'George', 'Test biblio_insert_contributors($node), firstname');
     $this->assertIdentical($node->biblio_contributors[1][2]['lastname'], 'Bushzzzzzz', 'Test biblio_insert_contributors($node), lastname' );
-    unset ($node->biblio_contributors[1][2]);
+    unset($node->biblio_contributors[1][2]);
     $node->revision = TRUE;
     node_save($node);
 
     $node = node_load($nid, NULL, TRUE);
-    $this->assertFalse(isset($node->biblio_contributors[1][2]),'Test removing an author and updating the node');
+    $this->assertFalse(isset($node->biblio_contributors[1][2]), 'Test removing an author and updating the node');
 
     biblio_delete_contributor_revision($node->biblio_contributors[1][1]['cid'], $node->vid);
     $node = node_load($nid, NULL, TRUE);
@@ -101,7 +101,7 @@ class BiblioContributorUnitTest extends BiblioContributorWebTestCase {
 
     biblio_delete_contributors($node);
     $node = node_load($nid, NULL, TRUE);
-    $this->assertFalse(count($node->biblio_contributors),'Test biblio_delete_contributors($node), should be zero authors on reload');
+    $this->assertFalse(count($node->biblio_contributors), 'Test biblio_delete_contributors($node), should be zero authors on reload');
 
   }
 

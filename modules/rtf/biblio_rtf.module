@@ -25,7 +25,7 @@ function biblio_rtf_biblio_export_options() {
 }
 
 function biblio_rtf_node_view($node, $view_mode) {
-  if($node->type == 'biblio') {
+  if ($node->type == 'biblio') {
     $links = biblio_rtf_biblio_export_link($node->nid);
     $node->content['links']['biblio_rtf'] = array(
       '#links' => $links,
@@ -92,7 +92,7 @@ function biblio_rtf_biblio_export($nids) {
       $rtf->addColour("#000000");
     }
 
-    $rtf->addText(filter_xss(theme('biblio_style', $variables).'<br><br>',array('i','b','br','u','p','strong','em','sub','sup','ul','li')));
+    $rtf->addText(filter_xss(theme('biblio_style', $variables) . '<br><br>', array('i', 'b', 'br', 'u', 'p', 'strong', 'em', 'sub', 'sup', 'ul', 'li')));
   }
   if ($count > 0) $rtf->getDocument();
 }

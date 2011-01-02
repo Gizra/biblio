@@ -15,13 +15,13 @@ function biblio_citeproc_schema() {
       'id' => array(
         'type' => 'varchar',
         'length' => 255,
-        'not null' => true,
+        'not null' => TRUE,
         'default' => ''
        ),
       'title' => array(
         'type' => 'varchar',
         'length' => 255,
-        'not null' => true,
+        'not null' => TRUE,
         'default' => ''
        ),
       'summary' => array(
@@ -43,7 +43,7 @@ function biblio_citeproc_schema() {
 
 function biblio_citeproc_install_default_styles() {
   $record = array();
-  $dir = drupal_get_path('module', 'biblio_citeproc') .'/style';
+  $dir = drupal_get_path('module', 'biblio_citeproc') . '/style';
   $files = file_scan_directory($dir, '/..*.csl$/');
 
   $query = db_insert('biblio_citeproc_styles')->fields(array('id', 'title', 'summary', 'csl'));
@@ -52,7 +52,7 @@ function biblio_citeproc_install_default_styles() {
     $csl = file_get_contents($file->uri);
     $xml = simplexml_load_string($csl);
 
-    $record  = array (
+    $record  = array(
       'id' => $xml->info->id,
       'title' => $xml->info->title,
       'summary' => $xml->info->summary,

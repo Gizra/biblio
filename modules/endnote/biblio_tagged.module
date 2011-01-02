@@ -125,7 +125,7 @@ function biblio_tagged_biblio_export($nids) {
       $popup_data .=  _biblio_tagged_export($node);
     }
   }
-  if ($popup && !empty($popup_data)) return '<pre>'. $popup_data .'</pre>';
+  if ($popup && !empty($popup_data)) return '<pre>' . $popup_data . '</pre>';
 
 }
 
@@ -140,21 +140,21 @@ function biblio_tagged_biblio_export($nids) {
 
 function _biblio_tagged_import($file, $terms = array(), $batch = FALSE, $session_id = NULL) {
   if (!($fp = fopen($file->uri, "r"))) {
-    drupal_set_message("could not open EndNote Tagged input", 'error');
+    drupal_set_message(t("Could not open EndNote Tagged input"), 'error');
     return;
   }
   $nids = array();
   $dups = array();
   $node = new stdClass();
-  $incite = false;
-  $node_id = null;
-  $contributors = null;
+  $incite = FALSE;
+  $node_id = NULL;
+  $contributors = NULL;
   while (!feof($fp)) {
     $line = trim(fgets($fp));
     $line_len = strlen($line);
     if ($line_len) {
       $start = strpos($line, "%"); // There could be some unprintables at the beginning of the line so fine the location of the %
-      if ($start !== false) {
+      if ($start !== FALSE) {
         $tag = drupal_substr($line, $start, 2);
         $value = trim(drupal_substr($line, $start +3));
       }
@@ -164,7 +164,7 @@ function _biblio_tagged_import($file, $terms = array(), $batch = FALSE, $session
     }
     if ($line_len) { // if this is not a blank line
       if (!$incite) {
-        $incite = true;
+        $incite = TRUE;
         $node = new stdClass();
         //$node->biblio_contributors = array();
 
@@ -210,7 +210,7 @@ function _biblio_tagged_import($file, $terms = array(), $batch = FALSE, $session
       } //end switch
     }
     else {
-      $incite = false;
+      $incite = FALSE;
       if (isset($node)) {
         $node->biblio_tagged_md5 = md5(serialize($node));
         if (!empty($terms)) {
@@ -224,10 +224,10 @@ function _biblio_tagged_import($file, $terms = array(), $batch = FALSE, $session
         else {
           $dups[] = $dup;
         }
-        $node = null;
+        $node = NULL;
       }
 
-    } // end if ($start !== false)
+    } // end if ($start !== FALSE)
   } // end while
   fclose($fp);
   return array($nids, $dups);
@@ -236,7 +236,7 @@ function _biblio_tagged_import($file, $terms = array(), $batch = FALSE, $session
 function _biblio_tagged_export($node) {
   $export = TRUE;
   $tagged = "";
-  $tagged .= "%0 ". _biblio_tagged_type_map($node->biblio_type, $export) ."\r\n";
+  $tagged .= "%0 " . _biblio_tagged_type_map($node->biblio_type, $export) . "\r\n";
   switch ($node->biblio_type) {
     case 100 :
     case 101 :
@@ -246,27 +246,27 @@ function _biblio_tagged_export($node) {
     case 108 :
     case 119 :
       if (!empty($node->biblio_secondary_title))
-      $tagged .= "%B ". trim($node->biblio_secondary_title) ."\r\n";
+      $tagged .= "%B " . trim($node->biblio_secondary_title) . "\r\n";
       break;
     case 102 :
       if (!empty($node->biblio_secondary_title))
-      $tagged .= "%J ". trim($node->biblio_secondary_title) ."\r\n";
+      $tagged .= "%J " . trim($node->biblio_secondary_title) . "\r\n";
       break; // journal
   }
-  if (isset($node->biblio_year) && $node->biblio_year < 9998)  $tagged .= "%D ". trim($node->biblio_year) ."\r\n";
-  if (!empty($node->title))  $tagged .= "%T ". trim($node->title) ."\r\n";
+  if (isset($node->biblio_year) && $node->biblio_year < 9998)  $tagged .= "%D " . trim($node->biblio_year) . "\r\n";
+  if (!empty($node->title))  $tagged .= "%T " . trim($node->title) . "\r\n";
 
   foreach ($node->biblio_contributors[1] as $auth) {
-    $tagged .= "%A ". trim($auth['name']) ."\r\n";
+    $tagged .= "%A " . trim($auth['name']) . "\r\n";
   }
   if (isset($node->biblio_contributors[2]) ) {
     foreach ($node->biblio_contributors[2] as $auth) {
-      $tagged .= "%E ". trim($auth['name']) ."\r\n";
+      $tagged .= "%E " . trim($auth['name']) . "\r\n";
     }
   }
   if (isset($node->biblio_contributors[2]) ) {
     foreach ($node->biblio_contributors[3] as $auth) {
-      $tagged .= "%Y " . trim($auth['name']) ."\r\n";
+      $tagged .= "%Y " . trim($auth['name']) . "\r\n";
     }
   }
 
@@ -284,7 +284,7 @@ function _biblio_tagged_export($node) {
   if (!empty($kw_array)) {
     $kw_array = array_unique($kw_array);
     foreach ($kw_array as $term) {
-      $tagged .= "%K ". trim($term) ."\r\n";
+      $tagged .= "%K " . trim($term) . "\r\n";
     }
   }
   $abst = "";
@@ -293,7 +293,7 @@ function _biblio_tagged_export($node) {
     $search = array("/\r/", "/\n/");
     $replace = " ";
     $abst = preg_replace($search, $replace, $abst);
-    $tagged .= "%X ". $abst ."\r\n";
+    $tagged .= "%X " . $abst . "\r\n";
   }
   $skip_fields = array('biblio_year',  'biblio_abst_e', 'biblio_abst_f', 'biblio_type' );
   $fields = drupal_schema_fields_sql('biblio');
@@ -305,7 +305,7 @@ function _biblio_tagged_export($node) {
   }
   if (!empty ($node->files) && count($node->files)  && user_access('view uploaded files')) {
     foreach ($node->files as $file) {
-      $tagged .= "%> ". file_create_url($file->uri) ."\r\n"; // insert file here.
+      $tagged .= "%> " . file_create_url($file->uri) . "\r\n"; // insert file here.
     }
   }
   $tagged .= "\r\n";
@@ -316,7 +316,7 @@ function _biblio_tagged_format_entry($key, $value) {
   $reverse = TRUE;
   $tag = _biblio_tagged_field_map($key, $reverse);
   if (!empty($tag)) {
-    return "$tag ". trim($value) ."\r\n";
+    return "$tag " . trim($value) . "\r\n";
   }
 
 }

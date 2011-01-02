@@ -31,7 +31,7 @@ function biblio_bibtex_biblio_import_options() {
 function biblio_bibtex_form_biblio_node_form_alter(&$form, &$form_state) {
   global $user;
   if (!$form_state['submitted'] && !isset($form_state['values']) && !isset($form['#node']->nid)) {
-      if(!$form_state['submitted']) {
+      if (!$form_state['submitted']) {
       $form['biblio_cut_paste'] = array(
         '#type' => 'fieldset',
         '#title' => t('Paste BibTex Record'),
@@ -69,15 +69,14 @@ function biblio_bibtex_form_biblio_node_form_submit($form, &$form_state) {
   if (strlen($form_state['values']['paste_data_bibtex'])) {
     list($node_data, $dups) = biblio_bibtex_biblio_import($form_state['values']['paste_data_bibtex'], array(), FALSE, NULL, FALSE, TRUE);
   }
-  if(!empty($node_data) && is_object($node_data[0])) {
+  if (!empty($node_data) && is_object($node_data[0])) {
     $form_state['values'] = array_merge($form_state['values'], (array)$node_data[0]);
     $form_state['input']['biblio_type'] = $node_data[0]->biblio_type;
 
 //    $form_state['storage']['biblio_type']  = $node_data[0]->biblio_type;
   }
   elseif (!empty($dups)) {
-    $message = t('The bibtex node that you are trying to paste into the form already exists in the database, see ');
-    $message .= l('node/'.$dups[0], 'node/'.$dups[0]);
+    $message = t('The bibtex node that you are trying to paste into the form already exists in the database, see !url', array('!url' => l('node/' . $dups[0], 'node/' . $dups[0])));
     form_set_error('paste_data_bibtex', $message);
   }
   $form_state['rebuild'] = TRUE;
@@ -115,8 +114,9 @@ function biblio_bibtex_biblio_export_link($nid = NULL) {
     $link = array(
         'attributes' => array(
           'class' => 'popups',
-          'title' => t("Click to get the BibTEX output ")));
-  } else {
+          'title' => t("Click to get the BibTEX output")));
+  }
+  else {
     $link = array(
         'attributes' => array(
           'title' => t("Click to download the BibTEX formatted file")));
@@ -144,7 +144,7 @@ function biblio_bibtex_node_insert($node) {
   if ($node->type != 'biblio') {
     return;
   }
-  if(!isset($node->biblio_bibtex_md5)) {
+  if (!isset($node->biblio_bibtex_md5)) {
     return;
   }
   drupal_write_record('biblio_bibtex', $node);
@@ -202,7 +202,7 @@ function _biblio_bibtex_import($entries, $terms = array(), $batch = FALSE, $sess
     $node = new stdClass();
     $node->biblio_contributors = array();
     $node->biblio_type = _biblio_bibtex_type_map($entry['bibtexEntryType'], 'import');
-    switch ($entry['bibtexEntryType']){
+    switch ($entry['bibtexEntryType']) {
       case 'mastersthesis':
         $node->biblio_type_of_work = 'masters';
         break;
@@ -210,21 +210,18 @@ function _biblio_bibtex_import($entries, $terms = array(), $batch = FALSE, $sess
         $node->biblio_type_of_work = 'phd';
         break;
     }
-    if (!empty($entry['author'])){
+    if (!empty($entry['author'])) {
       // split on ' and '
       $authorArray = preg_split("/\s(and|&)\s/i", trim($entry['author']));
-      foreach ($authorArray as $key => $author)
-      {
+      foreach ($authorArray as $key => $author) {
         $node->biblio_contributors[1][]= array('name' => $author, 'auth_type' => _biblio_get_auth_type(1, $node->biblio_type));
       }
     }
 
     $node->biblio_citekey = (!empty($entry['bibtexCitation'])) ? $entry['bibtexCitation'] : NULL;
-    if (!empty($entry['editor']))
-    {
+    if (!empty($entry['editor'])) {
       $authorArray = preg_split("/\s(and|&)\s/i", trim($entry['editor']));
-      foreach ($authorArray as $key => $author)
-      {
+      foreach ($authorArray as $key => $author) {
         $node->biblio_contributors[2][]= array('name' => $author, 'auth_type' => _biblio_get_auth_type(2, $node->biblio_type));
       }
     }
@@ -255,8 +252,10 @@ function _biblio_bibtex_import($entries, $terms = array(), $batch = FALSE, $sess
     $node->biblio_section         = (!empty($entry['chapter'])) ? $entry['chapter'] : NULL;
     $node->biblio_place_published = (!empty($entry['address'])) ? $entry['address'] : NULL;
     $node->biblio_abst_e          = (!empty($entry['abstract'])) ? $entry['abstract'] : NULL;
-    if (!empty($entry['keywords'])){
-      if (strpos($entry['keywords'],';')) $entry['keywords'] = str_replace(';',',',$entry['keywords']);
+    if (!empty($entry['keywords'])) {
+      if (strpos($entry['keywords'], ';')) {
+        $entry['keywords'] = str_replace(';', ',', $entry['keywords']);
+      }
       $node->biblio_keywords = explode(',', $entry['keywords']);
     }
     $node->biblio_isbn            = (!empty($entry['isbn'])) ? $entry['isbn'] : NULL;
@@ -267,7 +266,9 @@ function _biblio_bibtex_import($entries, $terms = array(), $batch = FALSE, $sess
     $node->biblio_import_type     = 'bibtex';
 
     if (!empty($terms)) {
-      if (!isset($node->taxonomy)) $node->taxonomy = array();
+      if (!isset($node->taxonomy)) {
+        $node->taxonomy = array();
+      }
       $node->taxonomy = array_merge($terms, $node->taxonomy);
     }
 
@@ -298,7 +299,7 @@ function _biblio_bibtex_export($node) {
 
   $bibtex = '';
   $type = "article";
-  $journal = $series = $booktitle = $school = $organization = $institution = null;
+  $journal = $series = $booktitle = $school = $organization = $institution = NULL;
   $type = _biblio_bibtex_type_map($node->biblio_type);
   switch ($node->biblio_type) {
     case 100 :
@@ -313,21 +314,21 @@ function _biblio_bibtex_export($node) {
       break;
     case 108 :
       $school = $node->biblio_publisher;
-      $node->biblio_publisher = null;
+      $node->biblio_publisher = NULL;
       if (stripos($node->biblio_type_of_work, 'masters')) {
         $type = "mastersthesis";
       }
       break;
     case 109 :
       $institution  = $node->biblio_publisher;
-      $node->biblio_publisher = null;
+      $node->biblio_publisher = NULL;
       break;
     case 102 :
     default:
       $journal = $node->biblio_secondary_title;
       break;
   }
-  $bibtex .= '@'. $type .' {';
+  $bibtex .= '@' . $type . ' {';
   $bibtex .= ($node->biblio_citekey) ? $node->biblio_citekey  : "";
   $bibtex .= _biblio_bibtex_format_entry('title', $node->title);
   $bibtex .= _biblio_bibtex_format_entry('journal', $journal);
@@ -350,17 +351,17 @@ function _biblio_bibtex_export($node) {
   $bibtex .= _biblio_bibtex_format_entry('abstract', $node->biblio_abst_e);
 
   $kw_array = array();
-  if (!empty($node->terms)){
-    foreach($node->terms as $term){
+  if (!empty($node->terms)) {
+    foreach ($node->terms as $term) {
       $kw_array[] = $term->name;
     }
   }
   if (!empty($node->biblio_keywords)) {
-    foreach($node->biblio_keywords as $term){
+    foreach ($node->biblio_keywords as $term) {
       $kw_array[] = $term;
     }
   }
-  if (!empty($kw_array)){
+  if (!empty($kw_array)) {
     $kw_array = array_unique($kw_array);
     $bibtex .= _biblio_bibtex_format_entry('keywords', implode(', ', $kw_array));
   }
@@ -369,17 +370,17 @@ function _biblio_bibtex_export($node) {
   $bibtex .= _biblio_bibtex_format_entry('doi', $node->biblio_doi);
   $bibtex .= _biblio_bibtex_format_entry('url', $node->biblio_url);
   if (!empty ($node->files) && count($node->files) && user_access('view uploaded files')) {
-    foreach($node->files as $file) {
+    foreach ($node->files as $file) {
       $attachments[] = file_create_url($file->uri);
     }
     $bibtex .= _biblio_bibtex_format_entry('attachments', implode(' , ', $attachments));
   }
 
   $a = $e = array();
-  if(isset($node->biblio_contributors[1])) {
+  if (isset($node->biblio_contributors[1])) {
     foreach ((array)$node->biblio_contributors[1] as $auth) $a[] = trim($auth['name']);
   }
-  if(isset($node->biblio_contributors[2])) {
+  if (isset($node->biblio_contributors[2])) {
     foreach ((array)$node->biblio_contributors[2] as $auth) $e[] = trim($auth['name']);
   }
   $a = implode(' and ', $a);
@@ -393,13 +394,13 @@ function _biblio_bibtex_export($node) {
   module_load_include('php', 'biblio_bibtex', 'PARSEENTRIES');
   include(drupal_get_path('module', 'biblio_bibtex') . '/transtab_unicode_bibtex.inc.php');
   $converter = new PARSEENTRIES();
-  $bibtex = $converter->searchReplaceText($transtab_unicode_bibtex, $bibtex, false);
+  $bibtex = $converter->searchReplaceText($transtab_unicode_bibtex, $bibtex, FALSE);
 
   return $bibtex;
 }
 
 function _biblio_bibtex_format_entry($key, $value) {
-  return !empty($value) ? ",\n\t$key = {".$value."}" : '';
+  return !empty($value) ? ",\n\t$key = {" . $value . "}" : '';
 }
 
 function _biblio_bibtex_type_map($type, $direction = 'export') {
