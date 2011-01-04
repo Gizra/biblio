@@ -153,6 +153,8 @@ function biblio_build_query($arg_list) {
     $query = db_select('node', 'n');
   }
 
+  //add a tag of "node_access" to ensure that only nodes to which the user has access are retrieved
+  $query->addTag('node_access');
 
   $query->addField('n', 'nid');
   $type_name = $query->addField('bt', 'name', 'biblio_type_name');

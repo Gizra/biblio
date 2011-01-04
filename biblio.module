@@ -397,25 +397,39 @@ function biblio_node_info() {
   )
   );
 }
-/**
- * Implementation of hook_access().
- *
- * Node modules may implement node_access() to determine the operations
- * users may perform on nodes. This example uses a very common access pattern.
- */
+
+
+function biblio_node_access($node, $op, $account) {
+  $type = is_string($node) ? $node : $node->type;
+  if ($type != 'biblio') { // we only care about biblio nodes
+    return NODE_ACCESS_IGNORE;
+  }
+  switch ($op) {
+    case 'view':
+      if ((variable_get('biblio_view_only_own', 0)) && $account->uid != $node->uid) {
+        return NODE_ACCESS_DENY;
+      }
+      break;
+    case 'update':
+    case 'delete':
+      if(user_access('edit by all biblio authors') && isset($node->biblio_contributors) && is_array($node->biblio_contributors)) {
+        foreach ($node->biblio_contributors as $cat => $authors) {
+          foreach ($authors as $key => $author) {
+            if ((isset($author['drupal_uid']) && $author['drupal_uid'] == $account->uid) || 
+                (isset($account->data['biblio_contributor_id']) && $author['cid'] == $account->data['biblio_contributor_id'])) {
+              return NODE_ACCESS_ALLOW;
+            }
+          }
+        }
+      }
+      break;
+    default:
+  }
+  return NODE_ACCESS_IGNORE;
+}
+
 function biblio_access($op, $node = '', $user = '') {
   switch ($op) {
-    case 'create':
-      return user_access('create biblio');
-    case 'delete':
-    case 'update':
-      if (user_access('edit all biblio entries')) return TRUE;
-      if (user_access('edit own biblio entries') && $user->uid == $node->uid) return TRUE;
-      if (user_access('edit own biblio entries') && $user->uid != $node->uid) return;
-      break;
-    case 'view':
-      if ((variable_get('biblio_view_only_own', 0)) && $user->uid != $node->uid) return FALSE;
-      break;
     case 'admin':
       return user_access('administer biblio');
     case 'import':
@@ -423,16 +437,16 @@ function biblio_access($op, $node = '', $user = '') {
     case 'export':
       return user_access('show export links');
     case 'edit_author':
-        if (user_access('administer biblio') || user_access('edit biblio authors')) return TRUE;
+        if (user_access('administer biblio') || user_access('edit biblio authors')) return NODE_ACCESS_ALLOW;
         break;
     case 'download':
-      if (user_access('show download links') || (user_access('show own download links') && ($user->uid == $node->uid))) return TRUE;
+      if (user_access('show download links') || (user_access('show own download links') && ($user->uid == $node->uid))) return NODE_ACCESS_ALLOW;
       break;
     case 'rss':
       return variable_get('biblio_rss', 0);
     default:
   }
-  return;
+  return NODE_ACCESS_IGNORE;
 }
 /**
  * Implementation of hook_permission().
@@ -451,18 +465,17 @@ function biblio_permission() {
       'title' => t('Access Biblio content'),
       'description' => t('Allows the user to view Biblio nodes'),
       ),
-    'create biblio' => array(
-      'title' => t('Create Biblio'),
-      'description' => t('Allows the user to create new Biblio nodes'),
-      ),
-    'edit all biblio entries' => array(
-      'title' => t('Edit all Biblio entries'),
-      'description' => t('Allows the user to edit ALL biblio entries regardless of who "owns" them, otherwise they are restricted to on'),
-      ),
-//FIXME edit own entries should be the default so no need for the following, check to see how it is used.
-    'edit own biblio entries' => array(
-      'title' => t('Edit own Biblio entries'),
-      'description' => t('Restricts the user to '),
+//    'create biblio' => array(
+//      'title' => t('Create Biblio'),
+//      'description' => t('Allows the user to create new Biblio nodes'),
+//      ),
+//    'edit all biblio entries' => array(
+//      'title' => t('Edit all Biblio entries'),
+//      'description' => t('Allows the user to edit ALL biblio entries regardless of who "owns" them, otherwise they are restricted to on'),
+//      ),
+    'edit by all biblio authors' => array(
+      'title' => t('Edit by all Biblio authors'),
+      'description' => t('Allows any/all of the authors associated with a biblio entry to edit the biblio entry. This requires the Drupal UserID be mapped to a Biblio author ID'),
       ),
     'edit biblio authors' => array(
       'title' => t('Edit Biblio authors'),
@@ -1213,7 +1226,14 @@ function biblio_user_presave(&$edit, $account, $catagory) {
   $keys = array_keys($edit);
   foreach ($keys as $key) {
     if (strpos($key, 'biblio_') !== FALSE && isset($edit[$key])) {
+      if (isset($account->data['biblio_id_change_count']) && $account->data['biblio_id_change_count'] > 2 
+          && $key == 'biblio_contributor_id' && $edit[$key] != 0 ) {
+         $edit[$key] = 0;
+      }
       $edit['data'][$key] = $edit[$key];
+      if ($key == 'biblio_contributor_id' && $edit[$key] != 0) {
+        $edit['data']['biblio_id_change_count']++;
+      }
     }
   }
 
