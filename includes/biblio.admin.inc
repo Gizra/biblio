@@ -720,7 +720,7 @@ function biblio_admin_types_edit_form($form, &$form_state, $tid = 0) {
       '#title' => 'tid',
       '#value' => $tid
     );
-  } 
+  }
   else {
     $form['top_message'] = array(
       '#value' => t('Field settings common to all publication types')
@@ -1459,7 +1459,7 @@ function _biblio_get_user_profile_form(&$form, $profile_user = FALSE) {
     '#type' => 'textfield',
     '#size' => 2,
     '#title' => t('Drupal UserID to Biblio AuthorID mapping change count'),
-    '#default_value' => $profile_user->data['biblio_id_change_count'] ,
+    '#default_value' => isset($profile_user->data['biblio_id_change_count']) ?  $profile_user->data['biblio_id_change_count'] : 0,
     '#disabled' => ($user->uid == 1 || user_access('administer biblio')) ? FALSE : TRUE,
     '#description' => 'When this value is >= 3, the user will no longer be able to change their author id mapping',
     );
@@ -1950,7 +1950,7 @@ function biblio_admin_orphans_form($form_state) {
                          WHERE c.cid IS NULL', 50);
 
 */
-  
+
   $sub_query = db_select('biblio_contributor', 'bc');
   $sub_query->fields('bc', array('cid'));
   $sub_query->groupBy('cid');

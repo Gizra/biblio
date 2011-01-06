@@ -29,11 +29,13 @@ function biblio_view_node($nid) {
  */
 function biblio_db_search($arg_list = array()) {
   $nids = array();
+  $saved_filters = array();
 
   $uri = drupal_parse_url(request_uri());
   $arg_list = array_merge($arg_list, $uri['query']);
-  $saved_filters = &$_SESSION['biblio_filter'];
-
+  if(isset($_SESSION['biblio_filter']) && !empty($_SESSION['biblio_filter'])) {
+    $saved_filters = &$_SESSION['biblio_filter'];
+  }
   foreach ($saved_filters as $filter) {
     $type = key($filter);
     $value = $filter[$type];
@@ -669,8 +671,8 @@ function _biblio_filter_info_line($args) {
 
 function _biblio_category_separator_bar($node, $reset = FALSE) {
   static $_text = '';
-  if ($reset) { 
-    $_text = ''; 
+  if ($reset) {
+    $_text = '';
     return;
   }
   $content = '';
@@ -890,6 +892,7 @@ function biblio_search_query($keys) {
  */
 function _get_biblio_search_filter($arg = 'keys') {
   if (variable_get('biblio_search', 0) &&
+    !empty($_SESSION['biblio_filter']) &&
     is_array($_SESSION['biblio_filter']) &&
     is_array($_SESSION['biblio_filter'][0]) &&
     in_array('search', $_SESSION['biblio_filter'][0])
