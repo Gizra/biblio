@@ -161,12 +161,15 @@ function biblio_delete_orphan_authors($force = FALSE) {
 }
 
 function biblio_insert_contributors($node) {
-  if (empty ($node->biblio_contributors)) return TRUE;
-  return _save_contributors($node->biblio_contributors, $node->nid, $node->vid);
+  if (!empty($node->biblio_contributors)) {
+    return _save_contributors($node->biblio_contributors, $node->nid, $node->vid);
+  }
 }
 
 function biblio_update_contributors($node) {
-  _save_contributors($node->biblio_contributors, $node->nid, $node->vid, TRUE);
+  if (!empty($node->biblio_contributors)) {
+    _save_contributors($node->biblio_contributors, $node->nid, $node->vid, TRUE);
+  }
   biblio_delete_orphan_authors();
   return;
 
