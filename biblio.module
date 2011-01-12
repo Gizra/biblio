@@ -415,7 +415,7 @@ function biblio_node_access($node, $op, $account) {
       if(user_access('edit by all biblio authors') && isset($node->biblio_contributors) && is_array($node->biblio_contributors)) {
         foreach ($node->biblio_contributors as $cat => $authors) {
           foreach ($authors as $key => $author) {
-            if ((isset($author['drupal_uid']) && $author['drupal_uid'] == $account->uid) || 
+            if ((isset($author['drupal_uid']) && $author['drupal_uid'] == $account->uid) ||
                 (isset($account->data['biblio_contributor_id']) && $author['cid'] == $account->data['biblio_contributor_id'])) {
               return NODE_ACCESS_ALLOW;
             }
@@ -1226,7 +1226,7 @@ function biblio_user_presave(&$edit, $account, $catagory) {
   $keys = array_keys($edit);
   foreach ($keys as $key) {
     if (strpos($key, 'biblio_') !== FALSE && isset($edit[$key])) {
-      if (isset($account->data['biblio_id_change_count']) && $account->data['biblio_id_change_count'] > 2 
+      if (isset($account->data['biblio_id_change_count']) && $account->data['biblio_id_change_count'] > 2
           && $key == 'biblio_contributor_id' && $edit[$key] != 0 ) {
          $edit[$key] = 0;
       }
@@ -1282,7 +1282,21 @@ function biblio_form($node, &$form_state) {
     '#required' => TRUE
   );
   if ($show_fields) {
-    $form['title'] = array(
+    $form['biblio_settings'] = array(
+      '#type' => 'vertical_tabs',
+      '#weight' => 0,
+    );
+
+    $form['titles'] = array(
+        '#type' => 'fieldset',
+        '#group' => 'biblio_settings',
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE,
+        '#title' => t('Titles'),
+        '#description' => '',
+        '#weight' => 0
+      );
+    $form['titles']['title'] = array(
       '#type' => 'textfield',
       '#title' => t('Title'),
       '#required' => TRUE,
@@ -1304,6 +1318,7 @@ function biblio_form($node, &$form_state) {
     if (!variable_get('biblio_hide_other_fields', 0)) {
       $form['other_fields'] = array(
         '#type' => 'fieldset',
+        '#group' => 'biblio_settings',
         '#collapsible' => TRUE,
         '#collapsed' => TRUE,
         '#title' => t('Other Biblio Fields'),
@@ -1311,28 +1326,15 @@ function biblio_form($node, &$form_state) {
         '#weight' => 0
       );
     }
+
     $max_visible_weight = -5;
     foreach ($fields as $key => $fld) {
       $options = '';
       $main_area = $fld['common'] || $fld['visible'];
       if ($fld['type'] == 'contrib_widget') {
         $auth_category = $fld['fid'];
-        if ($main_area) {
-          if (isset($form_state['values'])) {
-            $form += _biblio_contributor_widget($form_state, $fld, $auth_category, $tid);
-          }
-          else {
-            $form += _biblio_contributor_widget($node, $fld, $auth_category, $tid);
-          }
-        }
-        else {
-          if (isset($form_state['values']) && !variable_get('biblio_hide_other_fields', 0)) {
-            $form['other_fields'] += _biblio_contributor_widget($form_state, $fld, $auth_category, $tid, TRUE);
-          }
-          elseif (!variable_get('biblio_hide_other_fields', 0)) {
-            $form['other_fields'] += _biblio_contributor_widget($node, $fld, $auth_category, $tid, TRUE);
-          }
-        }
+        $values = isset($form_state['values']) ? $form_state : $node;
+        $form += _biblio_contributor_widget($values, $fld, $auth_category, $tid);
       }
       else {
         if ($key == 'biblio_keywords' ) {
@@ -1379,6 +1381,7 @@ function biblio_form($node, &$form_state) {
           /* wrap all textarea fields in collapsed field sets to save space on the page */
           $field_widget = array(
             '#type' => 'fieldset',
+            '#group' => 'biblio_settings',
             '#collapsible' => TRUE,
             '#collapsed' => TRUE,
             '#title' => check_plain($fld['title']),
@@ -1390,7 +1393,12 @@ function biblio_form($node, &$form_state) {
         }
         // embed field directly or in "Other Fields" fieldset
         if ($main_area) {
-          $form[$key] = $field_widget;
+          if (strstr($fld['name'], 'title')) {
+            $form['titles'][$key] =  $field_widget;
+          }
+          else {
+            $form[$key] = $field_widget;
+          }
           $max_visible_weight = max($max_visible_weight, $field_widget['#weight']);
         }
         else {
@@ -1463,13 +1471,14 @@ function _biblio_contributor_widget($node, $fld, $auth_category, $biblio_type, $
   $wrapper = array(
     '#tree' => TRUE,
     '#type' => 'fieldset',
+    '#group' => 'biblio_settings',
     '#collapsible' => TRUE,
     '#collapsed' => !$fld['required'] && (count($contributors)==0),
     '#title' => check_plain($fld['title']),
     '#weight' => $fld['weight'] / 10,
     '#description' => t('Enter a single name per line using a format such as "Smith, John K" or "John K Smith" or "J.K. Smith"'),
-    '#prefix' => '<div class="clear-block" id="' . $type . '-wrapper">',
-    '#suffix' => '</div>'
+//    '#prefix' => '<div class="clear-block" id="' . $type . '-wrapper">',
+//    '#suffix' => '</div>'
     );
   // Container for just the contributors.
   $wrapper['biblio_contributors'][$auth_category] = array(
@@ -2051,7 +2060,7 @@ function _biblio_inline_filter_replace_callback($matches) {
 function _biblio_filter_footnote_callback($matches, $square_brackets = FALSE) {
   if ($square_brackets)  {
     $text = '[fn]' . _biblio_citekey_print($matches[1]) . "</fn>";
-  } 
+  }
   else {
     $text = '<fn>' . _biblio_citekey_print($matches[1]) . "</fn>";
   }
