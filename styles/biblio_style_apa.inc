@@ -22,8 +22,8 @@ function biblio_style_apa_author_options() {
     'AuthorsInitialsDelimStandard'    =>  ' ',       //8
     'betweenInitialsDelim'            =>  '. ',      //9
     'initialsBeforeAuthorFirstAuthor' =>  FALSE,     //10
-    'initialsBeforeAuthorStandard'    =>  TRUE,      //11
-    'shortenGivenNames'               =>  FALSE,     //12
+    'initialsBeforeAuthorStandard'    =>  FALSE,     //11
+    'shortenGivenNames'               =>  TRUE,     //12
     'numberOfAuthorsTriggeringEtAl'   =>  6,         //13
     'includeNumberOfAuthors'          =>  6,         //14
     'customStringAfterFirstAuthors'   =>  ', et al.',//15

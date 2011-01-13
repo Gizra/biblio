@@ -45,6 +45,7 @@ function biblio_style_classic_author_options() {
  *   The styled biblio entry
  */
 function biblio_style_classic($node, $base = 'biblio', $inline = FALSE) {
+  $output = '';
   $author_options = biblio_style_classic_author_options();
   $authors = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[1], 'options' => $author_options, 'inline' => $inline));
   if (!empty ($node->biblio_citekey)&&(variable_get('biblio_display_citation_key',0))) {
