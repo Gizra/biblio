@@ -26,7 +26,6 @@ function theme_biblio_citeproc_style($variables) {
   $node = $variables['node'];
   $base = $variables['base'];
   $style_name = $variables['style_name'];
-  $inline = $variables['inline'];
 
   module_load_include('inc', 'biblio_citeproc', 'CSL');
 

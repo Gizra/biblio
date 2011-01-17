@@ -52,7 +52,9 @@ function biblio_xml_node_view($node, $view_mode) {
  */
 function biblio_xml_biblio_export_link($nid = NULL) {
   $show_link = variable_get('biblio_export_links', array('xml' => TRUE));
-  if (!$show_link['xml'] || !biblio_access('export')) return array();
+  if (!isset($show_link['xml']) || !biblio_access('export')) {
+    return array();
+  }
   $base = variable_get('biblio_base', 'biblio');
 
   $link = array();

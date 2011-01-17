@@ -48,7 +48,9 @@ function biblio_rtf_link($type, $node = NULL, $teaser = FALSE) {
  */
 function biblio_rtf_biblio_export_link($nid = NULL) {
   $show_link = variable_get('biblio_export_links', array('rtf' => TRUE));
-  if (!$show_link['rtf'] || !biblio_access('export') ) return array();
+  if (!isset($show_link['rtf']) || !biblio_access('export') ) {
+    return array();
+  }
   $base = variable_get('biblio_base', 'biblio');
 
   $link = array(
