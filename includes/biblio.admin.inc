@@ -626,13 +626,13 @@ function biblio_admin_settings() {
   return ($form);
 }
 function biblio_admin_settings_form_submit($form, $form_state) {
-  if ($form_state['values']['biblio_keyword_freetagging'] && $form_state['values']['biblio_keyword_vocabulary']) {
-    if ($vocabulary = taxonomy_vocabulary_load(variable_get('biblio_keyword_vocabulary', 0))) {
-      $vocabulary = (array) $vocabulary;
-      $vocabulary['nodes']['biblio'] = 1;
-      taxonomy_save_vocabulary($vocabulary);
-    }
-  }
+//  if ($form_state['values']['biblio_keyword_freetagging'] && $form_state['values']['biblio_keyword_vocabulary']) {
+//    if ($vocabulary = taxonomy_vocabulary_load(variable_get('biblio_keyword_vocabulary', 0))) {
+//      $vocabulary = (array) $vocabulary;
+//      $vocabulary['nodes']['biblio'] = 1;
+//      taxonomy_save_vocabulary($vocabulary);
+//    }
+//  }
 
   menu_rebuild();
 }
@@ -1450,7 +1450,7 @@ function _biblio_get_user_profile_form(&$form, $profile_user = FALSE) {
     $form['biblio_profile']['biblio_contributor_id'] = array(
     '#type' => 'select',
     '#title' => t('Link My Profile with this Author from the Biblio database'),
-    '#default_value' => $profile_user->data['biblio_contributor_id'] ,
+    '#default_value' => isset($profile_user->data['biblio_contributor_id']) ? $profile_user->data['biblio_contributor_id'] : 0,
     '#disabled' => ($user->uid == 1 || user_access('administer biblio')) ? FALSE : !$allow_edit,
     '#options' => $options,
     '#description' => $msg,
