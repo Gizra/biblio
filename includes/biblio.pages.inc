@@ -158,6 +158,10 @@ function biblio_build_query($arg_list) {
   //add a tag of "node_access" to ensure that only nodes to which the user has access are retrieved
   $query->addTag('node_access');
 
+  if ($user->uid != 1 || !user_access('administer biblio')) {
+    $query->condition('n.status', 1);
+  }
+  
   $query->addField('n', 'nid');
   $type_name = $query->addField('bt', 'name', 'biblio_type_name');
   $query->leftJoin('biblio', 'b', 'n.vid=b.vid');
