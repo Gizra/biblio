@@ -35,18 +35,32 @@ function biblio_admin_ahah($form, $element, $value) {
 function biblio_admin_settings() {
   $version = '$Name$ $Date$';
   $version = str_replace('$', '', $version);
-  $form['biblio_rev'] = array(
-    '#value' => $version,
+
+  $form['biblio_settings'] = array(
+      '#type' => 'vertical_tabs',
+      '#weight' => 0,
+    );
+  
+  $form['general'] = array(
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#title' => t('General'),
+    '#group' => 'biblio_settings',
+    '#description' => ''
+  );
+    $form['general']['biblio_rev'] = array(
+    '#markup' => $version,
 
   );
-  $form['biblio_base'] = array(
+  $form['general']['biblio_base'] = array(
     '#type' => 'textfield',
     '#title' => t('Base URL'),
     '#size' => 20,
     '#default_value' => variable_get('biblio_base', 'biblio'),
     '#description' => t('This sets the base URL used to access the biblio module (e.g. /biblio ).')
   );
-  $form['biblio_base_title'] = array(
+  $form['general']['biblio_base_title'] = array(
    '#type' => 'textfield',
     '#title' => t('Biblio page title'),
     '#size' => 20,
@@ -54,7 +68,7 @@ function biblio_admin_settings() {
     '#description' => t('The page title shown on the base URL.')
   );
 
-  $form['biblio_rowsperpage'] = array(
+  $form['general']['biblio_rowsperpage'] = array(
     '#type' => 'textfield',
     '#title' => t('Number of results per page'),
     '#default_value' => variable_get('biblio_rowsperpage', 25),
@@ -62,7 +76,7 @@ function biblio_admin_settings() {
     '#maxlength' => 6,
     '#description' => t('This sets the number of results that will be displayed per page.')
   );
-  $form['biblio_view_only_own'] = array(
+  $form['general']['biblio_view_only_own'] = array(
     '#type' => 'checkbox',
     '#title' => t('Restrict users such that they can only view their own biblio entries'),
     '#return_value' => 1,
@@ -74,6 +88,7 @@ function biblio_admin_settings() {
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
     '#title' => t('Authors'),
+    '#group' => 'biblio_settings',
     '#description' => ''
   );
   $form['authors']['biblio_auto_orphaned_author_delete'] = array(
@@ -88,6 +103,7 @@ function biblio_admin_settings() {
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
     '#title' => t('BibTex settings'),
+    '#group' => 'biblio_settings',
     '#description' => ''
   );
   $form['bibtex']['biblio_hide_bibtex_braces'] = array(
@@ -103,8 +119,9 @@ function biblio_admin_settings() {
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
     '#title' => t('Block settings'),
-    '#description' => ''
-  );
+    '#description' => '',
+    '#group' => 'biblio_settings',
+    );
   $form['block']['biblio_rowsperblock'] = array(
     '#type' => 'textfield',
     '#title' => t('Number of results in the "New Publications" block'),
@@ -138,7 +155,8 @@ function biblio_admin_settings() {
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
     '#title' => t('Citekey'),
-    '#description' => t('You can alter citekey related settings here.')
+    '#description' => t('You can alter citekey related settings here.'),
+    '#group' => 'biblio_settings',
   );
   $form['citekey']['biblio_display_citation_key'] = array(
     '#type' => 'checkbox',
@@ -190,7 +208,8 @@ function biblio_admin_settings() {
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
     '#collapsed' =>  TRUE,
-    '#title' => t('CrossRef Login Information')
+    '#title' => t('CrossRef Login Information'),
+    '#group' => 'biblio_settings',
   );
   $link_attrs = array('attributes' => array('target' => '_blank'),
                       'absolue' => TRUE);
@@ -213,7 +232,8 @@ function biblio_admin_settings() {
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
     '#title' => t('Footnotes'),
-    '#description' => t('You can integrate with the !url module here.', array('!url' => l('footnotes', url("http://www.drupal.org/project/footnotes", array('query' => NULL, 'fragment' => NULL, 'absolute' => TRUE)))))
+    '#description' => t('You can integrate with the !url module here.', array('!url' => l('footnotes', url("http://www.drupal.org/project/footnotes", array('query' => NULL, 'fragment' => NULL, 'absolute' => TRUE))))),
+    '#group' => 'biblio_settings',
   );
   if (!module_exists('footnotes')) {
     $additional_text = '<div class="admin-dependencies">' . t('Depends on') . ': ' . t('Footnotes') . ' (<span class="admin-disabled">' . t('disabled') . '</span>)</div>';
@@ -237,8 +257,9 @@ function biblio_admin_settings() {
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
     '#title' => t('ISI Web of Knowledge'),
-    '#description' => ''
-  );
+    '#description' => '',
+    '#group' => 'biblio_settings',
+    );
   $form['isi_wok']['biblio_fix_isi_links'] = array(
     '#type' => 'checkbox',
     '#title' => t('Automatically replace "Go to ISI" links with the  URL below'),
@@ -259,8 +280,9 @@ function biblio_admin_settings() {
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
     '#title' => t('Keywords'),
-    '#description' => ''
-  );
+    '#description' => '',
+    '#group' => 'biblio_settings',
+    );
   $form['keywords']['biblio_keyword_sep'] = array(
     '#type' => 'textfield',
     '#title' => t('Keyword separator'),
@@ -317,7 +339,8 @@ function biblio_admin_settings() {
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
-    '#title' => t('Links')
+    '#title' => t('Links'),
+    '#group' => 'biblio_settings',
   );
   $form['links']['export'] = array(
     '#type' => 'fieldset',
@@ -403,7 +426,8 @@ function biblio_admin_settings() {
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
     '#title' => t('OpenURL'),
-    '#description' => t('You can set an <a href="http://en.wikipedia.org/wiki/OpenURL">openurl</a> link here')
+    '#description' => t('You can set an <a href="http://en.wikipedia.org/wiki/OpenURL">openurl</a> link here'),
+    '#group' => 'biblio_settings',
   );
   $form['openurl']['biblio_show_openurl_profile_form'] = array(
     '#type' => 'checkbox',
@@ -436,7 +460,14 @@ function biblio_admin_settings() {
     '#description' => t('Enter a path to your image here, this image will be used as button which when clicked will find the entry via the OpenURL link')
   );
   // Add profile page settings... this is done in a fucntion so it can be reused elsewhere
-  _biblio_get_user_profile_form($form);
+  $form['biblio_profile'] = array(
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' =>  TRUE,
+    '#title' => ($profile_user) ? t('My publications') : t('Profile pages'),
+    '#group' => 'biblio_settings',
+  );
+   $form['biblio_profile'] += _biblio_get_user_profile_form();
   //
   if (!module_exists('search')) {
     $search_text = '<div class="admin-dependencies">' . t('Depends on') . ': ' . t('Search') . ' (<span class="admin-disabled">' . t('disabled') . '</span>)</div>';
@@ -453,6 +484,7 @@ function biblio_admin_settings() {
     '#collapsed' => TRUE,
     '#description' => $search_text,
     '#title' => t('Search'),
+    '#group' => 'biblio_settings',
   );
   $form['search']['biblio_search'] = array(
     '#type' => 'checkbox',
@@ -483,7 +515,8 @@ function biblio_admin_settings() {
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
     '#title' => t('Sorting'),
-    '#description' => t('You can set the default sorting and ordering for the /biblio page here.')
+    '#description' => t('You can set the default sorting and ordering for the /biblio page here.'),
+    '#group' => 'biblio_settings',
   );
   $form['sort']['biblio_sort'] = array(
     '#type' => 'radios',
@@ -531,7 +564,8 @@ function biblio_admin_settings() {
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
     '#title' => t('Styling'),
-    '#description' => t('You can set the default style for the /biblio page here.')
+    '#description' => t('You can set the default style for the /biblio page here.'),
+    '#group' => 'biblio_settings',
   );
   $form['style']['biblio_no_year_text'] = array(
     '#type' => 'textfield',
@@ -600,7 +634,8 @@ function biblio_admin_settings() {
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
     '#title' => t('Syndication'),
-    '#description' => t('You can set the RSS defaults here.')
+    '#description' => t('You can set the RSS defaults here.'),
+    '#group' => 'biblio_settings',
   );
   $form['syndication']['biblio_rss'] = array(
     '#type' => 'checkbox',
@@ -1385,19 +1420,14 @@ function biblio_admin_types_reset_form_submit($form, & $form_state) {
  * This functin is used by both the admin/config/biblio page and user profile page
  *   - if $user is set, then it is being called from the user profile page
  */
-function _biblio_get_user_profile_form(&$form, $profile_user = FALSE) {
+function _biblio_get_user_profile_form($profile_user = FALSE) {
   global $user;
+  $form = array();
   $allow_edit = variable_get('biblio_show_user_profile_form', '1');
   $allow_edit = $allow_edit || user_access('administer biblio');
 
-  $form['biblio_profile'] = array(
-    '#type' => 'fieldset',
-    '#collapsible' => TRUE,
-    '#collapsed' =>  TRUE,
-    '#title' => ($profile_user) ? t('My publications') : t('Profile pages')
-  );
   if (!$profile_user) {
-    $form['biblio_profile']['biblio_show_user_profile_form'] = array(
+    $form['biblio_show_user_profile_form'] = array(
       '#type' => 'checkbox',
       '#title' => t('Allow users to override these settings on their "My account" page') ,
       '#return_value' => 1,
@@ -1405,7 +1435,7 @@ function _biblio_get_user_profile_form(&$form, $profile_user = FALSE) {
       '#default_value' => variable_get('biblio_show_user_profile_form', '1')
     );
   }
-  $form['biblio_profile']['biblio_show_profile'] = array(
+  $form['biblio_show_profile'] = array(
     '#type' => 'checkbox',
     '#title' => ($profile_user) ? t('Show my publications on my profile page') : t('Show publications on users profile pages'),
     '#return_value' => 1,
@@ -1413,12 +1443,12 @@ function _biblio_get_user_profile_form(&$form, $profile_user = FALSE) {
     '#description' => ($profile_user) ? t('Selecting this will create a listing of your publications on your profile page') : t('This sets the site wide default, users may change this in their profile')
   );
   if ($profile_user) {
-    $form['biblio_profile']['biblio_show_profile']['#default_value'] = (isset($profile_user->data['biblio_show_profile'])) ? $profile_user->data['biblio_show_profile'] : variable_get('biblio_show_profile', '0');
+    $form['biblio_show_profile']['#default_value'] = (isset($profile_user->data['biblio_show_profile'])) ? $profile_user->data['biblio_show_profile'] : variable_get('biblio_show_profile', '0');
   }
   else {
-    $form['biblio_profile']['biblio_show_profile']['#default_value'] = variable_get('biblio_show_profile', '0');
+    $form['biblio_show_profile']['#default_value'] = variable_get('biblio_show_profile', '0');
   }
-  $form['biblio_profile']['biblio_my_pubs_menu'] = array(
+  $form['biblio_my_pubs_menu'] = array(
     '#type' => 'checkbox',
     '#title' => t('Show "My publications" item in the navigation menu'),
     '#disabled' => !$allow_edit,
@@ -1426,10 +1456,10 @@ function _biblio_get_user_profile_form(&$form, $profile_user = FALSE) {
     '#description' => ''
   );
   if ($profile_user) {
-    $form['biblio_profile']['biblio_my_pubs_menu']['#default_value'] = ((isset($profile_user->data['biblio_my_pubs_menu'])) ? $profile_user->data['biblio_my_pubs_menu'] : variable_get('biblio_my_pubs_menu', '0'));
+    $form['biblio_my_pubs_menu']['#default_value'] = ((isset($profile_user->data['biblio_my_pubs_menu'])) ? $profile_user->data['biblio_my_pubs_menu'] : variable_get('biblio_my_pubs_menu', '0'));
   }
   else {
-    $form['biblio_profile']['biblio_my_pubs_menu']['#default_value'] = variable_get('biblio_my_pubs_menu', '0');
+    $form['biblio_my_pubs_menu']['#default_value'] = variable_get('biblio_my_pubs_menu', '0');
   }
   if ($profile_user) {
     $db_result = db_query("SELECT cd.lastname, cd.firstname, cd.initials, cd.cid FROM {biblio_contributor_data} cd
@@ -1447,7 +1477,7 @@ function _biblio_get_user_profile_form(&$form, $profile_user = FALSE) {
     else {
       $msg = t('This will link your profile to the selected author from the biblio database, then all publications containing this author to be displayed on your "Publications" tab.');
     }
-    $form['biblio_profile']['biblio_contributor_id'] = array(
+    $form['biblio_contributor_id'] = array(
     '#type' => 'select',
     '#title' => t('Link My Profile with this Author from the Biblio database'),
     '#default_value' => isset($profile_user->data['biblio_contributor_id']) ? $profile_user->data['biblio_contributor_id'] : 0,
@@ -1455,7 +1485,7 @@ function _biblio_get_user_profile_form(&$form, $profile_user = FALSE) {
     '#options' => $options,
     '#description' => $msg,
     );
-    $form['biblio_profile']['biblio_id_change_count'] = array(
+    $form['biblio_id_change_count'] = array(
     '#type' => 'textfield',
     '#size' => 2,
     '#title' => t('Drupal UserID to Biblio AuthorID mapping change count'),
@@ -1466,7 +1496,7 @@ function _biblio_get_user_profile_form(&$form, $profile_user = FALSE) {
     $options = array();
     $options['system'] = t('System default');
     $options = array_merge($options, biblio_get_styles() );
-    $form['biblio_profile']['biblio_user_style'] = array(
+    $form['biblio_user_style'] = array(
     '#type' => 'radios',
     '#title' => t('Style'),
     '#default_value' => (isset($profile_user->data['biblio_user_style']) ? $profile_user->data['biblio_user_style'] : 'system'),
@@ -1475,8 +1505,9 @@ function _biblio_get_user_profile_form(&$form, $profile_user = FALSE) {
   );
 
   }
+  return $form;
 }
-function _biblio_get_user_doi_form(&$form, $user) {
+function _biblio_get_user_doi_form($user) {
   $form['biblio_doi'] = array(
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
@@ -1494,7 +1525,7 @@ function _biblio_get_user_doi_form(&$form, $user) {
   );
   return $form;
 }
-function _biblio_get_user_openurl_form(&$form, $user) {
+function _biblio_get_user_openurl_form($user) {
   $form['openurl'] = array(
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
