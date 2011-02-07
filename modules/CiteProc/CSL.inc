@@ -523,7 +523,7 @@ class csl_name extends csl_format {
         //      $shortenInitials = (isset($options['numberOfInitialsToKeep'])) ? $options['numberOfInitialsToKeep'] : FALSE;
         //      if ($shortenInitials) $given = drupal_substr($given, 0, $shortenInitials);
 
-        if (isset($initialize_with) && !empty($initialize_with)) {
+        if (isset($initialize_with)) {
           $name['firstname'] = $name['initials'];
          // if ($shortenInitials) $name['firstname'] = drupal_substr($name['firstname'], 0, $shortenInitials);
         }
