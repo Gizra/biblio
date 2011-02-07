@@ -572,13 +572,13 @@ function biblio_form_user_profile_form_alter(&$form, &$form_state, $form_id) {
         '#collapsed' => TRUE,
       );
       if ($admin_show_form || variable_get('biblio_show_user_profile_form', '1')) {
-        _biblio_get_user_profile_form($form['biblio_fieldset'], $account);
+        $form['biblio_fieldset'] += _biblio_get_user_profile_form($account);
       }
       if ($admin_show_form || variable_get('biblio_show_openurl_profile_form', '1')) {
-        _biblio_get_user_openurl_form($form['biblio_fieldset'], $account);
+        $form['biblio_fieldset'] += _biblio_get_user_openurl_form($account);
       }
       if ($admin_show_form || variable_get('biblio_show_crossref_profile_form', '1')) {
-        _biblio_get_user_doi_form($form['biblio_fieldset'], $account);
+        $form['biblio_fieldset'] += _biblio_get_user_doi_form($account);
       }
 
     }
@@ -1175,7 +1175,7 @@ function biblio_node_view($node, $view_mode) {
 }
 
 function biblio_form_alter(&$form, &$form_state, $form_id) {
-  if ($form_id == "biblio_node_form") { // this next bit is to remove all the form elements execpt the pub type select box the first time through
+  if ($form_id == "biblio_node_formmmm") { // this next bit is to remove all the form elements execpt the pub type select box the first time through
     if (!isset($form_state['input']['biblio_type']) &&
         empty($form_state['post']['biblio_type']) &&
         empty($form_state['submitted']) &&
@@ -1251,7 +1251,7 @@ function biblio_form($node, &$form_state) {
   $tid = isset($form_state['values']['biblio_type']) ?
                $form_state['values']['biblio_type']  :
                ( isset($node->biblio_type) ? $node->biblio_type : '');
-  $show_fields = !empty($tid);
+  $show_fields = TRUE;
 
   $form['#validate']= array('biblio_node_form_validate');
   $form['#cache'] = TRUE;
@@ -1264,13 +1264,14 @@ function biblio_form($node, &$form_state) {
   foreach ($result as $option) {
     $options["$option->tid"] = $option->name;
   }
-  $form['biblio_next'] = array(
-      '#type'   => 'submit',
-      '#value'  => $show_fields ? t('Change Publication Type') : t('Next'),
-      '#weight' => -10,
-  );
-
-  $form['biblio_type'] = array(
+//  $form['biblio_next'] = array(
+//      '#type'   => 'submit',
+//      '#value'  => $show_fields ? t('Change Publication Type') : t('Next'),
+//      '#weight' => -10,
+//  );
+  $form += biblio_node_form_vtabs();
+  
+  $form['TYPE OF RESOURCE']['biblio_type'] = array(
     '#type' => 'select',
     '#title' => t('Publication Type'),
     '#default_value' => $tid,
@@ -1286,17 +1287,8 @@ function biblio_form($node, &$form_state) {
       '#type' => 'vertical_tabs',
       '#weight' => 0,
     );
-
-    $form['titles'] = array(
-        '#type' => 'fieldset',
-        '#group' => 'biblio_settings',
-        '#collapsible' => TRUE,
-        '#collapsed' => TRUE,
-        '#title' => t('Titles'),
-        '#description' => '',
-        '#weight' => 0
-      );
-    $form['titles']['title'] = array(
+  
+     $form['TITLE INFORMATION']['title'] = array(
       '#type' => 'textfield',
       '#title' => t('Title'),
       '#required' => TRUE,
@@ -1326,15 +1318,27 @@ function biblio_form($node, &$form_state) {
         '#weight' => 0
       );
     }
-
+  $form['contributors'] = array(
+    '#tree' => TRUE,
+    '#type' => 'fieldset',
+    '#group' => 'biblio_settings',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#title' => 'Authors',
+  //  '#weight' => $fld['weight'] / 10,
+    '#description' => t('Enter a single name per line using a format such as "Smith, John K" or "John K Smith" or "J.K. Smith"'),
+  );
+    
     $max_visible_weight = -5;
+    $form['contributors'] += biblio_contributor_widget($node, $form_state);
     foreach ($fields as $key => $fld) {
       $options = '';
       $main_area = $fld['common'] || $fld['visible'];
       if ($fld['type'] == 'contrib_widget') {
         $auth_category = $fld['fid'];
         $values = isset($form_state['values']) ? $form_state : $node;
-        $form += _biblio_contributor_widget($values, $fld, $auth_category, $tid);
+       // $form += _biblio_contributor_widget($values, $fld, $auth_category, $tid);
+  //      $form += biblio_contributor_widget($node, $form_state);
       }
       else {
         if ($key == 'biblio_keywords' ) {
@@ -1394,7 +1398,7 @@ function biblio_form($node, &$form_state) {
         // embed field directly or in "Other Fields" fieldset
         if ($main_area) {
           if (strstr($fld['name'], 'title')) {
-            $form['titles'][$key] =  $field_widget;
+            $form['TITLE INFORMATION'][$key] =  $field_widget;
           }
           else {
             $form[$key] = $field_widget;
@@ -1434,145 +1438,135 @@ function biblio_form($node, &$form_state) {
   return $form;
 }
 
-/**
- * @param $node
- * @param $fld
- * @param $auth_category
- * @param $biblio_type
- * @param $other_fields
- * @return contributor fieldset form
- */
-function _biblio_contributor_widget($node, $fld, $auth_category, $biblio_type, $other_fieldset = FALSE) {
-  $fldname = $fld['name'];
-  $type = str_replace('_', '-', $fldname);
-  $init_count = variable_get('biblio_init_auth_count', 4);
-  if (is_object($node)) {
-    $contributors = isset($node->biblio_contributors[$auth_category]) ? $node->biblio_contributors[$auth_category] : '';
-    $contributor_count = max($init_count, count($contributors));
-  }
-  else {
-    $contributors = isset($node['values']['biblio_contributors'][$auth_category]) ? $node['biblio_contributors'][$auth_category] : '';
-    $contributor_count = max($init_count, count($contributors));
-    $state_count = $node['biblio_auth_count'][$auth_category];
-    $contributor_count = max($contributor_count, $state_count);
-  }
-
-  $ctypes = _biblio_get_auth_types($auth_category, $biblio_type);
-  // if no author types are available skip this widget
-  if (!isset($ctypes)) return array();
-  $ctypes = db_query('SELECT * FROM {biblio_contributor_type_data}
-                      WHERE auth_type IN (' . implode(',', $ctypes) . ')');
-
-  foreach ($ctypes as $ctype ) {
-    $options[$ctype->auth_type] = $ctype->title;
-  }
-
-  // Add a wrapper for the choices and more button.
-  $wrapper = array(
-    '#tree' => TRUE,
-    '#type' => 'fieldset',
-    '#group' => 'biblio_settings',
-    '#collapsible' => TRUE,
-    '#collapsed' => !$fld['required'] && (count($contributors)==0),
-    '#title' => check_plain($fld['title']),
-    '#weight' => $fld['weight'] / 10,
-    '#description' => t('Enter a single name per line using a format such as "Smith, John K" or "John K Smith" or "J.K. Smith"'),
-//    '#prefix' => '<div class="clear-block" id="' . $type . '-wrapper">',
-//    '#suffix' => '</div>'
+function biblio_node_form_vtabs() {
+  $groups = array('TITLE INFORMATION', 'DESCRIPTION', 'NAME INFORMATION', 'PUBLICATION OR ORIGIN', 'RESOURCE DATE INFORMATION', 
+  'EDITION INFORMATION', 'LANGUAGE INFORMATION', 'TYPE OF RESOURCE', 'GEOGRAPHIC INFORMATION', 'SUBJECT INFORMATION', 
+  'GENRE', 'NOTE INFORMATION', 'PHYSICAL DESCRIPTION', ' FREQUENCY INFORMATION', 'RELATED ITEMS', 'AUDIENCE INFORMATION', 
+  'LOCATION INFORMATION', 'RIGHTS INFORMATION', 'IDENTIFIERS', 'RECORD INFORMATION');
+  foreach($groups as $weight => $group) {
+    $form[$group] = array(
+        '#type' => 'fieldset',
+        '#group' => 'biblio_settings',
+        '#collapsible' => TRUE,
+        '#collapsed' => FALSE,
+        '#title' => t($group),
+        '#description' => 'This is a description of the fieldset',
+        '#weight' => $weight
     );
-  // Container for just the contributors.
-  $wrapper['biblio_contributors'][$auth_category] = array(
-    '#prefix' => '<div id="' . $type . '">',
-    '#suffix' => '</div>',
-    '#theme' => 'biblio_contributors',
-    '#id' => $fldname,
-    '#hideRole' => count($options) <= 1,
-    );
-  // Add the current choices to the form.
-  $default_values = array('name' => '', 'cid' => '', 'auth_type' => key($options));
-  for ($delta = 0; $delta < $contributor_count; $delta++) {
-    if (isset($contributors[$delta])) { // contributor already exists
-      $values = $contributors[$delta];
-    }
-    else { // contributor is new
-      $values = $default_values;
-    }
-    $values['rank'] = $delta;
-    $wrapper['biblio_contributors'][$auth_category][$delta]
-      = _biblio_contributor_form($delta, $auth_category, $values, $options, $fld['autocomplete']);
   }
-  // We name our button 'contrib_more' to avoid conflicts with other modules using
-  // AHAH-enabled buttons with the id 'more'.
-  $path = 'biblio/js/' . $biblio_type . '/' . $auth_category;
-  if ($other_fieldset) $path .= '/1';
-  $wrapper[$fldname . '_more'] = array(
-    '#type' => 'submit',
-    '#value' => t('More @title', array('@title' => $fld['title'])),
-    '#description' => t("If there aren't enough boxes above, click here to add more."),
-    '#weight' => 1,
-    '#submit' => array('biblio_contributors_add_more'), // If no javascript action.
-    '#ajax' => array(
-      'callback' => 'biblio_contributors_add_more_callback',
-      'wrapper' => $type,
-      'method' => 'replace',
-      'effect' => 'fade'
-      )
-    );
-
-  $form['contributors' . $auth_category . '_wrapper'] = $wrapper;
   return $form;
 }
-
-function _biblio_contributor_form($delta, $auth_category, $values, $types = NULL, $autocomplete = TRUE) {
-  $form = array(
-    '#tree' => TRUE
-  );
-  // We'll manually set the #parents property of these fields so that
-  // their values appear in the $form_state['values']['choice'] array.
-  $form['name'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Name'),
-    '#autocomplete_path' => $autocomplete ? 'biblio/autocomplete/contributor' : '',
-    '#default_value' => $values['name'],
-    '#parents' => array('biblio_contributors', $auth_category, $delta, 'name')
-  );
-  if (count($types) > 1) {
-    $form['auth_type'] = array(
-      '#type' => 'select',
-      '#title' => t('Type'),
-      '#default_value' => isset($values['auth_type']) ? $values['auth_type'] : '',
-      '#options' => $types,
-      '#multiple' => FALSE,
-      '#parents' => array('biblio_contributors', $auth_category, $delta, 'auth_type')
-      );
+function biblio_contributor_widget($node, &$form_state) {
+  $init_count = variable_get('biblio_init_auth_count', 4);
+  $contributor_count = 0;
+  if (isset($form_state['values']['biblio_contributors'])) {
+    $contributors = $form_state['values']['biblio_contributors'];
+  }
+  elseif (isset($node->biblio_contributors)) {
+    $contributors = $node->biblio_contributors;
   }
   else {
-    $form['auth_type'] = array(
-      '#type' => 'hidden',
-      '#value' => isset($values['auth_type']) ? $values['auth_type'] : '',
-      '#parents' => array('biblio_contributors', $auth_category, $delta, 'auth_type')
-      );
+    $contributors = array();
   }
+  
+  $ctypes = _biblio_get_auth_types($auth_category, $biblio_type);
+  // if no author types are available skip this widget
+  
+  $ctypes = db_query('SELECT * FROM {biblio_contributor_type_data}');
+
+  foreach ($ctypes as $ctype ) {
+    $options['roles'][$ctype->auth_type] = $ctype->title;
+  }
+  $options['categories'] = array( 
+    1 => 'Primary', 
+    2 => 'Secondary', 
+    3 => 'Tirtiary', 
+    4 => 'Subsidiary', 
+    5 => 'Corporate/Institutional');
+  
+  // Container for just the contributors.
+  $wrapper = array();
+  $wrapper['biblio_contributors'] = array(
+    '#theme'  => 'biblio_contributors',
+    '#prefix' => '<div id="biblio-contributors-wrapper">',
+    '#suffix' => '</div>',
+  );
+  foreach ($contributors as $cat => $authors) {
+    foreach ($authors as $key => $author) {
+  
+//  for ($i = 0; $i < $contributor_count; $i++) {
+//    $contributor = (isset($contributors[$i])) ? $contributors[$i] : array();
+    $wrapper['biblio_contributors'][] = biblio_contributor_form($author, $options);
+    $contributor_count++;
+  }
+  }
+  //$contributor_count = max($init_count, count($contributors));
+  if (isset($form_state['biblio_contrib_count'])) {
+    $form_count = max(max($init_count, $contributor_count), $form_state['biblio_contrib_count']);
+  }
+  else {
+     $form_count = max($init_count, $contributor_count);
+    $form_state['biblio_contrib_count'] = $form_count;
+  }
+  if($form_count > $contributor_count) {
+    $author = array();
+    for($i = 0; $i < ($form_count - $contributor_count); $i++) {
+       $wrapper['biblio_contributors'][] = biblio_contributor_form($author, $options);
+    }
+  }
+  $wrapper['add_more'] = array(
+    '#type'        => 'submit',
+    '#value'       => t('More @title', array('@title' => $fld['title'])),
+    '#description' => t("If there aren't enough boxes above, click here to add more."),
+    '#weight'      => 1,
+    '#submit'      => array('biblio_contributors_add_more'), // If no javascript action.
+    '#ajax'        => array(
+           'callback' => 'biblio_contributors_add_more_callback',
+           'wrapper'  => 'biblio-contributors-wrapper',
+      ),
+    );
+  
+  return $wrapper;
+}
+
+function biblio_contributor_form($contributor, $options) {
+    $form = array('#tree' => TRUE);
+
+  $form['name'] = array(
+    '#type' => 'textfield',
+    '#autocomplete_path' =>  'biblio/autocomplete/contributor',
+    '#default_value' => $contributor['name'],
+  );
+  $form['auth_category'] = array(
+      '#type' => 'select',
+      '#default_value' => isset($contributor['auth_category']) ? $contributor['auth_category'] : '',
+      '#options' => $options['categories'],
+      '#multiple' => FALSE,
+      );
+  $form['auth_type'] = array(
+      '#type' => 'select',
+      '#default_value' => isset($contributor['auth_type']) ? $contributor['auth_type'] : '',
+      '#options' => $options['roles'],
+      '#multiple' => FALSE,
+      );
   $form['cid'] = array(
     '#type' => 'hidden',
-    '#default_value' => isset($values['cid']) ? $values['cid'] : '',
-    '#parents' => array('biblio_contributors', $auth_category, $delta, 'cid')
+    '#default_value' => isset($contributor['cid']) ? $contributor['cid'] : '',
   );
   $form['rank'] = array(
     '#type' => 'textfield',
     '#size' => 6,
-    '#default_value' => $values['rank'],
-    '#parents' => array('biblio_contributors', $auth_category, $delta, 'rank')
-  );
+    '#default_value' => $contributor['rank'],
+   );
   return $form;
 }
 
 function biblio_contributors_add_more_callback($form, &$form_state) {
-  return $form['names_fieldset'];
+  return $form['contributors']['biblio_contributors'];
 }
 
 function biblio_contributors_add_more($form, &$form_state) {
-  $form_state['num_names']++;
+  $form_state['biblio_contrib_count']++;
   $form_state['rebuild'] = TRUE;
 }
 
@@ -1823,7 +1817,7 @@ function biblio_view($node, $buildmode = 'full') {
     }
     break;
   case 'teaser':
-    $node->content['teaser']['#value'] = theme('biblio_style', array('node' => $node, 'base' => $base, 'style_name' => $style));
+    $node->content['teaser']['#markup'] = theme('biblio_style', array('node' => $node, 'base' => $base, 'style_name' => $style));
     break;
 }
 
