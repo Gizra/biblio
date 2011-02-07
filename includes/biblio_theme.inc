@@ -194,14 +194,12 @@ function theme_biblio_long($node, $base = 'biblio', $style = 'classic') {
 function theme_biblio_tabular($variables) {
   $node = $variables['node'];
   $base = $variables['base'];
-
+  static $citeproc;
+  
   if (module_exists('popups')) {
      popups_add_popups();
   }
   $tid = $node->biblio_type;
-  $style_name = biblio_get_style();
-  $style_function = "biblio_style_$style_name" . "_author_options";
-  module_load_include('inc', 'biblio', "/styles/biblio_style_$style_name");
   $fields = _biblio_get_field_information($node->biblio_type, TRUE);
   $rows[] = array(
     array('data' => t('Title'), 'class' => array('biblio-row-title')),
@@ -230,15 +228,21 @@ function theme_biblio_tabular($variables) {
     // handling the contributor categories like any other field orders them correctly by weight
     if ($row['type'] == 'contrib_widget' && !empty($node->biblio_contributors[$row['fid']][0]['name']) ) {
       if (module_exists('biblio_citeproc')) {
-        foreach ($node->biblio_contributors[$row['fid']] as $author) {
-          if (variable_get('biblio_author_links', 1)) {
-            $author['name'] = theme('biblio_author_link', array('author' => $author));
-          }
-          $authors[] = $author['name'];
+        module_load_include('inc', 'biblio_citeproc', 'CSL');
+        if (!isset($citeproc)) {
+          $csl = '<style xmlns="http://purl.org/net/xbiblio/csl" class="note" version="1.0">
+                  <info><id /><title /><updated>2009-08-10T04:49:00+09:00</updated></info>
+                  <bibliography><layout><names variable="author">
+                  <name form="long" name-as-sort-order="all"  sort-separator=" " initialize-with="" delimiter=", "  />
+                  </names></layout></bibliography></style>';
+          $citeproc = new citeproc($csl, $language->language);
         }
-        $data = implode('; ', $authors);
+        $data = $citeproc->render($node);
       }
       else {
+        $style_name = biblio_get_style();
+        $style_function = "biblio_style_$style_name" . "_author_options";
+        module_load_include('inc', 'biblio', "/styles/biblio_style_$style_name");
         $author_options = $style_function();
         $author_options['numberOfAuthorsTriggeringEtAl'] = 100; //set really high so we see all authors
         $data = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[$row['fid']], 'options' => $author_options));
@@ -943,13 +947,12 @@ function theme_google_scholar_link($node) {
 function theme_biblio_contributors($variables) {
   $form = $variables['form'];
   $rows = array();
-  if ($form['#hideRole']) $headers = array('', t('Name'), t('Weight'));
-  else $headers = array('', t('Name'), t('Role'), t('Weight'));
+  $headers = array('', t('Name'), t('Category'), t('Role'), t('Weight'));
   drupal_add_tabledrag($form['#id'], 'order', 'sibling', 'rank');
 
   foreach (element_children($form) as $key) {
     // No need to print the field title every time.
-    unset($form[$key]['name']['#title'], $form[$key]['auth_type']['#title']);
+//    unset($form[$key]['name']['#title'], $form[$key]['auth_type']['#title'], $form[$key]['auth_category']['#title']);
     // Add class to group weight fields for drag and drop.
     $form[$key]['rank']['#attributes']['class'] = array('rank');
 
@@ -957,10 +960,10 @@ function theme_biblio_contributors($variables) {
     $row = array('');
     $row[] = array('data' => drupal_render($form[$key]['name']),
                    'class' => array('biblio-contributor'));
-    if (!$form['#hideRole']) {
-      $row[] = array('data' => drupal_render($form[$key]['auth_type']),
+    $row[] = array('data' => drupal_render($form[$key]['auth_category']),
+                     'class' => array('biblio-contributor-category'));
+    $row[] = array('data' => drupal_render($form[$key]['auth_type']),
                      'class' => array('biblio-contributor-type'));
-    }
     $row[] = drupal_render($form[$key]['rank']);
     $rows[] = array('data' => $row, 'class' => array('draggable'));
   }
