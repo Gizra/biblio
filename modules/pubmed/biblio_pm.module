@@ -5,6 +5,10 @@
  *
  */
 
+function biblio_pm_form_biblio_admin_settings_alter(&$form, &$form_state, $form_id) {
+  module_load_include('inc', 'biblio_pm', 'biblio_pm.admin');
+  $form += biblio_pm_settings_form();
+}
 function biblio_pm_form_biblio_node_form_alter(&$form, &$form_state, $form_id) {
   if (!$form_state['submitted'] && !isset($form_state['values']) && !isset($form['#node']->nid)) {
     $form['biblio_pubmed_lookup'] = array(
@@ -117,7 +121,20 @@ function _biblio_pm_import($file, $terms, $batch, $session_id) {
           if (!isset($node->taxonomy)) $node->taxonomy = array();
           $node->taxonomy = array_merge($terms, $node->taxonomy);
         }
-        if (! ($dup = biblio_pm_check_md5($node->biblio_pubmed_md5))) {
+        $dup = biblio_pm_check_md5($node->biblio_pubmed_id, $node->biblio_pubmed_md5);
+        $action = variable_get('biblio_pm_dup_action', 'newrev');
+        if ($dup < 0 && $action == 'newrev') { //entry has be imported before, but may have changed
+          $node->nid = -$dup;
+          $node->revision = 1;
+          $curr_date = format_date(time());
+          $node->log = t("Automatically updated on !date due to changes at source", array('!date' => $curr_date));
+          $dup = NULL;
+        }
+        if ($dup < 0 && $action == 'replace') { //entry has be imported before, but may have changed
+          $node->nid = -$dup;
+          $dup = NULL;
+        }
+        if (!$dup) {
           biblio_save_node($node, $batch, $session_id);
           if (!empty($node->nid)) $nids[] = $node->nid;
         }
@@ -196,19 +213,25 @@ function biblio_pm_node_load($nodes, $types) {
   }
 }
 
-function biblio_pm_check_md5($md5) {
+function biblio_pm_check_md5($pmid, $md5) {
   static $pm_md5s = array();
+  static $pm_nids = array();
   if (empty($pm_md5s)) {
     $result = db_query("SELECT * FROM {biblio_pubmed} ");
     foreach ($result as $row ) {
       $pm_md5s[$row->biblio_pubmed_md5] = $row->nid;
+      $pm_nids[$row->biblio_pubmed_id] = $row->nid;
     }
   }
-  if (isset($pm_md5s[$md5])) {
-    return $pm_md5s[$md5];
+  if (isset($pm_nids[$pmid]) && isset($pm_md5s[$md5])) { // must be an exact duplicate of an existing node (return the nid)
+      return $pm_md5s[$md5];
+  }
+  elseif (isset($pm_nids[$pmid]) && !isset($pm_md5s[$md5])) { //pmid has been save previously but content must have changed (return negative nid)
+    return -$pm_nids[$pmid];
   }
   else {
-    $pm_md5s[$md5] = TRUE; // gaurd against duplicates in the same import
+    $pm_md5s[$md5]  = TRUE; // gaurd against duplicates in the same import
+    $pm_nids[$pmid] = TRUE;
     return;
   }
 }
