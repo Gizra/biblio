@@ -36,6 +36,7 @@ function biblio_admin_settings() {
   $version = '$Name$ $Date$';
   $version = str_replace('$', '', $version);
 
+  
   $form['biblio_settings'] = array(
       '#type' => 'vertical_tabs',
       '#weight' => 0,
@@ -97,6 +98,22 @@ function biblio_admin_settings() {
     '#return_value' => 1,
     '#default_value' => variable_get('biblio_auto_orphaned_author_delete', 0),
     '#description' => t('Orphaned authors are those which are no longer linked to any entries as the result of a biblio update or delete.')
+  );
+  $form['authors']['biblio_init_auth_count'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Number of contributor fields to initially display on the input form'),
+    '#size' => 2,
+    '#maxlength' => 2,
+    '#default_value' => variable_get('biblio_init_auth_count', 4),
+    '#description' => t('Increasing this value will increase the number of input fields displayed in the contributors section of the input form')
+  );
+  $form['authors']['biblio_contrib_fields_delta'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Number of fields added by the "Add more" button on the contributor input form'),
+    '#size' => 2,
+    '#maxlength' => 2,
+    '#default_value' => variable_get('biblio_contrib_fields_delta', 2),
+    '#description' => t('This number of blank fields will be added to the contributors section of the input form each time the "Add more" button is pressed.')
   );
   $form['bibtex'] = array(
     '#type' => 'fieldset',
@@ -367,9 +384,11 @@ function biblio_admin_settings() {
     '#collapsed' => FALSE,
     '#title' => t('Lookup Links')
   );
+  
   $options = module_invoke_all('biblio_lookup_link_settings');
   $options +=  array('google' => 'Google Scholar');
   $lookup_defaults = array_combine(array_keys($options), array_keys($options));
+  
   $form['links']['google']['biblio_lookup_links'] = array(
     '#type' => 'checkboxes',
     '#title' => t('Show lookup links'),
@@ -464,7 +483,7 @@ function biblio_admin_settings() {
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
     '#collapsed' =>  TRUE,
-    '#title' => ($profile_user) ? t('My publications') : t('Profile pages'),
+    '#title' =>  t('Profile pages'),
     '#group' => 'biblio_settings',
   );
    $form['biblio_profile'] += _biblio_get_user_profile_form();
