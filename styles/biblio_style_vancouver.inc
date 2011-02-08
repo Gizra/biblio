@@ -63,7 +63,9 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = FALSE) {
                                "italic-suffix" => '<\/i>',
                                "endash" => '-');
   $author_options = biblio_style_vancouver_author_options();
-  $authors = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[1], 'options' => $author_options, 'inline' => $inline));
+  if (isset($node->biblio_contributors[1])) {
+    $authors = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[1], 'options' => $author_options, 'inline' => $inline));
+  }
   //$editors = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[2], 'options' => $author_options, 'inline' => $inline));
   //if (empty($authors)) $authors = theme('biblio_authors', $node->biblio_contributors[5], 'mla', 5, $inline);  // if no authors substitute corp author if available
   //if (empty($authors)) $authors = '[' . t('Anonymous') . ']';  // use anonymous if we still have nothing.
@@ -387,7 +389,7 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = FALSE) {
         }
       }
 
-      if (count($node->biblio_contributors[2]))      // editor (if different from author, see note above regarding the check for ' (ed)' or ' (eds)')
+      if (isset($node->biblio_contributors[2]))      // editor (if different from author, see note above regarding the check for ' (ed)' or ' (eds)')
       {
 
         $editor_options = array(

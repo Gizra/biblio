@@ -54,7 +54,9 @@ function biblio_style_mla_author_options() {
 function biblio_style_mla($node, $base = 'biblio', $inline = FALSE) {
   $output = '';
   $author_options = biblio_style_mla_author_options();
-  $authors = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[1], 'options' => $author_options, 'inline' => $inline));
+  if (isset($node->biblio_contributors[1])) {
+    $authors = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[1], 'options' => $author_options, 'inline' => $inline));
+  }
   //if (empty($authors)) $authors = theme('biblio_authors', $node->biblio_contributors[5], 'mla', 5, $inline);  // if no authors substitute corp author if available
   //if (empty($authors)) $authors = '[' . t('Anonymous') . ']';  // use anonymous if we still have nothing.
   //$output .= '<span class="biblio-authors">' . $authors . "</span>.&nbsp; \n";

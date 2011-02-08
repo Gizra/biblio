@@ -56,10 +56,14 @@ function biblio_style_chicago_author_options() {
  */
 function biblio_style_chicago($node, $base = 'biblio', $inline = FALSE) {
   $output = '';
+  $markupPatternsArray = array("italic-prefix" => '<i>',
+                               "italic-suffix" => '<\/i>',
+                               "endash" => '-');
   $author_options = biblio_style_chicago_author_options();
   // $authors = theme('biblio_authors', $node->biblio_contributors[1], 'mla', 1, $inline);
-
-  $authors = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[1], 'options' => $author_options, 'inline' => $inline));
+  if (isset($node->biblio_contributors[1])) {
+    $authors = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[1], 'options' => $author_options, 'inline' => $inline));
+  }
   //$editors = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[2], 'options' => $author_options, 'inline' => $inline));
   //if (empty($authors)) $authors = theme('biblio_authors', $node->biblio_contributors[5], 'mla', 5, $inline);  // if no authors substitute corp author if available
   //if (empty($authors)) $authors = '[' . t('Anonymous') . ']';  // use anonymous if we still have nothing.
@@ -330,7 +334,7 @@ function biblio_style_chicago($node, $base = 'biblio', $inline = FALSE) {
       if (!empty($publication))      // publication
       $output .= " In <i>$publication</i>";
 
-      if (count($node->biblio_contributors[2]))      // editor (if different from author, see note above regarding the check for ' (ed)' or ' (eds)')
+      if (isset($node->biblio_contributors[2]))      // editor (if different from author, see note above regarding the check for ' (ed)' or ' (eds)')
       {
 
         $editor_options = array(
@@ -429,39 +433,39 @@ function biblio_style_chicago($node, $base = 'biblio', $inline = FALSE) {
       if (!empty($node->biblio_year))      // year
       $output .= ", ".$node->biblio_year;
 
-      if ($node->online_publication == "yes") // this record refers to an online article
-      {
-        // append an optional string (given in 'online_citation') plus the current date and the DOI (or URL):
-
-        $today = date("F j, Y");
-
-        if (!empty($node->online_citation))      // online_citation
-        {
-          if (!preg_match("/\. *$/", $output))  $output .= ".";
-
-          $output .= " " . $node->online_citation;
-        }
-
-        if (!empty($node->doi))      // doi
-        {
-          if (!preg_match("/\. *$/", $output)) $output .= ".";
-
-          if ($encodeHTML)
-          $output .= " " . encodeHTML("http://dx.doi.org/" . $node->doi) . " (accessed " . $today . ")";
-          else
-          $output .= " " . "http://dx.doi.org/" . $node->doi . " (accessed " . $today . ")";
-        }
-        elseif (!empty($node->biblio_url))      // url
-        {
-          if (!preg_match("/\. *$/", $output)) $output .= ".";
-
-          if ($encodeHTML)
-          $output .= " " . encodeHTML($node->biblio_url) . " (accessed " . $today . ")";
-          else
-          $output .= " " . $node->biblio_url . " (accessed " . $today . ")";
-        }
-
-      }
+//      if ($node->online_publication == "yes") // this record refers to an online article
+//      {
+//        // append an optional string (given in 'online_citation') plus the current date and the DOI (or URL):
+//
+//        $today = date("F j, Y");
+//
+//        if (!empty($node->online_citation))      // online_citation
+//        {
+//          if (!preg_match("/\. *$/", $output))  $output .= ".";
+//
+//          $output .= " " . $node->online_citation;
+//        }
+//
+//        if (!empty($node->doi))      // doi
+//        {
+//          if (!preg_match("/\. *$/", $output)) $output .= ".";
+//
+//          if ($encodeHTML)
+//          $output .= " " . encodeHTML("http://dx.doi.org/" . $node->doi) . " (accessed " . $today . ")";
+//          else
+//          $output .= " " . "http://dx.doi.org/" . $node->doi . " (accessed " . $today . ")";
+//        }
+//        elseif (!empty($node->biblio_url))      // url
+//        {
+//          if (!preg_match("/\. *$/", $output)) $output .= ".";
+//
+//          if ($encodeHTML)
+//          $output .= " " . encodeHTML($node->biblio_url) . " (accessed " . $today . ")";
+//          else
+//          $output .= " " . $node->biblio_url . " (accessed " . $today . ")";
+//        }
+//
+//      }
 
       if (!preg_match("/\. *$/", $output)) $output .= ".";
       break;

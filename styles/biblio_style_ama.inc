@@ -52,7 +52,9 @@ function biblio_style_ama($node, $base = 'biblio', $inline = FALSE) {
                                "italic-suffix" => "<\/i>",
                                "endash" => '-');
   $author_options = biblio_style_ama_author_options();
-  $authors = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[1], 'options' => $author_options, 'inline' => $inline));
+  if (isset($node->biblio_contributors[1])) {
+    $authors = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[1], 'options' => $author_options, 'inline' => $inline));
+  }
   //$editors = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[2], 'options' => $author_options, 'inline' => $inline));
   //if (empty($authors)) $authors = theme('biblio_authors', $node->biblio_contributors[5], 'mla', 5, $inline);  // if no authors substitute corp author if available
   //if (empty($authors)) $authors = '[' . t('Anonymous') . ']';  // use anonymous if we still have nothing.
@@ -380,7 +382,7 @@ function biblio_style_ama($node, $base = 'biblio', $inline = FALSE) {
         }
       }
 
-      if (count($node->biblio_contributors[2]))      // editor (if different from author, see note above regarding the check for ' (ed)' or ' (eds)')
+      if (isset($node->biblio_contributors[2]))      // editor (if different from author, see note above regarding the check for ' (ed)' or ' (eds)')
       {
 
         $editor_options = array(
@@ -427,7 +429,7 @@ function biblio_style_ama($node, $base = 'biblio', $inline = FALSE) {
 
       $output .= ";";
 
-      if ($row['type'] == "Software")      // for software, volume (=month) and issue (=day) information is printed before the year (similar to newspaper articles)
+      if ($node->biblio_type == "Software")      // for software, volume (=month) and issue (=day) information is printed before the year (similar to newspaper articles)
       {
         if (!empty($node->biblio_volume))      // volume (=month)
         $output .= " " . $node->biblio_volume;
@@ -464,39 +466,39 @@ function biblio_style_ama($node, $base = 'biblio', $inline = FALSE) {
         $output .= "(" . $node->biblio_issue . ")"; // is it correct to format series issues similar to journal article issues?
       }
 
-      if ($row['online_publication'] == "yes" || $row['type'] == "Software") // this record refers to an online article, or a computer program/software
-      {
-        // append an optional string (given in 'online_citation') plus the current date and the DOI (or URL):
-
-        $today = date("F j, Y");
-
-        if (!empty($row['online_citation']))      // online_citation
-        {
-          if (!preg_match("/\. *$/", $output)) $output .= ".";
-
-          $output .= $row['online_citation'];
-        }
-
-        if (!empty($row['doi']))      // doi
-        {
-          if (!preg_match("/\. *$/", $output))  $output .= ".";
-
-          if ($encodeHTML)
-          $output .= " " . encodeHTML("http://dx.doi.org/" . $row['doi']) . ". Accessed " . $today;
-          else
-          $output .= " " . "http://dx.doi.org/" . $row['doi'] . ". Accessed " . $today;
-        }
-        elseif (!empty($row['url']))      // url
-        {
-          if (!preg_match("/\. *$/", $output))  $output .= ".";
-
-          if ($encodeHTML)
-          $output .= " " . encodeHTML($row['url']) . ". Accessed " . $today;
-          else
-          $output .= " " . $row['url'] . ". Accessed " . $today;
-        }
-
-      }
+//      if ($row['online_publication'] == "yes" || $row['type'] == "Software") // this record refers to an online article, or a computer program/software
+//      {
+//        // append an optional string (given in 'online_citation') plus the current date and the DOI (or URL):
+//
+//        $today = date("F j, Y");
+//
+//        if (!empty($row['online_citation']))      // online_citation
+//        {
+//          if (!preg_match("/\. *$/", $output)) $output .= ".";
+//
+//          $output .= $row['online_citation'];
+//        }
+//
+//        if (!empty($row['doi']))      // doi
+//        {
+//          if (!preg_match("/\. *$/", $output))  $output .= ".";
+//
+//          if ($encodeHTML)
+//          $output .= " " . encodeHTML("http://dx.doi.org/" . $row['doi']) . ". Accessed " . $today;
+//          else
+//          $output .= " " . "http://dx.doi.org/" . $row['doi'] . ". Accessed " . $today;
+//        }
+//        elseif (!empty($row['url']))      // url
+//        {
+//          if (!preg_match("/\. *$/", $output))  $output .= ".";
+//
+//          if ($encodeHTML)
+//          $output .= " " . encodeHTML($row['url']) . ". Accessed " . $today;
+//          else
+//          $output .= " " . $row['url'] . ". Accessed " . $today;
+//        }
+//
+//      }
 
       if (!preg_match("/\. *$/", $output))  $output .= ".";
       break;
