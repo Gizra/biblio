@@ -1166,15 +1166,18 @@ function biblio_reset_types() {
 }
 
 function _add_publication_types() {
-  $types[] = array(-1, 'Select Type...', NULL, -10);
   $types[] = array(100, 'Book', NULL, 1);
   $types[] = array(101, 'Book Chapter', NULL, 2);
   $types[] = array(102, 'Journal Article', NULL, 3);
+  $types[] = array(131,'Journal',NULL,3);
   $types[] = array(103, 'Conference Paper', NULL, 4);
   $types[] = array(104, 'Conference Proceedings', NULL, 5);
   $types[] = array(105, 'Newspaper Article', NULL, 6);
   $types[] = array(106, 'Magazine Article', NULL, 7);
   $types[] = array(107, 'Web Article', NULL, 8);
+  $types[] = array(132,'Website',NULL,8);
+  $types[] = array(133,'Web service',NULL,8);
+  $types[] = array(134,'Web project page',NULL,8);
   $types[] = array(108, 'Thesis', NULL, 9);
   $types[] = array(109, 'Report', NULL, 10);
   $types[] = array(110, 'Film', NULL, 11);
@@ -1198,6 +1201,7 @@ function _add_publication_types() {
   $types[] = array(128, 'Legal Ruling', NULL, 29);
   $types[] = array(129, 'Miscellaneous',NULL, 30);
   $types[] = array(130, 'Miscellaneous Section', NULL, 31);
+  $types[] = array(135,'Presentation',NULL,8);
 
   foreach ($types as $record) {
 //    $result[] = update_sql("INSERT INTO {biblio_types} (tid, name, description, weight) VALUES ('" . implode("', '", $record) . "')");
