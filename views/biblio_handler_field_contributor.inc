@@ -2,6 +2,8 @@
 // $Id$
 class biblio_handler_field_contributor extends biblio_handler_field {
   function construct() {
+    module_load_include('inc', 'biblio', 'includes/biblio_theme');
+    
     parent::construct();
     $this->additional_fields['vid'] = array('table' => 'biblio', 'field' => 'vid');
     $this->auth_category = isset($this->definition['auth_category']) ? $this->definition['auth_category'] : 1;
@@ -14,7 +16,7 @@ class biblio_handler_field_contributor extends biblio_handler_field {
   }
   function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
-    module_load_include('inc', 'biblio', 'biblio.admin');
+    module_load_include('inc', 'biblio', 'includes/biblio.admin');
     $form['style_name'] = array(
       '#type' => 'radios',
       '#title' => t('Style'),
@@ -32,10 +34,6 @@ class biblio_handler_field_contributor extends biblio_handler_field {
   }
 
   function pre_render($values) {
-    module_load_include('inc', 'biblio', 'styles/biblio_style_' . $this->options['style_name']);
-    $author_options_func = 'biblio_style_' . $this->options['style_name'] . '_author_options';
-    $this->author_options = $author_options_func();
-
     $vids = array();
     $this->items = array();
 
@@ -72,6 +70,6 @@ class biblio_handler_field_contributor extends biblio_handler_field {
     parent::set_label($values);
     $vid = $values->{$this->field_alias};
     if (!isset($this->items[$vid])) return NULL;
-    return theme('biblio_format_authors', array('contributor' => $this->items[$vid], 'options' => $this->author_options));
+    return biblio_format_authors($this->items[$vid]);
   }
 }

@@ -227,26 +227,7 @@ function theme_biblio_tabular($variables) {
   foreach ($fields as $key => $row) {
     // handling the contributor categories like any other field orders them correctly by weight
     if ($row['type'] == 'contrib_widget' && !empty($node->biblio_contributors[$row['fid']][0]['name']) ) {
-      if (module_exists('biblio_citeproc')) {
-        module_load_include('inc', 'biblio_citeproc', 'CSL');
-        if (!isset($citeproc)) {
-          $csl = '<style xmlns="http://purl.org/net/xbiblio/csl" class="note" version="1.0">
-                  <info><id /><title /><updated>2009-08-10T04:49:00+09:00</updated></info>
-                  <bibliography><layout><names variable="author">
-                  <name form="long" name-as-sort-order="all"  sort-separator=" " initialize-with="" delimiter=", "  />
-                  </names></layout></bibliography></style>';
-          $citeproc = new citeproc($csl, $language->language);
-        }
-        $data = $citeproc->render($node);
-      }
-      else {
-        $style_name = biblio_get_style();
-        $style_function = "biblio_style_$style_name" . "_author_options";
-        module_load_include('inc', 'biblio', "/styles/biblio_style_$style_name");
-        $author_options = $style_function();
-        $author_options['numberOfAuthorsTriggeringEtAl'] = 100; //set really high so we see all authors
-        $data = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[$row['fid']], 'options' => $author_options));
-      }
+      $data = biblio_format_authors($node->biblio_contributors[$row['fid']]);
     }
     elseif (empty ($node->$row['name']) || $row['name'] == 'biblio_coins') {
       continue;
@@ -425,6 +406,37 @@ function _biblio_get_regex_patterns() {
     // Unicode safe filter for the value
     return _biblio_get_utf8_regex();
   }
+}
+
+function biblio_format_authors($authors) {
+  if (module_exists('biblio_citeproc')) {
+    static $auth_proc;
+    if (!isset($auth_proc)) {
+      module_load_include('inc', 'biblio_citeproc', 'CSL');
+      $csl = '<name form="long"
+                   name-as-sort-order="all"  
+                   sort-separator=", " 
+                   initialize-with="" 
+                   delimiter=", "  
+                   />';
+      $csl_doc = new DOMDocument();
+      $csl_doc->loadXML($csl);
+      $auth_proc = new csl_rendering_element($csl_doc);
+    }
+    $data = $auth_proc->render($authors);
+  }
+  else {
+    $style_name = biblio_get_style();
+    $style_function = "biblio_style_$style_name" . "_author_options";
+    if (!function_exists($style_function)) {
+      module_load_include('inc', 'biblio', "/styles/biblio_style_$style_name");
+    }
+    $author_options = $style_function();
+    $author_options['numberOfAuthorsTriggeringEtAl'] = 100; //set really high so we see all authors
+    $data = theme('biblio_format_authors', array('contributors' => $authors, 'options' => $author_options));
+  }
+  
+  return $data;
 }
 function theme_biblio_format_authors($variables) {
   $contributors = $variables['contributors'];

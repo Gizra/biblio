@@ -161,17 +161,19 @@ class csl_element extends csl_collection {
   function set_attributes($dom_node) {
     $att = array();
     $element_name = $dom_node->nodeName;
-    for ($i=0; $i < $dom_node->attributes->length; $i++) {
-      $value = $dom_node->attributes->item($i)->value;
-      $name  = str_replace(' ', '_', $dom_node->attributes->item($i)->name);
-      if ($name == 'type' ) {
-        $value = $this->citeproc->map_type($value);
-      }
+    if (isset($dom_node->attributes->length)) {
+      for ($i=0; $i < $dom_node->attributes->length; $i++) {
+        $value = $dom_node->attributes->item($i)->value;
+        $name  = str_replace(' ', '_', $dom_node->attributes->item($i)->name);
+        if ($name == 'type' ) {
+          $value = $this->citeproc->map_type($value);
+        }
 
-      if (($name == 'variable'  || $name == 'is-numeric') && $element_name != 'label') {
-        $value = $this->citeproc->map_field($value);
+        if (($name == 'variable'  || $name == 'is-numeric') && $element_name != 'label') {
+          $value = $this->citeproc->map_field($value);
+        }
+        $att[$name]  = $value;
       }
-      $att[$name]  = $value;
     }
     return $att;
   }
@@ -212,7 +214,7 @@ class csl_element extends csl_collection {
 
 class csl_rendering_element extends csl_element {
 
-  function render($data, $mode) {
+  function render($data, $mode = NULL) {
     $text = '';
     $text_parts = array();
 
@@ -395,16 +397,18 @@ class csl_name extends csl_format {
   }
 
   function init_attrs($mode) {
-    $and = $this->get_attributes('and');
+ //   $and = $this->get_attributes('and');
     if (isset($this->attributes['and']) && $this->attributes['and'] == 'text') {
       $this->attributes['and'] = $this->citeproc->get_locale('term', 'and');
     }
     if (isset($this->attributes['and']) && $this->attributes['and'] == 'symbol') {
       $this->attributes['and'] = ' & ';
     }
-    $style_attrs = $this->citeproc->style->get_hier_attributes();
-    $mode_attrs = $this->citeproc->{$mode}->get_hier_attributes();
-    $this->attributes = array_merge($style_attrs, $mode_attrs, $this->attributes);
+    if (isset($this->citeproc)) {
+      $style_attrs = $this->citeproc->style->get_hier_attributes();
+      $mode_attrs = $this->citeproc->{$mode}->get_hier_attributes();
+      $this->attributes = array_merge($style_attrs, $mode_attrs, $this->attributes);
+    }
     if (!isset($this->attributes['delimiter'])) {
       $this->attributes['delimiter'] = (!empty($this->attributes['name-delimiter'])) ? $this->attributes['name-delimiter'] : ', ';
     }
@@ -490,7 +494,7 @@ class csl_name extends csl_format {
     return $html;
   }
 
-  function render($names, $mode) {
+  function render($names, $mode = NULL) {
     $text = '';
     $authors = array();
     $count = 0;
