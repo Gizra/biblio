@@ -319,7 +319,7 @@ function biblio_parse_author($author_array, $cat = 0) {
     //var_dump($prefix);
     //$surname = $surname . ' ' . $appellation;
     $author_array['firstname'] = trim($firstname);
-    $author_array['initials'] = trim($initials);
+    $author_array['initials'] = (strlen(trim($initials)) > 10) ? drupal_substr(trim($initials), 0, 10) : trim($initials);
     $author_array['lastname'] = trim($surname);
     $author_array['prefix'] = trim($prefix);
     $author_array['suffix'] = trim($appellation);

@@ -1275,14 +1275,14 @@ function biblio_form($node, &$form_state) {
       '#weight' => -10,
   );
 
-  
+
   if ($show_fields) {
       $form += biblio_node_form_vtabs();
     $form['biblio_settings'] = array(
       '#type' => 'vertical_tabs',
       '#weight' => 0,
     );
-  
+
      $form['TITLE INFORMATION']['title'] = array(
       '#type' => 'textfield',
       '#title' => t('Title'),
@@ -1323,7 +1323,7 @@ function biblio_form($node, &$form_state) {
   //  '#weight' => $fld['weight'] / 10,
     '#description' => t('Enter a single name per line using a format such as "Smith, John K" or "John K Smith" or "J.K. Smith"'),
   );
-    
+
     $max_visible_weight = -5;
     $form['contributors'] += biblio_contributor_widget($node, $form_state);
     foreach ($fields as $key => $fld) {
@@ -1434,9 +1434,9 @@ function biblio_form($node, &$form_state) {
 }
 
 function biblio_node_form_vtabs() {
-  $groups = array('TITLE INFORMATION', 'DESCRIPTION', 'NAME INFORMATION', 'PUBLICATION OR ORIGIN', 'RESOURCE DATE INFORMATION', 
-  'EDITION INFORMATION', 'LANGUAGE INFORMATION', 'TYPE OF RESOURCE', 'GEOGRAPHIC INFORMATION', 'SUBJECT INFORMATION', 
-  'GENRE', 'NOTE INFORMATION', 'PHYSICAL DESCRIPTION', ' FREQUENCY INFORMATION', 'RELATED ITEMS', 'AUDIENCE INFORMATION', 
+  $groups = array('TITLE INFORMATION', 'DESCRIPTION', 'NAME INFORMATION', 'PUBLICATION OR ORIGIN', 'RESOURCE DATE INFORMATION',
+  'EDITION INFORMATION', 'LANGUAGE INFORMATION', 'TYPE OF RESOURCE', 'GEOGRAPHIC INFORMATION', 'SUBJECT INFORMATION',
+  'GENRE', 'NOTE INFORMATION', 'PHYSICAL DESCRIPTION', ' FREQUENCY INFORMATION', 'RELATED ITEMS', 'AUDIENCE INFORMATION',
   'LOCATION INFORMATION', 'RIGHTS INFORMATION', 'IDENTIFIERS', 'RECORD INFORMATION');
   foreach($groups as $weight => $group) {
     $form[$group] = array(
@@ -1463,22 +1463,22 @@ function biblio_contributor_widget($node, &$form_state) {
   else {
     $contributors = array();
   }
-  
+
   //$ctypes = _biblio_get_auth_types($auth_category, $biblio_type);
   // if no author types are available skip this widget
-  
+
   $ctypes = db_query('SELECT * FROM {biblio_contributor_type_data}');
 
   foreach ($ctypes as $ctype ) {
     $options['roles'][$ctype->auth_type] = $ctype->title;
   }
-  $options['categories'] = array( 
-    1 => 'Primary', 
-    2 => 'Secondary', 
-    3 => 'Tirtiary', 
-    4 => 'Subsidiary', 
+  $options['categories'] = array(
+    1 => 'Primary',
+    2 => 'Secondary',
+    3 => 'Tirtiary',
+    4 => 'Subsidiary',
     5 => 'Corporate/Institutional');
-  
+
   // Container for just the contributors.
   $wrapper = array();
   $wrapper['biblio_contributors'] = array(
@@ -1517,7 +1517,7 @@ function biblio_contributor_widget($node, &$form_state) {
            'wrapper'  => 'biblio-contributors-wrapper',
       ),
     );
-  
+
   return $wrapper;
 }
 
@@ -2459,11 +2459,18 @@ function biblio_get_title_url_info($node, $inline = FALSE) {
  */
 function biblio_get_map($type, $format) {
   $result = db_select('biblio_type_maps', 'btm')
-          ->fields('btm', array($type))
-          ->condition('format', $format)
-          ->execute()
-          ->fetchField();
-  return  unserialize($result);
+    ->fields('btm', array($type))
+    ->condition('format', $format)
+    ->execute()
+    ->fetchField();
+  $map = unserialize($result);
+  if ($type == 'export_map' && empty($map)) {
+    $schema = drupal_get_schema('biblio');
+    $fieldnames = array_keys($schema['fields']);
+    asort($fieldnames);
+    $map = array_fill_keys($fieldnames, 1);
+  }
+ return $map;
 }
 
 function biblio_save_map($maps) {

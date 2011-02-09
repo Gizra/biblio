@@ -36,12 +36,12 @@ function biblio_admin_settings() {
   $version = '$Name$ $Date$';
   $version = str_replace('$', '', $version);
 
-  
+
   $form['biblio_settings'] = array(
       '#type' => 'vertical_tabs',
       '#weight' => 0,
     );
-  
+
   $form['general'] = array(
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
@@ -384,11 +384,11 @@ function biblio_admin_settings() {
     '#collapsed' => FALSE,
     '#title' => t('Lookup Links')
   );
-  
+
   $options = module_invoke_all('biblio_lookup_link_settings');
   $options +=  array('google' => 'Google Scholar');
   $lookup_defaults = array_combine(array_keys($options), array_keys($options));
-  
+
   $form['links']['google']['biblio_lookup_links'] = array(
     '#type' => 'checkboxes',
     '#title' => t('Show lookup links'),
@@ -1136,6 +1136,8 @@ function biblio_admin_type_mapper_form_submit($form, $form_state) {
 
 function biblio_admin_field_mapper_form($form, $form_state, $format = 'bibtex', $op = 'map') {
   $map = biblio_get_map('field_map', $format);
+  $export_map = biblio_get_map('export_map', $format);
+
   $form['fileformat'] = array(
     '#type' => 'hidden',
     '#value' => $format,
@@ -1167,7 +1169,8 @@ function biblio_admin_field_mapper_form($form, $form_state, $format = 'bibtex', 
       $form['type'][$key] = array(
       'format' => array('#markup' => "<b>" . $key . "</b>"),
       'biblio' => $biblio_field_select,
-      'export' => array('#type' => 'checkbox', '#default_value' => $export_map[$value]),
+      'export' => array('#type' => 'checkbox',
+      '#default_value' => isset($export_map[$value]) ? $export_map[$value] : ''),
       '#tree' => 1,
       );
 

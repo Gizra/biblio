@@ -1611,6 +1611,37 @@ function biblio_update_6029() {
   db_query("ALTER TABLE {biblio_type_maps} ADD COLUMN export_map  LONGBLOB NULL DEFAULT NULL ");
   return $result;
 }
+
+function biblio_update_6030() {
+  $result = array();
+  $spec = array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default'  => 0,
+        'unsigned' => TRUE,
+        'description' =>'Determines if the author name is allowed to be reformated by the variaous styles or should be used literally.',
+        );
+  db_add_field($result, 'biblio_contributor_data', 'literal', $spec);
+  return $result;
+}
+
+function biblio_update_6031() {
+  $result = array();
+  $types[] = array(131,'Journal',NULL,3);
+  $types[] = array(132,'Web site',NULL,8);
+  $types[] = array(133,'Web service','e.g. Google, Yahoo',8);
+  $types[] = array(134,'Web project page',NULL,8);
+  $types[] = array(135,'Presentation',NULL,8);
+  $types[] = array(136,'Newspaper',NULL,8);
+
+  foreach($types as $record)
+  {
+    db_query("INSERT INTO {biblio_types} (tid, name, description, weight) VALUES ('" . implode("', '", $record) . "')");
+  }
+    db_query("DELETE FROM {biblio_types} WHERE tid=-1");
+
+ return $result;
+}
 function biblio_update_7000() {
   $result = array();
   _biblio_helper_modules('install');
@@ -1624,15 +1655,20 @@ function biblio_update_7000() {
  * Add new column to biblio_contributor_data table
  */
 function biblio_update_7001() {
-  if (db_field_exists('biblio_contributor_data', 'literal')) {
-    return; // this may have already been done in 6.x
+  if (!db_field_exists('biblio_contributor_data', 'literal')) {
+    biblio_update_6030();
   }
-  $spec = array(
-        'type' => 'int',
-        'not null' => TRUE,
-        'default'  => 0,
-        'unsigned' => TRUE,
-        'description' => 'Determines if the author name is allowed to be reformated by the variaous styles or should be used literally.',
-        );
-  db_add_field('biblio_contributor_data', 'literal', $spec);
+}
+
+function biblio_update_7002() {
+  if (!db_field_exists('biblio_type_maps', 'export_map')) {
+    biblio_update_6029();
+  }
+}
+
+function biblio_update_7003() {
+  $result = db_query('SELECT tid FROM {biblio_types} WHERE tid = :tid', array(':tid' => 136))->fetchField();
+  if (!$result) {
+    biblio_update_6031();
+  }
 }
