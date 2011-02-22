@@ -1,6 +1,6 @@
 ; $Id$
 name = Biblio
-description = Maintains biblographic lists.
+description = Maintains bibliographic lists.
 core = 7.x
 dependencies[] = taxonomy
 package = Biblio
