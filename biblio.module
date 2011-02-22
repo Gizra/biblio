@@ -2095,7 +2095,7 @@ function biblio_coins_generate(& $node) {
   else {
     $result = db_query("SELECT nr.*, b.*
                         FROM {node} AS n
-                        LEFT JOIN {node_revisions}  AS nr ON n.vid = nr.vid LEFT JOIN {biblio} AS b ON n.vid = b.vid
+                        LEFT JOIN {node_revision}  AS nr ON n.vid = nr.vid LEFT JOIN {biblio} AS b ON n.vid = b.vid
                         WHERE n.type = 'biblio'  ");
 
     foreach ($result as $node) {

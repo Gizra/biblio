@@ -89,7 +89,7 @@ function biblio_views_data() {
       'field'      => 'vid',
       'type'       => 'inner',
     ),
-    'node_revisions' => array(
+    'node_revision' => array(
       'left_field' => 'vid',
       'field'      => 'vid',
       'type'       => 'inner',

@@ -652,7 +652,7 @@ function biblio_backup() {
 
   $csv_function = (!function_exists('fputcsv')) ? 'biblio_fputcsv' : 'fputcsv';
   $count_sql = "SELECT COUNT(*)
-                FROM {biblio} b, {node} n, {node_revisions} nr
+                FROM {biblio} b, {node} n, {node_revision} nr
                 WHERE b.vid = n.vid and nr.vid = n.vid;";
   $field_type_sql = "SELECT *  FROM {biblio_field_type} ";
   $field_type_data_sql = "SELECT *  FROM {biblio_field_type_data} ";
@@ -663,7 +663,7 @@ function biblio_backup() {
           n.changed, n.comment, n.promote, n.moderate, n.sticky,
           n.tnid, n.translate,
           nr.title, nr.body, nr.teaser, nr.log, nr.timestamp, nr.format
-          FROM {biblio} b, {node} n, {node_revisions} nr
+          FROM {biblio} b, {node} n, {node_revision} nr
           WHERE b.vid = n.vid and nr.vid = n.vid;";
 
   $biblio_count = db_result(db_query($count_sql));

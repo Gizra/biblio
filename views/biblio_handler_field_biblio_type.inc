@@ -4,8 +4,8 @@
 class biblio_handler_field_biblio_type extends views_handler_field {
   function init(&$view, $options) {
     parent::init($view, $options);
-    if ($view->base_table == 'node_revisions') {
-      $this->additional_fields['vid'] = array('table' => 'node_revisions', 'field' => 'vid');
+    if ($view->base_table == 'node_revision') {
+      $this->additional_fields['vid'] = array('table' => 'node_revision', 'field' => 'vid');
     }
     else {
       $this->additional_fields['vid'] = array('table' => 'node', 'field' => 'vid');
