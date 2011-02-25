@@ -11,8 +11,8 @@ class biblio_handler_argument_many_to_one extends views_handler_argument_many_to
   function title_query() {
     $names = array();
     $result = db_query('SELECT ' . $this->name_field . ' FROM {' . $this->name_table
-      . '} WHERE ' . $this->real_field . ' IN ('. db_placeholders($this->value) .')', $this->value);
-    while ($row = db_fetch_object($result)) {
+      . '} WHERE ' . $this->real_field . ' IN (:vids)',  array(':vids' => implode(', ', $this->value)));
+    foreach ($result as $row) {
       $names[] = $row->{$this->name_field};
     }
     return !empty($names) ? $names : array(t('Invalid input'));
