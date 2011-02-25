@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 function biblio_citeproc_theme() {
   return array(

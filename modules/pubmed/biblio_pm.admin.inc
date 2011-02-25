@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /*
  * @file biblio_pm.admin.inc
  *

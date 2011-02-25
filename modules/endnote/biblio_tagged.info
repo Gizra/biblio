@@ -1,4 +1,3 @@
-; $Id$
 name = Biblio - EndNote Tagged
 description = Provides EndNote tagged file import and export to the Biblio module.
 core = 7.x

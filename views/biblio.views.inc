@@ -1,5 +1,4 @@
 <?php
-// $Id$
 //function biblio_views_plugins() {
 //  return array(
 //    'display' => array(

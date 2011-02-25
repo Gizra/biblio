@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  *
  *   Copyright (C) 2006-2008  Ron Jerome

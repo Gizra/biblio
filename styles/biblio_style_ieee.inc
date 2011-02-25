@@ -1,6 +1,5 @@
 <?php
 
-// $Id$
 // by Jeffrey Dwoskin
 // A style closer to IEEE format
 // see http://standards.ieee.org/guides/style/section7.html#992

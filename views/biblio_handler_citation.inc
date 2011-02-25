@@ -1,5 +1,4 @@
 <?php
-// $Id$
 class biblio_handler_citation extends views_handler_field {
   function init(&$view, $options) {
     parent::init($view, $options);

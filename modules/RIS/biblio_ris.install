@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file
  * Database table creation for biblio_ris module.

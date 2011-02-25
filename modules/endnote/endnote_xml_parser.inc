@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /*
  * @file endnote_xml_parser.inc
  *

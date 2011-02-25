@@ -1,5 +1,4 @@
 <?php
-// $Id$
 class BiblioImportExportWebTestCase extends BiblioWebTestCase {
   function setUp() {
     parent::setUp('biblio', 'biblio_ris', 'biblio_bibtex', 'biblio_tagged', 'biblio_xml', 'biblio_crossref');

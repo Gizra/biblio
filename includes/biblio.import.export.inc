@@ -1,6 +1,5 @@
 <?php
 
-// $Id$
 /**
  * @file
  * Functions that are used to import and export biblio data.

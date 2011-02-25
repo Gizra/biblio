@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 class biblio_handler_field_biblio_type extends views_handler_field {
   function init(&$view, $options) {

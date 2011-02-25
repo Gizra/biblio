@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file EntrezPubmedArticle.php
  * Provides a class for handling PubMed articles retrieved with EFetch.

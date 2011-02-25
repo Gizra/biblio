@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 class biblio_handler_sort_contributor_lastname extends views_handler_sort {
 

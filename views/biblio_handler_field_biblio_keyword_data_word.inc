@@ -1,5 +1,4 @@
 <?php
-// $Id$
 class biblio_handler_field_biblio_keyword_data_word extends views_handler_field {
   /**
    * Constructor to provide additional field to add.

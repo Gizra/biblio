@@ -1,5 +1,4 @@
 <?php
-// $Id$
 class biblio_handler_field_contributor extends biblio_handler_field {
   function construct() {
     module_load_include('inc', 'biblio', 'includes/biblio_theme');

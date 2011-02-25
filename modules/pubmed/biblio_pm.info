@@ -1,4 +1,3 @@
-; $Id$
 name = Biblio - PubMed
 description = Provides PubMed import and search to the Biblio module.
 core = 7.x

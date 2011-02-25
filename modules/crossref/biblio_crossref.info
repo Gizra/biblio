@@ -1,4 +1,3 @@
-; $Id$
 name = Biblio - Crossref (DOI Lookup)
 description = Provides DOI import and search to the Biblio module.
 core = 7.x

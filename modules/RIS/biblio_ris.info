@@ -1,4 +1,3 @@
-; $Id$
 name = Biblio - RIS
 description = Provides RIS file import and export to the Biblio module.
 core = 7.x

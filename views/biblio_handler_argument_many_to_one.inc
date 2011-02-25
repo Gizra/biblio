@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 /**
  * Argument handler for 'associated tables'. (Used for types, authors, keywords)

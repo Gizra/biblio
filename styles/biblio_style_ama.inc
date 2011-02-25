@@ -15,7 +15,6 @@
 
 // Modified for use in biblio by Ron Jerome
 //
-// $Id$
 /**
  * Get the style information
  *

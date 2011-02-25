@@ -1,4 +1,3 @@
-; $Id$
 name = Biblio - MARC
 description = Provides MARC file import to the Biblio module.
 core = 7.x

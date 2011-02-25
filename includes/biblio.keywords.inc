@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  *   biblio.module for Drupal
  *

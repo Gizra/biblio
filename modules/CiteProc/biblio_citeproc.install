@@ -1,5 +1,4 @@
 <?php
-// $Id$
 function biblio_citeproc_install() {
   biblio_citeproc_install_default_styles();
 

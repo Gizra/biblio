@@ -1,7 +1,6 @@
 <?php
 
 
-// $Id$
 /**
  * Get the style information
  *

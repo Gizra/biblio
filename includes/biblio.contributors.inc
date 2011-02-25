@@ -1,5 +1,4 @@
 <?php
-//$Id$
 /**
  * @param $aid
  * @return unknown_type
