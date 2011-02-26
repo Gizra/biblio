@@ -701,12 +701,12 @@ function _biblio_category_separator_bar($node, $reset = FALSE) {
       }
       break;
     case 'author':
-      if ( (isset($node->biblio_contributors[1][0]['lastname'])) &&
-      (drupal_substr(drupal_ucfirst(ltrim($node->biblio_contributors[1][0]['lastname'])), 0, 1) != $_text)) {
+      if ($node->biblio_contributors->sort_letter &&
+          $node->biblio_contributors->sort_letter != $_text) {
         if ($_text != '' ) {
           $content .= theme_biblio_end_category_section();
         }
-        $_text = drupal_substr(drupal_ucfirst(ltrim($node->biblio_contributors[1][0]['lastname'])), 0, 1) ;
+        $_text = $node->biblio_contributors->sort_letter ;
         $content .= theme_biblio_separator_bar($_text);
       }
       break;

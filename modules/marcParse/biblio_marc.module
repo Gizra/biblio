@@ -106,16 +106,18 @@ function biblio_marc_biblio_import($file, $terms = array(), $batch = FALSE, $ses
           case '700':
             $value = $field->subfield('a');
             if (!empty($value)) {
-              $node->biblio_contributors[1][] = array(
+              $node->biblio_contributors[] = array(
               'name' => $value,
+              'auth_category' => 1,
               'auth_type' => 1
               );
             }
             break;
           case '110':
           case '710':
-            $node->biblio_contributors[5][] = array(
+            $node->biblio_contributors[] = array(
               'name' => $field->subfield('a'),
+              'auth_category' => 5,
               'auth_type' => 5
             );
             break;

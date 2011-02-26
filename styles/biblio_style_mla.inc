@@ -53,10 +53,10 @@ function biblio_style_mla_author_options() {
 function biblio_style_mla($node, $base = 'biblio', $inline = FALSE) {
   $output = '';
   $author_options = biblio_style_mla_author_options();
-  if (isset($node->biblio_contributors[1])) {
-    $authors = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[1], 'options' => $author_options, 'inline' => $inline));
+  if ($node->biblio_contributors->has_category(1)) {
+    $authors = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors->get_category(1), 'options' => $author_options, 'inline' => $inline));
   }
-  //if (empty($authors)) $authors = theme('biblio_authors', $node->biblio_contributors[5], 'mla', 5, $inline);  // if no authors substitute corp author if available
+  //if (empty($authors)) $authors = theme('biblio_authors', $node->biblio_contributors->get_category(5), 'mla', 5, $inline);  // if no authors substitute corp author if available
   //if (empty($authors)) $authors = '[' . t('Anonymous') . ']';  // use anonymous if we still have nothing.
   //$output .= '<span class="biblio-authors">' . $authors . "</span>.&nbsp; \n";
   if (!empty ($node->biblio_citekey)&&(variable_get('biblio_display_citation_key',0))) {
@@ -197,7 +197,7 @@ function biblio_style_mla($node, $base = 'biblio', $inline = FALSE) {
         // From here on we'll assume that at least either the 'author' or the 'title' field did contain some contents
         // if this is not the case, the output string will begin with a space. However, any preceding/trailing whitespace will be removed at the cleanup stage (see below)
 
-        if (!empty($node->biblio_contributors[2]))      // editor
+        if ($node->biblio_contributors->has_category(2))      // editor
         {
           $editor_options = array(
             'BetweenAuthorsDelimStandard' =>', ',         //4
@@ -213,10 +213,10 @@ function biblio_style_mla($node, $base = 'biblio', $inline = FALSE) {
             'customStringAfterFirstAuthors' => ', et al.',//15
             'encodeHTML' => TRUE
           );
-          $editor = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[2], 'options' => $editor_options, 'inline' => $inline));
+          $editor = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors->get_category(2), 'options' => $editor_options, 'inline' => $inline));
           _period_if_needed($output);
 
-          if (count($node->biblio_contributors[2]) > 1) { // there are at least two editors (separated by ';')
+          if ($node->biblio_contributors->has_category(2) > 1) { // there are at least two editors (separated by ';')
             $output .= " Eds. " . $editor;
           }
           else { // there's only one editor (or the editor field is malformed with multiple editors but missing ';' separator[s])
@@ -340,7 +340,7 @@ function biblio_style_mla($node, $base = 'biblio', $inline = FALSE) {
         $output .= '</i>';
       }
 
-      if (isset($node->biblio_contributors[2]) && count($node->biblio_contributors[2]))      // editor (if different from author, see note above regarding the check for ' (ed)' or ' (eds)')
+      if ($node->biblio_contributors->has_category(2))      // editor (if different from author, see note above regarding the check for ' (ed)' or ' (eds)')
       {
 
         $editor_options = array(
@@ -357,10 +357,10 @@ function biblio_style_mla($node, $base = 'biblio', $inline = FALSE) {
           'customStringAfterFirstAuthors' => ', et al.',//15
           'encodeHTML' => TRUE
         );
-        $editor = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[2], 'options' => $editor_options, 'inline' => $inline));
+        $editor = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors->get_category(2), 'options' => $editor_options, 'inline' => $inline));
         _period_if_needed($output);
 
-        if (count($node->biblio_contributors[2] > 1)) {// there are at least two editors (separated by ';')
+        if ($node->biblio_contributors->has_category(2) > 1)) {// there are at least two editors (separated by ';')
           $output .= " Eds. " . $editor;
         }
         else {// there's only one editor (or the editor field is malformed with multiple editors but missing ';' separator[s])

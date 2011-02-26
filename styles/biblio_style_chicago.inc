@@ -60,8 +60,8 @@ function biblio_style_chicago($node, $base = 'biblio', $inline = FALSE) {
                                "endash" => '-');
   $author_options = biblio_style_chicago_author_options();
   // $authors = theme('biblio_authors', $node->biblio_contributors[1], 'mla', 1, $inline);
-  if (isset($node->biblio_contributors[1])) {
-    $authors = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[1], 'options' => $author_options, 'inline' => $inline));
+  if ($node->biblio_contributors->has_category(1)) {
+    $authors = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors->get_category(1), 'options' => $author_options, 'inline' => $inline));
   }
   //$editors = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[2], 'options' => $author_options, 'inline' => $inline));
   //if (empty($authors)) $authors = theme('biblio_authors', $node->biblio_contributors[5], 'mla', 5, $inline);  // if no authors substitute corp author if available
@@ -196,7 +196,7 @@ function biblio_style_chicago($node, $base = 'biblio', $inline = FALSE) {
       // From here on we'll assume that at least either the 'author' or the 'title' field did contain some contents
       // if this is not the case, the output string will begin with a space. However, any preceding/trailing whitespace will be removed at the cleanup stage (see below)
 
-      if (!empty($node->biblio_contributors[2]))      // editor
+      if ($node->biblio_contributors->has_category(2)))      // editor
       {
         $editor_options = array(
           'BetweenAuthorsDelimStandard'     => ', ',
@@ -213,7 +213,7 @@ function biblio_style_chicago($node, $base = 'biblio', $inline = FALSE) {
           'encodeHTML'                      => TRUE
         );
 
-        $editor = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[2], 'options' => $editor_options, 'inline' => $inline));
+        $editor = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors->get_category(2), 'options' => $editor_options, 'inline' => $inline));
 
         $output .= ", edited by " . $editor;
       }
@@ -333,7 +333,7 @@ function biblio_style_chicago($node, $base = 'biblio', $inline = FALSE) {
       if (!empty($publication))      // publication
       $output .= " In <i>$publication</i>";
 
-      if (isset($node->biblio_contributors[2]))      // editor (if different from author, see note above regarding the check for ' (ed)' or ' (eds)')
+      if ($node->biblio_contributors->has_category(2))      // editor (if different from author, see note above regarding the check for ' (ed)' or ' (eds)')
       {
 
         $editor_options = array(
@@ -351,7 +351,7 @@ function biblio_style_chicago($node, $base = 'biblio', $inline = FALSE) {
           'encodeHTML'                      => TRUE
         );
 
-        $editor = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[2], 'options' => $editor_options, 'inline' => $inline));
+        $editor = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors->get_category(2), 'options' => $editor_options, 'inline' => $inline));
         $output .= ", Edited by " . $editor;
       }
 

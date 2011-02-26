@@ -9,6 +9,7 @@ class EndNoteXMLParser {
   private $node;
   private $keyword_count;
   private $contributors;
+  private $contributor_type;
   private $contrib_count;
   private $titles;
   private $periodical;
@@ -104,28 +105,12 @@ class EndNoteXMLParser {
       case 'tertiary-authors' :
       case 'subsidiary-authors' :
       case 'translated-authors' :
-        $this->contributors = $name;
-        if (!isset($this->contrib_count))
+        $this->contributors_type = $name;
+        $this->contributors = array();
         $this->contrib_count = 0;
         break;
       case 'author' :
-        switch ($this->contributors) {
-          case 'authors' :
-            if (!isset($this->node->biblio_contributors[1][$this->contrib_count]['name'])) $this->node->biblio_contributors[1][$this->contrib_count]['name'] = '';
-            break;
-          case 'secondary-authors' :
-            $this->node->biblio_contributors[2][$this->contrib_count]['name'] = '';
-            break;
-          case 'tertiary-authors' :
-            $this->node->biblio_contributors[3][$this->contrib_count]['name'] = '';
-            break;
-          case 'subsidiary-authors' :
-            $this->node->biblio_contributors[4][$this->contrib_count]['name'] = '';
-            break;
-          case 'translated-authors' :
-            $this->node->biblio_contributors[5][$this->contrib_count]['name'] = '';
-            break;
-        }
+        $this->contributors[$this->contrib_count]['name'] = '';
         $this->element = $name;
         break;
       case 'year' :
@@ -151,10 +136,10 @@ class EndNoteXMLParser {
   }
 
   function endnote8_endElement($parser, $name) {
-    //    global $this->node, $nids, $this->element, $terms, $batch_proc, $session_id, $this->contributors, $this->contrib_count, $this->dates, $this->urls, $this->keyword_count, $this->font_attr;
+    //    global $this->node, $nids, $this->element, $terms, $batch_proc, $session_id, $this->contributors_type, $this->contrib_count, $this->dates, $this->urls, $this->keyword_count, $this->font_attr;
     switch ($name) {
       case 'record' :
-        $this->element = $this->contributors = $this->contrib_count = $this->dates = $this->urls = '';
+        $this->element = $this->contributors_type = $this->contrib_count = $this->dates = $this->urls = '';
         $this->node->biblio_xml_md5 = md5(serialize($this->node));
         if ( !($dup = $this->biblio_xml_check_md5($this->node->biblio_xml_md5)) ) {
           if (!empty($this->terms)) {
@@ -173,9 +158,32 @@ class EndNoteXMLParser {
       case 'tertiary-authors' :
       case 'subsidiary-authors' :
       case 'translated-authors' :
-        $this->contributors = '';
+        $this->contributors_type = '';
+        $this->node->biblio_contributors += $this->contributors;
         break;
       case 'author' :
+        switch ($this->contributors_type) {
+          case 'authors' :
+            $this->contributors[$this->contrib_count]['auth_category'] = 1;
+            $this->contributors[$this->contrib_count]['auth_type'] =  1;
+            break;
+          case 'secondary-authors' :
+            $this->contributors[$this->contrib_count]['auth_category'] = 2;
+            $this->contributors[$this->contrib_count]['auth_type'] = 2;
+            break;
+          case 'tertiary-authors' :
+            $this->contributors[$this->contrib_count]['auth_category'] = 3;
+            $this->contributors[$this->contrib_count]['auth_type'] = 3;
+            break;
+          case 'subsidiary-authors' :
+            $this->contributors[$this->contrib_count]['auth_category'] = 4;
+            $this->contributors[$this->contrib_count]['auth_type'] = 4;
+            break;
+          case 'translated-authors' :
+            $this->contributors[$this->contrib_count]['auth_category'] = 5;
+            $this->contributors[$this->contrib_count]['auth_type'] = 5;
+            break;
+        }
         $this->contrib_count++;
         break;
       case 'keyword' :
@@ -229,33 +237,12 @@ class EndNoteXMLParser {
   }
 
   function endnote8_characterData($parser, $data) {
-    //    global $this->node, $this->element, $this->contributors, $this->contrib_count, $this->dates, $this->urls, $this->keyword_count;
+    //    global $this->node, $this->element, $this->contributors_type, $this->contrib_count, $this->dates, $this->urls, $this->keyword_count;
     if (trim($data)) {
       switch ($this->element) {
         //Author information
         case 'author' :
-          switch ($this->contributors) {
-            case 'authors' :
-              $this->node->biblio_contributors[1][$this->contrib_count]['name'] .= $data;
-              $this->node->biblio_contributors[1][$this->contrib_count]['auth_type'] = _biblio_get_auth_type(1, $this->node->biblio_type);
-              break;
-            case 'secondary-authors' :
-              $this->node->biblio_contributors[2][$this->contrib_count]['name'] .= $data;
-              $this->node->biblio_contributors[2][$this->contrib_count]['auth_type'] = _biblio_get_auth_type(2, $this->node->biblio_type);
-              break;
-            case 'tertiary-authors' :
-              $this->node->biblio_contributors[3][$this->contrib_count]['name'] .= $data;
-              $this->node->biblio_contributors[3][$this->contrib_count]['auth_type'] = _biblio_get_auth_type(3, $this->node->biblio_type);
-              break;
-            case 'subsidiary-authors' :
-              $this->node->biblio_contributors[4][$this->contrib_count]['name'] .= $data;
-              $this->node->biblio_contributors[4][$this->contrib_count]['auth_type'] = _biblio_get_auth_type(4, $this->node->biblio_type);
-              break;
-            case 'translated-authors' :
-              $this->node->biblio_contributors[5][$this->contrib_count]['name'] .= $data;
-              $this->node->biblio_contributors[5][$this->contrib_count]['auth_type'] = _biblio_get_auth_type(5, $this->node->biblio_type);
-              break;
-          }
+          $this->contributors[$this->contrib_count]['name'] .= $data;
           break;
         case 'keyword' :
           $this->node->biblio_keywords[$this->keyword_count] .= $data;
@@ -315,6 +302,13 @@ class EndNoteXMLParser {
       case 'TERTIARY_AUTHORS':
       case 'SUBSIDIARY_AUTHORS':
         $this->contrib_count = 0;
+        $this->contributors = array();
+        break;
+      case 'AUTHOR':
+      case 'SECONDARY_AUTHOR':
+      case 'TERTIARY_AUTHOR':
+      case 'SUBSIDIARY_AUTHOR':
+          $this->contributors[$this->contrib_count]['name'] = '';
         break;
       case 'KEYWORDS':
         $this->keyword_count = 0;
@@ -340,12 +334,31 @@ class EndNoteXMLParser {
           $this->dups[] = $dup;
         }
         break;
+      case 'AUTHORS':
+      case 'SECONDARY_AUTHORS':
+      case 'TERTIARY_AUTHORS':
+      case 'SUBSIDIARY_AUTHORS':
+        $this->contributors_type = '';
+        $this->node->biblio_contributors += $this->contributors;
+        break;
       case 'AUTHOR':
+        $this->contributors[$this->contrib_count]['auth_category'] = 1;
+        $this->contributors[$this->contrib_count]['auth_type'] = 1;
+        $this->contrib_count++;
+        break;
       case 'SECONDARY_AUTHOR':
+        $this->contributors[$this->contrib_count]['auth_category'] = 2;
+        $this->contributors[$this->contrib_count]['auth_type'] = 2;
+        $this->contrib_count++;
+        break;
       case 'TERTIARY_AUTHOR':
+        $this->contributors[$this->contrib_count]['auth_category'] = 3;
+        $this->contributors[$this->contrib_count]['auth_type'] = 3;
+        $this->contrib_count++;
+        break;
       case 'SUBSIDIARY_AUTHOR':
-        $auth_category = $this->field_map($name);
-        $this->node->biblio_contributors[$auth_category][$this->contrib_count]['auth_type'] = _biblio_get_auth_type($auth_category, $this->node->biblio_type);
+        $this->contributors[$this->contrib_count]['auth_category'] = 4;
+        $this->contributors[$this->contrib_count]['auth_type'] = 4;
         $this->contrib_count++;
         break;
       case 'KEYWORD':
@@ -364,16 +377,10 @@ class EndNoteXMLParser {
           $this->node->biblio_type = $this->type_map($data);
           break;
         case 'AUTHOR':
-          $this->node->biblio_contributors[1][$this->contrib_count]['name'] .= $data;
-          break;
         case 'SECONDARY_AUTHOR':
-          $this->node->biblio_contributors[2][$this->contrib_count]['name'] .= $data;
-          break;
         case 'TERTIARY_AUTHOR':
-          $this->node->biblio_contributors[3][$this->contrib_count]['name'] .= $data;
-          break;
         case 'SUBSIDIARY_AUTHOR':
-          $this->node->biblio_contributors[4][$this->contrib_count]['name'] .= $data;
+          $this->contributors[$this->contrib_count]['name'] .= $data;
           break;
         case 'KEYWORD':
           $this->node->biblio_keywords[$this->keyword_count] .= $data;

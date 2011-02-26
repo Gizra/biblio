@@ -14,6 +14,7 @@ class BiblioCrossRefClient
   private $attribute;
   private $auth_category;
   private $contrib_count;
+  private $contribtors;
   private $org_count;
   private $field_map;
   private $type_map;
@@ -88,6 +89,7 @@ class BiblioCrossRefClient
     switch ($name) {
       case 'doi_record' :
         $this->node = array();
+        $this->contributors = array();
         $this->element = $name;
         break;
       case 'book':
@@ -147,26 +149,29 @@ class BiblioCrossRefClient
   function unixref_endElement($parser, $name) {
     switch ($name) {
       case 'doi_record' :
+        $this->node['biblio_contributors'] += $this->contributors;
         array_walk_recursive($this->node, array($this,'unixref_decode') );
         $this->node['biblio_crossref_id']  = $this->getDOI();
         $this->node['biblio_crossref_md5'] = md5(serialize($this->node));
         $this->nodes[] = $this->node; //biblio_save_node($node, $batch, $session_id, $save_node);
         break;
       case 'person_name' :
-        $this->node['biblio_contributors'][$this->auth_category][$this->contrib_count]['auth_type'] = _biblio_get_auth_type($this->auth_category, $this->node['biblio_type']);
-        $this->node['biblio_contributors'][$this->auth_category][$this->contrib_count]['name'] =
-        $this->node['biblio_contributors'][$this->auth_category][$this->contrib_count]['lastname'];
-        if (isset($this->node['biblio_contributors'][$this->auth_category][$this->contrib_count]['firstname'])) {
-          $this->node['biblio_contributors'][$this->auth_category][$this->contrib_count]['name'] .=
-            ', ' . $this->node['biblio_contributors'][$this->auth_category][$this->contrib_count]['firstname'];
+        $this->contributors[$this->contrib_count]['auth_type'] = _biblio_get_auth_type($this->auth_category, $this->node['biblio_type']);
+        $this->contributors[$this->contrib_count]['auth_category'] = $this->auth_category;
+        $this->contributors[$this->contrib_count]['name'] =
+        $this->contributors[$this->contrib_count]['lastname'];
+        if (isset($this->contributors[$this->contrib_count]['firstname'])) {
+          $this->contributors[$this->contrib_count]['name'] .=
+            ', ' . $this->contributors[$this->contrib_count]['firstname'];
         }
 
         $this->auth_category = '';
         $this->contrib_count++;
         break;
       case 'organization' :
-        $this->node['biblio_contributors'][5][$this->org_count]['auth_type'] = _biblio_get_auth_type(5, $this->node['biblio_type']);
-        $this->org_count++;
+        $this->contributors[$this->contrib_count]['auth_type'] = _biblio_get_auth_type(5, $this->node['biblio_type']);
+        $this->contributors[$this->contrib_count]['auth_category'] = 5;
+        $this->contrib_count++;
         break;
       case 'pages':
         if (isset($this->node['biblio_first_page'])) $this->node['biblio_pages'] = $this->node['biblio_first_page'];
@@ -212,19 +217,19 @@ class BiblioCrossRefClient
     if (trim($data)) {
       switch ($this->element) {
         case 'surname' :
-          $this->node['biblio_contributors'][$this->auth_category][$this->contrib_count]['lastname'] = $data;
+          $this->contributors[$this->contrib_count]['lastname'] = $data;
           break;
         case 'given_name' :
-          $this->node['biblio_contributors'][$this->auth_category][$this->contrib_count]['firstname'] = $data;
+          $this->contributors[$this->contrib_count]['firstname'] = $data;
           break;
         case 'suffix':
-          $this->node['biblio_contributors'][$this->auth_category][$this->contrib_count]['suffix'] = $data;
+          $this->contributors[$this->contrib_count]['suffix'] = $data;
           break;
         case 'affiliation' :
-          $this->node['biblio_contributors'][$this->auth_category][$this->contrib_count]['affiliation'] = $data;
+          $this->contributors[$this->contrib_count]['affiliation'] = $data;
           break;
         case 'organization':
-          $this->node['biblio_contributors'][5][$this->org_count]['name'] = $data;
+          $this->contributors[$this->contrib_count]['name'] = $data;
           break;
         case 'year':
           $this->node['year'] = $data;

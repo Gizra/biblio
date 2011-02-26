@@ -640,18 +640,18 @@ class csl_name extends csl_format {
    }
     // strip out the last delimiter if not required
     if (isset($this->and) && $auth_count > 1) {
-      $last_delim =  strrpos($text, $this->delimiter);
+      $last_delim =  strrpos($text, $this->delimiter . $this->and);
       switch ($this->dpl) { //dpl == delimiter proceeds last
         case 'always':
           return $text;
           break;
         case 'never':
-          return substr_replace($text, '', $last_delim, strlen($this->delimiter));
+          return substr_replace($text, ' ', $last_delim, strlen($this->delimiter));
           break;
         case 'contextual':
         default:
           if ($auth_count < 3) {
-            return substr_replace($text, '', $last_delim, strlen($this->delimiter));
+            return substr_replace($text, ' ', $last_delim, strlen($this->delimiter));
           }
       }
     }
@@ -774,8 +774,8 @@ class csl_names extends csl_format {
 
     $variables  = explode(' ', $this->variable);
     foreach ($variables as $var) {
-      list($contributor, $type) = explode(':', $var);
-      if (isset($data->{$contributor}[$type]) && !empty($data->{$contributor}[$type]) ) {
+      list($contributor, $category) = explode(':', $var);
+      if ($data->{$contributor}->has_category($category) ) {
         $matches++;
         break;
       }
@@ -787,8 +787,8 @@ class csl_names extends csl_format {
           if (($element instanceof csl_names)) { //test to see if any of the other names variables has content
             $variables  = explode(' ', $element->variable);
             foreach ($variables as $var) {
-              list($contributor, $type) = explode(':', $var);
-              if (isset($data->{$contributor}[$type]) && !empty($data->{$contributor}[$type]) ) {
+              list($contributor, $category) = explode(':', $var);
+              if ($data->{$contributor}->has_category($category)) {
                 $matches++;
                 break;
               }
@@ -803,13 +803,13 @@ class csl_names extends csl_format {
 
     foreach ($variables as $var) {
       $text = '';
-      list($contributor, $type) = explode(':', $var);
-      if (!empty($data->{$contributor}[$type])) {
+      list($contributor, $category) = explode(':', $var);
+      if ($data->{$contributor}->has_category($category)) {
         foreach ($this->elements as $element) {
           if(is_a($element, 'csl_label')) {
             $data->{$var}['variable'] = $var;
           }
-          $text .= $element->render($data->{$contributor}[$type], $mode);
+          $text .= $element->render($data->{$contributor}->get_category($category), $mode);
         }
       }
       if (!empty($text)) $variable_parts[] = $text;
@@ -1190,7 +1190,7 @@ class csl_group extends csl_format{
 class csl_layout extends csl_format {
 
   function init_formatting() {
-    $this->div_class = 'csl-entry';
+   // $this->div_class = 'csl-entry';
     parent::init_formatting();
   }
 
@@ -1260,7 +1260,7 @@ class csl_bibliography  extends csl_format {
   }
 
   function init_formatting() {
-    $this->div_class = 'csl-bib-body';
+   // $this->div_class = 'csl-bib-body';
     parent::init_formatting();
   }
 

@@ -114,9 +114,10 @@ function theme_biblio_long($node, $base = 'biblio', $style = 'classic') {
     }
     return $output;
   }
-  foreach ((array)$node->biblio_contributors[1] as $auth) {
-
-    $authors[] = theme('biblio_author_link', array('author' => $auth));
+  foreach ((array)$node->biblio_contributors as $auth) {
+    if ($auth['auth_category'] == 1) {
+      $authors[] = theme('biblio_author_link', array('author' => $auth));
+    }
   }
   $authors = implode('; ', (array)$authors);
   $openurl_base = variable_get('biblio_baseopenurl', '');
@@ -225,8 +226,8 @@ function theme_biblio_tabular($variables) {
 
   foreach ($fields as $key => $row) {
     // handling the contributor categories like any other field orders them correctly by weight
-    if ($row['type'] == 'contrib_widget' && !empty($node->biblio_contributors[$row['fid']][0]['name']) ) {
-      $data = biblio_format_authors($node->biblio_contributors[$row['fid']]);
+    if ($row['type'] == 'contrib_widget' && $node->biblio_contributors->has_category($row['fid']) ) {
+      $data = biblio_format_authors($node->biblio_contributors->get_category($row['fid']));
     }
     elseif (empty ($node->$row['name']) || $row['name'] == 'biblio_coins') {
       continue;
@@ -412,12 +413,7 @@ function biblio_format_authors($authors) {
     static $auth_proc;
     if (!isset($auth_proc)) {
       module_load_include('inc', 'biblio_citeproc', 'CSL');
-      $csl = '<name form="long"
-                   name-as-sort-order="all"  
-                   sort-separator=", " 
-                   initialize-with="" 
-                   delimiter=", "  
-                   />';
+      $csl = '<name form="long" name-as-sort-order="all" sort-separator=", " initialize-with="" delimiter=", " />';
       $csl_doc = new DOMDocument();
       $csl_doc->loadXML($csl);
       $auth_proc = new csl_rendering_element($csl_doc);
@@ -553,7 +549,7 @@ function theme_biblio_format_authors($variables) {
         break;
       }
     }
-    elseif (($authorCount > 1) AND (($rank + 1) == $authorCount)) {// -> last author (if multiple authors) 
+    elseif (($authorCount > 1) AND (($rank + 1) == $authorCount)) {// -> last author (if multiple authors)
       $output .= $options['BetweenAuthorsDelimLastAuthor'] . $author['name'];
     }
   }
@@ -615,7 +611,7 @@ function theme_biblio_page_number($variables) {
   $page_range_suffix      = $variables['page_range_prefix'];
   $total_pages_suffix     = $variables['total_pages_prefix'];
   $shorten_page_range_end = $variables['single_page_suffix'];
-  
+
   list($alnum, $alpha, $cntrl, $dash, $digit, $graph, $lower,
        $print, $punct, $space, $upper, $word, $patternModifiers) = _biblio_get_regex_patterns();
 
@@ -930,8 +926,8 @@ function theme_google_scholar_link($node) {
 
   $query['btnG'] = 'Search+Scholar';
   $query['as_q'] = '"' . str_replace(array(' ', '(', ')'), array('+'), $node->title) . '"'; // as_q = all the words
-  if (isset($node->biblio_contributors[1][0]['lastname'])) {
-    $query['as_sauthors'] = $node->biblio_contributors[1][0]['lastname'];
+  if (isset($node->biblio_contributors->data[0]['lastname'])) {
+    $query['as_sauthors'] = $node->biblio_contributors->data[0]['lastname'];
   }
   $query['as_occt'] = 'any';
   $query['as_epq'] = ''; // exact phrase

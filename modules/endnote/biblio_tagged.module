@@ -175,26 +175,30 @@ function _biblio_tagged_import($file, $terms = array(), $batch = FALSE, $session
           $node->biblio_type = _biblio_tagged_type_map($value);
           break;
         case '%A' :
-          $node->biblio_contributors[1][] = array(
+          $node->biblio_contributors[] = array(
             'name' => $value,
+            'auth_category' => 1,
             'auth_type' => _biblio_get_auth_type(1, $node->biblio_type));
           break;
         case '%E' :
-          $node->biblio_contributors[2][] = array(
+          $node->biblio_contributors[] = array(
             'name' => $value,
+            'auth_category' => 2,
             'auth_type' => _biblio_get_auth_type(2, $node->biblio_type));
           break;
         case '%T' :
           $node->title = $value;
           break;
         case '%Y' :
-          $node->biblio_contributors[3][] = array(
+          $node->biblio_contributors[] = array(
             'name' => $value,
+            'auth_category' => 3,
             'auth_type' => _biblio_get_auth_type(3, $node->biblio_type));
           break;
         case '%?' :
-          $node->biblio_contributors[4][] = array(
+          $node->biblio_contributors[] = array(
             'name' => $value,
+            'auth_category' => 4,
             'auth_type' => _biblio_get_auth_type(4, $node->biblio_type));
           break;
         case '%X' :
@@ -257,17 +261,22 @@ function _biblio_tagged_export($node) {
   if (isset($node->biblio_year) && $node->biblio_year < 9998)  $tagged .= "%D " . trim($node->biblio_year) . "\r\n";
   if (!empty($node->title))  $tagged .= "%T " . trim($node->title) . "\r\n";
 
-  foreach ($node->biblio_contributors[1] as $auth) {
+  foreach ($node->biblio_contributors->get_category(1) as $auth) {
     $tagged .= "%A " . trim($auth['name']) . "\r\n";
   }
-  if (isset($node->biblio_contributors[2]) ) {
-    foreach ($node->biblio_contributors[2] as $auth) {
+  if ($node->biblio_contributors->has_category(2) ) {
+    foreach ($node->biblio_contributors->get_category(2) as $auth) {
       $tagged .= "%E " . trim($auth['name']) . "\r\n";
     }
   }
-  if (isset($node->biblio_contributors[2]) ) {
-    foreach ($node->biblio_contributors[3] as $auth) {
+  if ($node->biblio_contributors->has_category(3) ) {
+    foreach ($node->biblio_contributors->get_category(3) as $auth) {
       $tagged .= "%Y " . trim($auth['name']) . "\r\n";
+    }
+  }
+  if ($node->biblio_contributors->has_category(4) ) {
+    foreach ($node->biblio_contributors->get_category(4) as $auth) {
+      $tagged .= "%? " . trim($auth['name']) . "\r\n";
     }
   }
 

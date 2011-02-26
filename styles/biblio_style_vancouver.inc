@@ -62,11 +62,11 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = FALSE) {
                                "italic-suffix" => '<\/i>',
                                "endash" => '-');
   $author_options = biblio_style_vancouver_author_options();
-  if (isset($node->biblio_contributors[1])) {
-    $authors = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[1], 'options' => $author_options, 'inline' => $inline));
+  if ($node->biblio_contributors->has_category(1)) {
+    $authors = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors->get_category(1), 'options' => $author_options, 'inline' => $inline));
   }
-  //$editors = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[2], 'options' => $author_options, 'inline' => $inline));
-  //if (empty($authors)) $authors = theme('biblio_authors', $node->biblio_contributors[5], 'mla', 5, $inline);  // if no authors substitute corp author if available
+  //$editors = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors->get_category(2), 'options' => $author_options, 'inline' => $inline));
+  //if (empty($authors)) $authors = theme('biblio_authors', $node->biblio_contributors->get_category(5), 'mla', 5, $inline);  // if no authors substitute corp author if available
   //if (empty($authors)) $authors = '[' . t('Anonymous') . ']';  // use anonymous if we still have nothing.
   //$output .= '<span class="biblio-authors">' . $authors . "</span>.&nbsp; \n";
   if (!empty ($node->biblio_citekey)&&(variable_get('biblio_display_citation_key',0))) {
@@ -128,7 +128,7 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = FALSE) {
         if (!empty($node->biblio_year) || !empty($node->biblio_volume) || !empty($node->biblio_issue) || !empty($node->biblio_alternate_title) || !empty($node->biblio_secondary_title)) // only add ": " if either year, volume, issue, abbrev_journal or publication isn't empty
           $output .= ":";
 
-        $output .= theme('biblio_page_number', array('orig_page_info' => $node->biblio_pages, 
+        $output .= theme('biblio_page_number', array('orig_page_info' => $node->biblio_pages,
                                                      'page_range_delim' => $markupPatternsArray["endash"],
                                                      'shorten_page_range_end' => TRUE)); // function 'formatPageInfo()' is defined in 'cite.inc.php'
       }
@@ -193,7 +193,7 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = FALSE) {
       }
 
 
-      if (!empty($node->biblio_contributors[2]))      // editor
+      if ($node->biblio_contributors->has_category(2))      // editor
       {
         $editor_options = array(
           'BetweenAuthorsDelimStandard'       => ', ',
@@ -210,10 +210,10 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = FALSE) {
           'encodeHTML'                        => TRUE
         );
 
-        $editor = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[2], 'options' => $editor_options, 'inline' => $inline));
+        $editor = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors->get_category(2), 'options' => $editor_options, 'inline' => $inline));
 
         $output .= " In: " . $editor . ", ";
-        if (count ($node->biblio_contributors[2]) > 1) // there are at least two editors (separated by ';')
+        if ($node->biblio_contributors->has_category(2) > 1) // there are at least two editors (separated by ';')
         $output .= "editors";
         else // there's only one editor (or the editor field is malformed with multiple editors but missing ';' separator[s])
         $output .= "editor";
@@ -282,12 +282,12 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = FALSE) {
 
       if (!empty($node->biblio_pages))      // pages
         $output .= ". " . theme_biblio_page_number($node->biblio_pages, $markupPatternsArray["endash"], "p. ", "p. ", "", "", "", "", TRUE); // function 'formatPageInfo()' is defined in 'cite.inc.php'
-        $output .= ". " . theme('biblio_page_number', array('orig_page_info' => $node->biblio_pages, 
+        $output .= ". " . theme('biblio_page_number', array('orig_page_info' => $node->biblio_pages,
                                                      'page_range_delim' => $markupPatternsArray["endash"],
                                                      'single_page_prefix' => "p. ",
                                                      'page_range_prefix' => "p. ",
                                                      'shorten_page_range_end' => TRUE)); // function 'formatPageInfo()' is defined in 'cite.inc.php'
-        
+
       if (!empty($node->biblio_alternate_title) OR !empty($node->biblio_tertiary_title)) // if there's either a full or an abbreviated series title
       {
         if (!preg_match("/[?!.][ \"" . $markupPatternsArray["italic-suffix"] . "]*$/", $output)) $output .= ".";
@@ -388,7 +388,7 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = FALSE) {
         }
       }
 
-      if (isset($node->biblio_contributors[2]))      // editor (if different from author, see note above regarding the check for ' (ed)' or ' (eds)')
+      if ($node->biblio_contributors->has_category(2))      // editor (if different from author, see note above regarding the check for ' (ed)' or ' (eds)')
       {
 
         $editor_options = array(
@@ -406,12 +406,12 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = FALSE) {
           'encodeHTML'                      => TRUE
         );
 
-        $editor = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[2], 'options' => $editor_options, 'inline' => $inline));
+        $editor = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors->get_category(2), 'options' => $editor_options, 'inline' => $inline));
         if (!preg_match("/[?!.][ \"" . $markupPatternsArray["italic-suffix"] . "]*$/", $output))
         $output .= ".";
 
         $output .= " " . $editor;
-        if (count($node->biblio_contributors[2]) > 1) // there are at least two editors (separated by ';')
+        if ($node->biblio_contributors->has_category(2) > 1) // there are at least two editors (separated by ';')
         $output .= ", editors";
         else // there's only one editor (or the editor field is malformed with multiple editors but missing ';' separator[s])
         $output .= ", editor";

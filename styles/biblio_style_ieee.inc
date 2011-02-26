@@ -49,13 +49,13 @@ function biblio_style_ieee_author_options() {
 function biblio_style_ieee($node, $base = 'biblio', $inline = FALSE) {
   $output = '';
   $author_options = biblio_style_ieee_author_options();
-  if (isset($node->biblio_contributors[1])) {
-    $authors = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors[1], 'options' => $author_options, 'inline' => $inline));
+  if ($node->biblio_contributors->has_category(1)) {
+    $authors = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors->get_category(1), 'options' => $author_options, 'inline' => $inline));
   }
   if (!empty ($node->biblio_citekey)&&(variable_get('biblio_display_citation_key',0))) {
     $output .= '[' . check_plain($node->biblio_citekey) . '] ';
   }
-  
+
   $output .= isset($authors) ? '<span class="biblio-authors">' . $authors . ", </span> \n" : '';
   switch ($node->biblio_type) {
     default :

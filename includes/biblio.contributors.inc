@@ -46,7 +46,7 @@ function biblio_load_contributors($vid) {
   $result = $query->execute();
 
   foreach  ($result as $creator ) {
-    $contributors[$creator['auth_category']][] = $creator;
+    $contributors[] = $creator;
   }
 
   return $contributors;
@@ -198,11 +198,11 @@ function _save_contributors(&$contributors, $nid, $vid, $update = FALSE) {
   db_delete('biblio_contributor')
   ->condition(db_and()->condition('nid', $nid)->condition('vid', $vid))
   ->execute();
-  foreach ($contributors as $cat => $authors) {
-    foreach ($authors as $key => $author) {
+  foreach ($contributors as  $key => $author) {
+ //   foreach ($authors as $key => $author) {
       if (!empty($author['name'])) {
         if (empty($author['lastname'])) {
-          $contributors[$cat][$key] = $author = biblio_parse_author($author, $cat);
+          $contributors[$key] = $author = biblio_parse_author($author);
         }
         if ($update && !empty($author['cid']))  $author['cid'] = NULL; // null out the cid so we don't do a global change
         if (empty ($author['cid']) && isset($author['md5']) && !empty ($md5)) {
@@ -218,13 +218,13 @@ function _save_contributors(&$contributors, $nid, $vid, $update = FALSE) {
         'vid' => $vid,
         'cid' => $author['cid'],
         'rank' => $rank++, //((isset($author['rank']) && is_numeric($author['rank'])) ? $author['rank'] : $key),
-        'auth_type' => !empty($author['auth_type']) ? $author['auth_type'] :  $cat,
-        'auth_category' => $cat,
+        'auth_type' => !empty($author['auth_type']) ? $author['auth_type'] :  $author['auth_category'],
+        'auth_category' =>  $author['auth_category'],
         );
 
         if (!drupal_write_record('biblio_contributor', $link_array)) return FALSE;
       }
-    }
+   // }
   }
   //TODO  check if it is necessary to reset aka here...
   //  db_query("UPDATE {biblio_contributor_data} SET aka = cid WHERE aka = 0 OR aka IS NULL");

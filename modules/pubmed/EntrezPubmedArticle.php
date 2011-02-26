@@ -135,7 +135,7 @@ class BiblioEntrezPubmedArticle
             $name = $lastname . ', ' . (string)$author->Initials;
           }
         }
-        $contributors[$category][] = array('name' => $name);
+        $contributors[] = array('name' => $name, 'auth_category' => $category);
       }
     }
 

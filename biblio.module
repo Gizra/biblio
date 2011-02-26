@@ -2,7 +2,7 @@
 /**
  *   biblio.module for Drupal
  *
- *   Copyright (C) 2006-2008  Ron Jerome
+ *   Copyright (C) 2006-2011  Ron Jerome
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -1231,6 +1231,7 @@ function biblio_user_presave(&$edit, $account, $catagory) {
   }
 
 }
+
 /**
  * Implementation of hook_form().
  *
@@ -1253,14 +1254,17 @@ function biblio_form($node, &$form_state) {
   $param['options'] = array(
     "enctype" => "multipart/form-data"
     );
-    $result = db_query('SELECT t.* FROM {biblio_types} as t WHERE tid > -2 AND visible = 1');
+  $result = db_query('SELECT t.* FROM {biblio_types} as t WHERE tid > -2 AND visible = 1');
   foreach ($result as $option) {
-    $options["$option->tid"] = $option->name;
+    $results["$option->tid"] = $option->name;
   }
+  asort($results);
+  $options[-1] = t('Select Type...');
+  $options += $results;
   $form['biblio_type'] = array(
     '#type' => 'select',
     '#title' => t('Publication Type'),
-    '#default_value' => $tid,
+    '#default_value' =>(!empty($tid)) ? $tid : -1,
     '#options' => $options,
     '#description' => NULL,
     '#weight' => -15,
@@ -1312,8 +1316,8 @@ function biblio_form($node, &$form_state) {
         '#weight' => 0
       );
     }
-  $form['contributors'] = array(
-    '#tree' => TRUE,
+  $form['biblio_contributors'] = array(
+ //   '#tree' => TRUE,
     '#type' => 'fieldset',
     '#group' => 'biblio_settings',
     '#collapsible' => TRUE,
@@ -1324,7 +1328,7 @@ function biblio_form($node, &$form_state) {
   );
 
     $max_visible_weight = -5;
-    $form['contributors'] += biblio_contributor_widget($node, $form_state);
+    $form['biblio_contributors'] += biblio_contributor_widget($node, $form_state);
     foreach ($fields as $key => $fld) {
       $options = '';
       $main_area = $fld['common'] || $fld['visible'];
@@ -1481,15 +1485,14 @@ function biblio_contributor_widget($node, &$form_state) {
   // Container for just the contributors.
   $wrapper = array();
   $wrapper['biblio_contributors'] = array(
+    '#tree'	  => TRUE,
     '#theme'  => 'biblio_contributors',
     '#prefix' => '<div id="biblio-contributors-wrapper">',
     '#suffix' => '</div>',
   );
-  foreach ($contributors as $cat => $authors) {
-    foreach ($authors as $key => $author) {
-      $wrapper['biblio_contributors'][] = biblio_contributor_form($author, $options);
-      $contributor_count++;
-    }
+  foreach ($contributors as $author) {
+    $wrapper['biblio_contributors'][] = biblio_contributor_form($author, $options);
+    $contributor_count++;
   }
   //$contributor_count = max($init_count, count($contributors));
   if (isset($form_state['biblio_contrib_count'])) {
@@ -1703,7 +1706,7 @@ function biblio_load($nodes) {
       $nodes[$record['nid']]->$key = $value;
     }
     $nodes[$record['nid']]->biblio_year         = _biblio_text_year($nodes[$record['nid']]->biblio_year);
-    $nodes[$record['nid']]->biblio_contributors = biblio_load_contributors($nodes[$record['nid']]->vid, $nodes[$record['nid']]->biblio_type);
+    $nodes[$record['nid']]->biblio_contributors = new biblio_contributors($nodes[$record['nid']]->vid);
     $nodes[$record['nid']]->biblio_keywords     = biblio_load_keywords($nodes[$record['nid']]->vid);
   }
   //return $nodes;
@@ -2204,27 +2207,29 @@ function biblio_contextObject($node) {
   }
   // aulast, aufirst, author (author)
   if (!empty($node->biblio_contributors)) {
-    if (!empty($node->biblio_contributors[1][0]['lastname'])) {
-      $co["rft.aulast"] = check_plain($node->biblio_contributors[1][0]['lastname']);
+    if (!empty($node->biblio_contributors[0]['lastname'])) {
+      $co["rft.aulast"] = check_plain($node->biblio_contributors[0]['lastname']);
     }
-    if (!empty($node->biblio_contributors[1][0]['firstname'])) {
-      $co["rft.aufirst"] = check_plain($node->biblio_contributors[1][0]['firstname']);
+    if (!empty($node->biblio_contributors[0]['firstname'])) {
+      $co["rft.aufirst"] = check_plain($node->biblio_contributors[0]['firstname']);
     }
-    elseif (!empty($node->biblio_contributors[1][0]['initials'])) {
-      $co["rft.auinit"] = check_plain($node->biblio_contributors[1][0]['initials']);
+    elseif (!empty($node->biblio_contributors[0]['initials'])) {
+      $co["rft.auinit"] = check_plain($node->biblio_contributors['initials']);
     }
-    foreach ((array)$node->biblio_contributors[1] as $author) {
-      if (!empty($author['lastname'])) {
-        $au = $author['lastname'];
-        if (!empty($author['firstname']) || !empty($author['initials'])) $au .= ", ";
+    foreach ($node->biblio_contributors as $author) {
+      if ($author['auth_category'] == 1) {
+        if (!empty($author['lastname'])) {
+          $au = $author['lastname'];
+          if (!empty($author['firstname']) || !empty($author['initials'])) $au .= ", ";
+        }
+        if (!empty($author['firstname'])) {
+          $au .= $author['firstname'];
+        }
+        elseif (!empty($author['initials'])) {
+          $au .= $author['initials'];
+        }
+        if (!empty($au)) $co["rft.au" . $i++] = $au;
       }
-      if (!empty($author['firstname'])) {
-        $au .= $author['firstname'];
-      }
-      elseif (!empty($author['initials'])) {
-        $au .= $author['initials'];
-      }
-      if (!empty($au)) $co["rft.au" . $i++] = $au;
     }
   }
   // pub (publisher)
@@ -2252,8 +2257,8 @@ function biblio_hash($node) {
   }
 //TODO title value??
   $hash_string = str_replace(' ', '', drupal_strtolower($node->title));
-  if (isset($node->biblio_contributors[1][0])) {
-    $hash_string .= str_replace(' ', '', drupal_strtolower($node->biblio_contributors[1][0]['lastname']));
+  if (isset($node->biblio_contributors->data[0])) {
+    $hash_string .= str_replace(' ', '', drupal_strtolower($node->biblio_contributors[0]['lastname']));
   }
   $hash_string .= $node->biblio_year;
 
@@ -2346,7 +2351,7 @@ function biblio_token_values($type, $object = NULL) {
         $type = db_query('SELECT name FROM {biblio_types} as t WHERE t.tid = :tid', array(':tid' => $object -> biblio_type))->fetchField();
         #$title = db_result(db_query("SELECT title FROM {node} WHERE nid = %d", $gid));
         $values['biblio_year'] = check_plain($object->biblio_year);
-        $values['biblio_authors'] = check_plain($object->biblio_contributors[1][0]['lastname']);
+        $values['biblio_authors'] = check_plain($object->biblio_contributors->data[0]['lastname']);
         $values['biblio_type_id'] = check_plain($object->biblio_type);
         $values['biblio_type'] = check_plain($type);
         $values['biblio_citekey'] = check_plain($object->biblio_citekey);

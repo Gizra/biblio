@@ -213,7 +213,7 @@ function _biblio_bibtex_import($entries, $terms = array(), $batch = FALSE, $sess
       // split on ' and '
       $authorArray = preg_split("/\s(and|&)\s/i", trim($entry['author']));
       foreach ($authorArray as $key => $author) {
-        $node->biblio_contributors[1][]= array('name' => $author, 'auth_type' => _biblio_get_auth_type(1, $node->biblio_type));
+        $node->biblio_contributors[]= array('name' => $author, 'auth_category' => 1, 'auth_type' => _biblio_get_auth_type(1, $node->biblio_type));
       }
     }
 
@@ -221,7 +221,7 @@ function _biblio_bibtex_import($entries, $terms = array(), $batch = FALSE, $sess
     if (!empty($entry['editor'])) {
       $authorArray = preg_split("/\s(and|&)\s/i", trim($entry['editor']));
       foreach ($authorArray as $key => $author) {
-        $node->biblio_contributors[2][]= array('name' => $author, 'auth_type' => _biblio_get_auth_type(2, $node->biblio_type));
+        $node->biblio_contributors[]= array('name' => $author, 'auth_category' => 2, 'auth_type' => _biblio_get_auth_type(2, $node->biblio_type));
       }
     }
 
@@ -376,11 +376,11 @@ function _biblio_bibtex_export($node) {
   }
 
   $a = $e = array();
-  if (isset($node->biblio_contributors[1])) {
-    foreach ((array)$node->biblio_contributors[1] as $auth) $a[] = trim($auth['name']);
+  if ($node->biblio_contributors->has_category(1)) {
+    foreach ($node->biblio_contributors->get_category(1) as $auth) $a[] = trim($auth['name']);
   }
-  if (isset($node->biblio_contributors[2])) {
-    foreach ((array)$node->biblio_contributors[2] as $auth) $e[] = trim($auth['name']);
+  if ($node->biblio_contributors->has_category(2)) {
+    foreach ($node->biblio_contributors->get_category(2) as $auth) $e[] = trim($auth['name']);
   }
   $a = implode(' and ', $a);
   $e = implode(' and ', $e);
