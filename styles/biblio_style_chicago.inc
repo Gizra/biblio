@@ -196,7 +196,7 @@ function biblio_style_chicago($node, $base = 'biblio', $inline = FALSE) {
       // From here on we'll assume that at least either the 'author' or the 'title' field did contain some contents
       // if this is not the case, the output string will begin with a space. However, any preceding/trailing whitespace will be removed at the cleanup stage (see below)
 
-      if ($node->biblio_contributors->has_category(2)))      // editor
+      if ($node->biblio_contributors->has_category(2))      // editor
       {
         $editor_options = array(
           'BetweenAuthorsDelimStandard'     => ', ',

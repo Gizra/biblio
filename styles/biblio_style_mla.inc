@@ -360,7 +360,7 @@ function biblio_style_mla($node, $base = 'biblio', $inline = FALSE) {
         $editor = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors->get_category(2), 'options' => $editor_options, 'inline' => $inline));
         _period_if_needed($output);
 
-        if ($node->biblio_contributors->has_category(2) > 1)) {// there are at least two editors (separated by ';')
+        if ($node->biblio_contributors->has_category(2) > 1) {// there are at least two editors (separated by ';')
           $output .= " Eds. " . $editor;
         }
         else {// there's only one editor (or the editor field is malformed with multiple editors but missing ';' separator[s])
