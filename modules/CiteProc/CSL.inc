@@ -129,7 +129,7 @@ class csl_collection {
   protected  $elements = array();
 
   function add_element($elem) {
-    $this->elements[] = $elem;
+    if (isset($elem)) $this->elements[] = $elem;
   }
 
   function render($data, $mode = NULL) {}
@@ -465,6 +465,9 @@ class csl_name extends csl_format {
   }
 
   function init_format($attribs, $part = 'base') {
+    if (!isset($this->{$part})) {
+      $this->{$part} = array();
+    }
     if (isset($attribs['quotes'])) {
       $this->{$part}['open-quote'] = $this->citeproc->get_locale('term', 'open-quote');
       $this->{$part}['close-quote'] = $this->citeproc->get_locale('term', 'close-quote');
@@ -483,7 +486,10 @@ class csl_name extends csl_format {
     $this->format[$part] .= (isset($attribs['text-decoration'])) ? 'text-decoration: ' . $attribs['text-decoration'] . ';' : '';
     $this->format[$part] .= (isset($attribs['vertical-align']))  ? 'vertical-align: ' . $attribs['vertical-align'] . ';' : '';
 
-    if (isset($attribs['text-case']))  $this->no_op[$part] = FALSE;
+    if (isset($attribs['text-case']))  {
+      $this->no_op[$part] = FALSE;
+      $this->{$part}['text-case'] = $attribs['text-case'];
+    }
     if (!empty($this->format[$part])) $this->no_op[$part] = FALSE;
 
   }
@@ -618,7 +624,12 @@ class csl_name extends csl_format {
           unset($authors[$i]);
         }
       }
-      $authors[] = $this->citeproc->get_locale('term', 'et-al');
+      if ($this->etal) {
+        $authors[] = $this->etal->render();
+      }
+      else {
+        $authors[] = $this->citeproc->get_locale('term', 'et-al');
+      }
       $et_al_triggered = TRUE;
     }
 
@@ -746,10 +757,16 @@ class csl_names extends csl_format {
   }
 
   function init($dom_node, $citeproc) {
-
+    $etal = '';
     $tag = $dom_node->getElementsByTagName('substitute')->item(0);
     if ($tag) {
       $this->substitutes = csl_factory::create($tag, $citeproc);
+      $dom_node->removeChild($tag);
+    }
+
+    $tag = $dom_node->getElementsByTagName('et-al')->item(0);
+    if ($tag) {
+      $etal = csl_factory::create($tag, $citeproc);
       $dom_node->removeChild($tag);
     }
 
@@ -758,6 +775,9 @@ class csl_names extends csl_format {
       if ($node->nodeType == 1) {
         $element = csl_factory::create($node, $citeproc);
         if (($element instanceof csl_label)) $element->variable = $var;
+        if (($element instanceof csl_name) && $etal) {
+          $element->etal = $etal;
+        }
         $this->add_element($element);
       }
     }
@@ -1062,7 +1082,7 @@ class csl_text extends csl_format {
 
   }
 
-  function render($data, $mode) {
+  function render($data = NULL, $mode = NULL) {
     $text = '';
 
     switch ($this->source) {
@@ -1097,6 +1117,15 @@ class csl_text extends csl_format {
   }
 }
 
+class csl_et_al extends csl_text {
+
+  function __construct($dom_node = NULL, $citeproc = NULL) {
+    $this->var = 'et-al';
+    $this->source = 'term';
+    parent::__construct($dom_node, $citeproc);
+
+    }
+}
 class csl_label extends csl_format {
   private $plural;
 
@@ -1121,7 +1150,7 @@ class csl_label extends csl_format {
           $plural = 'multiple';
         }
     }
-    if (isset($data->{'variable'})) {
+    if (is_array($data) && isset($data['variable'])) {
       $text = $this->citeproc->get_locale('term', $data['variable'], $form, $plural);
     }
     if (empty($text)) {
@@ -1506,7 +1535,7 @@ class csl_locale  {
             $option = $this->style_locale->xpath("//locale/style-options[@$arg1]");
           }
         }
-        if (isset($option)) {
+        if (isset($option) && !empty($option)) {
           $attribs = $option[0]->attributes();
         }
         if (empty($attribs)) {
