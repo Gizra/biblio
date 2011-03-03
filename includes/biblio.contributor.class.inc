@@ -38,6 +38,10 @@ class biblio_contributors {
     return isset($this->categories[$category]) ? $this->categories[$category] : NULL;
   }
 
+  function get_all() {
+    return $this->data;
+  }
+
   function get_category($category = NULL) {
     if (empty($category)) return;
     $authors = array();

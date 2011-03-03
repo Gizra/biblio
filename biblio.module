@@ -1461,7 +1461,7 @@ function biblio_contributor_widget($node, &$form_state) {
     $contributors = $form_state['values']['biblio_contributors'];
   }
   elseif (isset($node->biblio_contributors)) {
-    $contributors = $node->biblio_contributors;
+    $contributors = $node->biblio_contributors->get_all();
   }
   else {
     $contributors = array();
