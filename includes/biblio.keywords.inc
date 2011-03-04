@@ -201,7 +201,7 @@ function biblio_save_keyword(&$keyword) {
 }
 
 function biblio_delete_orphan_keywords($force = FALSE) {
-  if (variable_get('biblio_auto_orphaned_keyword_delete', 0) || $force) {
+  if (variable_get('biblio_keyword_orphan_autoclean', 0) || $force) {
 //    $sub_select = db_select('biblio_keyword', 'bk');
 //    $sub_select->addField('bk', 'kid');
 //    $sub_select->distinct();
