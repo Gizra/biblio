@@ -635,13 +635,19 @@ function biblio_schema() {
         'unsigned' => TRUE,
         'default' => 0,
         ),
+      'vtab' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'default' => 0,
+        ),
       'autocomplete' => array(
         'type' => 'int',
         'not null' => TRUE,
         'unsigned' => TRUE,
         'default' => 0,
         ),
-      'required' => array(
+        'required' => array(
         'type' => 'int',
         'not null' => TRUE,
         'unsigned' => TRUE,
@@ -1138,6 +1144,40 @@ function biblio_schema() {
       ),
     'primary key' => array('format'));
 
+   $schema['biblio_vtabs'] = array(
+    'description' => 'Table used to store the information to create the vertical tabs on the input form',
+    'fields' => array(
+        'tab_id' => array(
+          'type' => 'int',
+          'not null' => TRUE,
+          'unsigned' => TRUE,
+          'default' => 0,
+          'description' => ''
+        ),
+        'weight' => array(
+          'type' => 'int',
+          'not null' => TRUE,
+          'unsigned' => TRUE,
+          'default' => 0,
+          'description' => ''
+        ),
+        'title' => array(
+          'type' => 'varchar',
+          'length' => 128,
+          'not null' => TRUE,
+          'default' => '',
+          'description' => t('The title of the tab'),
+        ),
+        'description' => array(
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => TRUE,
+          'default' => '',
+          'description' => t('The description of the tab'),
+        ),
+    ),
+    'primary key' => array('tab_id'));
+
    return ($schema);
 
 }
@@ -1162,6 +1202,29 @@ function biblio_reset_types() {
   //_add_db_field_data_XML();
   _add_db_field_data();
   _add_custom_field_data();
+}
+function _biblio_add_vtabs() {
+  $vtabs = array(
+    array('tab_id' => 1, 'weight' => 1, 'title' => 'Authors', 'description' => ''),
+    array('tab_id' => 2, 'weight' => 2, 'title' => 'Publication', 'description' => ''),
+    array('tab_id' => 3, 'weight' => 3, 'title' => 'Publisher', 'description' => ''),
+    array('tab_id' => 4, 'weight' => 4, 'title' => 'Identifiers', 'description' => ''),
+    array('tab_id' => 5, 'weight' => 5, 'title' => 'Locators', 'description' => 'URL\'s etc'),
+    array('tab_id' => 6, 'weight' => 6, 'title' => 'Keywords', 'description' => ''),
+    array('tab_id' => 7, 'weight' => 7, 'title' => 'Notes', 'description' => ''),
+    array('tab_id' => 8, 'weight' => 8, 'title' => 'Alternate Titles', 'description' => ''),
+    array('tab_id' => 9, 'weight' => 9, 'title' => 'Other', 'description' => ''),
+    );
+
+  foreach ($vtabs as $record) {
+   db_insert('biblio_vtabs')->fields($record)->execute();
+  }
+
+//    array() 'NAME INFORMATION', 'PUBLICATION OR ORIGIN', 'RESOURCE DATE INFORMATION',
+//  'EDITION INFORMATION', 'LANGUAGE INFORMATION', 'TYPE OF RESOURCE', 'GEOGRAPHIC INFORMATION', 'SUBJECT INFORMATION',
+//  'GENRE', 'NOTE INFORMATION', 'PHYSICAL DESCRIPTION', ' FREQUENCY INFORMATION', 'RELATED ITEMS', 'AUDIENCE INFORMATION',
+//  'LOCATION INFORMATION', 'RIGHTS INFORMATION', 'IDENTIFIERS', 'RECORD INFORMATION');
+
 }
 
 function _add_publication_types() {
@@ -1323,9 +1386,6 @@ function _add_db_field_data() {
       $column = 0;
       // add link data for default biblio type (0) and all other defined types (100-130)
       foreach (array_merge(array(0), range(100, 130)) as $t) {
-//        $link_data = array($t,$row[0],$row[0],$row[0],$row[3],$row[4],$row[5],$row[6],$row[7]);
-//        db_query("INSERT INTO {biblio_field_type} (". implode(", ", $field_type_fieldnames) . ")
-//                  VALUES ('" . implode("', '", $link_data) . "')");
         db_insert('biblio_field_type')->fields(array(
           'tid'          => $t,
           'fid'          => $row[0],
@@ -1335,20 +1395,17 @@ function _add_db_field_data() {
           'autocomplete' => $row[4],
           'required'     => $row[5],
           'weight'       => $row[6],
-          'visible'      => $row[7]
+          'visible'      => $row[7],
+          'vtab'         => $row[12]
         ))->execute();
       }
-//      $ftd = array($row[0],$row[1],$row[2]);
-//      db_query("INSERT INTO {biblio_field_type_data} (" . implode(", ", $field_type_data_fieldnames) . ")
-//                  VALUES('" . implode("', '", $ftd) . "')");
+
       db_insert('biblio_field_type_data')->fields(array(
         'ftdid' => $row[0],
         'title' => $row[1],
         'hint'  => $row[2]
       ))->execute();
-//      $field_data = array($row[0],$row[8],$row[9],$row[10],$row[11]);
-//      db_query("INSERT INTO {biblio_fields} (" . implode(", ", $fieldnames) . ")
-//                  VALUES('" . implode("', '", $field_data) . "')");
+
       db_insert('biblio_fields')->fields(array(
         'fid'     => $row[0],
         'name'    => $row[8],
@@ -1361,12 +1418,12 @@ function _add_db_field_data() {
       if ($row[9] == 'contrib_widget') {
         // use field name without trailing 's' as initial guess for author type
         $auth_type = (substr($row[1], -1, 1) == 's') ? substr($row[1], 0, -1) : $row[1];
-//        db_query("INSERT INTO {biblio_contributor_type_data} (auth_type, title) VALUES (%d, '%s' )", $row[0], $auth_type);
+
         db_insert('biblio_contributor_type_data')->fields(array(
           'auth_type' => $row[0],
           'title'     => $auth_type
         ))->execute();
-//        db_query("INSERT INTO {biblio_contributor_type} (auth_category, biblio_type, auth_type) VALUES (%d, %d, %d)", $row[0], 0, $row[0]);
+
         db_insert('biblio_contributor_type')->fields(array(
           'auth_category' => $row[0],
           'biblio_type'   => 0,
@@ -1659,7 +1716,14 @@ function biblio_update_7000() {
  */
 function biblio_update_7001() {
   if (!db_field_exists('biblio_contributor_data', 'literal')) {
-    biblio_update_6030();
+    $spec = array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default'  => 0,
+        'unsigned' => TRUE,
+        'description' =>'Determines if the author name is allowed to be reformated by the variaous styles or should be used literally.',
+        );
+    db_add_field('biblio_contributor_data', 'literal', $spec);
   }
 }
 
@@ -1675,3 +1739,34 @@ function biblio_update_7003() {
     biblio_update_6031();
   }
 }
+/**
+ * Add information to manage vtabs on input form.
+*/
+function biblio_update_7005() {
+  $spec = array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'default' => 0,
+  );
+  db_add_field('biblio_field_type', 'vtab', $spec);
+  $csv_file = drupal_get_path('module', 'biblio') . '/misc/biblio.field.link.data.csv';
+
+  if ($handle = fopen($csv_file, "r")) {
+    $header = fgetcsv($handle, 10000, ","); // the first line has the field names
+    while (($row = fgetcsv($handle, 10000, ",")) !== FALSE) {
+      $column = 0;
+      // add link data for default biblio type (0) and all other defined types (100-130)
+      foreach (array_merge(array(0), range(100, 130)) as $t) {
+        db_update('biblio_field_type')
+        ->fields(array(
+                'vtab' => $row[12]
+        ))
+        ->condition(db_and()->condition('tid', $t)->condition('fid', $row[0]))
+        ->execute();
+      }
+    }
+  }
+  cache_clear_all();
+}
+

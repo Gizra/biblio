@@ -1280,18 +1280,19 @@ function biblio_form($node, &$form_state) {
 
 
   if ($show_fields) {
-      $form += biblio_node_form_vtabs();
+    $form += biblio_node_form_vtabs();
+
     $form['biblio_settings'] = array(
       '#type' => 'vertical_tabs',
       '#weight' => 0,
     );
 
-     $form['TITLE INFORMATION']['title'] = array(
+     $form['title'] = array(
       '#type' => 'textfield',
       '#title' => t('Title'),
       '#required' => TRUE,
       '#default_value' => trim((isset($form_state['values']['title'])?$form_state['values']['title']: $node->title)),
-      '#size' => 60,
+ //     '#size' => 60,
       '#maxlength' => 255,
       '#weight' => -4
         );
@@ -1305,17 +1306,17 @@ function biblio_form($node, &$form_state) {
       $fields[$row['name']] = $row;
     }
     _biblio_localize_fields($fields);
-    if (!variable_get('biblio_hide_other_fields', 0)) {
-      $form['other_fields'] = array(
-        '#type' => 'fieldset',
-        '#group' => 'biblio_settings',
-        '#collapsible' => TRUE,
-        '#collapsed' => TRUE,
-        '#title' => t('Other Biblio Fields'),
-        '#description' => '',
-        '#weight' => 0
-      );
-    }
+//    if (!variable_get('biblio_hide_other_fields', 0)) {
+//      $form['other_fields'] = array(
+//        '#type' => 'fieldset',
+//        '#group' => 'biblio_settings',
+//        '#collapsible' => TRUE,
+//        '#collapsed' => TRUE,
+//        '#title' => t('Other Biblio Fields'),
+//        '#description' => '',
+//        '#weight' => 0
+//      );
+//    }
   $form['biblio_contributors'] = array(
  //   '#tree' => TRUE,
     '#type' => 'fieldset',
@@ -1379,38 +1380,38 @@ function biblio_form($node, &$form_state) {
          }
           //        '#options' => $options,
 
-        if ($main_area && $fld['type'] == 'textarea') {
-          /* wrap all textarea fields in collapsed field sets to save space on the page */
-          $field_widget = array(
-            '#type' => 'fieldset',
-            '#group' => 'biblio_settings',
-            '#collapsible' => TRUE,
-            '#collapsed' => TRUE,
-            '#title' => check_plain($fld['title']),
-            '#description' => '',
-            '#weight' => $fld['weight'] / 10,
-            $key => $field_widget
-              );
-          $key = $fld['name'] . '_field';
-        }
+//        if ($main_area && $fld['type'] == 'textarea') {
+//          /* wrap all textarea fields in collapsed field sets to save space on the page */
+//          $field_widget = array(
+//            '#type' => 'fieldset',
+//            '#group' => 'biblio_settings',
+//            '#collapsible' => TRUE,
+//            '#collapsed' => TRUE,
+//            '#title' => check_plain($fld['title']),
+//            '#description' => '',
+//            '#weight' => $fld['weight'] / 10,
+//            $key => $field_widget
+//              );
+//          $key = $fld['name'] . '_field';
+//        }
         // embed field directly or in "Other Fields" fieldset
         if ($main_area) {
-          if (strstr($fld['name'], 'title')) {
-            $form['TITLE INFORMATION'][$key] =  $field_widget;
-          }
-          else {
-            $form[$key] = $field_widget;
-          }
+//          if (strstr($fld['name'], 'title')) {
+//            $form[$fld['vtab']][] =  $field_widget;
+//          }
+//          else {
+            $form[$fld['vtab']][$key] = $field_widget;
+ //         }
           $max_visible_weight = max($max_visible_weight, $field_widget['#weight']);
         }
         else {
-          $form['other_fields'][$key] = $field_widget;
+          $form[$fld['vtab']][$key] = $field_widget;
         }
       }
     }
 
     // place 'Other biblio fields' directly below visible fields
-    $form['other_fields']['#weight'] = $max_visible_weight + 0.1;
+//    $form['other_fields']['#weight'] = $max_visible_weight + 0.1;
 //    $form['body_field'] = array(
 //      '#type' => 'fieldset',
 //      '#collapsible' => TRUE,
@@ -1437,19 +1438,26 @@ function biblio_form($node, &$form_state) {
 }
 
 function biblio_node_form_vtabs() {
-  $groups = array('TITLE INFORMATION', 'DESCRIPTION', 'NAME INFORMATION', 'PUBLICATION OR ORIGIN', 'RESOURCE DATE INFORMATION',
-  'EDITION INFORMATION', 'LANGUAGE INFORMATION', 'TYPE OF RESOURCE', 'GEOGRAPHIC INFORMATION', 'SUBJECT INFORMATION',
-  'GENRE', 'NOTE INFORMATION', 'PHYSICAL DESCRIPTION', ' FREQUENCY INFORMATION', 'RELATED ITEMS', 'AUDIENCE INFORMATION',
-  'LOCATION INFORMATION', 'RIGHTS INFORMATION', 'IDENTIFIERS', 'RECORD INFORMATION');
-  foreach($groups as $weight => $group) {
-    $form[$group] = array(
+  $vtabs = array(
+    array('tab_id' => 1, 'weight' => 10, 'title' => 'Abstract', 'description' => ''),
+    array('tab_id' => 2, 'weight' => 12, 'title' => 'Publication', 'description' => ''),
+    array('tab_id' => 3, 'weight' => 13, 'title' => 'Publisher', 'description' => ''),
+    array('tab_id' => 4, 'weight' => 14, 'title' => 'Identifiers', 'description' => ''),
+    array('tab_id' => 5, 'weight' => 15, 'title' => 'Locators', 'description' => 'URL\'s etc'),
+    array('tab_id' => 6, 'weight' => 16, 'title' => 'Keywords', 'description' => ''),
+    array('tab_id' => 7, 'weight' => 17, 'title' => 'Notes', 'description' => ''),
+    array('tab_id' => 8, 'weight' => 18, 'title' => 'Alternate Titles', 'description' => ''),
+    array('tab_id' => 9, 'weight' => 19, 'title' => 'Other', 'description' => ''),
+    );
+  foreach($vtabs as $tab) {
+    $form[$tab['tab_id']] = array(
         '#type' => 'fieldset',
         '#group' => 'biblio_settings',
         '#collapsible' => TRUE,
         '#collapsed' => FALSE,
-        '#title' => t($group),
-        '#description' => 'This is a description of the fieldset',
-        '#weight' => $weight
+        '#title' => t($tab['title']),
+        '#description' => '',
+        '#weight' => $tab['weight']
     );
   }
   return $form;
