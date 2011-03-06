@@ -47,7 +47,7 @@ function biblio_style_cse($node, $base = 'biblio', $inline = FALSE) {
   $output = '';
   if (!empty($node->biblio_contributors)) {
   $author_options = biblio_style_cse_author_options();
-  $authors = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors->has_category(1), 'options' => $author_options, 'inline' => $inline));
+  $authors = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors->get_category(1), 'options' => $author_options, 'inline' => $inline));
   if (empty($authors) && $node->biblio_contributors->has_category(5)) {// if no authors substitute corp author if available
     foreach ($node->biblio_contributors->get_category(5) as $rank => $author) {
       $authors .= (empty($authors)) ? '' : ', ';
