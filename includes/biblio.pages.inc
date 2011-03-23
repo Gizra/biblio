@@ -259,13 +259,13 @@ function biblio_build_query($arg_list) {
           break;
         case 'term':
         case 'term_id':
-          $query->innerJoin('term_node', "tn$tcc", "n.vid = tn$tcc.vid");
+          $query->innerJoin('taxonomy_index', "ti$tcc", "n.nid = ti$tcc.nid");
           if ($type == 'term') {
-            $query->innerJoin('term_data', 'td', "tn$tcc.tid = td.tid");
+            $query->innerJoin('taxonomy_term_data', 'td', "ti$tcc.tid = td.tid");
             $query->condition('td.name', $value);
           }
           elseif ($type == 'term_id') {
-            $query->condition("tn$tcc.tid", $value);
+            $query->condition("ti$tcc.tid", $value);
           }
           $tcc++;
           break;
@@ -591,7 +591,7 @@ function _biblio_filter_info_line($args) {
         continue;
       }
       if ($type == 'term_id') {
-        $term = taxonomy_get_term($value);
+        $term = taxonomy_term_load($value);
         $value = $term->name;
         $type = t("Taxonomy term");
       }
