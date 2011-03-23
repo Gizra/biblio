@@ -88,7 +88,7 @@ function biblio_ris_form_biblio_node_form_submit($form, &$form_state) {
  */
 function biblio_ris_biblio_export_link($nid = NULL) {
   $show_link = variable_get('biblio_export_links', array('ris' => TRUE));
-  if (!isset($show_link['ris']) || !biblio_access('export') ) {
+  if (!isset($show_link['ris']) || empty($show_link['ris']) || !biblio_access('export') ) {
     return array();
   }
   $base = variable_get('biblio_base', 'biblio');

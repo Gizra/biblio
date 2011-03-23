@@ -531,7 +531,7 @@ function biblio_link($type, $node = NULL, $teaser = FALSE) {
     }
     if (biblio_access('export', $node)) {
       $show_link = variable_get('biblio_lookup_links', array('google' => TRUE));
-      if ($show_link['google']) $links['biblio_google_scholar'] = theme_google_scholar_link($node);
+      if (!empty($show_link['google'])) $links['biblio_google_scholar'] = theme_google_scholar_link($node);
     }
   }
   return $links;
@@ -1256,7 +1256,7 @@ function biblio_form($node, &$form_state) {
     );
   $result = db_query('SELECT t.* FROM {biblio_types} as t WHERE tid > -2 AND visible = 1');
   foreach ($result as $option) {
-    $results["$option->tid"] = $option->name;
+    $results[$option->tid] = $option->name;
   }
   asort($results);
   $options[-1] = t('Select Type...');
