@@ -422,7 +422,12 @@ function biblio_show_results($nodes, $query_info = array(), $inline = FALSE) {
   if (!$inline && !$profile) {
 
     if (variable_get('biblio_rss', 0)) {
-      drupal_set_html_head('<link rel="alternate" type="application/rss+xml" title="' . variable_get('site_name', 'Drupal') . ' RSS" href="' . url("$base/rss.xml") . '" />');
+      drupal_add_html_head_link(array(
+        'rel' => 'alternate',
+        'type' => 'application/rss+xml',
+        'title' => variable_get('site_name', 'Drupal') . ' RSS',
+        'href' => url("$base/rss.xml")
+      ));
     }
     // Search box. Has same permissions as the filter tab.
     $content = '<div id="biblio-header" class="clear-block">';

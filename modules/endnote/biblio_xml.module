@@ -34,11 +34,15 @@ function biblio_xml_biblio_export_options() {
 
 function biblio_xml_node_view($node, $view_mode) {
   if ($node->type == 'biblio') {
-    $links = biblio_xml_biblio_export_link($node->nid);
-    $node->content['links']['biblio_xml'] = array(
-      '#links' => $links,
-      '#attributes' => array('class' => array('links', 'inline')),
-    );
+    switch ($view_mode) {
+      case 'full':
+      case 'teaser':
+        $links = biblio_xml_biblio_export_link($node->nid);
+        $node->content['links']['biblio_xml'] = array(
+          '#links' => $links,
+          '#attributes' => array('class' => array('links', 'inline')),
+        );
+    }
   }
 }
 

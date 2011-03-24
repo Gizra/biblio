@@ -1180,7 +1180,7 @@ function biblio_form_alter(&$form, &$form_state, $form_id) {
         if ((isset($form[$form_element]['#type']))
            // || $form[$form_element]['#type'] == 'container'
             || $form_element == 'buttons') {
-          $form[$form_element] = NULL;
+          unset($form[$form_element]);
         }
       }
     }
@@ -1749,88 +1749,136 @@ function biblio_view($node, $buildmode = 'full') {
   if (variable_get('biblio_fix_isi_links', 0)) biblio_fix_isi_links($node);
 
   switch ($buildmode) {
-  case 'full':
-    drupal_set_breadcrumb(array(l(t('Home'), NULL), l(drupal_ucfirst($base_title), $base)));
-    if (variable_get('biblio_hide_bibtex_braces', 0) && !isset($node->view )) {
-      $node->title = biblio_remove_brace($node->title);
-      drupal_set_title(filter_xss($node->title, biblio_get_allowed_tags()));
-    }  // fall through...
-  case 'search_index':
-    switch (variable_get('biblio_node_layout', 'tabular')) {
-      case 'orig' :
-      case 'ft' :
-        $node->content['body']['#markup'] = theme('biblio_long', array('node' => $node, 'base' => $base, 'style' => $style));
-        break;
-      case 'tabular' :
-      default :
-        $node->content['body']['#markup'] = theme('biblio_tabular', array('node' => $node, 'base' => $base));
-        break;
-    }
-    break;
-  case 'teaser':
-    $node->content['teaser']['#markup'] = theme('biblio_style', array('node' => $node, 'base' => $base, 'style_name' => $style));
-    break;
-}
+    case 'full':
+      drupal_set_breadcrumb(array(l(t('Home'), NULL), l(drupal_ucfirst($base_title), $base)));
+      if (variable_get('biblio_hide_bibtex_braces', 0) && !isset($node->view )) {
+        $node->title = biblio_remove_brace($node->title);
+        drupal_set_title(filter_xss($node->title, biblio_get_allowed_tags()));
+      }  // fall through...
+    case 'search_index':
+      switch (variable_get('biblio_node_layout', 'tabular')) {
+        case 'orig' :
+        case 'ft' :
+          $node->content['body']['#markup'] = theme('biblio_long', array('node' => $node, 'base' => $base, 'style' => $style));
+          break;
+        case 'tabular' :
+        default :
+          $node->content['body']['#markup'] = theme('biblio_tabular', array('node' => $node, 'base' => $base));
+          break;
+      }
+      break;
+    case 'teaser':
+      $node->content['teaser']['#markup'] = theme('biblio_style', array('node' => $node, 'base' => $base, 'style_name' => $style));
+      break;
+  }
 
-return $node;
+  return $node;
 }
 /**
  * Implementation of hook_block().
  *
  * Generates a block containing the latest poll.
  */
-function biblio_block($op = 'list', $delta = 0) {
-  if (user_access('access content')) {
-    if ($op == 'list') {
-      $blocks[0]['info'] = t('Most recent publications');
-      return $blocks;
-    }
-    else
-    if ($op == 'view') {
-      // Retrieve the latest pubs
+function biblio_block_info() {
+  $blocks['recent'] = array(
+    'info' => t('Recent publications'),
+  );
+  return $blocks;
+}
+
+function biblio_block_configure($delta = '') {
+  $form = array();
+    $form['block'] = array(
+    '#type' => 'fieldset',
+    '#collapsible' => FALSE,
+    '#collapsed' => FALSE,
+    '#title' => t('Options'),
+    '#description' => '',
+    '#group' => 'biblio_settings',
+    );
+  $form['block']['biblio_rowsperblock'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Number of results in the "Recent Publications" block'),
+    '#default_value' => variable_get('biblio_rowsperblock', 4),
+    '#size' => 2,
+    '#maxlength' => 2,
+    '#description' => t('This sets the number of results that will be displayed in the "New Publications" block.')
+  );
+  $form['block']['biblio_block_order'] = array(
+    '#type' => 'radios',
+    '#title' => t('Order by'),
+    '#default_value' => variable_get('biblio_block_order', 'n.created'),
+    '#options' => array(
+      'n.created' => t('Date Created'),
+      'b.biblio_year' => t('Year Published')
+     )
+  );
+  return $form;
+}
+
+function biblio_block_save($delta = '', $edit = array()) {
+  if ($delta == 'recent') {
+    variable_set('biblio_rowsperblock', $edit['biblio_rowsperblock']);
+    variable_set('biblio_block_order', $edit['biblio_block_order']);
+  }
+}
+
+function biblio_block_view($delta = '') {
+  switch($delta) {
+    case 'recent':
       $num_in_block = variable_get('biblio_rowsperblock', 4);
       $block_order = variable_get('biblio_block_order', 'n.created');
 
-        $result = db_select('node', 'n')
-            ->fields('n', array('nid', 'title'))
-            ->condition(db_and()
-                ->condition('n.type', 'biblio')
-                ->condition('n.status', 1))
-            ->orderBy($block_order, 'DESC')
-            ->execute();
-//FIXME DB
-     //  $result = db_query_range(db_rewrite_sql($query), 0, $num_in_block);
-        $base = variable_get('biblio_base', 'biblio');
-        $block['subject'] = t('Recent Publications');
-        $block['content'] = '<div class="item-list"><ul>';
-        $options['html'] = TRUE;
-//FIXME DB
-        foreach ($result as $pub) {
-          $block['content'] .= '<li >' . l(filter_xss($pub->title, biblio_get_allowed_tags()), "node/$pub->nid", $options) . '</li>';
-        }
-        $block['content'] .= '</ul>';
-        if (variable_get('biblio_rss', 0)) {
-          $block['content'] .= theme('feed_icon', url("$base/recent/rss.xml", array(
-              'absolute' => TRUE
-          )), t('Recently Added Publications'));
-        }
-        $block['content'] .= l(t('More...'), $base);
-        $block['content'] .= '</div>';
+      $query = db_select('node', 'n')
+        ->fields('n', array('nid', 'title'))
+        ->condition(db_and()
+          ->condition('n.type', 'biblio')
+          ->condition('n.status', 1))
+        ->orderBy($block_order, 'DESC')
+        ->range(0, $num_in_block);
+       if ($block_order == 'b.biblio_year') {
+         $query->leftJoin('biblio', 'b', 'n.vid=b.vid');
+       }
+       $result = $query->execute();
+      //FIXME DB
+      // $result = db_query_range(db_rewrite_sql($query), 0, $num_in_block);
+      $base = variable_get('biblio_base', 'biblio');
+      $block['subject'] = t('Recent Publications');
+      $block['content'] = '<div class="item-list"><ul>';
+      $options['html'] = TRUE;
+      //FIXME DB
+      foreach ($result as $pub) {
+        $block['content'] .= '<li >' . l(filter_xss($pub->title, biblio_get_allowed_tags()), "node/$pub->nid", $options) . '</li>';
+      }
+      $block['content'] .= '</ul>';
+      if (variable_get('biblio_rss', 0)) {
+        $block['content'] .= theme('feed_icon', array(
+                                  'url'   => url("$base/recent/rss.xml", array('absolute' => TRUE)),
+                                  'title' => t('Recent Publications')));
+      }
+      $block['content'] .= l(t('More...'), $base);
+      $block['content'] .= '</div>';
 
       return $block;
-    }
+      break;
   }
 }
+
 function biblio_recent_feed() {
-  $query = "SELECT *
-            FROM {node} AS n
-            WHERE n.type = 'biblio' AND n.status=1
-            ORDER BY n.created DESC";
   $numberInFeed = variable_get('biblio_rss_number_of_entries', 10);
+
+  $query = db_select('node', 'n')
+    ->fields('n', array('nid', 'title'))
+    ->condition(db_and()
+      ->condition('n.type', 'biblio')
+      ->condition('n.status', 1))
+    ->orderBy('n.created', 'DESC')
+    ->range(0, $numberInFeed);
+  $result = $query->execute();
+
   $siteName = variable_get('site_name', 'Drupal');
   $base = variable_get('biblio_base', 'biblio');
-//FIXME DB
-  $result = db_query_range(db_rewrite_sql($query), 0, $numberInFeed);
+
   $channel['title'] = $siteName . ' - ' . t("Recently Added Publications");
   $channel['link'] = url($base, array('absolute' => TRUE));
   $channel['description'] = t("This feed lists the %num most recently added publications on %site", array('%num' => $numberInFeed, '%site' => $siteName));

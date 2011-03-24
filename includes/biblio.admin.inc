@@ -130,31 +130,6 @@ function biblio_admin_settings() {
     '#description' => ''
   );
 
-  $form['block'] = array(
-    '#type' => 'fieldset',
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
-    '#title' => t('Block settings'),
-    '#description' => '',
-    '#group' => 'biblio_settings',
-    );
-  $form['block']['biblio_rowsperblock'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Number of results in the "New Publications" block'),
-    '#default_value' => variable_get('biblio_rowsperblock', 4),
-    '#size' => 2,
-    '#maxlength' => 2,
-    '#description' => t('This sets the number of results that will be displayed in the "New Publications" block.')
-  );
-  $form['block']['biblio_block_order'] = array(
-    '#type' => 'radios',
-    '#title' => t('Order by'),
-    '#default_value' => variable_get('biblio_block_order', 'n.created'),
-    '#options' => array(
-      'n.created' => t('Date Created'),
-      'b.biblio_year' => t('Year Published')
-     )
-  );
   $result = db_query("SELECT b.name, bftd.title FROM {biblio_fields} b
                       INNER JOIN {biblio_field_type} bt ON bt.fid=b.fid
                       INNER JOIN {biblio_field_type_data} bftd ON bftd.ftdid=bt.ftdid
