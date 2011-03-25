@@ -366,7 +366,7 @@ function biblio_admin_settings() {
   $form['links']['google']['biblio_lookup_links'] = array(
     '#type' => 'checkboxes',
     '#title' => t('Show lookup links'),
-    '#default_value' => array_merge($lookup_defaults, variable_get('biblio_export_links', $lookup_defaults)),
+    '#default_value' => array_merge($lookup_defaults, variable_get('biblio_lookup_links', $lookup_defaults)),
     '#options' => $options,
   '#description' => t('You can select which lookup links to display here.')
   );
@@ -578,7 +578,7 @@ function biblio_admin_settings() {
     $form['style']['biblio_citeproc_style'] = array(
       '#type' => 'select',
       '#title' => t('Style'),
-      '#default_value' =>  variable_get('biblio_citeproc_style', 'http://www.zotero.org/styles/ama'),
+      '#default_value' =>  variable_get('biblio_citeproc_style', 'cse.csl'),
       '#options' => biblio_get_styles(),
       '#description' => t('Set the bibliographic style of the "list" view.')
     );
@@ -1493,7 +1493,7 @@ function _biblio_get_user_profile_form($profile_user = FALSE) {
     $options['system'] = t('System default');
     $options = array_merge($options, biblio_get_styles() );
     $form['biblio_user_style'] = array(
-    '#type' => 'radios',
+    '#type' => 'select',
     '#title' => t('Style'),
     '#default_value' => (isset($profile_user->data['biblio_user_style']) ? $profile_user->data['biblio_user_style'] : 'system'),
     '#options' => $options,
