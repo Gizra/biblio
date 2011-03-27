@@ -169,10 +169,14 @@ function biblio_pm_link($type, $node = NULL, $teaser = FALSE) {
 
   if ($type == 'node' && $node->type == 'biblio' ) {
     $link  = 'http://www.ncbi.nlm.nih.gov/pubmed/' . $node->biblio_pubmed_id . '?dopt=Abstract';
+    $attrs = array('title' => t("Click to view the PubMed listing for this node"));
+    if (variable_get('biblio_links_target_new_window', null)){
+      $attrs = array_merge($attrs, array('target'=>'_blank'));
+    }
     return array('biblio_pubmed' => array(
         'title'      => t('PubMed'),
         'href'       => $link,
-        'attributes' => array('title' => t("Click to view the PubMed listing for this node")),
+        'attributes' => $attrs,
     ));
   }
   return ;

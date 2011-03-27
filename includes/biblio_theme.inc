@@ -195,7 +195,7 @@ function theme_biblio_tabular($variables) {
   $node = $variables['node'];
   $base = $variables['base'];
   static $citeproc;
-  
+
   if (module_exists('popups')) {
      popups_add_popups();
   }
@@ -430,7 +430,7 @@ function biblio_format_authors($authors) {
     $author_options['numberOfAuthorsTriggeringEtAl'] = 100; //set really high so we see all authors
     $data = theme('biblio_format_authors', array('contributors' => $authors, 'options' => $author_options));
   }
-  
+
   return $data;
 }
 function theme_biblio_format_authors($variables) {
@@ -939,10 +939,15 @@ function theme_google_scholar_link($node) {
   $query['as_sdtAAP'] = 1; //Search articles in all subject areas
   $query['as_sdtp'] = 1; //include patents
 
+  $attrs = array('title' => t("Click to search Google Scholar for this entry"));
+  if (variable_get('biblio_links_target_new_window', null)){
+    $attrs = array_merge($attrs, array('target'=>'_blank'));
+  }
+
   return array(
         'title'      => t('Google Scholar'),
         'href'       => 'http://scholar.google.com/scholar',
-        'attributes' => array('title' => t("Click to search Google Scholar for this entry")),
+        'attributes' => $attrs,
         'query'      => $query,
   );
 }

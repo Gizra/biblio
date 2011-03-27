@@ -2510,7 +2510,7 @@ function biblio_get_allowed_tags() {
 function biblio_get_title_url_info($node, $inline = FALSE) {
   return array('link' =>  ((variable_get('biblio_link_title_url', 0) && !empty($node->biblio_url)) ? $node->biblio_url : ($inline ? "$base/viewinline/$node->nid":"node/$node->nid" ) ),
                'options' =>
-                  array('attributes' => (variable_get('biblio_links_target_new_window', FALSE) && variable_get('biblio_link_title_url', 0) && !empty($node->biblio_url)) ? array('target' => '_blank') : array(),
+                  array('attributes' => (variable_get('biblio_links_target_new_window', FALSE)) ? array('target' => '_blank') : array(),
                         'html' => TRUE),
                 );
 }
