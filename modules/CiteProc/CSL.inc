@@ -320,8 +320,8 @@ class csl_format extends csl_rendering_element {
       $suffix =  $this->quotes['close-quote'] . $suffix;
     }
     if (!empty($suffix)) { // gaurd against repeaded suffixes...
-      if (($text[(strlen($text)-1)] == $suffix[0]) ||
-          (substr($text, -7) == '</span>' && substr($text, -8, 1) == $suffix[0])) {
+      $no_tags = strip_tags($text);
+      if (($no_tags[(strlen($no_tags) - 1)] == $suffix[0]) ) {
         $suffix = substr($suffix, 1);
       }
     }
