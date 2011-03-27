@@ -2266,17 +2266,23 @@ function biblio_contextObject($node) {
     }
   }
   // aulast, aufirst, author (author)
-  if (!empty($node->biblio_contributors)) {
-    if (!empty($node->biblio_contributors[0]['lastname'])) {
-      $co["rft.aulast"] = check_plain($node->biblio_contributors[0]['lastname']);
+  if (!empty($node->biblio_contributors) && is_a($node->biblio_contributors, 'biblio_contributors')) {
+    $biblio_contributors = $node->biblio_contributors->get_all();
+  }
+  elseif (is_array($node->biblio_contributors)) {
+    $biblio_contributors = $node->biblio_contributors;
+  }
+  if (!empty($biblio_contributors)) {
+    if (!empty($biblio_contributors[0]['lastname'])) {
+      $co["rft.aulast"] = check_plain($biblio_contributors[0]['lastname']);
     }
-    if (!empty($node->biblio_contributors[0]['firstname'])) {
-      $co["rft.aufirst"] = check_plain($node->biblio_contributors[0]['firstname']);
+    if (!empty($biblio_contributors[0]['firstname'])) {
+      $co["rft.aufirst"] = check_plain($biblio_contributors[0]['firstname']);
     }
-    elseif (!empty($node->biblio_contributors[0]['initials'])) {
-      $co["rft.auinit"] = check_plain($node->biblio_contributors['initials']);
+    elseif (!empty($biblio_contributors[0]['initials'])) {
+      $co["rft.auinit"] = check_plain($biblio_contributors[0]['initials']);
     }
-    foreach ($node->biblio_contributors as $author) {
+    foreach ($biblio_contributors as $author) {
       if ($author['auth_category'] == 1) {
         if (!empty($author['lastname'])) {
           $au = $author['lastname'];
