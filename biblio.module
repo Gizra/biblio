@@ -1224,8 +1224,12 @@ function biblio_user_presave(&$edit, $account, $catagory) {
          $edit[$key] = 0;
       }
       $edit['data'][$key] = $edit[$key];
-      if ($key == 'biblio_contributor_id' && $edit[$key] != 0) {
-        $edit['data']['biblio_id_change_count']++;
+      if ($key == 'biblio_contributor_id' ) {
+        if ($edit[$key] != 0) {
+          $edit['biblio_id_change_count']++;
+        }
+        db_update('biblio_contributor_data')->condition('drupal_uid', $account->uid)->fields(array('drupal_uid' => 0))->execute();
+        db_update('biblio_contributor_data')->condition('cid', $edit['biblio_contributor_id'])->fields(array('drupal_uid' => $account->uid))->execute();
       }
     }
   }
@@ -2451,17 +2455,17 @@ function biblio_get_style() {
   if (isset($user->data['biblio_user_style']) && $user->data['biblio_user_style'] != "system") {
     return $user->data['biblio_user_style'];
   }
-  return  module_exists('biblio_citeproc') ? variable_get('biblio_citeproc_style', 'http://www.zotero.org/styles/ama') : variable_get('biblio_style', 'cse');
+  return  module_exists('biblio_citeproc') ? variable_get('biblio_citeproc_style', 'cse.csl') : variable_get('biblio_style', 'cse');
 }
 function biblio_get_styles() {
   $styles = array();
   if (module_exists('biblio_citeproc')) {
     $result = db_select('biblio_citeproc_styles', 'csl')
-        ->fields('csl', array('id', 'title', 'summary'))
+        ->fields('csl', array('filename', 'title'))
         ->orderBy('title', 'ASC')
         ->execute();
      foreach ($result as $style) {
-       $styles[$style->id] = $style->title;
+       $styles[$style->filename] = $style->title;
      }
   }
   else {

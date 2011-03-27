@@ -1,5 +1,18 @@
 <?php
-
+function biblio_citeproc_menu() {
+  global $user;
+  $items = array();
+  $items['admin/config/biblio/styles'] = array(
+    'title'             => 'CiteProc Style Manager',
+    'page callback'     => 'drupal_get_form',
+    'page arguments'    => array('biblio_citeproc_style_manager_form'),
+    'access arguments'  => array('administer biblio'),
+    'file'              => 'biblio_citeproc.admin.inc',
+    'type'              => MENU_LOCAL_TASK,
+    'weight'            => 12
+  );
+  return $items;
+}
 function biblio_citeproc_theme() {
   return array(
     'biblio_citeproc_style' => array(
@@ -10,8 +23,11 @@ function biblio_citeproc_theme() {
           'base' => 'biblio',
           'style_name' => 'classic',
           'inline' => FALSE),
-      ),
-    );
+    ),
+    'biblio_citeproc_style_manager_form' => array(
+        'render element' => 'form',
+    ),
+  );
 }
 
 function biblio_citeproc_theme_registry_alter(&$theme_registry) {
@@ -31,8 +47,14 @@ function theme_biblio_citeproc_style($variables) {
   if (!$citeproc) {
     $csl_id = biblio_get_style();
 
-    $csl_file_contents = db_query('SELECT csl FROM {biblio_citeproc_styles} WHERE id = :id', array(':id' => $csl_id))->fetchField();
-//    $cslid = $csl_file_name . '-' . $language->language;
+    $csl = db_query('SELECT parent,csl FROM {biblio_citeproc_styles} WHERE filename = :id', array(':id' => $csl_id))->fetchObject();
+    if (!empty($csl->parent)) {
+      $csl_file_contents = db_query("SELECT csl FROM biblio_citeproc_styles WHERE id = :id", array(':id' => $csl->parent))->fetchField();
+    }
+    else {
+      $csl_file_contents = $csl->csl;
+    }
+    //    $cslid = $csl_file_name . '-' . $language->language;
 //    $cached = cache_get($cslid, 'cache_biblio_csl_object');
     if (!$cached) {
       $citeproc = new citeproc($csl_file_contents, $language->language);
@@ -49,3 +71,4 @@ function theme_biblio_citeproc_style($variables) {
   }
   return ($styled_node . filter_xss($node->biblio_coins, array('span')));
 }
+
