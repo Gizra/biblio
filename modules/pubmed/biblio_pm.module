@@ -158,28 +158,37 @@ function biblio_pm_biblio_lookup_link_settings() {
 }
 
 function biblio_pm_biblio_lookup_link($node) {
-  return biblio_pm_link('node', $node);
-}
-
-function biblio_pm_link($type, $node = NULL, $teaser = FALSE) {
   $show_link = variable_get('biblio_lookup_links', array('pubmed' => TRUE));
-  if (!$show_link['pubmed'] || !isset($node) || !isset($node->biblio_pubmed_id)) {
+  if (!$show_link['pubmed'] ||
+      !isset($node) ||
+      $node->type != 'biblio' ||
+      !isset($node->biblio_pubmed_id)) {
     return array();
   }
 
-  if ($type == 'node' && $node->type == 'biblio' ) {
-    $link  = 'http://www.ncbi.nlm.nih.gov/pubmed/' . $node->biblio_pubmed_id . '?dopt=Abstract';
-    $attrs = array('title' => t("Click to view the PubMed listing for this node"));
-    if (variable_get('biblio_links_target_new_window', null)){
-      $attrs = array_merge($attrs, array('target'=>'_blank'));
-    }
-    return array('biblio_pubmed' => array(
+  $link  = 'http://www.ncbi.nlm.nih.gov/pubmed/' . $node->biblio_pubmed_id . '?dopt=Abstract';
+  $attrs = array('title' => t("Click to view the PubMed listing for this node"));
+  if (variable_get('biblio_links_target_new_window', null)){
+    $attrs = array_merge($attrs, array('target'=>'_blank'));
+  }
+  return array('biblio_pubmed' => array(
         'title'      => t('PubMed'),
         'href'       => $link,
         'attributes' => $attrs,
-    ));
+  ));
+}
+
+function biblio_pm_node_view($node, $view_mode, $langcode) {
+  if ($node->type == 'biblio' && isset($node->biblio_pubmed_id)) {
+    switch ($view_mode) {
+      case 'full':
+      case 'teaser':
+        $node->content['links']['biblio_pubmed'] = array(
+          '#links' => biblio_pm_biblio_lookup_link($node),
+          '#attributes' => array('class' => array('links', 'inline')),
+        );
+    }
   }
-  return ;
 }
 
 function biblio_pm_node_delete($node) {
