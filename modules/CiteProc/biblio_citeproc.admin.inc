@@ -72,7 +72,7 @@ function biblio_citeproc_style_manager_form($form, &$form_state) {
   );
 
   $form['current_default'] = array(
-    '#markup' => $titles[variable_get('biblio_citeproc_style', 'cse.csl')],
+    '#markup' => empty($titles) ? '' : $titles[variable_get('biblio_citeproc_style', 'cse.csl')],
   );
 
   return $form;
@@ -130,7 +130,21 @@ function biblio_citeproc_style_manager_form_submit($form, &$form_state) {
   }
 
   if ($form_state['clicked_button']['#value'] == t('Install all')) {
-    _install_from_zip();
+    $batch_op = array(
+      'title' => t('Importing all styles from GitHub repository'),
+      'operations' => array(
+        array('_get_zip_from_github', array()),
+        array('_install_from_zip', array()),
+      ),
+      'progressive' => TRUE,
+      'finished' => '_csl_import_batch_finished',
+      'init_message' => t('Downloading file...'),
+      'progress_message' => t('Saving styles...'),
+      'file' => './'. drupal_get_path('module', 'biblio_citeproc') .'/biblio_citeproc.admin.inc'
+    );
+    batch_set($batch_op);
+    batch_process('admin/config/biblio/styles');
+
   }
 
 }
@@ -179,26 +193,57 @@ function _install_csl($name, $csl, $sha = NULL) {
     db_update('biblio_citeproc_styles')->condition('id', $record['id'])->fields($record)->execute();
   }
 }
-function _install_from_zip() {
-  $zip_url = 'http://github.com/citation-style-language/styles/zipball/master';
+
+function _get_zip_from_github(&$context = NULL) {
+  $zip_url = 'https://github.com/citation-style-language/styles/zipball/master';
   $zip_file = system_retrieve_file($zip_url);
 
-  $zip = zip_open(drupal_realpath($zip_file));
-  if(!is_resource($zip)){
-    $message = t('Could not open zip file containing styles: !file', array('!file' => drupal_realpath($zip_file)));
-    drupal_set_message($message, 'error');
-    return;
+  $filename = drupal_realpath($zip_file);
+  if(!empty($filename)) {
+    variable_set('github_zip', $filename);
   }
-  if ($zip) {
-    while ($zip_entry = zip_read($zip)) {
-      $name =  zip_entry_name($zip_entry);
-      $name = basename($name);
-      if (strstr($name, '.csl')  && zip_entry_open($zip, $zip_entry, "r")) {
-        $csl = zip_entry_read($zip_entry, zip_entry_filesize($zip_entry));
-        _install_csl($name, $csl);
-        zip_entry_close($zip_entry);
-      }
+}
+function _install_from_zip(&$context = NULL) {
+
+  $destination = variable_get('github_zip', '');
+
+  if(!empty($destination)) {
+    $zip = zip_open($destination);
+    $za = new ZipArchive();
+
+    if ($za->open($destination) !== TRUE) {
+      $message = t('Could not open zip file containing styles: !file', array('!file' => realpath($destination)));
+      drupal_set_message($message, 'error');
+      return;
     }
-    zip_close($zip);
+    if (empty($context['sandbox'])) {
+     $context['sandbox']['progress'] = 0;
+     $context['results']['install_count'] = 0;
+    }
+
+    $num_files = $za->numFiles;
+    $start = $context['sandbox']['progress'];
+    $end = min(($start+50), $num_files);
+
+    for ($i = $start; $i < $end; $i++) {
+      $name = $za->getNameIndex($i);
+      $name = basename($name);
+      if (strstr($name, '.csl')) {
+        $csl = $za->getFromIndex($i);
+        _install_csl($name, $csl);
+        $context['results']['install_count']++;
+      }
+      $context['sandbox']['progress']++;
+    }
+    $za->close();
+
+    if ($context['sandbox']['progress'] != $num_files) {
+      $context['finished'] = $context['sandbox']['progress'] / $num_files;
+    }
   }
+}
+function _csl_import_batch_finished($success, $results, $operations) {
+  $destination = variable_get('github_zip', '');
+  file_unmanaged_delete($destination);
+  variable_del('github_zip');
 }
