@@ -338,6 +338,14 @@ function biblio_import_finalize($success, $results) {
       $message = format_plural($count, 'One duplicate node skipped.', '@count duplicate nodes skipped.');
       drupal_set_message($message, 'status');
       watchdog($format, $message, array('@count' => $count), WATCHDOG_INFO);
+      foreach ($dups as $nid) {
+        $message = '';
+        $message = t('The item you are trying to import already exists in the database, see ');
+        $message .= l('node/'. $nid, 'node/'. $nid);
+
+        drupal_set_message($message, 'status');
+        watchdog($format, $message, array(), WATCHDOG_ERROR);
+      }
     }
   }
   else {
