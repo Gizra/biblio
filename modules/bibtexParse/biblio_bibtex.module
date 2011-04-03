@@ -379,12 +379,12 @@ function _biblio_bibtex_export($node) {
     $bibtex .= _biblio_bibtex_format_entry('attachments', implode(' , ', $attachments));
   }
 
-  $a = $e = array();
-  if ($node->biblio_contributors->has_category(1)) {
-    foreach ($node->biblio_contributors->get_category(1) as $auth) $a[] = trim($auth['name']);
+  $a = $e = $authors = array();
+  if ($authors = biblio_get_contributor_category($node->biblio_contributors, 1)) {
+    foreach ($authors as $auth) $a[] = trim($auth['name']);
   }
-  if ($node->biblio_contributors->has_category(2)) {
-    foreach ($node->biblio_contributors->get_category(2) as $auth) $e[] = trim($auth['name']);
+  if ($authors = biblio_get_contributor_category($node->biblio_contributors, 2)) {
+    foreach ($authors as $auth) $e[] = trim($auth['name']);
   }
   $a = implode(' and ', $a);
   $e = implode(' and ', $e);

@@ -192,6 +192,7 @@ function theme_biblio_long($node, $base = 'biblio', $style = 'classic') {
  * @return unknown_type
  */
 function theme_biblio_tabular($variables) {
+  module_load_include('inc', 'biblio', '/includes/biblio.contributors');
   $node = $variables['node'];
   $base = $variables['base'];
   static $citeproc;
@@ -205,6 +206,13 @@ function theme_biblio_tabular($variables) {
     array('data' => t('Title'), 'class' => array('biblio-row-title')),
     array('data' => filter_xss($node->title, biblio_get_allowed_tags()))
   );
+
+  if (!isset($node->biblio_type_name) && isset($node->biblio_type)) { // needed for preview
+    if (($pub_type = db_query('SELECT t.tid, t.name FROM {biblio_types} as t WHERE t.tid=:tid', array(':tid' => $node->biblio_type))->fetchObject())) {
+      $node->biblio_type_name = drupal_ucfirst(_biblio_localize_type($pub_type->tid, $pub_type->name));
+    }
+  }
+
   $rows[] = array(
     array('data' => t('Publication Type'), 'class' => array('biblio-row-title')),
     array('data' => $node->biblio_type_name)
@@ -226,8 +234,8 @@ function theme_biblio_tabular($variables) {
 
   foreach ($fields as $key => $row) {
     // handling the contributor categories like any other field orders them correctly by weight
-    if ($row['type'] == 'contrib_widget' && $node->biblio_contributors->has_category($row['fid']) ) {
-      $data = biblio_format_authors($node->biblio_contributors->get_category($row['fid']));
+    if ($row['type'] == 'contrib_widget' && ($authors = biblio_get_contributor_category($node->biblio_contributors, $row['fid']))) {
+      $data = biblio_format_authors($authors);
     }
     elseif (empty ($node->$row['name']) || $row['name'] == 'biblio_coins') {
       continue;
@@ -280,29 +288,6 @@ function theme_biblio_tabular($variables) {
   return $output;
 }
 
-function theme_biblio_authors($contributors, $style = 'classic', $cat = 1, $inline = FALSE, $glue = ', ') {
-  if (empty($contributors)) return; // t('No author information available');
-  $author_style_function = '_' . $style . '_format_author';
-  $author_links = variable_get('biblio_author_links', 1);
-  $base  = variable_get('biblio_base', 'biblio');
-  foreach ($contributors as $key => $author) {
-    if (!empty($author['name']) && !isset($author['lastname'])) {
-      $author = biblio_parse_author($author, $cat); // this is needed for form preview to fill in all fields
-    }
-    if (strlen($author['name'])) {
-      $format = $author_style_function($author);
-      if ($author_links) $format = theme('biblio_author_link', array('author' => $format, 'authorID' => $author['cid'], 'base' => $base, 'inline' => $inline));
-      // add the auth_type as css id to allow later formatting
-      $author_array[] = '<span id="' . $author['auth_type'] . '">' . $format . '</span>';
-    }
-  }
-  if (empty($author_array)) return '';
-
-  $output  = '<span class="biblio_authors">';
-  $output .= implode($glue, $author_array);
-  $output .= '</span>';
-  return $output;
-}
 function _biblio_get_latin1_regex() {
   $alnum = "[:alnum:]ÄÅÁÀÂÃÇÉÈÊËÑÖØÓÒÔÕÜÚÙÛÍÌÎÏÆäåáàâãçéèêëñöøóòôõüúùûíìîïæÿß";
 
@@ -455,7 +440,7 @@ function theme_biblio_format_authors($variables) {
   foreach ($contributors as $rank => $author) {
     if (empty($author['name'])) continue;
     if (!isset($author['lastname'])) {
-      module_load_include('inc', 'biblio', 'biblio.contributors');
+      module_load_include('inc', 'biblio', '/includes/biblio.contributors');
       $author = biblio_parse_author($author, $author['auth_type']); // this is needed for form preview to fill in all fields
     }
 
@@ -907,7 +892,7 @@ function theme_biblio_export_links($variables) {
     $show_link = variable_get('biblio_lookup_links', array('google' => TRUE));
     $lookup_links = module_invoke_all('biblio_lookup_link', $node);
     if ($show_link['google'] && !empty($node)) {
-      $lookup_links['biblio_google_scholar'] = theme_google_scholar_link($node);
+      $lookup_links['biblio_google_scholar'] = theme('google_scholar_link', array('node' => $node));
     }
     $nid = (isset($node->nid)) ? $node->nid : NULL;
     $export_links = module_invoke_all('biblio_export_link', $nid);
@@ -921,13 +906,14 @@ function theme_biblio_export_links($variables) {
 }
 
 
-function theme_google_scholar_link($node) {
+function theme_google_scholar_link($variables) {
+  $node = $variables['node'];
   $query = array();
 
   $query['btnG'] = 'Search+Scholar';
   $query['as_q'] = '"' . str_replace(array(' ', '(', ')'), array('+'), $node->title) . '"'; // as_q = all the words
-  if (isset($node->biblio_contributors->data[0]['lastname'])) {
-    $query['as_sauthors'] = $node->biblio_contributors->data[0]['lastname'];
+  if (isset($node->biblio_contributors[0]['lastname'])) {
+    $query['as_sauthors'] = $node->biblio_contributors[0]['lastname'];
   }
   $query['as_occt'] = 'any';
   $query['as_epq'] = ''; // exact phrase

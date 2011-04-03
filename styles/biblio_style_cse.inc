@@ -44,12 +44,17 @@ function biblio_style_cse_author_options() {
 }
 
 function biblio_style_cse($node, $base = 'biblio', $inline = FALSE) {
-  $output = '';
+  $output = $authors = '';
   if (!empty($node->biblio_contributors)) {
   $author_options = biblio_style_cse_author_options();
-  $authors = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors->get_category(1), 'options' => $author_options, 'inline' => $inline));
-  if (empty($authors) && $node->biblio_contributors->has_category(5)) {// if no authors substitute corp author if available
-    foreach ($node->biblio_contributors->get_category(5) as $rank => $author) {
+  $primary_authors = biblio_get_contributor_category($node->biblio_contributors, 1);
+  $editors = biblio_get_contributor_category($node->biblio_contributors, 2);
+  $corp_authors = biblio_get_contributor_category($node->biblio_contributors, 5);
+  if (!empty($primary_authors)) {
+    $authors = theme('biblio_format_authors', array('contributors' => $primary_authors, 'options' => $author_options, 'inline' => $inline));
+  }
+  if (empty($authors) && !empty($corp_authors)) {// if no authors substitute corp author if available
+    foreach ($corp_authors as $rank => $author) {
       $authors .= (empty($authors)) ? '' : ', ';
       $authors .= (variable_get('biblio_author_links', 1)) ?  theme('biblio_author_link', array('author' => $author['name'], 'authorID' => $author['cid'], 'base' => variable_get('biblio_base', 'biblio'), 'inline' => $inline)) : $author['name'];
 

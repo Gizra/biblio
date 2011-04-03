@@ -251,14 +251,6 @@ function biblio_theme($existing, $type, $theme, $path) {
           'style_name' => 'classic',
           'inline' => FALSE),
     ),
-    'biblio_authors' => array(
-      'file' => '/includes/biblio_theme.inc',
-      'variables' => array(
-        'contributors',
-        'style' => 'classic',
-        'inline' => FALSE,
-        'glue' => ', '),
-    ),
     'biblio_format_authors' => array(
       'file' => '/includes/biblio_theme.inc',
       'variables' => array(
@@ -531,7 +523,7 @@ function biblio_link($type, $node = NULL, $teaser = FALSE) {
     }
     if (biblio_access('export', $node)) {
       $show_link = variable_get('biblio_lookup_links', array('google' => TRUE));
-      if (!empty($show_link['google'])) $links['biblio_google_scholar'] = theme_google_scholar_link($node);
+      if (!empty($show_link['google'])) $links['biblio_google_scholar'] = theme('google_scholar_link', array('node' => $node));
     }
   }
   return $links;
@@ -1167,54 +1159,6 @@ function biblio_node_view($node, $view_mode) {
   }
 }
 
-function biblio_form_alter(&$form, &$form_state, $form_id) {
-  if ($form_id == "biblio_node_form") { // this next bit is to remove all the form elements execpt the pub type select box the first time through
-    if (!isset($form_state['input']['biblio_type']) &&
-        empty($form_state['post']['biblio_type']) &&
-        empty($form_state['submitted']) &&
-        empty($form['vid']['#value'])) {
-
-      foreach (element_children($form) as $form_element) {
-        if (strstr($form_element, 'biblio_')) continue;
-        if (strstr($form_element, 'form_')) continue;
-        if ((isset($form[$form_element]['#type']))
-           // || $form[$form_element]['#type'] == 'container'
-            || $form_element == 'buttons') {
-          unset($form[$form_element]);
-        }
-      }
-    }
-    else {
-      if (isset($form['menu']['#weight']) && $form['menu']['#weight'] < 20) $form['menu']['#weight'] = 20;
-      if (isset($form['book']['#weight']) && $form['book']['#weight'] < 20) $form['book']['#weight'] = 20;
-      if (isset($form['taxonomy'])) {
-        if (!isset($form['taxonomy']['#title'])) {
-          $form['taxonomy'] += array(
-            '#type' => 'fieldset',
-            '#title' => t('Vocabularies'),
-            '#collapsible' => TRUE,
-            '#collapsed' => FALSE,
-          );
-        }
-        $form['taxonomy']['#description'] = t('Select taxonomy terms which will be related to this %biblio_base_title entry.', array('%biblio_base_title' => variable_get('biblio_base_title', 'Biblio')));
-        $form['taxonomy']['copy_to_biblio'] = array(
-          '#type' => 'checkbox',
-          '#title' => t('Copy these terms to the biblio keyword database'),
-          '#return_value' => 1,
-          '#default_value' =>  variable_get('biblio_copy_taxo_terms_to_keywords', 0),
-          '#description' => t('If this option is selected, the selected taxonomy terms will be copied to the %biblio_base_title keyword database and be displayed as keywords (as well as taxonomy terms) for this entry.', array('%biblio_base_title' => variable_get('biblio_base_title', 'Biblio')))
-        );
-      }
-      $kw_vocab = variable_get('biblio_keyword_vocabulary', 0);
-      $freetagging = variable_get('biblio_keyword_freetagging', 0);
-      if ($freetagging && $kw_vocab && isset($form['taxonomy']['tags'][$kw_vocab])) {
-        unset($form['taxonomy']['tags'][$kw_vocab]);
-
-      }
-    }
-  }
-  return $form;
-}
 function biblio_user_presave(&$edit, $account, $catagory) {
   $keys = array_keys($edit);
   foreach ($keys as $key) {
@@ -1247,17 +1191,15 @@ function biblio_form($node, &$form_state) {
   global $user;
   $fields = array();
   $tid = isset($form_state['values']['biblio_type']) ?
-               $form_state['values']['biblio_type']  :
-               ( isset($node->biblio_type) ? $node->biblio_type : '');
+          $form_state['values']['biblio_type']  :
+          ( isset($node->biblio_type) ? $node->biblio_type : '');
   $show_fields = !empty($tid);
 
   $form['#validate']= array('biblio_node_form_validate');
   $form['#cache'] = TRUE;
 
   /* publication type */
-  $param['options'] = array(
-    "enctype" => "multipart/form-data"
-    );
+  $param['options'] = array("enctype" => "multipart/form-data");
   $result = db_query('SELECT t.* FROM {biblio_types} as t WHERE tid > -2 AND visible = 1');
   foreach ($result as $option) {
     $results[$option->tid] = $option->name;
@@ -1276,12 +1218,12 @@ function biblio_form($node, &$form_state) {
     '#multiple' => FALSE,
     '#required' => TRUE
   );
-    $form['biblio_next'] = array(
+
+  $form['biblio_next'] = array(
       '#type'   => 'submit',
       '#value'  => $show_fields ? t('Change Publication Type') : t('Next'),
       '#weight' => -10,
   );
-
 
   if ($show_fields) {
     $form += biblio_node_form_vtabs();
@@ -1291,17 +1233,16 @@ function biblio_form($node, &$form_state) {
       '#weight' => 0,
     );
 
-     $form['title'] = array(
+    $form['title'] = array(
       '#type' => 'textfield',
       '#title' => t('Title'),
       '#required' => TRUE,
       '#default_value' => trim((isset($form_state['values']['title'])?$form_state['values']['title']: $node->title)),
- //     '#size' => 60,
       '#maxlength' => 255,
       '#weight' => -4
-        );
+    );
     // Build the field array used to make the form
-        $result = db_query("SELECT * FROM {biblio_fields} b
+    $result = db_query("SELECT * FROM {biblio_fields} b
               INNER JOIN {biblio_field_type} bt ON b.fid = bt.fid
               INNER JOIN {biblio_field_type_data} btd ON btd.ftdid=bt.ftdid
               WHERE bt.tid=:tid ORDER BY bt.weight ASC", array(':tid' => $tid), array('fetch' => PDO::FETCH_ASSOC));
@@ -1310,58 +1251,38 @@ function biblio_form($node, &$form_state) {
       $fields[$row['name']] = $row;
     }
     _biblio_localize_fields($fields);
-//    if (!variable_get('biblio_hide_other_fields', 0)) {
-//      $form['other_fields'] = array(
-//        '#type' => 'fieldset',
-//        '#group' => 'biblio_settings',
-//        '#collapsible' => TRUE,
-//        '#collapsed' => TRUE,
-//        '#title' => t('Other Biblio Fields'),
-//        '#description' => '',
-//        '#weight' => 0
-//      );
-//    }
-  $form['biblio_contributors'] = array(
- //   '#tree' => TRUE,
-    '#type' => 'fieldset',
-    '#group' => 'biblio_settings',
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
-    '#title' => 'Authors',
-  //  '#weight' => $fld['weight'] / 10,
-    '#description' => t('Enter a single name per line using a format such as "Smith, John K" or "John K Smith" or "J.K. Smith"'),
-  );
 
-    $max_visible_weight = -5;
-    $form['biblio_contributors'] += biblio_contributor_widget($node, $form_state);
+    $form['biblio_authors'] = array(
+      '#type' => 'fieldset',
+      '#group' => 'biblio_settings',
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+      '#title' => 'Authors',
+      '#description' => t('Enter a single name per line using a format such as "Smith, John K" or "John K Smith" or "J.K. Smith"'),
+    );
+
+    $form['biblio_authors'] += biblio_contributor_widget($node, $form_state);
+
     foreach ($fields as $key => $fld) {
       $options = '';
-      $main_area = $fld['common'] || $fld['visible'];
-      if ($fld['type'] == 'contrib_widget') {
-        $auth_category = $fld['fid'];
-        $values = isset($form_state['values']) ? $form_state : $node;
-       // $form += _biblio_contributor_widget($values, $fld, $auth_category, $tid);
-  //      $form += biblio_contributor_widget($node, $form_state);
-      }
-      else {
-        if ($key == 'biblio_keywords' ) {
-          $sep = check_plain(variable_get('biblio_keyword_sep', ','));
-          // is the kewords are in array form, then implode them into a string.
-          if (isset($form_state['values']['biblio_keywords']) &&
-             is_array($form_state['values']['biblio_keywords'])) {
-             require_once(drupal_get_path('module', 'biblio') . '/includes/biblio.keywords.inc');
-             $form_state['values']['biblio_keywords'] = biblio_implode_keywords($form_state['values']['biblio_keywords']);
-          }
-          if (!empty($node->$key) && is_array($node->$key)) {
-            require_once(drupal_get_path('module', 'biblio') . '/includes/biblio.keywords.inc');
-            $node->$key = biblio_implode_keywords($node->$key);
-          }
-          if (empty($fld['hint'])) {
-            $fld['hint'] = t('Separate keywords using the " @sep " character', array('@sep' => $sep));
-          }
+      if ($key == 'biblio_keywords' ) {
+        $sep = check_plain(variable_get('biblio_keyword_sep', ','));
+        // is the kewords are in array form, then implode them into a string.
+        if (isset($form_state['values']['biblio_keywords']) &&
+        is_array($form_state['values']['biblio_keywords'])) {
+          require_once(drupal_get_path('module', 'biblio') . '/includes/biblio.keywords.inc');
+          $form_state['values']['biblio_keywords'] = biblio_implode_keywords($form_state['values']['biblio_keywords']);
         }
+        if (!empty($node->$key) && is_array($node->$key)) {
+          require_once(drupal_get_path('module', 'biblio') . '/includes/biblio.keywords.inc');
+          $node->$key = biblio_implode_keywords($node->$key);
+        }
+        if (empty($fld['hint'])) {
+          $fld['hint'] = t('Separate keywords using the " @sep " character', array('@sep' => $sep));
+        }
+      }
 
-        $field_widget = array(
+      $field_widget = array(
             '#default_value' => (isset($form_state['values'][$key]) ? $form_state['values'][$key] : (isset($node->$key)?$node->$key:'')),
             '#type' => $fld['type'],
             '#title' => check_plain($fld['title']),
@@ -1371,72 +1292,23 @@ function biblio_form($node, &$form_state) {
             '#weight' => $fld['weight'] / 10,
             '#autocomplete_path' => ($fld['autocomplete']) ? 'biblio/autocomplete/' . $fld['name'] : '',
             '#description' => check_plain($fld['hint']),
-          );
-         if ($key == 'biblio_refereed' ) {
-           $field_widget['#options'] = array(
+      );
+
+      if ($key == 'biblio_refereed' ) {
+        $field_widget['#options'] = array(
               '' => t('None'),
               'Refereed' => t('Refereed'),
               'Non-Refereed' => t('Non-Refereed'),
               'Does Not Apply' => t('Does Not Apply'),
               'Unknown' => t('Unknown'),
-            );
-           $field_widget['#description'] = t('If you are not sure, set this to Unknown or Does Not Apply');
-         }
-          //        '#options' => $options,
-
-//        if ($main_area && $fld['type'] == 'textarea') {
-//          /* wrap all textarea fields in collapsed field sets to save space on the page */
-//          $field_widget = array(
-//            '#type' => 'fieldset',
-//            '#group' => 'biblio_settings',
-//            '#collapsible' => TRUE,
-//            '#collapsed' => TRUE,
-//            '#title' => check_plain($fld['title']),
-//            '#description' => '',
-//            '#weight' => $fld['weight'] / 10,
-//            $key => $field_widget
-//              );
-//          $key = $fld['name'] . '_field';
-//        }
-        // embed field directly or in "Other Fields" fieldset
-        if ($main_area) {
-//          if (strstr($fld['name'], 'title')) {
-//            $form[$fld['vtab']][] =  $field_widget;
-//          }
-//          else {
-            $form[$fld['vtab']][$key] = $field_widget;
- //         }
-          $max_visible_weight = max($max_visible_weight, $field_widget['#weight']);
-        }
-        else {
-          $form[$fld['vtab']][$key] = $field_widget;
-        }
+        );
+        $field_widget['#description'] = t('If you are not sure, set this to Unknown or Does Not Apply');
       }
-    }
 
-    // place 'Other biblio fields' directly below visible fields
-//    $form['other_fields']['#weight'] = $max_visible_weight + 0.1;
-//    $form['body_field'] = array(
-//      '#type' => 'fieldset',
-//      '#collapsible' => TRUE,
-//      '#collapsed' => TRUE,
-//      '#title' => t('Full Text'),
-//      '#description' => '',
-//      '#weight' => $max_visible_weight + 0.2
-//    );
-//    $form['body_field']['body'] = array(
-//      '#type' => 'textarea',
-//      '#title' => t('Full Text'),
-//      '#default_value' => $node->body,
-//      '#rows' => 10,
-//      '#required' => FALSE,
-//      '#description' => t('You may enter a full text or HTML version of the publication here.'),
-//      '#weight' => 19
-//    );
-    // embed filter form in "Full Text" fieldset, because it applies to the full text only
-//    $form['body_field']['format'] = filter_form($node->format, 20);
+      $form[$fld['vtab']][$key] = $field_widget;
+    }
   }
- // $form['format'] = filter_form($node->format, 20);
+  // $form['format'] = filter_form($node->format, 20);
 
   return $form;
 }
@@ -1473,7 +1345,7 @@ function biblio_contributor_widget($node, &$form_state) {
     $contributors = $form_state['values']['biblio_contributors'];
   }
   elseif (isset($node->biblio_contributors)) {
-    $contributors = $node->biblio_contributors->get_all();
+    $contributors = $node->biblio_contributors;
   }
   else {
     $contributors = array();
@@ -1568,7 +1440,7 @@ function biblio_contributor_form($contributor, $options) {
 }
 
 function biblio_contributors_add_more_callback($form, &$form_state) {
-  return $form['contributors']['biblio_contributors'];
+  return $form['biblio_authors']['biblio_contributors'];
 }
 
 function biblio_contributors_add_more($form, &$form_state) {
@@ -1709,17 +1581,17 @@ function biblio_load($nodes) {
   foreach ($nodes as $nid => $node) $vids[] = $node->vid;
 
   $result = db_query('SELECT b.*, bt.name as biblio_type_name
-                                         FROM {biblio} b
-                                         LEFT JOIN {biblio_types} bt on b.biblio_type = bt.tid
-                                         WHERE b.vid IN (:vids)', array(':vids' => $vids), array('fetch' => PDO::FETCH_ASSOC));
+                      FROM {biblio} b
+                      LEFT JOIN {biblio_types} bt on b.biblio_type = bt.tid
+                      WHERE b.vid IN (:vids)', array(':vids' => $vids), array('fetch' => PDO::FETCH_ASSOC));
   foreach ($result as $record) {
-//    $nodes[$record['nid']]->biblio = $record;
+    //    $nodes[$record['nid']]->biblio = $record;
     foreach ($record as $key => $value) {
       $nodes[$record['nid']]->$key = $value;
     }
-    $nodes[$record['nid']]->biblio_year         = _biblio_text_year($nodes[$record['nid']]->biblio_year);
-    $nodes[$record['nid']]->biblio_contributors = new biblio_contributors($nodes[$record['nid']]->vid);
-    $nodes[$record['nid']]->biblio_keywords     = biblio_load_keywords($nodes[$record['nid']]->vid);
+    $nodes[$record['nid']]->biblio_year         = _biblio_text_year($record['biblio_year']);
+    $nodes[$record['nid']]->biblio_contributors = biblio_load_contributors($record['vid']);
+    $nodes[$record['nid']]->biblio_keywords     = biblio_load_keywords($record['vid']);
   }
   //return $nodes;
 }
@@ -2144,13 +2016,17 @@ function biblio_term_path($term) {
 }
 
 function biblio_coins_generate(& $node) {
+  if (!isset($node->vid)) {
+    $node->biblio_coins = biblio_coins($node);
+    return;
+  }
   if ($node) {
     $node->biblio_coins = biblio_coins($node);
 //    db_query("UPDATE {biblio}
 //              SET biblio_coins = :coins
 //              WHERE vid = :vid", array(':coins' => $node->biblio_coins, ':vid' => $node->vid));
     db_update('biblio')
-      ->fields(array('biblio_coins' => biblio_coins))
+      ->fields(array('biblio_coins' => $node->biblio_coins))
       ->condition('vid', $node->vid)
       ->execute();
   }
@@ -2266,23 +2142,20 @@ function biblio_contextObject($node) {
     }
   }
   // aulast, aufirst, author (author)
-  if (!empty($node->biblio_contributors) && is_a($node->biblio_contributors, 'biblio_contributors')) {
-    $biblio_contributors = $node->biblio_contributors->get_all();
-  }
   elseif (is_array($node->biblio_contributors)) {
-    $biblio_contributors = $node->biblio_contributors;
+    $node->biblio_contributors = $node->biblio_contributors;
   }
-  if (!empty($biblio_contributors)) {
-    if (!empty($biblio_contributors[0]['lastname'])) {
-      $co["rft.aulast"] = check_plain($biblio_contributors[0]['lastname']);
+  if (!empty($node->biblio_contributors)) {
+    if (!empty($node->biblio_contributors[0]['lastname'])) {
+      $co["rft.aulast"] = check_plain($node->biblio_contributors[0]['lastname']);
     }
-    if (!empty($biblio_contributors[0]['firstname'])) {
-      $co["rft.aufirst"] = check_plain($biblio_contributors[0]['firstname']);
+    if (!empty($node->biblio_contributors[0]['firstname'])) {
+      $co["rft.aufirst"] = check_plain($node->biblio_contributors[0]['firstname']);
     }
-    elseif (!empty($biblio_contributors[0]['initials'])) {
-      $co["rft.auinit"] = check_plain($biblio_contributors[0]['initials']);
+    elseif (!empty($node->biblio_contributors[0]['initials'])) {
+      $co["rft.auinit"] = check_plain($node->biblio_contributors[0]['initials']);
     }
-    foreach ($biblio_contributors as $author) {
+    foreach ($node->biblio_contributors as $author) {
       if ($author['auth_category'] == 1) {
         if (!empty($author['lastname'])) {
           $au = $author['lastname'];
@@ -2323,7 +2196,7 @@ function biblio_hash($node) {
   }
 //TODO title value??
   $hash_string = str_replace(' ', '', drupal_strtolower($node->title));
-  if (isset($node->biblio_contributors->data[0])) {
+  if (isset($node->biblio_contributors[0])) {
     $hash_string .= str_replace(' ', '', drupal_strtolower($node->biblio_contributors[0]['lastname']));
   }
   $hash_string .= $node->biblio_year;
@@ -2417,7 +2290,7 @@ function biblio_token_values($type, $object = NULL) {
         $type = db_query('SELECT name FROM {biblio_types} as t WHERE t.tid = :tid', array(':tid' => $object -> biblio_type))->fetchField();
         #$title = db_result(db_query("SELECT title FROM {node} WHERE nid = %d", $gid));
         $values['biblio_year'] = check_plain($object->biblio_year);
-        $values['biblio_authors'] = check_plain($object->biblio_contributors->data[0]['lastname']);
+        $values['biblio_authors'] = check_plain($object->biblio_contributors[0]['lastname']);
         $values['biblio_type_id'] = check_plain($object->biblio_type);
         $values['biblio_type'] = check_plain($type);
         $values['biblio_citekey'] = check_plain($object->biblio_citekey);

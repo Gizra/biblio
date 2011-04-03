@@ -10,7 +10,6 @@ files[] = tests/keyword.test
 files[] = tests/contributor.test
 files[] = tests/import.export.test
 
-files[] = includes/biblio.contributor.class.inc
 
 files[] = views/biblio_handler_citation.inc
 files[] = views/biblio_handler_field_biblio_keyword_data_word.inc
