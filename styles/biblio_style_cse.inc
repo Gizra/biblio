@@ -44,6 +44,7 @@ function biblio_style_cse_author_options() {
 }
 
 function biblio_style_cse($node, $base = 'biblio', $inline = FALSE) {
+  module_load_include('inc', 'biblio', '/includes/biblio.contributors');
   $output = $authors = '';
   if (!empty($node->biblio_contributors)) {
   $author_options = biblio_style_cse_author_options();

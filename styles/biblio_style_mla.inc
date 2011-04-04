@@ -51,6 +51,7 @@ function biblio_style_mla_author_options() {
  *   The styled biblio entry
  */
 function biblio_style_mla($node, $base = 'biblio', $inline = FALSE) {
+  module_load_include('inc', 'biblio', '/includes/biblio.contributors');
   $output = $authors = $editor = '';
   $author_options = biblio_style_mla_author_options();
   $primary_authors = biblio_get_contributor_category($node->biblio_contributors, 1);

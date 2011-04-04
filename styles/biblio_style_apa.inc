@@ -45,6 +45,7 @@ function biblio_style_apa_author_options() {
  *   The styled biblio entry
  */
 function biblio_style_apa($node, $base = 'biblio', $inline = FALSE) {
+  module_load_include('inc', 'biblio', '/includes/biblio.contributors');
   $output = '';
   $authors = '';
   $author_options = biblio_style_apa_author_options();

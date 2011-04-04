@@ -57,6 +57,7 @@ function biblio_style_vancouver_author_options() {
 }
 
 function biblio_style_vancouver($node, $base = 'biblio', $inline = FALSE) {
+  module_load_include('inc', 'biblio', '/includes/biblio.contributors');
   $output = $authors = $editor = '';
   $markupPatternsArray = array("italic-prefix" => '<i>',
                                "italic-suffix" => '<\/i>',

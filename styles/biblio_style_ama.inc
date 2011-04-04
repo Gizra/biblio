@@ -46,6 +46,7 @@ function biblio_style_ama_author_options() {
 }
 
 function biblio_style_ama($node, $base = 'biblio', $inline = FALSE) {
+  module_load_include('inc', 'biblio', '/includes/biblio.contributors');
   $output = '';
   $markupPatternsArray = array("italic-prefix" => "<i>",
                                "italic-suffix" => "<\/i>",

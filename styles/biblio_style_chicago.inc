@@ -54,6 +54,7 @@ function biblio_style_chicago_author_options() {
  *   The styled biblio entry
  */
 function biblio_style_chicago($node, $base = 'biblio', $inline = FALSE) {
+  module_load_include('inc', 'biblio', '/includes/biblio.contributors');
   $output = '';
   $markupPatternsArray = array("italic-prefix" => '<i>',
                                "italic-suffix" => '<\/i>',
