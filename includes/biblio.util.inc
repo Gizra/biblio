@@ -1,6 +1,15 @@
 <?php
 function biblio_normalize_title($title) {
   $stop_words = array('a', 'an', 'the');
+  if (!@preg_match('/\pL/u', 'a')) {
+    // probably a broken PCRE library
+    $title = trim(_strip_punctuation($title));
+  }
+  else {
+    // Unicode safe filter for the value
+    $title = trim(_strip_punctuation_utf8($title));
+  }
+
   $title = trim(_strip_punctuation($title));
   mb_regex_encoding( "utf-8" );
   $title_words = mb_split( ' +', $title );
@@ -8,6 +17,9 @@ function biblio_normalize_title($title) {
     array_shift($title_words);
   }
   return drupal_substr(implode(' ', $title_words), 0, 64);
+}
+function _strip_punctuation($text) {
+  return preg_replace("/[[:punct:]]/", '', $text);
 }
 /**
  * Copyright (c) 2008, David R. Nadeau, NadeauSoftware.com.
@@ -43,7 +55,7 @@ function biblio_normalize_title($title) {
  * See also:
  * 	http://nadeausoftware.com/articles/2007/9/php_tip_how_strip_punctuation_characters_web_page
  */
-function _strip_punctuation( $text )
+function _strip_punctuation_utf8( $text )
 {
 	$urlbrackets    = '\[\]\(\)';
 	$urlspacebefore = ':;\'_\*%@&?!' . $urlbrackets;

@@ -1827,7 +1827,7 @@ function biblio_update_7009(&$sandbox) {
     ->fields('n', array('vid', 'title'))
     ->condition('vid', $sandbox['current_vid'], '>')
     ->condition('type', 'biblio')
-    ->range(0, 10)
+    ->range(0, 20)
     ->orderBy('vid', 'ASC')
     ->execute();
 
