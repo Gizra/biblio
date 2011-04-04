@@ -167,14 +167,7 @@ function biblio_build_query($arg_list) {
   $match_op = ($db_type == 'pgsql') ? '~*' : 'RLIKE';
    // The following is to be used to compare titles
    // LOWER() is required for case insensitive sorting (at least, in PostgreSQL)
-  $sort_title =" CASE
-                    WHEN SUBSTR(n.title,1,1)='\"'   THEN LOWER(SUBSTR(n.title,2))
-                    WHEN SUBSTR(n.title,1,1)='\''   THEN LOWER(SUBSTR(n.title,2))
-                    WHEN SUBSTR(n.title,1,2)='A '   THEN LOWER(SUBSTR(n.title,3))
-                    WHEN SUBSTR(n.title,1,3)='An '  THEN LOWER(SUBSTR(n.title,4))
-                    WHEN SUBSTR(n.title,1,4)='The ' THEN LOWER(SUBSTR(n.title,5))
-                    ELSE LOWER(n.title)
-                 END ";
+  $sort_title ="biblio_sort_title";
 
   $limit = '';
   if (variable_get('biblio_view_only_own', 0) ) {
@@ -690,13 +683,8 @@ function _biblio_category_separator_bar($node, $reset = FALSE) {
 
   switch ($sort) {
     case 'title':
-      $title = $node->title;
+      $title = $node->biblio_sort_title;
       $first = drupal_substr(drupal_ucfirst(ltrim($title)), 0, 1);
-      if (drupal_substr(drupal_ucfirst(ltrim($title)), 0, 1) == '"' ) $first = drupal_ucfirst(drupal_substr(ltrim($title), 1, 1));
-      if (drupal_substr(drupal_ucfirst(ltrim($title)), 0, 1) == "'" ) $first = drupal_ucfirst(drupal_substr(ltrim($title), 1, 1));
-      if (drupal_substr(drupal_ucfirst(ltrim($title)), 0, 2) == "A " ) $first = drupal_ucfirst(drupal_substr(ltrim($title), 2, 1));
-      if (drupal_substr(drupal_ucfirst(ltrim($title)), 0, 3) == "An " ) $first = drupal_ucfirst(drupal_substr(ltrim($title), 3, 1));
-      if (drupal_substr(drupal_ucfirst(ltrim($title)), 0, 4) == "The " ) $first = drupal_ucfirst(drupal_substr(ltrim($title), 4, 1));
       if ( $first  != $_text) {
         if ($_text != '' ) {
           $content .= theme_biblio_end_category_section();

@@ -279,6 +279,12 @@ function biblio_schema() {
         'length' => '128',
         'description' => '',
   ),
+      'biblio_sort_title' => array(
+        'type' => 'varchar',
+        'not null' => FALSE,
+        'length' => '64',
+        'description' => 'A normalized version of the title, used for sorting on titles. (only first 64 characters saved)',
+  ),
       'biblio_secondary_title' => array(
         'type' => 'varchar',
         'not null' => FALSE,
@@ -816,10 +822,10 @@ function biblio_schema() {
         ),
       'name' => array(
         'type' => 'varchar',
-        'length' => '128',
+        'length' => '255',
         'not null' => TRUE,
         'default' => '',
-        'description' => 'Author last name',
+        'description' => 'Full name',
         ),
       'lastname' => array(
         'type' => 'varchar',
@@ -1385,7 +1391,7 @@ function _add_db_field_data() {
     while (($row = fgetcsv($handle, 10000, ",")) !== FALSE) {
       $column = 0;
       // add link data for default biblio type (0) and all other defined types (100-130)
-      foreach (array_merge(array(0), range(100, 130)) as $t) {
+      foreach (array_merge(array(0), range(100, 136)) as $t) {
         db_insert('biblio_field_type')->fields(array(
           'tid'          => $t,
           'fid'          => $row[0],
@@ -1739,6 +1745,27 @@ function biblio_update_7003() {
     biblio_update_6031();
   }
 }
+function _biblio_update_field_link_data($range){
+    $csv_file = drupal_get_path('module', 'biblio') . '/misc/biblio.field.link.data.csv';
+
+  if ($handle = fopen($csv_file, "r")) {
+    $header = fgetcsv($handle, 10000, ","); // the first line has the field names
+    while (($row = fgetcsv($handle, 10000, ",")) !== FALSE) {
+      $column = 0;
+      // add link data for default biblio type (0) and all other defined types (100-130)
+      foreach (array_merge(array(0), range($range[0], $range[1])) as $t) {
+        db_update('biblio_field_type')
+        ->fields(array(
+                'vtab' => $row[12]
+        ))
+        ->condition(db_and()->condition('tid', $t)->condition('fid', $row[0]))
+        ->execute();
+      }
+    }
+  }
+
+}
+
 /**
  * Add information to manage vtabs on input form.
 */
@@ -1750,23 +1777,70 @@ function biblio_update_7005() {
         'default' => 0,
   );
   db_add_field('biblio_field_type', 'vtab', $spec);
-  $csv_file = drupal_get_path('module', 'biblio') . '/misc/biblio.field.link.data.csv';
-
-  if ($handle = fopen($csv_file, "r")) {
-    $header = fgetcsv($handle, 10000, ","); // the first line has the field names
-    while (($row = fgetcsv($handle, 10000, ",")) !== FALSE) {
-      $column = 0;
-      // add link data for default biblio type (0) and all other defined types (100-130)
-      foreach (array_merge(array(0), range(100, 130)) as $t) {
-        db_update('biblio_field_type')
-        ->fields(array(
-                'vtab' => $row[12]
-        ))
-        ->condition(db_and()->condition('tid', $t)->condition('fid', $row[0]))
-        ->execute();
-      }
-    }
-  }
+  _biblio_update_field_link_data(array(100, 130));
   cache_clear_all();
 }
 
+function biblio_update_7006() {
+  _biblio_update_field_link_data(array(131, 136));
+  cache_clear_all();
+}
+/**
+ * Increases the size of the {biblio_contributor_data}.name column to 255 characters
+*/
+function biblio_update_7007() {
+  $spec = array(
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'Full name',
+        );
+  db_change_field('biblio_contributor_data', 'name', 'name', $spec);
+}
+/**
+ * Adds new "biblio_sort_title" column to the biblio table, which is used for title sorting.
+*/
+function biblio_update_7008() {
+  $spec = array(
+        'type' => 'varchar',
+        'not null' => FALSE,
+        'length' => '64',
+        'description' => 'A normalized version of the title, used for sorting on titles. (only first 64 characters saved)',
+  );
+  db_add_field('biblio', 'biblio_sort_title', $spec);
+}
+
+/**
+ * Populates the  new "biblio_sort_title" column, which is used for title sorting.
+*/
+function biblio_update_7009(&$sandbox) {
+  $sandbox['#finished'] = 0;
+  module_load_include('inc', 'biblio', '/includes/biblio.util');
+
+  if (!isset($sandbox['max'])) {
+    $sandbox['max'] = db_query('SELECT COUNT(DISTINCT vid) FROM {node} n WHERE n.type = :type', array(':type' => 'biblio'))->fetchField();
+    $sandbox['current_vid'] = 0;
+  }
+
+  $nodes = db_select('node', 'n')
+    ->fields('n', array('vid', 'title'))
+    ->condition('vid', $sandbox['current_vid'], '>')
+    ->condition('type', 'biblio')
+    ->range(0, 10)
+    ->orderBy('vid', 'ASC')
+    ->execute();
+
+  foreach ($nodes as $node) {
+    $node->biblio_sort_title = biblio_normalize_title($node->title);
+    db_update('biblio')
+      ->fields(array('biblio_sort_title' => $node->biblio_sort_title))
+      ->condition('vid', $node->vid)
+      ->execute();
+
+    $sandbox['progress']++;
+    $sandbox['current_vid'] = $node->vid;
+  }
+
+  $sandbox['#finished'] = empty($sandbox['max']) ? 1 : ($sandbox['progress'] / $sandbox['max']);
+}

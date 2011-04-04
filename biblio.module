@@ -1499,7 +1499,8 @@ function _biblio_text_year($year) {
 function _biblio_prepare_submit(&$node) {
   // this is now done within the _save_contributors() function
   //$node->biblio_contributors = biblio_parse_contributors($node->biblio_contributors);
-
+  module_load_include('inc', 'biblio', '/includes/biblio.util');
+  $node->biblio_sort_title = biblio_normalize_title($node->title);
   $node->biblio_year = _biblio_numeric_year($node->biblio_year);
 
   $node->biblio_coins = biblio_coins($node);
