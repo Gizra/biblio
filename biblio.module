@@ -2044,7 +2044,7 @@ function biblio_coins_generate(& $node) {
 //                SET biblio_coins = :coins
 //                WHERE vid = :vid",  array(':coins' => $node->biblio_coins, ':vid' => $node->vid));
       db_update('biblio')
-        ->fields(array('biblio_coins' => biblio_coins))
+        ->fields(array('biblio_coins' => $node->biblio_coins))
         ->condition('vid', $node->vid)
         ->execute();
     }
