@@ -1226,10 +1226,6 @@ function _biblio_add_vtabs() {
    db_insert('biblio_vtabs')->fields($record)->execute();
   }
 
-//    array() 'NAME INFORMATION', 'PUBLICATION OR ORIGIN', 'RESOURCE DATE INFORMATION',
-//  'EDITION INFORMATION', 'LANGUAGE INFORMATION', 'TYPE OF RESOURCE', 'GEOGRAPHIC INFORMATION', 'SUBJECT INFORMATION',
-//  'GENRE', 'NOTE INFORMATION', 'PHYSICAL DESCRIPTION', ' FREQUENCY INFORMATION', 'RELATED ITEMS', 'AUDIENCE INFORMATION',
-//  'LOCATION INFORMATION', 'RIGHTS INFORMATION', 'IDENTIFIERS', 'RECORD INFORMATION');
 
 }
 
@@ -1445,13 +1441,10 @@ function _add_db_field_data() {
     $result = array('success' => FALSE, 'query' => 'Could not open ' . $csv_file);
   }
 
-
   if ($db_type == 'mysql' or $db_type == 'mysqli') {
     db_query("/*!40000 ALTER TABLE {biblio_field_type_data} ENABLE KEYS */;");
     db_query("/*!40000 ALTER TABLE {biblio_fields} ENABLE KEYS */;");
-
   }
-
   return $result;
 }
 
@@ -1685,7 +1678,7 @@ function biblio_update_6030() {
         'not null' => TRUE,
         'default'  => 0,
         'unsigned' => TRUE,
-        'description' =>'Determines if the author name is allowed to be reformated by the variaous styles or should be used literally.',
+        'description' => 'Determines if the author name is allowed to be reformated by the variaous styles or should be used literally.',
         );
   db_add_field($result, 'biblio_contributor_data', 'literal', $spec);
   return $result;
@@ -1708,14 +1701,32 @@ function biblio_update_6031() {
 
  return $result;
 }
+function biblio_update_6032() {
+  $spec = array(
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'Full name',
+        );
+  db_change_field('biblio_contributor_data', 'name', 'name', $spec);
+}
+function biblio_update_6033() {
+  $spec = array(
+        'type' => 'varchar',
+        'not null' => FALSE,
+        'length' => '64',
+        'description' => 'A normalized version of the title, used for sorting on titles. (only first 64 characters saved)',
+  );
+  db_add_field('biblio', 'biblio_sort_title', $spec);
+}
+
 function biblio_update_7000() {
-  $result = array();
+
   _biblio_helper_modules('install');
 
-  db_drop_primary_key($result, 'biblio_contributor_data');
-  db_add_primary_key($result, 'biblio_contributor_data', array('cid', 'aka'));
-
-  return $result;
+  db_drop_primary_key('biblio_contributor_data');
+  db_add_primary_key('biblio_contributor_data', array('cid', 'aka'));
 }
 /**
  * Add new column to biblio_contributor_data table
@@ -1802,13 +1813,9 @@ function biblio_update_7007() {
  * Adds new "biblio_sort_title" column to the biblio table, which is used for title sorting.
 */
 function biblio_update_7008() {
-  $spec = array(
-        'type' => 'varchar',
-        'not null' => FALSE,
-        'length' => '64',
-        'description' => 'A normalized version of the title, used for sorting on titles. (only first 64 characters saved)',
-  );
-  db_add_field('biblio', 'biblio_sort_title', $spec);
+  if (!db_field_exists('biblio', 'biblio_sort_title')) {
+    biblio_update_6033();
+  }
 }
 
 /**
