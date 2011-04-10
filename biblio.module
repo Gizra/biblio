@@ -2031,7 +2031,7 @@ function biblio_tokens($type, $tokens, $data = array(), $options = array()) {
     }
   }
 
-  return replacements;
+  return $replacements;
 }
 
 function _biblio_profile_access($user, $type = 'profile') {
