@@ -96,8 +96,11 @@ function theme_biblio_long($node, $base = 'biblio', $style = 'classic') {
   if (module_exists('popups')) {
      popups_add_popups();
   }
-  if (empty ($node->biblio_coins))
-    biblio_coins_generate($node);
+  if (empty ($node->biblio_coins)) {
+    module_load_include('inc', 'biblio', '/includes/biblio.util');
+    $node->biblio_coins = biblio_coins($node);
+  }
+
   $output .= filter_xss($node->biblio_coins, array('span'));
   $layout = variable_get('biblio_node_layout', 'orig');
   if (variable_get('biblio_node_layout', 'orig') == 'ft' && strlen(trim($node->body)) && user_access('view full text')) {
@@ -678,7 +681,8 @@ function theme_biblio_style($variables ) {
   $styled_node = $style_function ($node, $base, $inline);
 
   if (empty ($node->biblio_coins)) {
-    biblio_coins_generate($node);
+    module_load_include('inc', 'biblio', '/includes/biblio.util');
+    $node->biblio_coins = biblio_coins($node);
   }
   return ($styled_node . filter_xss($node->biblio_coins, array('span')));
 }

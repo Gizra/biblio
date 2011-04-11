@@ -18,6 +18,177 @@ function biblio_normalize_title($title) {
   }
   return drupal_substr(implode(' ', $title_words), 0, 64);
 }
+function biblio_coins($node) {
+  // Copyright:          Matthias Steffens <mailto:refbase@extracts.de> and the file's
+  //                     original author.
+  // Original Author:    Richard Karnesky <mailto:karnesky@gmail.com>  //
+  // Adapted for biblio: Ron Jerome
+  // fmt_info (type)
+  $fmt = "info:ofi/fmt:kev:mtx:";
+  // 'dissertation' is compatible with the 1.0 spec, but not the 0.1 spec
+  if ($node->biblio_type == 108) {
+    $fmt .= "dissertation";
+  }
+  elseif ($node->biblio_type == 102) {
+    $fmt .= "journal";
+  }
+  elseif ($node->biblio_type == 100 || $node->biblio_type == 101) {
+    $fmt .= "book";
+  }
+  // 'dc' (dublin core) is compatible with the 1.0 spec, but not the 0.1 spec.
+  // We default to this, as it is the most generic type.
+  else {
+   $fmt .= "dc";
+  }
+
+  $co = biblio_contextObject($node);
+  $coins = "ctx_ver=Z39.88-2004&amp;rft_val_fmt=" . urlencode($fmt);
+  foreach ($co as $coKey => $coValue) {
+    // 'urlencode()' differs from 'rawurlencode() (i.e., RFC1738 encoding)
+    // in that spaces are encoded as plus (+) signs
+    $coKey = preg_replace("/au[0-9]*/", "au", $coKey);
+    $coins .= "&amp;" . $coKey . "=" . urlencode($coValue);
+  }
+  $coinsSpan = "<span class=\"Z3988\" title=\"" . $coins . "\"></span>";
+  return $coinsSpan;
+}
+
+function biblio_contextObject($node) {
+  // Copyright:          Matthias Steffens <mailto:refbase@extracts.de> and the file's
+  //                     original author.
+  // Original Author:    Richard Karnesky <mailto:karnesky@gmail.com>  //
+  // Adapted for biblio: Ron Jerome
+  global $base_url;
+  $i = 0;
+    // $openurl_base = variable_get('biblio_baseopenurl', '');
+  $co = array();
+  // rfr_id
+//  $co["rfr_id"] = "info:sid/". ereg_replace("http://", "", $base_url);
+//  // genre (type)
+//  if (isset($node->biblio_type)) {
+//    if ($node->biblio_type == 102)
+//    $co["rft.genre"] = "article";
+//    elseif ($node->biblio_type == 101) $co["rft.genre"] = "bookitem";
+//    elseif ($node->biblio_type == 100) $co["rft.genre"] = "book";
+//    elseif ($node->biblio_type == "Journal") $co["rft.genre"] = "journal";
+//  }
+  // atitle, btitle, title (title, publication)
+  if (($node->biblio_type == 102) || ($node->biblio_type == 101)) {
+    if (!empty($node->title)) $co["rft.atitle"] = check_plain($node->title);
+    if (!empty($node->biblio_secondary_title)) {
+      $co["rft.title"] = check_plain($node->biblio_secondary_title);
+      if ($node->biblio_type == 101)
+      $co["rft.btitle"] = check_plain($node->biblio_secondary_title);
+    }
+  }
+  elseif (!empty($node->title)) {
+   $co["rft.title"] = check_plain($node->title);
+  }
+  if (($node->biblio_type == 100) && (!empty($node->biblio_secondary_title))) $co["rft.btitle"] = check_plain($node->biblio_secondary_title);
+  // stitle (abbrev_journal)
+  if (!empty($node->biblio_short_title)) $co["rft.stitle"] = check_plain($node->biblio_short_title);
+  // series (series_title)
+  if (!empty($node->biblio_tertiary_title)) $co["rft.series"] = check_plain($node->biblio_tertiary_title);
+  // issn
+  if (!empty($node->biblio_issn)) $co["rft.issn"] = check_plain($node->biblio_issn);
+  // isbn
+  if (!empty($node->biblio_isbn)) $co["rft.isbn"] = check_plain($node->biblio_isbn);
+  // date (year)
+  if (!empty($node->biblio_year)) $co["rft.date"] = check_plain($node->biblio_year);
+  // volume
+  if (!empty($node->biblio_volume)) $co["rft.volume"] = check_plain($node->biblio_volume);
+  // issue
+  if (!empty($node->biblio_issue)) $co["rft.issue"] = check_plain($node->biblio_issue);
+  // spage, epage, tpages (pages)
+  // NOTE: lifted from modsxml.inc.php--should throw some into a new include file
+  if (!empty($node->biblio_pages)) {
+    if (preg_match("/[0-9] *- *[0-9]/", $node->biblio_pages)) {
+      list ($pagestart, $pageend) = preg_split('/\s*[-]\s*/', $node->biblio_pages);
+      if ($pagestart < $pageend) {
+        $co["rft.spage"] = check_plain($pagestart);
+        $co["rft.epage"] = check_plain($pageend);
+      }
+    }
+    elseif ($node->biblio_type == 100) { //"Book Whole") {
+      $pagetotal = preg_replace('/^(\d+)\s*pp?\.?$/', "\\1", $node->biblio_pages);
+      $co["rft.tpages"] = check_plain($pagetotal);
+    }
+    else {
+      $co["rft.spage"] = check_plain($node->biblio_pages);
+    }
+  }
+  // aulast, aufirst, author (author)
+  if (!empty($node->biblio_contributors)) {
+    if (!empty($node->biblio_contributors[0]['lastname'])) {
+      $co["rft.aulast"] = check_plain($node->biblio_contributors[0]['lastname']);
+    }
+    if (!empty($node->biblio_contributors[0]['firstname'])) {
+      $co["rft.aufirst"] = check_plain($node->biblio_contributors[0]['firstname']);
+    }
+    elseif (!empty($node->biblio_contributors[0]['initials'])) {
+      $co["rft.auinit"] = check_plain($node->biblio_contributors[0]['initials']);
+    }
+    for($i = 1; $i < count($node->biblio_contributors); $i++) {
+      $author = $node->biblio_contributors[$i];
+      if ($author['auth_category'] == 1) {
+        if (!empty($author['lastname'])) {
+          $au = $author['lastname'];
+          if (!empty($author['firstname']) || !empty($author['initials'])) $au .= ", ";
+        }
+        if (!empty($author['firstname'])) {
+          $au .= $author['firstname'];
+        }
+        elseif (!empty($author['initials'])) {
+          $au .= $author['initials'];
+        }
+        if (!empty($au)) $co["rft.au" . $i] = $au;
+      }
+    }
+  }
+  // pub (publisher)
+  if (!empty($node->biblio_publisher)) $co["rft.pub"] = check_plain($node->biblio_publisher);
+  // place
+  if (!empty($node->biblio_place_published)) $co["rft.place"] = check_plain($node->biblio_place_published);
+  // id (doi, url)
+  if (!empty($node->biblio_doi)) {
+    $co["rft_id"] = "info:doi/" . check_plain($node->biblio_doi);
+  }
+//  elseif (!empty($node->biblio_url)) {
+//    $co["rft_id"] = $node->biblio_url;
+//  }
+
+  return $co;
+}
+
+function biblio_coins_generate(& $node) {
+  if (!isset($node->vid)) {
+    $node->biblio_coins = biblio_coins($node);
+    return;
+  }
+  if ($node) {
+    $node->biblio_coins = biblio_coins($node);
+    db_update('biblio')
+      ->fields(array('biblio_coins' => $node->biblio_coins))
+      ->condition('vid', $node->vid)
+      ->execute();
+  }
+  else {
+    $result = db_query("SELECT nr.*, b.*
+                        FROM {node} AS n
+                        LEFT JOIN {node_revision}  AS nr ON n.vid = nr.vid LEFT JOIN {biblio} AS b ON n.vid = b.vid
+                        WHERE n.type = 'biblio'  ");
+
+    foreach ($result as $node) {
+      $node->biblio_coins = biblio_coins($node);
+      db_update('biblio')
+        ->fields(array('biblio_coins' => $node->biblio_coins))
+        ->condition('vid', $node->vid)
+        ->execute();
+    }
+    drupal_goto('');
+  }
+}
+
 function _strip_punctuation($text) {
   return preg_replace("/[[:punct:]]/", '', $text);
 }
