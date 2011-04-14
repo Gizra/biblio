@@ -81,6 +81,35 @@ function biblio_uninstall() {
 
 }
 
+function biblio_requirements($phase) {
+  $requirements = array();
+  $message = '';
+ // Ensure translations don't break at install time
+  $t = get_t();
+
+  // Report Drupal version
+  if ($phase == 'runtime') {
+    $dir = drupal_get_path('module', 'biblio');
+    $files = file_scan_directory($dir, '/..*.inc$/',  array('recurse' => FALSE));
+    if (count($files)) {
+      $message = $t('There is a problem with your Biblio installation! There should not be any ".inc" files in the %biblio directory.  You probably forgot to delete the old biblio files when you upgraded the module.  You should remove the following files from that directory...', array('%biblio' => $dir));
+      $message .= "<ul>";
+      foreach ($files as $file) {
+        $message .= "<li>" . $file->filename;
+      }
+      $message .= "</ul>";
+      $requirements['biblio'] = array(
+        'title' => $t('Biblio'),
+        'value' => BIBLIO_VERSION,
+        'severity' => empty($message) ? REQUIREMENT_OK : REQUIREMENT_ERROR,
+        'description' => $message,
+      );
+    }
+
+  }
+  return $requirements;
+}
+
 function _biblio_helper_modules($mode) {
 
   $modules = _biblio_get_helper_modules();
