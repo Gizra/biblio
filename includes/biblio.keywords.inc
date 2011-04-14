@@ -129,13 +129,13 @@ function biblio_insert_keywords($node, $update = FALSE) {
       if (is_array($term) && !empty($term)) {
         foreach ($term as $tid) {
           if ($tid) {
-            $term_obj = taxonomy_get_term($tid);
+            $term_obj = taxonomy_term_load($tid);
             $taxo_terms[$term_obj->tid] = $term_obj->name;
           }
         }
       }
       elseif ($term) {
-        $term_obj = taxonomy_get_term($term);
+        $term_obj = taxonomy_term_load($term);
         $taxo_terms[$term_obj->tid] = $term_obj->name;
       }
     }
