@@ -76,7 +76,7 @@ function en8_add_urls(&$node) {
   // TODO: fix URLS
   if (!empty($node->biblio_url)) {
     $xml .= "<web-urls>";
-    $xml .= '<url><style face="normal" font="default" size="100%">' . $node->biblio_url . "</style></url>";
+    $xml .= '<url><style face="normal" font="default" size="100%">' . htmlspecialchars($node->biblio_url) . "</style></url>";
     $xml .= "</web-urls>";
   }
   unset($node->biblio_url);
@@ -84,7 +84,7 @@ function en8_add_urls(&$node) {
     $xml .= "<related-urls>";
     foreach ($node->files as $file) {
       $xml .= '<url><style face="normal" font="default" size="100%">';
-      $xml .= file_create_url($file->uri);
+      $xml .= htmlspecialchars(file_create_url($file->uri));
       $xml .= "</style></url>";
     }
     $xml .= "</related-urls>";
