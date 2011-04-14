@@ -66,10 +66,6 @@ function theme_biblio_citeproc_style($variables) {
   }
   $styled_node = $citeproc->render($node);
 
-  if (empty ($node->biblio_coins)) {
-    module_load_include('inc', 'biblio', '/includes/biblio.util');
-    $node->biblio_coins = biblio_coins($node);
-  }
   return ($styled_node . filter_xss($node->biblio_coins, array('span')));
 }
 

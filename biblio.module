@@ -19,6 +19,7 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  */
+define('BIBLIO_VERSION', '7.x-1.x-dev');
 
 function _biblio_get_auth_types($auth_category, $biblio_type) {
   static $auth_types = array();
@@ -1467,7 +1468,6 @@ function _biblio_text_year($year) {
  * @return none
  */
 function _biblio_prepare_submit(&$node) {
-  module_load_include('inc', 'biblio', '/includes/biblio.util');
   $node->biblio_sort_title = biblio_normalize_title($node->title);
   $node->biblio_year = _biblio_numeric_year($node->biblio_year);
 
@@ -1482,8 +1482,9 @@ function _biblio_prepare_submit(&$node) {
  * database inserts.
  */
 function biblio_insert($node) {
-  require_once(drupal_get_path('module', 'biblio') . '/includes/biblio.contributors.inc');
-  require_once(drupal_get_path('module', 'biblio') . '/includes/biblio.keywords.inc');
+  module_load_include('inc', 'biblio', 'includes/biblio.util');
+  module_load_include('inc', 'biblio', 'includes/biblio.contributors');
+  module_load_include('inc', 'biblio', 'includes/biblio.keywords');
   _biblio_prepare_submit($node);
   biblio_insert_contributors($node);
   biblio_insert_keywords($node);
@@ -1503,7 +1504,9 @@ function biblio_insert($node) {
  * database updates.
  */
 function biblio_update($node) {
-  require_once(drupal_get_path('module', 'biblio') . '/includes/biblio.keywords.inc');
+  module_load_include('inc', 'biblio', 'includes/biblio.util');
+  module_load_include('inc', 'biblio', 'includes/biblio.contributors');
+  module_load_include('inc', 'biblio', 'includes/biblio.keywords');
   _biblio_prepare_submit($node);
   biblio_update_contributors($node);
   biblio_update_keywords($node);
@@ -1525,9 +1528,9 @@ function biblio_update($node) {
  * When a node is deleted, we need to clean up related tables.
  */
 function biblio_delete($node) {
-  require_once(drupal_get_path('module', 'biblio') . '/includes/biblio.contributors.inc');
-  require_once(drupal_get_path('module', 'biblio') . '/includes/biblio.keywords.inc');
-  //first remove data from the biblio table
+  module_load_include('inc', 'biblio', 'includes/biblio.contributors');
+  module_load_include('inc', 'biblio', 'includes/biblio.keywords');
+    //first remove data from the biblio table
 
   db_delete('biblio')
     ->condition('nid', $node->nid)
@@ -1544,9 +1547,9 @@ function biblio_delete($node) {
  *
  */
 function biblio_load($nodes) {
-
-  require_once(drupal_get_path('module', 'biblio') . '/includes/biblio.contributors.inc');
-  require_once(drupal_get_path('module', 'biblio') . '/includes/biblio.keywords.inc');
+  module_load_include('inc', 'biblio', 'includes/biblio.util');
+  module_load_include('inc', 'biblio', 'includes/biblio.contributors');
+  module_load_include('inc', 'biblio', 'includes/biblio.keywords');
   $vids = array();
   foreach ($nodes as $nid => $node) $vids[] = $node->vid;
 
@@ -1562,6 +1565,9 @@ function biblio_load($nodes) {
     $nodes[$record['nid']]->biblio_year         = _biblio_text_year($record['biblio_year']);
     $nodes[$record['nid']]->biblio_contributors = biblio_load_contributors($record['vid']);
     $nodes[$record['nid']]->biblio_keywords     = biblio_load_keywords($record['vid']);
+    if (empty($record['biblio_coins'])) {
+      $nodes[$record['nid']]->biblio_coins = biblio_coins($nodes[$record['nid']]);
+    }
   }
 }
 function biblio_citekey_generate($node) {
