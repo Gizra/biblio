@@ -2011,6 +2011,7 @@ function biblio_token_info() {
 }
 
 function biblio_tokens($type, $tokens, $data = array(), $options = array()) {
+  $replacements = array();
   if ($type == 'node' && !empty($data['node']) && $data['node']->type = 'biblio') {
     $node = $data['node'];
     foreach ($tokens as $name => $original) {
@@ -2020,16 +2021,16 @@ function biblio_tokens($type, $tokens, $data = array(), $options = array()) {
           $replacements[$original] = check_plain($node->biblio_year);
           break;
         case 'biblio_authors':
-          $replacements[$original] = check_plain($object->biblio_contributors[0]['lastname']);;
+          $replacements[$original] = check_plain($node->biblio_contributors[0]['lastname']);;
           break;
         case 'biblio_type_id':
-          $replacements[$original] = check_plain($object->biblio_type);
+          $replacements[$original] = check_plain($node->biblio_type);
           break;
         case 'biblio_citekey':
-          $replacements[$original] = check_plain($object->biblio_citekey);
+          $replacements[$original] = check_plain($node->biblio_citekey);
           break;
         case 'biblio_type':
-          $type = db_query('SELECT name FROM {biblio_types} as t WHERE t.tid = :tid', array(':tid' => $object -> biblio_type))->fetchField();
+          $type = db_query('SELECT name FROM {biblio_types} as t WHERE t.tid = :tid', array(':tid' => $node -> biblio_type))->fetchField();
           $replacements[$original] = check_plain($type);
           break;
 
