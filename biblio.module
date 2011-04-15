@@ -1977,11 +1977,6 @@ function biblio_hash($node) {
 }
 
 function biblio_token_info() {
-  $type = array(
-    'name' => t('Biblio'),
-    'description' => t('Tokens related to Biblio nodes.'),
-    'needs-data' => 'node',
-  );
 
   $node['biblio_year'] = array(
     'name' => t("Biblio: Publication year"),
@@ -2004,9 +1999,7 @@ function biblio_token_info() {
     'description' => '',
   );
 
-  return array(
-    'types' => array('node' => $type),
-    'tokens' => array('node' => $node),
+  return array('tokens' => array('node' => $node),
   );
 }
 
