@@ -90,8 +90,6 @@ function biblio_db_search($arg_list = array()) {
     }
   }
 */
-  $inline = in_array('inline', $arg_list);
-  $inline = in_array('profile', $arg_list)?'profile':$inline;
 
   $_SESSION['last_biblio_query'] = $arg_list;
 
@@ -106,7 +104,7 @@ function biblio_db_search($arg_list = array()) {
     //$count = db_result(db_query($query_info['count_query'],$query_info['query_terms']));
     $nodes = array();
     //$result = pager_query($query_info['query'], variable_get('biblio_rowsperpage', 25),0,$query_info['count_query'],$query_info['query_terms']);
-    $query_info['filter_line'] = _biblio_filter_info_line($query_info['args']);
+    $variables['filter_line'] = _biblio_filter_info_line($query_info['args']);
 
     foreach ($query_info['query'] as $node) {
       $nids[] = $node->nid;
@@ -121,8 +119,10 @@ function biblio_db_search($arg_list = array()) {
       }
     }
   }
+  $variables['nodes'] = $nodes;
+  $variables['profile'] = in_array('profile', $arg_list);
 
-  return biblio_show_results($nodes, $query_info, $inline);
+  return biblio_show_results($variables);
 }
 
 
@@ -230,6 +230,7 @@ function biblio_build_query($arg_list) {
 
   if (isset($arg_list['f']) && count($arg_list['f']) ) {
     $args = array();
+    $fields = biblio_get_db_fields();
     foreach ($arg_list['f'] as $type => $value) {
       switch ($type) {
         case 'no_filters':
@@ -240,15 +241,9 @@ function biblio_build_query($arg_list) {
         case 'or':
           $operator = " OR ";
           break;
-        case 'inline':
-          $inline = TRUE;
-          break;
         case 'rss.xml':
           $rss_info['feed'] = TRUE;
           $count_limit = 'LIMIT ' . variable_get('biblio_rss_number_of_entries', 10);
-          break;
-        case 'profile':
-          $inline = "profile";
           break;
         case 'term':
         case 'term_id':
@@ -367,7 +362,6 @@ function biblio_build_query($arg_list) {
           $operator = NULL;
           break;
         default:
-          $fields = biblio_get_db_fields();
           if (in_array("biblio_$type", $fields)) {
             $query->condition("b.biblio_$type ", $value, 'LIKE');
           }
@@ -397,23 +391,16 @@ function biblio_build_query($arg_list) {
  * @param $inline
  * @return unknown_type
  */
-function biblio_show_results($nodes, $query_info = array(), $inline = FALSE) {
+function biblio_show_results($variables) {
   global $pager_total_items;
-  $profile = FALSE;
-//  $attrib = $query_info['sort_attrib'];
-  $args   = $query_info['args'];
+  $profile = $variables['profile'];
   $base =  variable_get('biblio_base', 'biblio');
   $style = biblio_get_style();
-  if ($inline === 'profile') {
-    $profile = TRUE;
-    $inline  = FALSE;
-  }
   if (module_exists('popups')) {
      popups_add_popups();
   }
 
-  if (!$inline && !$profile) {
-
+  if (!$profile) {
     if (variable_get('biblio_rss', 0)) {
       drupal_add_html_head_link(array(
         'rel' => 'alternate',
@@ -440,11 +427,9 @@ function biblio_show_results($nodes, $query_info = array(), $inline = FALSE) {
     $content .= '</div>';
 
     if  (user_access('show filter tab')) {
-      $content .=  $query_info['filter_line'];
+      $content .=  $variables['filter_line'];
     }
   }
-
-  if ($inline === TRUE) print '<div class="biblio-inline">';
 
   if (isset($_GET['s'])) {
     if ( $_GET['s'] == 'title' ||
@@ -466,7 +451,7 @@ function biblio_show_results($nodes, $query_info = array(), $inline = FALSE) {
   // Reset separator bar status for repeated calls to biblio_db_search.
   _biblio_category_separator_bar(NULL, TRUE);
 
-  foreach ($nodes as $node) {
+  foreach ($variables['nodes'] as $node) {
     $count++;
     if (is_array($node)) $node = (object)$node;
     if (variable_get('biblio_hide_bibtex_braces', 0)) $node->title = biblio_remove_brace($node->title);
@@ -476,9 +461,7 @@ function biblio_show_results($nodes, $query_info = array(), $inline = FALSE) {
     // output separator bar if needed
     $content .= _biblio_category_separator_bar($node);
 
-    $inline_links = ($inline && variable_get('biblio_inlinemode_in_links', 0)) ? TRUE : FALSE;
-
-    $content .= theme('biblio_entry', array('node' => $node, 'base' => $base, 'style_name' => $style, 'inline' => $inline_links));
+    $content .= theme('biblio_entry', array('node' => $node, 'style_name' => $style));
 
   } //end while
   if ($count) $content .= '</div><!-- end category-section -->';
@@ -489,12 +472,12 @@ function biblio_show_results($nodes, $query_info = array(), $inline = FALSE) {
       $content .= t('!modify_link or !remove_link your filters and try again.', array('!modify_link' => l(t('Modify'), "$base/filter"), '!remove_link' => l(t('remove'), "$base/filter/clear")));
     }
   }
-  if ($profile === TRUE)  return $content;
-  if ($inline === TRUE)   return $content . "</div>";
-  if ($inline === FALSE)  {
-    drupal_set_title(check_plain(variable_get('biblio_base_title', 'Biblio')));
+  if ($profile === TRUE) {
     return $content;
   }
+
+  drupal_set_title(check_plain(variable_get('biblio_base_title', 'Biblio')));
+  return $content;
 
 }
 
@@ -1128,21 +1111,6 @@ function biblio_get_user_pubs($user, $profile='', $nofilters='') {
   $args += array('profile' => 1);
 
   return  biblio_db_search($args);;
-}
-
-/**
- * @param $node
- * @return unknown_type
- */
-function biblio_view_inline(&$node) {
-  $style = biblio_get_style();
-  $base =  variable_get('biblio_base', 'biblio');
-  $layout = variable_get('biblio_node_layout', 'tabular');
-  $theme = ($layout == 'tabular') ? 'biblio_tabular' : 'biblio_long';
-  $output  = '<div class="biblio-inline">';
-  $output .= theme($theme, array('node' => $node, 'base' => $base, 'style' => $style));
-  $output .= '</div>';
-  return $output;
 }
 
 /**

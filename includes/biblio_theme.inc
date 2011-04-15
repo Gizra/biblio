@@ -420,7 +420,6 @@ function biblio_format_authors($authors) {
 function theme_biblio_format_authors($variables) {
   $contributors = $variables['contributors'];
   $options      = $variables['options'];
-  $inline       = $variables['inline'];
 
   if (empty($contributors)) return;
   list($alnum, $alpha, $cntrl, $dash, $digit, $graph, $lower,
@@ -555,16 +554,12 @@ function theme_biblio_author_link($variables) {
   $author = $variables['author'];
 //  $aid    = $variables['authorID'];
 //  $base   = $variables['base'];
-//  $inline = $variables['inline'];
 
   $uri = drupal_parse_url(request_uri());
   $uri['path'] = variable_get('biblio_base', 'biblio');
 
   $uri['query']['f']['author'] = $author['cid'];
 
-//  if ($inline) {
-//    $options['query']['inline'] = 'TRUE';
-//  }
 
   return l(trim($author['name']), $uri['path'], $uri );
 
@@ -659,23 +654,22 @@ function theme_biblio_page_number($variables) {
  * Applies a "style" function to a single node.
  *
  * @param $node A node
- * @param $base The base url for biblio (defaults to /biblio)
  * @param $style_name The name of the style to apply
- * @param $inline "inline" mode returns the raw HTML rather than letting drupal render the whole page.
  * @return A string containing the styled (HTML) node
  */
 function theme_biblio_style($variables ) {
   $node       = $variables['node'];
-  $base       = $variables['base'];
   $style_name = $variables['style_name'];
-  $inline     = $variables['inline'];
-
+  $styled_node = '';
   module_load_include('inc', 'biblio', "/styles/biblio_style_$style_name");
 
   $style_function = "biblio_style_$style_name";
-
-  $styled_node = $style_function ($node, $base, $inline);
-
+  if (function_exists($style_function)) {
+    $styled_node = $style_function ($node);
+  }
+  else {
+    drupal_set_message(t('The style function: @funct does not exist', array('@funct' => $style_function)), 'error');
+  }
   return ($styled_node . filter_xss($node->biblio_coins, array('span')));
 }
 
@@ -683,14 +677,11 @@ function theme_biblio_style($variables ) {
  * @param $node
  * @param $base
  * @param $style
- * @param $inline
  * @return unknown_type
  */
 function theme_biblio_entry($variables) {
   $node       = $variables['node'];
-  $base       = $variables['base'];
   $style_name = $variables['style_name'];
-  $inline     = $variables['inline'];
 
   $output  = "\n" . '<div class="biblio-entry">' . "\n" ;
   $output  .= '<div class="biblio-style-' . $style_name . '">' . "\n" ;
@@ -699,7 +690,7 @@ function theme_biblio_entry($variables) {
   }
 
   // first add the styled entry...
-  $output .= theme('biblio_style', array('node' => $node, 'base' => $base, 'style_name' => $style_name, 'inline' => $inline));
+  $output .= theme('biblio_style', array('node' => $node, 'style_name' => $style_name));
 
   // now add the various links
 //  if ($node->biblio_abst_e) {

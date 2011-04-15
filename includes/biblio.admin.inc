@@ -385,13 +385,6 @@ function biblio_admin_settings() {
     '#default_value' => variable_get('biblio_links_target_new_window', 0),
     '#description' => t('This causes related URLs to open in a new browser window')
   );
-  $form['links']['biblio_inlinemode_in_links'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Carry "inline" mode through to all links'),
-      '#return_value' => 1,
-      '#default_value' => variable_get('biblio_inlinemode_in_links', 0),
-      '#description' => t('This causes the "inline" mode to be applied to all links such as titles, authors and keywords')
-  );
 
   $form['links']['biblio_link_title_url'] = array(
     '#type' => 'checkbox',
@@ -512,7 +505,7 @@ function biblio_admin_settings() {
     '#group' => 'biblio_settings',
   );
   $form['sort']['biblio_sort'] = array(
-    '#type' => 'radios',
+    '#type' => 'select',
     '#title' => t('Sort by'),
     '#default_value' => variable_get('biblio_sort', 'year'),
     '#options' => array(
@@ -521,8 +514,18 @@ function biblio_admin_settings() {
       'title'   => t('Title'),
       'type'    => t('Type'),
       'year'    => t('Year')
-    )
+    ),
+   '#description' => t('This is the initial default sort.'),
   );
+  $stop_words = 'a,an,is,on,the';
+  $form['sort']['biblio_stop_words'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Words to remove from the beginning of titles prior to sorting'),
+    '#size' => 60,
+    '#default_value' => variable_get('biblio_stop_words', $stop_words),
+    '#description' => t('A comma separated list of (case insensitive) words to strip from the title for sorting purposes.  NOTE: quotation and punctuation are stripped automatically.')
+  );
+
   $form['sort']['biblio_sort_tabs'] = array(
     '#type' => 'checkboxes',
     '#title' => t('Show sort links'),

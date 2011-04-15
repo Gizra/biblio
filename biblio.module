@@ -226,9 +226,8 @@ function biblio_theme($existing, $type, $theme, $path) {
         'file' => '/includes/biblio_theme.inc',
         'variables' => array(
           'node' => NULL,
-          'base' => 'biblio',
           'style_name' => 'classic',
-          'inline' => FALSE),
+         ),
     ),
     'biblio_long' => array(
         'file' => '/includes/biblio_theme.inc',
@@ -248,16 +247,15 @@ function biblio_theme($existing, $type, $theme, $path) {
         'file' => '/includes/biblio_theme.inc',
         'variables' => array(
           'node',
-          'base' => 'biblio',
           'style_name' => 'classic',
-          'inline' => FALSE),
+         ),
     ),
     'biblio_format_authors' => array(
       'file' => '/includes/biblio_theme.inc',
       'variables' => array(
         'contributors' => NULL,
         'options' => array(),
-        'inline' => FALSE),
+        ),
     ),
     'biblio_page_number' => array(
       'file' => '/includes/biblio_theme.inc',
@@ -1038,15 +1036,6 @@ function biblio_menu() {
   $items["$base/citekey"] = array(
     'title'             => '',
     'page callback'     => 'biblio_citekey_view',
-    'access arguments'  => array('access biblio content'),
-    'file'              => '/includes/biblio.pages.inc',
-    'type'              => MENU_CALLBACK
-  );
-  $items["$base/viewinline/%node"] = array(
-    'title'             => '',
-    'page callback'     => 'biblio_view_inline',
-    'page arguments'    => array(2),
-    'access callback'   => 'user_access',
     'access arguments'  => array('access biblio content'),
     'file'              => '/includes/biblio.pages.inc',
     'type'              => MENU_CALLBACK
@@ -2113,8 +2102,8 @@ function biblio_get_allowed_tags() {
   return array('a', 'b', 'i', 'u', 'sub', 'sup', 'span');
 }
 
-function biblio_get_title_url_info($node, $inline = FALSE) {
-  return array('link' =>  ((variable_get('biblio_link_title_url', 0) && !empty($node->biblio_url)) ? $node->biblio_url : ($inline ? "$base/viewinline/$node->nid":"node/$node->nid" ) ),
+function biblio_get_title_url_info($node) {
+  return array('link' =>  ((variable_get('biblio_link_title_url', 0) && !empty($node->biblio_url)) ? $node->biblio_url : "node/$node->nid"  ),
                'options' =>
                   array('attributes' => (variable_get('biblio_links_target_new_window', FALSE)) ? array('target' => '_blank') : array(),
                         'html' => TRUE),

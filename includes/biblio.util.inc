@@ -1,6 +1,7 @@
 <?php
 function biblio_normalize_title($title) {
-  $stop_words = array('a', 'an', 'the');
+  $stop_words = 'a,an,the,is,on';
+  $stop_words = explode(',', variable_get('biblio_stop_words', $stop_words));
   if (!@preg_match('/\pL/u', 'a')) {
     // probably a broken PCRE library
     $title = trim(_strip_punctuation($title));

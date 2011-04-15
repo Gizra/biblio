@@ -56,7 +56,7 @@ function biblio_style_vancouver_author_options() {
   return $author_options;
 }
 
-function biblio_style_vancouver($node, $base = 'biblio', $inline = FALSE) {
+function biblio_style_vancouver($node) {
   module_load_include('inc', 'biblio', '/includes/biblio.contributors');
   $output = $authors = $editor = '';
   $markupPatternsArray = array("italic-prefix" => '<i>',
@@ -67,7 +67,7 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = FALSE) {
   $editors = biblio_get_contributor_category($node->biblio_contributors, 2);
  // $corp_authors = biblio_get_contributor_category($node->biblio_contributors, 5);
   if (!empty($primary_authors)) {
-    $authors = theme('biblio_format_authors', array('contributors' => $primary_authors, 'options' => $author_options, 'inline' => $inline));
+    $authors = theme('biblio_format_authors', array('contributors' => $primary_authors, 'options' => $author_options));
   }
   //$editors = theme('biblio_format_authors', array('contributors' => $node->biblio_contributors->get_category(2), 'options' => $author_options, 'inline' => $inline));
   //if (empty($authors)) $authors = theme('biblio_authors', $node->biblio_contributors->get_category(5), 'mla', 5, $inline);  // if no authors substitute corp author if available
@@ -214,7 +214,7 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = FALSE) {
           'encodeHTML'                        => TRUE
         );
 
-        $editor = theme('biblio_format_authors', array('contributors' => $editors, 'options' => $editor_options, 'inline' => $inline));
+        $editor = theme('biblio_format_authors', array('contributors' => $editors, 'options' => $editor_options));
 
         $output .= " In: " . $editor . ", ";
         if (count($editors) > 1) // there are at least two editors (separated by ';')
@@ -410,7 +410,7 @@ function biblio_style_vancouver($node, $base = 'biblio', $inline = FALSE) {
           'encodeHTML'                      => TRUE
         );
 
-        $editor = theme('biblio_format_authors', array('contributors' => $editors, 'options' => $editor_options, 'inline' => $inline));
+        $editor = theme('biblio_format_authors', array('contributors' => $editors, 'options' => $editor_options));
         if (!preg_match("/[?!.][ \"" . $markupPatternsArray["italic-suffix"] . "]*$/", $output))
         $output .= ".";
 

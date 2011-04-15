@@ -1880,3 +1880,6 @@ function biblio_update_7009(&$sandbox) {
 
   $sandbox['#finished'] = empty($sandbox['max']) ? 1 : ($sandbox['progress'] / $sandbox['max']);
 }
+function biblio_update_7010() {
+  variable_del('biblio_inlinemode_in_links');
+}

@@ -42,15 +42,10 @@ function biblio_style_mla_author_options() {
  *
  * @param $node
  *   An object containing the node data to render
- * @param $base
- *   The base URL of the biblio module (defaults to /biblio)
- * @param $inline
- *   A logical value indicating if this is being rendered within the
- *   Drupal framwork (FALSE) or we are just passing back the html (TRUE)
  * @return
  *   The styled biblio entry
  */
-function biblio_style_mla($node, $base = 'biblio', $inline = FALSE) {
+function biblio_style_mla($node) {
   module_load_include('inc', 'biblio', '/includes/biblio.contributors');
   $output = $authors = $editor = '';
   $author_options = biblio_style_mla_author_options();
@@ -59,7 +54,7 @@ function biblio_style_mla($node, $base = 'biblio', $inline = FALSE) {
  // $corp_authors = biblio_get_contributor_category($node->biblio_contributors, 5);
 
   if (!empty($primary_authors)) {
-    $authors = theme('biblio_format_authors', array('contributors' => $primary_authors, 'options' => $author_options, 'inline' => $inline));
+    $authors = theme('biblio_format_authors', array('contributors' => $primary_authors, 'options' => $author_options));
   }
   //if (empty($authors)) $authors = theme('biblio_authors', $node->biblio_contributors->get_category(5), 'mla', 5, $inline);  // if no authors substitute corp author if available
   //if (empty($authors)) $authors = '[' . t('Anonymous') . ']';  // use anonymous if we still have nothing.
@@ -218,7 +213,7 @@ function biblio_style_mla($node, $base = 'biblio', $inline = FALSE) {
             'customStringAfterFirstAuthors' => ', et al.',//15
             'encodeHTML' => TRUE
           );
-          $editor = theme('biblio_format_authors', array('contributors' => $editors, 'options' => $editor_options, 'inline' => $inline));
+          $editor = theme('biblio_format_authors', array('contributors' => $editors, 'options' => $editor_options));
           _period_if_needed($output);
 
           if (count($editors) > 1) { // there are at least two editors (separated by ';')
@@ -362,7 +357,7 @@ function biblio_style_mla($node, $base = 'biblio', $inline = FALSE) {
           'customStringAfterFirstAuthors' => ', et al.',//15
           'encodeHTML' => TRUE
         );
-        $editor = theme('biblio_format_authors', array('contributors' => $editors, 'options' => $editor_options, 'inline' => $inline));
+        $editor = theme('biblio_format_authors', array('contributors' => $editors, 'options' => $editor_options));
         _period_if_needed($output);
 
         if (count($editors) > 1) {// there are at least two editors (separated by ';')
