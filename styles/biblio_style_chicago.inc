@@ -273,8 +273,8 @@ function biblio_style_chicago($node, $base = 'biblio', $inline = FALSE) {
         if (!empty($node->biblio_volume))      // series volume
         $output .= $node->biblio_volume;
 
-        if (!empty($node->biblio_issue))      // series issue (I'm not really sure if -- for this cite style -- the series issue should be rather omitted here)
-        $output .= ", no. " . $node->biblio_issue; // is it correct to format series issues similar to journal article issues?
+ //       if (!empty($node->biblio_issue))      // series issue (I'm not really sure if -- for this cite style -- the series issue should be rather omitted here)
+ //       $output .= ", no. " . $node->biblio_issue; // is it correct to format series issues similar to journal article issues?
       }
 
       if (!preg_match("/[?!.][ \"<i>]*$/", $output)) $output .= ".";
@@ -406,8 +406,8 @@ function biblio_style_chicago($node, $base = 'biblio', $inline = FALSE) {
         if (!empty($node->biblio_volume))      // series volume
         $output .= $node->biblio_volume;
 
-        if (!empty($node->biblio_issue))      // series issue (I'm not really sure if -- for this cite style -- the series issue should be rather omitted here)
-        $output .= ", no. " . $node->biblio_issue; // is it correct to format series issues similar to journal article issues?
+ //       if (!empty($node->biblio_issue))      // series issue (I'm not really sure if -- for this cite style -- the series issue should be rather omitted here)
+ //       $output .= ", no. " . $node->biblio_issue; // is it correct to format series issues similar to journal article issues?
       }
 
       if (!empty($node->thesis))      // thesis
