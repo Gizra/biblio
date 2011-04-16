@@ -88,19 +88,19 @@ function biblio_pm_biblio_import_options() {
 function biblio_pm_biblio_import($file, $terms = array(), $batch = FALSE, $session_id = NULL, $save = TRUE, $string = FALSE) {
   $nids = array();
   $dups = array();
-  list($nids, $dups) = _biblio_pm_import($file, $terms, $batch, $session_id);
-
-  return array($nids, $dups);
-}
-
-function _biblio_pm_import($file, $terms, $batch, $session_id) {
-  module_load_include('php', 'biblio_pm', 'EntrezClient');
-  module_load_include('php', 'biblio_pm', 'EntrezPubmedArticle');
   $pmids = file($file->uri, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
   if (empty($pmids)) {
     drupal_set_message(t("Could not open PubMed ID file"), 'error');
     return;
   }
+  list($nids, $dups) = biblio_pm_import_ids($pmids, $terms, $batch, $session_id);
+
+  return array($nids, $dups);
+}
+
+function biblio_pm_import_ids($pmids, $terms, $batch, $session_id) {
+  module_load_include('php', 'biblio_pm', 'EntrezClient');
+  module_load_include('php', 'biblio_pm', 'EntrezPubmedArticle');
   $retmax = 100;
   $resmax = count($pmids);
   $start = 0;
