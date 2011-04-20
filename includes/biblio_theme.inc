@@ -20,13 +20,6 @@
  ****************************************************************************/
 module_load_include('inc', 'biblio', 'biblio.pages');
 
-/**
- * @param $element
- * @return unknown_type
- */
-function theme_biblio_coin_button($element) {
-  return '<a href="/biblio/regen_coins"><input type="button"  name="' . $element['#name'] . '" value="' . $element['#value'] . '"  /></a>';
-}
 
 /**
  * @param $openURL
@@ -48,7 +41,7 @@ function theme_biblio_openurl($variables) {
  * @param $node
  * @return unknown_type
  */
-function biblio_openURL($node) {
+function biblio_openurl($node) {
   global $user;
   $open_url = '';
   // Copyright:          Matthias Steffens <mailto:refbase@extracts.de> and the file's
@@ -121,7 +114,7 @@ function theme_biblio_long($node, $base = 'biblio', $style = 'classic') {
   $authors = implode('; ', (array)$authors);
   $openurl_base = variable_get('biblio_baseopenurl', '');
   if ($openurl_base)
-    $output .= theme('biblio_openurl', array('openURL' => biblio_openurl($node, $openurl_base)));
+    $output .= theme('biblio_openurl', array('openURL' => biblio_openurl($node)));
   $output .= '<div class="biblio_type"><h3>' . t("Publication Type") . ":</h3> $node->biblio_type_name</div>\n";
   $output .= '<div class="biblio_authors"><h3>' . t("Authors") . ':</h3> ' . $authors . "</div>\n";
   $output .= '<div class="biblio_source"><h3>' . t("Source") . ': </h3> ';
@@ -917,8 +910,8 @@ function theme_google_scholar_link($variables) {
   $query['as_sdtp'] = 1; //include patents
 
   $attrs = array('title' => t("Click to search Google Scholar for this entry"));
-  if (variable_get('biblio_links_target_new_window', null)){
-    $attrs = array_merge($attrs, array('target'=>'_blank'));
+  if (variable_get('biblio_links_target_new_window', NULL)){
+    $attrs = array_merge($attrs, array('target '=> '_blank'));
   }
 
   return array(

@@ -34,7 +34,7 @@
  *   An array which will be used by the form builder to add a select box to a form
  */
 function _biblio_admin_build_user_select($my_uid) {
-  $sql = 'SELECT DISTINCT u.uid, u.name, u.status, u.mail FROM {users} u  WHERE u.uid != 0 ';
+  $sql = 'SELECT DISTINCT u.uid, u.name, u.status, u.mail FROM {users} u  WHERE u.uid <> 0 ';
   $result = db_query($sql);
   foreach ($result as $user) {
     $users[$user->uid] = $user->name . " ($user->mail)";

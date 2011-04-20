@@ -32,7 +32,7 @@ function biblio_db_search($arg_list = array()) {
 
   $uri = drupal_parse_url(request_uri());
   $arg_list = array_merge($arg_list, $uri['query']);
-  if(isset($_SESSION['biblio_filter']) && !empty($_SESSION['biblio_filter'])) {
+  if (isset($_SESSION['biblio_filter']) && !empty($_SESSION['biblio_filter'])) {
     $saved_filters = &$_SESSION['biblio_filter'];
   }
   foreach ($saved_filters as $filter) {

@@ -214,10 +214,6 @@ function biblio_theme($existing, $type, $theme, $path) {
         'file' => '/includes/biblio_theme.inc',
         'render element' => 'form',
     ),
-    'biblio_coin_button' => array(
-        'file' => '/includes/biblio_theme.inc',
-        'variables' => array('element'),
-    ),
     'biblio_openurl' => array(
         'file' => '/includes/biblio_theme.inc',
         'variables' => array('openURL'),
@@ -402,7 +398,7 @@ function biblio_node_access($node, $op, $account) {
       break;
     case 'update':
     case 'delete':
-      if(user_access('edit by all biblio authors') && isset($node->biblio_contributors) && is_array($node->biblio_contributors)) {
+      if (user_access('edit by all biblio authors') && isset($node->biblio_contributors) && is_array($node->biblio_contributors)) {
         foreach ($node->biblio_contributors as $cat => $authors) {
           foreach ($authors as $key => $author) {
             if ((isset($author['drupal_uid']) && $author['drupal_uid'] == $account->uid) ||
@@ -1173,7 +1169,7 @@ function biblio_form($node, &$form_state) {
   $form['biblio_type'] = array(
     '#type' => 'select',
     '#title' => t('Publication Type'),
-    '#default_value' =>(!empty($tid)) ? $tid : -1,
+    '#default_value' => (!empty($tid)) ? $tid : -1,
     '#options' => $options,
     '#description' => NULL,
     '#weight' => -15,
@@ -1288,7 +1284,7 @@ function biblio_node_form_vtabs() {
     array('tab_id' => 8, 'weight' => 18, 'title' => 'Alternate Titles', 'description' => ''),
     array('tab_id' => 9, 'weight' => 19, 'title' => 'Other', 'description' => ''),
     );
-  foreach($vtabs as $tab) {
+  foreach ($vtabs as $tab) {
     $form[$tab['tab_id']] = array(
         '#type' => 'fieldset',
         '#group' => 'biblio_settings',
@@ -1329,7 +1325,7 @@ function biblio_contributor_widget($node, &$form_state) {
   // Container for just the contributors.
   $wrapper = array();
   $wrapper['biblio_contributors'] = array(
-    '#tree'	  => TRUE,
+    '#tree'   => TRUE,
     '#theme'  => 'biblio_contributors',
     '#prefix' => '<div id="biblio-contributors-wrapper">',
     '#suffix' => '</div>',
@@ -1346,9 +1342,9 @@ function biblio_contributor_widget($node, &$form_state) {
      $form_count = max($init_count, $contributor_count);
     $form_state['biblio_contrib_count'] = $form_count;
   }
-  if($form_count > $contributor_count) {
+  if ($form_count > $contributor_count) {
     $author = array();
-    for($i = 0; $i < ($form_count - $contributor_count); $i++) {
+    for ($i = 0; $i < ($form_count - $contributor_count); $i++) {
        $wrapper['biblio_contributors'][] = biblio_contributor_form($author, $options);
     }
   }
@@ -1663,7 +1659,7 @@ function biblio_block_save($delta = '', $edit = array()) {
 }
 
 function biblio_block_view($delta = '') {
-  switch($delta) {
+  switch ($delta) {
     case 'recent':
       $num_in_block = variable_get('biblio_rowsperblock', 4);
       $block_order = variable_get('biblio_block_order', 'n.created');
@@ -1981,7 +1977,7 @@ function biblio_token_info() {
   );
   $node['biblio_type'] = array(
     'name' => t("Biblio: Type Name (e.g.: book)"),
-    'description' =>'',
+    'description' => '',
   );
   $node['biblio_citekey'] = array(
     'name' => t("Biblio: Cite Key often used in BibTex files"),
