@@ -2,7 +2,7 @@
 /**
  *   biblio.module for Drupal
  *
- *   Copyright (C) 2006-2009  Ron Jerome
+ *   Copyright (C) 2006-2011  Ron Jerome
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by

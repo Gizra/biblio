@@ -7,7 +7,7 @@
  */
 /*   biblio.import.export.inc
  *
- *   Copyright (C) 2006-2008  Ron Jerome
+ *   Copyright (C) 2006-2011  Ron Jerome
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -312,7 +312,6 @@ function biblio_import_batch_finished($success, $results, $operations) {
 
   biblio_import_finalize($success, $results);
   //clean up import cache...
-//  db_query("DELETE FROM {biblio_import_cache} WHERE session_id = :sessid", array(':sessid' => $results['session_id']));
   db_delete('biblio_import_cache')
     ->condition('session_id', $results['session_id'])
     ->execute();
@@ -359,12 +358,10 @@ function biblio_import_finalize($success, $results) {
   $userid = $results['userid'];
 
   if (user_access('administer biblio') && count($nids) && $user->uid != $userid) {
-//    db_query('UPDATE {node} SET uid = :uid WHERE nid IN(:nid)', array(':uid' => $results['userid'], ':nid' => implode(',', $nids)));
     db_update('node')
       ->fields(array('uid' => $results['userid']))
       ->condition('nid', $nids, 'IN')
       ->execute();
-  //  db_query('UPDATE {node_revision} SET uid = :uid WHERE nid IN(:nid)', array(':uid' => $results['userid'], ':nid' => implode(',', $nids)));
     db_update('node_revision')
       ->fields(array('uid' => $results['userid']))
       ->condition('nid', $nids, 'IN')
