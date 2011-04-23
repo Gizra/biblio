@@ -1320,11 +1320,12 @@ function biblio_contributor_widget($node, &$form_state) {
     $options['roles'][$ctype->auth_type] = $ctype->title;
   }
   $options['categories'] = array(
-    1 => 'Primary',
-    2 => 'Secondary',
-    3 => 'Tirtiary',
-    4 => 'Subsidiary',
-    5 => 'Corporate/Institutional');
+    1 => t('Primary'),
+    2 => t('Secondary'),
+    3 => t('Tirtiary'),
+    4 => t('Subsidiary'),
+    5 => t('Corporate/Institutional')
+  );
 
   // Container for just the contributors.
   $wrapper = array();
