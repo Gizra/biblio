@@ -1801,7 +1801,7 @@ function biblio_admin_author_edit_form($form, &$form_state, $author_id) {
     '#maxlength' => 256,
     '#description' => t('University, Company or Organization that the author is affiliated with.')
   );
-  $authors = db_query("SELECT * FROM {biblio_contributor_data} cd WHERE cid != :aid ORDER BY lastname", array(':aid' => $author_id), array('fetch' => PDO::FETCH_ASSOC));
+  $authors = db_query("SELECT * FROM {biblio_contributor_data} cd WHERE cid <> :aid ORDER BY lastname", array(':aid' => $author_id), array('fetch' => PDO::FETCH_ASSOC));
   $base = variable_get('biblio_base', 'biblio');
   foreach ($authors as $other_author) {
     if ((stripos($other_author['name'], $author->lastname) !== FALSE) && $author->aka != $other_author['cid']) {
@@ -2098,7 +2098,7 @@ function biblio_admin_keyword_edit_form($form, &$form_state, $keyword_id) {
     '#maxlength' => 255
   );
 
-  $keywords = db_query("SELECT * FROM {biblio_keyword_data} kd WHERE word LIKE :word AND kid!=:kid", array(':word' => '%%' . drupal_substr($keyword->word, 0, 5) . '%%', ':kid' => $keyword_id));
+  $keywords = db_query("SELECT * FROM {biblio_keyword_data} kd WHERE word LIKE :word AND kid <> :kid", array(':word' => '%%' . drupal_substr($keyword->word, 0, 5) . '%%', ':kid' => $keyword_id));
 
   unset($options);
   $base = variable_get('biblio_base', 'biblio');

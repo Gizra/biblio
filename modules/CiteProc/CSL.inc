@@ -79,7 +79,7 @@ class citeproc {
   }
   function render($data, $mode = NULL) {
     $text = '';
-    switch($mode) {
+    switch ($mode) {
       case 'citation':
         $text .=  (isset($this->citation))? $this->citation->render($data) : '';
         break;
@@ -830,7 +830,7 @@ class csl_names extends csl_format {
       list($contributor, $category) = explode(':', $var);
       if ($authors = $this->_get_category($data->{$contributor}, $category)) {
         foreach ($this->elements as $element) {
-          if(is_a($element, 'csl_label')) {
+          if (is_a($element, 'csl_label')) {
             $data->{$var}['variable'] = $var;
           }
           $text .= $element->render($authors, $mode);

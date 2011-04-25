@@ -10,7 +10,7 @@ function biblio_citeproc_style_manager_form($form, &$form_state) {
   $tree = array_flip($tree);
   $options = array();
   foreach ($tree as $sha => $file) {
-    if(strstr($file, '.csl')) {
+    if (strstr($file, '.csl')) {
       $options[$sha] =  basename($file);
     }
   }
@@ -81,9 +81,9 @@ function theme_biblio_citeproc_style_manager_form($variables) {
   $form = $variables['form'];
   $rows = array();
   $rows[] = array(
-            array('data' => drupal_render($form['installed_styles']). '<br>' . drupal_render($form['default'])),
+            array('data' => drupal_render($form['installed_styles']) . '<br>' . drupal_render($form['default'])),
             array('data' => drupal_render($form['install']) . '<br>' . drupal_render($form['remove'])),
-            array('data' => drupal_render($form['avialable_styles']). '<br>' . drupal_render($form['install_all'])),
+            array('data' => drupal_render($form['avialable_styles']) . '<br>' . drupal_render($form['install_all'])),
             );
   $rows[] = array(
             array('data' => t('Current default style') . ': <b>' . drupal_render($form['current_default']) . '</b>', 'colspan' => array(3)),
@@ -140,7 +140,7 @@ function biblio_citeproc_style_manager_form_submit($form, &$form_state) {
       'finished' => '_csl_import_batch_finished',
       'init_message' => t('Downloading file...'),
       'progress_message' => t('Saving styles...'),
-      'file' => './'. drupal_get_path('module', 'biblio_citeproc') .'/biblio_citeproc.admin.inc'
+      'file' => './' . drupal_get_path('module', 'biblio_citeproc') . '/biblio_citeproc.admin.inc'
     );
     batch_set($batch_op);
     batch_process('admin/config/biblio/styles');
@@ -166,7 +166,7 @@ function _install_csl($name, $csl, $sha = NULL) {
   $xml = simplexml_load_string($csl);
 
   $parent = '';
-  foreach($xml->info->link as $link) {
+  foreach ($xml->info->link as $link) {
     $attrs = $link->attributes();
     if (isset($attrs['rel']) && $attrs['rel'] == 'independent-parent') {
       $parent = (string)$attrs['href'];
@@ -175,9 +175,9 @@ function _install_csl($name, $csl, $sha = NULL) {
 
   $sha1 = (isset($sha)) ? $sha : sha1($csl);
 
-  $record  = array (
+  $record  = array(
     'filename' => $name,
-    'parent'	 => $parent,
+    'parent'   => $parent,
     'title'    => (string)$xml->info->title,
     'summary'  => (string)$xml->info->summary,
     'csl'      => $csl,
@@ -199,7 +199,7 @@ function _get_zip_from_github(&$context = NULL) {
   $zip_file = system_retrieve_file($zip_url);
 
   $filename = drupal_realpath($zip_file);
-  if(!empty($filename)) {
+  if (!empty($filename)) {
     variable_set('github_zip', $filename);
   }
 }
@@ -207,12 +207,13 @@ function _install_from_zip(&$context = NULL) {
 
   $destination = variable_get('github_zip', '');
 
-  if(!empty($destination)) {
+  if (!empty($destination)) {
     $zip = zip_open($destination);
     $za = new ZipArchive();
 
     if ($za->open($destination) !== TRUE) {
       $message = t('Could not open zip file containing styles: !file', array('!file' => realpath($destination)));
+      $message = check_plain($message);
       drupal_set_message($message, 'error');
       return;
     }
