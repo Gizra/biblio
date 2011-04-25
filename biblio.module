@@ -383,8 +383,8 @@ function biblio_node_info() {
     'biblio' => array(
       'name' => t('Biblio'),
       'base' => 'biblio',
-      'description' => t('Manages bibliographies')
-  )
+      'description' => t('Use Biblio for scholarly content, such as journal papers and books.'),
+    )
   );
 }
 
@@ -1250,6 +1250,7 @@ function biblio_form($node, &$form_state) {
             '#type' => $fld['type'],
             '#title' => check_plain($fld['title']),
             '#size' => $fld['size'],
+            '#rows' => 10,
             '#required' => $fld['required'],
             '#maxlength' => $fld['maxsize'],
             '#weight' => $fld['weight'] / 10,
@@ -1279,6 +1280,7 @@ function biblio_form($node, &$form_state) {
 function biblio_node_form_vtabs() {
   $vtabs = array(
     array('tab_id' => 1, 'weight' => 10, 'title' => 'Abstract', 'description' => ''),
+    array('tab_id' => 'biblio_full_text', 'weight' => 11, 'title' => 'Full text', 'description' => ''),
     array('tab_id' => 2, 'weight' => 12, 'title' => 'Publication', 'description' => ''),
     array('tab_id' => 3, 'weight' => 13, 'title' => 'Publisher', 'description' => ''),
     array('tab_id' => 4, 'weight' => 14, 'title' => 'Identifiers', 'description' => ''),
@@ -1409,6 +1411,21 @@ function biblio_contributors_add_more($form, &$form_state) {
   $form_state['rebuild'] = TRUE;
 }
 
+function biblio_form_node_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id == 'biblio_node_form') {
+    $form['#pre_render'][] = 'biblio_node_form_pre_render';
+    if (!isset($form['biblio_full_text']) && isset($form['body'])) {
+     unset($form['body']);
+    }
+  }
+}
+function biblio_node_form_pre_render($form) {
+    if (isset($form['biblio_full_text']) && isset($form['body'])) {
+      $form['biblio_full_text']['body'] = $form['body'];
+      unset($form['body']);
+    }
+  return $form;
+}
 /**
  * Implementation of hook_validate().
  *

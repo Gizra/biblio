@@ -1,23 +1,10 @@
 <?php
 /**
  *
- *   Copyright (C) 2006-2008  Ron Jerome
+ *   Copyright (C) 2006-2011  Ron Jerome
  *
- *   This program is free software; you can redistribute it and/or modify
- *   it under the terms of the GNU General Public License as published by
- *   the Free Software Foundation; either version 2 of the License, or
- *   (at your option) any later version.
  *
- *   This program is distributed in the hope that it will be useful,
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *   GNU General Public License for more details.
- *
- *   You should have received a copy of the GNU General Public License along
- *   with this program; if not, write to the Free Software Foundation, Inc.,
- *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- ****************************************************************************/
+ */
 module_load_include('inc', 'biblio', 'biblio.pages');
 
 /**
@@ -92,7 +79,9 @@ function biblio_openURL($node) {
  * @param $style
  * @return unknown_type
  */
-function theme_biblio_long($node, $base = 'biblio', $style = 'classic') {
+function theme_biblio_long($variables) {
+  $output = '';
+  $node = $variables['node'];
   if (module_exists('popups')) {
      popups_add_popups();
   }
@@ -100,7 +89,7 @@ function theme_biblio_long($node, $base = 'biblio', $style = 'classic') {
   $output .= filter_xss($node->biblio_coins, array('span'));
   $layout = variable_get('biblio_node_layout', 'orig');
   if (variable_get('biblio_node_layout', 'orig') == 'ft' && strlen(trim($node->body)) && user_access('view full text')) {
-    $output .= '<div class="biblio-head">' . theme('biblio_style', $node, $base, $style) . '</div>';
+    $output .= '<div class="biblio-head">' . theme('biblio_style', $variables) . '</div>';
     $annotation_field = variable_get('biblio_annotations', 'none');
     if ($annotation_field != 'none' && $node-> $annotation_field) {
       $output .= '<div class="biblio-annotation">';
@@ -170,7 +159,7 @@ function theme_biblio_long($node, $base = 'biblio', $style = 'classic') {
     $output .= '<h3>' . t("URL") . ':</h3>' . l($node->biblio_url, $node->biblio_url, $attrib) . "\n";
   }
   if (!empty($node->biblio_keywords)) {
-    $output .= '<h3>' . t("Keywords") . ':</h3> ' . _biblio_keyword_links( $node->biblio_keywords, $base) . "\n";
+    $output .= '<h3>' . t("Keywords") . ':</h3> ' . _biblio_keyword_links( $node->biblio_keywords) . "\n";
   }
   if ($node->biblio_abst_e)
     $output .= '<h3>' . t("Abstract") . ':</h3> ' . check_markup($node->biblio_abst_e) . "\n";
@@ -178,8 +167,8 @@ function theme_biblio_long($node, $base = 'biblio', $style = 'classic') {
     $output .= '<p>' . check_markup($node->biblio_abst_f) . "\n";
   if ($node->biblio_notes)
     $output .= '<h3>' . t("Notes") . ': </h3>' . check_markup($node->biblio_notes) . "\n";
-  if ( strlen(trim($node->body)) && user_access('view full text') ) {
-       $output .= '<h3>' . t('Full Text') . ':</h3>' . check_markup($node->body);
+  if (!empty($node->body) && user_access('view full text') ) {
+       $output .= drupal_render(field_view_field('node', $node, 'body'));
   }
 
   return $output;
@@ -270,14 +259,13 @@ function theme_biblio_tabular($variables) {
       )
     );
   }
-//FIXME figure out where the node body stuff is now...
-//  if (strlen(trim($node->body)) && user_access('view full text')) {
-//    $rows[] = array(
-//        array('data' => t('Full Text'),  'valign' => 'top'),
-//        array('data' =>  check_markup($node->body, $node->format, FALSE))
-//    );
-//
-//  }
+  if (isset($node->body) && !empty($node->body) && user_access('view full text')) {
+    $rows[] = array(
+        array('data' => t('Full Text'),  'valign' => 'top'),
+        array('data' =>  drupal_render(field_view_field('node', $node, 'body', array('label' => 'hidden')))),
+    );
+
+  }
   $output = '<div id="biblio-node">';
   $output .= filter_xss($node->biblio_coins, array('span'));
   $header = array();
@@ -979,8 +967,13 @@ function theme_biblio_alpha_line($variables) {
   $base = variable_get('biblio_base', 'biblio');
   $all = '';
   $uri = drupal_parse_url(request_uri());
-  if (substr($uri['path'], 0, 1) == '/') $uri['path'] = substr($uri['path'], 1);
+  if (substr($uri['path'], 0, 1) == '/') {
+    $uri['path'] = substr($uri['path'], 1);
+  }
   $all_uri = $uri;
+  $filters = biblio_get_query_filters($uri['query']);
+  $current = '';
+
   switch ($type) {
     case 'authors':
       $filter = 'author';
