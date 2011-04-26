@@ -38,7 +38,6 @@ function theme_biblio_citeproc_style($variables) {
   global $language;
   $cached = NULL;
   $node = $variables['node'];
-  $style_name = $variables['style_name'];
 
   module_load_include('inc', 'biblio_citeproc', 'CSL');
 
