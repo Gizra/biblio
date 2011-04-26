@@ -1783,7 +1783,7 @@ function biblio_get_db_fields() {
  *******************************************/
 function _biblio_citekey_print($citekey) {
 
-  $nid = db_query("SELECT nid FROM {biblio} WHERE biblio_citekey = :key ORDER BY vid DESC", array(':key' => $citekey))->fetchCol();
+  $nid = db_query("SELECT nid FROM {biblio} WHERE biblio_citekey = :key", array(':key' => $citekey))->fetchObject();
   if ($nid->nid > 0) {
     $style = biblio_get_style();
     $base = variable_get('biblio_base', 'biblio');
