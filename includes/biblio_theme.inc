@@ -964,7 +964,6 @@ function theme_biblio_alpha_line($variables) {
     $uri['path'] = substr($uri['path'], 1);
   }
   $all_uri = $uri;
-  $filters = biblio_get_query_filters($uri['query']);
   $current = '';
 
   switch ($type) {

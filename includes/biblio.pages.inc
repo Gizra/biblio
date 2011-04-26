@@ -1,45 +1,61 @@
 <?php
 /**
  *
- *   Copyright (C) 2006-2008  Ron Jerome
+ *   Copyright (C) 2006-2011  Ron Jerome
  *
- *   This program is free software; you can redistribute it and/or modify
- *   it under the terms of the GNU General Public License as published by
- *   the Free Software Foundation; either version 2 of the License, or
- *   (at your option) any later version.
- *
- *   This program is distributed in the hope that it will be useful,
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *   GNU General Public License for more details.
- *
- *   You should have received a copy of the GNU General Public License along
- *   with this program; if not, write to the Free Software Foundation, Inc.,
- *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- ****************************************************************************/
+ */
 
 
 function biblio_view_node($nid) {
   drupal_goto('node/' . (int)$nid, NULL, NULL, 301); // set a 301 response code
 }
+
+function biblio_arg_handler($arg_info) {
+  $arg_list = array();
+  if (count($arg_info['func_args']) == 1 && is_array($arg_info['func_args'][0])) {
+    return $arg_info['func_args'];
+  }
+
+  while ($arg_info['func_args']) {
+    $arg   = array_shift($arg_info['func_args']);
+    $value = array_shift($arg_info['func_args']);
+    if ($arg == 'sort') {
+      $arg_list['s'] = $value;
+    }
+    elseif ($arg == 'order') {
+      $arg_list['o'] = (strtolower($value) == 'desc') ? 'desc' : 'asc';
+    }
+    else {
+      $arg_list['f'][$arg] = $value;
+    }
+  }
+  $arg_list = array_merge($arg_list, $arg_info['uri']['query']);
+  return $arg_list;
+}
 /**
  * @return unknown_type
  */
-function biblio_db_search($arg_list = array()) {
+function biblio_db_search() {
   $nids = array();
   $saved_filters = array();
 
-  $uri = drupal_parse_url(request_uri());
-  $arg_list = array_merge($arg_list, $uri['query']);
+  $info['func_args'] = func_get_args();
+  $info['uri']  = drupal_parse_url(request_uri());
+//  $arg_list = array_merge($arg_list, $uri['query']);
   if (isset($_SESSION['biblio_filter']) && !empty($_SESSION['biblio_filter'])) {
-    $saved_filters = &$_SESSION['biblio_filter'];
+    $info['saved_filters'] = &$_SESSION['biblio_filter'];
   }
-  foreach ($saved_filters as $filter) {
+
+  $arg_list = biblio_arg_handler($info);
+
+/*
+
+   foreach ($saved_filters as $filter) {
     $type = key($filter);
     $value = $filter[$type];
     $arg_list['f'][$type] = $value;
   }
+*/
 
   // Drupal search? It returns an array of search results. We store the nids
   // of the result nodes and make them a "where n.nid in {..}" filter.
@@ -98,7 +114,8 @@ function biblio_db_search($arg_list = array()) {
   $query_info = biblio_build_query($arg_list);
 
   if ($query_info['rss']['feed']) {
-    biblio_filter_feed($query_info['query'], $query_info['query_terms'], $query_info['rss']);
+    biblio_filter_feed($query_info);
+    return;
   }
   else{
     //$count = db_result(db_query($query_info['count_query'],$query_info['query_terms']));
@@ -138,7 +155,11 @@ function biblio_build_query($arg_list) {
   static $bcc = 0; //biblio_contributor (bc) count , increase for every invocation
   static $bkd = 0;
   static $tcc = 0; //term counter, increase for every invocation
-  $inline = $rss_info['feed'] = FALSE;
+  $rss_info['feed'] = FALSE;
+  $rss_info['title'] = variable_get('biblio_base_title', 'Biblio');
+  $rss_info['link'] = '';
+  $rss_info['description'] = '';
+
   $joins = array();
   $args = array();
   $selects = array();

@@ -1751,17 +1751,15 @@ function biblio_recent_feed() {
  * @param $rss_info
  *    an array which contains the title,link and description info for the rss feed
  */
-function biblio_filter_feed($query, $terms = NULL, $rss_info = NULL) {
+function biblio_filter_feed($variables) {
   $base = variable_get('biblio_base', 'biblio');
-  $channel['title'] = $rss_info['title'];
-  $channel['link'] = url($base . $rss_info['link'], array('absolute' => TRUE));
-  $channel['description'] = $rss_info['description'];
+  $channel['title'] = $variables['rss']['title'];
+  $channel['link'] = url($base . $variables['rss']['link'], array('absolute' => TRUE));
+  $channel['description'] = $variables['rss']['description'];
   $nids = array();
-//FIXME DB
-//  $result = db_query($query, $terms);
-//  while ($row = db_fetch_object($result)) {
-//    $nids[] = $row->nid;
-//  }
+  foreach ($variables['query'] as $node) {
+    $nids[] = $node->nid;
+  }
   node_feed($nids, $channel);
 }
 function biblio_get_db_fields() {
