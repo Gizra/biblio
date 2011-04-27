@@ -2006,7 +2006,7 @@ function biblio_token_info() {
 
 function biblio_tokens($type, $tokens, $data = array(), $options = array()) {
   $replacements = array();
-  if ($type == 'node' && !empty($data['node']) && $data['node']->type = 'biblio') {
+  if ($type == 'node' && !empty($data['node']) && $data['node']->type == 'biblio') {
     $node = $data['node'];
     foreach ($tokens as $name => $original) {
       switch ($name) {
