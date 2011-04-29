@@ -1776,8 +1776,6 @@ function biblio_update_7000() {
 
   _biblio_helper_modules('install');
 
-  db_drop_primary_key('biblio_contributor_data');
-  db_add_primary_key('biblio_contributor_data', array('cid', 'aka'));
 }
 /**
  * Add new column to biblio_contributor_data table
@@ -1794,13 +1792,19 @@ function biblio_update_7001() {
     db_add_field('biblio_contributor_data', 'literal', $spec);
   }
 }
-
+/**
+ *
+ * Adds export_map column to biblio_type_maps table
+ */
 function biblio_update_7002() {
   if (!db_field_exists('biblio_type_maps', 'export_map')) {
     biblio_update_6029();
   }
 }
-
+/**
+ *
+ * Adds some new publication types
+ */
 function biblio_update_7003() {
   $result = db_query('SELECT tid FROM {biblio_types} WHERE tid = :tid', array(':tid' => 136))->fetchField();
   if (!$result) {
@@ -1902,13 +1906,13 @@ function biblio_update_7009(&$sandbox) {
 
   $sandbox['#finished'] = empty($sandbox['max']) ? 1 : ($sandbox['progress'] / $sandbox['max']);
 }
-/*
+/**
  * Removes "biblio_inlinemode_in_links" variable
  */
 function biblio_update_7010() {
   variable_del('biblio_inlinemode_in_links');
 }
-/*
+/**
  * Add a body field instance
  */
 function biblio_update_7011() {
