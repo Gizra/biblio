@@ -38,24 +38,6 @@ function _biblio_get_auth_type($auth_category, $biblio_type) {
   // return first element of the array
   return empty($result) ? NULL : current($result);
 }
-function _biblio_get_field_information($biblio_type, $only_visible = FALSE) {
-  $fields = array();
-  $visible = $only_visible ? ' AND (bt.common = 1 OR bt.visible=1) ' : '';
-
-  $result = db_query("SELECT b.*, btd.*, btt.name AS type_name
-                      FROM {biblio_fields} AS b
-                      INNER JOIN {biblio_field_type} AS bt ON bt.fid = b.fid
-                      INNER JOIN {biblio_field_type_data} AS btd ON btd.ftdid = bt.ftdid
-                      INNER JOIN {biblio_types} as btt ON btt.tid = bt.tid
-                      WHERE bt.tid = :tid $visible
-                      ORDER BY bt.weight ASC", array(':tid' => $biblio_type), array('fetch' => PDO::FETCH_ASSOC));
-
-  foreach ($result as $row) {
-    $fields[$row['fid']] = $row;
-  }
-
-  return $fields;
-}
 
 /**
  * Translate field titles and hints through the interface translation system, if
@@ -167,10 +149,6 @@ function biblio_init() {
 function biblio_theme($existing, $type, $theme, $path) {
   $path = drupal_get_path('module', 'biblio');
   return array(
-//   'views_view_unformatted__biblio_year' => array(
-//      'template' => 'views-view-unformatted--biblio-year',
-//      'path'  => $path,
-//    ),
     'biblio_alpha_line' => array(
         'file' => '/includes/biblio_theme.inc',
         'variables' => array(
@@ -297,6 +275,7 @@ function biblio_theme($existing, $type, $theme, $path) {
     ),
     );
 }
+
 function biblio_autocomplete($field, $string = '') {
   $matches = array();
   switch ($field) {
@@ -331,6 +310,7 @@ function biblio_autocomplete($field, $string = '') {
   print drupal_json_encode($matches);
   exit();
 }
+
 function biblio_help_page() {
   $base = variable_get('biblio_base', 'biblio');
   $text = "<h3>" . t('General:') . "</h3>";
@@ -362,6 +342,7 @@ function biblio_help_page() {
  * as well. We use it here to provide a description of the module on the
  * module administration page.
  */
+
 function biblio_help($path, $arg) {
   switch ($path) {
     case 'admin/help#biblio' :
@@ -374,6 +355,7 @@ function biblio_help($path, $arg) {
       return t('This allows you to add a bibliographic entry to the database');
   }
 }
+
 function biblio_node_info() {
   return array(
     'biblio' => array(
@@ -383,7 +365,6 @@ function biblio_node_info() {
     )
   );
 }
-
 
 function biblio_node_access($node, $op, $account) {
   $type = is_string($node) ? $node : $node->type;
@@ -497,47 +478,7 @@ function biblio_permission() {
       ),
     );
 }
-/**
- * Implementation of hook_link().
- *
- * This is implemented so that an edit link is displayed for users who have
- * the rights to edit a node.
- */
-function biblio_link($type, $node = NULL, $teaser = FALSE) {
-  $links = array();
-  $base = variable_get('biblio_base', 'biblio');
 
-  if ($type == 'node' && $node->type == 'biblio') {
-    // Don't display a redundant edit link if they are node administrators.
-    if (biblio_access('update', $node) && !user_access('administer nodes')) {
-      $links['biblio_edit'] = array(
-        'title' => t('edit this entry'),
-        'href' => "node/$node->nid/edit"
-      );
-
-    }
-    if (biblio_access('export', $node)) {
-      $show_link = variable_get('biblio_lookup_links', array('google' => TRUE));
-      if (!empty($show_link['google'])) $links['biblio_google_scholar'] = theme('google_scholar_link', array('node' => $node));
-    }
-  }
-  return $links;
-}
-/**
- * Implementation of hook_link_alter to modifiy taxonomy links
- *
- * @param $links
- * @param $node
- * @return none
- */
-//function biblio_link_alter(&$links, $node) {
-//  foreach ($links AS $module => $link) {
-//    if (strstr($module, 'taxonomy_term')) {
-//      // Link back to the forum and not the taxonomy term page
-//      $links[$module]['href'] = str_replace('taxonomy/term', 'biblio/term_id', $link['href']);
-//    }
-//  }
-//}
 /**
  * Implementation of hook_user().
  */
@@ -578,23 +519,6 @@ function biblio_forms() {
   );
   return $forms;
 
-}
-/**
- * Return actual argument for %biblio_user placeholders in menu paths
- */
-function biblio_user_to_arg($arg) {
-  // Give back the current user uid when called from eg. tracker, aka.
-  // with an empty arg. Also use the current user uid when called from
-  // the menu with a % for the current account link.
-  return (empty($arg) || $arg == '%') ? $GLOBALS['user']->uid : $arg;
-}
-/**
- * load user object from arg, used for %biblio_user placeholders in menu paths
- * @param $uid
- * @return $user
- */
-function biblio_user_load($uid) {
-  //return user_load($uid);
 }
 /**
  * Implementation of hook_menu().
@@ -1045,6 +969,7 @@ function biblio_menu() {
   );
   return $items;
 }
+
 function biblio_filter_clear() {
   $options = array();
   $_SESSION['biblio_filter'] = array();
@@ -1057,6 +982,7 @@ function biblio_filter_clear() {
   }
   drupal_goto($base, $options);
 }
+
 function biblio_remove_brace($title_string) {
     //$title_string = utf8_encode($title_string);
     $matchpattern = '/\{\$(?:(?!\$\}).)*\$\}|(\{[^}]*\})/';
@@ -1072,7 +998,6 @@ function biblio_remove_brace_callback($match) {
         }
         return $match[0];
 }
-
 
 function biblio_node_revision_delete($node) {
   if ($node->type == 'biblio') {
@@ -1113,8 +1038,22 @@ function biblio_node_update($node) {
 }
 
 function biblio_node_view($node, $view_mode) {
-  if (variable_get('biblio_hide_bibtex_braces', 0) && !empty($a4)) {
-    drupal_set_title(filter_xss($node->title, biblio_get_allowed_tags()));
+  if ($node->type == 'biblio') {
+    switch ($view_mode) {
+      case 'full':
+        if (variable_get('biblio_hide_bibtex_braces', 0) && !empty($a4)) {
+          drupal_set_title(filter_xss($node->title, biblio_get_allowed_tags()));
+        }
+        //fall through
+      case 'teaser':
+        $show_link = variable_get('biblio_lookup_links', array('google' => TRUE));
+        if (!empty($show_link['google'])) {
+          $node->content['links']['biblio_google_scholar'] = array(
+            '#links' => array(theme('google_scholar_link', array('node' => $node))),
+            '#attributes' => array('class' => array('links', 'inline')),
+          );
+        }
+     }
   }
 }
 
@@ -1136,7 +1075,6 @@ function biblio_user_presave(&$edit, $account, $catagory) {
       }
     }
   }
-
 }
 
 /**

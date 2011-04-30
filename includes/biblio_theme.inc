@@ -166,6 +166,26 @@ function theme_biblio_long($variables) {
 
   return $output;
 }
+
+function _biblio_get_field_information($biblio_type, $only_visible = FALSE) {
+  $fields = array();
+  $visible = $only_visible ? ' AND (bt.common = 1 OR bt.visible=1) ' : '';
+
+  $result = db_query("SELECT b.*, btd.*, btt.name AS type_name
+                      FROM {biblio_fields} AS b
+                      INNER JOIN {biblio_field_type} AS bt ON bt.fid = b.fid
+                      INNER JOIN {biblio_field_type_data} AS btd ON btd.ftdid = bt.ftdid
+                      INNER JOIN {biblio_types} as btt ON btt.tid = bt.tid
+                      WHERE bt.tid = :tid $visible
+                      ORDER BY bt.weight ASC", array(':tid' => $biblio_type), array('fetch' => PDO::FETCH_ASSOC));
+
+  foreach ($result as $row) {
+    $fields[$row['fid']] = $row;
+  }
+
+  return $fields;
+}
+
 /**
  * @param $node
  * @param $base
@@ -691,7 +711,7 @@ function theme_biblio_entry($variables) {
     $output .= theme('biblio_openurl', array('openURL' => biblio_openurl($node)));
   }
 
-  if (biblio_access('export', $node)) {
+  if (biblio_access('export')) {
     $base = variable_get('biblio_base', 'biblio');
     $output .= theme('biblio_export_links', array('node' => $node));
   }
@@ -860,7 +880,7 @@ function theme_biblio_export_links($variables) {
   $links = array();
   $output = '';
 
-  if (biblio_access('export', $node)) {
+  if (biblio_access('export')) {
     $show_link = variable_get('biblio_lookup_links', array('google' => TRUE));
     $lookup_links = module_invoke_all('biblio_lookup_link', $node);
     if ($show_link['google'] && !empty($node)) {
