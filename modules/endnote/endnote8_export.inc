@@ -80,16 +80,16 @@ function en8_add_urls(&$node) {
     $xml .= "</web-urls>";
   }
   unset($node->biblio_url);
-  if (!empty ($node->files) && count($node->files) && user_access('view uploaded files')) {
-    $xml .= "<related-urls>";
-    foreach ($node->files as $file) {
+  if (!empty ($node->upload) && count($node->upload['und'])  && user_access('view uploaded files')) {
+      $xml .= "<related-urls>";
+    foreach ($node->upload['und'] as $file) {
       $xml .= '<url><style face="normal" font="default" size="100%">';
-      $xml .= htmlspecialchars(file_create_url($file->uri));
+      $xml .= htmlspecialchars(file_create_url($file['uri']));
       $xml .= "</style></url>";
     }
     $xml .= "</related-urls>";
   }
-  unset($node->files);
+  unset($node->upload['und']);
   if (!empty($xml)) return "<urls>$xml</urls>";
   return ;
 }

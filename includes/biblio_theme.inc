@@ -832,12 +832,13 @@ function theme_biblio_admin_types_edit_form($variables) {
 function theme_biblio_download_links($variables) {
   $node = $variables['node'];
   $files = '';
-  if (!empty ($node->files) && count($node->files) > 0 && user_access('view uploaded files')) {
+  if (!empty ($node->upload) && count($node->upload['und']) > 0 && user_access('view uploaded files')) {
     $files .= '<span class="biblio_file_links">';
     $files .= '&nbsp;' . t('Download') . ':&nbsp;';
     $file_count = 0;
-    foreach ($node->files as $file) {
-      if ($file->list) {
+    foreach ($node->upload['und'] as $file) {
+      $file = (object) $file;
+      if ($file->display) {
         $file_count++;
         $alias = FALSE;
         if (module_exists('filefield_paths')) {
@@ -849,21 +850,6 @@ function theme_biblio_download_links($variables) {
       }
     }
     $files .= '</span>';
-  }
-  if (module_exists('filefield')) { // now lets get any CCK FileField files...
-    $fields = filefield_get_field_list('biblio');
-    foreach ($fields as $field_name => $field) {
-      if (filefield_view_access($field_name)) {
-        $field_files = filefield_get_node_files($node, $field_name);
-        if ($field_files) {
-          foreach ($field_files as $file) {
-            if ($file['fid']) {
-              $files .= theme('filefield_file', $file);
-            }
-          }
-        }
-      }
-    }
   }
 
   return $files;

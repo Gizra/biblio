@@ -372,9 +372,9 @@ function _biblio_bibtex_export($node) {
   $bibtex .= _biblio_bibtex_format_entry('issn', $node->biblio_issn);
   $bibtex .= _biblio_bibtex_format_entry('doi', $node->biblio_doi);
   $bibtex .= _biblio_bibtex_format_entry('url', $node->biblio_url);
-  if (!empty ($node->files) && count($node->files) && user_access('view uploaded files')) {
-    foreach ($node->files as $file) {
-      $attachments[] = file_create_url($file->uri);
+  if (!empty ($node->upload) && count($node->upload['und']) && user_access('view uploaded files')) {
+      foreach ($node->upload['und'] as $file) {
+      $attachments[] = file_create_url($file['uri']);
     }
     $bibtex .= _biblio_bibtex_format_entry('attachments', implode(' , ', $attachments));
   }

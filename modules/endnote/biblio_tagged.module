@@ -311,9 +311,9 @@ function _biblio_tagged_export($node) {
       $tagged .= _biblio_tagged_format_entry($field, $node->$field);
     }
   }
-  if (!empty ($node->files) && count($node->files)  && user_access('view uploaded files')) {
-    foreach ($node->files as $file) {
-      $tagged .= "%> " . file_create_url($file->uri) . "\r\n"; // insert file here.
+  if (!empty ($node->upload) && count($node->upload['und']) && user_access('view uploaded files')) {
+      foreach ($node->upload['und'] as $file) {
+      $tagged .= "%> " . file_create_url($file['uri']) . "\r\n"; // insert file here.
     }
   }
   $tagged .= "\r\n";
