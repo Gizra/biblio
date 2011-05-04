@@ -1,19 +1,32 @@
 <?php
 function biblio_citeproc_style_manager_form($form, &$form_state) {
   $form = array();
-  module_load_include('php', 'biblio_citeproc', '/Github/Autoloader');
-  Github_Autoloader::register();
-  $github = new Github_Client();
-  $branches = $github->getRepoApi()->getRepoBranches('citation-style-language', 'styles');
-  $tree = $github->getObjectApi()->listBlobs('citation-style-language', 'styles', $branches['master']);
-
-  $tree = array_flip($tree);
   $options = array();
-  foreach ($tree as $sha => $file) {
-    if (strstr($file, '.csl')) {
-      $options[$sha] =  basename($file);
+
+  if ($has_curl = function_exists('curl_init')) {
+    module_load_include('php', 'biblio_citeproc', '/Github/Autoloader');
+    Github_Autoloader::register();
+    $github = new Github_Client();
+    $branches = $github->getRepoApi()->getRepoBranches('citation-style-language', 'styles');
+    $tree = $github->getObjectApi()->listBlobs('citation-style-language', 'styles', $branches['master']);
+
+    $tree = array_flip($tree);
+    $options = array();
+    foreach ($tree as $sha => $file) {
+      if (strstr($file, '.csl')) {
+        $options[$sha] =  basename($file);
+      }
     }
   }
+
+  if (!$has_curl) {
+    $message = t('Additional styles cannot be '
+        . 'installed because the PHP <a href="@curl_url">cURL</a> library is '
+        . 'not available.',
+        array('@curl_url' => 'http://www.php.net/manual/en/book.curl.php'));
+    drupal_set_message($message, 'warning');
+  }
+
   $form['remote_names'] = array(
     '#type' => 'value',
     '#value' => $options,
@@ -25,15 +38,18 @@ function biblio_citeproc_style_manager_form($form, &$form_state) {
     '#title' => t('Available styles'),
     '#size' => 15,
     '#multiple' => TRUE,
+    '#disabled' => !$has_curl,
     '#description' => t('Choose the styles you would like to download and install.'),
   );
 
   $form['install'] = array(
     '#type' => 'submit',
+    '#disabled' => !$has_curl,
     '#value' => t('<--')
   );
   $form['remove'] = array(
     '#type' => 'submit',
+    '#disabled' => !$has_curl,
     '#value' => t('-->')
   );
   $form['default'] = array(
@@ -42,6 +58,7 @@ function biblio_citeproc_style_manager_form($form, &$form_state) {
   );
   $form['install_all'] = array(
     '#type' => 'submit',
+    '#disabled' => !$has_curl,
     '#value' => t('Install all')
   );
 
