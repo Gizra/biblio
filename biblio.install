@@ -1423,10 +1423,6 @@ function _add_db_field_data_XML() {
 
 function _add_db_field_data() {
   global $db_type;
-  $schema = biblio_schema();
-  $fieldnames = array_keys($schema['biblio_fields']['fields']);
-  $field_type_fieldnames = array_keys($schema['biblio_field_type']['fields']);
-  $field_type_data_fieldnames = array_keys($schema['biblio_field_type_data']['fields']);
   if ($db_type == 'mysql' or $db_type == 'mysqli') {
     db_query("/*!40000 ALTER TABLE {biblio_field_type_data} DISABLE KEYS */;");
     db_query("/*!40000 ALTER TABLE {biblio_fields} DISABLE KEYS */;");
@@ -1811,21 +1807,38 @@ function biblio_update_7003() {
     biblio_update_6031();
   }
 }
-function _biblio_update_field_link_data($range){
-    $csv_file = drupal_get_path('module', 'biblio') . '/misc/biblio.field.link.data.csv';
+function _biblio_update_field_link_data($range, $vtabs = FALSE){
+  $csv_file = drupal_get_path('module', 'biblio') . '/misc/biblio.field.link.data.csv';
 
   if ($handle = fopen($csv_file, "r")) {
     $header = fgetcsv($handle, 10000, ","); // the first line has the field names
     while (($row = fgetcsv($handle, 10000, ",")) !== FALSE) {
-      $column = 0;
-      // add link data for default biblio type (0) and all other defined types (100-130)
-      foreach (array_merge(array(0), range($range[0], $range[1])) as $t) {
-        db_update('biblio_field_type')
-        ->fields(array(
+      if ($vtabs) {
+        // add link data for default biblio type (0) and all other defined types (100-130)
+        foreach (array_merge(array(0), range($range[0], $range[1])) as $t) {
+          db_update('biblio_field_type')
+          ->fields(array(
                 'vtab' => $row[12]
-        ))
-        ->condition(db_and()->condition('tid', $t)->condition('fid', $row[0]))
-        ->execute();
+          ))
+          ->condition(db_and()->condition('tid', $t)->condition('fid', $row[0]))
+          ->execute();
+        }
+      }
+      else {
+        foreach (range($range[0], $range[1]) as $t) {
+          db_insert('biblio_field_type')->fields(array(
+          'tid'          => $t,
+          'fid'          => $row[0],
+          'ftdid'        => $row[0],
+          'cust_tdid'    => $row[0],
+          'common'       => $row[3],
+          'autocomplete' => $row[4],
+          'required'     => $row[5],
+          'weight'       => $row[6],
+          'visible'      => $row[7],
+          'vtab'         => $row[12]
+          ))->execute();
+        }
       }
     }
   }
@@ -1843,13 +1856,16 @@ function biblio_update_7005() {
         'default' => 0,
   );
   db_add_field('biblio_field_type', 'vtab', $spec);
-  _biblio_update_field_link_data(array(100, 130));
+  _biblio_update_field_link_data(array(100, 130), TRUE);
   cache_clear_all();
 }
 
 function biblio_update_7006() {
-  _biblio_update_field_link_data(array(131, 136));
-  cache_clear_all();
+  $result = db_query('SELECT fid FROM {biblio_field_type} WHERE tid = :tid', array(':tid' => 136))->fetchField();
+  if (!$result) {
+    _biblio_update_field_link_data(array(131, 136));
+    cache_clear_all();
+  }
 }
 /**
  * Increases the size of the {biblio_contributor_data}.name column to 255 characters
@@ -1918,4 +1934,12 @@ function biblio_update_7010() {
 function biblio_update_7011() {
   $content_type = node_type_load('biblio');
   node_add_body_field($content_type, 'Full text');
+}
+/**
+ * Update biblio_field_type table
+ */
+function biblio_update_7012() {
+
+  // there was a problem with update 7006 and it might no have done anything so lets try again.
+  biblio_update_7006();
 }
