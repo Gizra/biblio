@@ -566,7 +566,7 @@ function _biblio_sort_tabs() {
 function _biblio_sort_tab($tab, $tabs = FALSE) {
   if ($tabs) {
     $text  = '<span class="a"><span class="b">' . $tab['text'] . $tab['arrow'] . '</span></span>';
-    $class = ($tab['attributes']['class']) ? 'class="active"' : '';
+    $class = (isset($tab['attributes']['class'])) ? 'class="active"' : '';
     $link  = l($text, $tab['path'], $tab);
     return "<li $class >" . str_replace('class="active"', $class, $link) . '</li>';
   }
