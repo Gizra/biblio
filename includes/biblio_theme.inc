@@ -558,7 +558,6 @@ function theme_biblio_author_link($variables) {
 
   $uri = drupal_parse_url(request_uri());
   $uri['path'] = variable_get('biblio_base', 'biblio');
-
   $uri['query']['f']['author'] = $author['cid'];
 
 
@@ -966,6 +965,7 @@ function theme_biblio_alpha_line($variables) {
   $base = variable_get('biblio_base', 'biblio');
   $all = '';
   $uri = drupal_parse_url(request_uri());
+  $uri['path'] = variable_get('biblio_base', 'biblio');
   if (substr($uri['path'], 0, 1) == '/') {
     $uri['path'] = substr($uri['path'], 1);
   }
@@ -1109,8 +1109,7 @@ function theme_biblio_admin_keyword_orphans_form($variables) {
 }
 function _biblio_keyword_links($keywords, $base='biblio') {
   $uri = drupal_parse_url(request_uri());
-  $base      = variable_get('biblio_base', 'biblio');
-  $uri['path'] = $base;
+  $uri['path'] = variable_get('biblio_base', 'biblio');;
 
   $html = "";
   if (!is_array($keywords)) {

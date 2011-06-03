@@ -508,6 +508,7 @@ function _biblio_sort_tabs() {
   $sort_links = array();
   $tabs = variable_get('biblio_sort_tabs_style', 0);
   $uri = drupal_parse_url(request_uri());
+  $uri['path'] = variable_get('biblio_base', 'biblio');
   if (substr($uri['path'], 0, 1) == '/') $uri['path'] = substr($uri['path'], 1);
 
   if (isset($uri['query']['s'])) {
@@ -584,6 +585,7 @@ function _biblio_filter_info_line($args) {
   $session = &$_SESSION['biblio_filter'];
   // if there are any filters in place, print them at the top of the list
   $uri = drupal_parse_url(request_uri());
+  $uri['path'] = variable_get('biblio_base', 'biblio');
   $filters = isset($uri['query']['f']) ? $uri['query']['f'] : array();
   if (count($filters)) {
     $i = 0;
@@ -1073,7 +1075,6 @@ function biblio_form_filter_submit($form, &$form_state) {
 
       if (isset($form_state['values']['filter'])) {
         $uri = drupal_parse_url(request_uri());
-        $uri['path'] = variable_get('biblio_base', 'biblio');
 //        $filter = $form_state['values']['filter'];
 //
 //        // Flatten the options array to accommodate hierarchical/nested options.
@@ -1158,6 +1159,7 @@ function biblio_citekey_view() {
 
 function biblio_author_page() {
   $uri = drupal_parse_url(request_uri());
+  $uri['path'] = variable_get('biblio_base', 'biblio');
   $filter = isset($uri['query']['f']['author']) ? $uri['query']['f']['author'] : '';
   $authors = _biblio_get_authors($filter);
   return _biblio_format_author_page($filter, $authors);
@@ -1249,6 +1251,7 @@ function _biblio_author_edit_links($author) {
 
 function biblio_keyword_page() {
   $uri = drupal_parse_url(request_uri());
+  $uri['path'] = variable_get('biblio_base', 'biblio');
   $filter = isset($uri['query']['f']['keyword']) ? $uri['query']['f']['keyword'] : '';
   $keywords = _biblio_get_keywords($filter);
   return _biblio_format_keyword_page($uri, $filter, $keywords);
