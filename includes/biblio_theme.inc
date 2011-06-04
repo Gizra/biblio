@@ -829,24 +829,36 @@ function theme_biblio_admin_types_edit_form($variables) {
 }
 
 function theme_biblio_download_links($variables) {
+  static $langcode = NULL;
+  $file_links = array();
   $node = $variables['node'];
-  $files = '';
-  if (!empty ($node->upload) && count($node->upload['und']) > 0 && user_access('view uploaded files')) {
-    $files .= '<span class="biblio_file_links">';
-    $files .= '&nbsp;' . t('Download') . ':&nbsp;';
-    $file_count = 0;
-    foreach ($node->upload['und'] as $file) {
-      $file = (object) $file;
-      if ($file->display) {
-        $file_count++;
-        $alias = FALSE;
+  if (!isset($langcode)) {
+    $langcode = $GLOBALS['language_content']->language;
+  }
+
+  $fields = field_attach_view('node', $node, 'full', $langcode);
+  foreach (element_children($fields) as $field) {
+    if($fields[$field]['#field_type'] == 'file') {
+      foreach ($fields[$field]['#items'] as $delta => $item) {
         if (module_exists('filefield_paths')) {
-          $alias =  drupal_get_path_alias('filefield_paths/alias/' . $file->fid);
+          $alias =  drupal_get_path_alias('filefield_paths/alias/' . $item['fid']);
         }
-        $href = ($alias) ?  $alias : file_create_url($file->uri);
-        $text = $file->description ? $file->description : $file->filename;
-        $files .= l($text, $href) . '&nbsp;(' . format_size($file->filesize) . ')';
+        $file_links[] = array(
+          theme('file_link', array('file' => (object) $item)),
+          format_size($item['filesize']),
+        );
       }
+
+    }
+  }
+  $files = '';
+  if (count($file_links) > 0 && user_access('view uploaded files')) {
+    $files .= '<span class="biblio_file_links">';
+   // $files .= '&nbsp;' . t('Download') . ':&nbsp;';
+    $file_count = 0;
+    foreach ($file_links as $file) {
+        $files .= $file[0] . '&nbsp;(' . $file[1] . ')';
+
     }
     $files .= '</span>';
   }

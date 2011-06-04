@@ -130,6 +130,9 @@ function biblio_db_search() {
     }
     if (count($nids)) {
       $nodes = node_load_multiple($nids);
+      $langcode = $GLOBALS['language_content']->language;
+      field_attach_prepare_view('node', $nodes, 'biblio_list', $langcode);
+      entity_prepare_view('node', $nodes, $langcode);
 
       foreach ($nodes as $nid => $node) {
         $nodes[$nid] = (object)array_merge((array)$node, (array)$extras[$nid]);
@@ -141,7 +144,6 @@ function biblio_db_search() {
 
   return biblio_show_results($variables);
 }
-
 
 /*
  * biblio_db_search builds the SQL query which will be used to
