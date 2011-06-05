@@ -188,9 +188,6 @@ function biblio_build_query($arg_list) {
 
   // POSIX regular expression matching, case insensitive
   $match_op = ($db_type == 'pgsql') ? '~*' : 'RLIKE';
-   // The following is to be used to compare titles
-   // LOWER() is required for case insensitive sorting (at least, in PostgreSQL)
-  $sort_title ="biblio_sort_title";
 
   $limit = '';
   if (variable_get('biblio_view_only_own', 0) ) {
@@ -220,11 +217,11 @@ function biblio_build_query($arg_list) {
       //$sortby = "ORDER BY bt.name %s, b.biblio_year DESC ";
       $query->addField('n', 'title');
       $query->orderBy($type_name, $arg_list['o']);
-      $query->orderBy($sort_title, $arg_list['o']);
+      $query->orderBy('biblio_sort_title', $arg_list['o']);
             break;
     case 'title':
       $query->addField('n', 'title');
-      $query->orderBy($sort_title, $arg_list['o']);
+      $query->orderBy('biblio_sort_title', $arg_list['o']);
 
       break;
     case 'author':
@@ -255,6 +252,7 @@ function biblio_build_query($arg_list) {
     $args = array();
     $fields = biblio_get_db_fields();
     foreach ($arg_list['f'] as $type => $value) {
+      $tables = array_keys($query->getTables());
       switch ($type) {
         case 'no_filters':
           break;
@@ -281,13 +279,15 @@ function biblio_build_query($arg_list) {
           $tcc++;
           break;
         case 'tg':
-          $query->where("substring(($sort_title),1 ,1) " . $match_op . " LOWER(:letter)", array(':letter' => $value));
+          $query->where("substring(('biblio_sort_title'),1 ,1) " . $match_op . " LOWER(:letter)", array(':letter' => $value));
           break;
         case 'ag': //selects entries whoose authors firstname starts with the letter provided
           $query->where(" UPPER(substring(bcd.lastname,1,1)) = :letter ", array(':letter' => $value));
           //$where['bc-rank'] = "bc.rank=0";
-          $query->innerJoin('biblio_contributor', 'bc', 'b.vid = bc.vid');
-          $query->innerJoin('biblio_contributor_data', 'bcd', 'bc.cid = bcd.cid');
+          if ($arg_list['s'] != 'author') {
+            $query->innerJoin('biblio_contributor', 'bc', 'b.vid = bc.vid');
+            $query->innerJoin('biblio_contributor_data', 'bcd', 'bc.cid = bcd.cid');
+          }
           break;
         case 'cid':
         case 'aid':
@@ -297,7 +297,7 @@ function biblio_build_query($arg_list) {
           break;
         case 'author':
           $bcc++;
-          if (array_search('bc', array_keys($query->getTables())) === FALSE) {
+          if (array_search('bc', $tables) === FALSE) {
             $query->innerJoin('biblio_contributor', 'bc', 'n.vid = bc.vid');
           }
           if (is_numeric($value)) {
@@ -323,7 +323,7 @@ function biblio_build_query($arg_list) {
 
           }
           else {
-            if (array_search('bcd', array_keys($query->getTables())) === FALSE) {
+            if (array_search('bcd', $tables) === FALSE) {
               $query->innerJoin('biblio_contributor_data', 'bcd', 'bcd.cid = bc.cid');
             }
             $query->condition('bcd.name', "[[:<:]]" . $value . "[[:>:]]", $match_op);
@@ -344,14 +344,14 @@ function biblio_build_query($arg_list) {
           break;
         case 'keyword':
           $bkd++;
-          if (array_search('bk', array_keys($query->getTables())) === FALSE) {
+          if (array_search('bk', $tables) === FALSE) {
             $query->innerJoin('biblio_keyword', 'bk', 'n.vid = bk.vid');
           }
           if (is_numeric($value)) {
             $query->condition('bk.kid', $value);
           }
           else{
-            if (array_search('bkd', array_keys($query->getTables())) === FALSE) {
+            if (array_search('bkd', $tables) === FALSE) {
               $query->innerJoin('biblio_keyword_data', 'bkd', 'bkd.kid = bk.kid');
             }
             if (strlen($value) == 1) {
@@ -466,7 +466,7 @@ function biblio_show_results($variables) {
       else {
         $value = '';
       }
-      $content .= theme('biblio_alpha_line', array('type' => $_GET['s'], 'current' => $value, 'path' => ''));
+      $content .= theme('biblio_alpha_line', array('type' => $_GET['s'], 'current' => $value, 'path' => $base));
     }
   }
 
