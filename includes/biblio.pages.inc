@@ -1161,10 +1161,9 @@ function biblio_citekey_view() {
 
 function biblio_author_page() {
   $uri = drupal_parse_url(request_uri());
-  $uri['path'] = variable_get('biblio_base', 'biblio');
   $filter = isset($uri['query']['f']['author']) ? $uri['query']['f']['author'] : '';
   $authors = _biblio_get_authors($filter);
-  return _biblio_format_author_page($filter, $authors);
+  return _biblio_format_author_page($uri['path'], $filter, $authors);
 }
 
 function _biblio_get_authors($filter = NULL) {
@@ -1202,7 +1201,7 @@ function _biblio_get_authors($filter = NULL) {
                               bd.affiliation, bd.md5, COUNT(*) AS cnt
                             FROM {biblio_contributor} b
                                  LEFT JOIN {biblio_contributor_data} bd ON b.cid = bd.cid
-                                 LEFT JOIN {node} n on n.vid = b.vid
+                                 INNER JOIN {node} n on n.vid = b.vid
                             ' . $where_clause . '
                             GROUP BY bd.cid, bd.drupal_uid, bd.name, bd.lastname,
                                      bd.firstname, bd.prefix, bd.suffix,
@@ -1218,8 +1217,8 @@ function _biblio_get_authors($filter = NULL) {
     return $authors;
 }
 
-function _biblio_format_author_page($filter, $authors) {
-  $rows[] = array(array('data' => theme('biblio_alpha_line', array('type' => 'authors', 'current' => $filter)), 'colspan' => 3));
+function _biblio_format_author_page($path, $filter, $authors) {
+  $rows[] = array(array('data' => theme('biblio_alpha_line', array('type' => 'authors', 'current' => $filter, 'path' => $path)), 'colspan' => 3));
   if (count($authors)) {
       for ($i=0; $i < count($authors); $i+=3) {
         $rows[] = array( array('data' => _biblio_format_author($authors[$i]) ),
