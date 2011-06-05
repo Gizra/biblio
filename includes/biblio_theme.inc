@@ -977,7 +977,7 @@ function theme_biblio_alpha_line($variables) {
   $base = variable_get('biblio_base', 'biblio');
   $all = '';
   $uri = drupal_parse_url(request_uri());
-  $uri['path'] = variable_get('biblio_base', 'biblio');
+  $uri['path'] = $path; //variable_get('biblio_base', 'biblio');
   if (substr($uri['path'], 0, 1) == '/') {
     $uri['path'] = substr($uri['path'], 1);
   }
