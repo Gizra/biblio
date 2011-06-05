@@ -525,13 +525,15 @@ function biblio_save_imported_nodes(& $node_array) {
 }
 function biblio_save_node($node, $batch = FALSE, $session_id = NULL, $save_node = TRUE) {
   global $user;
+
   if ($batch && $session_id) { // we are batch processing some import data
     $node = base64_encode(serialize($node));// base64_encode to avoid problems unserializing strings with embeded quotes.
     db_query("INSERT INTO {biblio_import_cache} (session_id, data) VALUES (:sessid, :node)", array(':sessid' => $session_id, ':node' => $node));
     return;
   }
 
-  $options = variable_get('node_options_biblio', array('status'));
+  $node->type = 'biblio';
+  node_object_prepare($node);
 
   $node->language = 'und';  //start by setting the language to undefined and then try to refine it.
   if (module_exists('locale')) {
@@ -540,14 +542,6 @@ function biblio_save_node($node, $batch = FALSE, $session_id = NULL, $save_node 
   if (module_exists('i18n') && variable_get('i18n_node_biblio', 0) && variable_get('language_content_type_biblio', 0) ) {
     $node->language = module_invoke('i18n', 'default_language');
   }
-  $node->uid = $user->uid;
-  $node->type = 'biblio';
-  $node->comment = variable_get('comment_biblio', 0);
-  $node->promote = (int) in_array('promote', $options);
-  $node->moderate = (int) in_array('moderate', $options);
-  $node->sticky = (int) in_array('sticky', $options);
-  $node->format = 0;
-  $node->status = (int) in_array('status', $options);
 
   if (!isset($node->biblio_type)) {
     $node->biblio_type = 129; // default to misc if not set.
