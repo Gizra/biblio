@@ -478,8 +478,6 @@ function biblio_show_results($variables) {
     $count++;
     if (is_array($node)) $node = (object)$node;
     if (variable_get('biblio_hide_bibtex_braces', 0)) $node->title = biblio_remove_brace($node->title);
-    if (variable_get('biblio_fix_isi_links', 0)) biblio_fix_isi_links($node);
-
 
     // output separator bar if needed
     $content .= _biblio_category_separator_bar($node);

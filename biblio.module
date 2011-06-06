@@ -1498,14 +1498,23 @@ function biblio_load($nodes) {
                       FROM {biblio} b
                       LEFT JOIN {biblio_types} bt on b.biblio_type = bt.tid
                       WHERE b.vid IN (:vids)', array(':vids' => $vids), array('fetch' => PDO::FETCH_ASSOC));
+  $contributors = biblio_load_contributors_multiple($vids);
+  $keywords     = biblio_load_keywords_multiple($vids);
 
   foreach ($result as $record) {
+    if ((isset($record['biblio_url']) || isset($record['biblio_accession_number'])) &&
+         variable_get('biblio_fix_isi_links', 0)) {
+           biblio_fix_isi_links($record);
+    }
+
     foreach ($record as $key => $value) {
       $nodes[$record['nid']]->$key = $value;
     }
+
     $nodes[$record['nid']]->biblio_year         = _biblio_text_year($record['biblio_year']);
-    $nodes[$record['nid']]->biblio_contributors = biblio_load_contributors($record['vid']);
-    $nodes[$record['nid']]->biblio_keywords     = biblio_load_keywords($record['vid']);
+    $nodes[$record['nid']]->biblio_contributors = isset($contributors[$record['vid']]) ? $contributors[$record['vid']] : array();
+    $nodes[$record['nid']]->biblio_keywords     = isset($keywords[$record['vid']]) ? $keywords[$record['vid']] : array();
+
     if (empty($record['biblio_coins'])) {
       $nodes[$record['nid']]->biblio_coins = biblio_coins($nodes[$record['nid']]);
     }
@@ -1537,7 +1546,6 @@ function biblio_view($node, $buildmode = 'full') {
   $style = biblio_get_style();
   $base  = variable_get('biblio_base', 'biblio');
   $base_title = check_plain(variable_get('biblio_base_title', 'Biblio'));
-  if (variable_get('biblio_fix_isi_links', 0)) biblio_fix_isi_links($node);
 
   switch ($buildmode) {
     case 'full':
@@ -2040,11 +2048,11 @@ function biblio_views_api() {
 
 function biblio_fix_isi_links(&$node) {
   $isi = check_plain(variable_get('biblio_isi_url', 'http://apps.isiknowledge.com/InboundService.do?Func=Frame&product=WOS&action=retrieve&SrcApp=EndNote&Init=Yes&SrcAuth=ResearchSoft&mode=FullRecord&UT='));
-  if (isset($node->biblio_url) && preg_match ('/Go\s*to\s*ISI/', $node->biblio_url)) {
-    $node->biblio_url = str_replace('<Go to ISI>://', $isi, $node->biblio_url);
+  if (isset($node['biblio_url']) && preg_match ('/Go\s*to\s*ISI/', $node['biblio_url'])) {
+    $node['biblio_url'] = str_replace('<Go to ISI>://', $isi, $node['biblio_url']);
   }
-  if (isset($node->biblio_accession_number) && preg_match ('/^ISI:/', $node->biblio_accession_number)) {
-    $node->biblio_accession_number = str_replace("ISI:", $isi, $node->biblio_accession_number);
+  if (isset($node['biblio_accession_number']) && preg_match ('/^ISI:/', $node['biblio_accession_number'])) {
+    $node['biblio_accession_number'] = str_replace("ISI:", $isi, $node['biblio_accession_number']);
   }
 }
 
