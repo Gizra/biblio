@@ -58,7 +58,7 @@ function biblio_rtf_biblio_export_link($nid = NULL) {
 
   $link = array(
       'attributes' => array(
-           'title' => t("Click to download the rtf formatted file")));
+           'title' => t("Click to download the RTF formatted file")));
 
   $link['href']  = (!empty($nid) ? "$base/export/rtf/$nid" : "$base/export/rtf");
   $link['title'] = t('RTF');
