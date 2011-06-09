@@ -1258,7 +1258,7 @@ function biblio_contributor_widget($node, &$form_state) {
   $options['categories'] = array(
     1 => t('Primary'),
     2 => t('Secondary'),
-    3 => t('Tirtiary'),
+    3 => t('Tertiary'),
     4 => t('Subsidiary'),
     5 => t('Corporate/Institutional')
   );
