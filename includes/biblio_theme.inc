@@ -852,7 +852,7 @@ function theme_biblio_download_links($variables) {
     }
   }
   $files = '';
-  if (count($file_links) > 0 && user_access('view uploaded files')) {
+  if (count($file_links) > 0 && (user_access('show download links') || user_access('show own download links'))) {
     $files .= '<span class="biblio_file_links">';
    // $files .= '&nbsp;' . t('Download') . ':&nbsp;';
     $file_count = 0;
