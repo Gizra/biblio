@@ -129,6 +129,7 @@ function biblio_db_search() {
       $extras[$node->nid] = $node;
     }
     if (count($nids)) {
+      $nids = array_unique($nids);
       $nodes = node_load_multiple($nids);
       $langcode = $GLOBALS['language_content']->language;
       field_attach_prepare_view('node', $nodes, 'biblio_list', $langcode);
@@ -184,7 +185,7 @@ function biblio_build_query($arg_list) {
   $type_name = $query->addField('bt', 'name', 'biblio_type_name');
   $query->leftJoin('biblio', 'b', 'n.vid=b.vid');
   $query->innerJoin('biblio_types', 'bt', 'b.biblio_type=bt.tid');
-  $query->distinct();
+//  $query->distinct();
 
   // POSIX regular expression matching, case insensitive
   $match_op = ($db_type == 'pgsql') ? '~*' : 'RLIKE';
@@ -244,7 +245,7 @@ function biblio_build_query($arg_list) {
       $query->addField('b', 'biblio_year');
       $query->addField('b', 'biblio_date');
       $query->orderBy('biblio_year', $arg_list['o']);
-      $query->orderBy('biblio_date', $arg_list['o']);
+      $query->orderBy('biblio_sort_title');
   } //end switch
 
 
