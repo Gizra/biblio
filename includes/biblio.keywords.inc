@@ -70,8 +70,8 @@ function biblio_load_keywords_multiple($vids = array()) {
 
   $query = db_select('biblio_keyword', 'bk');
   $query->innerJoin('biblio_keyword_data', 'bkd', 'bk.kid = bkd.kid');
-  $query->fields('bk');
-  $query->fields('bkd');
+  $query->addField('bk', 'vid');
+  $query->fields('bkd', array('kid', 'word'));
   $query->orderby('bk.vid');
   $query->orderby('bkd.word');
   if (count($vids) == 1) {
