@@ -19,6 +19,7 @@ files[] = views/biblio_handler_field_contributor.inc
 files[] = views/biblio_handler_field.inc
 files[] = views/biblio_handler_filter_biblio_contributor_auth_type.inc
 files[] = views/biblio_handler_filter_biblio_keyword_kid.inc
+files[] = views/biblio_handler_filter_biblio_keyword_word.inc
 files[] = views/biblio_handler_filter_biblio_type.inc
 files[] = views/biblio_handler_filter_contributor_lastname.inc
 files[] = views/biblio_handler_filter_contributor_uid.inc
