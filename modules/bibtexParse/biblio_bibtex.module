@@ -268,16 +268,9 @@ function _biblio_bibtex_import($entries, $terms = array(), $batch = FALSE, $sess
     $node->biblio_bibtex_md5      = md5(serialize($node));
     $node->biblio_import_type     = 'bibtex';
 
-    if (!empty($terms)) {
-      if (!isset($node->taxonomy)) {
-        $node->taxonomy = array();
-      }
-      $node->taxonomy = array_merge($terms, $node->taxonomy);
-    }
-
     if (!($dup = biblio_bibtex_check_md5($node->biblio_bibtex_md5))) {
       if ($save) {
-        biblio_save_node($node, $batch, $session_id, $save);
+        biblio_save_node($node, $terms, $batch, $session_id, $save);
         $nids[] = (!empty($node->nid))? $node->nid : NULL;
       }
       else { // return the whole node if we are not saveing to the DB (used for the paste function on the input form)

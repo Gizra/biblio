@@ -222,12 +222,8 @@ function _biblio_tagged_import($file, $terms = array(), $batch = FALSE, $session
       $incite = FALSE;
       if (isset($node)) {
         $node->biblio_tagged_md5 = md5(serialize($node));
-        if (!empty($terms)) {
-          if (!isset($node->taxonomy)) $node->taxonomy = array();
-          $node->taxonomy = array_merge($terms, $node->taxonomy);
-        }
         if (! ($dup = biblio_tagged_check_md5($node->biblio_tagged_md5))) {
-          biblio_save_node($node, $batch, $session_id);
+          biblio_save_node($node, $terms, $batch, $session_id);
           if (!empty($node->nid)) $nids[] = $node->nid;
         }
         else {
