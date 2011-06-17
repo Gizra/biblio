@@ -36,9 +36,8 @@ function biblio_arg_handler($arg_info) {
  * @return unknown_type
  */
 function biblio_db_search() {
-  $nids = array();
+  $nids = $extras = $rss_info = array();
   $saved_filters = array();
-
   $info['func_args'] = func_get_args();
   $info['uri']  = drupal_parse_url(request_uri());
 //  $arg_list = array_merge($arg_list, $uri['query']);
@@ -48,86 +47,23 @@ function biblio_db_search() {
 
   $arg_list = biblio_arg_handler($info);
 
-/*
-
-   foreach ($saved_filters as $filter) {
-    $type = key($filter);
-    $value = $filter[$type];
-    $arg_list['f'][$type] = $value;
-  }
-*/
-
-  // Drupal search? It returns an array of search results. We store the nids
-  // of the result nodes and make them a "where n.nid in {..}" filter.
-  // After installing the filter, we can go on as usual.
-
-  // When called manually, search takes one parameter, i.e.
-  // biblio_db_search('search', 'bla blu')
-  $search = array_keys($arg_list, 'search');
-  if (!empty($search)) {
-    $keys = $arg_list[$search+1];
-
-    // Special case: if search is activated via URL, i.e., biblio/search/...,
-    // we reset the search session filter. Two searches are not combinable.
-    $base =  variable_get('biblio_base', 'biblio');
-    if (preg_match('+' . $base . '/search/+', $_GET['q'])) {
-      $_SESSION['biblio_filter'] = array();
-    }
-  }
-  else {
-    $keys = _get_biblio_search_filter();
-  }
-
-/*  if ($keys) {
-    // Only search in biblio nodes. If we use a SESSION filter and have a list of
-    // nids stored there, don't re-search. List is reset when submitting a new search.
-    if ($search !== FALSE || !_get_biblio_search_filter('nodelist')) {
-      if ($result = biblio_build_search_query($keys)) {
-        $node_list = '';
-        while ($nid = db_result($result)) {
-          $node_list .= $nid. ",";
-        }
-        // No node search result. Make sure we find nothing, too. Node -1 does not exist.
-        if (empty($node_list)) $node_list = '-1';
-
-        // Store as SESSION filter or argument list.
-        // When called as function argument it takes only one parameter, i.e.
-        // biblio_db_search('search', 'bla blu') and we must insert the node
-        // list inbetween.
-        if ($search !== FALSE) {
-          array_splice($arg_list, $search + 1, 0, $node_list);
-        }
-        else {
-          $_SESSION['biblio_filter'] = array(array('search', rtrim($node_list, ','), $keys));
-        }
-      }
-      // Wrong query (too short, only negative words etc.). Warning has been issued.
-      else $_SESSION['biblio_filter'] = array();
-    }
-  }
-*/
 
   $_SESSION['last_biblio_query'] = $arg_list;
 
   $arg_list['page_limit'] = variable_get('biblio_rowsperpage', 25);
 
-  $query_info = biblio_build_query($arg_list);
+  list($nids, $extras, $rss_info) = biblio_build_query($arg_list);
 
-  if ($query_info['rss']['feed']) {
-    biblio_filter_feed($query_info);
+  if (isset($rss_info['rss']['feed'])) {
+    biblio_filter_feed($rss_info, $nids);
     return;
   }
   else{
     //$count = db_result(db_query($query_info['count_query'],$query_info['query_terms']));
     $nodes = array();
     //$result = pager_query($query_info['query'], variable_get('biblio_rowsperpage', 25),0,$query_info['count_query'],$query_info['query_terms']);
-    $variables['filter_line'] = _biblio_filter_info_line($query_info['args']);
+    $variables['filter_line'] = _biblio_filter_info_line();
 
-    foreach ($query_info['query'] as $node) {
-      $nids[] = $node->nid;
-      if (isset($node->biblio_year)) unset($node->biblio_year);
-      $extras[$node->nid] = $node;
-    }
     if (count($nids)) {
       $nids = array_unique($nids);
       $nodes = node_load_multiple($nids);
@@ -135,8 +71,10 @@ function biblio_db_search() {
       field_attach_prepare_view('node', $nodes, 'biblio_list', $langcode);
       entity_prepare_view('node', $nodes, $langcode);
 
-      foreach ($nodes as $nid => $node) {
-        $nodes[$nid] = (object)array_merge((array)$node, (array)$extras[$nid]);
+      if (!empty($extras)) {
+        foreach ($nodes as $nid => $node) {
+          $nodes[$nid] = (object)array_merge((array)$node, (array)$extras[$nid]);
+        }
       }
     }
   }
@@ -373,17 +311,8 @@ function biblio_build_query($arg_list) {
           $query->condition('b.biblio_type', $value);
           break;
         case 'search':
-          $term = explode("?", array_shift($arg_list));
-          $result_nids = split(',', $term[0]);
-          $where[] = "n.nid in (" . db_placeholders($result_nids) . ")";
-          foreach ($result_nids as $result_nid) {
-            $terms[] = $result_nid;
-            array_push($args, $type, $result_nid);
-          }
-          // Save search keyword to show in the filter list.
-          $term = array_shift($arg_list);
-          array_push($args, $type, $term);
-          $operator = NULL;
+          $result_nids =  biblio_search_query($value);
+          $query->condition('n.nid', $result_nids, 'IN');
           break;
         default:
           if (in_array("biblio_$type", $fields)) {
@@ -395,11 +324,16 @@ function biblio_build_query($arg_list) {
   }
 
   $result = $query->execute();
-  return (array('query'      => $result,
-               'args'        => $args,
-              // 'sort_attrib' => $sort_attrib,
-               'rss'         => $rss_info
-  ));
+  $nids = array();
+  $extras = array();
+
+  foreach ($result as $node) {
+    $nids[] = $node->nid;
+    if (isset($node->biblio_year)) unset($node->biblio_year);
+    $extras[$node->nid] = $node;
+  }
+
+  return array($nids, $extras, $rss_info);
 
 }
 
@@ -578,7 +512,7 @@ function _biblio_sort_tab($tab, $tabs = FALSE) {
   return;
 }
 
-function _biblio_filter_info_line($args) {
+function _biblio_filter_info_line($args = array()) {
   $content = '';
   $filtercontent = '';
   $search_content = '';
@@ -767,96 +701,49 @@ function theme_biblio_end_category_section() {
  * @return unknown_type
  */
 function biblio_search_form($form, &$form_state) {
+  $base = variable_get('biblio_base', 'biblio');
+//  $form['#action'] = url($base);
   $form['biblio_search'] = array(
     '#prefix' => '<div class="container-inline biblio-search clear-block">',
     '#suffix' => '</div>',
     );
   $form['biblio_search']['keys'] = array(
-  '#type' => 'textfield',
+  	'#type' => 'textfield',
     '#title' => '',
     '#default_value' => '',
     '#size' => 25,
     '#maxlength' => 255,
   );
   $button_text = variable_get('biblio_search_button_text', 'Biblio search');
-  $form['biblio_search']['submit'] = array('#type' => 'submit', '#value' => t($button_text));
-  $form['#cache'] = FALSE;
+  $form['biblio_search']['submit'] = array(
+  	'#type' => 'submit',
+  	'#value' => t($button_text)
+  );
+ // $form['#cache'] = FALSE;
   return $form;
 }
 
-/**
- * Build the query following the do_search algorithm in search.module.
- * Unfortunately we cannot reuse anything from do_search as everything
- * is hard-coded :-(
- * @param $keys
- */
-function biblio_build_search_query($keys = '') {
-  if ($keys != '')  {
-    $query = search_parse_query($keys);
-    if ($query[2] == '') {
-      form_set_error('keys', t('You must include at least one positive keyword with @count characters or more.', array('@count' => variable_get('minimum_word_size', 3))));
-      return FALSE;
-    }
-    if ($query === NULL || $query[0] == '') return FALSE;
-
-    $where = '(' . $query[2] . ')';
-    $args = $query[3];
-    if (!$query[5]) {
-      $where .= " AND ($query[0])";
-      $args = array_merge($args, $query[1]);
-      $join = " INNER JOIN {search_dataset} d ON i.sid = d.sid AND i.type = d.type";
-    }
-    // The COUNT ensures that we get only nodes where "term1 AND term2"
-    // match as we demand 2 matches. Note that this doesn't work when
-    // using the partial word search patch.
-    $args[] =$query[4];
-
-    $query = "SELECT distinct(i.sid) FROM {search_index} i
-              INNER JOIN {node} n ON n.nid = i.sid
-              $join
-              WHERE n.status = 1 AND (n.type = 'biblio')
-              AND $where
-              AND i.type = 'node'
-              GROUP BY i.type, i.sid HAVING COUNT(*) >= %d";
-    return db_query(db_rewrite_sql($query), $args);
-  }
-  return FALSE;
-}
-
-
-/**
- * When we submit a search, we revoke all current filters since search
- * and filtering are considered two different concepts things* conceptually.
- *
- * But we store the results as a filter (which is just a list of node ids that
- * matched the search request) so that we can reorder or export the search
- * results like with any other filter.  The filter has three components:
- * ('search',<list of node ids>,<search keywords>).
- * The second component, the filter value, is empty when submitting keywords.
- * In biblio_db_search we fill the second component with the list of nids
- * matching our keywords, as returned by node_search.  We store the keywords
- * only for showing them in "Search results for <keywords>".
- */
-/**
- * @param $form
- * @param $form_state
- * @return unknown_type
- */
 function biblio_search_form_submit($form, &$form_state) {
   static $keys = '';
+  $base = variable_get('biblio_base', 'biblio');
+  $keys =  $form_state['values']['keys'];
+  $form_state['redirect'] = $base . '/search/' . $keys;
+  $uri = drupal_parse_url(request_uri());
+  $uri['path'] = variable_get('biblio_base', 'biblio');
+  $uri['query']['f']['search'] = $keys;
+  drupal_goto($uri['path'], $uri);
+
 }
 
 function biblio_search_query($keys) {
-  if (empty($keys)) {
-    $keys = $form_state['values']['keys'];
-
-
-    $query = db_select('search_index', 'i', array('target' => 'slave'))->extend('SearchQuery')->extend('PagerDefault');
+  if (!empty($keys)) {
+    $query = db_select('search_index', 'i', array('target' => 'slave'))
+      ->extend('SearchQuery')
+      ->extend('PagerDefault');
     $query->join('node', 'n', 'n.nid = i.sid');
-    $query
-    ->condition('n.status', 1)
-    ->addTag('node_access')
-    ->searchExpression($keys, 'node');
+    $query->condition('n.status', 1)
+      ->addTag('node_access')
+      ->searchExpression($keys, 'node');
 
     // Insert special keywords.
     $query->setOption('type', 'n.type');
@@ -873,17 +760,15 @@ function biblio_search_query($keys) {
     _node_rankings($query);
 
     // Load results.
-    $find = $query
-    ->limit(10)
-    ->execute();
+    $find = $query->execute();
+
     $results = array();
     foreach ($find as $item) {
       // Build the node body.
-      $results[] = node_load($item->sid);
+      $nids[] = $item->sid;
     }
-    return biblio_show_results($results);
+    return $nids;
   }
-
 }
 
   /**
