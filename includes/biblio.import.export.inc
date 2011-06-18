@@ -116,9 +116,11 @@ function biblio_import_form($form, &$form_state) {
       '#title' => t('Taxonomy Settings'),
       '#description' => t('Typically you don\'t have to do anything here, however if you wish, you may select terms to be assigned to imported records. This effectively adds a keyword to all entries being imported.'));
     if (count($biblio_vocabs)) {
+      $vocabularies = module_invoke('taxonomy', 'get_vocabularies', 'biblio');
       if (variable_get('biblio_keyword_freetagging', 0)) {
-        $freetag_vocab = $vocabularies[variable_get('biblio_keyword_vocabulary', 0)];
-        unset($vocabularies[variable_get('biblio_keyword_vocabulary', 0)]);
+//FIXME
+//        $freetag_vocab = $vocabularies[variable_get('biblio_keyword_vocabulary', 0)];
+//        unset($vocabularies[variable_get('biblio_keyword_vocabulary', 0)]);
         $msg = t('<b>NOTE:</b> Keyword "free tagging" is turned on, consequently all incomming keywords will be added to the <b>@name</b> vocabulary as specified in the "Keyword" section of the !url page.', array('@name' => $freetag_vocab->name, '!url' => l(t('admin/config/biblio'), 'admin/config/biblio')));
       }
       else {
@@ -128,7 +130,7 @@ function biblio_import_form($form, &$form_state) {
       $form += array('#parents' => array());
       $form['import_taxonomy']['vocabularies'] = array();
       $term_refs = array();
-      $vocabularies = module_invoke('taxonomy', 'get_vocabularies', 'biblio');
+
       foreach ($vocabularies as $vocabulary) {
         if (in_array($vocabulary->machine_name, array_keys($biblio_vocabs))) {
           $term_refs[] = $biblio_vocabs[$vocabulary->machine_name]['instance']['field_name'];
@@ -442,7 +444,7 @@ function biblio_export_form_submit($form, & $form_state) {
  * Import data from a file and return the node ids created.
  *
  * @param $userid
- *   The user id of that will be assigned to each node imported
+ *   The user id that will be assigned to each node imported
  * @param $filename
  *   The name of the file containing the data to import
  * @param $type
@@ -450,10 +452,9 @@ function biblio_export_form_submit($form, & $form_state) {
  * @param $terms
  *   the vocabulary that the imported nodes will be associated with
  * @return
- *   An array the node id's of the items imported
+ *   An array of node id's of the items imported
  */
 function biblio_import($import_file, $type, $userid = 1, $terms = NULL, $batch = FALSE, $session_id = NULL, &$context ) {
-
   global $user;
   $parsed = 0;
   $nids = array();
@@ -480,7 +481,7 @@ function biblio_import($import_file, $type, $userid = 1, $terms = NULL, $batch =
   $context['results']['user']   = $user;
   $context['results']['file']   = $import_file;
 
-  return ;
+  return $batch ? NULL : $nids;
 }
 /**
  * Export nodes in a given file format.
