@@ -58,6 +58,7 @@ function _biblio_admin_build_user_select($my_uid) {
 function biblio_import_form($form, &$form_state) {
   global $user;
   $msg = '';
+  $biblio_vocabs = array();
 
   if (biblio_access('import')) { // && !user_access('administer nodes')) {
     $form['#attributes']['enctype'] = 'multipart/form-data';
@@ -98,7 +99,15 @@ function biblio_import_form($form, &$form_state) {
     );
     $form ['userid'] = _biblio_admin_build_user_select($user->uid);
     // Get the vocabularies  attached to the biblio node type ...
-    $vocabularies = module_invoke('taxonomy', 'get_vocabularies', 'biblio');
+    foreach (field_info_instances('node', 'biblio') as $instance) {
+      $field = field_info_field_by_id($instance['field_id']);
+      if ($field['type'] == 'taxonomy_term_reference') {
+        foreach ($field['settings']['allowed_values'] as $delta => $tree) {
+          $biblio_vocabs[$tree['vocabulary']] = array('instance' => $instance, 'field' => $field);
+        }
+      }
+    }
+
     // ... and print a form to select the terms in each of them
     $form['import_taxonomy'] = array(
       '#type' => 'fieldset',
@@ -106,7 +115,7 @@ function biblio_import_form($form, &$form_state) {
       '#collapsed' => TRUE,
       '#title' => t('Taxonomy Settings'),
       '#description' => t('Typically you don\'t have to do anything here, however if you wish, you may select terms to be assigned to imported records. This effectively adds a keyword to all entries being imported.'));
-    if (count($vocabularies)) {
+    if (count($biblio_vocabs)) {
       if (variable_get('biblio_keyword_freetagging', 0)) {
         $freetag_vocab = $vocabularies[variable_get('biblio_keyword_vocabulary', 0)];
         unset($vocabularies[variable_get('biblio_keyword_vocabulary', 0)]);
@@ -116,44 +125,38 @@ function biblio_import_form($form, &$form_state) {
         $msg = t('<b>NOTE:</b> Keyword "free tagging" is turned off, consequently keywords will <b>NOT</b> be added to the vocabulary as specified in the Taxonomy section of the !url page.', array('!url' => l(t('admin/config/biblio'), 'admin/config/biblio')));
       }
       $i = 0;
-      foreach (field_info_instances('node', 'biblio') as $instance) {
-        $field = field_info_field_by_id($instance['field_id']);
-        if ($field['type'] == 'taxonomy_term_reference') {
-          foreach ($field['settings']['allowed_values'] as $delta => $tree) {
-            $vocabs[$tree['vocabulary']] = array('instance' => $instance, 'field' => $field);
-          }
-        }
-      }
       $form += array('#parents' => array());
       $form['import_taxonomy']['vocabularies'] = array();
       $term_refs = array();
+      $vocabularies = module_invoke('taxonomy', 'get_vocabularies', 'biblio');
       foreach ($vocabularies as $vocabulary) {
-        if (in_array($vocabulary->machine_name, array_keys($vocabs))) {
-          $term_refs[] = $vocabs[$vocabulary->machine_name]['instance']['field_name'];
+        if (in_array($vocabulary->machine_name, array_keys($biblio_vocabs))) {
+          $term_refs[] = $biblio_vocabs[$vocabulary->machine_name]['instance']['field_name'];
           $entity = new stdClass();
           $entity->type = 'biblio';
-          $field = $vocabs[$vocabulary->machine_name]['field'];
-          $instance = $vocabs[$vocabulary->machine_name]['instance'];
+          $field = $biblio_vocabs[$vocabulary->machine_name]['field'];
+          $instance = $biblio_vocabs[$vocabulary->machine_name]['instance'];
           $items = array();
           $form['import_taxonomy']['vocabularies'] += field_default_form('node', $entity, $field, $instance, 'und', $items, $form, $form_state);
         }
       }
-     $form['term_refs'] = array(
-       '#type' => 'hidden',
-       '#value' => $term_refs,
-     );
-      $form['import_taxonomy']['copy_to_biblio'] = array(
-        '#type' => 'checkbox',
-        '#title' => t('Copy these terms to the biblio keyword database'),
-        '#return_value' => 1,
-        '#default_value' =>  variable_get('biblio_copy_taxo_terms_to_keywords', 0),
-        '#description' => t('If this option is selected, the selected taxonomy terms will be copied to the ' . check_plain(variable_get('biblio_base_title', 'Biblio')) . ' keyword database and be displayed as keywords (as well as taxonomy terms) for this entry.')
-      );
-
+      if (!empty($term_refs)) {
+        $form['term_refs'] = array(
+          '#type' => 'hidden',
+          '#value' => $term_refs,
+        );
+        $form['import_taxonomy']['copy_to_biblio'] = array(
+          '#type' => 'checkbox',
+          '#title' => t('Copy these terms to the biblio keyword database'),
+          '#return_value' => 1,
+          '#default_value' =>  variable_get('biblio_copy_taxo_terms_to_keywords', 0),
+          '#description' => t('If this option is selected, the selected taxonomy terms will be copied to the ' . check_plain(variable_get('biblio_base_title', 'Biblio')) . ' keyword database and be displayed as keywords (as well as taxonomy terms) for this entry.')
+        );
+      }
     }
     else {
       if (module_exists('taxonomy')) {
-        $vocab_msg = t('There are currently no vocabularies assigned to the biblio node type, please go the the !url page to fix this', array('!url' => l(t('admin/content/taxonomy'), 'admin/content/taxonomy')));
+        $vocab_msg = t('There are currently no "Term references" attached to the biblio node type. If you would like to associate a Taxonomy vocabulary with the Biblio node type, go the the !url page and add one or more "Term reference" fields.', array('!url' => l(t('admin/structure/types/manage/biblio/fields'), 'admin/structure/types/manage/biblio/fields')));
       }
       else{
         $vocab_msg = '<div class="admin-dependencies">' . t('Depends on') . ': ' . t('Taxonomy') . ' (<span class="admin-disabled">' . t('disabled') . '</span>)</div>';
