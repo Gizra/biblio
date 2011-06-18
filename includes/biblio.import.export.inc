@@ -498,23 +498,12 @@ function biblio_export($format = "tagged", $nid = NULL, $popup = FALSE) {
   $params = array();
   $nids = array();
   $arg_list = array();
-  if ($nid === NULL && isset ($_SESSION['last_biblio_query']) ) {
+  if ($nid === NULL ) {
     module_load_include('inc', 'biblio', 'includes/biblio.pages');
-
     $uri = drupal_parse_url(request_uri());
     $arg_list += $uri['query'];
     $arg_list['page_limit'] = 0;
-    $query_info = biblio_build_query($arg_list);
-    if (isset($query_info['query'])) {
-      $result = $query_info['query'];
-    }
-    else {
-      $result = array();
-    }
-
-    foreach ($result as $node) {
-      $nids[] = $node->nid;
-    }
+    list($nids,,) = biblio_build_query($arg_list);
   }
   elseif (!empty ($nid)) {
     $nids[] = $nid;
