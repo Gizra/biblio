@@ -311,8 +311,12 @@ function biblio_build_query($arg_list) {
           $query->condition('b.biblio_type', $value);
           break;
         case 'search':
-          $result_nids =  biblio_search_query($value);
-          $query->condition('n.nid', $result_nids, 'IN');
+          $search_nids = array();
+          $search_nids =  biblio_search_query($value);
+          if (empty($search_nids)) {
+            $search_nids[] = -1;  // if we didn't find anything, then add one value of -1 since there will never be a node id == -1
+          }
+          $query->condition('n.nid', $search_nids, 'IN');
           break;
         default:
           if (in_array("biblio_$type", $fields)) {
@@ -738,8 +742,8 @@ function biblio_search_form_submit($form, &$form_state) {
 function biblio_search_query($keys) {
   if (!empty($keys)) {
     $query = db_select('search_index', 'i', array('target' => 'slave'))
-      ->extend('SearchQuery')
-      ->extend('PagerDefault');
+      ->extend('SearchQuery');
+     // ->extend('PagerDefault');
     $query->join('node', 'n', 'n.nid = i.sid');
     $query->condition('n.status', 1)
       ->addTag('node_access')
@@ -762,9 +766,8 @@ function biblio_search_query($keys) {
     // Load results.
     $find = $query->execute();
 
-    $results = array();
+    $nids = array();
     foreach ($find as $item) {
-      // Build the node body.
       $nids[] = $item->sid;
     }
     return $nids;
