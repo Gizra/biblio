@@ -874,6 +874,7 @@ function theme_biblio_download_links($variables) {
 function theme_biblio_export_links($variables) {
   global $pager_total_items;
   $node = $variables['node'];
+  $filter = ($variables['node'] == NULL && isset($variables['filter'])) ? $variables['filter'] : array();
   $links = array();
   $output = '';
 
@@ -884,7 +885,7 @@ function theme_biblio_export_links($variables) {
       $lookup_links['biblio_google_scholar'] = theme('google_scholar_link', array('node' => $node));
     }
     $nid = (isset($node->nid)) ? $node->nid : NULL;
-    $export_links = module_invoke_all('biblio_export_link', $nid);
+    $export_links = module_invoke_all('biblio_export_link', $nid, $filter);
     $links = array_merge($lookup_links, $export_links);
   }
   if (empty($node) && !empty($links)) {

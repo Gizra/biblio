@@ -259,7 +259,9 @@ function biblio_theme($existing, $type, $theme, $path) {
     ),
     'biblio_export_links' => array(
         'file' => '/includes/biblio_theme.inc',
-        'variables' => array('node'),
+        'variables' => array(
+        	'node' => NULL,
+          'filter' => array()),
     ),
     'biblio_download_links' => array(
         'file' => '/includes/biblio_theme.inc',
@@ -534,7 +536,7 @@ function biblio_menu() {
   $base_title = check_plain(variable_get('biblio_base_title', 'Biblio'));
   $items["$base"] = array(
     'title'             => $base_title,
-    'page callback'     => 'biblio_db_search',
+    'page callback'     => 'biblio_page',
     'access callback'   => 'user_access',
     'access arguments'  => array('access biblio content'),
     'file'              => '/includes/biblio.pages.inc',
@@ -568,7 +570,7 @@ function biblio_menu() {
   );
   $items["$base/user/%"] = array(
     'title'             => 'My publications',
-    'page callback'     => 'biblio_get_user_pubs',
+    'page callback'     => 'biblio_profile_page',
     'page arguments'    => array(2),
     'access callback'   => '_biblio_profile_access',
     'access arguments'  => array(2, 'menu'),
@@ -634,7 +636,7 @@ function biblio_menu() {
 
   $items["user/%user/$base"] = array(
     'title'             => 'Publications',
-    'page callback'     => 'biblio_get_user_pubs',
+    'page callback'     => 'biblio_profile_page',
     'page arguments'    => array(1, 'profile', 'no_filters'),
     'access callback'   => '_biblio_profile_access',
     'access arguments'  => array(1, 'profile'),
@@ -1687,27 +1689,15 @@ function biblio_recent_feed() {
   }
   node_feed($nids, $channel);
 }
-/**
- * This function creates a feed from a filter type query (i.e. biblio/author/jones)
- *
- * @param $query
- *    the SQL string to be used in the call to db_query
- * @param $terms
- *    the terms that are used to replace any place holders in the query
- * @param $rss_info
- *    an array which contains the title,link and description info for the rss feed
- */
-function biblio_filter_feed($variables) {
+
+function biblio_filter_feed($rss_info, $nids) {
   $base = variable_get('biblio_base', 'biblio');
-  $channel['title'] = $variables['rss']['title'];
-  $channel['link'] = url($base . $variables['rss']['link'], array('absolute' => TRUE));
-  $channel['description'] = $variables['rss']['description'];
-  $nids = array();
-  foreach ($variables['query'] as $node) {
-    $nids[] = $node->nid;
-  }
+  $channel['title'] = $rss_info['rss']['title'];
+  $channel['link'] = url($base . $rss_info['rss']['link'], array('absolute' => TRUE));
+  $channel['description'] = $rss_info['rss']['description'];
   node_feed($nids, $channel);
 }
+
 function biblio_get_db_fields() {
   $fields = array();
   $fields[] = 'nid';
