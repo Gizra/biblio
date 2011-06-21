@@ -118,9 +118,8 @@ function biblio_import_form($form, &$form_state) {
     if (count($biblio_vocabs)) {
       $vocabularies = module_invoke('taxonomy', 'get_vocabularies', 'biblio');
       if (variable_get('biblio_keyword_freetagging', 0)) {
-//FIXME
-//        $freetag_vocab = $vocabularies[variable_get('biblio_keyword_vocabulary', 0)];
-//        unset($vocabularies[variable_get('biblio_keyword_vocabulary', 0)]);
+        $freetag_vocab = $vocabularies[variable_get('biblio_keyword_vocabulary', 0)];
+        unset($vocabularies[variable_get('biblio_keyword_vocabulary', 0)]);
         $msg = t('<b>NOTE:</b> Keyword "free tagging" is turned on, consequently all incomming keywords will be added to the <b>@name</b> vocabulary as specified in the "Keyword" section of the !url page.', array('@name' => $freetag_vocab->name, '!url' => l(t('admin/config/biblio'), 'admin/config/biblio')));
       }
       else {
@@ -225,23 +224,25 @@ function biblio_import_form_submit($form, & $form_state) {
       // Concatenate all the terms of the different vocabularies
       // in a single array to be sent to biblio_import
       $terms = array();
-      foreach ($form_state['values']['term_refs'] as $key) {
-        if (isset($form_state['values'][$key]) && !empty($form_state['values'][$key])) {
-          foreach ($form_state['values'][$key]['und'] as $id => $item) {
-            if (!is_array($item) || (empty($item['tid']) && (string) $item['tid'] !== '0')) {
-              unset($form_state['values'][$key]['und'][$id]);
+      if (isset($form_state['values']['term_refs'])) {
+        foreach ($form_state['values']['term_refs'] as $key) {
+          if (isset($form_state['values'][$key]) && !empty($form_state['values'][$key])) {
+            foreach ($form_state['values'][$key]['und'] as $id => $item) {
+              if (!is_array($item) || (empty($item['tid']) && (string) $item['tid'] !== '0')) {
+                unset($form_state['values'][$key]['und'][$id]);
+              }
+            }
+            if (empty($form_state['values'][$key]['und'])) {
+              unset($form_state['values'][$key]);
+            }
+            else {
+              $terms[$key] = $form_state['values'][$key];
             }
           }
-          if (empty($form_state['values'][$key]['und'])) {
-            unset($form_state['values'][$key]);
-          }
-          else {
-            $terms[$key] = $form_state['values'][$key];
-          }
-        }
-        //       }
+          //       }
 
-        //     if (count($terms) && $key == 'copy_to_biblio') $terms['copy_to_biblio'] = $form_state['values'][$key];
+          //FIXME     if (count($terms) && $key == 'copy_to_biblio') $terms['copy_to_biblio'] = $form_state['values'][$key];
+        }
       }
 
       // Added the $terms argument
