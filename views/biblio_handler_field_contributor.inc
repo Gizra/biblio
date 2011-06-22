@@ -155,6 +155,7 @@ class biblio_handler_field_contributor extends biblio_handler_field {
     }
 
     foreach ($contributors as $rank => $author) {
+      $author = (object)$author;
       if (!empty($author->firstname) && isset($this->options['initialize'])) {
         $author->firstname = preg_replace("/([$this->upper])[$this->lower]+/$this->patternModifiers", '\\1', $author->firstname);
         $author->firstname = preg_replace("/(?<=[-$this->upper]) +(?=[-$this->upper])/$this->patternModifiers", "", $author->firstname);
