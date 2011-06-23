@@ -918,7 +918,7 @@ function biblio_menu() {
     'access arguments'  => array('access biblio content'),
     'type'              => MENU_CALLBACK
   );
-  $items["$base/list"] = array(
+/*  $items["$base/list"] = array(
     'title'             => 'List',
     'type'              => MENU_DEFAULT_LOCAL_TASK,
     'weight'            => -10
@@ -933,6 +933,7 @@ function biblio_menu() {
     'file'              => '/includes/biblio.pages.inc',
     'weight'            => -9
   );
+*/
   $items["$base/filter/clear"] = array(
     'title'             => '',
     'page callback'     => 'biblio_filter_clear',

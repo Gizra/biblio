@@ -108,9 +108,18 @@ function biblio_page_header($filter = array()) {
   if (variable_get('biblio_search', 0) && user_access('show filter tab')) {
     $header += array(
       'search_form' => array(
-        '#markup' => drupal_render(drupal_get_form('biblio_search_form')),
+        '#type'   => 'fieldset',
+        '#title' 	=> t('Search'),
+    		'#collapsible' => TRUE,
+  			'#collapsed' => TRUE,
+        'searchform' => drupal_get_form('biblio_search_form'),
+        'filterform' => drupal_get_form('biblio_form_filter')
       ),
     );
+    $header['search_form']['#attached']['library'][] = array('system', 'drupal.form');
+    $header['search_form']['#attached']['library'][] = array('system', 'drupal.collapse');
+    $header['search_form']['#attributes']['class'][] = 'collapsible';
+    $header['search_form']['#attributes']['class'][] = 'collapsed';
   }
   $header += array(
     'export_links' => array(
@@ -618,7 +627,7 @@ function _biblio_filter_info_line($args = array()) {
     $i = 0;
     foreach ($filters as $type => $value) {
       if ($type == 'search') {
-        $search_content = array_shift($args);
+        $search_content = $value;
         continue;
       }
       if ($type == 'term_id') {
@@ -1019,6 +1028,9 @@ function biblio_form_filter() {
     '#title' => t('Show only items where'),
     '#theme' => 'exposed_filters__node',
   );
+  $form['filters']['#attributes']['class'][] = 'collapsible';
+ // $form['filters']['#attributes']['class'][] = 'collapsed';
+
   foreach ($session as $filter) {
     $type = key($filter);
     $value = $filter[$type];
@@ -1078,8 +1090,6 @@ function biblio_form_filter() {
     $form['filters']['status']['actions']['undo'] = array('#type' => 'submit', '#value' => t('Undo'));
     $form['filters']['status']['actions']['reset'] = array('#type' => 'submit', '#value' => t('Reset'));
   }
-
-  drupal_add_js('misc/form.js');
 
   return $form;
 }
