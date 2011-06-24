@@ -1172,16 +1172,15 @@ function biblio_citekey_view() {
 
 }
 
-/**
- * @param $keywords
- * @param $base
- * @return unknown_type
- */
 
 function biblio_author_page() {
+  $path = drupal_get_path('module', 'biblio');
+  drupal_add_js($path . '/misc/biblio.highlight.js', 'file');
+
   $uri = drupal_parse_url(request_uri());
   $filter = isset($uri['query']['f']['author']) ? $uri['query']['f']['author'] : '';
   $authors = _biblio_get_authors($filter);
+
   return _biblio_format_author_page($uri['path'], $filter, $authors);
 }
 
@@ -1191,31 +1190,36 @@ function _biblio_get_authors($filter = NULL) {
   $authors = array();
   $where_clause = '';
   $output = '';
-  $style_name = biblio_get_style();
-  module_load_include('inc', 'biblio', "/styles/biblio_style_$style_name");
 
-    $base = variable_get('biblio_base', 'biblio');
-    $menu = menu_get_active_title();
-    if ($menu == 'Authors') $path = $base . '/authors/';
-    if ($menu == 'Biblio settings') $path = 'admin/config/biblio/author/list/';
-    if ($filter) {
-      $filter = strtoupper($filter);
-      $where[] =  "UPPER(SUBSTRING(lastname,1,1)) = :filter ";
-      $header_ext = t(' (whose last name starts with the letter "@letter") ', array('@letter' => $filter ));
-    }
-    else {
-      $query_ext =  NULL;
-      $header_ext = NULL;
-    }
-    if ($user->uid != 1 ) {
-      $where[] = 'n.status = 1 ';
-    }//show only published entries to everyone except admin
+  if ($filter) {
+    $filter = strtoupper($filter);
+    $where['filter'] =  "UPPER(SUBSTRING(lastname,1,1)) = :filter ";
+    $header_ext = t(' (whose last name starts with the letter "@letter") ', array('@letter' => $filter ));
+  }
+  else {
+    $query_ext =  NULL;
+    $header_ext = NULL;
+  }
 
-    if (count($where)) {
-      $where_clause = count($where) > 1 ? 'WHERE (' . implode(') AND (', $where) . ')': 'WHERE ' . $where[0];
-    }
+  if (!biblio_access('edit_author')) {
+    $where['access'] = 'n.status = 1 ';
+  }//show only published entries to everyone except admin
 
-    $db_result = db_query('SELECT bd.cid, bd.drupal_uid, bd.name, bd.lastname,
+  if (count($where)) {
+    $where_clause =  'WHERE (' . implode(') AND (', $where) . ')';
+  }
+
+  $suspects = array();
+  $result = db_query('SELECT lastname FROM {biblio_contributor_data} '
+                      . (isset($where['filter']) ? 'WHERE '  . $where['filter'] : '') .
+                      ' GROUP BY lastname HAVING COUNT(*) > 1', array(':filter' => $filter)
+             );
+
+  foreach ($result as $author) {
+    $suspects[] = $author->lastname;
+  }
+
+  $db_result = db_query('SELECT bd.cid, bd.drupal_uid, bd.name, bd.lastname,
                               bd.firstname, bd.prefix, bd.suffix, bd.initials,
                               bd.affiliation, bd.md5, COUNT(*) AS cnt
                             FROM {biblio_contributor} b
@@ -1229,25 +1233,47 @@ function _biblio_get_authors($filter = NULL) {
                             ORDER BY  lastname ASC, SUBSTRING(firstname,1,1) ASC,
                             initials ASC', array(':filter' => $filter), array('fetch' => PDO::FETCH_ASSOC));
 
-    foreach ($db_result as $author) {
-      $authors[] = $author;
+  foreach ($db_result as $author) {
+    if (array_search($author['lastname'], $suspects) !== FALSE) {
+      $author['#suspect'] = TRUE;
     }
+    $authors[] = $author;
+  }
 
-    return $authors;
+  return $authors;
 }
 
 function _biblio_format_author_page($path, $filter, $authors) {
-  $rows[] = array(array('data' => theme('biblio_alpha_line', array('type' => 'authors', 'current' => $filter, 'path' => $path)), 'colspan' => 3));
-  if (count($authors)) {
-      for ($i=0; $i < count($authors); $i+=3) {
-        $rows[] = array( array('data' => _biblio_format_author($authors[$i]) ),
-        array('data' => isset($authors[$i+1])?_biblio_format_author($authors[$i+1]):'' ),
-        array('data' => isset($authors[$i+2])?_biblio_format_author($authors[$i+2]):'' ));
-      }
+  $header_ext = $admin_tools = '';
+  $header = array();
+
+  if (biblio_access('edit_author')) {
+    if (!empty($filter)) {
+      $header_ext = ' ' . t('whose last name begins with the letter') . ': ' . $filter;
     }
-  //$header = array(array('data' => t('There are a total of @count authors !header_ext in the database',array('@count' => count($authors), '!header_ext' => $header_ext)), 'align' =>'center', 'colspan' => 3));
-  $output = theme('table', array('rows' => $rows));
-  return $output;
+    $toggle_link = l(t('here'), '#', array('attributes' => array('id' => 'biblio-highlight')));
+    $admin_tools = l(t('Hightlight possible duplicates'), '#', array('attributes' => array('id' => 'biblio-highlight')));
+    $admin_tools = '<div class="biblio-alpha-line">['.$admin_tools . ']</div>';
+    $header = array(array('data' => t('There are a total of @count authors in the database!header_ext.', array('@count' => count($authors), '!header_ext' => $header_ext)), 'align' =>'center', 'colspan' => 3));
+  }
+
+  $rows[] = array(
+    array('data' =>
+      theme('biblio_alpha_line', array('type' => 'authors', 'current' => $filter, 'path' => $path)) . $admin_tools , 'colspan' => 3));
+  if (count($authors)) {
+    for ($i=0; $i < count($authors); $i+=3) {
+      $rows[] = array( array('data' => _biblio_format_author($authors[$i]) ),
+      array('data' => isset($authors[$i+1])?_biblio_format_author($authors[$i+1]):'' ),
+      array('data' => isset($authors[$i+2])?_biblio_format_author($authors[$i+2]):'' ));
+    }
+  }
+
+
+  return array(
+    '#theme' => 'table',
+    '#header' => $header,
+    '#rows' => $rows,
+  );
 }
 /*
  * Helper function to format the authors and add edit links if required
@@ -1256,6 +1282,10 @@ function _biblio_format_author($author) {
   static $author_options = array();
   $format = biblio_format_authors(array($author));
   $format .= ' (' . $author['cnt'] . ') ' . ((biblio_access('edit_author'))?_biblio_author_edit_links($author):'');
+  if (biblio_access('edit_author') && isset($author['#suspect'])) {
+    $format = '<div class="suspect">' . $format . '</div>';
+  }
+
   return $format;
 }
 
