@@ -1084,7 +1084,7 @@ function theme_biblio_admin_orphans_form($variables) {
     $output .= drupal_render($form['pager']);
   }
 
-//  $output .= drupal_render($form);
+  $output .= drupal_render_children($form);
 
   return $output;
 }
@@ -1116,7 +1116,7 @@ function theme_biblio_admin_keyword_orphans_form($variables) {
  //   $output .= drupal_render($form['pager']);
   }
 
-//  $output .= drupal_render($form);
+  $output .= drupal_render_children($form);
 
   return $output;
 }

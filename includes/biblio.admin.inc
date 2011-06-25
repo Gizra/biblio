@@ -1970,41 +1970,55 @@ function biblio_admin_author_edit_form_submit($form, &$form_state) {
 }
 
 
-function biblio_admin_orphans_form($form_state) {
-  $form = array();
+function biblio_admin_orphans_form($form, &$form_state) {
+  $authors = $orphans = array();
+
   $base = variable_get('biblio_base', 'biblio');
-/* TODO translate this query... it should be faster
-  $result = pager_query('SELECT distinct d.cid cid, name, affiliation
-                         FROM {biblio_contributor_data} d
-                         LEFT JOIN {biblio_contributor} c ON (d.cid=c.cid)
-                         WHERE c.cid IS NULL', 50);
 
-*/
+  $query = db_select('biblio_contributor', 'bc');
+  $active_cids = $query
+    ->fields('bc', array('cid'))
+    ->groupBy('cid')
+    ->execute()
+    ->fetchCol();
 
-  $sub_query = db_select('biblio_contributor', 'bc');
-  $sub_query->fields('bc', array('cid'));
-  $sub_query->groupBy('cid');
-  $query = db_select('biblio_contributor_data', 'bcd')->extend('PagerDefault')->limit(50);
-  $query->fields('bcd'); // SELECT * FROM {biblio_contributor_data}
-  $query->condition('cid', $sub_query, 'NOT IN');
+  $query = db_select('biblio_contributor_data', 'bcd');
+  $all_cids = $query
+    ->fields('bcd', array('cid'))
+    ->groupBy('cid')
+    ->execute()
+    ->fetchCol();
 
-  $result = $query->execute(); //pager_query('SELECT * FROM {biblio_contributor_data} WHERE cid NOT IN (SELECT cid FROM {biblio_contributor} GROUP BY cid)', 50);
-  $authors = array();
-  foreach ($result as $author) {
-    $authors[$author->cid] = '';
-    $form['name'][$author->cid] = array('#value' => l($author->name, $base . '/authors/' . $author->cid . '/edit'));
-    $form['affiliation'][$author->cid] = array('#value' => check_plain($author->affiliation));
+  $orphans = array_diff($all_cids, $active_cids);
+  if (!empty($orphans)) {
+    $query = db_select('biblio_contributor_data', 'bcd')->extend('PagerDefault')->limit(50);
+    $query->fields('bcd'); // SELECT * FROM {biblio_contributor_data}
+    $query->condition('cid', $orphans, 'IN');
+
+    $result = $query->execute(); //pager_query('SELECT * FROM {biblio_contributor_data} WHERE cid NOT IN (SELECT cid FROM {biblio_contributor} GROUP BY cid)', 50);
+    $authors = array();
+    foreach ($result as $author) {
+      $authors[$author->cid] = '';
+      $form['name'][$author->cid] = array('#markup' => l($author->name, $base . '/authors/' . $author->cid . '/edit'));
+      $form['affiliation'][$author->cid] = array('#markup' => check_plain($author->affiliation));
+      $names[$author->cid] = $author->name;
+    }
+    $form['names'] = array('#type' => 'hidden', '#value' => $names);
+
   }
   if (!empty($authors)) {
-  $form['authors'] = array('#type' => 'checkboxes', '#options' => $authors);
-  $form['pager']   = array('#value' => theme('pager', array('tags' => NULL, 'element' => 0)));
-  $form['#theme'] = 'biblio_admin_orphans_form';
-  $form['submit'] = array(
+    $form['authors'] = array(
+      '#type' => 'checkboxes',
+      '#options' => $authors,
+    );
+    $form['pager']   = array('#markup' => theme('pager', array('tags' => NULL, 'element' => 0)));
+    $form['#theme'] = 'biblio_admin_orphans_form';
+    $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Delete'),
     '#disabled' => (!count($authors)),
     '#submit' => array('biblio_admin_orphans_form_submit'),
-  );
+    );
   }
   return $form;
 }
@@ -2016,12 +2030,15 @@ function biblio_admin_orphans_form_validate($form, &$form_state) {
 }
 
 function biblio_admin_orphans_form_submit($form, &$form_state) {
+  $authors = $names = array();
   // Filter out unchecked authors
   $authors = array_filter($form_state['values']['authors']);
+  $names   = array_intersect_key($form_state['values']['names'], $authors);
+  $del_names = implode('; ', $names);
   db_delete('biblio_contributor_data')
     ->condition('cid', $authors, 'IN')
     ->execute();
-  drupal_set_message(t('The orphaned authors (@author_list) have been deleted.', array('@author_list', implode(',', $authors))));
+  drupal_set_message(t('The orphaned authors (@author_list) have been deleted.', array('@author_list' => $del_names)));
 
 }
 function biblio_admin_keyword_orphans_form($form, $form_state) {
