@@ -67,6 +67,7 @@ function biblio_profile_page($user) {
 
 function biblio_page() {
   $nodes = $nids = $extras = $rss_info = $info = $arg_list = $render = array();
+  $base = variable_get('biblio_base', 'biblio');
 
   $info['func_args'] = func_get_args();
   $info['uri']  = drupal_parse_url(request_uri());
@@ -1244,22 +1245,25 @@ function _biblio_get_authors($filter = NULL) {
 }
 
 function _biblio_format_author_page($path, $filter, $authors) {
-  $header_ext = $admin_tools = '';
+  $header_ext = $checkbox = '';
   $header = array();
 
   if (biblio_access('edit_author')) {
     if (!empty($filter)) {
       $header_ext = ' ' . t('whose last name begins with the letter') . ': ' . $filter;
     }
-    $toggle_link = l(t('here'), '#', array('attributes' => array('id' => 'biblio-highlight')));
-    $admin_tools = l(t('Hightlight possible duplicates'), '#', array('attributes' => array('id' => 'biblio-highlight')));
-    $admin_tools = '<div class="biblio-alpha-line">['.$admin_tools . ']</div>';
+    $checkbox = array(
+      '#title' => t('Hightlight possible duplicates'),
+      '#type'	 => 'checkbox',
+      '#id'		 => 'biblio-highlight',
+    );
+    $checkbox = '<div class="biblio-alpha-line">' . drupal_render($checkbox) . '</div>';
     $header = array(array('data' => t('There are a total of @count authors in the database!header_ext.', array('@count' => count($authors), '!header_ext' => $header_ext)), 'align' =>'center', 'colspan' => 3));
   }
 
   $rows[] = array(
     array('data' =>
-      theme('biblio_alpha_line', array('type' => 'authors', 'current' => $filter, 'path' => $path)) . $admin_tools , 'colspan' => 3));
+      theme('biblio_alpha_line', array('type' => 'authors', 'current' => $filter, 'path' => $path)) . $checkbox, 'colspan' => 3));
   if (count($authors)) {
     for ($i=0; $i < count($authors); $i+=3) {
       $rows[] = array( array('data' => _biblio_format_author($authors[$i]) ),
