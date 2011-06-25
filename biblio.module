@@ -1693,9 +1693,9 @@ function biblio_recent_feed() {
 
 function biblio_filter_feed($rss_info, $nids) {
   $base = variable_get('biblio_base', 'biblio');
-  $channel['title'] = $rss_info['rss']['title'];
-  $channel['link'] = url($base . $rss_info['rss']['link'], array('absolute' => TRUE));
-  $channel['description'] = $rss_info['rss']['description'];
+  $channel['title'] = $rss_info['title'];
+  $channel['link'] = url($base . $rss_info['link'], array('absolute' => TRUE));
+  $channel['description'] = $rss_info['description'];
   node_feed($nids, $channel);
 }
 

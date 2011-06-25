@@ -29,7 +29,7 @@ function biblio_arg_handler($arg_info) {
       $arg_list['f'][$arg] = $value;
     }
   }
-  $arg_list = array_merge($arg_list, $arg_info['uri']['query']);
+  $arg_list = array_merge_recursive($arg_list, $arg_info['uri']['query']);
   return $arg_list;
 }
 
@@ -75,7 +75,7 @@ function biblio_page() {
   $arg_list['page_limit'] = variable_get('biblio_rowsperpage', 25);
 
   list($nids, $extras, $rss_info) = biblio_build_query($arg_list);
-  if (isset($rss_info['rss']['feed'])) {
+  if ($rss_info['feed']) {
     biblio_filter_feed($rss_info, $nids);
     return;
   }
@@ -234,12 +234,22 @@ function biblio_entry($node) {
   $entry = array();
   $style = biblio_get_style();
 
-  $prefix = '<div class="biblio-entry"><div class="biblio-style-' . $style . '">';
-  $suffix = '</div></div>';
+  /*
+  $select_box = array(
+    '#type' => 'checkbox',
+    '#return_value'  => $node->nid,
+    '#default_value' => 0,
+    '#attributes' => array('class' => array('biblio-export-selector'),)
+
+  );
+*/
+  $prefix = '<div class="biblio-entry">';
+  $suffix = '</div>';
   if (!$node->status) {
     $prefix .= '<div id="node-' . $node->nid . '" class="node node-unpublished">';
     $suffix .= '</div>';
   }
+//  $prefix .= theme('checkbox', array('element' => $select_box));
 
   $entry  = array(
   	'#prefix' => $prefix,
@@ -401,7 +411,7 @@ function biblio_build_query($arg_list) {
           break;
         case 'rss.xml':
           $rss_info['feed'] = TRUE;
-          $count_limit = 'LIMIT ' . variable_get('biblio_rss_number_of_entries', 10);
+          $query->limit(variable_get('biblio_rss_number_of_entries', 10));
           break;
         case 'term':
         case 'term_id':
