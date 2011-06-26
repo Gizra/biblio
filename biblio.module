@@ -644,13 +644,6 @@ function biblio_menu() {
     'access arguments'  => array('administer biblio'),
     'file'              => '/includes/biblio.admin.inc',
   );
-  $items['admin/config/biblio/ahah'] = array(
-    'title'             => '',
-    'page callback'     => 'biblio_admin_ahah',
-    'file'              => '/includes/biblio.admin.inc',
-    'access arguments'  => array('administer biblio'),
-    'type'              => MENU_CALLBACK,
-  );
 
   $items['admin/config/biblio/basic'] = array(
     'title'             => 'Preferences',

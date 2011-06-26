@@ -20,15 +20,6 @@
  *
  */
 /**
- * Default page callback for batches.
- */
-
-function biblio_admin_ahah($form, $element, $value) {
-  switch ($form) {
-
-  }
-}
-/**
 * Implementation of hook_settings().
 */
 function biblio_admin_settings() {
