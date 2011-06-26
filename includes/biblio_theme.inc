@@ -1057,69 +1057,6 @@ function theme_biblio_admin_author_edit_form($variables) {
 
 }
 
-function theme_biblio_admin_orphans_form($variables) {
-  $form = $variables['form'];
-  // If there are any orphans, then $form['name'] contains a list of the author names
-  $has_items = isset($form['name']) && is_array($form['name']);
-  $select_header = $has_items ? theme('table_select_header_cell') : '';
-  $header = array($select_header, t('Author Name'), t('Affiliation'));
-
-  $output = '';
-  $output .= drupal_render($form['submit']);
-  if ($has_items) {
-    foreach (element_children($form['name']) as $key) {
-      $row = array();
-      $row[] = drupal_render($form['authors'][$key]);
-      $row[] = drupal_render($form['name'][$key]);
-      $row[] = drupal_render($form['affiliation'][$key]);
-      $rows[] = $row;
-    }
-  }
-  else {
-    $rows[] = array(array('data' => t('There are no orphaned authors in the database.'), 'colspan' => '3'));
-  }
-  $output .= theme('table', array('header' => $header, 'rows' => $rows));
-
-  if (isset($form['pager']['#value'])) {
-    $output .= drupal_render($form['pager']);
-  }
-
-  $output .= drupal_render_children($form);
-
-  return $output;
-}
-function theme_biblio_admin_keyword_orphans_form($variables) {
-
-  $form = $variables['form'];
-  // If there are any orphans, then $form['name'] contains a list of the author names
-
-  $has_items = isset($form['keyword']) && is_array($form['keyword']);
-  $select_header = $has_items ? theme('table_select_header_cell') : '';
-  $header = array($select_header, t('Keyword'));
-
-  $output = '';
-  $output .= drupal_render($form['submit']);
-  if ($has_items) {
-    foreach (element_children($form['keyword']) as $key) {
-      $row = array();
-      $row[] = drupal_render($form['keywords'][$key]);
-      $row[] = drupal_render($form['keyword'][$key]);
-      $rows[] = $row;
-    }
-  }
-  else {
-    $rows[] = array(array('data' => t('There are no orphaned keywords in the database.'), 'colspan' => '2'));
-  }
-  $output .= theme('table', array('header' => $header, 'rows' => $rows));
-
-  if ($form['pager']['#value']) {
- //   $output .= drupal_render($form['pager']);
-  }
-
-  $output .= drupal_render_children($form);
-
-  return $output;
-}
 function _biblio_keyword_links($keywords, $base='biblio') {
   $uri = drupal_parse_url(request_uri());
   $uri['path'] = variable_get('biblio_base', 'biblio');;

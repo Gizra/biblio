@@ -184,14 +184,6 @@ function biblio_theme($existing, $type, $theme, $path) {
         'file' => '/includes/biblio_theme.inc',
         'render element' => 'form',
     ),
-    'biblio_admin_orphans_form' => array(
-        'file' => '/includes/biblio_theme.inc',
-        'render element' => 'form',
-    ),
-    'biblio_admin_keyword_orphans_form' => array(
-        'file' => '/includes/biblio_theme.inc',
-        'render element' => 'form',
-    ),
     'biblio_openurl' => array(
         'file' => '/includes/biblio_theme.inc',
         'variables' => array('openURL'),
