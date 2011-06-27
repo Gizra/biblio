@@ -1075,13 +1075,13 @@ function biblio_user_presave(&$edit, $account, $catagory) {
 function biblio_form($node, &$form_state) {
   global $user;
   $fields = array();
+  $form['biblio_tabs'] = $tabs = array();
+
   $tid = isset($form_state['values']['biblio_type']) ?
           $form_state['values']['biblio_type']  :
           ( isset($node->biblio_type) ? $node->biblio_type : '');
-  $show_fields = !empty($tid);
 
-  $form['#validate']= array('biblio_node_form_validate');
-  $form['#cache'] = TRUE;
+  $step_two = !empty($tid);
 
   /* publication type */
   $param['options'] = array("enctype" => "multipart/form-data");
@@ -1106,18 +1106,11 @@ function biblio_form($node, &$form_state) {
 
   $form['biblio_next'] = array(
       '#type'   => 'submit',
-      '#value'  => $show_fields ? t('Change Publication Type') : t('Next'),
+      '#value'  => $step_two ? t('Change Publication Type') : t('Next'),
       '#weight' => -10,
   );
 
-  if ($show_fields) {
-    $form += biblio_node_form_vtabs();
-
-    $form['biblio_settings'] = array(
-      '#type' => 'vertical_tabs',
-      '#weight' => 0,
-    );
-
+  if ($step_two) {
     $form['title'] = array(
       '#type' => 'textfield',
       '#title' => t('Title'),
@@ -1137,16 +1130,22 @@ function biblio_form($node, &$form_state) {
     }
     _biblio_localize_fields($fields);
 
-    $form['biblio_authors'] = array(
+    $tabs = array(
+      '#type' => 'vertical_tabs',
+      '#weight' => 0,
+    );
+    $tabs += biblio_node_form_vtabs();
+
+    $tabs['biblio_authors'] = array(
       '#type' => 'fieldset',
-      '#group' => 'biblio_settings',
+      '#group' => 'biblio_tabs',
       '#collapsible' => TRUE,
       '#collapsed' => TRUE,
       '#title' => 'Authors',
       '#description' => t('Enter a single name per line using a format such as "Smith, John K" or "John K Smith" or "J.K. Smith"'),
     );
 
-    $form['biblio_authors'] += biblio_contributor_widget($node, $form_state);
+    $tabs['biblio_authors'] += biblio_contributor_widget($node, $form_state);
 
     foreach ($fields as $key => $fld) {
       $options = '';
@@ -1154,7 +1153,7 @@ function biblio_form($node, &$form_state) {
         $sep = check_plain(variable_get('biblio_keyword_sep', ','));
         // is the kewords are in array form, then implode them into a string.
         if (isset($form_state['values']['biblio_keywords']) &&
-        is_array($form_state['values']['biblio_keywords'])) {
+          is_array($form_state['values']['biblio_keywords'])) {
           require_once(drupal_get_path('module', 'biblio') . '/includes/biblio.keywords.inc');
           $form_state['values']['biblio_keywords'] = biblio_implode_keywords($form_state['values']['biblio_keywords']);
         }
@@ -1167,7 +1166,7 @@ function biblio_form($node, &$form_state) {
         }
       }
 
-      $field_widget = array(
+      $element = array(
             '#default_value' => (isset($form_state['values'][$key]) ? $form_state['values'][$key] : (isset($node->$key)?$node->$key:'')),
             '#type' => $fld['type'],
             '#title' => check_plain($fld['title']),
@@ -1181,20 +1180,24 @@ function biblio_form($node, &$form_state) {
       );
 
       if ($key == 'biblio_refereed' ) {
-        $field_widget['#options'] = array(
+        $element['#options'] = array(
               '' => t('None'),
               'Refereed' => t('Refereed'),
               'Non-Refereed' => t('Non-Refereed'),
               'Does Not Apply' => t('Does Not Apply'),
               'Unknown' => t('Unknown'),
         );
-        $field_widget['#description'] = t('If you are not sure, set this to Unknown or Does Not Apply');
+        $element['#description'] = t('If you are not sure, set this to Unknown or Does Not Apply');
       }
 
-      $form[$fld['vtab']][$key] = $field_widget;
+      $tabs[$fld['vtab']][$key] = $element;
     }
   }
   // $form['format'] = filter_form($node->format, 20);
+ //$biblio_form['#tree']  = TRUE;
+  $form['#validate']= array('biblio_node_form_validate');
+  $form['#cache'] = TRUE;
+  $form['biblio_tabs'] += $tabs;
 
   return $form;
 }
@@ -1215,7 +1218,7 @@ function biblio_node_form_vtabs() {
   foreach ($vtabs as $tab) {
     $form[$tab['tab_id']] = array(
         '#type' => 'fieldset',
-        '#group' => 'biblio_settings',
+        '#group' => 'biblio_tabs',
         '#collapsible' => TRUE,
         '#collapsed' => FALSE,
         '#title' => t($tab['title']),
@@ -1336,14 +1339,25 @@ function biblio_contributors_add_more($form, &$form_state) {
 function biblio_form_node_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'biblio_node_form') {
     $form['#pre_render'][] = 'biblio_node_form_pre_render';
-    if (!isset($form['biblio_full_text']) && isset($form['body'])) {
+    if (!isset($form['biblio_tabs']['biblio_full_text']) && isset($form['body'])) {
      unset($form['body']);
     }
+     if (!isset($form_state['input']['biblio_type']) || $form_state['input']['biblio_type'] < 0) {
+       // $form_state['rebuild'] = TRUE;
+       foreach (element_children($form) as $form_element) {
+        if (strstr($form_element, 'biblio_')) continue;
+        if (strstr($form_element, 'form_')) continue;
+        if ($form[$form_element]['#type'] != 'value') {
+          unset($form[$form_element]);
+        }
+      }
+     }
+
   }
 }
 function biblio_node_form_pre_render($form) {
-    if (isset($form['biblio_full_text']) && isset($form['body'])) {
-      $form['biblio_full_text']['body'] = $form['body'];
+    if (isset($form['biblio_tabs']['biblio_full_text']) && isset($form['body'])) {
+      $form['biblio_tabs']['biblio_full_text']['body'] = $form['body'];
       unset($form['body']);
     }
   return $form;
@@ -1361,6 +1375,7 @@ function biblio_node_form_validate($form, &$form_state) {
     if ($form_state['values']['biblio_type'] == -1) {
       form_set_error('biblio_type', t('Please select a publication type.'));
     }
+    return;
   }
 
   if (isset($form_state['values']['biblio_keywords'])) {
@@ -1575,14 +1590,13 @@ function biblio_block_info() {
 
 function biblio_block_configure($delta = '') {
   $form = array();
-    $form['block'] = array(
+  $form['block'] = array(
     '#type' => 'fieldset',
     '#collapsible' => FALSE,
     '#collapsed' => FALSE,
     '#title' => t('Options'),
     '#description' => '',
-    '#group' => 'biblio_settings',
-    );
+  );
   $form['block']['biblio_rowsperblock'] = array(
     '#type' => 'textfield',
     '#title' => t('Number of results in the "Recent Publications" block'),
