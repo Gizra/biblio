@@ -1328,7 +1328,7 @@ function biblio_contributor_form($contributor, $options) {
 }
 
 function biblio_contributors_add_more_callback($form, &$form_state) {
-  return $form['biblio_authors']['biblio_contributors'];
+  return $form['biblio_tabs']['biblio_authors']['biblio_contributors'];
 }
 
 function biblio_contributors_add_more($form, &$form_state) {
@@ -1342,8 +1342,10 @@ function biblio_form_node_form_alter(&$form, &$form_state, $form_id) {
     if (!isset($form['biblio_tabs']['biblio_full_text']) && isset($form['body'])) {
      unset($form['body']);
     }
-     if (!isset($form_state['input']['biblio_type']) || $form_state['input']['biblio_type'] < 0) {
-       // $form_state['rebuild'] = TRUE;
+    if (!isset($form_state['values']['biblio_type']) &&
+        empty($form_state['input']['biblio_type']) &&
+        empty($form_state['submitted']) &&
+        empty($form['vid']['#value'])) {
        foreach (element_children($form) as $form_element) {
         if (strstr($form_element, 'biblio_')) continue;
         if (strstr($form_element, 'form_')) continue;
