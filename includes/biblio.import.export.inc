@@ -575,11 +575,16 @@ function biblio_save_node($node, $terms = array(), $batch = FALSE, $session_id =
 
 
   if ($save_node) { // $save_node = TRUE, the normal save path
+    $title_truncate = FALSE;
     if (strlen($node->title) > 255) {
       $node->title = substr($node->title, 0, 255);
-      watchdog('biblio - import', 'Title value truncated to 255 characters', array(), WATCHDOG_ALERT, l($node->title, 'node/' . $node->nid));
+      $title_truncate = TRUE;
     }
     node_save($node);
+    if ($title_truncate) {
+      watchdog('biblio - import', 'Title value truncated to 255 characters', array(), WATCHDOG_ALERT, l($node->title, 'node/' . $node->nid));
+      $title_truncate = FALSE;
+    }
     return; // (isset($node->nid)) ? $node->nid : 0;
   }
   else { // $save_node = FALSE, primarily used to parse data and return it to the input form
