@@ -553,13 +553,30 @@ function theme_biblio_format_authors($variables) {
 
 function theme_biblio_author_link($variables) {
   $author = $variables['author'];
-//  $aid    = $variables['authorID'];
-//  $base   = $variables['base'];
 
   $uri = drupal_parse_url(request_uri());
+  if (!isset($uri['attributes'])) {
+    $uri['attributes'] = array();
+  }
+  $path = $uri['path'];
   $uri['path'] = variable_get('biblio_base', 'biblio');
   $uri['query']['f']['author'] = $author['cid'];
 
+  if (isset($author['drupal_uid']) && $author['drupal_uid'] > 0) {
+    $uri['attributes'] += array('class' => array('biblio-local-author'));
+  }
+  if (variable_get('biblio_links_target_new_window', null)){
+    $uri['attributes'] +=  array('target'=>'_blank');
+    $uri['html'] = TRUE;
+  }
+
+  if (variable_get('biblio_author_link_profile', 0) && $author['drupal_uid'] ) {
+    $profile_path = 'user/' . $author['drupal_uid'] . '/' . $uri['path'];
+    if ($path != '/' . $profile_path) {  // we only create links to the profile page if we are not already on it.
+      $uri['path'] = $profile_path;
+      unset($uri['query']);
+    }
+  }
 
   return l(trim($author['name']), $uri['path'], $uri );
 
