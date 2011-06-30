@@ -836,6 +836,7 @@ function theme_biblio_admin_types_edit_form($variables) {
   }
   $output = '<h2>' . drupal_render($form['top_message']) . '</h2>';
   $output .= drupal_render($form['help']);
+  $output .= drupal_render($form['types']);
   $output .= drupal_render($form['type_name']);
   $output .= drupal_render($form['options']);
 

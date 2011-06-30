@@ -683,20 +683,6 @@ function biblio_admin_types_edit_form($form, &$form_state, $tid = 0) {
   $form['help']['message'] = array(
     '#markup' => $msg
   );
-  if (!$tid) {
-    $form['options'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Options'),
-      '#collapsible' => TRUE,
-      '#collapsed' => TRUE
-    );
-    $form['options']['hide_other_fields'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Hide "Other Biblio Fields" fieldset'),
-      '#description' => t('Fields NOT set as "Common" on this page or "Visible" on one of the Type specific edit pages are normally moved to the "Other Biblio Fields" fieldset, selecting this check box will hide that fieldset completely'),
-      '#default_value' => variable_get('biblio_hide_other_fields', 0),
-    );
-  }
   // get author types
   $result = db_query("SELECT * FROM {biblio_contributor_type_data} b");
   $contrib_options = array();
@@ -721,9 +707,22 @@ function biblio_admin_types_edit_form($form, &$form_state, $tid = 0) {
                         INNER JOIN {biblio_field_type_data} AS bftd ON bftd.ftdid=bft.ftdid
                         WHERE bft.tid=$tid", array(), array('fetch' => PDO::FETCH_ASSOC));
   }
+
   foreach ($result as $row) {
     $fields[$row['fid']] = $row;
   }
+  $types = db_query("SELECT * from {biblio_types} ORDER BY name ASC");
+  $types_options[0] = t('Common');
+  foreach ($types as $type) {
+    $types_options[$type->tid] = $type->name;
+  }
+    $form['types'] = array(
+      '#title' => t('Publication type'),
+      '#type' => 'select',
+      '#options' => $types_options,
+      '#default_value' => $tid,
+    );
+
   $form['configured_flds'] = array('#tree' => 1);
   if ($tid) { // show an existing type
     $typename = $fields[1]['type_name'];
@@ -756,6 +755,9 @@ function biblio_admin_types_edit_form($form, &$form_state, $tid = 0) {
   if ($tid == 0)
     $options['autocomplete'] = '';
   foreach ($fields as $key => $fld) {
+    if ($fld['type'] == 'contrib_widget') {
+      continue;
+    }
     $def_values[$fld['name']] = array();
     if ($tid) {
       if ($fld['visible'] )
@@ -809,7 +811,7 @@ function biblio_admin_types_edit_form($form, &$form_state, $tid = 0) {
       '#type' => '#value',
       '#value' => $fld['ftdid']
     );
-    if ($fld['type'] == 'contrib_widget') {
+/*    if ($fld['type'] == 'contrib_widget') {
       $cur = _biblio_get_auth_types($fld['fid'], $tid ? $tid : $fld['fid']);
       $form['configured_flds'][$key]['auth_type'] = array(
         '#type' => 'select',
@@ -820,7 +822,9 @@ function biblio_admin_types_edit_form($form, &$form_state, $tid = 0) {
         '#disabled' => $disabled
       );
     }
+    */
   }
+
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save')
