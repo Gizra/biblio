@@ -45,6 +45,10 @@ function theme_biblio_citeproc_style($variables) {
     $csl_id = biblio_get_style();
 
     $csl = db_query('SELECT parent,csl FROM {biblio_citeproc_styles} WHERE filename = :id', array(':id' => $csl_id))->fetchObject();
+    if (!isset($csl->csl)) {
+      drupal_set_message(t('Biblio-CiteProc could not fetch the style file: !csl_id from the database.', array('!csl_id' => $csl_id)), 'error');
+      return;
+    }
     if (!empty($csl->parent)) {
       $csl_file_contents = db_query("SELECT csl FROM biblio_citeproc_styles WHERE id = :id", array(':id' => $csl->parent))->fetchField();
     }
