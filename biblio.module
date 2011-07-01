@@ -1077,9 +1077,8 @@ function biblio_form($node, &$form_state) {
   $fields = array();
   $form['biblio_tabs'] = $tabs = array();
 
-  $tid = isset($form_state['values']['biblio_type']) ?
-          $form_state['values']['biblio_type']  :
-          ( isset($node->biblio_type) ? $node->biblio_type : '');
+  $tid = !empty($form_state['biblio_type']) ? $form_state['biblio_type'] :
+          ( isset($node->biblio_type) ? $node->biblio_type : 0);
 
   $step_two = !empty($tid);
 
@@ -1090,12 +1089,12 @@ function biblio_form($node, &$form_state) {
     $results[$option->tid] = $option->name;
   }
   asort($results);
-  $options[-1] = t('Select Type...');
+  $options[0] = t('Select Type...');
   $options += $results;
   $form['biblio_type'] = array(
     '#type' => 'select',
     '#title' => t('Publication Type'),
-    '#default_value' => (!empty($tid)) ? $tid : -1,
+    '#default_value' =>  $tid,
     '#options' => $options,
     '#description' => NULL,
     '#weight' => -15,
@@ -1342,9 +1341,7 @@ function biblio_form_node_form_alter(&$form, &$form_state, $form_id) {
     if (!isset($form['biblio_tabs']['biblio_full_text']) && isset($form['body'])) {
      unset($form['body']);
     }
-    if (!isset($form_state['values']['biblio_type']) &&
-        empty($form_state['input']['biblio_type']) &&
-        empty($form_state['submitted']) &&
+    if (empty($form_state['biblio_type']) &&
         empty($form['vid']['#value'])) {
        foreach (element_children($form) as $form_element) {
         if (strstr($form_element, 'biblio_')) continue;
@@ -1374,7 +1371,8 @@ function biblio_node_form_validate($form, &$form_state) {
   if ($form_state['triggering_element']['#value'] == t('Next')
    || $form_state['triggering_element']['#value'] == t('Change Publication Type')) {
     $form_state['rebuild'] = TRUE;
-    if ($form_state['values']['biblio_type'] == -1) {
+    $form_state['biblio_type'] = $form_state['values']['biblio_type'];
+    if ($form_state['values']['biblio_type'] == 0) {
       form_set_error('biblio_type', t('Please select a publication type.'));
     }
     return;

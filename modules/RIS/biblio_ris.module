@@ -73,7 +73,7 @@ function biblio_ris_form_biblio_node_form_submit($form, &$form_state) {
   }
   if (!empty($node_data) && is_object($node_data)) {
     $form_state['values'] = array_merge($form_state['values'], (array)$node_data);
-    $form_state['input']['biblio_type'] = $node_data->biblio_type;
+    $form_state['input']['biblio_type'] = $form_state['biblio_type'] = $node_data->biblio_type;
   }
   $form_state['rebuild'] = TRUE;
   return;
