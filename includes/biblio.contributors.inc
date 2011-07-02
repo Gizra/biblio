@@ -207,7 +207,19 @@ function biblio_update_contributor(&$author) {
   if (!isset($author['cid'])) return FALSE;
   return drupal_write_record('biblio_contributor_data', $author, 'cid');
 }
-
+function _biblio_contributor_sort(&$authors) {
+  foreach($authors as $key => $author) {
+    if(!isset($author['rank'])) {
+      $authors[$key]['rank'] = $key;
+    }
+  }
+  usort($authors, '_biblio_contributor_usort');
+}
+function _biblio_contributor_usort($a, $b) {
+  if(empty($a['name'])) return 1;
+  if(empty($b['name'])) return -1;
+  return ($a['rank'] < $b['rank']) ? -1 : 1;
+}
 /**
  * Save contributors to the database
  * @param $authors
@@ -223,6 +235,7 @@ function _save_contributors(&$contributors, $nid, $vid, $update = FALSE) {
   db_delete('biblio_contributor')
   ->condition(db_and()->condition('nid', $nid)->condition('vid', $vid))
   ->execute();
+  _biblio_contributor_sort($contributors);// re-sort the authors by rank because the rank may have changed due to tabledrag on the input form
   foreach ($contributors as  $key => $author) {
  //   foreach ($authors as $key => $author) {
       if (!empty($author['name'])) {
