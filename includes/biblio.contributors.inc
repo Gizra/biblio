@@ -311,6 +311,7 @@ function biblio_parse_author($author_array, $cat = 0) {
     $author_array['initials'] = '';
     $author_array['lastname'] = trim($author_array['name']);
     $author_array['prefix'] = '';
+    $author_array['literal'] = 1;
   }
   else {
     $value = trim($author_array['name']);

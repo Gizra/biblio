@@ -438,77 +438,78 @@ function theme_biblio_format_authors($variables) {
 
   foreach ($contributors as $rank => $author) {
     if (empty($author['name'])) continue;
-    if (!isset($author['lastname'])) {
+    if (!isset($author['lastname']) && empty($author['literal'])) {
       module_load_include('inc', 'biblio', '/includes/biblio.contributors');
       $author = biblio_parse_author($author, $author['auth_type']); // this is needed for form preview to fill in all fields
     }
-
-    if (!empty($author['firstname'])) {
-      if ($options['shortenGivenNames']) {// if we're supposed to abbreviate given names
-        // within initials, reduce all full first names (-> defined by a starting uppercase character, followed by one ore more lowercase characters)
-        // to initials, i.e., only retain their first character
-        $author['firstname'] = preg_replace("/([$upper])[$lower]+/$patternModifiers", '\\1', $author['firstname']);
-        //$author['firstname'] = drupal_substr($author['firstname'], 0, 1);
-        // the next line caused extra betweenInitialsDelim to appear in some circumstances
-        //$author['firstname'] = preg_replace("/($space|$dash)?/$patternModifier", $options['betweenInitialsDelim'], $author['firstname']);
-      }
-    }
-    if (isset($author['initials'])) {
-      // within initials, remove any dots:
-      $author['initials'] = preg_replace("/([$upper])\.+/$patternModifiers", "\\1", $author['initials']);
-      //$author['initials'] = str_replace('.', '',  $author['initials']);
-
-      // within initials, remove any spaces *between* initials:
-      $author['initials'] = preg_replace("/(?<=[-$upper]) +(?=[-$upper])/$patternModifiers", "", $author['initials']);
-      //$author['initials'] = str_replace(' ', '',  $author['initials']);
-
-      // within initials, add a space after a hyphen, but only if ...
-      if (preg_match('/ $/', $options['betweenInitialsDelim'])) { // ... the delimiter that separates initials ends with a space
-        $author['initials'] = preg_replace("/-(?=[$upper])/$patternModifiers", "- ", $author['initials']);
-      }
-      // then, separate initials with the specified delimiter:
-      $delim = $options['betweenInitialsDelim'];
-      $author['initials'] = preg_replace("/([$upper])(?=[^$lower]+|$)/$patternModifiers", "\\1$delim", $author['initials']);
-
-      $shortenInitials = (isset($options['numberOfInitialsToKeep'])) ? $options['numberOfInitialsToKeep'] : FALSE;
-      if ($shortenInitials) $author['initials'] = drupal_substr($author['initials'], 0, $shortenInitials);
-
-      if ($options['shortenGivenNames'] && !empty($author['firstname'])) {
-        $author['firstname'] = $author['firstname'] . $options['betweenInitialsDelim'] . $author['initials'];
-        if ($shortenInitials) $author['firstname'] = drupal_substr($author['firstname'], 0, $shortenInitials);
-      }
-      elseif (!empty($author['firstname'])) {
-        $author['firstname'] = $author['firstname'] . ' ' . $author['initials'];
-      }
-      elseif (empty($author['firstname'])) {
-        $author['firstname'] = $author['initials'];
-      }
-    }
-
-    // if there is a surname prefix like "van", "von" etc, stick it back before the last name.
-    if (!empty($author['prefix'])) $author['lastname'] = $author['prefix'] . ' ' . $author['lastname'];
-    if (!empty($author['suffix'])) $author['lastname'] = $author['lastname'] . ', ' . $author['suffix'];
-
-    if (!empty($author['firstname'])) {
-      if ($rank == 0) { // -> first author
-        if ($options['initialsBeforeAuthorFirstAuthor']) {
-          $author['name'] = $author['firstname'] . $options['AuthorsInitialsDelimFirstAuthor'] . $author['lastname'];
-        }
-        else{
-          $author['name'] = $author['lastname'] . $options['AuthorsInitialsDelimFirstAuthor'] . $author['firstname'];
+    if (empty($author['literal'])) {
+      if (!empty($author['firstname'])) {
+        if ($options['shortenGivenNames']) {// if we're supposed to abbreviate given names
+          // within initials, reduce all full first names (-> defined by a starting uppercase character, followed by one ore more lowercase characters)
+          // to initials, i.e., only retain their first character
+          $author['firstname'] = preg_replace("/([$upper])[$lower]+/$patternModifiers", '\\1', $author['firstname']);
+          //$author['firstname'] = drupal_substr($author['firstname'], 0, 1);
+          // the next line caused extra betweenInitialsDelim to appear in some circumstances
+          //$author['firstname'] = preg_replace("/($space|$dash)?/$patternModifier", $options['betweenInitialsDelim'], $author['firstname']);
         }
       }
-      else { // $rank > 0 // -> all authors except the first one
-        if ($options['initialsBeforeAuthorStandard']) {
-          $author['name'] = $author['firstname'] . $options['AuthorsInitialsDelimStandard'] . $author['lastname'];
+      if (isset($author['initials'])) {
+        // within initials, remove any dots:
+        $author['initials'] = preg_replace("/([$upper])\.+/$patternModifiers", "\\1", $author['initials']);
+        //$author['initials'] = str_replace('.', '',  $author['initials']);
+
+        // within initials, remove any spaces *between* initials:
+        $author['initials'] = preg_replace("/(?<=[-$upper]) +(?=[-$upper])/$patternModifiers", "", $author['initials']);
+        //$author['initials'] = str_replace(' ', '',  $author['initials']);
+
+        // within initials, add a space after a hyphen, but only if ...
+        if (preg_match('/ $/', $options['betweenInitialsDelim'])) { // ... the delimiter that separates initials ends with a space
+          $author['initials'] = preg_replace("/-(?=[$upper])/$patternModifiers", "- ", $author['initials']);
         }
-        else{
-          $author['name'] = $author['lastname'] . $options['AuthorsInitialsDelimStandard'] . $author['firstname'];
+        // then, separate initials with the specified delimiter:
+        $delim = $options['betweenInitialsDelim'];
+        $author['initials'] = preg_replace("/([$upper])(?=[^$lower]+|$)/$patternModifiers", "\\1$delim", $author['initials']);
+
+        $shortenInitials = (isset($options['numberOfInitialsToKeep'])) ? $options['numberOfInitialsToKeep'] : FALSE;
+        if ($shortenInitials) $author['initials'] = drupal_substr($author['initials'], 0, $shortenInitials);
+
+        if ($options['shortenGivenNames'] && !empty($author['firstname'])) {
+          $author['firstname'] = $author['firstname'] . $options['betweenInitialsDelim'] . $author['initials'];
+          if ($shortenInitials) $author['firstname'] = drupal_substr($author['firstname'], 0, $shortenInitials);
+        }
+        elseif (!empty($author['firstname'])) {
+          $author['firstname'] = $author['firstname'] . ' ' . $author['initials'];
+        }
+        elseif (empty($author['firstname'])) {
+          $author['firstname'] = $author['initials'];
         }
       }
-    }
-    else {
-      $author['name'] = $author['lastname'];
+
+      // if there is a surname prefix like "van", "von" etc, stick it back before the last name.
+      if (!empty($author['prefix'])) $author['lastname'] = $author['prefix'] . ' ' . $author['lastname'];
+      if (!empty($author['suffix'])) $author['lastname'] = $author['lastname'] . ', ' . $author['suffix'];
+
+      if (!empty($author['firstname'])) {
+        if ($rank == 0) { // -> first author
+          if ($options['initialsBeforeAuthorFirstAuthor']) {
+            $author['name'] = $author['firstname'] . $options['AuthorsInitialsDelimFirstAuthor'] . $author['lastname'];
+          }
+          else{
+            $author['name'] = $author['lastname'] . $options['AuthorsInitialsDelimFirstAuthor'] . $author['firstname'];
+          }
+        }
+        else { // $rank > 0 // -> all authors except the first one
+          if ($options['initialsBeforeAuthorStandard']) {
+            $author['name'] = $author['firstname'] . $options['AuthorsInitialsDelimStandard'] . $author['lastname'];
+          }
+          else{
+            $author['name'] = $author['lastname'] . $options['AuthorsInitialsDelimStandard'] . $author['firstname'];
+          }
+        }
+      }
+      else {
+        $author['name'] = $author['lastname'];
+      }
     }
     if ($author_links) {
       $author['name'] = theme('biblio_author_link', array('author' => $author));

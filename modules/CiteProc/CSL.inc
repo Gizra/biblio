@@ -551,80 +551,77 @@ class csl_name extends csl_format {
     if (!$this->attr_init || $this->attr_init != $mode) $this->init_attrs($mode);
 
     foreach ($names as $rank => $name) {
-      if (!isset($name['lastname'])) {
-        module_load_include('inc', 'biblio', '/includes/biblio.contributors');
-        $name = biblio_parse_author($name); // this is needed for form preview to fill in all fields
-      }
-      $count++;
-      //$given = (!empty($name['firstname'])) ? $name['firstname'] : '';
-      if (!empty($name['firstname']) && isset($initialize_with)) {
-        $name['firstname'] = preg_replace("/([$this->upper])[$this->lower]+/$this->patternModifiers", '\\1', $name['firstname']);
-        $name['firstname'] = preg_replace("/(?<=[-$this->upper]) +(?=[-$this->upper])/$this->patternModifiers", "", $name['firstname']);
-        $name['initials'] = $name['firstname'] . $name['initials'];
-      }
-      if (isset($name['initials'])) {
-        // within initials, remove any dots:
-        $name['initials'] = preg_replace("/([$this->upper])\.+/$this->patternModifiers", "\\1", $name['initials']);
-        // within initials, remove any spaces *between* initials:
-        $name['initials'] = preg_replace("/(?<=[-$this->upper]) +(?=[-$this->upper])/$this->patternModifiers", "", $name['initials']);
-        if (isset($this->citeproc->style)  && $this->citeproc->style->{'initialize-with-hyphen'} == 'false') {
-          $name['initials'] = preg_replace("/-/", '', $name['initials']);
+      if (empty($name['literal'])) {
+        if (!isset($name['lastname'])) {
+          module_load_include('inc', 'biblio', '/includes/biblio.contributors');
+          $name = biblio_parse_author($name); // this is needed for form preview to fill in all fields
         }
-        // within initials, add a space after a hyphen, but only if ...
-        if (preg_match("/ $/", $initialize_with)) {// ... the delimiter that separates initials ends with a space
-          $name['initials'] = preg_replace("/-(?=[$this->upper])/$this->patternModifiers", "- ", $name['initials']);
+        $count++;
+        if (!empty($name['firstname']) && isset($initialize_with)) {
+          $name['firstname'] = preg_replace("/([$this->upper])[$this->lower]+/$this->patternModifiers", '\\1', $name['firstname']);
+          $name['firstname'] = preg_replace("/(?<=[-$this->upper]) +(?=[-$this->upper])/$this->patternModifiers", "", $name['firstname']);
+          $name['initials'] = $name['firstname'] . $name['initials'];
         }
-        // then, separate initials with the specified delimiter:
-        $name['initials'] = preg_replace("/([$this->upper])(?=[^$this->lower]+|$)/$this->patternModifiers", "\\1$initialize_with", $name['initials']);
-
-        //      $shortenInitials = (isset($options['numberOfInitialsToKeep'])) ? $options['numberOfInitialsToKeep'] : FALSE;
-        //      if ($shortenInitials) $given = drupal_substr($given, 0, $shortenInitials);
-
-        if (isset($initialize_with)) {
-          $name['firstname'] = $name['initials'];
-         // if ($shortenInitials) $name['firstname'] = drupal_substr($name['firstname'], 0, $shortenInitials);
-        }
-        elseif (!empty($name['firstname'])) {
-          $name['firstname'] = $name['firstname'] . ' ' . $name['initials'];
-        }
-        elseif (empty($name['firstname'])) {
-          $name['firstname'] = $name['initials'];
-        }
-      }
-
-
-      $given = $this->format($name['firstname'], 'given');
-      if (isset($name['lastname'])) {
-        if (!empty($name['prefix'])) {
-          $name['lastname'] = $name['prefix'] . ' ' . $name['lastname'];
-        }
-        if (!empty($name['suffix'])) {
-          $name['lastname'] = $name['lastname'] . ', ' . $name['suffix'];
-        }
-
-        $name['lastname'] = $this->format($name['lastname'], 'family');
-        if ($this->form == 'short') {
-          $text = $name['lastname'];
-        }
-        else {
-          switch ($this->{'name-as-sort-order'}) {
-            case 'first':
-            case 'all':
-              $text = $name['lastname'] . $this->sort_separator . $given;
-              break;
-            default:
-              $text = $given . ' ' . $name['lastname'] ;
+        if (isset($name['initials'])) {
+          // within initials, remove any dots:
+          $name['initials'] = preg_replace("/([$this->upper])\.+/$this->patternModifiers", "\\1", $name['initials']);
+          // within initials, remove any spaces *between* initials:
+          $name['initials'] = preg_replace("/(?<=[-$this->upper]) +(?=[-$this->upper])/$this->patternModifiers", "", $name['initials']);
+          if (isset($this->citeproc->style)  && $this->citeproc->style->{'initialize-with-hyphen'} == 'false') {
+            $name['initials'] = preg_replace("/-/", '', $name['initials']);
+          }
+          // within initials, add a space after a hyphen, but only if ...
+          if (preg_match("/ $/", $initialize_with)) {// ... the delimiter that separates initials ends with a space
+            $name['initials'] = preg_replace("/-(?=[$this->upper])/$this->patternModifiers", "- ", $name['initials']);
+          }
+          // then, separate initials with the specified delimiter:
+          $name['initials'] = preg_replace("/([$this->upper])(?=[^$this->lower]+|$)/$this->patternModifiers", "\\1$initialize_with", $name['initials']);
+          //      $shortenInitials = (isset($options['numberOfInitialsToKeep'])) ? $options['numberOfInitialsToKeep'] : FALSE;
+          //      if ($shortenInitials) $given = drupal_substr($given, 0, $shortenInitials);
+          if (isset($initialize_with)) {
+            $name['firstname'] = $name['initials'];
+            // if ($shortenInitials) $name['firstname'] = drupal_substr($name['firstname'], 0, $shortenInitials);
+          }
+          elseif (!empty($name['firstname'])) {
+            $name['firstname'] = $name['firstname'] . ' ' . $name['initials'];
+          }
+          elseif (empty($name['firstname'])) {
+            $name['firstname'] = $name['initials'];
           }
         }
-        $name['name'] = $text;
-        if (variable_get('biblio_author_links', 1)) {
-          $text = theme('biblio_author_link', array('author' => $name));
-          //$text = $this->author_link($name);
+        $given = $this->format($name['firstname'], 'given');
+        if (isset($name['lastname'])) {
+          if (!empty($name['prefix'])) {
+            $name['lastname'] = $name['prefix'] . ' ' . $name['lastname'];
+          }
+          if (!empty($name['suffix'])) {
+            $name['lastname'] = $name['lastname'] . ', ' . $name['suffix'];
+          }
+
+          $name['lastname'] = $this->format($name['lastname'], 'family');
+          if ($this->form == 'short') {
+            $text = $name['lastname'];
+          }
+          else {
+            switch ($this->{'name-as-sort-order'}) {
+              case 'first':
+              case 'all':
+                $text = $name['lastname'] . $this->sort_separator . $given;
+                break;
+              default:
+                $text = $given . ' ' . $name['lastname'] ;
+            }
+          }
+          $name['name'] = $text;
         }
-
-        $authors[] = $this->format($text);
-
       }
+      if (variable_get('biblio_author_links', 1)) {
+        $text = theme('biblio_author_link', array('author' => $name));
+        //$text = $this->author_link($name);
+      }
+
+      $authors[] = $this->format($text);
+
       if (isset($this->{'et-al-min'}) && $count >= $this->{'et-al-min'}) break;
     }
     if (isset($this->{'et-al-min'}) &&
