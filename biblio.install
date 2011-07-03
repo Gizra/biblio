@@ -1708,9 +1708,14 @@ function biblio_update_6028() {
 }
 
 function biblio_update_6029() {
-  $result = array();
-  db_query("ALTER TABLE {biblio_type_maps} ADD COLUMN export_map  LONGBLOB NULL DEFAULT NULL ");
-  return $result;
+  $spec = array(
+        'type' => 'blob',
+        'not null' => FALSE,
+        'default'  => NULL,
+        'size' => 'big',
+        'description' => 'Stores the mapping between biblio fields and external file formats',
+        );
+  db_add_field('biblio_type_maps', 'export_map', $spec);
 }
 
 function biblio_update_6030() {
