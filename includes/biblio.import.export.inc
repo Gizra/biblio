@@ -76,8 +76,8 @@ function biblio_import_form($form, &$form_state) {
         '#title' => t('File Type'),
         '#default_value' => 0,
         '#options' => array(
-          '0'        => t('Select type'),
-          )
+          '0' => t('Select type'),
+        )
       );
 
       $form['filetype']['#options'] = array_merge($form['filetype']['#options'], $import_options);
@@ -203,8 +203,8 @@ function biblio_import_form_validate($form, & $form_state) {
     }
   }
 
-  if ($op == t('Import') && $filetype == "none") {
-    form_set_error('biblio_import_form', t("Error: You must select a file type"));
+  if ($op == t('Import') && $filetype == "0") {
+    form_set_error('biblio_import_form', t("Error: You did not select the file type"));
   }
 }
 /**
