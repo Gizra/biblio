@@ -1605,16 +1605,23 @@ function biblio_admin_author_types_form($form, &$form_state, $op = NULL, $id = N
         '#weight' => 3,
         '#submit' => array('biblio_admin_author_types_form_submit')
       );
-      $form_state['redirect'] = 'admin/config/biblio/author/type';
+      $form['cancel_button'] = array(
+        '#type' => 'submit',
+        '#value' => t('Cancel'),
+        '#weight' => 4,
+      );
+      $form['#theme'] = '';
       return $form;
       break;
     case 'hide':
       break;
     default:
+      return;
   }
 }
 
-function theme_biblio_admin_author_types_form($form) {
+function theme_biblio_admin_author_types_form($variables) {
+  $form = $variables['form'];
   // We need this complex query to realize author_types which are not in use (cid is NULL)
   $db_result = db_query("SELECT ctd.*, cid FROM {biblio_contributor_type_data} ctd
                          LEFT JOIN {biblio_contributor} c ON ctd.auth_type = c.auth_type
@@ -1648,23 +1655,25 @@ function theme_biblio_admin_author_types_form($form) {
 
 function biblio_admin_author_types_form_submit($form, $form_state) {
 
-  $record->title = $form_state['values']['title'];
-  $record->hint = $form_state['values']['hint'];
-
-  switch ($form['#id']) {
-    case 'biblio-admin-author-types-form-new':
-      $record->title = $form_state['values']['title'];
-      $record->hint = $form_state['values']['hint'];
-      drupal_write_record('biblio_contributor_type_data', $record);
-      break;
-    case 'biblio-admin-author-types-form-edit':
-      $record->auth_type = $form_state['values']['auth_type'];
-      drupal_write_record('biblio_contributor_type_data', $record, 'auth_type');
-      break;
-
+  if ($form_state['triggering_element']['#value'] == t('Save') || $form_state['triggering_element']['#value'] == t('Create New Type')) {
+    $record->title = $form_state['values']['title'];
+    $record->hint = $form_state['values']['hint'];
+    switch ($form['#id']) {
+      case 'biblio-admin-author-types-form-new':
+        $record->title = $form_state['values']['title'];
+        $record->hint = $form_state['values']['hint'];
+        drupal_write_record('biblio_contributor_type_data', $record);
+        break;
+      case 'biblio-admin-author-types-form-edit':
+        $record->auth_type = $form_state['values']['auth_type'];
+        drupal_write_record('biblio_contributor_type_data', $record, 'auth_type');
+        break;
+    }
   }
+  drupal_goto('admin/config/biblio/author/type');
 }
-function biblio_admin_author_type_delete_confirm(&$form_state, $type_id) {
+
+function biblio_admin_author_type_delete_confirm($form, &$form_state, $type_id) {
   $base = variable_get('biblio_base', 'biblio');
   $type_data = db_query('SELECT * FROM {biblio_contributor_type_data} bctd WHERE bctd.auth_type = :tid ', array(':tid' => $type_id))->fetchObject();
   $form['auth_type'] = array(
