@@ -209,7 +209,7 @@ function biblio_update_contributor(&$author) {
 }
 function _biblio_contributor_sort(&$authors) {
   foreach($authors as $key => $author) {
-    if(!isset($author['rank'])) {
+    if(!isset($author['rank']) || empty($author['rank'])) {
       $authors[$key]['rank'] = $key;
     }
   }
