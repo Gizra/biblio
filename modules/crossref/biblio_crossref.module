@@ -93,7 +93,7 @@ function biblio_crossref_biblio_lookup_link($node) {
 
 function biblio_crossref_link($type, $node = NULL, $teaser = FALSE) {
   $show_link = variable_get('biblio_lookup_links', array('crossref' => TRUE));
-  if (!$show_link['crossref'] || !isset($node) || !isset($node->biblio_crossref_id)) {
+  if (empty($show_link['crossref']) || !isset($node) || !isset($node->biblio_crossref_id)) {
     return array();
   }
   if ($type == 'node' && $node->type == 'biblio') {
