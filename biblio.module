@@ -180,6 +180,10 @@ function biblio_theme($existing, $type, $theme, $path) {
       'file' => '/includes/biblio_theme.inc',
       'render element' => 'form',
     ),
+    'biblio_field_tab' => array(
+      'file' => '/includes/biblio_theme.inc',
+      'render element' => 'form',
+    ),
     'biblio_admin_author_edit_form' => array(
         'file' => '/includes/biblio_theme.inc',
         'render element' => 'form',
@@ -689,9 +693,9 @@ function biblio_menu() {
     'access arguments'  => array('administer biblio'),
     'file'              => '/includes/biblio.admin.inc',
     'type'              => MENU_DEFAULT_LOCAL_TASK,
-    'weight'            => -9
+    'weight'            => -10
   );
-  $items['admin/config/biblio/fields/type'] = array(
+/*  $items['admin/config/biblio/fields/type'] = array(
     'title'             => 'Publication Types',
     'page callback'     => 'biblio_admin_types_form',
 //    'page arguments'    => array('biblio_admin_types_form'),
@@ -700,6 +704,7 @@ function biblio_menu() {
     'type'              => MENU_LOCAL_TASK,
     'weight'            => -8
   );
+*/
   $items['admin/config/biblio/fields/typemap'] = array(
     'title'             => 'Type Mapping',
     'page callback'     => 'biblio_admin_type_mapper_page',

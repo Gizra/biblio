@@ -790,59 +790,52 @@ function theme_biblio_form_filter($variables) {
   return $output;
 }
 
+function theme_biblio_field_tab($variables) {
+  $form = $variables['form'];
+  $rows = array();
+  $headers = $form['#header'];
+  drupal_add_tabledrag($form['#id'], 'order', 'sibling', 'weight');
+
+  foreach (element_children($form['rows']) as $key) {
+    // No need to print the field title every time.
+//    unset($form[$key]['name']['#title'], $form[$key]['auth_type']['#title'], $form[$key]['auth_category']['#title']);
+    // Add class to group weight fields for drag and drop.
+    $form['rows'][$key]['weight']['#attributes']['class'] = array('weight');
+
+    // Build the table row.
+    $row = array('');
+    $row[] = array('data' => drupal_render($form['rows'][$key]['name']));
+    $row[] = array('data' => drupal_render($form['rows'][$key]['title']));
+    $row[] = array('data' => drupal_render($form['rows'][$key]['hint']));
+    foreach (element_children($form['rows'][$key]['checkboxes']) as $oid) {
+      if (is_array($form['rows'][$key]['checkboxes'])) {
+        $row[] = array(
+          'data' => drupal_render($form['rows'][$key]['checkboxes'][$oid]),
+          'title' => $oid);
+      }
+    }
+
+
+    $row[] = drupal_render($form['rows'][$key]['weight']);
+    $rows[] = array('data' => $row, 'class' => array('draggable'));
+  }
+  $output = theme('table', array('header' => $headers, 'rows' => $rows, 'attributes' => array('id' => $form['#id'])));
+  $output .= drupal_render_children($form);
+  return $output;
+
+}
 /**
  * @param $form
  * @return unknown_type
  */
 function theme_biblio_admin_types_edit_form($variables) {
   $form = $variables['form'];
-  drupal_add_tabledrag('field-table', 'order', 'sibling', 'weight', NULL, NULL, FALSE);
-  $base = variable_get('biblio_base', 'biblio');
-  $tid = (!empty ($form['#parameters'][2])) ? $form['#parameters'][2] : FALSE;
-  //  drupal_set_title($form['type_name'] ? $form['type_name']['#value'] : t('Common'));
+  $output = '';
 
-  // build the table with all the fields if no $tid is given, or only the common
-  // and customized fields if $tid is given
-  $conf_table = array();
-  foreach (element_children($form['configured_flds']) as $fld) {
-    $form['configured_flds'][$fld]['weight']['#attributes']['class'] = array('weight');
-
-    $conf_row = array();
-    $conf_row[] = array('data' => drupal_render($form['configured_flds'][$fld]['name']));
-    $conf_row[] = array('data' => drupal_render($form['configured_flds'][$fld]['title']));
-    if (isset($form['configured_flds'][$fld]['auth_type'])) {
-      $form['configured_flds'][$fld]['hint']['#size'] = 15;
-      $conf_row[] = array('data' => drupal_render($form['configured_flds'][$fld]['hint']));
-      $conf_row[] = array('data' => drupal_render($form['configured_flds'][$fld]['auth_type']));
-    }
-    else {
-      $form['configured_flds'][$fld]['hint']['#size'] = ($tid ? 38: 36);
-      $conf_row[] = array('data' => drupal_render($form['configured_flds'][$fld]['hint']), 'colspan' => array(2));
-    }
-    foreach (element_children($form['configured_flds'][$fld]['checkboxes']) as $oid) {
-      if (is_array($form['configured_flds'][$fld]['checkboxes'])) {
-        $conf_row[] = array(
-          'data' => drupal_render($form['configured_flds'][$fld]['checkboxes'][$oid]),
-          'title' => $oid);
-      }
-    }
-    $conf_row[] = array('data' => drupal_render($form['configured_flds'][$fld]['weight']));
-    $conf_table[] = array('data' => $conf_row, 'class' => array('draggable'));
-  }
-  if ($tid) {
-    $header = array(t('Field Name'), t('Title'), t('Hint'), '', t('Visible'), t('Required'), t('Weight'));
-  }
-  else {
-    $header = array(t('Field Name'), t('Default Title'), t('Hint'), '', t('Common'), t('Required'), t('Autocomplete'), t('Weight'));
-  }
-  $output = '<h2>' . drupal_render($form['top_message']) . '</h2>';
   $output .= drupal_render($form['help']);
-  $output .= drupal_render($form['types']);
-  $output .= drupal_render($form['type_name']);
-  $output .= drupal_render($form['options']);
-
-  $output .= theme('table', array('header' => $header, 'rows' => $conf_table, 'attributes' => array('id' => 'field-table')));
-  $output .= '<p><center>' . drupal_render($form['submit']) . '</center></p>';
+  $output .= drupal_render($form['pub_type']);
+  $output .= drupal_render($form['change_type']);
+  $output .= drupal_render($form['biblio_tabs']);
   $output .= drupal_render_children($form);
   return $output;
 }

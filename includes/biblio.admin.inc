@@ -51,6 +51,7 @@ function biblio_admin_settings() {
     '#default_value' => variable_get('biblio_base', 'biblio'),
     '#description' => t('This sets the base URL used to access the biblio module (e.g. /biblio ).')
   );
+  $form['#biblio_base'] = $form['general']['biblio_base']['#default_value'];
   $form['general']['biblio_base_title'] = array(
    '#type' => 'textfield',
     '#title' => t('Biblio page title'),
@@ -656,12 +657,17 @@ function biblio_admin_settings_form_submit($form, $form_state) {
 //    }
 //  }
 
-  menu_rebuild();
+  if( ($form['#biblio_base'] != $form_state['values']['biblio_base']) ||
+      ($form['biblio_profile']['#biblio_show_profile'] != $form_state['values']['biblio_show_profile']) ||
+      ($form['biblio_profile']['#biblio_my_pubs_menu'] != $form_state['values']['biblio_my_pubs_menu']) )
+  {
+    menu_rebuild();
+  }
 }
 function biblio_admin_types_edit_form($form, &$form_state, $tid = 0) {
  // $form['#theme'] = 'biblio_admin_types_edit_form';
-  $form['#tree'] = TRUE;
-
+ // $form['#tree'] = TRUE;
+  $tid = (isset($form_state['pub_type']) ? $form_state['pub_type'] : $tid);
   $msg = '<div>' . t('On this page you can set type specific "Titles" and "Hints" which will display on the input form.');
   if ($tid) {
     $msg .= ' ' . t('Checking the "Visible" box will add the field to the input form, checking "Required" will force the user to supply a value for this field and the weight value changes the order which it is rendered on the form with smaller values floating to the top of the form.
@@ -693,7 +699,7 @@ function biblio_admin_types_edit_form($form, &$form_state, $tid = 0) {
 
   // first get all of the field info
   if ($tid) {
-    $result = db_query("SELECT bf.*, bftd.*, bft.common, bft.visible, bft.autocomplete, bft.weight, bft.required, bt.name AS type_name
+    $result = db_query("SELECT bf.*, bftd.*,  bft.vtab, bft.common, bft.visible, bft.autocomplete, bft.weight, bft.required, bt.name AS type_name
                         FROM {biblio_fields} AS bf
                         INNER JOIN {biblio_field_type} AS bft ON bft.fid=bf.fid
                         INNER JOIN {biblio_field_type_data} AS bftd ON bftd.ftdid=bft.ftdid
@@ -701,7 +707,7 @@ function biblio_admin_types_edit_form($form, &$form_state, $tid = 0) {
                         WHERE bft.tid=$tid", array(), array('fetch' => PDO::FETCH_ASSOC));
   }
   else {
-    $result = db_query("SELECT bf.*, bftd.*, bft.common, bft.visible, bft.autocomplete, bft.weight, bft.required
+    $result = db_query("SELECT bf.*, bftd.*, bft.vtab, bft.common, bft.visible, bft.autocomplete, bft.weight, bft.required
                         FROM {biblio_fields} AS bf
                         INNER JOIN {biblio_field_type} AS bft ON bft.fid=bf.fid
                         INNER JOIN {biblio_field_type_data} AS bftd ON bftd.ftdid=bft.ftdid
@@ -716,14 +722,26 @@ function biblio_admin_types_edit_form($form, &$form_state, $tid = 0) {
   foreach ($types as $type) {
     $types_options[$type->tid] = $type->name;
   }
-    $form['types'] = array(
+    $form['pub_type'] = array(
       '#title' => t('Publication type'),
       '#type' => 'select',
       '#options' => $types_options,
+      '#attributes' =>  array('onchange' => 'document.getElementById(\'edit-change-type\').click()'),
       '#default_value' => $tid,
     );
+  $form['change_type'] = array(
+      '#type'   => 'submit',
+      '#value'  =>  t('Change Publication Type'),
+      '#weight' => -10,
+  );
 
-  $form['configured_flds'] = array('#tree' => 1);
+    $form['biblio_tabs'] = array(
+      '#type' => 'vertical_tabs',
+      '#weight' => 0,
+    );
+    $form['biblio_tabs'] += biblio_node_form_vtabs();
+
+ // $form['configured_flds'] = array('#tree' => 1);
   if ($tid) { // show an existing type
     $typename = $fields[1]['type_name'];
     $form['type_name'] = array(
@@ -753,7 +771,7 @@ function biblio_admin_types_edit_form($form, &$form_state, $tid = 0) {
   $options["$vis_comm"] = '';
   $options['required'] = '';
   if ($tid == 0)
-    $options['autocomplete'] = '';
+     $options['autocomplete'] = '';
   foreach ($fields as $key => $fld) {
     if ($fld['type'] == 'contrib_widget') {
       continue;
@@ -774,57 +792,63 @@ function biblio_admin_types_edit_form($form, &$form_state, $tid = 0) {
         array_push($def_values[$fld['name']], 'autocomplete');
     }
     $disabled = $tid ? ($fld['common'] ? 1 : 0) : 0;
-    $form['configured_flds'][$key]['name'] = array(
+
+    $tab_data[$fld['vtab']][$key]['#parents'] = array('biblio_tabs', $key);
+    $tab_data[$fld['vtab']][$key]['name'] = array(
       '#type' => 'markup',
       '#markup' => check_plain($fld['name']),
       '#weight' => $fld['weight']
     );
-    $form['configured_flds'][$key]['title'] = array(
+    $tab_data[$fld['vtab']][$key]['title'] = array(
       '#type' => 'textfield',
       '#default_value' => $fld['title'],
       '#size' => 15,
       '#weight' => $fld['weight'],
       '#disabled' => $disabled
     );
-    $form['configured_flds'][$key]['hint'] = array(
+    $tab_data[$fld['vtab']][$key]['hint'] = array(
       '#type' => 'textfield',
       '#default_value' => $fld['hint'],
       '#size' => 20,
       '#weight' => $fld['weight'],
       '#disabled' => $disabled
     );
-    $form['configured_flds'][$key]['weight'] = array(
+    $tab_data[$fld['vtab']][$key]['weight'] = array(
       '#type' => 'textfield',
       '#default_value' => $fld['weight'],
       '#size' => 2,
       '#weight' => $fld['weight'],
       //'#disabled' => $disabled
     );
-    $form['configured_flds'][$key]['checkboxes'] = array(
+    $tab_data[$fld['vtab']][$key]['checkboxes'] = array(
       '#type' => 'checkboxes',
       '#options' => $options,
       '#default_value' => $def_values[$fld['name']],
       '#weight' => $fld['weight'],
       //'#disabled' => $disabled
     );
-    $form['configured_flds'][$key]['ftdid'] = array(
-      '#type' => '#value',
+    $tab_data[$fld['vtab']][$key]['ftdid'] = array(
+      '#type' => 'value',
       '#value' => $fld['ftdid']
     );
-/*    if ($fld['type'] == 'contrib_widget') {
-      $cur = _biblio_get_auth_types($fld['fid'], $tid ? $tid : $fld['fid']);
-      $form['configured_flds'][$key]['auth_type'] = array(
-        '#type' => 'select',
-        '#options' => $contrib_options,
-        '#size' => min(count($contrib_options), 4),
-        '#multiple' => TRUE,
-        '#default_value' => _biblio_get_auth_types($fld['fid'], $disabled ? 0 : $tid),
-        '#disabled' => $disabled
-      );
-    }
-    */
+
+  }
+  if ($tid) {
+    $header = array('', t('Field Name'), t('Title'), t('Hint'), t('Visible'), t('Required'),'');
+  }
+  else {
+    $header = array('', t('Field Name'), t('Default Title'), t('Hint'),  t('Common'), t('Required'), t('Autocomplete'),'');
   }
 
+  foreach ($tab_data as $key => $rows) {
+    $form['biblio_tabs'][$key][] = array(
+      '#theme' => 'biblio_field_tab',
+      '#header' => $header,
+      'rows' => $rows,
+    );
+  }
+
+  $form['biblio_tabs']['#tree']  = TRUE;
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save')
@@ -833,6 +857,14 @@ function biblio_admin_types_edit_form($form, &$form_state, $tid = 0) {
   return $form;
 }
 
+function biblio_admin_types_edit_form_validate($form, & $form_state) {
+  if ($form_state['triggering_element']['#value'] == t('Change Publication Type')) {
+    $form_state['rebuild'] = TRUE;
+    $form_state['pub_type'] = $form_state['values']['pub_type'];
+    return;
+  }
+
+}
 function biblio_admin_types_edit_form_submit($form, & $form_state) {
   $tid = isset($form_state['values']['type_id']) ? $form_state['values']['type_id'] : 0;
 
@@ -842,7 +874,7 @@ function biblio_admin_types_edit_form_submit($form, & $form_state) {
       'tid' => $tid,
       'name' => $form_state['values']['type_name'],
     );
-    drupal_write_record('biblio_types', $type_name_record, 'tid');
+  //  drupal_write_record('biblio_types', $type_name_record, 'tid');
 
 //    db_update('biblio_types')
 //      ->fields($type_name_record)
@@ -851,7 +883,7 @@ function biblio_admin_types_edit_form_submit($form, & $form_state) {
   }
 
   // save author types
-  $link['biblio_type'] = $tid;
+/*  $link['biblio_type'] = $tid;
   db_delete('biblio_contributor_type')
     ->condition('biblio_type', $link['biblio_type'])
     ->execute();
@@ -868,89 +900,93 @@ function biblio_admin_types_edit_form_submit($form, & $form_state) {
         ->execute();
     }
   }
+  */
   $hide_other_fields = isset($form_state['values']['hide_other_fields']) ? $form_state['values']['hide_other_fields'] : 0;
   variable_set('biblio_hide_other_fields', $hide_other_fields);
 
   // save other field data
-  foreach ($form_state['values']['configured_flds'] as $fid => $values) {
+  foreach ($form_state['values']['biblio_tabs'] as $fid => $values) {
     $update = FALSE;
     $val = array();
     $link = array();
-    $link['fid'] = $fid;
-    $link['tid'] = $tid;
-    foreach ($values as $name => $value) {
-      $disabled = isset($form['configured_flds'][$fid][$name]['#disabled']) ? $form['configured_flds'][$fid][$name]['#disabled'] : 0;
-      if (!$disabled) {
-        $default_value = $form['configured_flds'][$fid][$name]['#default_value'];
-        if ($name == 'checkboxes') {
-          $link['visible']      = (!empty($value['visible'])) ? 1 : 0;
-          $link['required']     = (!empty($value['required'])) ? 1 : 0;
-          if ($tid == 0) {
-            $link['common']       = (!empty($value['common'])) ? 1 : 0;
-            $link['autocomplete'] = (!empty($value['autocomplete'])) ? 1 : 0;
+    if (is_int($fid)) {
+      $link['fid'] = $fid;
+      $link['tid'] = $tid;
+      foreach ($values as $name => $value) {
+        $disabled = isset($form['biblio_tabs'][$fid][$name]['#disabled']) ? $form['biblio_tabs'][$fid][$name]['#disabled'] : 0;
+        if (!$disabled) {
+ //FIXME         $default_value = $form['biblio_tabs'][$fid][$name]['#default_value'];
+          if ($name == 'checkboxes') {
+            $link['visible']      = (!empty($value['visible'])) ? 1 : 0;
+            $link['required']     = (!empty($value['required'])) ? 1 : 0;
+            if ($tid == 0) {
+              $link['common']       = (!empty($value['common'])) ? 1 : 0;
+              $link['autocomplete'] = (!empty($value['autocomplete'])) ? 1 : 0;
+            }
+          }
+          elseif ($name == 'weight') {
+            $link['weight'] = $value;
+          }
+          else {
+            $val[$name] = $value;
+            if (!$update) {
+ //FIXME         $update = ($default_value != $val[$name]) ? $form['biblio_tabs'][$fid]['ftdid']['#value'] : FALSE;
+            }
           }
         }
-        elseif ($name == 'weight') {
-          $link['weight'] = $value;
-        }
-        else {
-          $val[$name] = $value;
-          if (!$update)
-          $update = ($default_value != $val[$name]) ? $form['configured_flds'][$fid]['ftdid']['#value'] : FALSE;
-        }
       }
-    }
-    if ($update == $fid && $link['tid']) { // we just changed a default value, so create a new entry in biblio_field_type_data
-      $new_ftdid = variable_get('biblio_last_ftdid', 100);
-      variable_set('biblio_last_ftdid', $new_ftdid + 1);
-      $val['ftdid'] = $new_ftdid;
-      $link['ftdid'] = $new_ftdid;
-      $link['cust_tdid'] = $new_ftdid;
-      drupal_write_record('biblio_field_type_data', $val);
+      if ($update == $fid && $link['tid']) { // we just changed a default value, so create a new entry in biblio_field_type_data
+        $new_ftdid = variable_get('biblio_last_ftdid', 100);
+        variable_set('biblio_last_ftdid', $new_ftdid + 1);
+        $val['ftdid'] = $new_ftdid;
+        $link['ftdid'] = $new_ftdid;
+        $link['cust_tdid'] = $new_ftdid;
+        drupal_write_record('biblio_field_type_data', $val);
 
-    }
-    elseif ($update >= 100 && $link['tid']) { // we are updating an existing entry
-      $val['ftdid'] = $form['configured_flds'][$fid]['ftdid']['#value'];
-      drupal_write_record('biblio_field_type_data', $val, 'ftdid');
+      }
+      elseif ($update >= 100 && $link['tid']) { // we are updating an existing entry
+        $val['ftdid'] = $form['biblio_tabs'][$fid]['ftdid']['#value'];
+        drupal_write_record('biblio_field_type_data', $val, 'ftdid');
 
-    }
-    elseif ($update == $fid) { // changing the defaults
-      $val['ftdid'] = $fid;
-      drupal_write_record('biblio_field_type_data', $val, 'ftdid');
-    }
+      }
+      elseif ($update == $fid) { // changing the defaults
+        $val['ftdid'] = $fid;
+        drupal_write_record('biblio_field_type_data', $val, 'ftdid');
+      }
 
-    drupal_write_record('biblio_field_type', $link, array('fid', 'tid'));
+      drupal_write_record('biblio_field_type', $link, array('fid', 'tid'));
 
-    if ($tid == 0) {
-      if ($link['common']) {
-//        $query = "UPDATE {biblio_field_type} SET ftdid = %d, common = %d, visible = %d WHERE fid = %d";
-//        db_query($query, array($fid, 1, 1, $fid));
-        db_update('biblio_field_type')
+      if ($tid == 0) {
+        if ($link['common']) {
+          //        $query = "UPDATE {biblio_field_type} SET ftdid = %d, common = %d, visible = %d WHERE fid = %d";
+          //        db_query($query, array($fid, 1, 1, $fid));
+          db_update('biblio_field_type')
           ->fields(array('ftdid' => $fid, 'common' => 1, 'visible' => 1))
           ->condition('fid', $fid)
           ->execute();
-      }
-      else { // not common, so change pointer back to customizations if available
-        $query = "UPDATE {biblio_field_type} SET ftdid = cust_tdid, common = :comm WHERE fid = :fid";
-        db_query($query, array(':comm' => 0, ':fid' => $fid));
-//        db_update('biblio_field_type')
-//          ->fields(array('ftdid' => $fid, 'common' => 0, 'visible' => 1))
-//          ->condition('fid', $fid)
-//          ->execute();
-      }
-      // set the autocomplete bit on this field for all the types
-//      $query = "UPDATE {biblio_field_type} SET autocomplete = %d WHERE fid = %d";
-//      db_query($query, array($link['autocomplete'], $fid));
-      db_update('biblio_field_type')
+        }
+        else { // not common, so change pointer back to customizations if available
+          $query = "UPDATE {biblio_field_type} SET ftdid = cust_tdid, common = :comm WHERE fid = :fid";
+          db_query($query, array(':comm' => 0, ':fid' => $fid));
+          //        db_update('biblio_field_type')
+          //          ->fields(array('ftdid' => $fid, 'common' => 0, 'visible' => 1))
+          //          ->condition('fid', $fid)
+          //          ->execute();
+        }
+        // set the autocomplete bit on this field for all the types
+        //      $query = "UPDATE {biblio_field_type} SET autocomplete = %d WHERE fid = %d";
+        //      db_query($query, array($link['autocomplete'], $fid));
+        db_update('biblio_field_type')
         ->fields(array('autocomplete' => $link['autocomplete']))
         ->condition('fid', $fid)
         ->execute();
+      }
     }
   }
   drupal_set_message(t("The changes have been saved."));
 
   // Clear the cached pages and menus:
-  menu_rebuild();
+  //menu_rebuild();
 
   // Refresh translatable field strings.
   biblio_locale_refresh_fields($tid);
@@ -1129,6 +1165,7 @@ function biblio_admin_field_mapper_form($form, $form_state, $format = 'bibtex', 
     $fieldnames = array_keys($schema['fields']);
     asort($fieldnames);
     $biblio_field_options[''] =  t('-none-');
+    $biblio_field_options['title'] =  'title';
     foreach ($fieldnames as $field) {
       $biblio_field_options[$field] =  $field;
     }
@@ -1229,7 +1266,7 @@ function biblio_admin_field_mapper_form_submit($form, $form_state) {
   }
   elseif ($form_state['values']['op'] == t('Reset to Defaults')) {
     biblio_reset_map('field_map', $form_state['values']['fileformat']);
-    biblio_reset_map('export_map', $form_state['values']['fileformat']);
+  //  biblio_reset_map('export_map', $form_state['values']['fileformat']);
 
     drupal_goto('admin/config/biblio/fields/fieldmap/' . $form_state['values']['fileformat']);
   }
@@ -1442,6 +1479,7 @@ function _biblio_get_user_profile_form($profile_user = FALSE) {
   else {
     $form['biblio_show_profile']['#default_value'] = variable_get('biblio_show_profile', '0');
   }
+  $form['#biblio_show_profile'] = $form['biblio_show_profile']['#default_value'];
   $form['biblio_my_pubs_menu'] = array(
     '#type' => 'checkbox',
     '#title' => t('Show "My publications" item in the navigation menu'),
@@ -1455,6 +1493,8 @@ function _biblio_get_user_profile_form($profile_user = FALSE) {
   else {
     $form['biblio_my_pubs_menu']['#default_value'] = variable_get('biblio_my_pubs_menu', '0');
   }
+  $form['#biblio_my_pubs_menu'] =  $form['biblio_my_pubs_menu']['#default_value'];
+
   if ($profile_user) {
     $db_result = db_query("SELECT cd.lastname, cd.firstname, cd.initials, cd.cid FROM {biblio_contributor_data} cd
             ORDER by cd.lastname ASC ");
@@ -1783,7 +1823,7 @@ function biblio_admin_author_edit_form($form, &$form_state, $author_id) {
     '#default_value' => $author->lastname,
     '#size' => 20,
     '#weight' => 5,
-    '#required' => TRUE,
+    '#required' => FALSE,
     '#maxlength' => 128
   );
   $form['suffix'] = array(
