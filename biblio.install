@@ -1237,18 +1237,18 @@ function biblio_schema() {
 function biblio_reset_types() {
   $result = array();
 
-  db_drop_table($result, 'biblio_field_type_data');
-  db_drop_table($result, 'biblio_field_type');
-  db_drop_table($result, 'biblio_fields');
-  db_drop_table($result, 'biblio_contributor_type');
-  db_drop_table($result, 'biblio_contributor_type_data');
+  db_drop_table('biblio_field_type_data');
+  db_drop_table('biblio_field_type');
+  db_drop_table('biblio_fields');
+  db_drop_table('biblio_contributor_type');
+  db_drop_table('biblio_contributor_type_data');
 
   $schema = biblio_schema();
-  db_create_table($result, 'biblio_field_type_data', $schema['biblio_field_type_data']);
-  db_create_table($result, 'biblio_field_type', $schema['biblio_field_type']);
-  db_create_table($result, 'biblio_fields', $schema['biblio_fields']);
-  db_create_table($result, 'biblio_contributor_type', $schema['biblio_contributor_type']);
-  db_create_table($result, 'biblio_contributor_type_data', $schema['biblio_contributor_type_data']);
+  db_create_table('biblio_field_type_data', $schema['biblio_field_type_data']);
+  db_create_table('biblio_field_type', $schema['biblio_field_type']);
+  db_create_table('biblio_fields', $schema['biblio_fields']);
+  db_create_table('biblio_contributor_type', $schema['biblio_contributor_type']);
+  db_create_table('biblio_contributor_type_data', $schema['biblio_contributor_type_data']);
 
   variable_set('biblio_last_ftdid', 100); // reset custom field type id too
   //_add_db_field_data_XML();

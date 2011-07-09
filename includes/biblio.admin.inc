@@ -667,6 +667,7 @@ function biblio_admin_settings_form_submit($form, $form_state) {
 function biblio_admin_types_edit_form($form, &$form_state, $tid = 0) {
  // $form['#theme'] = 'biblio_admin_types_edit_form';
  // $form['#tree'] = TRUE;
+  $form['#cache'] = FALSE;
   $tid = (isset($form_state['pub_type']) ? $form_state['pub_type'] : $tid);
   $msg = '<div>' . t('On this page you can set type specific "Titles" and "Hints" which will display on the input form.');
   if ($tid) {
@@ -679,7 +680,7 @@ function biblio_admin_types_edit_form($form, &$form_state, $tid = 0) {
   }
   $msg .= t('Finally, for each author field you can choose a set of author roles. Assigning different roles to authors within the same field, e.g. primary and secondary authors within the authors field, allows to theme them differently.');
   $msg .= '</div>';
-  $form['#redirect'] = 'admin/config/biblio/fields/type';
+  $form['#redirect'] = 'admin/config/biblio/fields';
   $form['help'] = array(
     '#type' => 'fieldset',
     '#title' => t('Help'),
@@ -806,6 +807,9 @@ function biblio_admin_types_edit_form($form, &$form_state, $tid = 0) {
       '#weight' => $fld['weight'],
       '#disabled' => $disabled
     );
+    $form_state['tab_defaults'][$key]['title'] = $fld['title']; //we need store the default to see if it's changed later
+    $form_state['tab_defaults'][$key]['title']['disabled'] = $disabled;
+
     $tab_data[$fld['vtab']][$key]['hint'] = array(
       '#type' => 'textfield',
       '#default_value' => $fld['hint'],
@@ -813,6 +817,9 @@ function biblio_admin_types_edit_form($form, &$form_state, $tid = 0) {
       '#weight' => $fld['weight'],
       '#disabled' => $disabled
     );
+    $form_state['tab_defaults'][$key]['hint'] = $fld['hint'];
+    $form_state['tab_defaults'][$key]['hint']['disabled'] = $disabled;
+
     $tab_data[$fld['vtab']][$key]['weight'] = array(
       '#type' => 'textfield',
       '#default_value' => $fld['weight'],
@@ -913,9 +920,9 @@ function biblio_admin_types_edit_form_submit($form, & $form_state) {
       $link['fid'] = $fid;
       $link['tid'] = $tid;
       foreach ($values as $name => $value) {
-        $disabled = isset($form['biblio_tabs'][$fid][$name]['#disabled']) ? $form['biblio_tabs'][$fid][$name]['#disabled'] : 0;
+        $disabled = !empty($form_state['tab_defaults'][$fid][$name]['disabled']) ? TRUE : FALSE;
         if (!$disabled) {
- //FIXME         $default_value = $form['biblio_tabs'][$fid][$name]['#default_value'];
+          $default_value = isset($form_state['tab_defaults'][$fid][$name]) ? $form_state['tab_defaults'][$fid][$name] : '';
           if ($name == 'checkboxes') {
             $link['visible']      = (!empty($value['visible'])) ? 1 : 0;
             $link['required']     = (!empty($value['required'])) ? 1 : 0;
@@ -930,7 +937,7 @@ function biblio_admin_types_edit_form_submit($form, & $form_state) {
           else {
             $val[$name] = $value;
             if (!$update) {
- //FIXME         $update = ($default_value != $val[$name]) ? $form['biblio_tabs'][$fid]['ftdid']['#value'] : FALSE;
+              $update = ($default_value != $val[$name]) ? $form_state['values']['biblio_tabs'][$fid]['ftdid'] : FALSE;
             }
           }
         }
@@ -1439,7 +1446,7 @@ function biblio_admin_types_reset_form() {
     '#type' => 'value',
     '#value' => 'reset'
   );
-  $output = confirm_form($form, t('Are you sure you want to reset ALL the field definitions to the defaults?'), $_GET['destination'] ? $_GET['destination'] : 'admin/config/biblio/fields/type', t('By doing this, you will loose all customizations you have made to the field titles, <b><u>this action cannot be undone</u></b>!'), t('Reset!'), t('Cancel'));
+  $output = confirm_form($form, t('Are you sure you want to reset ALL the field definitions to the defaults?'), isset($_GET['destination']) ? $_GET['destination'] : 'admin/config/biblio/fields/type', t('By doing this, you will loose all customizations you have made to the field titles, <b><u>this action cannot be undone</u></b>!'), t('Reset!'), t('Cancel'));
   return $output;
 }
 function biblio_admin_types_reset_form_submit($form, & $form_state) {

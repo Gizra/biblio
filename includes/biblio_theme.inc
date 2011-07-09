@@ -835,6 +835,9 @@ function theme_biblio_admin_types_edit_form($variables) {
   $output .= drupal_render($form['help']);
   $output .= drupal_render($form['pub_type']);
   $output .= drupal_render($form['change_type']);
+  if (isset($form['type_name'])) {
+    $output .= drupal_render($form['type_name']);
+  }
   $output .= drupal_render($form['biblio_tabs']);
   $output .= drupal_render_children($form);
   return $output;
