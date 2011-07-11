@@ -667,7 +667,7 @@ function biblio_admin_settings_form_submit($form, $form_state) {
 function biblio_admin_types_edit_form($form, &$form_state, $tid = 0) {
  // $form['#theme'] = 'biblio_admin_types_edit_form';
  // $form['#tree'] = TRUE;
-  $form['#cache'] = FALSE;
+  $form['#cache'] = TRUE;
   $tid = (isset($form_state['pub_type']) ? $form_state['pub_type'] : $tid);
   $msg = '<div>' . t('On this page you can set type specific "Titles" and "Hints" which will display on the input form.');
   if ($tid) {
@@ -864,15 +864,13 @@ function biblio_admin_types_edit_form($form, &$form_state, $tid = 0) {
   return $form;
 }
 
-function biblio_admin_types_edit_form_validate($form, & $form_state) {
+function biblio_admin_types_edit_form_submit($form, &$form_state) {
   if ($form_state['triggering_element']['#value'] == t('Change Publication Type')) {
     $form_state['rebuild'] = TRUE;
     $form_state['pub_type'] = $form_state['values']['pub_type'];
+    $form_state['input'] = array();
     return;
   }
-
-}
-function biblio_admin_types_edit_form_submit($form, & $form_state) {
   $tid = isset($form_state['values']['type_id']) ? $form_state['values']['type_id'] : 0;
 
   if ($tid) {
@@ -883,9 +881,10 @@ function biblio_admin_types_edit_form_submit($form, & $form_state) {
     );
   //  drupal_write_record('biblio_types', $type_name_record, 'tid');
 
-//    db_update('biblio_types')
-//      ->fields($type_name_record)
-//      ->execute();
+    db_update('biblio_types')
+      ->fields($type_name_record)
+      ->condition('tid', $tid)
+      ->execute();
     biblio_locale_refresh_types($tid);
   }
 
@@ -952,7 +951,7 @@ function biblio_admin_types_edit_form_submit($form, & $form_state) {
 
       }
       elseif ($update >= 100 && $link['tid']) { // we are updating an existing entry
-        $val['ftdid'] = $form['biblio_tabs'][$fid]['ftdid']['#value'];
+        $val['ftdid'] = $form_state['values']['biblio_tabs'][$fid]['ftdid'];
         drupal_write_record('biblio_field_type_data', $val, 'ftdid');
 
       }
