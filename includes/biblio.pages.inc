@@ -1316,7 +1316,7 @@ function _biblio_author_edit_links($author) {
 
 function biblio_keyword_page() {
   $uri = drupal_parse_url(request_uri());
-  $uri['path'] = variable_get('biblio_base', 'biblio');
+//  $uri['path'] = variable_get('biblio_base', 'biblio');
   $filter = isset($uri['query']['f']['keyword']) ? $uri['query']['f']['keyword'] : '';
   $keywords = _biblio_get_keywords($filter);
   return _biblio_format_keyword_page($uri, $filter, $keywords);
@@ -1360,7 +1360,7 @@ function _biblio_get_keywords($filter = NULL) {
 }
 
 function _biblio_format_keyword_page($uri, $filter, $keywords) {
-  $rows[] = array(array('data' => theme('biblio_alpha_line', array('type' => 'keywords', 'current' => $filter, 'path' => '')), 'colspan' => 3));
+  $rows[] = array(array('data' => theme('biblio_alpha_line', array('type' => 'keywords', 'current' => $filter, 'path' => $uri['path'])), 'colspan' => 3));
   for ($i=0; $i < count($keywords); $i+=3) {
     $rows[] = array( array('data' => _biblio_format_keyword($uri, $keywords[$i]) ),
     array('data' => isset($keywords[$i+1]) ? _biblio_format_keyword($uri, $keywords[$i+1]) : '' ),
