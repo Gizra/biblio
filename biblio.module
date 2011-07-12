@@ -1111,7 +1111,9 @@ function biblio_form($node, &$form_state) {
   $form['biblio_next'] = array(
       '#type'   => 'submit',
       '#value'  => $step_two ? t('Change Publication Type') : t('Next'),
+      '#limit_validation_errors' => array(),
       '#weight' => -10,
+      '#submit' => array(),
   );
 
   if ($step_two) {
@@ -1290,6 +1292,7 @@ function biblio_contributor_widget($node, &$form_state) {
     '#description' => t("If there aren't enough boxes above, click here to add more."),
     '#weight'      => 1,
     '#submit'      => array('biblio_contributors_add_more'), // If no javascript action.
+    '#limit_validation_errors' => array(),
     '#ajax'        => array(
            'callback' => 'biblio_contributors_add_more_callback',
            'wrapper'  => 'biblio-contributors-wrapper',
