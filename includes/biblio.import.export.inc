@@ -592,7 +592,35 @@ function biblio_save_node($node, $terms = array(), $batch = FALSE, $session_id =
   }
 }
 
+function biblio_save_node_validate($node) {
+  static $schema = array();
+  $error = array();
 
+  if (empty($schema)) {
+    $schema['biblio'] = drupal_get_schema('biblio');
+  }
+  foreach ($schema['biblio']['fields'] as $field => $spec) {
+    if (isset($node->$field)) {
+      switch ($spec['type']) {
+        case 'int':
+          if (!is_int($node->$field)) {
+            $error[$field]['before'] = $node->$field;
+            $node->$field = (int)$node->$field;
+            $error[$field]['after'] = $node->$field;
+          }
+          break;
+        case 'varchar':
+          if (strlen($node->$field) > $spec['length']) {
+            $error[$field]['before'] = $node->$field;
+            $node->$field = substr($node->$field, 0, $spec['length']);
+            $error[$field]['after'] = $node->$field;
+          }
+          break;
+      }
+    }
+  }
+  return $error;
+}
 
 
 function biblio_csv_export_2($result, $bfields) {
