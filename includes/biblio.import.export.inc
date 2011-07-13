@@ -575,15 +575,13 @@ function biblio_save_node($node, $terms = array(), $batch = FALSE, $session_id =
 
 
   if ($save_node) { // $save_node = TRUE, the normal save path
-    $title_truncate = FALSE;
-    if (strlen($node->title) > 255) {
-      $node->title = substr($node->title, 0, 255);
-      $title_truncate = TRUE;
-    }
+    $validation_errors = array();
+    $validation_errors = biblio_save_node_validate($node);
     node_save($node);
-    if ($title_truncate) {
-      watchdog('biblio - import', 'Title value truncated to 255 characters', array(), WATCHDOG_ALERT, l($node->title, 'node/' . $node->nid));
-      $title_truncate = FALSE;
+    if (!empty($validation_errors)) {
+      foreach($validation_errors as $field => $value) {
+        watchdog('biblio - import', $field . ' was truncated to fit into the database column', array(), WATCHDOG_ALERT, l($value, 'node/' . $node->nid));
+      }
     }
     return; // (isset($node->nid)) ? $node->nid : 0;
   }
@@ -599,21 +597,33 @@ function biblio_save_node_validate($node) {
   if (empty($schema)) {
     $schema['biblio'] = drupal_get_schema('biblio');
   }
+  if (isset($node->title) && strlen($node->title) > 255) {
+    $error['title'] = $node->title;
+    $node->title = substr($node->title, 0, 255);
+  }
+  if (isset($node->biblio_keywords) && is_array($node->biblio_keywords)) {
+    foreach($node->biblio_keywords as $key => $word) {
+      if (strlen($word) > 255) {
+        $error['keyword'] = $word;
+        $node->biblio_keywords[$key] = substr($word, 0, 255);
+      }
+    }
+  }
+  if (isset($node->biblio_contributors) && is_array($node->biblio_contributors)) {
+    foreach($node->biblio_contributors as $key => $author) {
+      if (strlen($author['name']) > 255) {
+        $error['author'] = $author['name'];
+        $node->biblio_contributors[$key]['name'] = substr($author['name'], 0, 255);
+      }
+    }
+  }
   foreach ($schema['biblio']['fields'] as $field => $spec) {
     if (isset($node->$field)) {
       switch ($spec['type']) {
-        case 'int':
-          if (!is_int($node->$field)) {
-            $error[$field]['before'] = $node->$field;
-            $node->$field = (int)$node->$field;
-            $error[$field]['after'] = $node->$field;
-          }
-          break;
         case 'varchar':
           if (strlen($node->$field) > $spec['length']) {
-            $error[$field]['before'] = $node->$field;
+            $error[$field] = $node->$field;
             $node->$field = substr($node->$field, 0, $spec['length']);
-            $error[$field]['after'] = $node->$field;
           }
           break;
       }
