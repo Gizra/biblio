@@ -580,7 +580,10 @@ function biblio_save_node($node, $terms = array(), $batch = FALSE, $session_id =
     node_save($node);
     if (!empty($validation_errors)) {
       foreach($validation_errors as $field => $value) {
-        watchdog('biblio - import', $field . ' was truncated to fit into the database column', array(), WATCHDOG_ALERT, l($value, 'node/' . $node->nid));
+        $message = $field . t(' was truncated to fit into the database column');
+        $link = l('node/' . $node->nid, 'node/' . $node->nid);
+        drupal_set_message($message . '; ' . $link, 'warning');
+        watchdog('biblio - import', $message, array(), WATCHDOG_ALERT, $link);
       }
     }
     return; // (isset($node->nid)) ? $node->nid : 0;
