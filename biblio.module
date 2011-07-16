@@ -378,12 +378,10 @@ function biblio_node_access($node, $op, $account) {
     case 'update':
     case 'delete':
       if (user_access('edit by all biblio authors') && isset($node->biblio_contributors) && is_array($node->biblio_contributors)) {
-        foreach ($node->biblio_contributors as $cat => $authors) {
-          foreach ($authors as $key => $author) {
-            if ((isset($author['drupal_uid']) && $author['drupal_uid'] == $account->uid) ||
-                (isset($account->data['biblio_contributor_id']) && $author['cid'] == $account->data['biblio_contributor_id'])) {
-              return NODE_ACCESS_ALLOW;
-            }
+        foreach ($node->biblio_contributors as $key => $author) {
+          if ((isset($author['drupal_uid']) && $author['drupal_uid'] == $account->uid) ||
+          (isset($account->data['biblio_contributor_id']) && $author['cid'] == $account->data['biblio_contributor_id'])) {
+            return NODE_ACCESS_ALLOW;
           }
         }
       }
