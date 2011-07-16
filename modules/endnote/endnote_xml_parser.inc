@@ -52,7 +52,7 @@ class EndNoteXMLParser {
 
       while ($data = fread($fp, 2048)) {
         // $data = fread($fp, 2048);
-        set_time_limit(30);
+        set_time_limit(300);
         if (!xml_parse($this->parser, $data, feof($fp))) {
           drupal_set_message(sprintf("XML error: %s at line %d",
           xml_error_string(xml_get_error_code($this->parser)),
@@ -305,9 +305,14 @@ class EndNoteXMLParser {
       case 'TERTIARY_AUTHOR':
       case 'SUBSIDIARY_AUTHOR':
           $this->contributors[$this->contrib_count]['name'] = '';
+          $this->element = $name;
         break;
       case 'KEYWORDS':
         $this->keyword_count = 0;
+        break;
+      case 'KEYWORD':
+        $this->node->biblio_keywords[$this->keyword_count] = '';
+        $this->element = $name;
         break;
       default:
         $this->element = $name;
