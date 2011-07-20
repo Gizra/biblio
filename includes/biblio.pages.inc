@@ -667,7 +667,7 @@ function _biblio_filter_info_line($args = array()) {
       if ($type == 'aid' || ($type == 'author' && is_numeric($value))) {
         module_load_include('inc', 'biblio', 'includes/biblio.contributors');
         $author = biblio_get_contributor($value);
-        $value = $author->name;
+        $value = isset($author->name) ? $author->name : t('Unknown Author');
         $type = t("Author");
       }
       if ($type == 'ag' ) {
