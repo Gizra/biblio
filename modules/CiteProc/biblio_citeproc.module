@@ -2,7 +2,7 @@
 function biblio_citeproc_menu() {
   global $user;
   $items = array();
-  $items['admin/config/biblio/styles'] = array(
+  $items['admin/config/content/biblio/styles'] = array(
     'title'             => 'CiteProc Style Manager',
     'page callback'     => 'drupal_get_form',
     'page arguments'    => array('biblio_citeproc_style_manager_form'),

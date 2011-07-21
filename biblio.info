@@ -4,7 +4,7 @@ core = 7.x
 dependencies[] = taxonomy
 package = Biblio
 
-configure = admin/config/biblio
+configure = admin/config/content/biblio
 files[] = tests/biblio.test
 files[] = tests/keyword.test
 files[] = tests/contributor.test

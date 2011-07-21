@@ -641,27 +641,19 @@ function biblio_menu() {
     'file'              => '/includes/biblio.pages.inc',
     'type'              => MENU_LOCAL_TASK
   );
-  // The next two "LOCAL TASKS" are for the admin/config/biblio page
-  $items['admin/config/biblio'] = array(
+  // The next two "LOCAL TASKS" are for the admin/config/content/biblio page
+  $items['admin/config/content/biblio'] = array(
     'title'             => 'Biblio settings',
-    'description'       => 'Configure default behavior of the biblio module.',
-    'page callback' => 'system_admin_menu_block_page',
-    'access arguments' => array('administer site configuration'),
-    'file' => 'system.admin.inc',
-    'file path' => drupal_get_path( 'module', 'system' )
-  );
-    $items['admin/config/biblio/settings'] = array(
-    'title'             => 'Biblio settings',
-    'description'       => 'Configure default behavior of the biblio module.',
+    'description'       => 'Configure default behavior of the Biblio module.',
     'page callback'     => 'drupal_get_form',
     'page arguments'    => array('biblio_admin_settings'),
     'access arguments'  => array('administer biblio'),
     'file'              => '/includes/biblio.admin.inc',
   );
 
-  $items['admin/config/biblio/basic'] = array(
+  $items['admin/config/content/biblio/basic'] = array(
     'title'             => 'Preferences',
-    'description'       => 'Configure default behavior of the biblio module.',
+    'description'       => 'Configure default behavior of the Biblio module.',
     'page callback'     => 'drupal_get_form',
     'page arguments'    => array('biblio_admin_settings'),
     'access arguments'  => array('administer biblio'),
@@ -669,7 +661,7 @@ function biblio_menu() {
     'type'              => MENU_LOCAL_TASK,
     'weight'            => -10
   );
-  $items['admin/config/biblio/import'] = array(
+  $items['admin/config/content/biblio/import'] = array(
     'title'             => 'Data import',
     'page callback'     => 'drupal_get_form',
     'page arguments'    => array('biblio_import_form'),
@@ -678,7 +670,7 @@ function biblio_menu() {
     'type'              => MENU_LOCAL_TASK,
     'weight'            => 1
   );
-  $items['admin/config/biblio/export'] = array(
+  $items['admin/config/content/biblio/export'] = array(
     'title'             => 'Export',
     'page callback'     => 'drupal_get_form',
     'page arguments'    => array('biblio_export_form'),
@@ -687,7 +679,7 @@ function biblio_menu() {
     'type'              => MENU_LOCAL_TASK,
     'weight'            => 2
   );
-  $items['admin/config/biblio/fields'] = array(
+  $items['admin/config/content/biblio/fields'] = array(
     'title'             => 'Fields',
     'page callback'     => 'drupal_get_form',
     'page arguments'    => array('biblio_admin_types_edit_form'),
@@ -696,7 +688,7 @@ function biblio_menu() {
     'type'              => MENU_LOCAL_TASK,
     'weight'            => -9
   );
-  $items['admin/config/biblio/fields/common'] = array(
+  $items['admin/config/content/biblio/fields/common'] = array(
     'title'             => 'Common',
     'page callback'     => 'drupal_get_form',
     'page arguments'    => array('biblio_admin_types_edit_form'),
@@ -705,7 +697,7 @@ function biblio_menu() {
     'type'              => MENU_DEFAULT_LOCAL_TASK,
     'weight'            => -10
   );
-  $items['admin/config/biblio/iomap'] = array(
+  $items['admin/config/content/biblio/iomap'] = array(
     'title'             => 'Import/Export Mapping',
     'page callback'     => 'biblio_admin_io_mapper_page',
     'access arguments'  => array('administer biblio'),
@@ -713,7 +705,7 @@ function biblio_menu() {
     'type'              => MENU_LOCAL_TASK,
     'weight'            => -1
   );
-  $items['admin/config/biblio/iomap/formats'] = array(
+  $items['admin/config/content/biblio/iomap/formats'] = array(
     'title'             => 'Import/Export Mapping',
     'page callback'     => 'biblio_admin_io_mapper_page',
     'access arguments'  => array('administer biblio'),
@@ -723,28 +715,28 @@ function biblio_menu() {
   );
   $formats = module_invoke_all('biblio_mapper_options');
   foreach ($formats as $key => $format) {
-  $items['admin/config/biblio/iomap/edit/' . $key] = array(
+  $items['admin/config/content/biblio/iomap/edit/' . $key] = array(
     'title'             => $format,
     'page callback'     => 'drupal_get_form',
     'page arguments'    => array('biblio_admin_io_mapper_form', 5),
     'access arguments'  => array('administer biblio'),
     'file'              => '/includes/biblio.admin.inc',
-    'tab_parent'						=> 'admin/config/biblio/iomap',
+    'tab_parent'						=> 'admin/config/content/biblio/iomap',
     'type'              => MENU_LOCAL_TASK,
     'weight'            => -1
   );
   }
-  $items['admin/config/biblio/iomap/%/%/add'] = array(
+  $items['admin/config/content/biblio/iomap/%/%/add'] = array(
     'title'             => '',
     'page callback'     => 'drupal_get_form',
     'page arguments'    => array('biblio_admin_io_mapper_add_form', 4, 5),
     'access arguments'  => array('administer biblio'),
-    'tab_parent'						=> 'admin/config/biblio/iomap',
+    'tab_parent'						=> 'admin/config/content/biblio/iomap',
   'file'              => '/includes/biblio.admin.inc',
     'type'              => MENU_CALLBACK,
     'weight'            => -1
   );
-  $items['admin/config/biblio/fields/type/edit'] = array(
+  $items['admin/config/content/biblio/fields/type/edit'] = array(
     'title'             => '',
     'page callback'     => 'drupal_get_form',
     'page arguments'    => array('biblio_admin_types_edit_form'),
@@ -752,7 +744,7 @@ function biblio_menu() {
     'file'              => '/includes/biblio.admin.inc',
     'type'              => MENU_CALLBACK
   );
-  $items['admin/config/biblio/fields/type/delete'] = array(
+  $items['admin/config/content/biblio/fields/type/delete'] = array(
     'title'             => '',
     'page callback'     => 'drupal_get_form',
     'page arguments'    => array('biblio_admin_types_delete_form'),
@@ -760,7 +752,7 @@ function biblio_menu() {
     'file'              => '/includes/biblio.admin.inc',
     'type'              => MENU_CALLBACK
   );
-  $items['admin/config/biblio/fields/type/new'] = array(
+  $items['admin/config/content/biblio/fields/type/new'] = array(
     'title'             => 'Add New Type',
     'page callback'     => 'drupal_get_form',
     'page arguments'    => array('biblio_admin_types_add_form'),
@@ -769,7 +761,7 @@ function biblio_menu() {
     'type'              => MENU_LOCAL_TASK,
     'weight'            => -9
   );
-  $items['admin/config/biblio/fields/type/reset'] = array(
+  $items['admin/config/content/biblio/fields/type/reset'] = array(
     'title'             => 'Reset all types to defaults',
     'page callback'     => 'drupal_get_form',
     'page arguments'    => array('biblio_admin_types_reset_form'),
@@ -777,21 +769,21 @@ function biblio_menu() {
     'file'              => '/includes/biblio.admin.inc',
     'type'              => MENU_LOCAL_TASK
   );
-  $items['admin/config/biblio/fields/type/hide'] = array(
+  $items['admin/config/content/biblio/fields/type/hide'] = array(
     'title'             => '',
     'page callback'     => 'biblio_admin_types_hide',
     'access arguments'  => array('administer biblio'),
     'file'              => '/includes/biblio.admin.inc',
     'type'              => MENU_CALLBACK
   );
-  $items['admin/config/biblio/fields/type/show'] = array(
+  $items['admin/config/content/biblio/fields/type/show'] = array(
     'title'             => '',
     'page callback'     => 'biblio_admin_types_show',
     'access arguments'  => array('administer biblio'),
     'file'              => '/includes/biblio.admin.inc',
     'type'              => MENU_CALLBACK
   );
-  $items['admin/config/biblio/author'] = array(
+  $items['admin/config/content/biblio/author'] = array(
     'title'             => 'Authors',
     'page callback'     => 'biblio_author_page',
     'access callback'   => 'user_access',
@@ -800,7 +792,7 @@ function biblio_menu() {
     'type'              => MENU_LOCAL_TASK,
     'weight'            => -7
   );
-  $items['admin/config/biblio/author/list'] = array(
+  $items['admin/config/content/biblio/author/list'] = array(
     'title'             => 'List',
     'page callback'     => 'biblio_author_page',
     'access callback'   => 'user_access',
@@ -809,7 +801,7 @@ function biblio_menu() {
     'type'              => MENU_DEFAULT_LOCAL_TASK,
     'weight'            => -7
   );
-  $items['admin/config/biblio/author/%/edit'] = array(
+  $items['admin/config/content/biblio/author/%/edit'] = array(
     'title'             => 'Edit author information',
     'page callback'     => 'drupal_get_form',
     'page arguments'    => array('biblio_admin_author_edit_form', 4),
@@ -819,7 +811,7 @@ function biblio_menu() {
      'type'              => MENU_CALLBACK,
     'weight'            => -6
   );
-  $items['admin/config/biblio/author/orphans'] = array(
+  $items['admin/config/content/biblio/author/orphans'] = array(
     'title'             => 'Orphaned Authors',
     'page callback'     => 'drupal_get_form',
     'page arguments'    => array('biblio_admin_orphans_form'),
@@ -829,7 +821,7 @@ function biblio_menu() {
     'type'              => MENU_LOCAL_TASK,
     'weight'            => -6
   );
-  $items['admin/config/biblio/author/type'] = array(
+  $items['admin/config/content/biblio/author/type'] = array(
     'title'             => 'Author Types',
     'page callback'     => 'drupal_get_form',
     'page arguments'    => array('biblio_admin_author_types_form', 6, 5),
@@ -839,7 +831,7 @@ function biblio_menu() {
     'weight'            => -5
   );
 
-  $items['admin/config/biblio/author/type/new'] = array(
+  $items['admin/config/content/biblio/author/type/new'] = array(
     'title'             => 'Add New Author Type',
     'page callback'     => 'drupal_get_form',
     'page arguments'    => array('biblio_admin_author_types_form_new', 'new'),
@@ -848,7 +840,7 @@ function biblio_menu() {
     'type'              => MENU_LOCAL_TASK,
     'weight'            => -9
   );
-  $items['admin/config/biblio/author/type/%/edit'] = array(
+  $items['admin/config/content/biblio/author/type/%/edit'] = array(
     'title'             => 'Edit Author Type',
     'page callback'     => 'drupal_get_form',
     'page arguments'    => array('biblio_admin_author_types_form_edit', 'edit', 5),
@@ -857,7 +849,7 @@ function biblio_menu() {
     'type'              => MENU_CALLBACK,
     'weight'            => -9
   );
-  $items['admin/config/biblio/author/type/%/delete'] = array(
+  $items['admin/config/content/biblio/author/type/%/delete'] = array(
     'title'             => 'Delete',
     'page callback'     => 'drupal_get_form',
     'page arguments'    => array('biblio_admin_author_type_delete_confirm', 5),
@@ -867,7 +859,7 @@ function biblio_menu() {
     'weight'            => 1,
     'type'              => MENU_CALLBACK
   );
-  $items['admin/config/biblio/keywords'] = array(
+  $items['admin/config/content/biblio/keywords'] = array(
     'title'             => 'Keywords',
     'page callback'     => 'biblio_keyword_page',
     'access callback'   => 'user_access',
@@ -876,7 +868,7 @@ function biblio_menu() {
     'type'              => MENU_LOCAL_TASK,
     'weight'            => -7
   );
-  $items['admin/config/biblio/keywords/list'] = array(
+  $items['admin/config/content/biblio/keywords/list'] = array(
     'title'             => 'List',
     'page callback'     => 'biblio_keyword_page',
     'access callback'   => 'user_access',
@@ -885,7 +877,7 @@ function biblio_menu() {
     'type'              => MENU_DEFAULT_LOCAL_TASK,
     'weight'            => -7
   );
-  $items['admin/config/biblio/keywords/%/edit'] = array(
+  $items['admin/config/content/biblio/keywords/%/edit'] = array(
     'title'             => 'Edit keyword information',
     'page callback'     => 'drupal_get_form',
     'page arguments'    => array('biblio_admin_keyword_edit_form', 4),
@@ -895,7 +887,7 @@ function biblio_menu() {
     'type'              => MENU_CALLBACK,
     'weight'            => -6
   );
-  $items['admin/config/biblio/keywords/orphans'] = array(
+  $items['admin/config/content/biblio/keywords/orphans'] = array(
     'title'             => 'Orphaned Keywords',
     'page callback'     => 'drupal_get_form',
     'page arguments'    => array('biblio_admin_keyword_orphans_form'),
@@ -905,7 +897,7 @@ function biblio_menu() {
     'type'              => MENU_LOCAL_TASK,
     'weight'            => -6
   );
-  /*    $items['admin/config/biblio/authors/reset'] = array(
+  /*    $items['admin/config/content/biblio/authors/reset'] = array(
    'title' => t('Reset all Author types to defaults'),
    'page callback' => 'drupal_get_form',
    'page arguments' => array('biblio_admin_author_type_reset_form'),

@@ -120,10 +120,10 @@ function biblio_import_form($form, &$form_state) {
       if (variable_get('biblio_keyword_freetagging', 0)) {
         $freetag_vocab = $vocabularies[variable_get('biblio_keyword_vocabulary', 0)];
         unset($vocabularies[variable_get('biblio_keyword_vocabulary', 0)]);
-        $msg = t('<b>NOTE:</b> Keyword "free tagging" is turned on, consequently all incomming keywords will be added to the <b>@name</b> vocabulary as specified in the "Keyword" section of the !url page.', array('@name' => $freetag_vocab->name, '!url' => l(t('admin/config/biblio'), 'admin/config/biblio')));
+        $msg = t('<b>NOTE:</b> Keyword "free tagging" is turned on, consequently all incomming keywords will be added to the <b>@name</b> vocabulary as specified in the "Keyword" section of the !url page.', array('@name' => $freetag_vocab->name, '!url' => l(t('admin/config/content/biblio'), 'admin/config/content/biblio')));
       }
       else {
-        $msg = t('<b>NOTE:</b> Keyword "free tagging" is turned off, consequently keywords will <b>NOT</b> be added to the vocabulary as specified in the Taxonomy section of the !url page.', array('!url' => l(t('admin/config/biblio'), 'admin/config/biblio')));
+        $msg = t('<b>NOTE:</b> Keyword "free tagging" is turned off, consequently keywords will <b>NOT</b> be added to the vocabulary as specified in the Taxonomy section of the !url page.', array('!url' => l(t('admin/config/content/biblio'), 'admin/config/content/biblio')));
       }
       $i = 0;
       $form += array('#parents' => array());

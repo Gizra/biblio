@@ -160,7 +160,7 @@ function biblio_citeproc_style_manager_form_submit($form, &$form_state) {
       'file' => './' . drupal_get_path('module', 'biblio_citeproc') . '/biblio_citeproc.admin.inc'
     );
     batch_set($batch_op);
-    batch_process('admin/config/biblio/styles');
+    batch_process('admin/config/content/biblio/styles');
 
   }
 
