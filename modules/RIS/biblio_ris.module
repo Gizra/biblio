@@ -26,6 +26,9 @@
 function biblio_ris_biblio_import_options() {
   return array('biblio_ris' => t('RIS'));
 }
+function biblio_ris_biblio_mapper_options() {
+  return biblio_ris_biblio_export_options();
+}
 
 function biblio_ris_biblio_export_options() {
   return array('ris' => t('RIS'));

@@ -3,22 +3,7 @@
  * @file biblio_tagged.module
  *
  */
-/*function biblio_tagged_menu() {
-  global $user;
-  $items = array();
-  $base = variable_get('biblio_base', 'biblio');
-
-  $items["$base/export/tagged"] = array(
-    'title'             => '',
-    'page callback'     => 'biblio_tagged_biblio_export',
-    'access callback'   => 'user_access',
-    'access arguments'  => array('show export links'),
-    'type'              => MENU_CALLBACK
-  );
-
-  return $items;
-}
-*//*
+/*
  *   add the tagged option to the option list of the biblio_import_form
  *   the key is the module name use by module_invoke to call hook_biblio_import
  *   module_invoke('biblio_tagged', 'biblio_import',...)
@@ -26,7 +11,9 @@
 function biblio_tagged_biblio_import_options() {
   return array('biblio_tagged' => t('EndNote Tagged'));
 }
-
+function biblio_tagged_biblio_mapper_options() {
+  return biblio_tagged_biblio_export_options();
+}
 
 function biblio_tagged_biblio_export_options() {
   return array('tagged' => t('EndNote Tagged'));

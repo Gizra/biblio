@@ -86,6 +86,9 @@ function biblio_crossref_check_doi($doi) {
 function biblio_crossref_biblio_lookup_link_settings() {
   return array('crossref'  => t('DOI'));
 }
+function biblio_crossref_biblio_mapper_options() {
+  return array('crossref'  => t('CrossRef XML'));
+}
 
 function biblio_crossref_biblio_lookup_link($node) {
   return biblio_crossref_link('node', $node);

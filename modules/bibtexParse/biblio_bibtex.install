@@ -126,6 +126,7 @@ function _reset_bibtex_map($type) {
   $count = db_query("SELECT COUNT(*)  FROM {biblio_type_maps} WHERE format='bibtex'")->fetchField();
   if ($count && $type) { //update
     $function = '_get_bibtex_' . $type;
+    if (!function_exists($function)) return;
     $map = $function();
     db_update('biblio_type_maps')
       ->fields($map)

@@ -167,7 +167,11 @@ function biblio_theme($existing, $type, $theme, $path) {
     'biblio_admin_type_mapper_form' => array(
         'file' => '/includes/biblio.admin.inc',
         'render element' => 'form',
-        ),
+    ),
+   'biblio_admin_io_mapper_add_form'=> array(
+        'file' => '/includes/biblio.admin.inc',
+        'render element' => 'form',
+    ),
    'biblio_admin_field_mapper_form' => array(
         'file' => '/includes/biblio.admin.inc',
         'render element' => 'form',
@@ -709,6 +713,33 @@ function biblio_menu() {
     'access arguments'  => array('administer biblio'),
     'file'              => '/includes/biblio.admin.inc',
     'type'              => MENU_LOCAL_TASK,
+    'weight'            => -1
+  );
+  $items['admin/config/biblio/fields/iomap/%'] = array(
+    'title'             => 'Import/Export Mapping',
+    'page callback'     => 'drupal_get_form',
+    'page arguments'    => array('biblio_admin_io_mapper_form', 5),
+    'access arguments'  => array('administer biblio'),
+    'file'              => '/includes/biblio.admin.inc',
+    'type'              => MENU_CALLBACK,
+    'weight'            => -1
+  );
+  $items['admin/config/biblio/fields/iomap/%/%/add'] = array(
+    'title'             => 'Import/Export Mapping',
+    'page callback'     => 'drupal_get_form',
+    'page arguments'    => array('biblio_admin_io_mapper_add_form', 5, 6),
+    'access arguments'  => array('administer biblio'),
+    'file'              => '/includes/biblio.admin.inc',
+    'type'              => MENU_CALLBACK,
+    'weight'            => -1
+  );
+    $items['admin/config/biblio/fields/iomap/%'] = array(
+    'title'             => 'Import/Export Mapping',
+    'page callback'     => 'drupal_get_form',
+    'page arguments'    => array('biblio_admin_io_mapper_form', 5),
+    'access arguments'  => array('administer biblio'),
+    'file'              => '/includes/biblio.admin.inc',
+    'type'              => MENU_CALLBACK,
     'weight'            => -1
   );
   $items['admin/config/biblio/fields/typemap/%'] = array(

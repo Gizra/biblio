@@ -26,6 +26,9 @@
 function biblio_bibtex_biblio_import_options() {
   return array('biblio_bibtex' => t('BibTex'));
 }
+function biblio_bibtex_biblio_mapper_options() {
+  return biblio_bibtex_biblio_export_options();
+}
 
 function biblio_bibtex_form_biblio_node_form_alter(&$form, &$form_state) {
   global $user;
