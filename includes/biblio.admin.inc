@@ -998,14 +998,14 @@ function biblio_admin_types_edit_form_submit($form, &$form_state) {
   biblio_locale_refresh_fields($tid);
 }
 
-function biblio_admin_type_mapper_page() {
+function biblio_admin_io_mapper_page() {
   $formats = module_invoke_all('biblio_mapper_options');
   asort($formats);
 
   foreach ($formats as $key => $value) {
     $rows[] = array(
       $value,
-      l(t('edit'), 'admin/config/biblio/fields/iomap/' . $key),
+      l(t('edit'), 'admin/config/biblio/iomap/edit/' . $key),
     );
   }
   $header = array(t('Format'), t('Action'));
@@ -1015,6 +1015,11 @@ function biblio_admin_type_mapper_page() {
 function biblio_admin_io_mapper_form($form, $form_state, $format) {
   $formats = module_invoke_all('biblio_mapper_options');
   $form = array();
+  $form['title'] = array(
+    '#prefix' => '<h3>',
+    '#markup' => check_plain($formats[$format]) . ' ' . t('file format mapping'),
+    '#suffix' => '</h3>',
+  );
   $form['fileformat'] = array(
     '#type' => 'hidden',
     '#value' => $format,
@@ -1103,7 +1108,7 @@ function biblio_admin_io_mapper_add_form_pubtype_submit($form, &$form_state) {
   $names = biblio_get_map('type_names', $form_state['values']['fileformat']);
   $names[$form_state['values']['type_name']] = $form_state['values']['type_desc'];
   biblio_set_map('type_names', $form_state['values']['fileformat'], $names);
-  $form_state['redirect'] = 'admin/config/biblio/fields/iomap/' . $form_state['values']['fileformat'];
+  $form_state['redirect'] = 'admin/config/biblio/iomap/edit/' . $form_state['values']['fileformat'];
 }
 
 function biblio_admin_io_mapper_add_form_field_submit($form, &$form_state) {
@@ -1159,20 +1164,21 @@ function theme_biblio_admin_type_mapper_form($variables) {
   $form = $variables['form'];
   $title = $form['#file_format_title'];
 
-  drupal_set_title($title . ' ' . t('Type Mapping'));
-  foreach (element_children($form['type']) as $key ) {
+   foreach (element_children($form['type']) as $key ) {
     $rows[] = array(
     drupal_render($form['type'][$key]['format']),
     drupal_render($form['type'][$key])
     );
   }
+    $rows[] = array(
+    l('[' . t('Add New') . " $title " . t('Publication Type') . ']', 'admin/config/biblio/iomap/' . $form['#file_format'] . '/pubtype/add') ,
+    l('[' . t('Add New Biblio Publication Type') . ']', 'admin/config/biblio/fields/type/new')
+    );
   $header = array(
   $title . ' ' . t('Publication Types'),
   t('Biblio Publication Type')
   );
   $output = theme('table', array('header' => $header, 'rows' => $rows));
-  $output .= l('[' . t('Add New') . " $title " . t('Publication Type') . ']', 'admin/config/biblio/fields/iomap/' . $form['#file_format'] . '/pubtype/add') . ' ';
-  $output .= l('[' . t('Add New Biblio Publication Type') . ']', 'admin/config/biblio/fields/type/new') . '<br />';
 
   $output .= drupal_render($form['submit']);
   $output .= drupal_render($form['reset']);
@@ -1244,7 +1250,6 @@ function theme_biblio_admin_field_mapper_form($variables) {
   $form = $variables['form'];
   $title = $form['#file_format_title'];
 
-  drupal_set_title($title . ' ' . t('Field Mapping'));
   foreach (element_children($form['type']) as $key ) {
     $rows[] = array(
     drupal_render($form['type'][$key]['format']),

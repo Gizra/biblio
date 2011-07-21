@@ -645,6 +645,14 @@ function biblio_menu() {
   $items['admin/config/biblio'] = array(
     'title'             => 'Biblio settings',
     'description'       => 'Configure default behavior of the biblio module.',
+    'page callback' => 'system_admin_menu_block_page',
+    'access arguments' => array('administer site configuration'),
+    'file' => 'system.admin.inc',
+    'file path' => drupal_get_path( 'module', 'system' )
+  );
+    $items['admin/config/biblio/settings'] = array(
+    'title'             => 'Biblio settings',
+    'description'       => 'Configure default behavior of the biblio module.',
     'page callback'     => 'drupal_get_form',
     'page arguments'    => array('biblio_admin_settings'),
     'access arguments'  => array('administer biblio'),
@@ -662,7 +670,7 @@ function biblio_menu() {
     'weight'            => -10
   );
   $items['admin/config/biblio/import'] = array(
-    'title'             => 'Import',
+    'title'             => 'Data import',
     'page callback'     => 'drupal_get_form',
     'page arguments'    => array('biblio_import_form'),
     'access arguments'  => array('administer biblio'),
@@ -697,66 +705,42 @@ function biblio_menu() {
     'type'              => MENU_DEFAULT_LOCAL_TASK,
     'weight'            => -10
   );
-/*  $items['admin/config/biblio/fields/type'] = array(
-    'title'             => 'Publication Types',
-    'page callback'     => 'biblio_admin_types_form',
-//    'page arguments'    => array('biblio_admin_types_form'),
-    'access arguments'  => array('administer biblio'),
-    'file'              => '/includes/biblio.admin.inc',
-    'type'              => MENU_LOCAL_TASK,
-    'weight'            => -8
-  );
-*/
-  $items['admin/config/biblio/fields/typemap'] = array(
-    'title'             => 'Type Mapping',
-    'page callback'     => 'biblio_admin_type_mapper_page',
+  $items['admin/config/biblio/iomap'] = array(
+    'title'             => 'Import/Export Mapping',
+    'page callback'     => 'biblio_admin_io_mapper_page',
     'access arguments'  => array('administer biblio'),
     'file'              => '/includes/biblio.admin.inc',
     'type'              => MENU_LOCAL_TASK,
     'weight'            => -1
   );
-  $items['admin/config/biblio/fields/iomap/%'] = array(
+  $items['admin/config/biblio/iomap/formats'] = array(
     'title'             => 'Import/Export Mapping',
+    'page callback'     => 'biblio_admin_io_mapper_page',
+    'access arguments'  => array('administer biblio'),
+    'file'              => '/includes/biblio.admin.inc',
+    'type'              => MENU_DEFAULT_LOCAL_TASK,
+    'weight'            => -100
+  );
+  $formats = module_invoke_all('biblio_mapper_options');
+  foreach ($formats as $key => $format) {
+  $items['admin/config/biblio/iomap/edit/' . $key] = array(
+    'title'             => $format,
     'page callback'     => 'drupal_get_form',
     'page arguments'    => array('biblio_admin_io_mapper_form', 5),
     'access arguments'  => array('administer biblio'),
     'file'              => '/includes/biblio.admin.inc',
-    'type'              => MENU_CALLBACK,
+    'tab_parent'						=> 'admin/config/biblio/iomap',
+    'type'              => MENU_LOCAL_TASK,
     'weight'            => -1
   );
-  $items['admin/config/biblio/fields/iomap/%/%/add'] = array(
-    'title'             => 'Import/Export Mapping',
+  }
+  $items['admin/config/biblio/iomap/%/%/add'] = array(
+    'title'             => '',
     'page callback'     => 'drupal_get_form',
-    'page arguments'    => array('biblio_admin_io_mapper_add_form', 5, 6),
+    'page arguments'    => array('biblio_admin_io_mapper_add_form', 4, 5),
     'access arguments'  => array('administer biblio'),
-    'file'              => '/includes/biblio.admin.inc',
-    'type'              => MENU_CALLBACK,
-    'weight'            => -1
-  );
-    $items['admin/config/biblio/fields/iomap/%'] = array(
-    'title'             => 'Import/Export Mapping',
-    'page callback'     => 'drupal_get_form',
-    'page arguments'    => array('biblio_admin_io_mapper_form', 5),
-    'access arguments'  => array('administer biblio'),
-    'file'              => '/includes/biblio.admin.inc',
-    'type'              => MENU_CALLBACK,
-    'weight'            => -1
-  );
-  $items['admin/config/biblio/fields/typemap/%'] = array(
-    'title'             => 'Type Mapping',
-    'page callback'     => 'drupal_get_form',
-    'page arguments'    => array('biblio_admin_type_mapper_form', 5),
-    'access arguments'  => array('administer biblio'),
-    'file'              => '/includes/biblio.admin.inc',
-    'type'              => MENU_CALLBACK,
-    'weight'            => -1
-  );
-  $items['admin/config/biblio/fields/fieldmap/%'] = array(
-    'title'             => 'Field Mapping',
-    'page callback'     => 'drupal_get_form',
-    'page arguments'    => array('biblio_admin_field_mapper_form', 5),
-    'access arguments'  => array('administer biblio'),
-    'file'              => '/includes/biblio.admin.inc',
+    'tab_parent'						=> 'admin/config/biblio/iomap',
+  'file'              => '/includes/biblio.admin.inc',
     'type'              => MENU_CALLBACK,
     'weight'            => -1
   );
