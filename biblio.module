@@ -718,7 +718,7 @@ function biblio_menu() {
   $items['admin/config/content/biblio/iomap/edit/' . $key] = array(
     'title'             => $format,
     'page callback'     => 'drupal_get_form',
-    'page arguments'    => array('biblio_admin_io_mapper_form', 5),
+    'page arguments'    => array('biblio_admin_io_mapper_form', 6),
     'access arguments'  => array('administer biblio'),
     'file'              => '/includes/biblio.admin.inc',
     'tab_parent'						=> 'admin/config/content/biblio/iomap',
@@ -729,7 +729,7 @@ function biblio_menu() {
   $items['admin/config/content/biblio/iomap/%/%/add'] = array(
     'title'             => '',
     'page callback'     => 'drupal_get_form',
-    'page arguments'    => array('biblio_admin_io_mapper_add_form', 4, 5),
+    'page arguments'    => array('biblio_admin_io_mapper_add_form', 5, 6),
     'access arguments'  => array('administer biblio'),
     'tab_parent'						=> 'admin/config/content/biblio/iomap',
   'file'              => '/includes/biblio.admin.inc',
@@ -804,7 +804,7 @@ function biblio_menu() {
   $items['admin/config/content/biblio/author/%/edit'] = array(
     'title'             => 'Edit author information',
     'page callback'     => 'drupal_get_form',
-    'page arguments'    => array('biblio_admin_author_edit_form', 4),
+    'page arguments'    => array('biblio_admin_author_edit_form', 5),
     'access callback'   => 'biblio_access',
     'access arguments'  => array('edit_author'),
     'file'              => '/includes/biblio.admin.inc',
@@ -824,7 +824,7 @@ function biblio_menu() {
   $items['admin/config/content/biblio/author/type'] = array(
     'title'             => 'Author Types',
     'page callback'     => 'drupal_get_form',
-    'page arguments'    => array('biblio_admin_author_types_form', 6, 5),
+    'page arguments'    => array('biblio_admin_author_types_form', 7, 6),
   'access arguments'  => array('administer biblio'),
     'file'              => '/includes/biblio.admin.inc',
     'type'              => MENU_LOCAL_TASK,
@@ -843,7 +843,7 @@ function biblio_menu() {
   $items['admin/config/content/biblio/author/type/%/edit'] = array(
     'title'             => 'Edit Author Type',
     'page callback'     => 'drupal_get_form',
-    'page arguments'    => array('biblio_admin_author_types_form_edit', 'edit', 5),
+    'page arguments'    => array('biblio_admin_author_types_form_edit', 'edit', 6),
     'access arguments'  => array('administer biblio'),
     'file'              => '/includes/biblio.admin.inc',
     'type'              => MENU_CALLBACK,
@@ -852,7 +852,7 @@ function biblio_menu() {
   $items['admin/config/content/biblio/author/type/%/delete'] = array(
     'title'             => 'Delete',
     'page callback'     => 'drupal_get_form',
-    'page arguments'    => array('biblio_admin_author_type_delete_confirm', 5),
+    'page arguments'    => array('biblio_admin_author_type_delete_confirm', 6),
     'access callback'   => 'user_access',
     'access arguments'  => array('administer biblio'),
     'file'              => '/includes/biblio.admin.inc',
@@ -880,7 +880,7 @@ function biblio_menu() {
   $items['admin/config/content/biblio/keywords/%/edit'] = array(
     'title'             => 'Edit keyword information',
     'page callback'     => 'drupal_get_form',
-    'page arguments'    => array('biblio_admin_keyword_edit_form', 4),
+    'page arguments'    => array('biblio_admin_keyword_edit_form', 5),
     'access callback'   => 'user_access',
     'access arguments'  => array('administer biblio'),
     'file'              => '/includes/biblio.admin.inc',
