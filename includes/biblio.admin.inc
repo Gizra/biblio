@@ -1677,9 +1677,12 @@ function theme_biblio_admin_author_types_form($variables) {
   $form = $variables['form'];
   // We need this complex query to realize author_types which are not in use (cid is NULL)
   $query = db_select('biblio_contributor_type_data', 'ctd');
-  $query->fields('ctd')
+  $query->fields('ctd', array('auth_type', 'title', 'hint'))
     ->leftJoin('biblio_contributor', 'bc', 'ctd.auth_type = bc.auth_type');
-  $db_result = $query->groupBy('auth_type')
+  $db_result = $query->groupBy('ctd.auth_type')
+                  ->groupBy('ctd.title')
+                  ->groupBy('ctd.hint')
+                  ->orderBy('ctd.auth_type')
                   ->execute();
 
   foreach  ($db_result as $row) {
