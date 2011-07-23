@@ -169,20 +169,15 @@ function biblio_insert_keywords($node, $update = FALSE) {
     }
     // Defend against duplicate, differently cased tags
     if (!isset($inserted[$kid])) {
-      if ($update) {
-        $and = db_and()->condition('nid', $node->nid)
-                       ->condition('vid', $node->vid)
-                       ->condition('kid', $kid);
-         db_delete('biblio_keyword')
-            ->condition($and)
-            ->execute();
-      }
-      $inserted[$kid] = db_insert('biblio_keyword')->fields(
-        array(
-          'kid' => $kid,
-          'nid' => $node->nid,
-          'vid' => $node->vid
-        ))->execute();
+      db_merge('biblio_keyword')
+        ->key(array('kid' => $kid, 'vid' => $node->vid))
+        ->fields(
+          array(
+            'kid' => $kid,
+            'nid' => $node->nid,
+            'vid' => $node->vid
+          ))->execute();
+      $inserted[$kid] = TRUE;
     }
   }
 
