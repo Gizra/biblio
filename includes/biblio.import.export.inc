@@ -503,9 +503,9 @@ function biblio_export($format = "tagged", $nid = NULL, $popup = FALSE) {
   $params = array();
   $nids = array();
   $arg_list = array();
+  module_load_include('inc', 'biblio', 'includes/biblio.contributors');
   if ($nid === NULL ) {
     module_load_include('inc', 'biblio', 'includes/biblio.pages');
-    module_load_include('inc', 'biblio', 'includes/biblio.contributors');
     $uri = drupal_parse_url(request_uri());
     $arg_list += $uri['query'];
     $arg_list['page_limit'] = 0;
