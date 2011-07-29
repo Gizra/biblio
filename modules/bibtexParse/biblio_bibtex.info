@@ -4,3 +4,4 @@ core = 7.x
 package = Biblio
 dependencies[] = biblio
 files[] = PARSEENTRIES.php
+files[] = views/biblio_handler_field_export_link_bibtex.inc

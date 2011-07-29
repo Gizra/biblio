@@ -3,6 +3,12 @@
  * @file biblio_tagged.module
  *
  */
+function biblio_tagged_views_api() {
+  return array(
+    'api' => 2,
+    'path' => drupal_get_path('module', 'biblio_tagged') . '/views',
+  );
+}
 /*
  *   add the tagged option to the option list of the biblio_import_form
  *   the key is the module name use by module_invoke to call hook_biblio_import

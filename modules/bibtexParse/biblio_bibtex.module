@@ -3,22 +3,13 @@
  * @file biblio_bibtex.module
  *
  */
-/*function biblio_bibtex_menu() {
-  global $user;
-  $items = array();
-  $base = variable_get('biblio_base', 'biblio');
-
-  $items["$base/export/bibtex"] = array(
-    'title'             => '',
-    'page callback'     => 'biblio_bibtex_biblio_export',
-    'access callback'   => 'user_access',
-    'access arguments'  => array('show export links'),
-    'type'              => MENU_CALLBACK
+function biblio_bibtex_views_api() {
+  return array(
+    'api' => 2,
+    'path' => drupal_get_path('module', 'biblio_bibtex') . '/views',
   );
-
-  return $items;
 }
-*//*
+/*
  *   add the BibTex option to the option list of the biblio_import_form
  *   the key is the module name use by module_invoke to call hook_biblio_import
  *   module_invoke('biblio_bibtex', 'biblio_import',...)

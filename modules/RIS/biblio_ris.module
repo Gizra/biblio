@@ -3,22 +3,13 @@
  * @file biblio_ris.module
  *
  */
-/*function biblio_ris_menu() {
-  global $user;
-  $items = array();
-  $base = variable_get('biblio_base', 'biblio');
-
-  $items["$base/export/ris"] = array(
-    'title'             => '',
-    'page callback'     => 'biblio_ris_biblio_export',
-    'access callback'   => 'user_access',
-    'access arguments'  => array('show export links'),
-    'type'              => MENU_CALLBACK
+function biblio_ris_views_api() {
+  return array(
+    'api' => 2,
+    'path' => drupal_get_path('module', 'biblio_ris') . '/views',
   );
-
-  return $items;
 }
-*//*
+/*
  *   add the ris option to the option list of the biblio_import_form
  *   the key is the module name use by module_invoke to call hook_biblio_import
  *   module_invoke('biblio_ris', 'biblio_import',...)
