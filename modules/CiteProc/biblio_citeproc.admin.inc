@@ -4,18 +4,28 @@ function biblio_citeproc_style_manager_form($form, &$form_state) {
   $options = array();
 
   if ($has_curl = function_exists('curl_init')) {
-    module_load_include('php', 'biblio_citeproc', '/Github/Autoloader');
-    Github_Autoloader::register();
-    $github = new Github_Client();
-    $branches = $github->getRepoApi()->getRepoBranches('citation-style-language', 'styles');
-    $tree = $github->getObjectApi()->listBlobs('citation-style-language', 'styles', $branches['master']);
+    $cache = cache_get('github_csl_repo');
+    if (!$cache || $cache->expire < time()) {
+      module_load_include('php', 'biblio_citeproc', '/Github/Autoloader');
+      Github_Autoloader::register();
+      $github = new Github_Client();
+      $branches = $github->getRepoApi()->getRepoBranches('citation-style-language', 'styles');
+      $tree = $github->getObjectApi()->listBlobs('citation-style-language', 'styles', $branches['master']);
 
-    $tree = array_flip($tree);
-    $options = array();
-    foreach ($tree as $sha => $file) {
-      if (strstr($file, '.csl')) {
-        $options[$sha] =  basename($file);
+      $tree = array_flip($tree);
+      $options = array();
+      foreach ($tree as $sha => $file) {
+        if (strstr($file, '.csl')) {
+          $options[$sha] =  basename($file);
+        }
       }
+      if (!empty($options)) {
+        $expire = time()+86400; //one day from now
+        cache_set('github_csl_repo', $options, 'cache', $expire);
+      }
+    }
+    else {
+      $options = $cache->data;
     }
   }
 
