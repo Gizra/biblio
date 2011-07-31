@@ -1516,7 +1516,11 @@ class csl_locale  {
         if (!$term) {
           $term = $this->locale->xpath("//cs:term[@name='$arg1'$form]$plural");
         }
-        if (isset($term[0])) return (string)$term[0];
+        if (isset($term[0])){
+          if (isset($arg3) && isset($term[0]->{$arg3})) return (string)$term[0]->{$arg3};
+          if (!isset($arg3) && isset($term[0]->single)) return (string)$term[0]->single;
+          return (string)$term[0];
+        }
         break;
       case 'date_option':
         $attribs = array();
