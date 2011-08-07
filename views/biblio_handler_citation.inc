@@ -61,8 +61,8 @@ class biblio_handler_citation extends views_handler_field {
       $item->title = biblio_remove_brace($item->title);
     }
 
-    $output  = "\n" . '<div class="biblio-entry">' . "\n" ;
-    $output  .= '<div class="biblio-style-' . $this->options['style_name'] . '">' . "\n" ;
+//    $output  = "\n" . '<div class="biblio-entry">' . "\n" ;
+//    $output  .= '<div class="biblio-style-' . $this->options['style_name'] . '">' . "\n" ;
     if (!$item->status) {
       $output .= '<div id="node-' . $item->nid . '" class="node node-unpublished">';
     }
@@ -93,7 +93,7 @@ class biblio_handler_citation extends views_handler_field {
       $output .= '</div>';
     }
 
-    $output .= "\n</div></div>";
+ //   $output .= "\n</div></div>";
 
     return $output;
     //    return theme('biblio_entry', array('node' => $item, 'style_name' => $this->options['style_name']));
