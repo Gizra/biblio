@@ -2,12 +2,30 @@
 function biblio_citeproc_menu() {
   global $user;
   $items = array();
-  $items['admin/config/content/biblio/styles'] = array(
+  $items['admin/config/content/biblio/citeproc'] = array(
+    'title'             => 'CiteProc',
+    'page callback'     => 'drupal_get_form',
+    'page arguments'    => array('biblio_citeproc_style_manager_form'),
+    'access arguments'  => array('administer biblio'),
+    'file'              => 'biblio_citeproc.admin.inc',
+    'type'              => MENU_LOCAL_TASK,
+    'weight'            => 12
+  );
+  $items['admin/config/content/biblio/citeproc/styles'] = array(
     'title'             => 'CiteProc Style Manager',
     'page callback'     => 'drupal_get_form',
     'page arguments'    => array('biblio_citeproc_style_manager_form'),
     'access arguments'  => array('administer biblio'),
     'file'              => 'biblio_citeproc.admin.inc',
+    'type'              => MENU_DEFAULT_LOCAL_TASK,
+    'weight'            => 12
+  );
+    $items['admin/config/content/biblio/citeproc/map'] = array(
+    'title'             => 'CSL Field Mapper',
+    'page callback'     => 'drupal_get_form',
+    'page arguments'    => array('biblio_admin_io_mapper_form', 'csl', FALSE),
+    'access arguments'  => array('administer biblio'),
+    'file'              =>  '../../includes/biblio.admin.inc',
     'type'              => MENU_LOCAL_TASK,
     'weight'            => 12
   );
@@ -51,6 +69,7 @@ function theme_biblio_citeproc_style($variables) {
     }
     if (!empty($csl->parent)) {
       $csl_file_contents = db_query("SELECT csl FROM biblio_citeproc_styles WHERE id = :id", array(':id' => $csl->parent))->fetchField();
+
     }
     else {
       $csl_file_contents = $csl->csl;
@@ -70,3 +89,7 @@ function theme_biblio_citeproc_style($variables) {
   return ($styled_node . filter_xss($node->biblio_coins, array('span')));
 }
 
+function biblio_citeproc_csl_map_reset($type = NULL) {
+  module_load_include('install', 'biblio_citeproc', 'biblio_citeproc');
+  _reset_csl_map($type);
+}
