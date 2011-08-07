@@ -369,13 +369,17 @@ function biblio_node_info() {
 }
 
 function biblio_node_access($node, $op, $account) {
-  $type = is_string($node) ? $node : $node->type;
-  if ($type != 'biblio') { // we only care about biblio nodes
+  if (is_string($node)) {
+    return NODE_ACCESS_IGNORE;
+  }
+
+  if ($node->type != 'biblio') { // we only care about biblio nodes
     return NODE_ACCESS_IGNORE;
   }
   switch ($op) {
     case 'view':
-      if ((variable_get('biblio_view_only_own', 0)) && $account->uid != $node->uid) {
+      if (((variable_get('biblio_view_only_own', 0)) && $account->uid != $node->uid) ||
+          !user_access('access biblio content')){
         return NODE_ACCESS_DENY;
       }
       break;
@@ -1558,6 +1562,8 @@ function biblio_citekey_generate($node) {
  *
  */
 function biblio_view($node, $buildmode = 'full') {
+  global $user;
+  if (!user_access('access biblio content', $user)) return $node;
   $links = array();
   $style = biblio_get_style();
   $base  = variable_get('biblio_base', 'biblio');
@@ -2110,5 +2116,9 @@ function biblio_set_map($type, $format, $map) {
 }
 
 function biblio_reset_map($type, $format) {
-   module_invoke_all($format . '_map_reset', $type);
+  module_invoke_all($format . '_map_reset', $type);
+}
+function biblio_field_extra_fields() {
+  module_load_include('inc', 'biblio', 'includes/biblio.fields');
+  return  _biblio_field_extra_fields();
 }
