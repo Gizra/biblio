@@ -1004,7 +1004,7 @@ function biblio_admin_io_mapper_page() {
 
   foreach ($formats as $key => $value) {
     $rows[] = array(
-      $value,
+      $value['title'],
       l(t('edit'), 'admin/config/content/biblio/iomap/edit/' . $key),
     );
   }
@@ -1018,12 +1018,12 @@ function biblio_admin_io_mapper_form($form, $form_state, $format, $exportable = 
   if (isset($formats[$format])) {
     $form['title'] = array(
       '#prefix' => '<h3>',
-      '#markup' => check_plain($formats[$format]) . ' ' . t('file format mapping'),
+      '#markup' => check_plain($formats[$format]['title']) . ' ' . t('file format mapping'),
       '#suffix' => '</h3>',
     );
     $form['fileformat_title'] = array(
       '#type' => 'hidden',
-      '#value' => $formats[$format],
+      '#value' => $formats[$format]['title'],
     );
 
   }
@@ -1033,7 +1033,7 @@ function biblio_admin_io_mapper_form($form, $form_state, $format, $exportable = 
   );
   $form['fileformat_export'] = array(
     '#type' => 'hidden',
-    '#value' => $exportable,
+    '#value' => isset($formats[$format]['export']) ? $formats[$format]['export'] : $exportable,
   );
 
   $form['typemap'] = array(
@@ -1058,6 +1058,18 @@ function biblio_admin_io_mapper_form($form, $form_state, $format, $exportable = 
 
   return $form;
 }
+function theme_biblio_admin_io_mapper_form($variables) {
+  $form = $variables['form'];
+  $header = $rows = array();
+  $output = drupal_render($form['title']);
+  $rows[] = array(
+  drupal_render($form['typemap']),
+  drupal_render($form['fieldmap']));
+  $output .= theme('table', array('header' => $header, 'rows' => $rows));
+  $output .= drupal_render_children($form);
+
+  return $output;
+}
 
 function biblio_admin_io_mapper_add_form($form, &$form_state, $format, $type) {
   $formats = module_invoke_all('biblio_mapper_options');
@@ -1078,7 +1090,7 @@ function biblio_admin_io_mapper_add_form($form, &$form_state, $format, $type) {
   );
   $form['fileformat_title'] = array(
     '#type' => 'hidden',
-    '#value' => $formats[$format],
+    '#value' => $formats[$format]['title'],
   );
   $form['type_name'] = array(
       '#type' => 'textfield',
@@ -1127,7 +1139,7 @@ function biblio_admin_io_mapper_add_form_field_submit($form, &$form_state) {
 
 function biblio_admin_type_mapper_form($format) {
   $formats = module_invoke_all('biblio_mapper_options');
-  $form['#file_format_title'] = isset($formats[$format]) ? $formats[$format] : '';
+  $form['#file_format_title'] = isset($formats[$format]) ? $formats[$format]['title'] : '';
   $form['#file_format'] = $format;
   $names = biblio_get_map('type_names', $format);
   $map   = biblio_get_map('type_map', $format);
@@ -1210,7 +1222,7 @@ function biblio_admin_type_mapper_form_reset_submit($form, $form_state) {
 
 function biblio_admin_field_mapper_form($format, $exportable) {
   $formats = module_invoke_all('biblio_mapper_options');
-  $form['#file_format_title'] = isset($formats[$format]) ? $formats[$format] : '';
+  $form['#file_format_title'] = isset($formats[$format]) ? $formats[$format]['title'] : '';
   $form['#file_format'] = $format;
   $form['#file_format_export'] = $exportable;
   $map = biblio_get_map('field_map', $format);

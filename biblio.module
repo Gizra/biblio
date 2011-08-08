@@ -168,11 +168,15 @@ function biblio_theme($existing, $type, $theme, $path) {
         'file' => '/includes/biblio.admin.inc',
         'render element' => 'form',
     ),
+   'biblio_admin_io_mapper_form'=> array(
+        'file' => '/includes/biblio.admin.inc',
+        'render element' => 'form',
+    ),
    'biblio_admin_io_mapper_add_form'=> array(
         'file' => '/includes/biblio.admin.inc',
         'render element' => 'form',
     ),
-   'biblio_admin_field_mapper_form' => array(
+  'biblio_admin_field_mapper_form' => array(
         'file' => '/includes/biblio.admin.inc',
         'render element' => 'form',
     ),
@@ -720,7 +724,7 @@ function biblio_menu() {
   $formats = module_invoke_all('biblio_mapper_options');
   foreach ($formats as $key => $format) {
   $items['admin/config/content/biblio/iomap/edit/' . $key] = array(
-    'title'             => $format,
+    'title'             => $format['title'],
     'page callback'     => 'drupal_get_form',
     'page arguments'    => array('biblio_admin_io_mapper_form', 6),
     'access arguments'  => array('administer biblio'),

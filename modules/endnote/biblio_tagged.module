@@ -18,7 +18,12 @@ function biblio_tagged_biblio_import_options() {
   return array('biblio_tagged' => t('EndNote Tagged'));
 }
 function biblio_tagged_biblio_mapper_options() {
-  return biblio_tagged_biblio_export_options();
+  return  array(
+    'tagged' => array(
+      'title' => t('EndNote Tagged'),
+      'export' => TRUE,
+      )
+    );
 }
 
 function biblio_tagged_biblio_export_options() {

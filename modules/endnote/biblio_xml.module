@@ -20,8 +20,14 @@ function biblio_xml_biblio_import_options() {
 }
 function biblio_xml_biblio_mapper_options() {
   return array(
-    'endnote7' => t('EndNote 7 XML'),
-    'endnote8' => t('EndNote X3 XML'),
+    'endnote7' => array(
+      'title' => t('EndNote 7 XML'),
+      'export' => TRUE,
+      ),
+    'endnote8' => array(
+      'title' => t('EndNote X3 XML'),
+  		'export' => TRUE,
+  		),
   );
 }
 

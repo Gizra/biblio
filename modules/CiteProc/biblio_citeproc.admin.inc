@@ -175,7 +175,7 @@ function biblio_citeproc_style_manager_form_submit($form, &$form_state) {
   }
 
 }
-function _install_csl($name, $csl, $sha = NULL) {
+function _install_csl($name, $csl, $sha = NULL, $all = FALSE) {
   static  $installed = array();
 
   if (empty($installed)) {
@@ -199,13 +199,19 @@ function _install_csl($name, $csl, $sha = NULL) {
       $parent = (string)$attrs['href'];
     }
   }
+  if (!$all && !empty($parent)) {
+    $csl_file_contents = db_query("SELECT csl FROM biblio_citeproc_styles WHERE id = :parent", array(':parent' => $parent))->fetchField();
+    if (!$csl_file_contents) {
+      drupal_set_message(t('You do not have the parent style file: !parent_id installed. You must install !parent_id before you can use !csl_id', array('!parent_id' => basename($parent), '!csl_id' => $name)), 'error');
+    }
+  }
 
   $sha1 = (isset($sha)) ? $sha : sha1($csl);
 
   $record  = array(
     'filename' => $name,
     'parent'   => $parent,
-    'title'    => (string)$xml->info->title,
+    'title'    => trim((string)$xml->info->title),
     'summary'  => (string)$xml->info->summary,
     'csl'      => $csl,
     'sha1'     => $sha1,
@@ -258,7 +264,7 @@ function _install_from_zip(&$context = NULL) {
       $name = basename($name);
       if (strstr($name, '.csl')) {
         $csl = $za->getFromIndex($i);
-        _install_csl($name, $csl);
+        _install_csl($name, $csl, NULL, TRUE);
         $context['results']['install_count']++;
       }
       $context['sandbox']['progress']++;
