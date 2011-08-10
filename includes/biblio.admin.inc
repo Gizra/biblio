@@ -1062,9 +1062,11 @@ function theme_biblio_admin_io_mapper_form($variables) {
   $form = $variables['form'];
   $header = $rows = array();
   $output = drupal_render($form['title']);
-  $rows[] = array(
-  drupal_render($form['typemap']),
-  drupal_render($form['fieldmap']));
+  $rows[] = array('data' => array(
+                  array('data' => drupal_render($form['typemap']),'style' => 'vertical-align:top'),
+                  array('data' => drupal_render($form['fieldmap']), 'style' => 'vertical-align:top'),
+                )
+             );
   $output .= theme('table', array('header' => $header, 'rows' => $rows));
   $output .= drupal_render_children($form);
 
