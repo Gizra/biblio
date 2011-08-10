@@ -1059,8 +1059,14 @@ function biblio_node_view($node, $view_mode) {
             '#attributes' => array('class' => array('links', 'inline')),
           );
         }
-     }
+    }
   }
+}
+
+function biblio_query_node_access_alter(QueryAlterableInterface $query) {
+  global $user;
+  if (user_access('access biblio content', $user)) return;
+  $query->condition('n.type', 'biblio', '<>');
 }
 
 function biblio_user_presave(&$edit, $account, $catagory) {
