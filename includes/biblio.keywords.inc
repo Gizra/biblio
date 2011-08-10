@@ -80,6 +80,7 @@ function biblio_load_keywords_multiple($vids = array()) {
   else {
     $query->condition('bk.vid', $vids, 'IN');
   }
+  $query->addMetaData('base_table', 'biblio_keyword');
   $query->addTag('node_access');
   $result = $query->execute();
 

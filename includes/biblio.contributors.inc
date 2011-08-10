@@ -67,6 +67,7 @@ function biblio_load_contributors_multiple($vids = array()) {
   else {
     $query->condition('bc.vid', $vids, 'IN');
   }
+  $query->addMetaData('base_table', 'biblio_contributor');
   $query->addTag('node_access');
   $result = $query->execute();
 

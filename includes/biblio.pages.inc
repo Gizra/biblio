@@ -309,13 +309,6 @@ function biblio_build_query($arg_list) {
   $rss_info['link'] = '';
   $rss_info['description'] = '';
 
-  $joins = array();
-  $args = array();
-  $selects = array();
-  $count_selects = array();
-  $count_limit = '';
-
-
   if ($arg_list['page_limit'] > 0) {
     $query = db_select('node', 'n')->extend('PagerDefault');
     $query->limit($arg_list['page_limit']);
@@ -396,7 +389,6 @@ function biblio_build_query($arg_list) {
 
 
   if (isset($arg_list['f']) && count($arg_list['f']) ) {
-    $args = array();
     $fields = biblio_get_db_fields();
     foreach ($arg_list['f'] as $type => $value) {
       $tables = array_keys($query->getTables());
