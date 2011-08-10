@@ -1222,10 +1222,11 @@ function biblio_admin_type_mapper_form_reset_submit($form, $form_state) {
     biblio_reset_map('type_names', $form_state['values']['fileformat']);
 }
 
-function biblio_admin_field_mapper_form($format, $exportable) {
+function biblio_admin_field_mapper_form($format, $exportable = TRUE) {
   $formats = module_invoke_all('biblio_mapper_options');
   $form['#file_format_title'] = isset($formats[$format]) ? $formats[$format]['title'] : '';
   $form['#file_format'] = $format;
+  $exportable = isset($formats[$format]['export']) ? $formats[$format]['export'] : $exportable;
   $form['#file_format_export'] = $exportable;
   $map = biblio_get_map('field_map', $format);
   $export_map = biblio_get_map('export_map', $format);
@@ -1258,13 +1259,15 @@ function biblio_admin_field_mapper_form($format, $exportable) {
 
   foreach ($map as $key => $value) {
     $biblio_field_select['#default_value'] = $map[$key];
-    $export = $exportable ? array('#type' => 'checkbox', '#default_value' => isset($export_map[$value]) ? $export_map[$value] : '') : array();
     $form['type'][$key] = array(
       'format' => array('#markup' => "<b>" . $key . "</b>"),
       'biblio' => $biblio_field_select,
-      'export' => $export,
       '#tree' => 1,
     );
+    if($exportable) {
+      $form['type'][$key]['export'] = array('#type' => 'checkbox', '#default_value' => isset($export_map[$value]) ? $export_map[$value] : '');
+    }
+
   }
   return $form;
 }
@@ -1274,11 +1277,13 @@ function theme_biblio_admin_field_mapper_form($variables) {
   $title = $form['#file_format_title'];
 
   foreach (element_children($form['type']) as $key ) {
-    $rows[] = array(
-    drupal_render($form['type'][$key]['format']),
-    drupal_render($form['type'][$key]['biblio']),
-    drupal_render($form['type'][$key])
-    );
+    $row = array();
+    $row[] = drupal_render($form['type'][$key]['format']);
+    $row[] = drupal_render($form['type'][$key]['biblio']);
+    if ($form['#file_format_export']) {
+      $row[] = drupal_render($form['type'][$key]);
+    }
+    $rows[] = $row;
   }
   $header = array(
     $title . ' ' . t('field identifier'),
