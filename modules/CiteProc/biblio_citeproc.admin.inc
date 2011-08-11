@@ -108,15 +108,21 @@ function theme_biblio_citeproc_style_manager_form($variables) {
   $form = $variables['form'];
   $rows = array();
   $rows[] = array(
+            array('data' => t('Current default style')),
+            array('data' => '<b>' . drupal_render($form['current_default']) . '</b>'),
+            );
+  $rows[] = array(
+            array('data' => t('Example citation:')),
+            array('data' => biblio_citeproc_example_citation()));
+  $output = theme('table', array('rows' => $rows));
+  $rows = array();
+  $rows[] = array(
             array('data' => drupal_render($form['installed_styles']) . '<br>' . drupal_render($form['default'])),
             array('data' => drupal_render($form['install']) . '<br>' . drupal_render($form['remove'])),
             array('data' => drupal_render($form['avialable_styles']) . '<br>' . drupal_render($form['install_all'])),
             );
-  $rows[] = array(
-            array('data' => t('Current default style') . ': <b>' . drupal_render($form['current_default']) . '</b>', 'colspan' => array(3)),
+  $output .= theme('table', array('rows' => $rows));
 
-            );
-  $output = theme('table', array('rows' => $rows));
   $output .= drupal_render_children($form);
   return $output;
 
@@ -276,8 +282,48 @@ function _install_from_zip(&$context = NULL) {
     }
   }
 }
+
 function _csl_import_batch_finished($success, $results, $operations) {
   $destination = variable_get('github_zip', '');
   file_unmanaged_delete($destination);
   variable_del('github_zip');
+}
+function biblio_citeproc_example_citation() {
+  global $language;
+  $contributors = array(
+    0 => array(
+      'lastname' => 'Oneauth',
+      'firstname' => 'Joe',
+      'initials' => 'A',
+      'auth_category' => 1,
+      'cid' => -1),
+    1 => array(
+      'lastname' => 'Twoauth',
+      'firstname' => 'John',
+      'initials' => 'B',
+      'auth_category' => 1,
+      'cid' => -2),
+  );
+  $node = new stdClass();
+  $node->nid = -1;
+  $node->title                  = 'This is a fantasic title.';
+  $node->biblio_contributors    = $contributors;
+  $node->biblio_type            = 102;
+  $node->biblio_year            = 2010;
+  $node->biblio_volume          = 1;
+  $node->biblio_issue           = 2;
+  $node->biblio_secondary_title = 'Journal of Fantastic Articles';
+  $node->biblio_pages           = '	424-31';
+  $node->biblio_coins           = '';
+  return theme_biblio_citeproc_style(array('node' => $node));
+
+}
+function biblio_citeproc_csl_editor() {
+//  <script type="text/javascript" src="js/ext/jquery-1.4.js"></script>
+  drupal_add_js(drupal_get_path('module', 'biblio_citeproc') . 'js/ext/jquery-color.js');
+  drupal_add_js(drupal_get_path('module', 'biblio_citeproc') . '/js/ext/GLR/GLR.js');
+  drupal_add_js(drupal_get_path('module', 'biblio_citeproc') . '/js/ext/GLR/GLR.messenger.js');
+  drupal_add_js(drupal_get_path('module', 'biblio_citeproc') . '/js/loc/xmlEditor.js');
+  drupal_add_css(drupal_get_path('module', 'biblio_citeproc') . '/css/main.css');
+
 }
