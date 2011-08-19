@@ -1193,7 +1193,7 @@ function theme_biblio_admin_type_mapper_form($variables) {
   }
     $rows[] = array(
     l('[' . t('Add New') . " $title " . t('Publication Type') . ']', 'admin/config/content/biblio/iomap/' . $form['#file_format'] . '/pubtype/add') ,
-    l('[' . t('Add New Biblio Publication Type') . ']', 'admin/config/content/biblio/fields/type/new')
+    l('[' . t('Add New Biblio Publication Type') . ']', 'admin/config/content/biblio/pubtype/new')
     );
   $header = array(
   $title . ' ' . t('Publication Types'),
@@ -1328,21 +1328,21 @@ function biblio_admin_field_mapper_form_reset_submit($form, $form_state) {
 
 function biblio_admin_types_form() {
   $output = '';
-  $result = db_query('SELECT t.* FROM {biblio_types} as t WHERE t.tid > 0');
+  $result = db_query('SELECT t.* FROM {biblio_types} as t WHERE t.tid > 0 ORDER BY name ASC');
   //$rows[] = array('',t('Fields Common To All Types'),l('edit', 'admin/config/content/biblio/types/edit'),'');
   foreach ($result as $row ) {
     if ($row->tid < 999) {
       $rows[] = array(
         $row->tid,
         check_plain($row->name),
-        ($row->visible) ? l(t('edit'), 'admin/config/content/biblio/fields/type/edit/' . $row->tid) : '', ($row->visible) ? l(t('hide'), 'admin/config/content/biblio/fields/type/hide/' . $row->tid) : l(t('show'), 'admin/config/content/biblio/fields/type/show/' . $row->tid)
+        ($row->visible) ? l(t('edit'), 'admin/config/content/biblio/fields/' . $row->tid) : '', ($row->visible) ? l(t('hide'), 'admin/config/content/biblio/pubtype/hide/' . $row->tid) : l(t('show'), 'admin/config/content/biblio/pubtype/show/' . $row->tid)
       );
     }
     else {
       $rows[] = array(
         $row->tid,
         check_plain($row->name),
-        l(t('edit'), 'admin/config/content/biblio/fields/type/edit/' . $row->tid), l(t('delete'), 'admin/config/content/biblio/fields/type/delete/' . $row->tid)
+        l(t('edit'), 'admin/config/content/biblio/fields/' . $row->tid), l(t('delete'), 'admin/config/content/biblio/pubtype/delete/' . $row->tid)
       );
     }
   }
@@ -1353,11 +1353,7 @@ function biblio_admin_types_form() {
       'colspan' => '2'
     )
   );
-  $output .= '<p>[ ' . l(t('Add New Type'), 'admin/config/content/biblio/fields/type/new') . ' ]';
-  $output .= ' [ ' . l(t('Reset all types to defaults'), 'admin/config/content/biblio/fields/type/reset') . ' ]';
   $output .= theme('table', array('header' => $header, 'rows' => $rows));
-  $output .= '<p>[ ' . l(t('Add New Type'), 'admin/config/content/biblio/fields/type/new') . ' ]';
-  $output .= ' [ ' . l(t('Reset all types to defaults'), 'admin/config/content/biblio/fields/type/reset') . ' ]';
   return $output;
 }
 function biblio_admin_types_add_form() {
@@ -1384,7 +1380,8 @@ function biblio_admin_types_add_form() {
   return $form;
 }
 function biblio_admin_types_add_form_submit($form, & $form_state) {
-  $values = $form_state['values'];
+  $values['name'] = $form_state['values']['name'];
+  $values['description'] = $form_state['values']['description'];
   $values['tid'] = variable_get('biblio_max_user_tid', '999') + 1;
 
   db_insert('biblio_types')
@@ -1423,7 +1420,7 @@ function biblio_admin_types_add_form_submit($form, & $form_state) {
   // Refresh publication type string for translation.
   biblio_locale_refresh_types($values['tid']);
 
-  drupal_goto('admin/config/content/biblio/fields/type');
+  drupal_goto('admin/config/content/biblio/pubtype');
 }
 function biblio_admin_types_hide() {
   $args = func_get_args();
@@ -1434,7 +1431,7 @@ function biblio_admin_types_hide() {
       ->condition('tid', $args[0])
       ->execute();
   }
-  drupal_goto('admin/config/content/biblio/fields/type');
+  drupal_goto('admin/config/content/biblio/pubtype');
 }
 function biblio_admin_types_show() {
   $args = func_get_args();
@@ -1445,13 +1442,14 @@ function biblio_admin_types_show() {
       ->condition('tid', $args[0])
       ->execute();
   }
-  drupal_goto('admin/config/content/biblio/fields/type');
+  drupal_goto('admin/config/content/biblio/pubtype');
 }
-function biblio_admin_types_delete_form() {
-  $args = func_get_args();
-  if ($args[1] > 0 && is_numeric($args[1])) {
-    $row = db_query('SELECT t.* FROM {biblio_types} as t WHERE t.tid = :tid ', array(':tid', $args[1]))->fetchObject();
-    $num_rows = db_query('SELECT COUNT(*) FROM {biblio} as b WHERE b.biblio_type = :btype', array(':btype', $row['tid']))->fetchField();
+
+function biblio_admin_types_delete_form($form, &$form_state, $tid) {
+  $existing_msg = '';
+  if (isset($tid) && is_numeric($tid)) {
+    $row = db_query('SELECT t.* FROM {biblio_types} as t WHERE t.tid = :tid ', array(':tid'=> $tid))->fetchObject();
+    $num_rows = db_query('SELECT COUNT(*) FROM {biblio} as b WHERE b.biblio_type = :btype', array(':btype' => $row->tid))->fetchField();
     if ($num_rows) {
       $existing_msg = t('There are @count biblio entries of this type, you should change the type of these entries before proceeding otherwise they will be deleted', array(
         '@count' => $num_rows
@@ -1463,11 +1461,11 @@ function biblio_admin_types_delete_form() {
     );
     $output = confirm_form($form, t('Are you sure you want to delete the custom biblio type:  %title ?', array(
       '%title' => $row->name
-    )) . $existing_msg, $_GET['destination'] ? $_GET['destination'] : 'admin/config/content/biblio/fields/type', t('This action cannot be undone.'), t('Delete'), t('Cancel'));
+    )) . $existing_msg, isset($_GET['destination']) ? $_GET['destination'] : 'admin/config/content/biblio/pubtype', t('This action cannot be undone.'), t('Delete'), t('Cancel'));
     return $output;
   }
   else {
-    drupal_goto('admin/config/content/biblio/fields/type');
+    drupal_goto('admin/config/content/biblio/pubtype');
   }
 }
 function biblio_admin_types_delete_form_submit($form, & $form_state) {
@@ -1479,20 +1477,20 @@ function biblio_admin_types_delete_form_submit($form, & $form_state) {
     ->condition('tid', $form_state['values']['tid'])
     ->execute();
 
-  drupal_goto('admin/config/content/biblio/fields/type');
+  drupal_goto('admin/config/content/biblio/pubtype');
 }
 function biblio_admin_types_reset_form() {
   $form['reset'] = array(
     '#type' => 'value',
     '#value' => 'reset'
   );
-  $output = confirm_form($form, t('Are you sure you want to reset ALL the field definitions to the defaults?'), isset($_GET['destination']) ? $_GET['destination'] : 'admin/config/content/biblio/fields/type', t('By doing this, you will loose all customizations you have made to the field titles, <b><u>this action cannot be undone</u></b>!'), t('Reset!'), t('Cancel'));
+  $output = confirm_form($form, t('Are you sure you want to reset ALL the field definitions to the defaults?'), isset($_GET['destination']) ? $_GET['destination'] : 'admin/config/content/biblio/fields', t('By doing this, you will loose all customizations you have made to the field titles, <b><u>this action cannot be undone</u></b>!'), t('Reset!'), t('Cancel'));
   return $output;
 }
 function biblio_admin_types_reset_form_submit($form, & $form_state) {
   module_load_include('install', 'biblio');
   biblio_reset_types();
-  drupal_goto("admin/config/content/biblio/fields/type");
+  drupal_goto("admin/config/content/biblio/fields");
 }
 /*
  * This functin is used by both the admin/config/content/biblio page and user profile page
