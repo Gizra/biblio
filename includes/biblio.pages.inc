@@ -100,7 +100,7 @@ function biblio_page() {
 function biblio_page_header($filter = array()) {
   $header = array();
   $header = array(
-    	'#prefix' => '<div id="biblio-header" class="clear-block">',
+      '#prefix' => '<div id="biblio-header" class="clear-block">',
       '#suffix' => '</div>',
       '#weight' => -100,
   );
@@ -110,9 +110,9 @@ function biblio_page_header($filter = array()) {
     $header += array(
       'search_form' => array(
         '#type'   => 'fieldset',
-        '#title' 	=> t('Search'),
-    		'#collapsible' => TRUE,
-  			'#collapsed' => TRUE,
+        '#title'   => t('Search'),
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE,
         'searchform' => drupal_get_form('biblio_search_form'),
         'filterform' => drupal_get_form('biblio_form_filter')
       ),
@@ -124,10 +124,10 @@ function biblio_page_header($filter = array()) {
   }
   $header += array(
     'export_links' => array(
-    	'#prefix' => '<div class="biblio-export">',
-      '#node'		=> NULL,
+      '#prefix' => '<div class="biblio-export">',
+      '#node'    => NULL,
       '#filter' => $filter,
-      '#theme'	=> 'biblio_export_links',
+      '#theme'  => 'biblio_export_links',
       //'#markup' => theme('biblio_export_links', array('node' => NULL)),
       '#suffix' => '</div>',
     ),
@@ -148,7 +148,7 @@ function biblio_page_header($filter = array()) {
   }
   $header += array(
     'filter_status' => array(
-    	'#prefix' => '<div class="biblio-filter-status">',
+      '#prefix' => '<div class="biblio-filter-status">',
       '#suffix' => '</div>',
       '#markup' => _biblio_filter_info_line($filter),
     ),
@@ -167,13 +167,13 @@ function biblio_page_header($filter = array()) {
       }
       $header += array(
         'alpha_line' => array(
-        	'#prefix' => '<div class="biblio-alpha-line">',
+          '#prefix' => '<div class="biblio-alpha-line">',
           '#suffix' => '</div>',
           '#markup' => theme('biblio_alpha_line', array(
-          													'type' => $_GET['s'],
-          													'current' => $value,
-          													'path' => variable_get('biblio_base', 'biblio'))
-                       ),
+          'type' => $_GET['s'],
+          'current' => $value,
+          'path' => variable_get('biblio_base', 'biblio'))
+          ),
         ),
       );
     }
@@ -252,7 +252,7 @@ function biblio_entry($node) {
 //  $prefix .= theme('checkbox', array('element' => $select_box));
 
   $entry  = array(
-  	'#prefix' => $prefix,
+    '#prefix' => $prefix,
     '#suffix' => $suffix,
   );
 
@@ -879,7 +879,7 @@ function biblio_search_form($form, &$form_state) {
     '#suffix' => '</div>',
     );
   $form['biblio_search']['keys'] = array(
-  	'#type' => 'textfield',
+    '#type' => 'textfield',
     '#title' => '',
     '#default_value' => '',
     '#size' => 25,
@@ -887,8 +887,8 @@ function biblio_search_form($form, &$form_state) {
   );
   $button_text = variable_get('biblio_search_button_text', 'Biblio search');
   $form['biblio_search']['submit'] = array(
-  	'#type' => 'submit',
-  	'#value' => t($button_text)
+    '#type' => 'submit',
+    '#value' => t($button_text)
   );
  // $form['#cache'] = FALSE;
   return $form;
@@ -1257,8 +1257,8 @@ function _biblio_format_author_page($path, $filter, $authors) {
     }
     $checkbox = array(
       '#title' => t('Hightlight possible duplicates'),
-      '#type'	 => 'checkbox',
-      '#id'		 => 'biblio-highlight',
+      '#type'  => 'checkbox',
+      '#id'    => 'biblio-highlight',
     );
     $checkbox = '<div class="biblio-alpha-line">' . drupal_render($checkbox) . '</div>';
     $header = array(array('data' => t('There are a total of @count authors in the database!header_ext.', array('@count' => count($authors), '!header_ext' => $header_ext)), 'align' =>'center', 'colspan' => 3));
