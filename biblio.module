@@ -403,7 +403,9 @@ function biblio_node_access($node, $op, $account) {
   return NODE_ACCESS_IGNORE;
 }
 
-function biblio_access($op, $node = '', $user = '') {
+function biblio_access($op, $node = '') {
+  global $user;
+
   switch ($op) {
     case 'admin':
       return user_access('administer biblio');
