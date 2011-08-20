@@ -48,6 +48,7 @@ class biblio_handler_citation extends views_handler_field {
   }
 
   function render($values) {
+    $output = '';
 
     if (empty($this->biblio_base)) {
       $this->biblio_base = variable_get('biblio_base', 'biblio');
