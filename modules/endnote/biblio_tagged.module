@@ -215,7 +215,9 @@ function _biblio_tagged_import($file, $terms = array(), $batch = FALSE, $session
 
         default :
           $field = _biblio_tagged_field_map($tag);
-          $node->$field = $value;
+          if (!empty($field)) {
+            $node->$field = $value;
+          }
           break;
       } //end switch
     }
