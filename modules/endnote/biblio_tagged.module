@@ -151,6 +151,7 @@ function _biblio_tagged_import($file, $terms = array(), $batch = FALSE, $session
   }
   $nids = array();
   $dups = array();
+  $ignored_tags = array();
   $node = new stdClass();
   $incite = FALSE;
   $node_id = NULL;
@@ -218,6 +219,9 @@ function _biblio_tagged_import($file, $terms = array(), $batch = FALSE, $session
           if (!empty($field)) {
             $node->$field = $value;
           }
+          else {
+            $ignored_tags[] = $tag;
+          }
           break;
       } //end switch
     }
@@ -230,10 +234,18 @@ function _biblio_tagged_import($file, $terms = array(), $batch = FALSE, $session
 
     } // end if ($start !== FALSE)
   } // end while
+
   fclose($fp);
+
   if ($incite && isset($node)) {  // this catches the case where the file ends without a blank line at the end
     _biblio_tagged_save($node, $terms, $batch, $session_id, $nids, $dups);
   }
+
+  if (!empty($ignored_tags)) {
+    $ignored_tags = array_unique($ignored_tags);
+    drupal_set_message(t("The following EndNote tag(s) were ignored because they do not map to any biblio fields: ") . implode(', ',$ignored_tags), 'warning');
+  }
+
   return array($nids, $dups);
 }
 
