@@ -220,7 +220,9 @@ function _biblio_tagged_import($file, $terms = array(), $batch = FALSE, $session
             $node->$field = $value;
           }
           else {
-            $ignored_tags[] = $tag;
+            if (!in_array($tag, $ignored_tags)) {
+              $ignored_tags[] = $tag;
+            }
           }
           break;
       } //end switch
@@ -243,7 +245,12 @@ function _biblio_tagged_import($file, $terms = array(), $batch = FALSE, $session
 
   if (!empty($ignored_tags)) {
     $ignored_tags = array_unique($ignored_tags);
-    drupal_set_message(t("The following EndNote tag(s) were ignored because they do not map to any biblio fields: ") . implode(', ',$ignored_tags), 'warning');
+    $message = t("The following elements were ignored because they do not map to any biblio fields: ");
+    $message .= implode(', ',$ignored_tags);
+    if (user_access('administer biblio')) {
+      $message .= '. ' . t('Click !url if you wish to check the field mapping', array('!url' => l(t('here'), 'admin/config/content/biblio/iomap/edit/tagged')));
+    }
+    drupal_set_message($message, 'warning');
   }
 
   return array($nids, $dups);

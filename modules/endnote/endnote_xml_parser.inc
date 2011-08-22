@@ -21,6 +21,7 @@ class EndNoteXMLParser {
   private $terms;
   private $nids;
   private $dups;
+  private $unmapped;
 
   function parse($file, $terms, $batch, $session_id) {
     $this->terms = $terms;
@@ -28,6 +29,7 @@ class EndNoteXMLParser {
     $this->session_id = $session_id;
     $this->nids = array();
     $this->dups = array();
+    $this->unmapped = array();
 
     if (!($fp = fopen($file->uri, "r"))) {
       drupal_set_message(t("could not open XML input"), 'error');
@@ -61,8 +63,18 @@ class EndNoteXMLParser {
       }
       xml_parser_free($this->parser);
     }
+
     fclose($fp);
 
+    if (!empty($this->unmapped)) {
+      $ignored_tags = array_unique($this->unmapped);
+      $message = t("The following elements were ignored because they do not map to any biblio fields: ");
+      $message .= implode(', ',$ignored_tags);
+      if (user_access('administer biblio')) {
+        $message .= '. ' . t('Click !url if you wish to check the field mapping', array('!url' => l(t('here'), 'admin/config/content/biblio/iomap/edit/' . $this->format)));
+      }
+      drupal_set_message($message, 'warning');
+    }
     return array($this->nids, $this->dups);
 
   }
@@ -279,6 +291,11 @@ class EndNoteXMLParser {
           if ($field = $this->field_map(trim($this->element))) {
             $this->node->$field .= $data;
           }
+          else {
+            if (!in_array($this->element, $this->unmapped)) {
+              $this->unmapped[] = $this->element;
+            }
+          }
       }
     }
   }
@@ -385,9 +402,14 @@ class EndNoteXMLParser {
         case 'TITLE':
           $this->node->title .= $data;
           break;
-          default:
+        default:
           if ($field = $this->field_map(trim($this->element))) {
             $this->node->$field .= $data;
+          }
+          else {
+            if (!in_array($this->element, $this->unmapped)) {
+              $this->unmapped[] = $this->element;
+            }
           }
       }
     }
