@@ -161,9 +161,8 @@ function biblio_ris_biblio_export($nids) {
     drupal_add_http_header('Content-Disposition', 'attachment; filename="Drupal-Biblio.ris"');
   }
 
-  foreach ($nids as $nid)  {
-
-    $node = node_load($nid, FALSE, TRUE);
+  $nodes = node_load_multiple($nids, array(), TRUE);
+  foreach ($nodes as $node) {
     if (variable_get('biblio_hide_bibtex_braces', 0) ) {
       $node->title = biblio_remove_brace($node->title);
     }

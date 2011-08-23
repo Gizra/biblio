@@ -175,15 +175,17 @@ class PARSEENTRIES
   }
   function searchReplaceText($searchReplaceActionsArray, $sourceString, $includesSearchPatternDelimiters=FALSE)
   {
-    // apply the search & replace actions defined in '$searchReplaceActionsArray' to the text passed in '$sourceString':
-    foreach ($searchReplaceActionsArray as $searchString => $replaceString)
-    {
-      if (!$includesSearchPatternDelimiters)
-      $searchString = "/" . $searchString . "/"; // add search pattern delimiters
-      if (preg_match($searchString, $sourceString))
-      $sourceString = preg_replace($searchString, $replaceString, $sourceString);
+    $searchStrings = array_keys($searchReplaceActionsArray);
+    if (!$includesSearchPatternDelimiters) {
+      foreach ($searchStrings as $key => $value) {
+        $searchStrings[$key] = "/" . $value . "/"; // add search pattern delimiters
+      }
     }
-    return $sourceString;
+
+    $replaceStrings= array_values($searchReplaceActionsArray);
+
+    // apply the search & replace actions defined in '$searchReplaceActionsArray' to the text passed in '$sourceString':
+    return preg_replace($searchStrings, $replaceStrings, $sourceString);
   }
 
   // Set strings macro

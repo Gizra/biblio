@@ -108,14 +108,13 @@ function biblio_xml_biblio_import($file, $terms = array(), $batch = FALSE, $sess
 
 function biblio_xml_biblio_export($nids) {
   module_load_include('inc', 'biblio_xml', 'endnote8_export');
-
   drupal_add_http_header('Content-type', 'application/xml; charset=utf-8');
   drupal_add_http_header('Content-Disposition', 'attachment; filename="Biblio-EndNote.xml"');
 
   print _endnote8_XML_export('', 'begin');
-
-  foreach ($nids as $nid) {
-    $node = node_load($nid, FALSE, TRUE);
+  $nodes = node_load_multiple($nids, array(), TRUE);
+  foreach ($nodes as $node) {
+  //  $node = node_load($nid, FALSE, TRUE);
     if (variable_get('biblio_hide_bibtex_braces', 0) ) {
       $node->title = biblio_remove_brace($node->title);
     }

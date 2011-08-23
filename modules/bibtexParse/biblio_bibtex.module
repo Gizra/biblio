@@ -187,8 +187,8 @@ function biblio_bibtex_biblio_export($nids) {
     drupal_add_http_header('Content-Disposition', 'attachment; filename="Biblio-Bibtex.bib"');
   }
 
-  foreach ($nids as $nid) {
-    $node = node_load($nid, FALSE, TRUE);
+  $nodes = node_load_multiple($nids, array(), TRUE);
+  foreach ($nodes as $node) {
     if (!$popup) {
       print _biblio_bibtex_export($node);
     }
@@ -294,6 +294,7 @@ function _biblio_bibtex_import($entries, $terms = array(), $batch = FALSE, $sess
  *   none
  */
 function _biblio_bibtex_export($node) {
+  static $converter = NULL;
 
   $bibtex = '';
   $type = "article";
@@ -326,6 +327,7 @@ function _biblio_bibtex_export($node) {
       $journal = $node->biblio_secondary_title;
       break;
   }
+
   $bibtex .= '@' . $type . ' {';
   $bibtex .= ($node->biblio_citekey) ? $node->biblio_citekey  : "";
   $bibtex .= _biblio_bibtex_format_entry('title', $node->title);
@@ -363,10 +365,12 @@ function _biblio_bibtex_export($node) {
     $kw_array = array_unique($kw_array);
     $bibtex .= _biblio_bibtex_format_entry('keywords', implode(', ', $kw_array));
   }
+
   $bibtex .= _biblio_bibtex_format_entry('isbn', $node->biblio_isbn);
   $bibtex .= _biblio_bibtex_format_entry('issn', $node->biblio_issn);
   $bibtex .= _biblio_bibtex_format_entry('doi', $node->biblio_doi);
   $bibtex .= _biblio_bibtex_format_entry('url', $node->biblio_url);
+
   if (!empty ($node->upload) && count($node->upload['und']) && user_access('view uploaded files')) {
       foreach ($node->upload['und'] as $file) {
       $attachments[] = file_create_url($file['uri']);
@@ -389,10 +393,12 @@ function _biblio_bibtex_export($node) {
 
 
   //now convert any special characters to the latex equivelents...
-  module_load_include('php', 'biblio_bibtex', 'PARSEENTRIES');
-  include(drupal_get_path('module', 'biblio_bibtex') . '/transtab_unicode_bibtex.inc.php');
-  $converter = new PARSEENTRIES();
-  $bibtex = $converter->searchReplaceText($transtab_unicode_bibtex, $bibtex, FALSE);
+  if (!isset($converter)) {
+    module_load_include('php', 'biblio_bibtex', 'PARSEENTRIES');
+    include_once(drupal_get_path('module', 'biblio_bibtex') . '/transtab_unicode_bibtex.inc.php');
+    $converter = new PARSEENTRIES();
+  }
+  $bibtex = $converter->searchReplaceText(_biblio_bibtex_get_transtab(), $bibtex, FALSE);
 
   return $bibtex;
 }
