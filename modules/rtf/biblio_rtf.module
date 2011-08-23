@@ -66,8 +66,8 @@ function biblio_rtf_biblio_export($nids) {
     'style_name' => biblio_get_style(),
   );
 
-  foreach ($nids as $nid) {
-    $node = node_load($nid, FALSE, TRUE);
+  $nodes = node_load_multiple($nids, array(), TRUE);
+  foreach ($nodes as $node) {
     if (variable_get('biblio_hide_bibtex_braces', 0) ) {
       $node->title = biblio_remove_brace($node->title);
     }
@@ -80,7 +80,7 @@ function biblio_rtf_biblio_export($nids) {
       $rtf->setPaperOrientation(1);
       $rtf->setDefaultFontFace(1);
       $rtf->setDefaultFontSize(24);
-      $rtf->setAuthor("Biblio");
+      $rtf->setAuthor("Biblio 7.x");
       $rtf->setOperator("");
       $rtf->setTitle("Biblio RTF Export");
       $rtf->addColour("#000000");
