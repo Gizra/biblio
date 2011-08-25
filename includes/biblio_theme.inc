@@ -571,7 +571,7 @@ function theme_biblio_author_link($variables) {
     $uri['html'] = TRUE;
   }
 
-  if (variable_get('biblio_author_link_profile', 0) && $author['drupal_uid'] ) {
+  if (variable_get('biblio_author_link_profile', 0) && isset($author['drupal_uid']) ) {
     $profile_path = 'user/' . $author['drupal_uid'] . '/' . $uri['path'];
     if ($path != '/' . $profile_path) {  // we only create links to the profile page if we are not already on it.
       $uri['path'] = $profile_path;
