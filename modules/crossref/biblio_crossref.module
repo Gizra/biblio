@@ -14,8 +14,12 @@ function biblio_crossref_form_biblio_node_form_alter(&$form, &$form_state) {
         '#collapsible' => TRUE,
         '#collapsed' => TRUE,
     );
-    $have_pid  = (isset($user->data['biblio_crossref_pid']) && !empty($user->data['biblio_crossref_pid'])) ? TRUE : FALSE;
-    if (!$have_pid) {
+    $have_pid = variable_get('biblio_crossref_pid', '');
+    $user_pid = (isset($user->data['biblio_crossref_pid']) && !empty($user->data['biblio_crossref_pid'])) ? $user->biblio_crossref_pid : '';
+    if (variable_get('biblio_show_crossref_profile_form', '1') && !empty($user_pid)) {
+      $have_pid = $user_pid;
+    }
+    if (empty($have_pid)) {
       $form['biblio_doi_lookup']['doi_register'] = array(
           '#prefix' => '<p><b>',
           '#suffix' => '</b></p>',
@@ -29,14 +33,14 @@ function biblio_crossref_form_biblio_node_form_alter(&$form, &$form_state) {
         '#required' => FALSE,
         '#default_value' => (isset($form_state['values']['doi_data']) ? $form_state['values']['doi_data'] : ''),
         '#description' => t('Enter a DOI name in the form: <b>10.1000/123456</b>'),
-        '#disabled' => !$have_pid,
+        '#disabled' => empty($have_pid),
         '#size' => 60,
         '#maxlength' => 255,
         '#weight' => -4
     );
     $form['biblio_doi_lookup']['doi_submit'] = array(
         '#type' => 'submit',
-        '#disabled' => !$have_pid,
+        '#disabled' => empty($have_pid),
         '#value' => t('Populate using DOI'),
         '#submit' => array('biblio_crossref_form_biblio_node_form_submit')
     );
