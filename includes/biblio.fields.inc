@@ -1,6 +1,7 @@
 <?php
 function _biblio_field_extra_fields() {
   $extras['node']['biblio']['form'] = array();
+  $fields = array();
 
     $result = db_query("SELECT * FROM {biblio_fields} b
               INNER JOIN {biblio_field_type} bt ON b.fid = bt.fid
