@@ -418,7 +418,7 @@ function biblio_build_query($arg_list) {
           $tcc++;
           break;
         case 'tg':
-          $query->where("substring(('biblio_sort_title'),1 ,1) " . $match_op . " LOWER(:letter)", array(':letter' => $value));
+          $query->where("UPPER(substring(biblio_sort_title,1 ,1)) = :letter", array(':letter' => $value));
           break;
         case 'ag': //selects entries whoose authors firstname starts with the letter provided
           $query->where(" UPPER(substring(bcd.lastname,1,1)) = :letter ", array(':letter' => $value));
