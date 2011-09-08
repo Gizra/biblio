@@ -765,7 +765,7 @@ function biblio_menu() {
   $items['admin/config/content/biblio/pubtype/delete/%'] = array(
     'title'             => '',
     'page callback'     => 'drupal_get_form',
-    'page arguments'    => array('biblio_admin_types_delete_form', array(6)),
+    'page arguments'    => array('biblio_admin_types_delete_form', 6),
     'access arguments'  => array('administer biblio'),
     'file'              => '/includes/biblio.admin.inc',
     'type'              => MENU_CALLBACK
