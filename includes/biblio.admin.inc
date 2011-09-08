@@ -1389,19 +1389,11 @@ function biblio_admin_types_add_form_submit($form, & $form_state) {
     ->execute();
 
   variable_set('biblio_max_user_tid', $values['tid']);
-
-  for ($f = 1; $f <= 51; $f++) {
-    $ft_vals = array(
-      'tid'       => $values['tid'],
-      'fid'       => $f,
-      'ftdid'     => $f,
-      'cust_tdid' => $f,
-      'weight'    => $f,
-      'visible'    => 1,
-    );
-
+  $result = db_query('SELECT * FROM {biblio_field_type} WHERE tid=0', array(), array('fetch' => PDO::FETCH_ASSOC));
+  foreach ($result as $row) {
+    $row['tid'] = $values['tid'];
     db_insert('biblio_field_type')
-      ->fields($ft_vals)
+      ->fields($row)
       ->execute();
   }
   // Fill contributor types. Use the first 4 defaults.
