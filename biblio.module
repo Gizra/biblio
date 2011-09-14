@@ -1098,7 +1098,7 @@ function biblio_user_presave(&$edit, $account, $catagory) {
       }
       $edit['data'][$key] = $edit[$key];
       if ($key == 'biblio_contributor_id' ) {
-        if ($edit[$key] != 0) {
+        if ($edit[$key] != 0 && $edit[$key] != $account->data[$key]) {
           $edit['biblio_id_change_count']++;
         }
         db_update('biblio_contributor_data')->condition('drupal_uid', $account->uid)->fields(array('drupal_uid' => 0))->execute();
