@@ -51,7 +51,7 @@ function biblio_load_contributors($vid) {
   return biblio_load_contributors_multiple($vids);
 }
 
-function biblio_load_contributors_multiple($vids = array()) {
+function biblio_load_contributors_multiple($vids = array(), $auth_category = 0) {
   $contributors = array();
   if (empty($vids)) return $contributors;
 
@@ -66,6 +66,9 @@ function biblio_load_contributors_multiple($vids = array()) {
   }
   else {
     $query->condition('bc.vid', $vids, 'IN');
+  }
+  if ($auth_category) {
+    $query->condition('bc.auth_category', $auth_category);
   }
   $query->addMetaData('base_table', 'biblio_contributor');
   $query->addTag('node_access');
