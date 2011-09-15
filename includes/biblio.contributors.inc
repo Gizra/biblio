@@ -180,11 +180,30 @@ function biblio_get_orphan_authors() {
 
 function biblio_delete_orphan_authors($force = FALSE) {
   if (variable_get('biblio_auto_orphaned_author_delete', 0) || $force) {
-//    db_query('DELETE FROM {biblio_contributor_data} WHERE cid NOT IN (SELECT DISTINCT(cid) FROM {biblio_contributor})');
-    $sub_select = db_select('biblio_contributor', 'bc')->fields('bc', array('cid'))->distinct();
-    db_delete('biblio_contributor_data')
-      ->condition('cid', $sub_select, 'NOT IN')
-      ->execute();
+    //    db_query('DELETE FROM {biblio_contributor_data} WHERE cid NOT IN (SELECT DISTINCT(cid) FROM {biblio_contributor})');
+    //    $sub_select = db_select('biblio_contributor', 'bc')->fields('bc', array('cid'))->distinct();
+
+    $query = db_select('biblio_contributor', 'bc');
+    $active_cids = $query
+      ->fields('bc', array('cid'))
+      ->groupBy('cid')
+      ->execute()
+      ->fetchCol();
+
+    $query = db_select('biblio_contributor_data', 'bcd');
+    $all_cids = $query
+      ->fields('bcd', array('cid'))
+      ->groupBy('cid')
+      ->execute()
+      ->fetchCol();
+
+    $orphans = array_diff($all_cids, $active_cids);
+
+    if (!empty($orphans)) {
+      db_delete('biblio_contributor_data')
+        ->condition('cid', $orphans, 'IN')
+        ->execute();
+    }
   }
 }
 

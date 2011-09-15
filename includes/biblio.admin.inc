@@ -2077,10 +2077,12 @@ function biblio_admin_orphans_form($form, &$form_state) {
     ->fetchCol();
 
   $orphans = array_diff($all_cids, $active_cids);
+
   if (!empty($orphans)) {
-    $query = db_select('biblio_contributor_data', 'bcd')->extend('PagerDefault')->limit(50);
-    $query->fields('bcd'); // SELECT * FROM {biblio_contributor_data}
-    $query->condition('cid', $orphans, 'IN');
+    $query = db_select('biblio_contributor_data', 'bcd')->extend('PagerDefault')->limit(25);
+    $query->fields('bcd') // SELECT * FROM {biblio_contributor_data}
+      ->condition('cid', $orphans, 'IN')
+      ->orderBy('lastname');
 
     $result = $query->execute(); //pager_query('SELECT * FROM {biblio_contributor_data} WHERE cid NOT IN (SELECT cid FROM {biblio_contributor} GROUP BY cid)', 50);
     $authors = array();
@@ -2119,7 +2121,7 @@ function biblio_admin_orphans_form($form, &$form_state) {
       '#options' => $options,
       '#empty' => t('No orphaned authors.'),
     );
-    $form['pager']   = theme('pager');
+    $form['pager']   = array('#markup' => theme('pager'));
 //  }
   return $form;
 }
