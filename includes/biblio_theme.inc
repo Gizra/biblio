@@ -853,7 +853,7 @@ function theme_biblio_download_links($variables) {
 
   $fields = field_attach_view('node', $node, 'full', $langcode);
   foreach (element_children($fields) as $field) {
-    if($fields[$field]['#field_type'] == 'file') {
+    if($fields[$field]['#access']  && $fields[$field]['#field_type'] == 'file') {
       foreach ($fields[$field]['#items'] as $delta => $item) {
         if (module_exists('filefield_paths')) {
           $alias =  drupal_get_path_alias('filefield_paths/alias/' . $item['fid']);
