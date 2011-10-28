@@ -151,7 +151,7 @@ function _biblio_tagged_import($file, $terms = array(), $batch = FALSE, $session
   $nids = array();
   $dups = array();
   $ignored_tags = array();
-  $node = new stdClass();
+  $node = NULL;
   $incite = FALSE;
   $node_id = NULL;
   $contributors = NULL;
@@ -228,7 +228,7 @@ function _biblio_tagged_import($file, $terms = array(), $batch = FALSE, $session
     }
     else {
       $incite = FALSE;
-      if (isset($node)) {
+      if (!empty($node)) {
         _biblio_tagged_save($node, $terms, $batch, $session_id, $nids, $dups);
         $node = NULL;
       }
@@ -238,7 +238,7 @@ function _biblio_tagged_import($file, $terms = array(), $batch = FALSE, $session
 
   fclose($fp);
 
-  if ($incite && isset($node)) {  // this catches the case where the file ends without a blank line at the end
+  if ($incite && !empty($node)) {  // this catches the case where the file ends without a blank line at the end
     _biblio_tagged_save($node, $terms, $batch, $session_id, $nids, $dups);
   }
 
