@@ -144,6 +144,7 @@ function biblio_tagged_biblio_export($nids) {
  */
 
 function _biblio_tagged_import($file, $terms = array(), $batch = FALSE, $session_id = NULL) {
+  ini_set('auto_detect_line_endings', true);
   if (!($fp = fopen($file->uri, "r"))) {
     drupal_set_message(t("Could not open EndNote Tagged input"), 'error');
     return;

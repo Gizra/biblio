@@ -158,6 +158,7 @@ class PARSEENTRIES
   {
     if (!is_file($file))
     die;
+    ini_set('auto_detect_line_endings', true);
     $this->fid = fopen ($file,'r');
     $this->parseFile = TRUE;
   }

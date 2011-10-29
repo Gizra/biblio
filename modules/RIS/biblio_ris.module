@@ -217,6 +217,7 @@ function _biblio_ris_import_string($string) {
 }
 
 function _biblio_ris_import($file, $terms = array(), $batch = FALSE, $session_id = NULL) {
+  ini_set('auto_detect_line_endings', true);
   if (!($fp = fopen($file->uri, "r"))) {
     drupal_set_message(t("Could not open RIS input file for reading."), 'error');
     return;
@@ -259,7 +260,7 @@ function _biblio_ris_import($file, $terms = array(), $batch = FALSE, $session_id
         $node->biblio_contributors = array();
       }
       else {
-        _biblio_ris_parse_line($tag, $data, $node);
+        _biblio_ris_parse_line($tag, $data, $node, $unmapped);
       }
 
     }
@@ -280,7 +281,7 @@ function _biblio_ris_import($file, $terms = array(), $batch = FALSE, $session_id
   return array($nids, $dups);
 }
 
-function _biblio_ris_parse_line($tag, $data, $node) {
+function _biblio_ris_parse_line($tag, $data, $node, &$unmapped) {
   switch ($tag) {
     case 'TY' :
       $node->biblio_type = _biblio_ris_type_map($data);
@@ -326,7 +327,6 @@ function _biblio_ris_parse_line($tag, $data, $node) {
       }
       break;
     default :
-      $field = _biblio_ris_field_map($tag);
       if ($field = _biblio_ris_field_map($tag)) {
         $node->$field .= $data;
       }
