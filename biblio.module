@@ -308,7 +308,15 @@ function biblio_autocomplete($field, $string = '') {
       break;
 
     default:
-      $result = db_query_range("SELECT :sfield FROM {biblio} WHERE LOWER(:fieldv) LIKE LOWER(:value) ORDER BY :ofield ASC", 0, 10, array(':sfield' => $field, ':ofield' => $field, ':fieldv' => $field, ':value' => $string . '%') );
+      $field = drupal_strtolower($field);
+      $string = drupal_strtolower($string) . '%';
+      $query = db_select('biblio', 'b')
+        ->fields('b', array($field))
+        ->condition($field, $string, 'LIKE')
+        ->orderBy($field, 'ASC')
+        ->range(0, 10);
+      $result = $query->execute();
+
       foreach ($result as $data) {
         $matches[$data->$field] = check_plain($data->$field);
       }
@@ -1459,6 +1467,7 @@ function _biblio_text_year($year) {
  */
 function _biblio_prepare_submit(&$node) {
   $node->biblio_sort_title = biblio_normalize_title($node->title);
+  if(!isset($node->biblio_year)) $node->biblio_year = 9999;
   $node->biblio_year = _biblio_numeric_year($node->biblio_year);
 
   if (variable_get('biblio_auto_citekey', 1) && empty($node->biblio_citekey)) {
