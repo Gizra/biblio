@@ -2246,10 +2246,10 @@ function biblio_admin_keyword_edit_form($form, &$form_state, $keyword_id) {
   );
 
   $result = db_query("SELECT kd.word, kd.kid, count(*) as use_count FROM {biblio_keyword_data} kd
-  											LEFT JOIN {biblio_keyword} bk on bk.kid = kd.kid
-  											WHERE LOWER(word) LIKE LOWER(:word)
-  											AND kd.kid <> :kid
-  											GROUP BY kd.kid, kd.word", array(':word' => '%%' . drupal_substr($keyword->word, 0, 5) . '%%', ':kid' => $keyword_id));
+                      LEFT JOIN {biblio_keyword} bk on bk.kid = kd.kid
+                      WHERE LOWER(word) LIKE LOWER(:word)
+                      AND kd.kid <> :kid
+                      GROUP BY kd.kid, kd.word", array(':word' => '%%' . drupal_substr($keyword->word, 0, 5) . '%%', ':kid' => $keyword_id));
 
   foreach ($result as $keyword) {
     $keywords[] = $keyword;
@@ -2257,6 +2257,7 @@ function biblio_admin_keyword_edit_form($form, &$form_state, $keyword_id) {
   if(isset($form_state['biblio_add_merge_keywords'])) {
     $keywords = array_merge($keywords, $form_state['biblio_add_merge_keywords']);
   }
+
   foreach($keywords as $keyword) {
     $options[$keyword->kid] = array(
         'keyword' => array(
@@ -2272,7 +2273,7 @@ function biblio_admin_keyword_edit_form($form, &$form_state, $keyword_id) {
   $form['merge'] = array(
       '#type' => 'fieldset',
       '#title' => t('Keyword Merge'),
-      '#description' => t('Select other keywords which will be merged with the one above.  You should only do this if you are sure the other keywords represent the same keyword as the one being edited.'),
+      '#description' => t('If you wish to consolodate references to multiple keywords into single reference to: <b><u>!kw</u></b>, select the others from the list below. This will remove the selected keywords from the database and replace references to them with a reference to: <b><u>!kw</u></b>. You should only do this if you are sure the other keywords represent the same keyword as the one being edited.', array('!kw' => $keyword->word)),
       '#weight' => 5,
       '#collapsible' => TRUE,
       '#collapsed' => FALSE,
@@ -2283,7 +2284,7 @@ function biblio_admin_keyword_edit_form($form, &$form_state, $keyword_id) {
       '#type' => 'tableselect',
       '#header' => $header,
       '#options' => $options,
-      '#empty' => t('No similar keywords.'),
+      '#empty' => t('No similar keywords automatically detected, use the search box below to manually add others.'),
       '#prefix' => '<div id="biblio-keyword-merge-table">',
       '#suffix' => '</div>',
 
@@ -2292,20 +2293,18 @@ function biblio_admin_keyword_edit_form($form, &$form_state, $keyword_id) {
       '#type' => 'textfield',
       '#title' => t('Keyword search'),
       '#autocomplete_path' => 'biblio/autocomplete/biblio_keywords',
-      '#description' => t('Use this field to find other keywords, then click the "Add to merge list" button below to add it to the merge list.')
+      '#description' => t('Use this field to find other keywords you would like to merge with: <b><u>!kw</u></b>, then click the "Add to merge list" button. (The merge will not happen until the "Save" button is clicked)', array('!kw' => $keyword->word))
     );
     $form['merge']['add'] = array(
       '#type' => 'submit',
       '#value' => t('Add to merge list'),
       '#submit'      => array('biblio_add_merge_keyword'),
       '#ajax'        => array(
-               'callback' => 'biblio_add_merge_keyword_callback',
-               'wrapper'  => 'biblio-keyword-merge-table',
-    ),
-
+        'callback' => 'biblio_add_merge_keyword_callback',
+        'wrapper'  => 'biblio-keyword-merge-table',
+      ),
     );
 
-//  }
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save'),
@@ -2334,21 +2333,21 @@ function biblio_add_merge_keyword($form, &$form_state) {
     module_load_include('inc', 'biblio', 'includes/biblio.keywords');
     if ($word = biblio_get_keyword_by_name($form_state['values']['search'])) {
       if ($word->kid == $form_state['values']['kid']) { // we don't want to merge with ourselves :-(
-        form_set_error('search', t('You cannot merge a keyword with itself'));
+        drupal_set_message(t('You cannot merge a keyword with itself'), 'error');
       }
       elseif (isset($form_state['biblio_add_merge_keywords'][$word->kid])) {
-        form_set_error('search', t('Keyword already exists in the merge list'));
+        drupal_set_message(t('Keyword already exists in the merge list'), 'warning');
       }
       else {
         $form_state['biblio_add_merge_keywords'][$word->kid] = $word;
       }
     }
     else {
-      form_set_error('search', t('The keyword was not found in the database'));
+      drupal_set_message(t('The keyword was not found in the database.  You must select a keyword from the "auto-complete" list of the Keyword search box.'), 'error');
     }
   }
   else {
-    form_set_error('search', t('Cannot add an empty value'));
+    drupal_set_message(t('Cannot add an empty value'), 'error');
   }
 
   $form_state['rebuild'] = TRUE;
