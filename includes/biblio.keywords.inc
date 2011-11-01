@@ -27,7 +27,10 @@
 function biblio_get_keyword_by_name($name) {
   static $keywords = array();
   if (!$kid = array_search($name, $keywords)) {
-    $term = db_query("SELECT * FROM {biblio_keyword_data} k WHERE LOWER(k.word) = LOWER(:name)", array(':name' => trim($name)))->fetchObject();
+    $term = db_query("SELECT kd.kid, kd.word, COUNT(*) as use_count FROM {biblio_keyword_data} kd
+    								LEFT JOIN {biblio_keyword} bk on bk.kid = kd.kid
+    								WHERE LOWER(kd.word) = LOWER(:name)
+    								GROUP BY kd.kid, kd.word", array(':name' => trim($name)))->fetchObject();
     if ($term) {
       $keywords[$term->kid] = $term;
       return $keywords[$term->kid];
