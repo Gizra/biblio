@@ -1953,7 +1953,7 @@ function biblio_hash($node) {
   }
 
   $hash_string = str_replace(' ', '', drupal_strtolower($node->title));
-  if (isset($node->biblio_contributors[0])) {
+  if (isset($node->biblio_contributors[0]['lastname'])) {
     $hash_string .= str_replace(' ', '', drupal_strtolower($node->biblio_contributors[0]['lastname']));
   }
   $hash_string .= $node->biblio_year;
