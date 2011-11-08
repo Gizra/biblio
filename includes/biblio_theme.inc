@@ -219,18 +219,14 @@ function theme_biblio_tabular($variables) {
     array('data' => $node->biblio_type_name)
   );
 
-  if ($node->biblio_url) {
-    $attrib = (variable_get('biblio_links_target_new_window', FALSE)) ? array('target' => '_blank') : array();
-    $node->biblio_url = l($node->biblio_url, $node->biblio_url, $attrib);
-  }
+  $attrib = (variable_get('biblio_links_target_new_window', FALSE)) ? array('target' => '_blank') : array();
   if ($node->biblio_doi) {
     $doi_url = '';
-    $attrib = (variable_get('biblio_links_target_new_window', FALSE)) ? array('target' => '_blank') : array();
     if ( ($doi_start = strpos($node->biblio_doi, '10.')) !== FALSE) {
       $doi = substr($node->biblio_doi, $doi_start);
       $doi_url .= 'http://dx.doi.org/' . $doi;
     }
-    $node->biblio_doi = l($node->biblio_doi, $doi_url, $attrib);
+    $doi = l($doi, $doi_url, $attrib);
   }
 
   foreach ($fields as $key => $row) {
@@ -247,10 +243,10 @@ function theme_biblio_tabular($variables) {
          $data = _biblio_keyword_links($node->$row['name'], $base);
           break;
         case 'biblio_url' :
+          $data = l($node->$row['name'], $node->$row['name'], $attrib);
+          break;
         case 'biblio_doi' :
-          // check_plain is not need on these since they have gone through
-          // the l() function which does a check_plain
-          $data = $node-> $row['name'];
+           $data = $doi;
           break;
         default:
           if ($row['type'] == 'textarea') {
