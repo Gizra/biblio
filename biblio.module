@@ -2156,7 +2156,17 @@ function biblio_set_map($type, $format, $map) {
 function biblio_reset_map($type, $format) {
   module_invoke_all($format . '_map_reset', $type);
 }
+
 function biblio_field_extra_fields() {
   module_load_include('inc', 'biblio', 'includes/biblio.fields');
   return  _biblio_field_extra_fields();
+}
+
+//Fixes node export importing issue #826506
+function biblio_node_export_node_alter($node, $original_node) {
+  if ($node->type == 'biblio' && isset($node->biblio_contributors) && is_array($node->biblio_contributors)) {
+    foreach ($node->biblio_contributors as $n => $value) {
+      unset($node->biblio_contributors[$n]['cid']);
+    }
+  }
 }
