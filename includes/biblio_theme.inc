@@ -220,13 +220,16 @@ function theme_biblio_tabular($variables) {
   );
 
   $attrib = (variable_get('biblio_links_target_new_window', FALSE)) ? array('target' => '_blank') : array();
-  if ($node->biblio_doi) {
+
+  $doi = '';
+  if (!empty($node->biblio_doi)) {
     $doi_url = '';
     if ( ($doi_start = strpos($node->biblio_doi, '10.')) !== FALSE) {
       $doi = substr($node->biblio_doi, $doi_start);
       $doi_url .= 'http://dx.doi.org/' . $doi;
+      $doi = l($doi, $doi_url, $attrib);
     }
-    $doi = l($doi, $doi_url, $attrib);
+
   }
 
   foreach ($fields as $key => $row) {
