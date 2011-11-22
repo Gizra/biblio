@@ -1823,7 +1823,7 @@ function biblio_admin_author_edit_form($form, &$form_state, $author_id) {
     '#size' => 100,
     '#weight' => 1,
     '#required' => TRUE,
-    '#maxlength' => 128
+    '#maxlength' => 255
   );
   $form['literal'] = array(
     '#type' => 'checkbox',
