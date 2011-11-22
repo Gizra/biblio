@@ -599,7 +599,13 @@ function biblio_schema() {
         'not null' => FALSE,
         'length' => '32',
         'description' => '',
-      )
+      ),
+      'biblio_formats' => array(
+        'type' => 'blob',
+        'not null' => FALSE,
+        'description' => '',
+        'serialize' => TRUE,
+      ),
     ),
     'foreign keys' => array(
       'node_revision' => array(
@@ -2024,4 +2030,43 @@ function biblio_update_7013() {
   db_add_index('biblio', 'title_sort', array('biblio_sort_title'));
   db_add_index('biblio', 'date', array('biblio_date'));
 
+}
+
+/**
+ *
+ * Widen the biblio_date column to 64 characters
+ */
+function biblio_update_7014() {
+  $spec =  array(
+        'type' => 'varchar',
+        'not null' => FALSE,
+        'length' => '64',
+        'description' => '',
+  );
+  db_change_field('biblio', 'biblio_date', 'biblio_date', $spec);
+
+}
+/**
+ *
+ * Add biblio_formats column to biblio table to hold the format information for each text area
+ */
+function biblio_update_7015() {
+  if (!db_field_exists('biblio', 'biblio_formats')) {
+    $spec =  array(
+              'type' => 'blob',
+              'not null' => FALSE,
+              'description' => '',
+              'serialize' => TRUE,
+      );
+    db_add_field('biblio', 'biblio_formats', $spec);
+  }
+}
+/**
+ * Convert textarea fields to text_format
+ */
+function biblio_update_7016() {
+    db_update('biblio_fields')
+      ->fields(array('type' => 'text_format'))
+      ->condition('type', 'textarea')
+      ->execute();
 }

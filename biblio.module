@@ -1229,6 +1229,7 @@ function biblio_form($node, &$form_state) {
             '#weight' => $fld['weight'] / 10,
             '#autocomplete_path' => ($fld['autocomplete']) ? 'biblio/autocomplete/' . $fld['name'] : '',
             '#description' => check_plain($fld['hint']),
+            '#format' => isset($node->biblio_formats[$key]) ? $node->biblio_formats[$key] : '',
       );
 
       if ($key == 'biblio_refereed' ) {
@@ -1473,6 +1474,16 @@ function _biblio_prepare_submit(&$node) {
   if (variable_get('biblio_auto_citekey', 1) && empty($node->biblio_citekey)) {
     $node->biblio_citekey = biblio_citekey_generate($node);
   }
+  $query = db_select('biblio_fields', 'bf');
+  $result =  $query->fields('bf', array('name'))
+                   ->condition('type', 'text_format')
+                   ->execute();
+  foreach ($result as $field) {
+    if (isset($node->{$field->name}) && is_array($node->{$field->name})) {
+      $node->biblio_formats[$field->name] = $node->{$field->name}['format'];
+      $node->{$field->name} = $node->{$field->name}['value'];
+    }
+  }
 }
 /**
  * Implementation of hook_insert().
@@ -1576,6 +1587,10 @@ function biblio_load($nodes) {
     if (empty($record['biblio_coins'])) {
       $nodes[$record['nid']]->biblio_coins = biblio_coins($nodes[$record['nid']]);
     }
+    if ($record['biblio_formats'] != NULL) {
+      $nodes[$record['nid']]->biblio_formats = unserialize($record['biblio_formats']);
+    }
+
   }
 }
 function biblio_citekey_generate($node) {
