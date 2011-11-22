@@ -109,7 +109,7 @@ function biblio_pm_xml_biblio_import($file, $terms = array(), $batch = FALSE, $s
   return _biblio_pm_create_node_from_xml($xml, $terms, $batch, $session_id);
 }
 
-function biblio_pm_import_ids($pmids, $terms, $batch, $session_id) {
+function biblio_pm_import_ids($pmids, $terms = array(), $batch = FALSE, $session_id = NULL) {
   module_load_include('php', 'biblio_pm', 'EntrezClient');
   $retmax = 100;
   $resmax = count($pmids);
