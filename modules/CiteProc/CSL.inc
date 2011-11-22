@@ -294,17 +294,17 @@ class csl_format extends csl_rendering_element {
     if (isset($this->{'text-case'})) {
       switch ($this->{'text-case'}) {
         case 'uppercase':
-          $text = mb_strtoupper($text);
+          $text =  drupal_strtoupper($text);
           break;
         case 'lowercase':
-          $text = mb_strtolower($text);
+          $text = drupal_strtolower($text);
           break;
         case 'capitalize-all':
         case 'title':
           $text = mb_convert_case($text, MB_CASE_TITLE);
           break;
         case 'capitalize-first':
-          $text[0] = mb_strtoupper($text[0]);
+          $text = drupal_ucfirst($text);
           break;
       }
     }
@@ -500,16 +500,16 @@ class csl_name extends csl_format {
     if (isset($this->{$part}['text-case'])) {
       switch ($this->{$part}['text-case']) {
         case 'uppercase':
-          $text = mb_strtoupper($text);
+          $text =  drupal_strtoupper($text);
           break;
         case 'lowercase':
-          $text = mb_strtolower($text);
+          $text = drupal_strtolower($text);
           break;
         case 'capitalize-all':
           $text = mb_convert_case($text, MB_CASE_TITLE);
           break;
         case 'capitalize-first':
-          $text[0] = mb_strtoupper($text[0]);
+          $text = drupal_ucfirst($text);
           break;
       }
     }
