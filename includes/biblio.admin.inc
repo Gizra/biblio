@@ -2224,12 +2224,23 @@ function biblio_admin_keyword_orphans_form_submit($form, &$form_state) {
 function biblio_admin_keyword_edit_form($form, &$form_state, $keyword_id) {
   $options = array();
   $keywords = array();
+  $destination = NULL;
 
   $keyword = db_query('SELECT * FROM {biblio_keyword_data} bkd WHERE bkd.kid = :kid ', array(':kid' => $keyword_id))->fetchObject();
 
   $base = variable_get('biblio_base', 'biblio');
-  $path = (strpos($_GET['q'], 'settings')) ? 'admin/config/content/biblio/keywords' : $base . '/keywords';
-  $form_state['redirect'] = $path;
+//  $path = (strpos($_GET['q'], 'config')) ? 'admin/config/content/biblio/keywords' : $base . '/keywords';
+
+  if(isset($_GET['destination'])) {
+    $destination = $_GET['destination'];
+  }
+  if (!$destination && isset($form_state['complete form']['#action'])) {
+    $action = drupal_parse_url($form_state['complete form']['#action']);
+    $destination = isset($action['query']['destination']) ? $action['query']['destination'] : NULL;
+  }
+  if (!$destination) $destination = $base . '/keywords';
+
+  $form_state['redirect'] = $destination;
 
   $form['kid'] = array(
     '#type' => 'value',
@@ -2245,6 +2256,7 @@ function biblio_admin_keyword_edit_form($form, &$form_state, $keyword_id) {
     '#maxlength' => 255
   );
 
+
   $result = db_query("SELECT kd.word, kd.kid, count(*) as use_count FROM {biblio_keyword_data} kd
                       LEFT JOIN {biblio_keyword} bk on bk.kid = kd.kid
                       WHERE LOWER(word) LIKE LOWER(:word)
@@ -2257,14 +2269,14 @@ function biblio_admin_keyword_edit_form($form, &$form_state, $keyword_id) {
   if(isset($form_state['biblio_add_merge_keywords'])) {
     $keywords = array_merge($keywords, $form_state['biblio_add_merge_keywords']);
   }
-
   foreach($keywords as $keyword) {
     $options[$keyword->kid] = array(
         'keyword' => array(
           'data' => array(
             '#type' => 'link',
             '#title' => $keyword->word . ' (' . $keyword->use_count .')',
-            '#href' => $base . '/keywords/' . $keyword->kid . '/edit',
+            '#href' => $destination . '/'.  $keyword->kid . '/edit',
+            '#options' => array('query' => array('destination' => $destination)),
           ),
         ),
       );
