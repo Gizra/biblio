@@ -1229,7 +1229,7 @@ function biblio_form($node, &$form_state) {
             '#weight' => $fld['weight'] / 10,
             '#autocomplete_path' => ($fld['autocomplete']) ? 'biblio/autocomplete/' . $fld['name'] : '',
             '#description' => check_plain($fld['hint']),
-            '#format' => isset($node->biblio_formats[$key]) ? $node->biblio_formats[$key] : '',
+            '#format' => isset($node->biblio_formats[$key]) ? $node->biblio_formats[$key] :  filter_default_format(),
       );
 
       if ($key == 'biblio_refereed' ) {
@@ -1432,7 +1432,15 @@ function biblio_node_form_validate($form, &$form_state) {
     }
     return;
   }
-
+  $format = new stdClass();
+  foreach (_biblio_get_formatted_fields() as $field) {
+    if (isset($form_state['values'][$field]['format'])) {
+      $format->format = $form_state['values'][$field]['format'];
+      if (!filter_access($format)) {
+        form_set_error($field, t('You do not have access to the !format format', array('!format' => $format->format)));
+      }
+    }
+  }
   if (isset($form_state['values']['biblio_keywords'])) {
     require_once(drupal_get_path('module', 'biblio') . '/includes/biblio.keywords.inc');
     if (!is_array($form_state['values']['biblio_keywords'])) {
@@ -1461,6 +1469,20 @@ function _biblio_text_year($year) {
   if ($year == 9999) return check_plain(variable_get('biblio_no_year_text', t('Submitted')));
   return $year;
 }
+
+function _biblio_get_formatted_fields() {
+  $fields = &drupal_static(__FUNCTION__);
+  if (!isset($fields)) {
+    $query = db_select('biblio_fields', 'bf');
+    $result =  $query->fields('bf', array('name'))
+    ->condition('type', 'text_format')
+    ->execute();
+    foreach ($result as $field) {
+      $fields[] = $field->name;
+    }
+  }
+  return (array) $fields;
+}
 /**
  * Prepare a node for submit to database. Contains code common to insert and update.
  * @param $node
@@ -1474,14 +1496,10 @@ function _biblio_prepare_submit(&$node) {
   if (variable_get('biblio_auto_citekey', 1) && empty($node->biblio_citekey)) {
     $node->biblio_citekey = biblio_citekey_generate($node);
   }
-  $query = db_select('biblio_fields', 'bf');
-  $result =  $query->fields('bf', array('name'))
-                   ->condition('type', 'text_format')
-                   ->execute();
-  foreach ($result as $field) {
-    if (isset($node->{$field->name}) && is_array($node->{$field->name})) {
-      $node->biblio_formats[$field->name] = $node->{$field->name}['format'];
-      $node->{$field->name} = $node->{$field->name}['value'];
+  foreach (_biblio_get_formatted_fields() as $field) {
+    if (isset($node->$field) && is_array($node->$field)) {
+      $node->biblio_formats[$field] = $node->{$field}['format'];
+      $node->$field = $node->{$field}['value'];
     }
   }
 }

@@ -252,9 +252,8 @@ function theme_biblio_tabular($variables) {
            $data = $doi;
           break;
         default:
-          if ($row['type'] == 'textarea') {
-//FIXME where is format stored now???
-            $data = check_markup($node->$row['name']);
+          if ($row['type'] == 'text_format') {
+            $data = check_markup($node->$row['name'], $node->biblio_formats[$row['name']]);
           }
           else {
             $data = check_plain($node->$row['name']);
