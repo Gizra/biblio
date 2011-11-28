@@ -7,7 +7,8 @@
 
 
 function biblio_view_node($nid) {
-  drupal_goto('node/' . (int)$nid, NULL, NULL, 301); // set a 301 response code
+  $options = array();
+  drupal_goto('node/' . (int)$nid, $options, 301); // set a 301 response code
 }
 
 function biblio_arg_handler($arg_info) {
