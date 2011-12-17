@@ -289,7 +289,7 @@ function biblio_entry($node) {
  *
  */
 function biblio_build_query($arg_list) {
-  global $user, $db_type;
+  global $user;
   static $bcc = 0; //biblio_contributor (bc) count , increase for every invocation
   static $bkd = 0;
   static $tcc = 0; //term counter, increase for every invocation
@@ -316,7 +316,7 @@ function biblio_build_query($arg_list) {
 //  $query->distinct();
 
   // POSIX regular expression matching, case insensitive
-  $match_op = ($db_type == 'pgsql') ? '~*' : 'RLIKE';
+  $match_op = (db_driver() == 'pgsql') ? '~*' : 'RLIKE';
 
   $limit = '';
   if (variable_get('biblio_view_only_own', 0) ) {
