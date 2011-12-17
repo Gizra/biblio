@@ -109,19 +109,8 @@ function biblio_page_header($filter = array()) {
   // Search box. Has same permissions as the filter tab.
   if (variable_get('biblio_search', 0) && user_access('show filter tab')) {
     $header += array(
-      'search_form' => array(
-        '#type'   => 'fieldset',
-        '#title'   => t('Search'),
-        '#collapsible' => TRUE,
-        '#collapsed' => TRUE,
-        'searchform' => drupal_get_form('biblio_search_form'),
-        'filterform' => drupal_get_form('biblio_form_filter')
-      ),
+      'search_form' => drupal_get_form('biblio_search_form'),
     );
-    $header['search_form']['#attached']['library'][] = array('system', 'drupal.form');
-    $header['search_form']['#attached']['library'][] = array('system', 'drupal.collapse');
-    $header['search_form']['#attributes']['class'][] = 'collapsible';
-    $header['search_form']['#attributes']['class'][] = 'collapsed';
   }
   $header += array(
     'export_links' => array(
@@ -129,7 +118,6 @@ function biblio_page_header($filter = array()) {
       '#node'    => NULL,
       '#filter' => $filter,
       '#theme'  => 'biblio_export_links',
-      //'#markup' => theme('biblio_export_links', array('node' => NULL)),
       '#suffix' => '</div>',
     ),
   );
@@ -875,12 +863,11 @@ function biblio_section_bar($text) {
  */
 function biblio_search_form($form, &$form_state) {
   $base = variable_get('biblio_base', 'biblio');
-//  $form['#action'] = url($base);
-  $form['biblio_search'] = array(
+  $searchform['biblio_search'] = array(
     '#prefix' => '<div class="container-inline biblio-search clear-block">',
     '#suffix' => '</div>',
     );
-  $form['biblio_search']['keys'] = array(
+  $searchform['biblio_search']['keys'] = array(
     '#type' => 'textfield',
     '#title' => '',
     '#default_value' => '',
@@ -888,11 +875,20 @@ function biblio_search_form($form, &$form_state) {
     '#maxlength' => 255,
   );
   $button_text = variable_get('biblio_search_button_text', 'Biblio search');
-  $form['biblio_search']['submit'] = array(
+  $searchform['biblio_search']['submit'] = array(
     '#type' => 'submit',
     '#value' => t($button_text)
   );
- // $form['#cache'] = FALSE;
+
+  $form['search_form'] = array(
+        '#type'   => 'fieldset',
+        '#title'   => t('Search'),
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE,
+        'searchform' => $searchform,
+        'filterform' => biblio_form_filter(),
+      );
+
   return $form;
 }
 
@@ -1032,9 +1028,9 @@ function biblio_form_filter() {
     '#type' => 'fieldset',
     '#title' => t('Show only items where'),
     '#theme' => 'exposed_filters__node',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
   );
-  $form['filters']['#attributes']['class'][] = 'collapsible';
- // $form['filters']['#attributes']['class'][] = 'collapsed';
 
   foreach ($session as $filter) {
     $type = key($filter);
