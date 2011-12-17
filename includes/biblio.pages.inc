@@ -896,11 +896,10 @@ function biblio_search_form_submit($form, &$form_state) {
   static $keys = '';
   $base = variable_get('biblio_base', 'biblio');
   $keys =  $form_state['values']['keys'];
-  $form_state['redirect'] = $base . '/search/' . $keys;
   $uri = drupal_parse_url(request_uri());
   $uri['path'] = variable_get('biblio_base', 'biblio');
   $uri['query']['f']['search'] = $keys;
-  drupal_goto($uri['path'], $uri);
+  $form_state['redirect'] = array($uri['path'], $uri);
 
 }
 
@@ -1124,28 +1123,7 @@ function biblio_form_filter_submit($form, &$form_state) {
           }
         }
       }
-      drupal_goto($uri['path'], $uri);
-      $base =  variable_get('biblio_base', 'biblio');
-      drupal_goto($base);
-
-      if (isset($form_state['values']['filter'])) {
-        $uri = drupal_parse_url(request_uri());
-//        $filter = $form_state['values']['filter'];
-//
-//        // Flatten the options array to accommodate hierarchical/nested options.
-//        if (isset($filters[$filter]['options'])) {
-//          $flat_options = form_options_flatten($filters[$filter]['options']);
-//        }
-        foreach ($form_state['values']['filter'] as $filter => $value) {
-          if (!empty($value)) {
-          }
-        }
- //       if (isset($flat_options[$form_state['values'][$filter]]) ) {
- //         $_SESSION['biblio_filter'][] = array($filter, $form_state['values'][$filter]);
- //         $base =  variable_get('biblio_base', 'biblio');
-
-  //      }
-      }
+      $form_state['redirect'] =  array($uri['path'], $uri);
       break;
     case t('Undo'):
       array_pop($_SESSION['biblio_filter']);
