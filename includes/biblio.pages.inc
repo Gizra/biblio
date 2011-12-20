@@ -209,7 +209,7 @@ function biblio_page_content($nids = array(), $extras = array()) {
 
   }
 
-  $content['pager']['#markup'] = theme('pager', array('quantity' => variable_get('biblio_rowsperpage', 25)));
+  $content['pager']['#markup'] = theme('pager');
   if ($count == 0) {
     $content .= "<h3>" . t("No items found") . "</h3>";
     if (strstr($content, "Filters:")) {
