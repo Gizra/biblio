@@ -192,10 +192,13 @@ function biblio_insert_keywords($node, $update = FALSE) {
   // now if we are saving keywords into a taxonomy freetagging vocabulary, then create the tags string and add it to the node object.
 
   if ($freetagging && $freetag_vocab ) {
+    $tids = array();
     $ft_field = 'field_' . $freetag_vocab->machine_name;
-    $lang = $freetag_vocab->language;
-    foreach($node->{$ft_field}[$lang] as $tag) {
-      $tids[] = $tag['tid'];
+    $lang = isset($freetag_vocab->language) ? $freetag_vocab->language : 'und';
+    if (isset($node->{$ft_field}[$lang])) {
+      foreach($node->{$ft_field}[$lang] as $tag) {
+        $tids[] = $tag['tid'];
+      }
     }
     foreach ($typed_keywords as $kw) {
       if ($possibilities = taxonomy_term_load_multiple(array(), array('name' => trim($kw), 'vid' => $freetag_vocab->vid))) {
