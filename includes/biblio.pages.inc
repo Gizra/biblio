@@ -517,6 +517,11 @@ function biblio_build_query($arg_list) {
     }
   }
 
+  // show unpublished nodes to users with uid = 1 or  with 'Administer Biblio' permissions
+  if ($user->uid != 1 && !biblio_access('admin')) {
+    $query->condition('n.status', 1);
+  }
+
   $result = $query->execute();
   $nids = array();
   $extras = array();
