@@ -173,7 +173,7 @@ function biblio_page_header($filter = array()) {
 
 function biblio_page_content($nids = array(), $extras = array()) {
   $base =  variable_get('biblio_base', 'biblio');
-  $content = $nodes = array();
+  $content = $raw_nodes = $nodes = array();
   $count = $section_id = 0;
 
   if (module_exists('popups')) {
@@ -181,17 +181,21 @@ function biblio_page_content($nids = array(), $extras = array()) {
   }
 
   if (count($nids)) {
-    $nids = array_unique($nids);
-    $nodes = node_load_multiple($nids);
+  //  $nids = array_unique($nids);
+    $raw_nodes = node_load_multiple($nids);
     $langcode = $GLOBALS['language_content']->language;
-    field_attach_prepare_view('node', $nodes, 'biblio_list', $langcode);
-    entity_prepare_view('node', $nodes, $langcode);
+    field_attach_prepare_view('node', $raw_nodes, 'biblio_list', $langcode);
+    entity_prepare_view('node', $raw_nodes, $langcode);
 
-    if (!empty($extras)) {
-      foreach ($nodes as $nid => $node) {
-        $nodes[$nid] = (object)array_merge((array)$node, (array)$extras[$nid]);
+    foreach ($nids as $key => $nid) {
+      if (!empty($extras)) {
+        $nodes[] = (object)array_merge((array)$raw_nodes[$nid], (array)$extras[$key]);
+      }
+      else {
+        $nodes[] = $raw_nodes[$nid];
       }
     }
+
   }
 
   foreach ($nodes as $node) {
@@ -529,7 +533,7 @@ function biblio_build_query($arg_list) {
   foreach ($result as $node) {
     $nids[] = $node->nid;
     if (isset($node->biblio_year)) unset($node->biblio_year);
-    $extras[$node->nid] = $node;
+    $extras[] = $node;
   }
 
   return array($nids, $extras, $rss_info);

@@ -524,7 +524,7 @@ function biblio_admin_settings() {
     '#default_value' => variable_get('biblio_sort_tabs', array('author', 'title', 'type', 'year')),
     '#options' => array(
       'author'  => t('Author'),
-      'keyword' => t('Keyword'),
+      'keyword' => t('Keyword  (<i>Warning: sorting by keyword may produce many duplicates due to the fact that an entry is listed for each keyword attached to it.</i>)'),
       'title'   => t('Title'),
       'type'    => t('Type'),
       'year'    => t('Year')
@@ -1759,7 +1759,7 @@ function biblio_admin_author_types_form_submit($form, $form_state) {
     }
   }
   $form_state['redirect'] = 'admin/config/content/biblio/author/type';
-  
+
 }
 
 function biblio_admin_author_type_delete_confirm($form, &$form_state, $type_id) {
