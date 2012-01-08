@@ -156,6 +156,8 @@ function _biblio_pm_create_node_from_xml($xml, $terms, $batch, $session_id) {
         $dup = NULL;
       }
       if (!$dup) {
+        // Allows other modules to alter the node before it is being saved. (Note: $article is a SimpleXML object)
+        drupal_alter('biblio_pm_node', $node, $article);
         biblio_save_node($node, $terms, $batch, $session_id);
         if (!empty($node->nid)) $nids[] = $node->nid;
       }
