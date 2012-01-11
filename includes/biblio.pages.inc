@@ -904,11 +904,13 @@ function biblio_search_form($form, &$form_state) {
 function biblio_search_form_submit($form, &$form_state) {
   static $keys = '';
   $base = variable_get('biblio_base', 'biblio');
-  $keys =  $form_state['values']['keys'];
-  $uri = drupal_parse_url(request_uri());
-  $uri['path'] = variable_get('biblio_base', 'biblio');
-  $uri['query']['f']['search'] = $keys;
-  $form_state['redirect'] = array($uri['path'], $uri);
+  $keys =  trim($form_state['values']['keys']);
+  if (!empty($keys)) {
+    $uri = drupal_parse_url(request_uri());
+    $uri['path'] = variable_get('biblio_base', 'biblio');
+    $uri['query']['f']['search'] = $keys;
+    $form_state['redirect'] = array($uri['path'], $uri);
+  }
 
 }
 
@@ -1094,10 +1096,19 @@ function biblio_form_filter() {
   $form['filters']['status']['actions']['submit'] = array(
     '#type' => 'submit',
     '#value' => count($session) ? t('Refine') : t('Filter'),
+    '#submit' => array('biblio_form_filter_submit'),
   );
   if (count($session)) {
-    $form['filters']['status']['actions']['undo'] = array('#type' => 'submit', '#value' => t('Undo'));
-    $form['filters']['status']['actions']['reset'] = array('#type' => 'submit', '#value' => t('Reset'));
+    $form['filters']['status']['actions']['undo'] = array(
+      '#type' => 'submit',
+      '#value' => t('Undo'),
+      '#submit' => array('biblio_form_filter_submit')
+    );
+    $form['filters']['status']['actions']['reset'] = array(
+      '#type' => 'submit',
+      '#value' => t('Reset'),
+      '#submit' => array('biblio_form_filter_submit')
+    );
   }
 
   return $form;
