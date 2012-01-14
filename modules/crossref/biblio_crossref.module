@@ -6,8 +6,8 @@
 
 function biblio_crossref_form_biblio_node_form_alter(&$form, &$form_state) {
   global $user;
-  if (phpversion() > 5 && !$form_state['submitted'] && !isset($form['#node']->nid)) {
-    $form['biblio_doi_lookup'] = array(
+  if ((!isset($form_state['biblio_type']) || empty($form_state['biblio_type'])) && !isset($form_state['node']->nid)) {
+      $form['biblio_doi_lookup'] = array(
         '#type' => 'fieldset',
         '#title' => t('DOI Lookup'),
         '#weight' => -20,
