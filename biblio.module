@@ -150,7 +150,7 @@ function biblio_theme($existing, $type, $theme, $path) {
   $path = drupal_get_path('module', 'biblio');
   return array(
     'biblio_alpha_line' => array(
-        'file' => '/includes/biblio_theme.inc',
+        'file' => '/includes/biblio.theme.inc',
         'variables' => array(
           'type' => 'author',
           'current' => NULL,
@@ -181,62 +181,62 @@ function biblio_theme($existing, $type, $theme, $path) {
         'render element' => 'form',
     ),
     'biblio_admin_types_edit_form' => array(
-        'file' => '/includes/biblio_theme.inc',
+        'file' => '/includes/biblio.theme.inc',
         'render element' => 'form',
         ),
     'biblio_admin_types_form' => array(
-      'file' => '/includes/biblio_theme.inc',
+      'file' => '/includes/biblio.theme.inc',
       'render element' => 'form',
     ),
     'biblio_field_tab' => array(
-      'file' => '/includes/biblio_theme.inc',
+      'file' => '/includes/biblio.theme.inc',
       'render element' => 'form',
     ),
     'biblio_admin_author_edit_form' => array(
-        'file' => '/includes/biblio_theme.inc',
+        'file' => '/includes/biblio.theme.inc',
         'render element' => 'form',
     ),
     'biblio_openurl' => array(
-        'file' => '/includes/biblio_theme.inc',
+        'file' => '/includes/biblio.theme.inc',
         'variables' => array('openURL'),
     ),
     'biblio_style' => array(
-        'file' => '/includes/biblio_theme.inc',
+        'file' => '/includes/biblio.theme.inc',
         'variables' => array(
           'node' => NULL,
           'style_name' => 'classic',
          ),
     ),
     'biblio_long' => array(
-        'file' => '/includes/biblio_theme.inc',
+        'file' => '/includes/biblio.theme.inc',
         'variables' => array(
           'node' => NULL,
           'base' => 'biblio',
           'style_name' => 'classic'),
     ),
     'biblio_tabular' => array(
-        'file' => '/includes/biblio_theme.inc',
+        'file' => '/includes/biblio.theme.inc',
         'variables' => array(
           'node' => NULL,
           'base' => 'biblio',
           'teaser' => FALSE),
     ),
     'biblio_entry' => array(
-        'file' => '/includes/biblio_theme.inc',
+        'file' => '/includes/biblio.theme.inc',
         'variables' => array(
           'node',
           'style_name' => 'classic',
          ),
     ),
     'biblio_format_authors' => array(
-      'file' => '/includes/biblio_theme.inc',
+      'file' => '/includes/biblio.theme.inc',
       'variables' => array(
         'contributors' => NULL,
         'options' => array(),
         ),
     ),
     'biblio_page_number' => array(
-      'file' => '/includes/biblio_theme.inc',
+      'file' => '/includes/biblio.theme.inc',
       'variables' => array(
         'orig_page_info' => NULL,
         'page_range_delim' => "-",
@@ -249,34 +249,34 @@ function biblio_theme($existing, $type, $theme, $path) {
         'shorten_page_range_end' => FALSE),
     ),
     'biblio_author_link' => array(
-      'file' => '/includes/biblio_theme.inc',
+      'file' => '/includes/biblio.theme.inc',
       'variables' => array(
         'author'),
     ),
     'biblio_filters' => array(
-        'file' => '/includes/biblio_theme.inc',
+        'file' => '/includes/biblio.theme.inc',
         'render element' => 'form',
     ),
     'form_filter' => array(
-        'file' => '/includes/biblio_theme.inc',
+        'file' => '/includes/biblio.theme.inc',
         'render element' => 'form',
     ),
     'biblio_export_links' => array(
-        'file' => '/includes/biblio_theme.inc',
+        'file' => '/includes/biblio.theme.inc',
         'variables' => array(
         	'node' => NULL,
           'filter' => array()),
     ),
     'biblio_download_links' => array(
-        'file' => '/includes/biblio_theme.inc',
+        'file' => '/includes/biblio.theme.inc',
         'variables' => array('node'),
     ),
     'google_scholar_link' => array(
-        'file' => '/includes/biblio_theme.inc',
+        'file' => '/includes/biblio.theme.inc',
         'variables' => array('node'),
     ),
     'biblio_contributors' => array(
-        'file' => '/includes/biblio_theme.inc',
+        'file' => '/includes/biblio.theme.inc',
         'render element' => 'form',
     ),
     );
