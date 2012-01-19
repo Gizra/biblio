@@ -2249,8 +2249,13 @@ function biblio_feeds_processor_targets_alter(&$targets, $entity_type, $bundle_n
 
 function biblio_feeds_importer_default() {
   module_load_include('inc', 'biblio', 'includes/biblio.feeds');
-  return  _biblio_feeds_importer_default();
-}
+  $defaults = array();
+  if (module_exists('feeds_oai_pmh')) {
+    $defaults +=  _biblio_feeds_oai_importer_default();
+  }
+
+  return $defaults;
+  }
 
 function biblio_ctools_plugin_api() {
   list($module, $api) = func_get_args();
