@@ -56,6 +56,9 @@ class biblio_handler_citation extends views_handler_field {
 
     $item = node_load($values->{$this->aliases['nid']});
     if ($item->type != 'biblio') return;
+    $langcode = $GLOBALS['language_content']->language;
+    field_attach_prepare_view('node', array($item->nid => $item), 'full', $langcode);
+    entity_prepare_view('node',  array($item->nid => $item), $langcode);
 
     if (isset($item->biblio_year)) $item->biblio_year = _biblio_text_year($item->biblio_year);
     if (variable_get('biblio_hide_bibtex_braces', 0)) {
