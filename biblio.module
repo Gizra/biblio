@@ -1681,7 +1681,6 @@ function biblio_citekey_generate($node) {
  */
 function biblio_view($node, $buildmode = 'full') {
   global $user;
-  if (!user_access('access biblio content', $user)) return $node;
   $links = array();
   $style = biblio_get_style();
   $base  = variable_get('biblio_base', 'biblio');
