@@ -19,7 +19,7 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  */
-define('BIBLIO_VERSION', '7.x-1.x-dev');
+define('BIBLIO_VERSION', '7.x-2.x-dev');
 
 function _biblio_get_auth_types($auth_category, $biblio_type) {
   static $auth_types = array();
