@@ -343,7 +343,7 @@ function biblio_schema() {
       ),
     ),
     'unique keys' => array(
-      'bid_vid' => array('bid', 'bid'),
+      'bid_vid' => array('bid', 'vid'),
       'bid'     => array('bid')
     ),
     'primary key' => array('bid'),
