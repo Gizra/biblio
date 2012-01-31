@@ -1259,7 +1259,7 @@ function biblio_form($node, &$form_state) {
   }
   foreach (element_children($tabs) as $key) {
     $tab_children = element_children($tabs[$key]);
-    if (empty($tab_children)) {
+    if (empty($tab_children) && $key != 'biblio_full_text') {
       unset($tabs[$key]);
     }
   }
