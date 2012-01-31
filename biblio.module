@@ -1423,7 +1423,7 @@ function biblio_form_node_form_alter(&$form, &$form_state, $form_id) {
        foreach (element_children($form) as $form_element) {
         if (strstr($form_element, 'biblio_')) continue;
         if (strstr($form_element, 'form_')) continue;
-        if ($form[$form_element]['#type'] != 'value') {
+        if (isset($form[$form_element]['#type']) && $form[$form_element]['#type'] != 'value') {
           unset($form[$form_element]);
         }
       }
