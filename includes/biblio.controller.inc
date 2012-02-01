@@ -156,5 +156,5 @@ class BiblioController extends DrupalDefaultEntityController {
     
     return TRUE;
   }
-  
+
 }

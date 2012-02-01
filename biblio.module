@@ -2291,8 +2291,8 @@ function biblio_entity_info() {
     // DDEC is for entities that behave similar to nodes.
     'controller class' => 'BiblioController',
     'base table' => 'biblio_new',
-    'revision table' => 'artwork_new_revision',
-    // Uses the artwork_uri() function to get the URI
+    'revision table' => 'biblio_new_revision',
+    // Uses the biblio_uri() function to get the URI
     'uri callback' => 'biblio_uri',
     // Indicates to the Field API that we can attach fields to this entity,
     // in the same fashion as nodes.
@@ -2329,21 +2329,42 @@ function biblio_entity_info() {
   // for our entity. To do that, we define, for each of our bundles, a label
   // that is shown to the user and the menu information that the Field API will
   // need to add itself to the menu.
-  foreach (artwork_types() as $type => $info) {
-    $return['artwork']['bundles'][$type] = array(
+  foreach (biblio_types() as $type => $info) {
+    $return['biblio']['bundles'][$type] = array(
       'label' => $info->name,
       'admin' => array(
         // defines the path that should be used in hook_menu() for the Fields UI pages
-        'path' => 'admin/structure/artworks/manage/%artwork_type',
+        'path' => 'admin/structure/biblio/manage/%publication_type',
         // The exact path that should be used when generating links within the admin interface
-        'real path' => 'admin/structure/artworks/manage/' . str_replace('_', '-', $type),
+        'real path' => 'admin/structure/biblio/manage/' . str_replace('_', '-', $type),
         // menu args are 0 based, so 4 is the fifth part of the path, which
-        // here is %artwork_type.
+        // here is %publication_type.
         'bundle argument' => 4,
-        'access arguments' => array('administer artworks'),
+        'access arguments' => array('administer biblio'),
       ),
     );
   }
 
   return $return;
+}
+function biblio_types() {
+  // Gives the variable a name that matches our function
+  // drupal_static() acts as a central collector for static PHP variables
+  $types = &drupal_static(__FUNCTION__);
+  
+  if (empty($types)) {
+    $types['journal_article'] = (object)array(
+      // type is the machine name of the bundle
+      'type' => 'journal_article',
+      // name is the human name of the bundle
+      'name' => t('Journal Article'),
+      'description' => t('A Journal Article'),
+    );
+    $types['book'] = (object)array(
+      'type' => 'book',
+      'name' => t('Book'),
+      'description' => t('A Book'),
+    );
+  }
+  return $types;
 }
