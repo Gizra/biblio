@@ -2272,3 +2272,78 @@ function biblio_ctools_plugin_api() {
     return array("version" => 1);
   }
 }
+
+/*********************************
+ * Entity/Field API Additions
+ *********************************/
+
+/**
+ * Implements hook_entity_info(). 
+ * 
+ * Inform the base system and the Field API about entity types.
+ */
+function biblio_entity_info() {
+  // biblio will serve as the machine name of this entity
+  $return['biblio'] = array(
+    // human readable entity name
+    'label' => t('Biblio'),
+    // Custom controller that will extend from DrupalDefaultEntityController.
+    // DDEC is for entities that behave similar to nodes.
+    'controller class' => 'BiblioController',
+    'base table' => 'biblio_new',
+    'revision table' => 'artwork_new_revision',
+    // Uses the artwork_uri() function to get the URI
+    'uri callback' => 'biblio_uri',
+    // Indicates to the Field API that we can attach fields to this entity,
+    // in the same fashion as nodes.
+    'fieldable' => TRUE,
+    'entity keys' => array(
+      'id' => 'bid',
+      'revision' => 'vid',
+      'bundle' => 'pub_type',
+      'label' => 'bid',
+    ),
+    'bundle keys' => array(
+      'bundle' => 'pub_type',
+    ),
+    'static cache' => TRUE,
+    'bundles' => array(),
+    // Defines different ways that our entity can be viewed. In this case,
+    // we're defining a "full" and a "teaser version, just as nodes use.
+    'view modes' => array(
+      'full' => array(
+        'label' => t('Full Content'),
+        // Indicates whether or not the Field UI should allow field formatters to
+        // be configured separately for that view mode by default.
+        'custom settings' => FALSE,
+      ),
+      'teaser' => array(
+        'label' => t('Teaser'),
+        'custom settings' => FALSE,
+      ),
+    ),
+  );
+  
+  // Since we have multiple bundles, we will need to tell the Field API what 
+  // bundles we have and what paths to put the extra field management interfaces
+  // for our entity. To do that, we define, for each of our bundles, a label
+  // that is shown to the user and the menu information that the Field API will
+  // need to add itself to the menu.
+  foreach (artwork_types() as $type => $info) {
+    $return['artwork']['bundles'][$type] = array(
+      'label' => $info->name,
+      'admin' => array(
+        // defines the path that should be used in hook_menu() for the Fields UI pages
+        'path' => 'admin/structure/artworks/manage/%artwork_type',
+        // The exact path that should be used when generating links within the admin interface
+        'real path' => 'admin/structure/artworks/manage/' . str_replace('_', '-', $type),
+        // menu args are 0 based, so 4 is the fifth part of the path, which
+        // here is %artwork_type.
+        'bundle argument' => 4,
+        'access arguments' => array('administer artworks'),
+      ),
+    );
+  }
+
+  return $return;
+}
