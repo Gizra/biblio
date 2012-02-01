@@ -298,36 +298,31 @@ function _add_biblio_keywords() {
 
 
 function biblio_schema() {
-  // @TODO: get rid of _new and replace the old biblio table with this one
+  // @TODO: get rid of old db tables once everything plays nicely with the new tables
+  // For now, new tables will be created with the naming convention 'biblio_new_*'.
+  // This is for development purposes only (so I can migrate all SQL from the old
+  // tables to the new ones. Once this is completed, unused tables can be removed,
+  // and 'biblio_new' table prefixes can be replaced with 'biblio_' prefixes.
   $schema['biblio_new'] = array(
     'description' => 'Base table for the Biblio entity.',
     'fields' => array(
       'bid' => array(
         'description' => 'The primary identifier for the biblio entry.',
-        'type' => 'serial',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-      ),
-      'vid' => array(
-        'description' => 'The current {biblio_revision}.vid version identifier.',
         'type' => 'int',
-        'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
       ),
-      'type' => array(
-        'description' => 'The {publication_type} of this biblio.',
-        'type' => 'varchar',
-        'length' => 32,
+      'vid' => array(
+        'description' => 'The current version identifier.',
+        'type' => 'int',
         'not null' => TRUE,
-        'default' => '',
+        'default' => 0,
       ),
-      'title' => array(
-        'description' => 'The title of the biblio entry.',
-        'type' => 'varchar',
-        'length' => 255,
+      'pub_type' => array(
+        'description' => 'The publication type id of this biblio.',
+        'type' => 'int',
         'not null' => TRUE,
-        'default' => '',
+        'default' => 0,
       ),
       'created' => array(
         'description' => 'The Unix timestamp when the biblio was created.',
@@ -342,13 +337,369 @@ function biblio_schema() {
         'default' => 0,
       ),
     ),
-    'unique keys' => array(
-      'bid_vid' => array('bid', 'vid'),
-      'bid'     => array('bid')
+    'primary key' => array('vid'),
+  );
+  $schema['biblio_new_revision'] = array(
+    'description' => 'Stores information about each saved version of a {biblio}.',
+    'fields' => array(
+      'bid' => array(
+        'description' => 'The {biblio}.bid this version belongs to.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'vid' => array(
+        'description' => 'The primary identifier for this version.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'created' => array(
+        'description' => 'The Unix timestamp when the biblio was created.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
     ),
-    'primary key' => array('bid'),
+    'indexes' => array(
+      'bid' => array('bid'),
+      'vid' => array('vid'),
+      'created' => array('created')
+    ),
+    'primary key' => array('bid','vid'),
+    'foreign keys' => array(
+      'biblio' => array(
+        'table' => 'biblio_new',
+        'columns' => array(
+          'vid' => 'vid',
+        ),
+      ),
+    ),
+  );
+  $schema['biblio_new_contribution'] = array(
+    'description' => 'Stores data for each biblio entry\'s contributor\'s role. (join table between biblio and contributor)',
+    'fields' => array(
+      'vid' => array(
+        'description' => 'The version id of this contribution.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'cid' => array(
+        'description' => 'The contributor id of this contribution.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'biblio_contributor_rank' => array(
+        'description' => 'The contributor\'s rank on the page.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'default' => 0,
+      ),
+      'contributor_type' => array(
+        'description' => 'The id of the contributor type for this contribution',
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'default' => 0,
+      ),
+      'contributor_category' => array(
+        'description' => 'The category of the contributor for this contribution',
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'default' => 0,
+      )
+    ),
+    'indexes' => array(
+      'vid' => array('vid'),
+      'cid' => array('cid'),
+    ),
+    'primary key' => array('vid', 'contributor_type'),
+    'foreign keys' => array(
+      'biblio' => array(
+        'table' => 'biblio_new',
+        'columns' => array(
+          'vid' => 'vid',
+        ),
+      ),
+      'contributor' => array(
+        'table' => 'biblio_new_contributor',
+        'columns' => array(
+          'cid' => 'cid',
+        ),
+      ),
+      'contributor_type' => array(
+        'table' => 'biblio_new_contributor_type',
+        'columns' => array(
+          'contributor_type' => 'auth_type',
+        ),
+      ),
+    ),
+  );
+  $schema['biblio_new_contributor'] = array(
+    'description' => 'Relational table linking contributors to their contributions to a biblio entry.',
+    'fields' => array(
+      'cid' => array(
+        'description' => 'The primary identifier for the contributor',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'aka' => array(
+        'description' => 'Also known as, links this author entry with others so you can have variation on the name, but listing by cid will find all other (aka) author entries.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'indexes' => array(
+      'cid' => array('cid'),
+      'aka' => array('aka'),
+    ),
+    'primary key' => array('cid', 'aka'),
+  );
+  $schema['biblio_new_contributor_type'] = array(
+    'description' => 'Contributor types for each contribution',
+    'fields' => array(
+      'auth_category' => array(
+        'description' => 'There are 5 categories of contributor: Primary, Secondary, Tertiary, Subsidary, and Corporate',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'biblio_type' => array(
+        'description' => '',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'auth_type' => array(
+        'description' => 'The publication type-specific version of a particular category',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('auth_category', 'biblio_type', 'auth_type'),
+  );
+  $schema['biblio_new_collection'] = array(
+    'description' => 'Relational table grouping biblio nodes into collections',
+    'fields' => array(
+      'cid' => array(
+        'description' => 'The primary identifier for the collection',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'vid' => array(
+        'description' => 'The biblio.vid of the biblio',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'pid' => array(
+        'description' => 'The parent id of the collection',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'bid' => array(
+        'description' => 'The biblio.bid of the collection',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'foreign keys' => array(
+      'biblio_revision' => array(
+        'table' => 'biblio_new',
+        'columns' => array('vid'=>'vid')
+      )
+    ),
+    'primary key' => array('cid', 'vid'),
+    'indexes' => array(
+      'pid' => array('pid'),
+      'bid' => array('bid'),
+    )
+  );
+  $schema['biblio_new_duplicates'] = array(
+    'description' => 'Relational table linking possible duplicate biblio nodes',
+    'fields' => array(
+      'vid' => array(
+        'description' => 'The biblio.vid of the original biblio',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'did' => array(
+        'description' => 'The biblio.bid of the newly imported node which may be a duplicate',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'type' => array(
+        'description' => 'The type of duplicate. 0=biblio, 1=author',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'foreign keys' => array(
+      'biblio_revision' => array(
+        'table' => 'biblio_new',
+        'columns' => array('vid'=>'vid')
+      )
+    ),
+    'primary key' => array('did', 'vid'),
+    'indexes' => array(
+      'did' => array('did'),
+    )
+  );
+  $schema['biblio_new_keyword'] = array(
+    'description' => 'Relational table linking keyords to biblios',
+    'fields' => array(
+      'kid' => array(
+        'description' => 'The primary identifier of the biblio keyword',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'bid' => array(
+        'description' => 'The bid of the biblio',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'vid' => array(
+        'description' => 'The biblio.vid of the node',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'foreign keys' => array(
+      'biblio_revision' => array(
+        'table' => 'biblio_new',
+        'columns' => array('vid'=>'vid')
+      )
+    ),
+    'primary key' => array('kid', 'vid'),
+    'indexes' => array(
+      'bid' => array('bid'),
+      'vid' => array('vid'),
+    )
+  );
+  $schema['biblio_new_keyword'] = array(
+    'description' => 'Relational table linking keyords to biblios',
+    'fields' => array(
+      'kid' => array(
+        'description' => 'The primary identifier of the biblio keyword',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'bid' => array(
+        'description' => 'The bid of the biblio',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'vid' => array(
+        'description' => 'The biblio.vid of the node',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'foreign keys' => array(
+      'biblio_revision' => array(
+        'table' => 'biblio_new',
+        'columns' => array('vid'=>'vid')
+      )
+    ),
+    'primary key' => array('kid', 'vid'),
+    'indexes' => array(
+      'bid' => array('bid'),
+      'vid' => array('vid'),
+    )
+  );
+  $schema['biblio_new_import_cache'] = array(
+    'description' => 'tables used for caching data imported from file and then batch processed',
+    'fields' => array(
+      'id' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'unsigned' => TRUE),
+      'session_id' => array(
+        'type' => 'varchar',
+        'length' => 45,
+        'not null' => TRUE),
+      'data' => array(
+        'description' => t('A collection of data to cache.'),
+        'type' => 'blob',
+        'not null' => FALSE,
+        'size' => 'big'),
+    ),
+    'primary key' => array('id')
+  );
+  $schema['biblio_new_type_maps'] = array(
+    'description' => 'Table used to store the mapping information between various file formats and the biblio schema',
+    'fields' => array(
+      'format' => array(
+        'description' => 'The import/export file format',
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE),
+      'type_map' => array(
+        'description' => 'The mapping between the publication types in the file format and biblio',
+        'type' => 'blob',
+        'not null' => FALSE,
+        'size' => 'big'),
+      'type_names' => array(
+        'description' => 'The human readable names of the publication types',
+        'type' => 'blob',
+        'not null' => FALSE,
+        'size' => 'big'),
+      'field_map' => array(
+        'description' => 'The mapping between the fields in the file format and biblio',
+        'type' => 'blob',
+        'not null' => FALSE,
+        'size' => 'big'),
+      'export_map' => array(
+        'description' => 'which fields are exported',
+        'type' => 'blob',
+        'not null' => FALSE,
+        'size' => 'big'),
+      ),
+    'primary key' => array('format')
   );
   
+  
+  // ---------- old tables -------------
   $schema['biblio'] = array(
     'fields' => array(
       'nid' => array(
