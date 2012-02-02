@@ -1,6 +1,6 @@
 <?php
 function biblio_install() {
-
+  
   $t = get_t();
 
   // Define the node type.
@@ -100,7 +100,21 @@ function biblio_uninstall() {
   }
 
   cache_clear_all();
-
+  
+  // Remove fields that were created upon install
+  $drupal_field_names = array(
+    'biblio_publication_types',
+  );
+  foreach($drupal_field_names as $field_name) {
+    $field = field_info_field($field_name);
+    if (!empty($field)) {
+      field_delete_field($field_name);
+    }
+    else {
+      drupal_set_message('The field <code>' . $field . '</code> could not be 
+                          deleted because it does not exist', 'error');
+    }
+  }
 }
 
 function biblio_requirements($phase) {
@@ -1854,6 +1868,7 @@ function _biblio_add_vtabs() {
 }
 
 function _add_publication_types() {
+  _biblio_add_field('Publication Types');
   $types[] = array(100, 'Book', NULL, 1);
   $types[] = array(101, 'Book Chapter', NULL, 2);
   $types[] = array(102, 'Journal Article', NULL, 3);
@@ -1893,13 +1908,13 @@ function _add_publication_types() {
 
   foreach ($types as $record) {
 //    $result[] = update_sql("INSERT INTO {biblio_types} (tid, name, description, weight) VALUES ('" . implode("', '", $record) . "')");
-        db_insert('biblio_types')->fields(array(
-          'tid'           => $record[0],
-          'name'          => $record[1],
-          'description'   => $record[2],
-          'weight'        => $record[3],
-        ))->execute();
-
+    db_insert('biblio_types')->fields(array(
+      'tid'           => $record[0],
+      'name'          => $record[1],
+      'description'   => $record[2],
+      'weight'        => $record[3],
+    ))->execute();
+    
   }
  return;
 }
@@ -2185,6 +2200,70 @@ function _id_by_name($table, $name, $id = NULL, $build = NULL) {
   if (isset($result[$table][$name])) return $result[$table][$name];
   if ($id) $result[$table][$name] = $id;
   return FALSE;
+}
+/**
+ * Create a new Drupal field and field instance
+ *
+ * @param type $human_name
+ * @param type $machine_name 
+ */
+function _biblio_add_field($human_name, $machine_name = '') {
+  // If no machine name was given, create one.
+  if (empty($machine_name)) {
+    $machine_name = strtolower(str_replace(' ', '_', $human_name));
+  }
+  // Create Publication type names for use in the Field API.
+  // This can't be more than 32 characters!
+  $field_name = 'biblio_' . $machine_name;
+  $field = field_info_field($field_name);
+  if (empty($field)) {
+    $field = array(
+      'field_name' => $field_name,
+      'type' => 'text_with_summary',
+      'cardinality' => 1,
+      'settings' => array(),
+      'entity_types' => array('biblio'),
+      'locked' => FALSE,
+      'translatable' => TRUE,
+    );
+    field_create_field($field);
+  }
+  else {
+    drupal_set_message('The field <code>' . $field_name . '</code> could not be
+                        created because it is already in use. <br /> Please use
+                        a different name or remove this field.', 'error');
+    return;
+  }
+  $instance = array(
+    'field_name' => $field['field_name'],
+    'entity_type' => 'biblio',
+    'bundle' => 'bar',
+    'label' => t($human_name),
+    'description' => t($human_name . ' field instance'),
+    'required' => TRUE,
+    'widget' => array(
+      'type' => 'text_textarea_with_summary',
+      'settings' => array(
+        'rows' => 10,
+        'summary_rows' => 3,
+      ),
+      'weight' => 0,
+    ),
+    'settings' => array(
+      'display_summary' => TRUE,
+      'text_processing' => 1, // @TODO Find out the name
+    ),
+    'default_value' => array(),
+    'display' => array(
+      'default' => array(
+        'label' => 'hidden',
+        'type' => 'text_default',
+        'settings' => array(),
+        'weight' => 0,
+      ),
+    ),
+  );
+  field_create_instance($instance);
 }
 /*
  * Removed updates 1 - 27 since they were from 5.x biblio
