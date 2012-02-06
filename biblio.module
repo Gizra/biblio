@@ -2290,8 +2290,8 @@ function biblio_entity_info() {
     // Custom controller that will extend from DrupalDefaultEntityController.
     // DDEC is for entities that behave similar to nodes.
     'controller class' => 'BiblioController',
-    'base table' => 'biblio_new',
-    'revision table' => 'biblio_new_revision',
+    'base table' => 'biblio__new',
+    'revision table' => 'biblio__new_revision',
     // Uses the biblio_uri() function to get the URI
     'uri callback' => 'biblio_uri',
     // Indicates to the Field API that we can attach fields to this entity,
@@ -2334,12 +2334,12 @@ function biblio_entity_info() {
       'label' => $info->name,
       'admin' => array(
         // defines the path that should be used in hook_menu() for the Fields UI pages
-        'path' => 'admin/structure/biblio/manage/%publication_type',
+        'path' => 'admin/config/content/biblio/manage/publication-types/%publication_type',
         // The exact path that should be used when generating links within the admin interface
-        'real path' => 'admin/structure/biblio/manage/' . str_replace('_', '-', $type),
-        // menu args are 0 based, so 4 is the fifth part of the path, which
+        'real path' => 'admin/config/content/biblio/manage/publication-types/' . str_replace('_', '-', $type),
+        // menu args are 0 based, so  is the seventh part of the path, which
         // here is %publication_type.
-        'bundle argument' => 4,
+        'bundle argument' => 6,
         'access arguments' => array('administer biblio'),
       ),
     );
