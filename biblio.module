@@ -1128,6 +1128,10 @@ function biblio_form($node, &$form_state) {
   $fields = array();
   $form['biblio_tabs'] = $tabs = array();
 
+  $tid = !empty($form_state['biblio_type']) ? $form_state['biblio_type'] :
+          ( isset($node->biblio_type) ? $node->biblio_type : 0);
+
+  $step_two = !empty($tid);
 
   /* publication type */
   $param['options'] = array("enctype" => "multipart/form-data");
@@ -1135,47 +1139,36 @@ function biblio_form($node, &$form_state) {
   foreach ($result as $option) {
     $results[$option->tid] = $option->name;
   }
-
-  $tid = !empty($form_state['biblio_type']) ? $form_state['biblio_type'] :
-  ( isset($node->biblio_type) ? $node->biblio_type : 0);
-
-  $step_two = !empty($tid);
-
-  if (count($results) == 1) {
-    reset($results);
-    $tid = $form_state['biblio_type'] = key($results);
-  }
-  else {
-    asort($results);
-    $options[0] = t('Select Type...');
-    $options += $results;
-    $form['biblio_type'] = array(
-      '#type' => 'select',
-      '#title' => t('Publication Type'),
-      '#default_value' =>  $tid,
-      '#options' => $options,
-      '#description' => NULL,
-      '#weight' => -15,
-      '#attributes' =>  array('onchange' => 'document.getElementById(\'edit-biblio-next\').click()'),
-      '#executes_submit_callback' => TRUE,
-      '#limit_validation_errors' => array(),
-      '#multiple' => FALSE,
-      '#required' => TRUE
-    );
+  asort($results);
+  $options[0] = t('Select Type...');
+  $options += $results;
+  $form['biblio_type'] = array(
+    '#type' => 'select',
+    '#title' => t('Publication Type'),
+    '#default_value' =>  $tid,
+    '#options' => $options,
+    '#description' => NULL,
+    '#weight' => -15,
+    '#attributes' =>  array('onchange' => 'document.getElementById(\'edit-biblio-next\').click()'),
+    '#executes_submit_callback' => TRUE,
+    '#limit_validation_errors' => array(),
+    '#multiple' => FALSE,
+    '#required' => TRUE
+  );
 
     $form['biblio_next'] = array(
         '#type'   => 'submit',
-        '#value'  => !empty($tid) ? t('Change Publication Type') : t('Next'),
+        '#value'  => $step_two ? t('Change Publication Type') : t('Next'),
         '#limit_validation_errors' => array(),
         '#attributes' =>  array('style' => array('display: none;')),
         '#weight' => -10,
         '#submit' => array(),
     );
-    if (isset($_COOKIE['has_js']) && !$_COOKIE['has_js']) {
-      unset($form['biblio_next']['#attributes']);
-    }
+  if (isset($_COOKIE['has_js']) && !$_COOKIE['has_js']) {
+    unset($form['biblio_next']['#attributes']);
   }
-  if (!empty($tid)) {
+
+  if ($step_two) {
     $form['title'] = array(
       '#type' => 'textfield',
       '#title' => t('Title'),
@@ -1266,7 +1259,7 @@ function biblio_form($node, &$form_state) {
   }
   foreach (element_children($tabs) as $key) {
     $tab_children = element_children($tabs[$key]);
-    if (empty($tab_children)) {
+    if (empty($tab_children) && $key != 'biblio_full_text') {
       unset($tabs[$key]);
     }
   }
@@ -1430,7 +1423,7 @@ function biblio_form_node_form_alter(&$form, &$form_state, $form_id) {
        foreach (element_children($form) as $form_element) {
         if (strstr($form_element, 'biblio_')) continue;
         if (strstr($form_element, 'form_')) continue;
-        if ($form[$form_element]['#type'] != 'value') {
+        if (isset($form[$form_element]['#type']) && $form[$form_element]['#type'] != 'value') {
           unset($form[$form_element]);
         }
       }
@@ -1688,7 +1681,6 @@ function biblio_view($node, $buildmode = 'full') {
 
   switch ($buildmode) {
     case 'full':
-      drupal_set_breadcrumb(array(l(t('Home'), NULL), l(drupal_ucfirst($base_title), $base)));
       if (variable_get('biblio_hide_bibtex_braces', 0) && !isset($node->view )) {
         $node->title = biblio_remove_brace($node->title);
         drupal_set_title(filter_xss($node->title, biblio_get_allowed_tags()));
@@ -2257,7 +2249,6 @@ function biblio_feeds_processor_targets_alter(&$targets, $entity_type, $bundle_n
 
 function biblio_feeds_importer_default() {
   module_load_include('inc', 'biblio', 'includes/biblio.feeds');
-
   $defaults = array();
   if (module_exists('feeds_oai_pmh')) {
     $defaults +=  _biblio_feeds_oai_importer_default();

@@ -90,6 +90,11 @@ function biblio_import_form($form, &$form_state) {
         '#value' => key($import_options),
       );
     }
+    elseif (count($import_options) == 0) {
+      $form['biblio_import_file']['#disabled'] = TRUE;
+      drupal_set_message(t("You won't be able to select a file until you enable at least one import module."), 'error');
+
+    }
 
     $form['batch_process'] = array(
       '#type' => 'checkbox',
@@ -184,8 +189,8 @@ function biblio_import_form($form, &$form_state) {
  */
 function biblio_import_form_validate($form, & $form_state) {
   $op = $form_state['values']['op'];
-  $filetype = $form_state['values']['filetype'];
-  if ($error = $_FILES['files']['error']['biblio_import_file']) {
+  $filetype = isset($form_state['values']['filetype']) ? $form_state['values']['filetype'] : 0;
+  if ($error = isset($_FILES['files']) ? $_FILES['files']['error']['biblio_import_file'] : '') {
     switch ($error) {
       case 1: form_set_error('biblio_import_form', t("The uploaded file exceeds the upload_max_filesize directive in php.ini."));
       break;
@@ -204,7 +209,7 @@ function biblio_import_form_validate($form, & $form_state) {
   }
 
   if ($op == t('Import') && $filetype == "0") {
-    form_set_error('biblio_import_form', t("Error: You did not select the file type"));
+    form_set_error('biblio_import_form', t("You did not select the file type"));
   }
 }
 /**
