@@ -1209,10 +1209,16 @@ function _biblio_get_authors($filter = NULL) {
   }
 
   $suspects = array();
-  $result = db_query('SELECT lastname FROM {biblio_contributor_data} '
-                      . (isset($where['filter']) ? 'WHERE '  . $where['filter'] : '') .
-                      ' GROUP BY lastname HAVING COUNT(*) > 1', array(':filter' => $filter)
-             );
+  $query = db_select('biblio_contributor_data', 'bcd')
+              ->fields('bcd', array('lastname'))
+              ->groupBy('lastname')
+              ->having('COUNT(*) > 1');
+
+  if ($filter) {
+    $filter = strtoupper($filter);
+    $query->where("UPPER(SUBSTRING(lastname,1,1)) = :filter ", array(':filter' => $filter));
+   }
+  $result = $query->execute();
 
   foreach ($result as $author) {
     $suspects[] = $author->lastname;

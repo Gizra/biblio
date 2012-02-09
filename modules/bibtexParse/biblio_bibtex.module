@@ -28,8 +28,8 @@ function biblio_bibtex_biblio_mapper_options() {
 
 function biblio_bibtex_form_biblio_node_form_alter(&$form, &$form_state) {
   global $user;
-  if ((!isset($form_state['biblio_type']) || empty($form_state['biblio_type'])) && !isset($form_state['node']->nid)) {
-   if (!$form_state['submitted']) {
+  if (!$form_state['submitted'] && !isset($form_state['values']) && !isset($form['#node']->nid)) {
+      if (!$form_state['submitted']) {
       $form['biblio_cut_paste'] = array(
         '#type' => 'fieldset',
         '#title' => t('Paste BibTex Record'),
