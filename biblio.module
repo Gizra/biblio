@@ -991,7 +991,33 @@ function biblio_menu() {
     'access arguments'  => array('rss'),
     'type'              => MENU_CALLBACK
   );
+  $items['admin/config/content/biblio/manage/publication-types'] = array(
+    'title' => 'View publication Types',
+    'page callback' => 'testa',
+    'access arguments' => array('administer biblios'),
+    'type' => MENU_LOCAL_TASK,
+  );
+  $items['admin/config/content/biblio/manage/derp'] = array(
+    'title' => 'View publication Types',
+    'page callback' => 'testa',
+    'access arguments' => array('administer biblios'),
+  );
+  // Sets up a callback for viewing and editing each publication type
+  $items['admin/config/content/biblio/manage/publication-types/%publication_type'] = array(
+    'title' => 'View publication type',
+    'title callback' => 'biblio_type_page_title',
+    'title arguments' => array(6),
+    'page callback' => 'biblio_information',
+    'page arguments' => array(6),
+    'access arguments' => array('administer biblios'),
+  );
+  
   return $items;
+}
+// @TODO: get rid of this
+function testa($var) {
+  dpm($var);
+  return 'nope chuck testa';
 }
 
 function biblio_filter_clear() {
@@ -2300,13 +2326,14 @@ function biblio_entity_info() {
     'entity keys' => array(
       'id' => 'bid',
       'revision' => 'vid',
-      'bundle' => 'pub_type',
+      'bundle' => 'publication_type',
       'label' => 'bid',
     ),
     'bundle keys' => array(
-      'bundle' => 'pub_type',
+      'bundle' => 'publication_type',
     ),
     'static cache' => TRUE,
+    // Will be retrieved using biblio_types()
     'bundles' => array(),
     // Defines different ways that our entity can be viewed. In this case,
     // we're defining a "full" and a "teaser version, just as nodes use.
@@ -2329,42 +2356,156 @@ function biblio_entity_info() {
   // for our entity. To do that, we define, for each of our bundles, a label
   // that is shown to the user and the menu information that the Field API will
   // need to add itself to the menu.
-  foreach (biblio_types() as $type => $info) {
-    $return['biblio']['bundles'][$type] = array(
-      'label' => $info->name,
-      'admin' => array(
-        // defines the path that should be used in hook_menu() for the Fields UI pages
-        'path' => 'admin/config/content/biblio/manage/publication-types/%publication_type',
-        // The exact path that should be used when generating links within the admin interface
-        'real path' => 'admin/config/content/biblio/manage/publication-types/' . str_replace('_', '-', $type),
-        // menu args are 0 based, so  is the seventh part of the path, which
-        // here is %publication_type.
-        'bundle argument' => 6,
-        'access arguments' => array('administer biblio'),
-      ),
-    );
+  $publication_types = biblio_types();
+  if (!empty($publication_types)){
+    foreach ($publication_types as $type => $info) {
+      $return['biblio']['bundles'][$type] = array(
+        'label' => $info->name,
+        'admin' => array(
+          // defines the path that should be used in hook_menu() for the Fields UI pages
+          'path' => 'admin/config/content/biblio/manage/publication-types/%publication_type',
+          // The exact path that should be used when generating links within the admin interface
+          'real path' => 'admin/config/content/biblio/manage/publication-types/' . str_replace('_', '-', $type),
+          // menu args are 0 based, so  is the seventh part of the path, which
+          // here is %publication_type.
+          'bundle argument' => 6,
+          'access arguments' => array('administer biblio'),
+        ),
+      );
+    }
   }
-
+  
   return $return;
 }
+
+/**
+ * Gets all publication types that are set up by default. 
+ * @return type 
+ */
 function biblio_types() {
   // Gives the variable a name that matches our function
   // drupal_static() acts as a central collector for static PHP variables
   $types = &drupal_static(__FUNCTION__);
-  
   if (empty($types)) {
-    $types['journal_article'] = (object)array(
-      // type is the machine name of the bundle
-      'type' => 'journal_article',
-      // name is the human name of the bundle
-      'name' => t('Journal Article'),
-      'description' => t('A Journal Article'),
-    );
-    $types['book'] = (object)array(
-      'type' => 'book',
-      'name' => t('Book'),
-      'description' => t('A Book'),
-    );
+    $result = db_select('biblio__new_types', 'bt')
+        ->fields('bt', array('name', 'description'))
+        ->execute();
+    while ($row = $result->fetchAssoc()) {
+      // computer-friendly version of the human-readable content type stored in the database
+      $machine_name = str_replace(' ', '_', strtolower($row['name']));
+      
+      $types[$machine_name] = (object)array(
+        // type is the machine name of the bundle
+        'type' => $machine_name,
+        // name is the human name of the bundle
+        'name' => t($row['name']),
+        'description' => t($row['description']),
+      );
+      
+    }
+    
   }
   return $types;
+}
+
+/**
+ * Allows us to abstract out the definition of the path within Drupal where this
+ * biblio will be accessed. Instead of hard coding a path, such as biblio/$bid,
+ * we call back this function to generate it for us.
+ * @param type $biblio
+ * @return array
+ */
+function biblio_uri($biblio) {
+  return array(
+    'path' => 'biblio/' . $biblio->bid,
+  );
+}
+
+/**
+ * Menu title callback.
+ *
+ * We want the tile of each page to be a string based on the type that is
+ * passed in, so we need to specify a title callback.
+ *
+ * @param type $publication_type
+ *    The biblio type.
+ * @return string
+ *    The human-friendly name of the publication type.
+ */
+function biblio_type_page_title($publication_type) {
+  return t('Manage @type', array('@type' => $publication_type->name));
+}
+
+/**
+ * Show the title and description of the publication type.
+ *
+ * @param type $publication_type
+ * @return type 
+ */
+function biblio_information($publication_type) {
+  return $publication_type->name . ': ' . $publication_type->description;
+}
+
+/**
+ * Get an individual biblio type definition object.
+ * Necessary for the menu placeholder to work.
+ * Good practice to provide clean, flexible APIs.
+ *
+ * @param type $type
+ *  The key of the biblio type we want
+ * @return object
+ *  The specified biblio type.
+ */
+function biblio_type_load($type) {
+  $types = biblio_types();
+  // Replace dashes in a type name with underscores.
+  // All Drupal paths use dashes in place of underscores in the URI, but
+  // bundle names need to use underscores, not dashes.
+  $type = str_replace('-', '_', $type);
+  return isset($types[$type]) ? $types[$type] : FALSE;
+}
+
+/**
+ * Load an biblio object from the database.
+ *
+ * @param $aid
+ *   The biblio ID.
+ * @param $vid
+ *   The revision ID.
+ * @param $reset
+ *   Whether to reset the biblio_load_multiple cache.
+ *
+ * @return
+ *   A fully-populated node object.
+ */
+function biblio__new_load($aid = NULL, $vid = NULL, $reset = FALSE) {
+  $aids = (isset($aid) ? array($aid) : array());
+  $conditions = (isset($vid) ? array ('vid' => $vid) : array());
+  $biblio = biblio_load_multiple($aids, $conditions, $reset);
+  return $biblio ? reset($biblio) : FALSE;
+}
+
+/**
+ * Load biblio entities from the database.
+ *
+ * This function should be used whenever you need to load more than one biblio
+ * from the database. biblios are loaded into memory and will not require
+ * database access if loaded again during the same page request.
+ *
+ * @see entity_load()
+ *
+ * @param $aids
+ *   An array of biblio IDs.
+ * @param $conditions
+ *   An array of conditions on the {biblio} table in the form 'field' => $value.
+ * @param $reset
+ *   Whether to reset the internal entity_load cache.
+ *
+ * @return
+ *   An array of node objects indexed by nid.
+ */
+function biblio_load_multiple($bids = array(), $conditions = array(), $reset = FALSE) {
+  // entity_load() will create a new instance of biblioController as needed
+  // and call the load() method on it. 
+  return entity_load('biblio', $bids, $conditions, $reset);
 }

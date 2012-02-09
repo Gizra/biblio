@@ -2242,6 +2242,12 @@ function _add_publication_types() {
       'description'   => $record[2],
       'weight'        => $record[3],
     ))->execute();
+    db_insert('biblio__new_types')->fields(array(
+      'tid'           => $record[0],
+      'name'          => $record[1],
+      'description'   => $record[2],
+      'weight'        => $record[3],
+    ))->execute();
     
   }
  return;
