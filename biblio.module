@@ -1148,7 +1148,7 @@ function biblio_form($node, &$form_state) {
     '#default_value' =>  $tid,
     '#options' => $options,
     '#description' => NULL,
-    '#weight' => -15,
+    '#weight' => 2,
     '#attributes' =>  array('onchange' => 'document.getElementById(\'edit-biblio-next\').click()'),
     '#executes_submit_callback' => TRUE,
     '#limit_validation_errors' => array(),
@@ -1175,7 +1175,8 @@ function biblio_form($node, &$form_state) {
       '#required' => TRUE,
       '#default_value' => trim((isset($form_state['values']['title'])?$form_state['values']['title']: $node->title)),
       '#maxlength' => 255,
-      '#weight' => -5
+      '#size' => 120,
+      '#weight' => 1
     );
     // Build the field array used to make the form
     $result = db_query("SELECT * FROM {biblio_fields} b
