@@ -309,7 +309,7 @@ function biblio_autocomplete($field, $string = '') {
 
     default:
       $field = drupal_strtolower($field);
-      $string = drupal_strtolower($string) . '%';
+      $string = '%' . drupal_strtolower($string) . '%';
       $query = db_select('biblio', 'b')
         ->fields('b', array($field))
         ->condition($field, $string, 'LIKE')
