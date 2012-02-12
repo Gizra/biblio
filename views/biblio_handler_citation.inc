@@ -25,7 +25,7 @@ class biblio_handler_citation extends views_handler_field {
       '#title' => t('Style'),
       '#default_value' => $this->options['style_name'],
       '#options' => biblio_get_styles(),
-      '#description' => t('Define the layout of author lists.')
+      '#description' => t('Define the layout of citation.')
     );
     $form['export_links'] = array(
       '#type' => 'checkbox',
@@ -56,6 +56,7 @@ class biblio_handler_citation extends views_handler_field {
 
     $item = node_load($values->{$this->aliases['nid']});
     if ($item->type != 'biblio') return;
+
     $langcode = $GLOBALS['language_content']->language;
     field_attach_prepare_view('node', array($item->nid => $item), 'full', $langcode);
     entity_prepare_view('node',  array($item->nid => $item), $langcode);
@@ -65,8 +66,6 @@ class biblio_handler_citation extends views_handler_field {
       $item->title = biblio_remove_brace($item->title);
     }
 
-//    $output  = "\n" . '<div class="biblio-entry">' . "\n" ;
-//    $output  .= '<div class="biblio-style-' . $this->options['style_name'] . '">' . "\n" ;
     if (!$item->status) {
       $output .= '<div id="node-' . $item->nid . '" class="node node-unpublished">';
     }
@@ -97,10 +96,7 @@ class biblio_handler_citation extends views_handler_field {
       $output .= '</div>';
     }
 
- //   $output .= "\n</div></div>";
-
     return $output;
-    //    return theme('biblio_entry', array('node' => $item, 'style_name' => $this->options['style_name']));
-  }
+   }
 
 }

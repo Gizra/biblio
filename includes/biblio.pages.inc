@@ -983,14 +983,17 @@ function _get_biblio_filters() {
   $taxo_joins = implode(' ', $taxo_join);
 
   $result = db_query("SELECT $fields FROM $table $join ORDER BY $order");
-  $authors = db_query("SELECT firstname, initials, lastname, cid FROM {biblio_contributor_data} ORDER BY lastname ASC");
+  $authors = db_query("SELECT DISTINCT firstname, initials, lastname, bcd.cid
+                       FROM {biblio_contributor_data} as bcd
+                       INNER JOIN {biblio_contributor} as bc on bc.cid = bcd.cid
+                       ORDER BY lastname ASC");
   $keywords = db_query("SELECT word, kid FROM {biblio_keyword_data} ORDER BY word ASC");
   $taxoresult = db_query("SELECT $taxo_fields FROM $table $taxo_joins ORDER BY $taxo_order");
-  $pub_years['[any]'] = t('any');
-  $pub_type['[any]']  = t('any');
-  $pub_authors['[any]']  = t('any');
-  $pub_keywords['[any]']  = t('any');
-  $pub_taxo['[any]']  = t('any');
+  $pub_years['any'] = t('any');
+  $pub_type['any']  = t('any');
+  $pub_authors['any']  = t('any');
+  $pub_keywords['any']  = t('any');
+  $pub_taxo['any']  = t('any');
   foreach ($result as $option) {
     if (isset ($option->biblio_year)) {
       $option->biblio_year = _biblio_text_year($option->biblio_year);
@@ -1085,7 +1088,7 @@ function biblio_form_filter() {
       '#type' => 'select',
       '#options' => $filter['options'],
       '#title' => $filter['title'],
-      '#default_value' => '[any]',
+      '#default_value' => 'any',
     );
   }
 
@@ -1133,7 +1136,7 @@ function biblio_form_filter_submit($form, &$form_state) {
         $uri = drupal_parse_url(request_uri());
         $uri['path'] = variable_get('biblio_base', 'biblio');
       foreach ($filters as $filter => $options) {
-        if (isset($form_state['values'][$filter]) && $form_state['values'][$filter] != '[any]') {
+        if (isset($form_state['values'][$filter]) && $form_state['values'][$filter] != 'any') {
           // Flatten the options array to accommodate hierarchical/nested options.
           $flat_options = form_options_flatten($filters[$filter]['options']);
           // Only accept valid selections offered on the dropdown, block bad input.
