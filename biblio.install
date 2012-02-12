@@ -2083,4 +2083,7 @@ function biblio_update_7017() {
     }
     drupal_rmdir($path);
   }
+  if (module_exists('views')) { // rebuild the data tables
+    views_invalidate_cache();
+  }
 }
