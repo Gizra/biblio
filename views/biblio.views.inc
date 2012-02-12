@@ -86,12 +86,12 @@ function biblio_views_data() {
       // links directly to node via vid
       'left_field' => 'vid',
       'field'      => 'vid',
-      'type'       => 'inner',
+      'type'       => 'left',
     ),
     'node_revision' => array(
       'left_field' => 'vid',
       'field'      => 'vid',
-      'type'       => 'inner',
+      'type'       => 'left',
     ),
     );
 
@@ -386,6 +386,21 @@ function biblio_views_data() {
 
 
   $viewsdata['biblio_keyword_data'] = $data;
+
+  $export_links = module_invoke_all('biblio_export_options');
+  foreach ($export_links as $type => $name) {
+    $viewsdata['biblio'][$type.'_export'] = array(
+        'title' => t('Export link - ' . $name),
+        'help'  => t("Provides a link to export the data in ") . $name . t(" format"),
+        'field' => array(
+          'handler' => 'biblio_handler_field_export_link',
+          'group' => t('Biblio'),
+          'format' => $type,
+          'format name' => $name,
+       ),
+    );
+
+  }
 
   return $viewsdata;
 }
