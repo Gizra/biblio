@@ -40,3 +40,36 @@ function _biblio_field_extra_fields() {
 
   return $extras;
 }
+
+function _biblio_add_fields() {
+  $file_data = biblio_parse_field_link_data_csv();
+}
+
+/**
+ *
+ * @return array
+ * Array of rows from the biblio.field.link.data.csv file, each row containing
+ * an array of values from the csv.
+ */
+function biblio_parse_field_link_data_csv() {
+  $csv_file = drupal_get_path('module', 'biblio') . '/misc/biblio.field.link.data.csv';
+  $file_handle = fopen($csv_file, 'r');
+  // array containing an array for each row in the csv
+  $file_data = array();
+  // the first line containing column names
+  $header_line = fgetcsv($file_handle, 10000, ","); 
+  // count for array keys in the while loop. Starts at 1 to match the fid in the csv
+  $count = 1;
+  while (!feof($file_handle)) {
+    // the rest of the lines in the csv containing actual field data
+    $data_line = fgetcsv($file_handle, 10000, ',');
+    $file_data[$count] = array();
+    foreach ($header_line as $key => $header_value) {
+      $file_data[$count][$header_value] = $data_line[$key];
+    }
+    $count++;
+  }
+  fclose($file_handle);
+
+  return $file_data;
+}
