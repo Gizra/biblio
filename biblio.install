@@ -33,22 +33,10 @@ function biblio_install() {
 
   $result[] = _set_system_weight();
   
-  $field = array(
-    'field_name' => 'biblio_author_test2',
-    'type' => 'text_with_summary',
-    'entity_types' => array('biblio'),
-    'bundles' => array('book'),
-  );
-  field_create_field($field);
-  $field = array(
-    'field_name' => 'biblio_title_test2',
-    'type' => 'text',
-    'entity_types' => array('biblio'),
-    'bundles' => array('book'),
-  );
-  field_create_field($field);
-  
+  module_load_include('inc', 'biblio', 'includes/biblio.fields');
 
+  _biblio_add_fields();
+  
 //  if (count($result) == count(array_filter($result))) {
 //    drupal_set_message(t('The biblio module has successfully added its tables to the database.'));
 //  }
@@ -2427,7 +2415,7 @@ function _add_custom_field_data() {
   $query = "SELECT fid, name FROM {biblio_fields} ";
   $res = db_query($query);
   foreach ($res as $row) {
-    $fieldmap[$row->name] =  $row->fid;
+    $fieldmap[$row->name] =  $row->fid; 
   }
 
   $csv_file = drupal_get_path('module', 'biblio') . '/misc/biblio.field.type.data.csv';

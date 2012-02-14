@@ -43,6 +43,24 @@ function _biblio_field_extra_fields() {
 
 function _biblio_add_fields() {
   $file_data = biblio_parse_field_link_data_csv();
+  foreach ($file_data as $key => $row) {
+    // get rid of unsupported field types listed in the CSV
+    // @todo clean up the CSV and replace with applicable field types
+    if ($row['type'] == 'contrib_widget' ||
+        $row['type'] == 'textfield' ||
+        $row['type'] == 'text_format' ||
+        $row['type'] == 'select'
+        ) {
+      $row['type'] = 'text';
+    }
+    $field = array(
+      'field_name' => $row['field name'], 
+      'type' => $row['type'],
+    );
+    if (isset($row['field name']) && isset($row['type'])) {
+      field_create_field($field);
+    }
+  }
 }
 
 /**
