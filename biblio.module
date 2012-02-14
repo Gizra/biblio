@@ -991,33 +991,56 @@ function biblio_menu() {
     'access arguments'  => array('rss'),
     'type'              => MENU_CALLBACK
   );
-  $items['admin/config/content/biblio/manage/publication-types'] = array(
-    'title' => 'View publication Types',
-    'page callback' => 'testa',
-    'access arguments' => array('administer biblios'),
+  $items["admin/config/content/biblio/pubtypes"] = array(
+    'title' => 'Publication Types (new)',
+    'description' => 'Manage Biblio publication types',
+    'page callback'=> 'biblio_overview_types',
+    'access arguments' => array('access biblio content'),
     'type' => MENU_LOCAL_TASK,
   );
-  $items['admin/config/content/biblio/manage/derp'] = array(
-    'title' => 'View publication Types',
-    'page callback' => 'testa',
-    'access arguments' => array('administer biblios'),
+  $items["admin/config/content/biblio/pubtypes/%publication_type"] = array(
+    'title' => 'Manage (new) Biblio Fields',
+    'page callback'=> 'biblio_field_settings',
+    'page arguments' => array(5),
+    'access arguments' => array('access biblio content'),
   );
-  // Sets up a callback for viewing and editing each publication type
-  $items['admin/config/content/biblio/manage/publication-types/%publication_type'] = array(
-    'title' => 'View publication type',
-    'title callback' => 'biblio_type_page_title',
-    'title arguments' => array(6),
-    'page callback' => 'biblio_information',
-    'page arguments' => array(6),
-    'access arguments' => array('administer biblios'),
+  $items['admin/config/content/biblio/pubtypes/%publication_type/view'] = array(
+    'title' => 'View',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
   );
-  
   return $items;
 }
-// @TODO: get rid of this
-function testa($var) {
-  dpm($var);
-  return 'nope chuck testa';
+
+/**
+ * hook_menu callback function
+ * 
+ * Gives an unordered list of all the publication types we have available.
+ * Each one is presented as a link to the manage page for that type.
+ * 
+ * @todo make this a table similar to the original publication type list.
+ *
+ * @return type 
+ */
+function biblio_overview_types() {
+  foreach (biblio_types() as $type => $info) {
+    $type_url_str = str_replace('_', '-', $type);
+    $label = t('Edit  @type fields', array('@type' => $info->name));
+    $items[] = l($label, 'admin/config/content/biblio/pubtypes/' . $type_url_str . '/edit/fields');
+  }
+  
+  return theme('item_list', array('items' => $items));
+}
+
+/**
+ * hook_menu callback function
+ *
+ * @todo change this to something useful.
+ *
+ * @param type $publication_type
+ * @return type 
+ */
+function biblio_field_settings($publication_type) {
+  return 'You are editing the ' .$publication_type->name . ' publication type.';
 }
 
 function biblio_filter_clear() {
@@ -2354,18 +2377,18 @@ function biblio_entity_info() {
         'label' => $info->name,
         'admin' => array(
           // defines the path that should be used in hook_menu() for the Fields UI pages
-          'path' => 'admin/config/content/biblio/manage/publication-types/%publication_type',
+          'path' => 'admin/config/content/biblio/pubtypes/%publication_type/edit',
           // The exact path that should be used when generating links within the admin interface
-          'real path' => 'admin/config/content/biblio/manage/publication-types/' . str_replace('_', '-', $type),
+          'real path' => 'admin/config/content/biblio/pubtypes/' . str_replace('_', '-', $type) . '/edit',
           // menu args are 0 based, so  is the seventh part of the path, which
           // here is %publication_type.
-          'bundle argument' => 6,
-          'access arguments' => array('administer biblio'),
+          'bundle argument' => 5,
+          'access arguments' => array('access biblio content'),
         ),
       );
     }
   }
-  
+
   return $return;
 }
 
@@ -2387,7 +2410,7 @@ function biblio_types() {
       
       $types[$machine_name] = (object)array(
         // type is the machine name of the bundle
-        'type' => $machine_name,
+        'publication_type' => $machine_name,
         // name is the human name of the bundle
         'name' => t($row['name']),
         'description' => t($row['description']),
@@ -2397,6 +2420,24 @@ function biblio_types() {
     
   }
   return $types;
+}
+
+/**
+ * Get an individual publication type definition object.
+ * Necessary for the %publication_type menu placeholder to work in hook_menu().
+ *
+ * @param type $type
+ *  The key of the publication type we want
+ * @return object
+ *  The specified publication type.
+ */
+function publication_type_load($type) {
+  $types = biblio_types();
+  // Replace dashes in a type name with underscores.
+  // All Drupal paths use dashes in place of underscores in the URI, but
+  // bundle names need to use underscores, not dashes.
+  $type = str_replace('-', '_', $type);
+  return isset($types[$type]) ? $types[$type] : FALSE;
 }
 
 /**
@@ -2435,25 +2476,6 @@ function biblio_type_page_title($publication_type) {
  */
 function biblio_information($publication_type) {
   return $publication_type->name . ': ' . $publication_type->description;
-}
-
-/**
- * Get an individual biblio type definition object.
- * Necessary for the menu placeholder to work.
- * Good practice to provide clean, flexible APIs.
- *
- * @param type $type
- *  The key of the biblio type we want
- * @return object
- *  The specified biblio type.
- */
-function biblio_type_load($type) {
-  $types = biblio_types();
-  // Replace dashes in a type name with underscores.
-  // All Drupal paths use dashes in place of underscores in the URI, but
-  // bundle names need to use underscores, not dashes.
-  $type = str_replace('-', '_', $type);
-  return isset($types[$type]) ? $types[$type] : FALSE;
 }
 
 /**
