@@ -1004,10 +1004,6 @@ function biblio_menu() {
     'page arguments' => array(5),
     'access arguments' => array('access biblio content'),
   );
-  $items['admin/config/content/biblio/pubtypes/%publication_type/view'] = array(
-    'title' => 'View',
-    'type' => MENU_DEFAULT_LOCAL_TASK,
-  );
   return $items;
 }
 
