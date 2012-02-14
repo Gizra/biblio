@@ -32,8 +32,22 @@ function biblio_install() {
   //_enable_biblio_keyword_vocabulary();
 
   $result[] = _set_system_weight();
-
-
+  
+  $field = array(
+    'field_name' => 'biblio_author_test2',
+    'type' => 'text_with_summary',
+    'entity_types' => array('biblio'),
+    'bundles' => array('book'),
+  );
+  field_create_field($field);
+  $field = array(
+    'field_name' => 'biblio_title_test2',
+    'type' => 'text',
+    'entity_types' => array('biblio'),
+    'bundles' => array('book'),
+  );
+  field_create_field($field);
+  
 
 //  if (count($result) == count(array_filter($result))) {
 //    drupal_set_message(t('The biblio module has successfully added its tables to the database.'));
@@ -98,15 +112,11 @@ function biblio_uninstall() {
   foreach ($vars as $var) {
     variable_del($var->name);
   }
+  
+  biblio_delete_fields();
 
   cache_clear_all();
   
-    }
-    else {
-      drupal_set_message('The field <code>' . $field . '</code> could not be 
-                          deleted because it does not exist', 'error');
-    }
-  }
 }
 
 function biblio_requirements($phase) {
@@ -2591,6 +2601,40 @@ function _biblio_add_field($human_name, $machine_name = '') {
 //  );
 //  field_create_instance($instance);
 }
+
+/**
+ * Deletes all Biblio fields
+ * 
+ * @return array Array of all fields that were deleted.
+ */
+function biblio_delete_fields() {
+  $fields = biblio_field_list();
+  foreach ($fields as $field) {
+    field_delete_field($field);
+  }
+  
+  return $fields;
+}
+
+/**
+ * Get a list of all biblio fields
+ *
+ * @return array 
+ */
+function biblio_field_list() {
+  // Get an array of all fields
+  $list_of_fields = array_keys(field_info_fields());
+  $biblio_fields = array();
+  foreach ($list_of_fields as $field) {
+    // Check if name of field has the 'biblio_' prefix
+    if (strstr($field, 'biblio_') != FALSE) {
+      $biblio_fields[] = $field;
+    }
+  }
+  
+  return $biblio_fields;
+}
+
 /*
  * Removed updates 1 - 27 since they were from 5.x biblio
  */
