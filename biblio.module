@@ -1224,7 +1224,8 @@ function biblio_form($node, &$form_state) {
       '#required' => TRUE,
       '#default_value' => trim((isset($form_state['values']['title'])?$form_state['values']['title']: $node->title)),
       '#maxlength' => 255,
-      '#weight' => -4
+      '#size' => 120,
+      '#weight' => 1
     );
     // Build the field array used to make the form
     $result = db_query("SELECT * FROM {biblio_fields} b
@@ -1239,7 +1240,7 @@ function biblio_form($node, &$form_state) {
 
     $tabs = array(
       '#type' => 'vertical_tabs',
-      '#weight' => 0,
+      '#weight' => 10,
     );
     $tabs += biblio_node_form_vtabs();
 

@@ -101,14 +101,6 @@ function biblio_uninstall() {
 
   cache_clear_all();
   
-  // Remove fields that were created upon install
-  $drupal_field_names = array(
-    'biblio_publication_types',
-  );
-  foreach($drupal_field_names as $field_name) {
-    $field = field_info_field($field_name);
-    if (!empty($field)) {
-      field_delete_field($field_name);
     }
     else {
       drupal_set_message('The field <code>' . $field . '</code> could not be 
