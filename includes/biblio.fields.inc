@@ -44,6 +44,7 @@ function _biblio_field_extra_fields() {
 function _biblio_add_fields() {
   $file_data = biblio_parse_field_link_data_csv();
   foreach ($file_data as $key => $row) {
+    
     // get rid of unsupported field types listed in the CSV
     // @todo clean up the CSV and replace with applicable field types
     if ($row['type'] == 'contrib_widget' ||
@@ -53,17 +54,36 @@ function _biblio_add_fields() {
         ) {
       $row['type'] = 'text';
     }
+    // convert 1 to true and 2 to false
+    if ($row['required'] == '1') {
+      $row['required'] = TRUE;
+    }
+    else {
+      $row['required'] = FALSE;
+    }
+    
     $field = array(
       'field_name' => $row['field name'], 
       'type' => $row['type'],
     );
+    $instance = array(
+      'field_name' => $row['field name'],
+      'entity_type' => 'biblio',
+      'bundle' => 'book', // @todo: add for each bundle
+      'label' => $row['title'],
+      'required' => $row['required'],
+      
+    );
     if (isset($row['field name']) && isset($row['type'])) {
       field_create_field($field);
+      field_create_instance($instance);
     }
   }
 }
 
 /**
+ * Gets data from the biblio.field.link.data.csv file and creates a structured
+ * array for use with field creation
  *
  * @return array
  * Array of rows from the biblio.field.link.data.csv file, each row containing
