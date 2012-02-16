@@ -41,8 +41,9 @@ function _biblio_field_extra_fields() {
   return $extras;
 }
 
-function _biblio_add_fields() {
+function biblio_add_fields() { 
   $file_data = biblio_parse_field_link_data_csv();
+  $publication_types = biblio_types();
   foreach ($file_data as $key => $row) {
     
     // get rid of unsupported field types listed in the CSV
@@ -69,14 +70,15 @@ function _biblio_add_fields() {
     $instance = array(
       'field_name' => $row['field name'],
       'entity_type' => 'biblio',
-      'bundle' => 'book', // @todo: add for each bundle
       'label' => $row['title'],
       'required' => $row['required'],
-      
     );
     if (isset($row['field name']) && isset($row['type'])) {
       field_create_field($field);
-      field_create_instance($instance);
+      foreach ($publication_types as $bundle => $data) {
+        $instance['bundle'] = $bundle;
+        field_create_instance($instance);
+      }
     }
   }
 }
@@ -110,4 +112,39 @@ function biblio_parse_field_link_data_csv() {
   fclose($file_handle);
 
   return $file_data;
+}
+
+/**
+ * Get a list of all biblio fields
+ *
+ * @return array 
+ */
+function biblio_field_list() {
+  // Get an array of all fields
+  $list_of_fields = array_keys(field_info_fields());
+  $biblio_fields = array();
+  foreach ($list_of_fields as $field) {
+    // Check if name of field has the 'biblio_' prefix
+    if (strstr($field, 'biblio_') != FALSE) {
+      $biblio_fields[] = $field;
+    }
+  }
+  
+  return $biblio_fields;
+}
+
+/**
+ * Deletes all Biblio fields
+ * 
+ * @return array Array of all fields that were deleted.
+ * @todo make this function not run so slow. field_d
+ */
+function biblio_delete_fields() {
+  $fields = biblio_field_list();
+  foreach ($fields as $field) {
+    // Each iteration takes ~90ms to run :(
+    field_delete_field($field);
+  }
+  
+  return $fields;
 }

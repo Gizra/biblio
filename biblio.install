@@ -1,5 +1,8 @@
 <?php
 function biblio_install() {
+  // @todo remove after development
+  $timer_name = 'biblio_install()';
+  timer_start($timer_name);
   
   $t = get_t();
 
@@ -34,9 +37,11 @@ function biblio_install() {
   $result[] = _set_system_weight();
   
   module_load_include('inc', 'biblio', 'includes/biblio.fields');
-
-  _biblio_add_fields();
+  biblio_add_fields();
   
+  // @todo remove after development
+  timer_stop($timer_name);
+  dpm($timer_name . ' run time: ' . timer_read($timer_name) . 'ms.');
 //  if (count($result) == count(array_filter($result))) {
 //    drupal_set_message(t('The biblio module has successfully added its tables to the database.'));
 //  }
@@ -77,6 +82,10 @@ function biblio_disable() {
 }
 
 function biblio_uninstall() {
+  // @todo remove after development
+  $timer_name = 'biblio_uninstall()';
+  timer_start($timer_name);
+  
   if (module_exists('taxonomy')) {
     $voc = taxonomy_get_vocabularies();
     foreach ($voc as $vid => $vocabulary) {
@@ -101,10 +110,16 @@ function biblio_uninstall() {
     variable_del($var->name);
   }
   
+  module_load_include('inc', 'biblio', 'includes/biblio.fields');
   biblio_delete_fields();
+  // @todo: delete after development
+  field_purge_batch(999);
 
   cache_clear_all();
   
+  // @todo remove after development
+  timer_stop($timer_name);
+  dpm($timer_name . ' run time: ' . timer_read($timer_name) . 'ms.');
 }
 
 function biblio_requirements($phase) {
@@ -2588,39 +2603,6 @@ function _biblio_add_field($human_name, $machine_name = '') {
 //    ),
 //  );
 //  field_create_instance($instance);
-}
-
-/**
- * Deletes all Biblio fields
- * 
- * @return array Array of all fields that were deleted.
- */
-function biblio_delete_fields() {
-  $fields = biblio_field_list();
-  foreach ($fields as $field) {
-    field_delete_field($field);
-  }
-  
-  return $fields;
-}
-
-/**
- * Get a list of all biblio fields
- *
- * @return array 
- */
-function biblio_field_list() {
-  // Get an array of all fields
-  $list_of_fields = array_keys(field_info_fields());
-  $biblio_fields = array();
-  foreach ($list_of_fields as $field) {
-    // Check if name of field has the 'biblio_' prefix
-    if (strstr($field, 'biblio_') != FALSE) {
-      $biblio_fields[] = $field;
-    }
-  }
-  
-  return $biblio_fields;
 }
 
 /*
