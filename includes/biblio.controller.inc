@@ -23,7 +23,7 @@ class BiblioController extends DrupalDefaultEntityController {
       global $user;
       
       // Determine if we will be inserting a new biblio.
-      $biblio->is_new = empty($biblio->aid);
+      $biblio->is_new = empty($biblio->bid);
       
       // Set the timestamp fields.
       if (empty($biblio->created)) {
@@ -42,7 +42,6 @@ class BiblioController extends DrupalDefaultEntityController {
         unset($biblio->vid);
       }
       
-      // If this is a new biblio...
       if ($biblio->is_new) {
         // Save the new biblio.
         drupal_write_record('biblio', $biblio);
@@ -53,7 +52,7 @@ class BiblioController extends DrupalDefaultEntityController {
       }
       else {
         // Save the updated biblio.
-        drupal_write_record('biblio', $biblio, 'aid');
+        drupal_write_record('biblio', $biblio, 'bid');
         
         if (!empty($biblio->revision)) {
           $this->saveRevision($biblio, $user->uid);
@@ -70,7 +69,7 @@ class BiblioController extends DrupalDefaultEntityController {
       if ($update_biblio) {
         db_update('biblio')
           ->fields(array('vid' => $biblio->vid))
-          ->condition('aid', $biblio->aid)
+          ->condition('bid', $biblio->bid)
           ->execute();
       }
       
@@ -122,18 +121,18 @@ class BiblioController extends DrupalDefaultEntityController {
     $biblio->uid = $temp_uid;
   }
   
-  public function delete($aids) {
-    if(!empty($aids)) {
-      $biblios = $this->load($aids, array());
+  public function delete($bids) {
+    if(!empty($bids)) {
+      $biblios = $this->load($bids, array());
       $transaction = db_transaction();
       
       try {
         db_delete('biblio')
-          ->condition('aid', $aids, 'IN')
+          ->condition('bid', $bids, 'IN')
           ->execute();
         
         db_delete('biblio_new_revision')
-          ->condition('aid', $aids, 'IN')
+          ->condition('bid', $bids, 'IN')
           ->execute();
         foreach ($biblios as $biblio_id => $biblio) {
           field_attach_delete('biblio', $biblio);
