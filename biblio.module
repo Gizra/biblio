@@ -1004,6 +1004,70 @@ function biblio_menu() {
     'page arguments' => array(5),
     'access arguments' => array('access biblio content'),
   );
+  $items['biblio/%biblio'] = array(
+    'title callback' => 'biblio_page_title',
+    'title arguments' => array(1),
+    'page callback' => 'biblio_page_view',
+    'page arguments' => array(1),
+    'access arguments' => array('access biblio content'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['biblio/add'] = array(
+    'title' => 'Add a new Biblio entry',
+    'page callback' => 'biblio_add_page',
+    'access arguments' => array('access biblio content'),
+    'weight' => 1,
+    'menu_name' => 'management',
+    'type' => MENU_NORMAL_ITEM,
+  );
+  // Create a menu item for each biblio type, converting underscores to dashes.
+  foreach (biblio_types() as $type) {
+    $type_url_str = str_replace('_', '-', $type->publication_type);
+    $items['biblio/add/' . $type_url_str] = array(
+      'title' => $type->name,
+      // check_plain() will take whatever is specified in the title and escape
+      // any and all HTML in it, making it safe to use as the page title.
+      'title callback' => 'check_plain',
+      'page callback' => 'biblio_add',
+      'page arguments' => array(2),
+      'access arguments' => array('access biblio content'),
+      'description' => $type->description,
+    );
+  }
+  $items['biblio/%biblio'] = array(
+    'title callback' => 'biblio_page_title',
+    'title arguments' => array(1),
+    'page callback' => 'biblio_page_view',
+    'page arguments' => array(1),
+    'access arguments' => array('view biblios'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['biblio/%biblio/view'] = array(
+    'title' => 'View',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+  );
+  $items['biblio/%biblio/edit'] = array(
+    'title' => 'Edit',
+    'page callback' => 'biblio_page_edit',
+    'page arguments' => array(1),
+    'access arguments' => array('update biblios'),
+    'weight' => 0,
+    'type' => MENU_LOCAL_TASK,
+    'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
+    'file' => 'biblio.pages.inc',
+  );
+  $items['biblio/%biblio/delete'] = array(
+    'title' => 'Delete',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('biblio_delete_confirm', 1),
+    'access arguments' => array('delete biblios'),
+    'weight' => 1,
+    'type' => MENU_LOCAL_TASK,
+    'context' => MENU_CONTEXT_INLINE,
+    'file' => 'biblio.pages.inc',
+  );
+  
   return $items;
 }
 
@@ -2478,7 +2542,7 @@ function biblio_information($publication_type) {
 /**
  * Load an biblio object from the database.
  *
- * @param $aid
+ * @param $bid
  *   The biblio ID.
  * @param $vid
  *   The revision ID.
@@ -2488,12 +2552,12 @@ function biblio_information($publication_type) {
  * @return
  *   A fully-populated node object.
  */
-function biblio__new_load($aid = NULL, $vid = NULL, $reset = FALSE) {
-  $aids = (isset($aid) ? array($aid) : array());
-  $conditions = (isset($vid) ? array ('vid' => $vid) : array());
-  $biblio = biblio_load_multiple($aids, $conditions, $reset);
-  return $biblio ? reset($biblio) : FALSE;
-}
+//function biblio_load($bid = NULL, $vid = NULL, $reset = FALSE) {
+//  $bids = (isset($bid) ? array($bid) : array());
+//  $conditions = (isset($vid) ? array ('vid' => $vid) : array());
+//  $biblio = biblio_load_multiple($bids, $conditions, $reset);
+//  return $biblio ? reset($biblio) : FALSE;
+//}
 
 /**
  * Load biblio entities from the database.
@@ -2504,7 +2568,7 @@ function biblio__new_load($aid = NULL, $vid = NULL, $reset = FALSE) {
  *
  * @see entity_load()
  *
- * @param $aids
+ * @param $bids
  *   An array of biblio IDs.
  * @param $conditions
  *   An array of conditions on the {biblio} table in the form 'field' => $value.
@@ -2518,4 +2582,267 @@ function biblio_load_multiple($bids = array(), $conditions = array(), $reset = F
   // entity_load() will create a new instance of biblioController as needed
   // and call the load() method on it. 
   return entity_load('biblio', $bids, $conditions, $reset);
+}
+
+/**
+ * Generates a bulleted list of menu items that are immediate children of the
+ * current page being viewed.
+ * @return type 
+ */
+function biblio_add_page() {
+  // Returns the current menu item
+  $item = menu_get_item();
+  // Gets the children of an arbitrary menu item
+  $links = system_admin_menu_block($item);
+  
+  foreach ($links as $link) {
+    $items[] = l($link['title'], $link['href'],
+                 // Allows the menu system to handle what attributes the link
+                 // should have, any interaction witht he translation system, etc.
+                 $item['localized_options'])
+                 // Strip out any unsafe HTML tags
+                 . ': ' . filter_xss_admin($link['description']);
+  }
+  
+  return theme('item_list', array('items' => $items));
+}
+
+/**
+ * Present an biblio submission form.
+ *
+ * @global type $user
+ * @param type $type
+ * @return string 
+ */
+function biblio_add($type) {
+  global $user;
+  
+  $types = biblio_types();
+  $type = isset($type) ? str_replace('-', '_', $type) : NULL;
+  // If no such biblio type, return a 404 page
+  if (empty($types[$type])) {
+    return MENU_NOT_FOUND;
+  }
+  
+  // Create a new, empty biblio object
+  $biblio = entity_get_controller('biblio')->create($type);
+  
+  // Set page title
+  // PASS_TRHOUGH as the second param tells the function to allow HTML in the
+  // string we're giving because we've already checked to make sure it's safe.
+  drupal_set_title(t('Create @name', array('@name' => $types[$type]->name)), PASS_THROUGH);
+  
+  // Display the form
+  return drupal_get_form($type . '_biblio_form', $biblio);
+}
+
+/**
+ * Presents the biblio editing form, or redirects to delete confirmation.
+ *
+ * @param type $biblio
+ * @return type 
+ */
+function biblio_page_edit($biblio) {
+  $types = biblio_types();
+  drupal_set_title(t('<em>Edit @type</em> @title', array('@type' =>
+    $types[$biblio->type]->name, '@title' =>$biblio->title)), PASS_THROUGH);
+  
+  return drupal_get_form($biblio->type . '_biblio_form', $biblio);
+}
+
+/**
+ * Form builder; Displays the biblio add/edit form.
+ *
+ * @param $form
+ * @param $form_state
+ * @param $biblio
+ *   The biblio object to edit, which may be brand new.
+ */
+function biblio_add_form($form, &$form_state, $biblio) {
+  // Set the id to identify this as an biblio edit form.
+  $form['#id'] = 'biblio-form';
+  
+  // Save the biblio for later, in case we need it.
+  $form['#biblio'] = $biblio;
+  $form_state['biblio'] = $biblio;
+  
+  // Common fields. We don't have many.
+  $form['title'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Title'),
+    '#default_value' => $biblio->title,
+    '#weight' => -5,
+    '#required' => TRUE,
+  );
+  
+  // Checkbox to indicate whether we should save a new revision or overwrite the
+  // existing revision.
+  $form['revision'] = array(
+    '#access' => user_access('administer biblios'),
+    '#type' => 'checkbox',
+    '#title' => t('Create new revision'),
+    '#default_value' => 0,
+  );
+  
+  // Add the buttons.
+  // Save button is always available
+  $form['buttons'] = array();
+  $form['buttons']['#weight'] = 100;
+  $form['buttons']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save'),
+    '#weight' => 5,
+    '#submit' => array('biblio_form_submit'),
+  );
+  // Delete button is available if we're editing an existing biblio.
+  if (!empty($biblio->bid)) {
+    $form['buttons']['delete'] = array(
+      '#access' => user_access('delete biblios'),
+      '#type' => 'submit',
+      '#value' => t('Delete'),
+      '#weight' => 15,
+      '#submit' => array('biblio_form_delete_submit'),
+    );
+  }
+  
+  $form['#validate'][] = 'biblio_form_validate';
+  
+  // Passes our form off to the field system so that any fields we've added to
+  // this biblio type can be added to the form.
+  field_attach_form('biblio', $biblio, $form, $form_state);
+  
+  return $form;
+}
+
+/**
+ * Let the Form API validate our form for us.
+ * 
+ * @param type $form
+ * @param type $form_state 
+ */
+function biblio_form_validate($form, &$form_state) {
+  $biblio = $form_state['biblio'];
+  
+  // Field validation.
+  field_attach_form_validate('biblio', $biblio, $form, $form_state);
+}
+
+/**
+ * The Submit callback is doing extremely little. It's just glue code between
+ * the form and the biblio_save() function.
+ *
+ * @global type $user
+ * @param type $form
+ * @param array $form_state 
+ */
+function biblio_form_submit($form, &$form_state) {
+  global $user;
+  
+  // Pull the old biblio object out of the $form_state variable.
+  $biblio = &$form_state['biblio'];
+  
+  // Set the biblio's uid if it's being created at this time.
+  if (empty($biblio->uid)) {
+    $biblio->uid = $user->uid;
+  }
+  
+  $biblio->title = $form_state['values']['title'];
+  $biblio->revision = $form_state['values']['revision'];
+  
+  // Notify field widgets.
+  field_attach_submit('biblio', $biblio, $form, $form_state);
+  
+  // Save the biblio.
+  biblio_save($biblio);
+  
+  // Notify the user.
+  drupal_set_message(t('Biblio saved.'));
+  
+  $form_state['redirect'] = 'biblio/' . $biblio->bid;
+}
+
+/**
+ * Redirects the user to biblio/$bid/delete
+ *
+ * @param type $form
+ * @param type $form_state 
+ */
+function biblio_form_delete_submit($form, &$form_state) {
+  $destination = array();
+  if (isset($_GET['destination'])) {
+    $destination = drupal_get_destination();
+    unset($_GET['destination']);
+  }
+  $biblio = $form['#biblio'];
+  $form_state['redirect'] = array('biblio/' . $biblio->bid . '/delete',
+      array('query' => $destination));
+}
+
+/**
+ * Displays an biblio; Hands data off to the Field API
+ *
+ * @param type $biblio
+ * @param type $view_mode View mode defined in biblio_entity_info().
+ * @return type 
+ */
+function biblio_page_view($biblio, $view_mode = 'full') {
+  // Remove previously built content, if exists.
+  $biblio->content = array();
+  
+  // If we're in teaser mode, we want to inject the title of the biblio into
+  // the viewable result.
+  if ($view_mode == 'teaser') {
+    $biblio->content['title'] = array(
+      '#markup' => filter_xss($biblio->title),
+      'weight' => -5,
+    );
+  }
+  
+  // Build fields content. Standard stuff.
+  field_attach_prepare_view('biblio', array($biblio->bid => $biblio), $view_mode);
+  entity_prepare_view('biblio', array($biblio->bid => $biblio));
+  $biblio->content += field_attach_view('biblio', $biblio, $view_mode);
+  
+  return $biblio->content;
+}
+
+/**
+ * Rather than build a complete form, we will simply pass data on to a utility
+ * function of the Form API called confirm_form().
+ *
+ * @param type $form
+ * @param type $form_state
+ * @param type $biblio
+ * @return type 
+ */
+function biblio_delete_confirm($form, &$form_state, $biblio) {
+  $form['#biblio'] = $biblio;
+  // Always provide entity id in the same form key as in the entity edit form
+  $form['bid'] = array('#type' => 'value', '#value' => $biblio->bid);
+  return confirm_form($form,
+    t('Are you sure you want to delete %title?', array('%title' => $biblio->title)),
+    'biblio/' . $biblio->bid,
+    t('This action cannot be undone.'),
+    t('Delete'),
+    t('Cancel')
+  );
+}
+
+function biblio_delete_confirm_submit($form, &$form_state) {
+  if ($form_state['values']['confirm']) {
+    $biblio = biblio_load($form_state['values']['bid']);
+    biblio_delete($form_state['values']['bid']);
+    watchdog('biblio', '@type: deleted %title.',
+        array('@type' => $biblio->type, '%title' => $biblio->title));
+    
+    $types = biblio_types();
+    drupal_set_message(t('@type %title has been deleted.',
+        array(
+          '@type' => $types[$biblio->type]-> name, 
+          '%title' => $biblio->title)
+        )
+    );
+  }
+  
+  $form_state['redirect'] = '<front>';
 }
