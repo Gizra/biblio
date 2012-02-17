@@ -76,6 +76,9 @@ function biblio_views_data() {
       unset($data[$field->name]['filter']);
       unset($data[$field->name]['argument']);
     }
+    if ($field->type == 'text_format') {
+      $data[$field->name]['field']['handler'] = 'biblio_handler_field_markup';
+    }
   }
   $data['biblio_year']['argument']  = array('handler' => 'views_handler_argument_numeric');  // biblio_year is an int
   $data['biblio_year']['filter']    = array('handler' => 'views_handler_filter_numeric');  // biblio_year is an int
