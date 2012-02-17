@@ -75,10 +75,15 @@ function biblio_add_fields() {
     );
     if (isset($row['field name']) && isset($row['type'])) {
       field_create_field($field);
-      foreach ($publication_types as $bundle => $data) {
-        $instance['bundle'] = $bundle;
-        field_create_instance($instance);
-      }
+      // un-comment this to add fields for ALL pubtypes (takes ~6 minutes to install)
+//      foreach ($publication_types as $bundle => $data) {
+//        $instance['bundle'] = $bundle;
+//        field_create_instance($instance);
+//      }
+
+      // @todo get rid of/comment-out this when using all pubtypes (after development)
+      $instance['bundle'] = 'book';
+      field_create_instance($instance);
     }
   }
 }
@@ -92,6 +97,9 @@ function biblio_add_fields() {
  * an array of values from the csv.
  */
 function biblio_parse_field_link_data_csv() {
+  // lines have been removed from the csv file to remove some fields for
+  // development purposes. This is only to reduce install time. 
+  // @todo: put back full csv file. 
   $csv_file = drupal_get_path('module', 'biblio') . '/misc/biblio.field.link.data.csv';
   $file_handle = fopen($csv_file, 'r');
   // array containing an array for each row in the csv
