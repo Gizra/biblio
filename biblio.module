@@ -535,6 +535,12 @@ function biblio_forms() {
   $forms['biblio_admin_author_types_form_edit'] = array(
     'callback' => 'biblio_admin_author_types_form',
   );
+  if ($types = biblio_types()) {
+    foreach (array_keys($types) as $type) {
+      $forms[$type . '_biblio_form']['callback'] = 'biblio_form';
+    }
+  }
+  
   return $forms;
 
 }
@@ -1016,6 +1022,7 @@ function biblio_menu() {
     'title' => 'Add a new Biblio entry',
     'page callback' => 'biblio_add_page',
     'access arguments' => array('access biblio content'),
+    'access callback' => 'user_access',
     'weight' => 1,
     'menu_name' => 'management',
     'type' => MENU_NORMAL_ITEM,
@@ -1031,43 +1038,34 @@ function biblio_menu() {
       'page callback' => 'biblio_add',
       'page arguments' => array(2),
       'access arguments' => array('access biblio content'),
-      'description' => $type->description,
+//      'description' => $type->description,
     );
   }
-  $items['biblio/%biblio'] = array(
-    'title callback' => 'biblio_page_title',
-    'title arguments' => array(1),
-    'page callback' => 'biblio_page_view',
-    'page arguments' => array(1),
-    'access arguments' => array('view biblios'),
-    'type' => MENU_CALLBACK,
-  );
-  $items['biblio/%biblio/view'] = array(
-    'title' => 'View',
-    'type' => MENU_DEFAULT_LOCAL_TASK,
-    'weight' => -10,
-  );
-  $items['biblio/%biblio/edit'] = array(
-    'title' => 'Edit',
-    'page callback' => 'biblio_page_edit',
-    'page arguments' => array(1),
-    'access arguments' => array('update biblios'),
-    'weight' => 0,
-    'type' => MENU_LOCAL_TASK,
-    'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
-    'file' => 'biblio.pages.inc',
-  );
-  $items['biblio/%biblio/delete'] = array(
-    'title' => 'Delete',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('biblio_delete_confirm', 1),
-    'access arguments' => array('delete biblios'),
-    'weight' => 1,
-    'type' => MENU_LOCAL_TASK,
-    'context' => MENU_CONTEXT_INLINE,
-    'file' => 'biblio.pages.inc',
-  );
-  
+//  $items['biblio/%biblio/view'] = array(
+//    'title' => 'View',
+//    'type' => MENU_DEFAULT_LOCAL_TASK,
+//    'weight' => -10,
+//  );
+//  $items['biblio/%biblio/edit'] = array(
+//    'title' => 'Edit',
+//    'page callback' => 'biblio_page_edit',
+//    'page arguments' => array(1),
+//    'access arguments' => array('update biblios'),
+//    'weight' => 0,
+//    'type' => MENU_LOCAL_TASK,
+//    'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
+//    'file' => 'biblio.pages.inc',
+//  );
+//  $items['biblio/%biblio/delete'] = array(
+//    'title' => 'Delete',
+//    'page callback' => 'drupal_get_form',
+//    'page arguments' => array('biblio_delete_confirm', 1),
+//    'access arguments' => array('delete biblios'),
+//    'weight' => 1,
+//    'type' => MENU_LOCAL_TASK,
+//    'context' => MENU_CONTEXT_INLINE,
+//    'file' => 'biblio.pages.inc',
+//  );
   return $items;
 }
 
@@ -1231,8 +1229,9 @@ function biblio_user_presave(&$edit, $account, $catagory) {
  * Create the form for collecting the information
  * specific to this node type. This hook requires us to return some HTML
  * that will be later placed inside the form.
+ * @todo get rid of this function, after re-using code for new hook_form implementation
  */
-function biblio_form($node, &$form_state) {
+function biblio_form_old($node, &$form_state) {
   global $user;
   $fields = array();
   $form['biblio_tabs'] = $tabs = array();
@@ -2587,14 +2586,15 @@ function biblio_load_multiple($bids = array(), $conditions = array(), $reset = F
 /**
  * Generates a bulleted list of menu items that are immediate children of the
  * current page being viewed.
- * @return type 
+ * @return type
+ * @todo: make this not hideous 
  */
 function biblio_add_page() {
   // Returns the current menu item
   $item = menu_get_item();
   // Gets the children of an arbitrary menu item
   $links = system_admin_menu_block($item);
-  
+
   foreach ($links as $link) {
     $items[] = l($link['title'], $link['href'],
                  // Allows the menu system to handle what attributes the link
@@ -2658,7 +2658,7 @@ function biblio_page_edit($biblio) {
  * @param $biblio
  *   The biblio object to edit, which may be brand new.
  */
-function biblio_add_form($form, &$form_state, $biblio) {
+function biblio_form($form, &$form_state, $biblio) {
   // Set the id to identify this as an biblio edit form.
   $form['#id'] = 'biblio-form';
   
