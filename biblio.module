@@ -1723,7 +1723,7 @@ function biblio_delete($node) {
  * every time a node is loaded, and allows us to do some loading of our own.
  *
  */
-function biblio_load($nodes) {
+function biblio_load_old($nodes) {
   module_load_include('inc', 'biblio', 'includes/biblio.util');
   module_load_include('inc', 'biblio', 'includes/biblio.contributors');
   module_load_include('inc', 'biblio', 'includes/biblio.keywords');
@@ -2551,12 +2551,12 @@ function biblio_information($publication_type) {
  * @return
  *   A fully-populated node object.
  */
-//function biblio_load($bid = NULL, $vid = NULL, $reset = FALSE) {
-//  $bids = (isset($bid) ? array($bid) : array());
-//  $conditions = (isset($vid) ? array ('vid' => $vid) : array());
-//  $biblio = biblio_load_multiple($bids, $conditions, $reset);
-//  return $biblio ? reset($biblio) : FALSE;
-//}
+function biblio_load($bid = NULL, $vid = NULL, $reset = FALSE) {
+  $bids = (isset($bid) ? array($bid) : array());
+  $conditions = (isset($vid) ? array ('vid' => $vid) : array());
+  $biblio = biblio_load_multiple($bids, $conditions, $reset);
+  return $biblio ? reset($biblio) : FALSE;
+}
 
 /**
  * Load biblio entities from the database.
@@ -2645,9 +2645,9 @@ function biblio_add($type) {
 function biblio_page_edit($biblio) {
   $types = biblio_types();
   drupal_set_title(t('<em>Edit @type</em> @title', array('@type' =>
-    $types[$biblio->type]->name, '@title' =>$biblio->title)), PASS_THROUGH);
+    $types[$biblio->publication_type]->name, '@title' =>$biblio->title)), PASS_THROUGH);
   
-  return drupal_get_form($biblio->type . '_biblio_form', $biblio);
+  return drupal_get_form($biblio->publication_type . '_biblio_form', $biblio);
 }
 
 /**
@@ -2751,7 +2751,6 @@ function biblio_form_submit($form, &$form_state) {
   
   // Notify field widgets.
   field_attach_submit('biblio', $biblio, $form, $form_state);
-  
   // Save the biblio.
   biblio_save($biblio);
   
@@ -2759,6 +2758,15 @@ function biblio_form_submit($form, &$form_state) {
   drupal_set_message(t('Biblio saved.'));
   
   $form_state['redirect'] = 'biblio/' . $biblio->bid;
+}
+
+/**
+ *
+ * @param type $biblio
+ * @return type 
+ */
+function biblio_save($biblio) {
+  return entity_get_controller('biblio')->save($biblio);
 }
 
 /**
@@ -2833,12 +2841,12 @@ function biblio_delete_confirm_submit($form, &$form_state) {
     $biblio = biblio_load($form_state['values']['bid']);
     biblio_delete($form_state['values']['bid']);
     watchdog('biblio', '@type: deleted %title.',
-        array('@type' => $biblio->type, '%title' => $biblio->title));
+        array('@type' => $biblio->publication_type, '%title' => $biblio->title));
     
     $types = biblio_types();
     drupal_set_message(t('@type %title has been deleted.',
         array(
-          '@type' => $types[$biblio->type]-> name, 
+          '@type' => $types[$biblio->publication_type]-> name, 
           '%title' => $biblio->title)
         )
     );
