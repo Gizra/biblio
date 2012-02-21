@@ -4,7 +4,7 @@ class BiblioController extends DrupalDefaultEntityController {
   public function create($pub_type = '') {
     return (object) array(
       'bid' => '',
-      'pub_type' => $pub_type,
+      'publication_type' => $pub_type,
       'title' => '',
     );
   }
@@ -44,7 +44,7 @@ class BiblioController extends DrupalDefaultEntityController {
       
       if ($biblio->is_new) {
         // Save the new biblio.
-        drupal_write_record('biblio', $biblio);
+        drupal_write_record('biblio__new', $biblio);
         // Save the initial revision.
         $this->saveRevision($biblio, $user->uid);
         
@@ -52,7 +52,7 @@ class BiblioController extends DrupalDefaultEntityController {
       }
       else {
         // Save the updated biblio.
-        drupal_write_record('biblio', $biblio, 'bid');
+        drupal_write_record('biblio__new', $biblio, 'bid');
         
         if (!empty($biblio->revision)) {
           $this->saveRevision($biblio, $user->uid);
@@ -67,7 +67,7 @@ class BiblioController extends DrupalDefaultEntityController {
       
       // If the revision ID is new or updated, save it to the biblio.
       if ($update_biblio) {
-        db_update('biblio')
+        db_update('biblio__new')
           ->fields(array('vid' => $biblio->vid))
           ->condition('bid', $biblio->bid)
           ->execute();
@@ -111,10 +111,10 @@ class BiblioController extends DrupalDefaultEntityController {
     // and drupal_write_record() will populate the vid property for us with 
     // the new version ID.
     if ($update) {
-      drupal_write_record('biblio_new_revision', $biblio, 'vid');
+      drupal_write_record('biblio__new_revision', $biblio, 'vid');
     }
     else {
-      drupal_write_record('biblio_new_revision', $biblio);
+      drupal_write_record('biblio__new_revision', $biblio);
     }
     
     // Reset the order's creator_uid to the original value.
@@ -127,15 +127,15 @@ class BiblioController extends DrupalDefaultEntityController {
       $transaction = db_transaction();
       
       try {
-        db_delete('biblio')
+        db_delete('biblio__new')
           ->condition('bid', $bids, 'IN')
           ->execute();
         
-        db_delete('biblio_new_revision')
+        db_delete('biblio__new_revision')
           ->condition('bid', $bids, 'IN')
           ->execute();
         foreach ($biblios as $biblio_id => $biblio) {
-          field_attach_delete('biblio', $biblio);
+          field_attach_delete('biblio__new', $biblio);
         }
         
         db_ignore_slave();
@@ -146,7 +146,7 @@ class BiblioController extends DrupalDefaultEntityController {
         return FALSE;
       }
       
-      module_invoke_all('entity_delete', $biblio, 'biblio');
+      module_invoke_all('entity_delete', $biblio, 'biblio_new');
       
       // Clear the page, block and biblio caches.
       cache_clear_all();
