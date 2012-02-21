@@ -328,10 +328,10 @@ function biblio_schema() {
   $schema['biblio__new'] = array(
     'fields' => array(
       'bid' => array(
-        'type' => 'int',
+        'type' => 'serial',
         'not null' => TRUE,
-        'default' => 0,
         'description' => '',
+        'unsigned' => TRUE,
       ),
       'vid' => array(
         'type' => 'int',
@@ -339,11 +339,12 @@ function biblio_schema() {
         'default' => 0,
         'description' => '',
       ),
-      'biblio_type' => array(
-        'type' => 'int',
+      'publication_type' => array(
+        'description' => 'The publication type of the biblio',
+        'type' => 'varchar',
+        'length' => 32,
         'not null' => TRUE,
-        'default' => 0,
-        'description' => '',
+        'default' => '',
       ),
       'biblio_md5' => array(
         'type' => 'varchar',
@@ -363,12 +364,12 @@ function biblio_schema() {
         'description' => '',
         'serialize' => TRUE,
       ),
-      'biblio_created' => array(
+      'created' => array(
         'type' => 'int',
         'not null' => TRUE,
         'description' => '',
       ),
-      'biblio_changed' => array(
+      'changed' => array(
         'type' => 'int',
         'not null' => TRUE,
         'description' => '',
@@ -378,10 +379,6 @@ function biblio_schema() {
       'biblio_revision' => array(
         'table' => 'biblio__new_revision',
         'columns' => array('vid' => 'vid'),
-       ),
-      'biblio_type' => array(
-        'table' => 'biblio__new_types',
-        'columns' => array('biblio_type' => 'tid'),
        ),
     ),
     'primary key' => array('vid'),
@@ -431,10 +428,11 @@ function biblio_schema() {
         'description' => '',
         'serialize' => TRUE,
       ),
-      'biblio_created' => array(
+      'created' => array(
         'type' => 'int',
         'not null' => TRUE,
         'description' => '',
+        'default' => 0,
       ),
     ),
     'indexes' => array(
