@@ -1238,7 +1238,6 @@ function _biblio_get_authors($filter = NULL) {
                             GROUP BY bd.cid, bd.drupal_uid, bd.name, bd.lastname,
                                      bd.firstname, bd.prefix, bd.suffix,
                                      bd.initials, bd.affiliation, bd.md5, bd.literal
-//                            HAVING COUNT(*) > 0
                             ORDER BY  lastname ASC, SUBSTRING(firstname,1,1) ASC,
                             initials ASC', array(':filter' => $filter));
 
