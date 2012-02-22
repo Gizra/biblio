@@ -1238,7 +1238,7 @@ function _biblio_get_authors($filter = NULL) {
                             GROUP BY bd.cid, bd.drupal_uid, bd.name, bd.lastname,
                                      bd.firstname, bd.prefix, bd.suffix,
                                      bd.initials, bd.affiliation, bd.md5, bd.literal
-                            HAVING COUNT(*) > 0
+//                            HAVING COUNT(*) > 0
                             ORDER BY  lastname ASC, SUBSTRING(firstname,1,1) ASC,
                             initials ASC', array(':filter' => $filter));
 
@@ -1367,9 +1367,9 @@ function _biblio_get_keywords($filter = NULL) {
   $db_result = db_query('SELECT bkd.kid, bkd.word, COUNT(*) AS cnt
                          FROM {biblio_keyword} bk
                          LEFT JOIN {biblio_keyword_data} bkd ON bkd.kid = bk.kid
-                         LEFT JOIN {node} n ON n.vid = bk.vid
+                         INNER JOIN {node} n ON n.vid = bk.vid
                          '. $where_clause . '
-                         GROUP BY bkd.kid, bkd.word HAVING COUNT(*) > 0
+                         GROUP BY bkd.kid, bkd.word
                          ORDER BY  word ASC', array(':filter' => $filter));
 
   foreach ($db_result as $keyword) {
