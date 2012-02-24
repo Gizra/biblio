@@ -2426,3 +2426,125 @@ function biblio_admin_keyword_edit_form_submit($form, &$form_state) {
       break;
   }
 }
+
+
+/**
+ * hook_menu callback function for admin/config/content/biblio/pubtypes
+ * 
+ * Gives an unordered list of all the publication types we have available.
+ * Each one is presented as a link to the manage page for that type.
+ * 
+ * @todo make this a table similar to the original publication type list.
+ *
+ * @return type 
+ */
+function biblio_overview_types() {
+  foreach (biblio_types() as $type => $info) {
+    $type_url_str = str_replace('_', '-', $type);
+    $label = t('Edit  @type fields', array('@type' => $info->name));
+    $items[] = l($label, 'admin/config/content/biblio/pubtypes/' . $type_url_str . '/edit/fields');
+  }
+  
+  return theme('item_list', array('items' => $items));
+}
+
+/**
+ * hook_menu callback function for admin/config/content/biblio/pubtypes/%publication_type
+ *
+ * @todo change this to something useful.
+ *
+ * @param type $publication_type
+ * @return type 
+ */
+function biblio_field_settings($publication_type) {
+  return 'You are editing the ' .$publication_type->name . ' publication type.';
+}
+
+/**
+ * hook_menu callback function for admin/config/biblio/content
+ *
+ * @return string
+ */
+function biblio_content() {
+  return 'This is the biblio content page.';
+}
+
+/**
+ * hook_menu callback function for admin/config/content/biblio/add
+ *
+ * Generates a bulleted list of menu items that are immediate children of the
+ * current page being viewed.
+ * @return type
+ * @todo: make this not hideous 
+ */
+function biblio_add_page() {
+  // Returns the current menu item
+  $item = menu_get_item();
+  // Gets the children of an arbitrary menu item
+  $links = system_admin_menu_block($item);
+
+  foreach ($links as $link) {
+    $items[] = l($link['title'], $link['href'],
+                 // Allows the menu system to handle what attributes the link
+                 // should have, any interaction witht he translation system, etc.
+                 $item['localized_options'])
+                 // Strip out any unsafe HTML tags
+                 . ': ' . filter_xss_admin($link['description']);
+  }
+  
+  return theme('item_list', array('items' => $items));
+}
+
+/**
+ * hook_menu callback function for biblio/add/[publication-type]
+ * 
+ * @global type $user
+ * @param type $type
+ * @return string 
+ */
+function biblio_add($type) {
+  global $user;
+  
+  $types = biblio_types();
+  $type = isset($type) ? str_replace('-', '_', $type) : NULL;
+  // If no such biblio type, return a 404 page
+  if (empty($types[$type])) {
+    return MENU_NOT_FOUND;
+  }
+  
+  // Create a new, empty biblio object
+  $biblio = entity_get_controller('biblio')->create($type);
+  
+  // Set page title
+  // PASS_TRHOUGH as the second param tells the function to allow HTML in the
+  // string we're giving because we've already checked to make sure it's safe.
+  drupal_set_title(t('Create @name', array('@name' => $types[$type]->name)), PASS_THROUGH);
+  
+  // Display the form
+  return drupal_get_form($type . '_biblio_form', $biblio);
+}
+
+/**
+ * Menu title callback.
+ *
+ * We want the tile of each page to be a string based on the type that is
+ * passed in, so we need to specify a title callback.
+ *
+ * @param type $publication_type
+ *    The biblio type.
+ * @return string
+ *    The human-friendly name of the publication type.
+ */
+function biblio_type_page_title($publication_type) {
+  return t('Manage @type', array('@type' => $publication_type->name));
+}
+
+/**
+ * Show the title and description of the publication type.
+ *
+ * @param type $publication_type
+ * @return type 
+ */
+function biblio_information($publication_type) {
+  return $publication_type->name . ': ' . $publication_type->description;
+}

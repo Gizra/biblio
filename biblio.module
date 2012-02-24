@@ -997,19 +997,6 @@ function biblio_menu() {
     'access arguments'  => array('rss'),
     'type'              => MENU_CALLBACK
   );
-  $items["admin/config/content/biblio/pubtypes"] = array(
-    'title' => 'Publication Types (new)',
-    'description' => 'Manage Biblio publication types',
-    'page callback'=> 'biblio_overview_types',
-    'access arguments' => array('access biblio content'),
-    'type' => MENU_LOCAL_TASK,
-  );
-  $items["admin/config/content/biblio/pubtypes/%publication_type"] = array(
-    'title' => 'Manage (new) Biblio Fields',
-    'page callback'=> 'biblio_field_settings',
-    'page arguments' => array(5),
-    'access arguments' => array('access biblio content'),
-  );
   $items['biblio/%biblio'] = array(
     'title callback' => 'biblio_page_title',
     'title arguments' => array(1),
@@ -1018,14 +1005,35 @@ function biblio_menu() {
     'access arguments' => array('access biblio content'),
     'type' => MENU_CALLBACK,
   );
-  $items['biblio/add'] = array(
+  $items["admin/config/content/biblio/pubtypes"] = array(
+    'title' => 'Publication Types (new)',
+    'description' => 'Manage Biblio publication types',
+    'page callback'=> 'biblio_overview_types',
+    'file' => '/includes/biblio.admin.inc',
+    'access arguments' => array('administer biblio'),
+    'type' => MENU_LOCAL_TASK,
+  );
+  $items["admin/config/content/biblio/pubtypes/%publication_type"] = array(
+    'title' => 'Manage (new) Biblio Fields',
+    'page callback'=> 'biblio_field_settings',
+    'file' => '/includes/biblio.admin.inc',
+    'page arguments' => array(5),
+    'access arguments' => array('administer biblio'),
+  );
+  $items['admin/config/content/biblio/'] = array(
+    'title' => 'Biblio Content',
+    'page callback' => 'biblio_content',
+    'file' => '/includes/biblio.admin.inc',
+    'access arguments' => array('administer biblio'),
+    'weight' => 1,
+    'type' => MENU_LOCAL_TASK,
+  );
+  $items['admin/config/content/biblio/add'] = array(
     'title' => 'Add a new Biblio entry',
     'page callback' => 'biblio_add_page',
-    'access arguments' => array('access biblio content'),
-    'access callback' => 'user_access',
-    'weight' => 1,
-    'menu_name' => 'management',
-    'type' => MENU_NORMAL_ITEM,
+    'file' => '/includes/biblio.admin.inc',
+    'access arguments' => array('administer biblio'),
+    'type' => MENU_LOCAL_TASK,
   );
   // Create a menu item for each biblio type, converting underscores to dashes.
   foreach (biblio_types() as $type) {
@@ -1036,8 +1044,9 @@ function biblio_menu() {
       // any and all HTML in it, making it safe to use as the page title.
       'title callback' => 'check_plain',
       'page callback' => 'biblio_add',
+      'file' => '/includes/biblio.admin.inc',
       'page arguments' => array(2),
-      'access arguments' => array('access biblio content'),
+      'access arguments' => array('administer biblio'),
 //      'description' => $type->description,
     );
   }
@@ -1062,43 +1071,11 @@ function biblio_menu() {
 //    'page arguments' => array('biblio_delete_confirm', 1),
 //    'access arguments' => array('delete biblios'),
 //    'weight' => 1,
-//    'type' => MENU_LOCAL_TASK,
+//    'type' => MENU_LOCAL_TASK, 
 //    'context' => MENU_CONTEXT_INLINE,
 //    'file' => 'biblio.pages.inc',
 //  );
   return $items;
-}
-
-/**
- * hook_menu callback function
- * 
- * Gives an unordered list of all the publication types we have available.
- * Each one is presented as a link to the manage page for that type.
- * 
- * @todo make this a table similar to the original publication type list.
- *
- * @return type 
- */
-function biblio_overview_types() {
-  foreach (biblio_types() as $type => $info) {
-    $type_url_str = str_replace('_', '-', $type);
-    $label = t('Edit  @type fields', array('@type' => $info->name));
-    $items[] = l($label, 'admin/config/content/biblio/pubtypes/' . $type_url_str . '/edit/fields');
-  }
-  
-  return theme('item_list', array('items' => $items));
-}
-
-/**
- * hook_menu callback function
- *
- * @todo change this to something useful.
- *
- * @param type $publication_type
- * @return type 
- */
-function biblio_field_settings($publication_type) {
-  return 'You are editing the ' .$publication_type->name . ' publication type.';
 }
 
 function biblio_filter_clear() {
@@ -2514,31 +2491,6 @@ function biblio_uri($biblio) {
 }
 
 /**
- * Menu title callback.
- *
- * We want the tile of each page to be a string based on the type that is
- * passed in, so we need to specify a title callback.
- *
- * @param type $publication_type
- *    The biblio type.
- * @return string
- *    The human-friendly name of the publication type.
- */
-function biblio_type_page_title($publication_type) {
-  return t('Manage @type', array('@type' => $publication_type->name));
-}
-
-/**
- * Show the title and description of the publication type.
- *
- * @param type $publication_type
- * @return type 
- */
-function biblio_information($publication_type) {
-  return $publication_type->name . ': ' . $publication_type->description;
-}
-
-/**
  * Load an biblio object from the database.
  *
  * @param $bid
@@ -2584,59 +2536,6 @@ function biblio_load_multiple($bids = array(), $conditions = array(), $reset = F
 }
 
 /**
- * Generates a bulleted list of menu items that are immediate children of the
- * current page being viewed.
- * @return type
- * @todo: make this not hideous 
- */
-function biblio_add_page() {
-  // Returns the current menu item
-  $item = menu_get_item();
-  // Gets the children of an arbitrary menu item
-  $links = system_admin_menu_block($item);
-
-  foreach ($links as $link) {
-    $items[] = l($link['title'], $link['href'],
-                 // Allows the menu system to handle what attributes the link
-                 // should have, any interaction witht he translation system, etc.
-                 $item['localized_options'])
-                 // Strip out any unsafe HTML tags
-                 . ': ' . filter_xss_admin($link['description']);
-  }
-  
-  return theme('item_list', array('items' => $items));
-}
-
-/**
- * Present an biblio submission form.
- *
- * @global type $user
- * @param type $type
- * @return string 
- */
-function biblio_add($type) {
-  global $user;
-  
-  $types = biblio_types();
-  $type = isset($type) ? str_replace('-', '_', $type) : NULL;
-  // If no such biblio type, return a 404 page
-  if (empty($types[$type])) {
-    return MENU_NOT_FOUND;
-  }
-  
-  // Create a new, empty biblio object
-  $biblio = entity_get_controller('biblio')->create($type);
-  
-  // Set page title
-  // PASS_TRHOUGH as the second param tells the function to allow HTML in the
-  // string we're giving because we've already checked to make sure it's safe.
-  drupal_set_title(t('Create @name', array('@name' => $types[$type]->name)), PASS_THROUGH);
-  
-  // Display the form
-  return drupal_get_form($type . '_biblio_form', $biblio);
-}
-
-/**
  * Presents the biblio editing form, or redirects to delete confirmation.
  *
  * @param type $biblio
@@ -2666,23 +2565,14 @@ function biblio_form($form, &$form_state, $biblio) {
   $form['#biblio'] = $biblio;
   $form_state['biblio'] = $biblio;
   
-  // Common fields. We don't have many.
-  $form['title'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Title'),
-    '#default_value' => $biblio->title,
-    '#weight' => -5,
-    '#required' => TRUE,
-  );
-  
   // Checkbox to indicate whether we should save a new revision or overwrite the
   // existing revision.
-  $form['revision'] = array(
-    '#access' => user_access('administer biblios'),
-    '#type' => 'checkbox',
-    '#title' => t('Create new revision'),
-    '#default_value' => 0,
-  );
+//  $form['revision'] = array(
+//    '#access' => user_access('administer biblios'),
+//    '#type' => 'checkbox',
+//    '#title' => t('Create new revision'),
+//    '#default_value' => 0,
+//  );
   
   // Add the buttons.
   // Save button is always available
@@ -2746,8 +2636,7 @@ function biblio_form_submit($form, &$form_state) {
     $biblio->uid = $user->uid;
   }
   
-  $biblio->title = $form_state['values']['title'];
-  $biblio->revision = $form_state['values']['revision'];
+//  $biblio->revision = $form_state['values']['revision'];
   
   // Notify field widgets.
   field_attach_submit('biblio', $biblio, $form, $form_state);
