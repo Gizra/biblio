@@ -1013,13 +1013,6 @@ function biblio_menu() {
     'access arguments' => array('administer biblio'),
     'type' => MENU_LOCAL_TASK,
   );
-  $items["admin/config/content/biblio/pubtypes/%publication_type"] = array(
-    'title' => 'Manage (new) Biblio Fields',
-    'page callback'=> 'biblio_field_settings',
-    'file' => '/includes/biblio.admin.inc',
-    'page arguments' => array(5),
-    'access arguments' => array('administer biblio'),
-  );
   $items['admin/content/biblio'] = array(
     'title' => 'Biblio Content',
     'page callback' => 'biblio_content',
@@ -2414,9 +2407,9 @@ function biblio_entity_info() {
         'label' => $info->name,
         'admin' => array(
           // defines the path that should be used in hook_menu() for the Fields UI pages
-          'path' => 'admin/config/content/biblio/pubtypes/%publication_type/edit',
+          'path' => 'admin/config/content/biblio/pubtypes/%publication_type',
           // The exact path that should be used when generating links within the admin interface
-          'real path' => 'admin/config/content/biblio/pubtypes/' . str_replace('_', '-', $type) . '/edit',
+          'real path' => 'admin/config/content/biblio/pubtypes/' . str_replace('_', '-', $type),
           // menu args are 0 based, so  is the seventh part of the path, which
           // here is %publication_type.
           'bundle argument' => 5,
