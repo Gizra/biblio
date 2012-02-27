@@ -40,7 +40,10 @@ function _biblio_field_extra_fields() {
 
   return $extras;
 }
-
+/**
+ * Adds fields and field instances to Drupal's Field API 
+ * @todo Add biblio.field.type.data.csv data (field instance labels, etc)
+ */
 function biblio_add_fields() { 
   $file_data = biblio_parse_field_link_data_csv();
   $publication_types = biblio_types();
@@ -72,6 +75,7 @@ function biblio_add_fields() {
       'entity_type' => 'biblio',
       'label' => $row['title'],
       'required' => $row['required'],
+      'widget' => array('weight' =>$row['weight']),
     );
     if (isset($row['field name']) && isset($row['type'])) {
       field_create_field($field);
