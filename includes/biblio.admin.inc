@@ -2480,16 +2480,13 @@ function biblio_content() {
 function biblio_add_page() {
   // Returns the current menu item
   $item = menu_get_item();
-  // Gets the children of an arbitrary menu item
-  $links = system_admin_menu_block($item);
-  $children = menu_get_children($item);
-  foreach ($links as $link) {
-    $items[] = l($link['title'], $link['href'],
+  $links = menu_get_children($item);
+  foreach ($links as $title => $path) {
+    $items[] = l($title, 
+                 $path,
                  // Allows the menu system to handle what attributes the link
                  // should have, any interaction witht he translation system, etc.
-                 $item['localized_options'])
-                 // Strip out any unsafe HTML tags
-                 . ': ' . filter_xss_admin($link['description']);
+                 $item['localized_options']);
   }
   
   return theme('item_list', array('items' => $items));

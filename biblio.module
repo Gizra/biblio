@@ -1020,7 +1020,7 @@ function biblio_menu() {
     'page arguments' => array(5),
     'access arguments' => array('administer biblio'),
   );
-  $items['admin/config/content/biblio/'] = array(
+  $items['admin/content/biblio'] = array(
     'title' => 'Biblio Content',
     'page callback' => 'biblio_content',
     'file' => '/includes/biblio.admin.inc',
@@ -1028,24 +1028,24 @@ function biblio_menu() {
     'weight' => 1,
     'type' => MENU_LOCAL_TASK,
   );
-  $items['admin/config/content/biblio/add'] = array(
+  $items['admin/content/biblio/add'] = array(
     'title' => 'Add a new Biblio entry',
     'page callback' => 'biblio_add_page',
     'file' => '/includes/biblio.admin.inc',
     'access arguments' => array('administer biblio'),
-    'type' => MENU_LOCAL_TASK,
+    'type' => MENU_LOCAL_ACTION,
   );
   // Create a menu item for each biblio type, converting underscores to dashes.
   foreach (biblio_types() as $type) {
     $type_url_str = str_replace('_', '-', $type->publication_type);
-    $items['biblio/add/' . $type_url_str] = array(
+    $items['admin/content/biblio/add/' . $type_url_str] = array(
       'title' => $type->name,
       // check_plain() will take whatever is specified in the title and escape
       // any and all HTML in it, making it safe to use as the page title.
       'title callback' => 'check_plain',
       'page callback' => 'biblio_add',
       'file' => '/includes/biblio.admin.inc',
-      'page arguments' => array(2),
+      'page arguments' => array(4),
       'access arguments' => array('administer biblio'),
 //      'description' => $type->description,
     );
