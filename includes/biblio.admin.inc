@@ -2482,7 +2482,7 @@ function biblio_add_page() {
   $item = menu_get_item();
   // Gets the children of an arbitrary menu item
   $links = system_admin_menu_block($item);
-
+  $children = menu_get_children($item);
   foreach ($links as $link) {
     $items[] = l($link['title'], $link['href'],
                  // Allows the menu system to handle what attributes the link
@@ -2547,4 +2547,19 @@ function biblio_type_page_title($publication_type) {
  */
 function biblio_information($publication_type) {
   return $publication_type->name . ': ' . $publication_type->description;
+}
+
+function menu_get_children($menu_item) {
+  $leading_path = db_like($menu_item['path']);
+  $result = db_query(
+    'SELECT * FROM menu_router WHERE path LIKE :leading_path',
+    array(':leading_path' => db_like($leading_path) . '/%')
+  );
+  
+  $children = array();
+  foreach($result as $row) {
+    $children[$row->title] = $row->path;
+  }
+  
+  return $children;
 }
