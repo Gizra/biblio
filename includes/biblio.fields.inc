@@ -58,13 +58,8 @@ function biblio_add_fields() {
         ) {
       $row['type'] = 'text';
     }
-    // convert 1 to true and 2 to false
-    if ($row['required'] == '1') {
-      $row['required'] = TRUE;
-    }
-    else {
-      $row['required'] = FALSE;
-    }
+    // convert 1 to true and 0 to false
+    $row['required'] = ($row['required'] == '1' ? TRUE : FALSE);
     
     $field = array(
       'field_name' => $row['field name'], 
@@ -78,18 +73,39 @@ function biblio_add_fields() {
       'widget' => array('weight' =>$row['weight']),
     );
     if (isset($row['field name']) && isset($row['type'])) {
+      timer_start($row['field name']);
       field_create_field($field);
-      // un-comment this to add fields for ALL pubtypes (takes ~6 minutes to install)
+      timer_stop($row['field name']);
+      $field_timer[$row['field name'] . ' field install timer'] = timer_read($row['field name']);
+      
+      // @todo get rid of/comment-out this when using all pubtypes (after development)
+      $instance['bundle'] = 'book';
+      // @todo remove all timers after development
+      timer_start($row['field name'] . ' instance');
+      field_create_instance($instance);
+      timer_stop($row['field name'] . ' instance');
+      $instance_timer[$row['field name'] . ' instance field install timer'] = timer_read($row['field name'] . ' instance');
+      
+      // un-comment this to add fields for ALL pubtypes (takes >6 minutes to install)
 //      foreach ($publication_types as $bundle => $data) {
 //        $instance['bundle'] = $bundle;
 //        field_create_instance($instance);
 //      }
-
-      // @todo get rid of/comment-out this when using all pubtypes (after development)
-      $instance['bundle'] = 'book';
-      field_create_instance($instance);
     }
   }
+  // @todo: remove after development
+  $field_sum = array_sum($field_timer);
+  $field_avg = $field_sum / count($field_timer);
+  $field_timer['total time'] = $field_sum;
+  $field_timer['average time'] = $field_avg;
+  $instance_sum = array_sum($instance_timer);
+  $instance_avg = $instance_sum / count($instance_timer);
+  $instance_timer['total time'] = $instance_sum;
+  $instance_timer['average time'] = $instance_avg;
+  $timers['Field Timer'] = $field_timer;
+  $timers['Field Instance Timer'] = $instance_timer;
+  $timers['Total Field/Field Instance creation time:'] = $field_sum + $instance_sum;
+  dpm($timers);
 }
 
 /**
