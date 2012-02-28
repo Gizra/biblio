@@ -370,7 +370,8 @@ function biblio_help($path, $arg) {
   }
 }
 
-function biblio_node_info() {
+// @todo: ditch this after development
+function biblio_node_info_old() {
   return array(
     'biblio' => array(
       'name' => t('Biblio'),
@@ -2520,7 +2521,7 @@ function biblio_load($bid = NULL, $vid = NULL, $reset = FALSE) {
  *   Whether to reset the internal entity_load cache.
  *
  * @return
- *   An array of node objects indexed by nid.
+ *   An array of biblio objects indexed by bid.
  */
 function biblio_load_multiple($bids = array(), $conditions = array(), $reset = FALSE) {
   // entity_load() will create a new instance of biblioController as needed
