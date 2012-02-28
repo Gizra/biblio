@@ -2464,9 +2464,10 @@ function biblio_field_settings($publication_type) {
  * hook_menu callback function for admin/config/biblio/content
  *
  * @return string
+ * @todo list all biblio entries (similar to admin/content does for nodes)
  */
 function biblio_content() {
-  return 'This is the biblio content page.';
+  return '[Insert table of biblio entries here]';
 }
 
 /**
