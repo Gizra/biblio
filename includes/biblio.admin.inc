@@ -2501,6 +2501,7 @@ function biblio_add_page() {
  * @return string 
  */
 function biblio_add($type) {
+  module_load_include('inc', 'biblio', 'includes/biblio.fields');
   global $user;
   
   $types = biblio_types();
@@ -2508,6 +2509,13 @@ function biblio_add($type) {
   // If no such biblio type, return a 404 page
   if (empty($types[$type])) {
     return MENU_NOT_FOUND;
+  }
+  
+  $params = array('entity_type' => 'biblio', 'bundle' => $type);
+  $instances = field_read_instances($params);
+  // Add field instances only if they dont already exist.
+  if (!isset($instances) || empty($instances)) {
+    biblio_add_field_instances($type);
   }
   
   // Create a new, empty biblio object
