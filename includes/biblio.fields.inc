@@ -46,66 +46,44 @@ function _biblio_field_extra_fields() {
  */
 function biblio_add_fields() { 
   $file_data = biblio_parse_field_link_data_csv();
-  $publication_types = biblio_types();
   foreach ($file_data as $key => $row) {
-    
     // get rid of unsupported field types listed in the CSV
     // @todo clean up the CSV and replace with applicable field types
-    if ($row['type'] == 'contrib_widget' ||
-        $row['type'] == 'textfield' ||
-        $row['type'] == 'text_format' ||
-        $row['type'] == 'select'
-        ) {
-      $row['type'] = 'text';
-    }
-    // convert 1 to true and 0 to false
-    $row['required'] = ($row['required'] == '1' ? TRUE : FALSE);
-    
+    $row['type'] = 'text';
     $field = array(
       'field_name' => $row['field name'], 
       'type' => $row['type'],
     );
+    if (isset($row['field name']) && isset($row['type'])) {
+      field_create_field($field);
+    }
+  }
+}
+
+function biblio_add_field_instances($publication_type) {
+  $file_data = biblio_parse_field_link_data_csv();
+  $publication_types = biblio_types();
+  
+  // @todo: remove all timers after development
+  timer_start('field_instances_creation');
+  foreach ($file_data as $key => $row) {
+    // convert 1 to true and 0 to false
+    $row['required'] = ($row['required'] == '1' ? TRUE : FALSE);
     $instance = array(
       'field_name' => $row['field name'],
       'entity_type' => 'biblio',
+      'bundle' => $publication_type, 
       'label' => $row['title'],
       'required' => $row['required'],
       'widget' => array('weight' =>$row['weight']),
     );
-    if (isset($row['field name']) && isset($row['type'])) {
-      timer_start($row['field name']);
-      field_create_field($field);
-      timer_stop($row['field name']);
-      $field_timer[$row['field name'] . ' field install timer'] = timer_read($row['field name']);
-      
-      // @todo get rid of/comment-out this when using all pubtypes (after development)
-      $instance['bundle'] = 'book';
+    if (isset($row['field name'])) {
       // @todo remove all timers after development
-      timer_start($row['field name'] . ' instance');
       field_create_instance($instance);
-      timer_stop($row['field name'] . ' instance');
-      $instance_timer[$row['field name'] . ' instance field install timer'] = timer_read($row['field name'] . ' instance');
-      
-      // un-comment this to add fields for ALL pubtypes (takes >6 minutes to install)
-//      foreach ($publication_types as $bundle => $data) {
-//        $instance['bundle'] = $bundle;
-//        field_create_instance($instance);
-//      }
     }
   }
-  // @todo: remove after development
-  $field_sum = array_sum($field_timer);
-  $field_avg = $field_sum / count($field_timer);
-  $field_timer['total time'] = $field_sum;
-  $field_timer['average time'] = $field_avg;
-  $instance_sum = array_sum($instance_timer);
-  $instance_avg = $instance_sum / count($instance_timer);
-  $instance_timer['total time'] = $instance_sum;
-  $instance_timer['average time'] = $instance_avg;
-  $timers['Field Timer'] = $field_timer;
-  $timers['Field Instance Timer'] = $instance_timer;
-  $timers['Total Field/Field Instance creation time:'] = $field_sum + $instance_sum;
-  dpm($timers);
+  timer_stop('field_instances_creation');
+  dpm('Creation of field instances: ' . timer_read('field_instances_creation') . 'ms');
 }
 
 /**
