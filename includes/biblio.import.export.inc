@@ -315,9 +315,9 @@ function biblio_import_batch_operations($session_id, $user, $userid, $terms, &$c
 
   $result = db_query_range("SELECT id, data FROM {biblio_import_cache} WHERE id > :id AND session_id = :sessid ORDER BY id ASC", 0, $limit, array(':id' => $context['sandbox']['current_id'], ':sessid' => $session_id));
   foreach ($result as $row) {
-    if ($node = unserialize(base64_decode($row->data))) {
-      biblio_save_node($node, $terms);
-      $context['results']['nids'][] = $node->nid;
+    if ($biblio = unserialize(base64_decode($row->data))) {
+      biblio_save_node($biblio, $terms);
+      $context['results']['bids'][] = $biblio->bid;
     }
     $context['sandbox']['progress']++;
     $context['sandbox']['current_id'] = $row->id;
@@ -549,51 +549,52 @@ function biblio_save_imported_nodes(& $node_array) {
 */
   return $node_ids;
 }
-function biblio_save_node($node, $terms = array(), $batch = FALSE, $session_id = NULL, $save_node = TRUE) {
+function biblio_save_node($biblio, $terms = array(), $batch = FALSE, $session_id = NULL, $save_node = TRUE) {
   global $user;
 
   if ($batch && $session_id) { // we are batch processing some import data
-    $node = base64_encode(serialize($node));// base64_encode to avoid problems unserializing strings with embeded quotes.
-    db_query("INSERT INTO {biblio_import_cache} (session_id, data) VALUES (:sessid, :node)", array(':sessid' => $session_id, ':node' => $node));
+    $biblio = base64_encode(serialize($biblio));// base64_encode to avoid problems unserializing strings with embeded quotes.
+    db_query("INSERT INTO {biblio_import_cache} (session_id, data) VALUES (:sessid, :biblio)", array(':sessid' => $session_id, ':biblio' => $biblio));
     return;
   }
 
-  $node->type = 'biblio';
   // Persist the node revision log since it will be overridden by
   // node_object_prepare().
-  $created = !empty($node->created)? $node->created : NULL;
-  $revision_log = !empty($node->log)? $node->log : NULL;
-  node_object_prepare($node);
-  $node->created = $created;
-  $node->log = $revision_log;
+  $created = !empty($biblio->created)? $biblio->created : NULL;
+  $revision_log = !empty($biblio->log)? $biblio->log : NULL;
+//  node_object_prepare($node);
+  $biblio->created = $created;
+  $biblio->log = $revision_log;
 
   if (!empty($terms)) {
     foreach ($terms as $key => $value) {
-      $node->{$key} = $value;
+      $biblio->{$key} = $value;
     }
   }
 
-  $node->language = 'und';  //start by setting the language to undefined and then try to refine it.
+  $biblio->language = 'und';  //start by setting the language to undefined and then try to refine it.
   if (module_exists('locale')) {
-    $node->language = locale_language_url_fallback();
+    $biblio->language = locale_language_url_fallback();
   }
   if (module_exists('i18n') && variable_get('i18n_node_biblio', 0) && variable_get('language_content_type_biblio', 0) ) {
-    $node->language = module_invoke('i18n', 'default_language');
+    $biblio->language = module_invoke('i18n', 'default_language');
   }
 
-  if (!isset($node->biblio_type)) {
-    $node->biblio_type = 129; // default to misc if not set.
+  if (!isset($biblio->biblio_type)) {
+    $biblio->biblio_type = 'miscellaneous'; // default to misc if not set.
   }
 
 
   if ($save_node) { // $save_node = TRUE, the normal save path
     $validation_errors = array();
-    $validation_errors = biblio_save_node_validate($node);
-    node_save($node);
+    //@todo: uncomment validation below and make it work
+//    $validation_errors = biblio_save_node_validate($biblio);
+//    node_save($biblio);
+    $biblio = biblio_save($biblio);
     if (!empty($validation_errors)) {
       foreach($validation_errors as $field => $value) {
         $message = $field . t(' was truncated to fit into the database column');
-        $link = l('node/' . $node->nid, 'node/' . $node->nid);
+        $link = l('biblio/' . $biblio->bid, 'biblio/' . $biblio->bid);
         drupal_set_message($message . '; ' . $link, 'warning');
         watchdog('biblio - import', $message, array(), WATCHDOG_ALERT, $link);
       }
@@ -601,7 +602,7 @@ function biblio_save_node($node, $terms = array(), $batch = FALSE, $session_id =
     return; // (isset($node->nid)) ? $node->nid : 0;
   }
   else { // $save_node = FALSE, primarily used to parse data and return it to the input form
-    return (array)$node;
+    return (array)$biblio;
   }
 }
 

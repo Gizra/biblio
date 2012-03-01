@@ -1001,7 +1001,7 @@ function biblio_admin_types_edit_form_submit($form, &$form_state) {
 function biblio_admin_io_mapper_page() {
   $formats = module_invoke_all('biblio_mapper_options');
   asort($formats);
-
+dpm($formats);
   foreach ($formats as $key => $value) {
     $rows[] = array(
       $value['title'],
@@ -2520,7 +2520,7 @@ function biblio_add($type) {
   
   // Create a new, empty biblio object
   $biblio = entity_get_controller('biblio')->create($type);
-  
+  dpm($biblio);
   // Set page title
   // PASS_TRHOUGH as the second param tells the function to allow HTML in the
   // string we're giving because we've already checked to make sure it's safe.

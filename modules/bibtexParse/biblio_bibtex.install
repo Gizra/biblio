@@ -34,20 +34,20 @@ function biblio_bibtex_set_system_weight() {
 function _get_bibtex_type_map() {
   $map['type_map'] = serialize(
         array(
-                'article'       => 102,
-                'book'          => 100,
-                'booklet'       => 129,
-                'conference'    => 103,
-                'inbook'        => 101,
-                'incollection'  => 101,
-                'inproceedings' => 103,
-                'manual'        => 129,
-                'mastersthesis' => 108,
-                'misc'          => 129,
-                'phdthesis'     => 108,
-                'proceedings'   => 104,
-                'techreport'    => 129,
-                'unpublished'   => 124,
+                'article'       => 'journal_article',
+                'book'          => 'book',
+                'booklet'       => 'miscellaneous',
+                'conference'    => 'conference_paper',
+                'inbook'        => 'book_chapter',
+                'incollection'  => 'book_chapter',
+                'inproceedings' => 'conference_paper',
+                'manual'        => 'miscellaneous',
+                'mastersthesis' => 'thesis',
+                'misc'          => 'miscellaneous',
+                'phdthesis'     => 'thesis',
+                'proceedings'   => 'conference_proceedings',
+                'techreport'    => 'miscellaneous',
+                'unpublished'   => 'unpublished',
         )
   );
   $map['format'] = 'bibtex';
