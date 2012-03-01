@@ -2648,9 +2648,7 @@ function biblio_form_submit($form, &$form_state) {
  * @return type 
  */
 function biblio_save($biblio) {
-  dpm($biblio);
   return entity_get_controller('biblio')->save($biblio);
-  dpm($biblio);
 }
 
 /**

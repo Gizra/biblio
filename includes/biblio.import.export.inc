@@ -346,7 +346,6 @@ function biblio_import_batch_operations($session_id, $user, $userid, $terms, &$c
   }
 }
 function biblio_import_batch_finished($success, $results, $operations) {
-
   biblio_import_finalize($success, $results);
   //clean up import cache...
   db_delete('biblio_import_cache')
@@ -356,28 +355,27 @@ function biblio_import_batch_finished($success, $results, $operations) {
 
 function biblio_import_finalize($success, $results) {
   $format = $results['format'];
-  $nids = $results['nids'];
+  $bids = $results['bids'];
   $dups = $results['dups'];
-  $total = count($nids) + count($dups);
+  $total = count($bids) + count($dups);
   //    drupal_set_message(t("<i><b>%count</b></i> of <i><b>%total</b></i> nodes were successfully imported.", array('%count' => count($nids), '%total' => $total)), (count($nids) != $total)?'warning':'status');
-
-  if ($success && (count($nids) || count($dups))) {
+  if ($success && (count($bids) || count($dups))) {
     $message = t("The file <i><b>@file</b></i> was successfully uploaded.", array('@file' => $results['file']->filename));
     drupal_set_message($message, 'status');
     watchdog($format, $message);
-    $count = count($nids);
-    $message = format_plural($count, 'One of @total node imported.', '@count of @total nodes imported.', array('@total' => $total));
+    $count = count($bids);
+    $message = format_plural($count, 'One of @total biblios imported.', '@count of @total biblios imported.', array('@total' => $total));
     drupal_set_message($message, 'status');
     watchdog($format, $message, array('@count' => $count, '@total' => $total), WATCHDOG_INFO);
     if (count($dups)) {
       $count = count($dups);
-      $message = format_plural($count, 'One duplicate node skipped.', '@count duplicate nodes skipped.');
+      $message = format_plural($count, 'One duplicate biblio skipped.', '@count duplicate biblios skipped.');
       drupal_set_message($message, 'status');
       watchdog($format, $message, array('@count' => $count), WATCHDOG_INFO);
-      foreach ($dups as $nid) {
+      foreach ($dups as $bid) {
         $message = '';
         $message = t('The item you are trying to import already exists in the database, see ');
-        $message .= l('node/'. $nid, 'node/'. $nid);
+        $message .= l('biblio/'. $bid, 'biblio/'. $bid);
 
         drupal_set_message($message, 'status');
         watchdog($format, $message, array(), WATCHDOG_ERROR);
@@ -385,8 +383,8 @@ function biblio_import_finalize($success, $results) {
     }
   }
   else {
-    $count = count($nids);
-    $message = t('Import finished with an error!  ') . format_plural($count, 'One node imported.', '@count nodes imported.');
+    $count = count($bids);
+    $message = t('Import finished with an error!  ') . format_plural($count, 'One biblio imported.', '@count biblios imported.');
     drupal_set_message($message, 'error');
     watchdog($format, $message, array('@count' => $count), WATCHDOG_ERROR);
   }
@@ -394,14 +392,14 @@ function biblio_import_finalize($success, $results) {
   $user = $results['user'];
   $userid = $results['userid'];
 
-  if (user_access('administer biblio') && count($nids) && $user->uid != $userid) {
-    db_update('node')
+  if (user_access('administer biblio') && count($bids) && $user->uid != $userid) {
+    db_update('biblio')
       ->fields(array('uid' => $results['userid']))
-      ->condition('nid', $nids, 'IN')
+      ->condition('bid', $bids, 'IN')
       ->execute();
-    db_update('node_revision')
+    db_update('biblio_revision')
       ->fields(array('uid' => $results['userid']))
-      ->condition('nid', $nids, 'IN')
+      ->condition('bid', $bids, 'IN')
       ->execute();
   }
 
@@ -591,6 +589,8 @@ function biblio_save_node($biblio, $terms = array(), $batch = FALSE, $session_id
 //    $validation_errors = biblio_save_node_validate($biblio);
 //    node_save($biblio);
     $biblio = biblio_save($biblio);
+    dpm($biblio);
+    field_attach_insert('biblio', $biblio);
     if (!empty($validation_errors)) {
       foreach($validation_errors as $field => $value) {
         $message = $field . t(' was truncated to fit into the database column');

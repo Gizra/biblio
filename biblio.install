@@ -381,7 +381,7 @@ function biblio_schema() {
         'columns' => array('vid' => 'vid'),
        ),
     ),
-    'primary key' => array('vid'),
+    'primary key' => array('bid'),
     'indexes' => array(
       'bid' => array('bid'),
       'md5' => array('biblio_md5'),
@@ -400,7 +400,7 @@ function biblio_schema() {
       ),
       'vid' => array(
         'description' => 'The primary identifier for this version.',
-        'type' => 'int',
+        'type' => 'serial',
         'unsigned' => TRUE,
         'not null' => TRUE,
       ),

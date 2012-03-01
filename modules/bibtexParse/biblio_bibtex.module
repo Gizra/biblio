@@ -201,6 +201,7 @@ function biblio_bibtex_biblio_export($nids) {
 
 function _biblio_bibtex_import($entries, $terms = array(), $batch = FALSE, $session_id = NULL, $save = TRUE) {
   module_load_include('inc', 'biblio', 'includes/biblio.fields');
+  global $user;
   $bids = array();
   $dups = array();
 
@@ -217,6 +218,7 @@ function _biblio_bibtex_import($entries, $terms = array(), $batch = FALSE, $sess
   
     // Create a new, empty biblio object
     $biblio = entity_get_controller('biblio')->create($type);
+    $biblio->uid = $user->uid;
     $biblio->biblio_contributors = array();
     switch ($entry['bibtexEntryType']) {
       case 'mastersthesis':
