@@ -116,7 +116,7 @@ function biblio_parse_field_link_data_csv() {
     $count++;
   }
   fclose($file_handle);
-
+  
   return $file_data;
 }
 

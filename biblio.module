@@ -2594,7 +2594,6 @@ function biblio_form($form, &$form_state, $biblio) {
   // Passes our form off to the field system so that any fields we've added to
   // this biblio type can be added to the form.
   field_attach_form('biblio', $biblio, $form, $form_state);
-  
   return $form;
 }
 
