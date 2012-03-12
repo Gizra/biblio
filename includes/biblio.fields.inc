@@ -47,14 +47,20 @@ function _biblio_field_extra_fields() {
 function biblio_add_fields() { 
   $file_data = biblio_parse_field_link_data_csv();
   foreach ($file_data as $key => $row) {
-    // get rid of unsupported field types listed in the CSV
-    // @todo clean up the CSV and replace with applicable field types
-    $row['type'] = 'text';
     $field = array(
       'field_name' => $row['field name'], 
       'type' => $row['type'],
     );
-    if (isset($row['field name']) && isset($row['type'])) {
+    // Allow user to add multiple author fields
+    switch ($field['field_name']) {
+      case 'biblio_authors':
+      case 'biblio_secondary_authors':
+      case 'biblio_tertiary_authors':
+      case 'biblio_subsidary_authors':
+      case 'biblio_corp_authors':
+        $field['cardinality'] = FIELD_CARDINALITY_UNLIMITED;
+    }
+    if (isset($row['field name'])) {
       field_create_field($field);
     }
   }
@@ -78,7 +84,6 @@ function biblio_add_field_instances($publication_type) {
       'widget' => array('weight' =>$row['weight']),
     );
     if (isset($row['field name'])) {
-      // @todo remove all timers after development
       field_create_instance($instance);
     }
   }
@@ -153,4 +158,47 @@ function biblio_delete_fields() {
   }
   
   return $fields;
+}
+
+//  module_load_include('inc', 'biblio', 'includes/biblio.fields');
+//  modify_biblio_field_link_data_csv();
+/**
+ * This function only  exists because I'm lazy and don't want to manipulate
+ * CSV data by hand. Copy the above lines to call this function quickly
+ * @todo remove after development
+ */
+function modify_biblio_field_link_data_csv() {
+  $csv_file = drupal_get_path('module', 'biblio') . '/misc/biblio.field.link.data.csv';
+  $handle = fopen($csv_file, 'r+');
+  $data = biblio_parse_field_link_data_csv();
+  $data_to_write[] = array_keys($data[1]);
+  foreach($data as $value) {
+    $data_to_write[] = $value;
+  }
+  
+  foreach($data_to_write as $key => $row) {
+    if (isset($row[0])) {
+      // Modify headers here...
+    }
+    if (isset($row['fid'])) {
+      // Modify data here...
+
+      // get rid of unsupported field types listed in the CSV
+      // @todo clean up the CSV and replace with applicable field types
+      if ($row['type'] == 'contrib_widget' ||
+          $row['type'] == 'textfield' ||
+          $row['type'] == 'select'
+          ) {
+        $data_to_write[$key]['type'] = 'text';
+      }
+      if ($row['type'] == 'text_format') {
+        $data_to_write[$key]['type'] = 'text_long';
+      }
+    }
+  }
+  foreach ($data_to_write as $key => $value) {
+    if (isset($value['fid']) || isset($value[0])) {
+      fputcsv($handle, $value);
+    }
+  }
 }
