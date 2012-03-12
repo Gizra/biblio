@@ -589,7 +589,38 @@ function biblio_save_node($biblio, $terms = array(), $batch = FALSE, $session_id
 //    $validation_errors = biblio_save_node_validate($biblio);
 //    node_save($biblio);
     $biblio = biblio_save($biblio);
-    dpm($biblio);
+    
+    // Get all possible field instances for the current publication type
+    $instances = field_info_instances('biblio', $biblio->publication_type);
+    
+    // Add field instance data if it exists in both Drupal's stored instances,
+    // and those field instances are also properties of the biblio entity
+    foreach($biblio as $field=>$value) {
+//      // @todo: add keywords as taxonomy terms
+      if (is_array($value)) {
+        // Change contributor array values (arrays) to the contributor name
+        if ($field == 'biblio_contributors') {
+          foreach ($value as $key => $contributor) {
+            $value[$key] = $contributor['name'];
+          }
+        }
+        // can't store an array in the db @fixme
+        $str = implode(',', array_values($value));
+        $value = $str;
+      }
+      
+      if (isset($instances[$field])) {
+        // This structure required to use field_attach_insert
+        // @todo: possibly make this available to more languages than 'und'
+        $biblio->$field = array(
+          'und' => array(
+            0 => array(
+              'value' => $value
+            )
+          )
+        );
+      }
+    }
     field_attach_insert('biblio', $biblio);
     if (!empty($validation_errors)) {
       foreach($validation_errors as $field => $value) {
