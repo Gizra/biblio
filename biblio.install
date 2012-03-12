@@ -30,7 +30,8 @@ function biblio_install() {
 
   $result[] = _add_publication_types();
 
-  $result[] = _add_custom_field_data();
+  // @todo: add contributor field data contained in this function
+//  $result[] = _add_custom_field_data();
 
   //_enable_biblio_keyword_vocabulary();
 
