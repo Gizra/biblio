@@ -2476,7 +2476,6 @@ function biblio_content() {
   $bids = $query->execute()
       ->fetchCol();
   $biblios = biblio_load_multiple($bids);
-  dpm($biblios);
   return '[Insert table of biblio entries here]';
 }
 

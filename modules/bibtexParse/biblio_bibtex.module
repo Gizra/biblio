@@ -275,7 +275,7 @@ function _biblio_bibtex_import($entries, $terms = array(), $batch = FALSE, $sess
     if (!empty($entry['organization'])) $biblio->biblio_publisher = $entry['organization'];
     if (!empty($entry['school']))       $biblio->biblio_publisher       = $entry['school'];
     if (!empty($entry['institution']))  $biblio->biblio_publisher       = $entry['institution'];
-    $biblio->title                   = (!empty($entry['title'])) ? $entry['title'] : NULL;
+    $biblio->biblio_title           = (!empty($entry['title'])) ? $entry['title'] : NULL;
     $biblio->biblio_type_of_work    .= (!empty($entry['type'])) ? $entry['type'] : NULL;
     $biblio->biblio_edition         = (!empty($entry['edition'])) ? $entry['edition'] : NULL;
     $biblio->biblio_section         = (!empty($entry['chapter'])) ? $entry['chapter'] : NULL;
