@@ -58,6 +58,7 @@ function biblio_add_fields() {
       case 'biblio_tertiary_authors':
       case 'biblio_subsidary_authors':
       case 'biblio_corp_authors':
+      case 'biblio_keywords':
         $field['cardinality'] = FIELD_CARDINALITY_UNLIMITED;
     }
     if (isset($row['field name'])) {

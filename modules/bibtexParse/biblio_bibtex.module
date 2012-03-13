@@ -243,7 +243,18 @@ function _biblio_bibtex_import($entries, $terms = array(), $batch = FALSE, $sess
         $biblio->biblio_contributors[]= array('name' => $author, 'auth_category' => 2, 'auth_type' => _biblio_get_auth_type(2, $type));
       }
     }
-
+    
+    // Split contributor data into their own 'auth_category'-specific fields (primary, secondary, tertiary, etc)
+    foreach($biblio->biblio_contributors as $key => $contributor_data) {
+      switch ($contributor_data['auth_category']) {
+        case 1:
+          $biblio->biblio_authors[] = $contributor_data['name'];
+          break;
+        case 2:
+          $biblio->biblio_secondary_authors[] = $contributor_data['name'];
+          break;
+      }
+    }
     $biblio->biblio_secondary_title = (!empty($entry['journal'])) ? $entry['journal'] : NULL;
     if (!empty($entry['booktitle'])) $biblio->biblio_secondary_title =  $entry['booktitle'];
     if (!empty($entry['series'])) {

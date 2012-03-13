@@ -595,29 +595,28 @@ function biblio_save_node($biblio, $terms = array(), $batch = FALSE, $session_id
     
     // Add field instance data if it exists in both Drupal's stored instances,
     // and those field instances are also properties of the biblio entity
-    foreach($biblio as $field=>$value) {
+    foreach($biblio as $field_name=>$field_value) {
 //      // @todo: add keywords as taxonomy terms
-      if (is_array($value)) {
+      if (is_array($field_value)) {
         // Change contributor array values (arrays) to the contributor name
-        if ($field == 'biblio_contributors') {
-          foreach ($value as $key => $contributor) {
-            $value[$key] = $contributor['name'];
+        // @todo: store contributor types somehow
+        if ($field_name == 'biblio_contributors') {
+          foreach ($field_value as $key => $contributor) {
+            $field_value[$key] = $contributor['name'];
           }
         }
-        // can't store an array in the db @fixme
-        $str = implode(',', array_values($value));
-        $value = $str;
+        foreach ($field_value as $key => $val) {
+          $field_value[$key] = array('value' =>$val);
+        }
+      }
+      else {
+        $field_value = array(array('value' => $field_value));
       }
       
-      if (isset($instances[$field])) {
-        // This structure required to use field_attach_insert
-        // @todo: possibly make this available to more languages than 'und'
-        $biblio->$field = array(
-          'und' => array(
-            0 => array(
-              'value' => $value
-            )
-          )
+      if (isset($instances[$field_name])) {
+        // Set up structure required to use field_attach_insert
+        $biblio->$field_name = array(
+          $biblio->language => $field_value
         );
       }
     }

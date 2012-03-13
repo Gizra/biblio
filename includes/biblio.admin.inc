@@ -2467,6 +2467,16 @@ function biblio_field_settings($publication_type) {
  * @todo list all biblio entries (similar to admin/content does for nodes)
  */
 function biblio_content() {
+  $query = db_select('biblio__new', 'b')
+      ->extend('PagerDefault')
+      ->extend('TableSort')
+      ->fields('b', array('bid'))
+      ->limit(50);
+//      ->orderByHeader($header)
+  $bids = $query->execute()
+      ->fetchCol();
+  $biblios = biblio_load_multiple($bids);
+  dpm($biblios);
   return '[Insert table of biblio entries here]';
 }
 
