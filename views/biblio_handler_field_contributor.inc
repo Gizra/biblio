@@ -113,7 +113,7 @@ class biblio_handler_field_contributor extends biblio_handler_field {
 
     foreach ($values as $result) {
       // Don't add empty results to the array.
-      if (isset($result->{$this->aliases['vid']}) && !empty($result->{$this->aliases['vid']})) {
+      if (isset($this->aliases['vid']) && !empty($result->{$this->aliases['vid']})) {
         $vids[] = $result->{$this->aliases['vid']};
       }
     }
