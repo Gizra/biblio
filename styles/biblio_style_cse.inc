@@ -12,11 +12,11 @@ function biblio_style_cse_info() {
   );
 }
 /**
- * Apply a bibliographic style to the node
+ * Apply a bibliographic style to the biblio
  *
  *
- * @param $node
- *   An object containing the node data to render
+ * @param $biblio
+ *   An object containing the biblio data to render
  * @return
  *   The styled biblio entry
  */
@@ -38,14 +38,14 @@ function biblio_style_cse_author_options() {
   return $author_options;
 }
 
-function biblio_style_cse($node) {
+function biblio_style_cse($biblio) {
   module_load_include('inc', 'biblio', '/includes/biblio.contributors');
   $output = $authors = '';
-  if (!empty($node->biblio_contributors)) {
+  if (!empty($biblio->biblio_authors[$biblio->language])) {
   $author_options = biblio_style_cse_author_options();
-  $primary_authors = biblio_get_contributor_category($node->biblio_contributors, 1);
-  $editors = biblio_get_contributor_category($node->biblio_contributors, 2);
-  $corp_authors = biblio_get_contributor_category($node->biblio_contributors, 5);
+  $primary_authors = biblio_get_contributor_category($biblio->biblio_authors, 1);
+  $editors = biblio_get_contributor_category($biblio->biblio_authors, 2);
+  $corp_authors = biblio_get_contributor_category($biblio->biblio_authors, 5);
   if (!empty($primary_authors)) {
     $authors = theme('biblio_format_authors', array('contributors' => $primary_authors, 'options' => $author_options));
   }
@@ -58,25 +58,25 @@ function biblio_style_cse($node) {
   }
   }
   if (empty($authors)) $authors = '[' . t('Anonymous') . ']';  // use anonymous if we still have nothing.
-  if (!empty ($node->biblio_citekey)&&(variable_get('biblio_display_citation_key',0))) {
-    $output .= '[' . check_plain($node->biblio_citekey) . '] ';
+  if (!empty ($biblio->biblio_citekey[$biblio->language][0]['value'])&&(variable_get('biblio_display_citation_key',0))) {
+    $output .= '[' . check_plain($biblio->biblio_citekey[$biblio->language][0]['value']) . '] ';
   }
   $output .= '<span class="biblio-authors">' . $authors . "</span>.&nbsp; \n";
 
-  switch ($node->biblio_type) {
+  switch ($biblio->biblio_type) {
 
     default :
-      if (isset ($node->biblio_year)) {
-        $output .= check_plain($node->biblio_year) . ".&nbsp;&nbsp;";
+      if (isset ($biblio->biblio_year[$biblio->language][0]['value'])) {
+        $output .= check_plain($biblio->biblio_year[$biblio->language][0]['value']) . ".&nbsp;&nbsp;";
       }
       $output .= '<span class="biblio-title">';
-      $url = biblio_get_title_url_info($node);
-      $output .= l($node->title, $url['link'], $url['options']);
-      $output .= (strpos($node->title, '?'))? " </span>" : ". </span>";  // if the title ends in a question mark, don't put a period after it.
-      $output .= (!empty ($node->biblio_secondary_title)) ? check_plain($node->biblio_secondary_title) . '. ' : '';
-      $output .= (!empty ($node->biblio_volume))          ? check_plain($node->biblio_volume) : '';
-      $output .= (!empty ($node->biblio_issue))           ? '(' . check_plain($node->biblio_issue) . ')' : '';
-      $output .= (!empty ($node->biblio_pages))           ? ':' . str_replace(" ", "", check_plain($node->biblio_pages)) . '.' : '';
+      $url = biblio_get_title_url_info($biblio);
+      $output .= l($biblio->biblio_title[$biblio->language][0]['value'], $url['link'], $url['options']);
+      $output .= (strpos($biblio->biblio_title, '?'))? " </span>" : ". </span>";  // if the title ends in a question mark, don't put a period after it.
+      $output .= (!empty ($biblio->biblio_secondary_title[$biblio->language][0]['value'])) ? check_plain($biblio->biblio_secondary_title[$biblio->language][0]['value']) . '. ' : '';
+      $output .= (!empty ($biblio->biblio_volume[$biblio->language][0]['value']))          ? check_plain($biblio->biblio_volume[$biblio->language][0]['value']) : '';
+      $output .= (!empty ($biblio->biblio_issue[$biblio->language][0]['value']))           ? '(' . check_plain($biblio->biblio_issue[$biblio->language][0]['value']) . ')' : '';
+      $output .= (!empty ($biblio->biblio_pages[$biblio->language][0]['value']))           ? ':' . str_replace(" ", "", check_plain($biblio->biblio_pages[$biblio->language][0]['value'])) . '.' : '';
       break; // generic
   }
   /*  if ($node->biblio_date) $output .= ', '. check_plain($node->biblio_date);

@@ -67,17 +67,16 @@ function biblio_profile_page($user) {
 }
 
 function biblio_page() {
-  $nodes = $nids = $extras = $rss_info = $info = $arg_list = $render = array();
+  $biblios = $bids = $extras = $rss_info = $info = $arg_list = $render = array();
   $base = variable_get('biblio_base', 'biblio');
 
   $info['func_args'] = func_get_args();
   $info['uri']  = drupal_parse_url(request_uri());
   $arg_list = biblio_arg_handler($info);
   $arg_list['page_limit'] = variable_get('biblio_rowsperpage', 25);
-
-  list($nids, $extras, $rss_info) = biblio_build_query($arg_list);
+  list($bids, $extras, $rss_info) = biblio_build_query($arg_list);
   if ($rss_info['feed']) {
-    biblio_filter_feed($rss_info, $nids);
+    biblio_filter_feed($rss_info, $bids);
     return;
   }
 
@@ -94,7 +93,7 @@ function biblio_page() {
   $filter = (isset($arg_list['f'])) ? array('f' => $arg_list['f']) : array();
 
   $render['biblio_page']['header']  = biblio_page_header($filter);
-  $render['biblio_page']['content'] = biblio_page_content($nids, $extras);
+  $render['biblio_page']['content'] = biblio_page_content($bids, $extras);
 
   return $render;
 }
@@ -115,7 +114,7 @@ function biblio_page_header($filter = array()) {
   $header += array(
     'export_links' => array(
       '#prefix' => '<div class="biblio-export">',
-      '#node'    => NULL,
+      '#biblio'    => NULL,
       '#filter' => $filter,
       '#theme'  => 'biblio_export_links',
       '#suffix' => '</div>',
@@ -171,46 +170,45 @@ function biblio_page_header($filter = array()) {
   return $header;
 }
 
-function biblio_page_content($nids = array(), $extras = array()) {
+function biblio_page_content($bids = array(), $extras = array()) {
   $base =  variable_get('biblio_base', 'biblio');
-  $content = $raw_nodes = $nodes = array();
+  $content = $raw_biblios = $biblios = array();
   $count = $section_id = 0;
-
   if (module_exists('popups')) {
      popups_add_popups();
   }
 
-  if (count($nids)) {
+  if (count($bids)) {
   //  $nids = array_unique($nids);
-    $raw_nodes = node_load_multiple($nids);
+    $raw_biblios = biblio_load_multiple($bids);
     $langcode = $GLOBALS['language_content']->language;
-    field_attach_prepare_view('node', $raw_nodes, 'biblio_list', $langcode);
-    entity_prepare_view('node', $raw_nodes, $langcode);
-
-    foreach ($nids as $key => $nid) {
+    // @todo determine the language programatically
+    $field_language = 'und';
+    field_attach_prepare_view('biblio', $raw_biblios, 'biblio_list', $langcode);
+    entity_prepare_view('biblio', $raw_biblios, $langcode);
+    
+    foreach ($bids as $key => $bid) {
       if (!empty($extras)) {
-        $nodes[] = (object)array_merge((array)$raw_nodes[$nid], (array)$extras[$key]);
+        $biblios[] = (object)array_merge((array)$raw_biblios[$bid], (array)$extras[$key]);
       }
       else {
-        $nodes[] = $raw_nodes[$nid];
+        $biblios[] = $raw_biblios[$bid];
       }
     }
 
   }
-
-  foreach ($nodes as $node) {
+  foreach ($biblios as $biblio) {
     $count++;
-    if (is_array($node)) $node = (object)$node;
-    if (variable_get('biblio_hide_bibtex_braces', 0)) $node->title = biblio_remove_brace($node->title);
-
+    if (is_array($biblio)) $biblio = (object)$biblio;
+    $biblio->language = $field_language;
+    if (variable_get('biblio_hide_bibtex_braces', 0)) $biblio->title = biblio_remove_brace($biblio->title);
+    $biblio->content =  field_attach_view('biblio', $biblio, 'biblio_list');
     // output new section if needed
-    if ($section = biblio_category_section($node)) {
+    if ($section = biblio_category_section($biblio)) {
       $section_id++;
       $content['section_'.$section_id] = $section;
     }
-
-     $content['section_'.$section_id][] = biblio_entry($node);
-
+     $content['section_'.$section_id][] = biblio_entry($biblio);
   }
 
   $content['pager']['#markup'] = theme('pager');
@@ -223,7 +221,7 @@ function biblio_page_content($nids = array(), $extras = array()) {
   return $content;
 }
 
-function biblio_entry($node) {
+function biblio_entry($biblio) {
   $entry = array();
   $style = biblio_get_style();
 
@@ -238,8 +236,10 @@ function biblio_entry($node) {
 */
   $prefix = '<div class="biblio-entry">';
   $suffix = '</div>';
-  if (!$node->status) {
-    $prefix .= '<div id="node-' . $node->nid . '" class="node node-unpublished">';
+  // @todo: get rid of below line and add published/unpublished support
+  $biblio->status = 1;
+  if (!$biblio->status) {
+    $prefix .= '<div id="node-' . $biblio->bid . '" class="node node-unpublished">';
     $suffix .= '</div>';
   }
 //  $prefix .= theme('checkbox', array('element' => $select_box));
@@ -249,13 +249,12 @@ function biblio_entry($node) {
     '#suffix' => $suffix,
   );
 
-  $entry['entry']['#markup'] =  theme('biblio_style', array('node' => $node, 'style_name' => $style));
-
+  $entry['entry']['#markup'] =  theme('biblio_style', array('biblio' => $biblio, 'style_name' => $style));
   $annotation_field = variable_get('biblio_annotations', 'none');
-  if ($annotation_field != 'none' && $node-> $annotation_field) {
+  if ($annotation_field != 'none' && $biblio-> $annotation_field) {
     $entry['annotation'] = array(
      '#prefix' => '<div class="biblio-annotation">',
-     '#markup' => filter_xss($node->$annotation_field, biblio_get_allowed_tags()),
+     '#markup' => filter_xss($biblio->$annotation_field, biblio_get_allowed_tags()),
      '#suffix' => '</div>',
     );
   }
@@ -264,24 +263,24 @@ function biblio_entry($node) {
 
   if ($openurl_base) {
     $entry['openurl'] = array(
-      '#markup' => theme('biblio_openurl', array('openURL' => biblio_openurl($node))),
+      '#markup' => theme('biblio_openurl', array('openURL' => biblio_openurl($biblio))),
     );
   }
 
   if (biblio_access('export')) {
     $base = variable_get('biblio_base', 'biblio');
     $entry['export_links'] = array(
-      '#markup' => theme('biblio_export_links', array('node' => $node)),
+      '#markup' => theme('biblio_export_links', array('biblio' => $biblio)),
     );
   }
 
-  if (biblio_access('download', $node)) {
+  if (biblio_access('download', $biblio)) {
     // add links to attached files (if any)
     $entry['download_links'] = array(
-      '#markup' => theme('biblio_download_links', array('node' => $node)),
+      '#markup' => theme('biblio_download_links', array('biblio' => $biblio)),
     );
   }
-
+  
   return $entry;
 }
 
@@ -303,29 +302,30 @@ function biblio_build_query($arg_list) {
   $rss_info['description'] = '';
 
   if ($arg_list['page_limit'] > 0) {
-    $query = db_select('node', 'n')->extend('PagerDefault');
+    $query = db_select('biblio__new', 'b')->extend('PagerDefault');
     $query->limit($arg_list['page_limit']);
   }
   else {
-    $query = db_select('node', 'n');
+    $query = db_select('biblio__new', 'b');
   }
-
+  
   //add a tag of "node_access" to ensure that only nodes to which the user has access are retrieved
-  $query->addTag('node_access');
+  $query->addTag('biblio_access');
 
-  $query->addField('n', 'nid');
-  $type_name = $query->addField('bt', 'name', 'biblio_type_name');
-  $query->leftJoin('biblio', 'b', 'n.vid=b.vid');
-  $query->innerJoin('biblio_types', 'bt', 'b.biblio_type=bt.tid');
+  $query->addField('b', 'bid');
+  $type_name = $query->addField('b', 'publication_type', 'pt');
+//  $query->leftJoin('biblio', 'b', 'n.vid=b.vid');
+//  $query->innerJoin('biblio_types', 'bt', 'b.biblio_type=bt.tid');
 //  $query->distinct();
 
   // POSIX regular expression matching, case insensitive
   $match_op = (db_driver() == 'pgsql') ? '~*' : 'RLIKE';
 
   $limit = '';
-  if (variable_get('biblio_view_only_own', 0) ) {
-    $limit .= " AND n.uid = $user->uid ";
-  }
+  //@todo add this functionality
+//  if (variable_get('biblio_view_only_own', 0) ) {
+//    $limit .= " AND n.uid = $user->uid ";
+//  }
 
   if (!isset($arg_list['s'])) {
     $arg_list['s'] = variable_get('biblio_sort', 'year');
@@ -348,35 +348,39 @@ function biblio_build_query($arg_list) {
   switch ($arg_list['s']) {
     case 'type':
       //$sortby = "ORDER BY bt.name %s, b.biblio_year DESC ";
-      $query->addField('n', 'title');
+      $query->addField('b', 'publication_type');
       $query->orderBy($type_name, $arg_list['o']);
       $query->orderBy('biblio_sort_title', $arg_list['o']);
-            break;
+      break;
     case 'title':
-      $query->addField('n', 'title');
+      $query->addField('fdbt', 'biblio_title_value');
+      $query->join('field_data_biblio_title', 'fdbt', 'fdbt.entity_id = b.bid');
       $query->orderBy('biblio_sort_title', $arg_list['o']);
-
       break;
-    case 'author':
-      //$last_name = $query->addField('bcd', 'lastname');
-      $query->innerJoin('biblio_contributor', 'bc', 'b.vid = bc.vid');
-      $query->join('biblio_contributor_data', 'bcd', 'bc.cid = bcd.cid');
-      $query->condition('bc.rank', 0);
-      $query->addField('bcd', 'lastname');
-      $query->orderBy('bcd.lastname', $arg_list['o']);
-      // $query->condition('bc.auth_category', 1);
-      break;
-    case 'keyword': // added msh 070808
-      $word = $query->addField('bkd', 'word', 'biblio_keyword');
-      $query->orderBy($word, $arg_list['o']);
-      $query->innerJoin('biblio_keyword', 'bk', 'b.vid = bk.vid');
-      $query->innerJoin('biblio_keyword_data', 'bkd', 'bk.kid = bkd.kid');
-      break;
-    case 'year':
+    // @todo: get functionality for contributor data
+//    case 'author':
+//      //$last_name = $query->addField('bcd', 'lastname');
+//      $query->innerJoin('biblio_contributor', 'bc', 'b.vid = bc.vid');
+//      $query->join('biblio_contributor_data', 'bcd', 'bc.cid = bcd.cid');
+//      $query->condition('bc.rank', 0);
+//      $query->addField('bcd', 'lastname');
+//      $query->orderBy('bcd.lastname', $arg_list['o']);
+//      // $query->condition('bc.auth_category', 1);
+//      break;
+    // @todo: get functionality for keywords working
+//    case 'keyword': // added msh 070808
+//      $word = $query->addField('bkd', 'word', 'biblio_keyword');
+//      $query->orderBy($word, $arg_list['o']);
+//      $query->innerJoin('biblio_keyword', 'bk', 'b.vid = bk.vid');
+//      $query->innerJoin('biblio_keyword_data', 'bkd', 'bk.kid = bkd.kid');
+//      break;
+//    case 'year':
     default:
-      $query->addField('b', 'biblio_year');
-      $query->addField('b', 'biblio_date');
-      $query->orderBy('biblio_year', $arg_list['o']);
+      $query->addField('fdby', 'biblio_year_value');
+      $query->join('field_data_biblio_year', 'fdby', 'fdby.entity_id = b.bid');
+      $query->addField('fdbd', 'biblio_date_value');
+      $query->join('field_data_biblio_date', 'fdbd', 'fdbd.entity_id = b.bid');
+      $query->orderBy('biblio_year_value', $arg_list['o']);
       $query->orderBy('biblio_sort_title');
   } //end switch
 
@@ -527,16 +531,16 @@ function biblio_build_query($arg_list) {
   }
 
   $result = $query->execute();
-  $nids = array();
+  $bids = array();
   $extras = array();
 
-  foreach ($result as $node) {
-    $nids[] = $node->nid;
-    if (isset($node->biblio_year)) unset($node->biblio_year);
-    $extras[] = $node;
+  foreach ($result as $biblio) {
+    $bids[] = $biblio->bid;
+    if (isset($biblio->biblio_year)) unset($biblio->biblio_year);
+    $extras[] = $biblio;
   }
 
-  return array($nids, $extras, $rss_info);
+  return array($bids, $extras, $rss_info);
 
 }
 
@@ -786,13 +790,13 @@ function _biblio_category_separator_bar($node, $reset = FALSE) {
   } //end switch
   return $content;
 }
-function biblio_category_section($node, $reset = FALSE) {
+function biblio_category_section($biblio, $reset = FALSE) {
   $_text = &drupal_static(__FUNCTION__, '');
   if ($reset) {
     $_text = &drupal_static(__FUNCTION__, '', TRUE);
     return;
   }
-
+  
   $section = array();
 
   if (isset($_GET['s'])) {
@@ -801,10 +805,10 @@ function biblio_category_section($node, $reset = FALSE) {
   else {
     $sort = variable_get('biblio_sort', 'year');
   }
-
+  
   switch ($sort) {
     case 'title':
-      $title = $node->biblio_sort_title;
+      $title = $biblio->biblio_sort_title;
       $first = drupal_substr(drupal_ucfirst(ltrim($title)), 0, 1);
       if ( $first  != $_text) {
         $_text =  $first ;
@@ -812,23 +816,23 @@ function biblio_category_section($node, $reset = FALSE) {
       }
       break;
     case 'author':
-      if ( (isset($node->biblio_contributors[0]['lastname'])) &&
-      (drupal_substr(drupal_ucfirst(ltrim($node->biblio_contributors[0]['lastname'])), 0, 1) != $_text))
+      if ( (isset($biblio->biblio_contributors[0]['lastname'])) &&
+      (drupal_substr(drupal_ucfirst(ltrim($biblio->biblio_contributors[0]['lastname'])), 0, 1) != $_text))
       {
-        $_text = drupal_substr(drupal_ucfirst(ltrim($node->biblio_contributors[0]['lastname'])), 0, 1) ;
+        $_text = drupal_substr(drupal_ucfirst(ltrim($biblio->biblio_contributors[0]['lastname'])), 0, 1) ;
         $section['bar'] = biblio_section_bar($_text);
       }
       break;
     case 'type':
-      if ($node->biblio_type_name != $_text) {
-        $_text = $node->biblio_type_name;
+      if ($biblio->biblio_type_name != $_text) {
+        $_text = $biblio->biblio_type_name;
         //      $name = db_result(db_query("SELECT name FROM {biblio_types} as t where t.tid=%d", $node->biblio_type)) ;
-        $section['bar'] = biblio_section_bar(_biblio_localize_type($node->biblio_type, $_text));
+        $section['bar'] = biblio_section_bar(_biblio_localize_type($biblio->biblio_type, $_text));
       }
       break;
     case 'keyword':   // added msh 08 aug 07
       // $kw = array_shift($node->biblio_keyword);
-      $tok = $node->biblio_keyword;
+      $tok = $biblio->biblio_keyword;
       if (empty($tok)) {
         $tok = t("No Keywords");
       }
@@ -841,8 +845,8 @@ function biblio_category_section($node, $reset = FALSE) {
       break;
     case 'year':
     default:
-      if ($node->biblio_year != $_text) {
-        $_text = $node->biblio_year;
+      if ($biblio->biblio_year[$biblio->language][0]['value'] != $_text) {
+        $_text = $biblio->biblio_year[$biblio->language][0]['value'];
         $section['bar'] = biblio_section_bar($_text);
       }
   } //end switch

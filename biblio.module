@@ -203,7 +203,7 @@ function biblio_theme($existing, $type, $theme, $path) {
     'biblio_style' => array(
         'file' => '/includes/biblio.theme.inc',
         'variables' => array(
-          'node' => NULL,
+          'biblio' => NULL,
           'style_name' => 'classic',
          ),
     ),
@@ -2258,8 +2258,8 @@ function biblio_get_allowed_tags() {
   return array('a', 'b', 'i', 'u', 'sub', 'sup', 'span');
 }
 
-function biblio_get_title_url_info($node) {
-  return array('link' =>  ((variable_get('biblio_link_title_url', 0) && !empty($node->biblio_url)) ? $node->biblio_url : "node/$node->nid"  ),
+function biblio_get_title_url_info($biblio) {
+  return array('link' =>  ((variable_get('biblio_link_title_url', 0) && !empty($biblio->biblio_url)) ? $biblio->biblio_url : "biblio/$biblio->bid"  ),
                'options' =>
                   array('attributes' => (variable_get('biblio_links_target_new_window', FALSE)) ? array('target' => '_blank') : array(),
                         'html' => TRUE),

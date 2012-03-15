@@ -1001,7 +1001,6 @@ function biblio_admin_types_edit_form_submit($form, &$form_state) {
 function biblio_admin_io_mapper_page() {
   $formats = module_invoke_all('biblio_mapper_options');
   asort($formats);
-dpm($formats);
   foreach ($formats as $key => $value) {
     $rows[] = array(
       $value['title'],

@@ -674,19 +674,18 @@ function theme_biblio_page_number($variables) {
  * @return A string containing the styled (HTML) node
  */
 function theme_biblio_style($variables ) {
-  $node       = $variables['node'];
+  $biblio       = $variables['biblio'];
   $style_name = $variables['style_name'];
   $styled_node = '';
   module_load_include('inc', 'biblio', "/styles/biblio_style_$style_name");
-
   $style_function = "biblio_style_$style_name";
   if (function_exists($style_function)) {
-    $styled_node = $style_function ($node);
+    $styled_node = $style_function ($biblio);
   }
   else {
     drupal_set_message(t('The style function: @funct does not exist', array('@funct' => $style_function)), 'error');
   }
-  return ($styled_node . filter_xss($node->biblio_coins, array('span')));
+  return ($styled_node . filter_xss($biblio->biblio_coins, array('span')));
 }
 
 /**
@@ -844,12 +843,12 @@ function theme_biblio_admin_types_edit_form($variables) {
 function theme_biblio_download_links($variables) {
   static $langcode = NULL;
   $file_links = array();
-  $node = $variables['node'];
+  $biblio = $variables['biblio'];
   if (!isset($langcode)) {
     $langcode = $GLOBALS['language_content']->language;
   }
 
-  $fields = field_attach_view('node', $node, 'full', $langcode);
+  $fields = field_attach_view('biblio', $biblio, 'full', $langcode);
   foreach (element_children($fields) as $field) {
     if($fields[$field]['#access']  && $fields[$field]['#field_type'] == 'file') {
       foreach ($fields[$field]['#items'] as $delta => $item) {
