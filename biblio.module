@@ -2736,3 +2736,112 @@ function biblio_delete_confirm_submit($form, &$form_state) {
   
   $form_state['redirect'] = '<front>';
 }
+
+/**
+ * Implements hook_field_info().
+ */
+function biblio_field_info() {
+  return array(
+    'biblio_text_with_id' => array(
+      'label' => t('Biblio Text with ID'),
+      'description' => t(
+        'Standard Text Field with the addition of an ID database column to differentiate between similar entries'),
+      'default_widget' => 'biblio_text_with_id_widget',
+      'default_formatter' => 'biblio_text_with_id_formatter', 
+    ), 
+  );
+}
+
+/**
+ * Implements hook_field_is_empty().
+ *
+ * Pseudo-hook.
+ */
+function biblio_field_is_empty($item, $field) {
+  if ($field['type'] == 'biblio_text_with_id') {
+    if (empty($item['value']) && empty($item['id'])) {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+/**
+ * Implements hook_field_widget_info().
+ */
+function biblio_field_widget_info() {
+  return array(
+    'biblio_text_with_id_widget' => array(
+      'label' => t('Biblio Text with ID'),
+      'description' => t('Shows as a standard text field. The ID is not displayed'),
+      'field types' => array('biblio_text_with_id'),
+      'behaviors' => array(
+        'multiple values' => FIELD_BEHAVIOR_DEFAULT,
+        'default value' => FIELD_BEHAVIOR_DEFAULT,
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_widget_form().
+ *
+ * Pseudo-hook.
+ */
+function biblio_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
+  // @todo: form validation
+  $base = $element;
+  // Assemble our default value for the form element out of the values available
+  // in the field
+  if ($instance['widget']['type'] == 'biblio_text_with_id_widget') {
+    $element['value'] = array(
+      '#type' => 'textfield',
+      '#default_value' => isset($items[$delta]['value']) ? $items[$delta]['value'] : NULL,
+    ) + $base;
+  }
+  return $element;
+}
+
+/**
+ * Implements hook_field_formatter_info().
+ */
+function biblio_field_formatter_info() {
+  return array(
+    'biblio_text_with_id_formatter' => array(
+      'label' => t('Default'),
+      'field types' => array('biblio_text_with_id'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_formatter_view().
+ */
+function biblio_field_formatter_view($obj_type, $object, $field, $instance, $langcode, $items, $display) {
+  $element = array();
+  foreach ($items as $delta => $item) {
+    $element[$delta] = biblio_format_field($item);
+  }
+  return $element;
+}
+
+/**
+ * Helper function for creating field formatters
+ * @param type $item 
+ */
+function biblio_format_field($item) {
+  $element = array(
+    '#type' => 'container',
+    '#attributes' => array( 'class' => array( 'field-item') ),
+  );
+  $element['value'] = array(
+    'item' => array(
+      '#type' => 'container',
+      '#attributes' => array( 'class' => array( 'field-item') ),
+      'text' => array(
+        '#markup' => $item['value'],
+      ),
+    ),
+  );
+  return $element;
+}
