@@ -354,6 +354,7 @@ function biblio_import_batch_finished($success, $results, $operations) {
 }
 
 function biblio_import_finalize($success, $results) {
+  global $user;
   $format = $results['format'];
   $bids = $results['bids'];
   $dups = $results['dups'];
@@ -389,8 +390,7 @@ function biblio_import_finalize($success, $results) {
     watchdog($format, $message, array('@count' => $count), WATCHDOG_ERROR);
   }
 
-  $user = $results['user'];
-  $userid = $results['userid'];
+  $userid = isset($results['userid']) ? $results['userid'] : $user->uid;
 
   if (user_access('administer biblio') && count($bids) && $user->uid != $userid) {
     db_update('biblio')
@@ -551,8 +551,9 @@ function biblio_save_node($biblio, $terms = array(), $batch = FALSE, $session_id
   global $user;
 
   if ($batch && $session_id) { // we are batch processing some import data
-    $biblio = base64_encode(serialize($biblio));// base64_encode to avoid problems unserializing strings with embeded quotes.
-    db_query("INSERT INTO {biblio_import_cache} (session_id, data) VALUES (:sessid, :biblio)", array(':sessid' => $session_id, ':biblio' => $biblio));
+    $cache['session_id'] = $session_id;
+    $cache['data'] = base64_encode(serialize($biblio));// base64_encode to avoid problems unserializing strings with embeded quotes.
+    drupal_write_record('biblio_import_cache', $cache);
     return;
   }
 

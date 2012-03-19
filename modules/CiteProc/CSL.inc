@@ -626,7 +626,8 @@ class csl_name extends csl_format {
     }
     if (isset($this->{'et-al-min'}) &&
     $count >= $this->{'et-al-min'} &&
-    isset($this->{'et-al-use-first'})) {
+    isset($this->{'et-al-use-first'}) &&
+    $count > $this->{'et-al-use-first'}) {
       if ($this->{'et-al-use-first'} < $this->{'et-al-min'}) {
         for ($i = $this->{'et-al-use-first'}; $i < $count; $i++) {
           unset($authors[$i]);
@@ -1485,16 +1486,20 @@ class csl_locale  {
         "en" => "en-US",
         "es" => "es-ES",
         "et" => "et-EE",
+        "fa" => "fa-IR",
+        "fi" => "fi-FI",
         "fr" => "fr-FR",
         "he" => "he-IL",
         "hu" => "hu-HU",
         "is" => "is-IS",
         "it" => "it-IT",
         "ja" => "ja-JP",
+        "km" => "km-KH",
         "ko" => "ko-KR",
         "mn" => "mn-MN",
         "nb" => "nb-NO",
         "nl" => "nl-NL",
+        "nn" => "nn-NO",
         "pl" => "pl-PL",
         "pt" => "pt-PT",
         "ro" => "ro-RO",

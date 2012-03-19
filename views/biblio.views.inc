@@ -1,35 +1,59 @@
 <?php
-//function biblio_views_plugins() {
-//  return array(
-//    'display' => array(
-//      'biblio' => array(
-//        'title' => t('Biblio Page'),
-//        'help' => t(''),
-//        'handler' => 'views_plugin_display_page_biblio',
-//        'path' => drupal_get_path('module', 'biblio') . '/views', // not necessary for most modules
-////        'theme' => 'views_view_row_node',
-//        'base' => array('node'), // only works with 'node' as base.
-//        'uses options' => TRUE,
-//        'type' => 'normal',
-//        ),
-//      ),
-//    'style' => array(
-//      // ... list of style plugins,
-//      ),
-//    'row' => array(
-//      // ... list of row style plugins,
-//      ),
-//    'argument default' => array(
-//      // ... list of argument default plugins,
-//      ),
-//    'argument validator' => array(
-//      // ... list of argument validator plugins,
-//      ),
-//    'access' => array(
-//      // ... list of access plugins,
-//      ),
-//   );
-//}
+function biblio_views_plugins() {
+ return array(
+   'display' => array(
+      'biblio_page' => array(
+        'title' => t('Biblio Citation Page'),
+        'help' => t('Display the view as a list of Biblio citations.'),
+        'handler' => 'biblio_plugin_display_page',
+        'theme' => 'views_view',
+        'uses hook menu' => TRUE,
+        'contextual links locations' => array('page'),
+        'use ajax' => TRUE,
+        'use pager' => TRUE,
+        'use more' => TRUE,
+        'accept attachments' => TRUE,
+        'admin' => t('Biblio Page'),
+        'help topic' => 'biblio-page',
+        ),
+      ),
+   'style' => array(
+      'biblio_cite' => array(
+        'title' => t('Citations'),
+        'help' => t('Displays rows in styled citation form.'),
+        'handler' => 'biblio_plugin_style_citation',
+        'theme' => 'views_view_unformatted',
+        'uses row plugin' => TRUE,
+        'uses row class' => TRUE,
+        'uses fields' => FALSE,
+        'uses options' => TRUE,
+        'type' => 'normal',
+        'help topic' => 'style-biblio_citation',
+      ),
+   ),
+   'row' => array(
+     // ... list of row style plugins,
+      'citation' => array(
+        'title' => t('Citation'),
+        'help' => t('Display the content styled as a Biblio citation.'),
+        'handler' => 'biblio_plugin_row_citation',
+        'base' => array('node'), // only works with 'node' as base.
+        'uses options' => TRUE,
+        'type' => 'normal',
+        'help topic' => 'style-biblio_citation',
+      ),
+ ),
+   'argument default' => array(
+     // ... list of argument default plugins,
+     ),
+   'argument validator' => array(
+     // ... list of argument validator plugins,
+     ),
+   'access' => array(
+     // ... list of access plugins,
+     ),
+  );
+}
 
 /**
  * Implementation of hook_views_data().
@@ -404,6 +428,14 @@ function biblio_views_data() {
     );
 
   }
+
+  $viewsdata['biblio']['export_links'] = array(
+    'title' => t('Biblio Export Links'),
+        'help' => t('Insert a set of export links.'),
+        'area' => array(
+          'handler' => 'biblio_handler_area_export_links',
+    ),
+  );
 
   return $viewsdata;
 }
