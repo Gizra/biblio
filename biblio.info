@@ -28,3 +28,8 @@ files[] = views/biblio_handler_filter_contributor.inc
 files[] = views/biblio_handler_sort_contributor_lastname.inc
 files[] = views/biblio_handler_argument_many_to_one.inc
 files[] = views/biblio_handler_field_export_link.inc
+files[] = views/biblio_plugin_row_citation.inc
+files[] = views/biblio_plugin_style_citation.inc
+files[] = views/biblio_plugin_display_page.inc
+
+
