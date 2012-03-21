@@ -2842,6 +2842,25 @@ function biblio_format_field($item) {
         '#markup' => $item['value'],
       ),
     ),
-  );
+  );     
   return $element;
+}
+
+/**
+ * hook_menu() callback
+ */
+function biblio_page_title($biblio) {
+  $langcode = biblio_field_language('biblio_title', $biblio);
+  return $biblio->biblio_title[$langcode][0]['value'];
+}
+
+/**
+ * Get the language code for a field instance
+ * @param string $field_name The machine name of the field/instance
+ * @param object $biblio
+ * @return string The language code ('en', 'und', etc...) 
+ */
+function biblio_field_language($field_name, $biblio) {
+  $field_languages = field_language('biblio', $biblio);
+  return $field_languages[$field_name];
 }
