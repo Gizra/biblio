@@ -53,11 +53,11 @@ function biblio_add_fields() {
     );
     // Allow user to add multiple author fields
     switch ($field['field_name']) {
-      case 'biblio_authors':
-      case 'biblio_secondary_authors':
-      case 'biblio_tertiary_authors':
-      case 'biblio_subsidary_authors':
-      case 'biblio_corp_authors':
+      case 'biblio_authors_primary':
+      case 'biblio_authors_secondary':
+      case 'biblio_authors_tertiary':
+      case 'biblio_authors_subsidiary':
+      case 'biblio_authors_corporate':
       case 'biblio_keywords':
         $field['cardinality'] = FIELD_CARDINALITY_UNLIMITED;
     }
@@ -84,12 +84,15 @@ function biblio_add_field_instances($publication_type) {
       'required' => $row['required'],
       'widget' => array('weight' =>$row['weight']),
     );
-    if (isset($row['field name'])) {
+    if (isset($row['field name']) && 
+        !field_info_instance('biblio', $row['field name'], $publication_type)) {
       field_create_instance($instance);
     }
   }
   timer_stop('field_instances_creation');
-  dpm('Creation of field instances: ' . timer_read('field_instances_creation') . 'ms');
+  drupal_set_message('Biblio field instances have been added for the ' 
+      . $publication_type . ' publication type. Time elapsed: ' 
+      . timer_read('field_instances_creation') . 'ms');
 }
 
 /**
@@ -124,6 +127,36 @@ function biblio_parse_field_link_data_csv() {
   fclose($file_handle);
   
   return $file_data;
+}
+
+/**
+ * Determines if the field instances for a publication type have been created.
+ * Used to decide whether or not to run biblio_add_field_instances when
+ * biblio/add is accessed for the first time for a specific publication type.
+ *
+ * @param string $publication_type
+ * @return boolean Whether or not biblio's required field instances are indeed missing.
+ */
+function biblio_field_instances_missing($publication_type) {
+  // Array of fields defined in /misc/biblio.field.link.data.csv
+  $biblio_instances = biblio_parse_field_link_data_csv();
+  // Get array of field instances that exist (if any) for the current pub type
+  $params = array('entity_type' => 'biblio', 'bundle' => $publication_type);
+  $existing_instances = field_read_instances($params);
+  foreach ($existing_instances as $key => $instance_data) {
+    // change the array values to the field name, so we can search for the 
+    // field instance in the array using in_array()
+    $existing_instances[$key] = $instance_data['field_name'];
+  }
+  foreach ($biblio_instances as $key => $field_data) {
+    // If CSV line isn't blank and field name isn't already in the list of 
+    // existing field instances
+    if (isset($biblio_instances[$key]['field name']) && 
+        !in_array($field_data['field name'], $existing_instances)) {
+      return TRUE;
+    }
+  }
+  return FALSE;
 }
 
 /**
