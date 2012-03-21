@@ -207,9 +207,9 @@ function biblio_delete_orphan_authors($force = FALSE) {
   }
 }
 
-function biblio_insert_contributors($node) {
-  if (!empty($node->biblio_contributors)) {
-    return _save_contributors($node->biblio_contributors, $node->nid, $node->vid);
+function biblio_insert_contributors($biblio) {
+  if (!empty($biblio->biblio_contributors[$biblio->language][0]['value'])) {
+    return _save_contributors($biblio->biblio_contributors[$biblio->language][0]['value'], $biblio->bid, $biblio->vid);
   }
 }
 
