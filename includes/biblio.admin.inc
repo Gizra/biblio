@@ -2485,7 +2485,7 @@ function biblio_field_settings($publication_type) {
  * @todo list all biblio entries (similar to admin/content does for nodes)
  */
 function biblio_content() {
-  $query = db_select('biblio__new', 'b')
+  $query = db_select('biblio', 'b')
       ->extend('PagerDefault')
       ->extend('TableSort')
       ->fields('b', array('bid'))

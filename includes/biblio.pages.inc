@@ -302,11 +302,11 @@ function biblio_build_query($arg_list) {
   $rss_info['description'] = '';
 
   if ($arg_list['page_limit'] > 0) {
-    $query = db_select('biblio__new', 'b')->extend('PagerDefault');
+    $query = db_select('biblio', 'b')->extend('PagerDefault');
     $query->limit($arg_list['page_limit']);
   }
   else {
-    $query = db_select('biblio__new', 'b');
+    $query = db_select('biblio', 'b');
   }
   
   //add a tag of "node_access" to ensure that only nodes to which the user has access are retrieved
