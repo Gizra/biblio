@@ -2519,10 +2519,8 @@ function biblio_add($type) {
     return MENU_NOT_FOUND;
   }
   
-  $params = array('entity_type' => 'biblio', 'bundle' => $type);
-  $instances = field_read_instances($params);
   // Add field instances only if they dont already exist.
-  if (!isset($instances) || empty($instances)) {
+  if (biblio_field_instances_missing($type)) {
     biblio_add_field_instances($type);
   }
   
