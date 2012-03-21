@@ -320,13 +320,7 @@ function _add_biblio_keywords() {
  * Implements hook_schema().
  */
 function biblio_schema() {
-  // @TODO: get rid of old db tables once everything plays nicely with the new tables
-  // For now, new tables will be created with the naming convention 'biblio__new_*'.
-  // The extra underscore is just so that the new tables will group together alphabetically
-  // Table redundancy is for development purposes only (so I can migrate all SQL from the old
-  // tables to the new ones. Once this is completed, unused tables can be removed,
-  // and 'biblio_new' table prefixes can be replaced with 'biblio_' prefixes.
-  $schema['biblio__new'] = array(
+  $schema['biblio'] = array(
     'fields' => array(
       'bid' => array(
         'type' => 'serial',
@@ -378,7 +372,7 @@ function biblio_schema() {
     ),
     'foreign keys' => array(
       'biblio_revision' => array(
-        'table' => 'biblio__new_revision',
+        'table' => 'biblio_revision',
         'columns' => array('vid' => 'vid'),
        ),
     ),
@@ -389,7 +383,7 @@ function biblio_schema() {
       'title_sort' => array('biblio_sort_title'),
     ),
   );
-  $schema['biblio__new_revision'] = array(
+  $schema['biblio_revision'] = array(
     'description' => 'Stores information about each saved version of a {biblio}.',
     'fields' => array(
       'bid' => array(
@@ -442,1034 +436,9 @@ function biblio_schema() {
     'primary key' => array('vid'),
     'foreign keys' => array(
       'biblio_vid' => array(
-        'table' => 'biblio__new',
-        'columns' => array(
-          'vid' => 'vid',
-        ),
-      ),
-    ),
-  );
-
-  $schema['biblio__new_fields'] = array(
-  'fields' => array(
-    'fid' => array(
-      'type' => 'int',
-      'not null' => TRUE,
-        'unsigned' => TRUE,
-      'default' => 0,
-      'description' => '{biblio_fields}.fid of the node',
-      ),
-    'name' => array(
-      'type' => 'varchar',
-      'length' => '128',
-      'not null' => TRUE,
-      'default' => ''
-      ),
-    'type' => array(
-      'type' => 'varchar',
-      'length' => '128',
-      'not null' => TRUE,
-      'default' => 'textfield'
-      ),
-    'size' => array(
-      'type' => 'int',
-      'not null' => TRUE,
-      'unsigned' => TRUE,
-      'default' => 60,
-      ),
-    'maxsize' => array(
-      'type' => 'int',
-      'not null' => TRUE,
-      'unsigned' => TRUE,
-      'default' => 255,
-      ),
-      ),
-    'primary key' => array('fid'),
-      );
-
-  $schema['biblio__new_field_type'] = array(
-  'description' => 'Relational table linking {biblio_fields} with {biblio_field_type_data}',
-  'fields' => array(
-    'tid' => array(
-      'type' => 'int',
-      'not null' => TRUE,
-      'unsigned' => TRUE,
-      'default' => 0,
-      'description' => '{biblio_types}.tid of the node',
-      ),
-    'fid' => array(
-      'type' => 'int',
-      'not null' => TRUE,
-      'unsigned' => TRUE,
-      'default' => 0,
-      'description' => '{biblio_fields}.fid of the node',
-      ),
-    'ftdid' => array(
-      'type' => 'int',
-      'not null' => TRUE,
-      'unsigned' => TRUE,
-      'default' => 0,
-      'description' => '{biblio_field_type_data}.ftdid of the node, points to the current data, default or custom',
-      ),
-    'cust_tdid' => array(
-      'type' => 'int',
-      'not null' => TRUE,
-      'unsigned' => TRUE,
-      'default' => 0,
-      'description' => 'This always points to the custom data for this field. Stored so we can switch back an forth between default and custom',
-      ),
-    'common' => array(
-      'type' => 'int',
-      'not null' => TRUE,
-      'unsigned' => TRUE,
-      'default' => 0,
-      ),
-    'vtab' => array(
-      'type' => 'int',
-      'not null' => TRUE,
-      'unsigned' => TRUE,
-      'default' => 0,
-      ),
-    'autocomplete' => array(
-      'type' => 'int',
-      'not null' => TRUE,
-      'unsigned' => TRUE,
-      'default' => 0,
-      ),
-      'required' => array(
-      'type' => 'int',
-      'not null' => TRUE,
-      'unsigned' => TRUE,
-      'default' => 0,
-      'description' => 'Is input required for this field'
-      ),
-    'weight' => array(
-      'type' => 'int',
-      'not null' => TRUE,
-      'default' => 0,
-      'description' => 'The weight (location) of the field on the input form'
-      ),
-    'visible' => array(
-      'type' => 'int',
-      'not null' => TRUE,
-      'unsigned' => TRUE,
-      'default' => 0,
-      'description' => 'Determines if the field is visible on the input form'
-      ),
-
-      ),
-  'primary key' => array('tid', 'fid'),
-  'indexes' => array(
-    'tid' => array('tid')
-      ),
-      );
-
-  $schema['biblio__new_field_type_data'] = array(
-  'description' => 'Data used to build the form elements on the input form',
-  'fields' => array(
-    'ftdid' => array(
-      'type' => 'int',
-      'not null' => TRUE,
-        'unsigned' => TRUE,
-      'default' => 0,
-      'description' => '{biblio_field_type_data}.ftdid of the node',
-      ),
-    'title' => array(
-      'type' => 'varchar',
-      'length' => '128',
-      'not null' => TRUE,
-      'default' => '',
-      'description' => 'The title, which will be displayed on the form, for a given field'
-      ),
-    'hint' => array(
-      'type' => 'varchar',
-      'length' => '255',
-      'not null' => FALSE,
-      'description' => 'The hint text printed below the input widget'
-      ),
-      ),
-  'primary key' => array('ftdid'),
-      );
-
-  $schema['biblio__new_types'] = array(
-  'fields' => array(
-      'tid' => array(
-      'type' => 'int',
-      'not null' => TRUE,
-      'default' => 0,
-      'description' => '{biblio_types}.tid of the publication type',
-      ),
-    'name' => array(
-      'type' => 'varchar',
-      'length' => '64',
-      'not null' => TRUE,
-      'default' => '',
-      'description' => 'The name of the publication type'
-      ),
-    'description' => array(
-      'type' => 'varchar',
-      'not null' => FALSE,
-      'length' => '255',
-      'description' => 'Description of the publication type'
-      ),
-    'weight' => array(
-      'type' => 'int',
-      'not null' => TRUE,
-      'default' => 0,
-      'description' => 'Controls the order the types are listed in'
-      ),
-    'visible' => array(
-      'type' => 'int',
-      'not null' => TRUE,
-      'unsigned' => TRUE,
-      'default' => 1,
-      'description' => 'Determines if the publication type is visible in the list'
-      ),
-      ),
-    'primary key' => array('tid'),
-
-      );
-
-
-
-  $schema['biblio__new_contributor'] = array(
-  'description' => 'Relational table linking authors to biblio entries',
-  'fields' => array(
-  'bid' => array(
-    'type' => 'int',
-    'not null' => TRUE,
-    'unsigned' => TRUE,
-    'default' => 0,
-    'description' => '{biblio}.bid of the node',
-  ),
-  'vid' => array(
-    'type' => 'int',
-    'not null' => TRUE,
-    'unsigned' => TRUE,
-    'default' => 0,
-    'description' => '{biblio}.vid of the node',
-  ),
-  'cid' => array(
-    'type' => 'int',
-    'not null' => TRUE,
-    'unsigned' => TRUE,
-    'default' => 0,
-    'description' => '{biblio_contributor_data}.cid of the node',
-  ),
-  'auth_type' => array(
-    'type' => 'int',
-    'not null' => TRUE,
-    'unsigned' => TRUE,
-    'default' => 1,
-    'description' => '{biblio_contributor_type}.auth_type of the node',
-  ),
-  'auth_category' => array(
-    'type' => 'int',
-    'not null' => TRUE,
-    'unsigned' => TRUE,
-    'default' => 1,
-    'description' => '',
-  ),
-  'rank' => array(
-    'type' => 'int',
-    'not null' => TRUE,
-    'unsigned' => TRUE,
-    'default' => 0,
-    'description' => 'Position of the author name on the publication (first,second,third...)',
-  )
-  ),
-  'foreign keys' => array(
-    'biblio_revision' => array(
-      'table' => 'biblio__new_revision',
-      'columns' => array('vid' => 'vid'),
-    ),
-    'biblio' => array(
-      'table' => 'biblio__new',
-      'columns' => array('bid' => 'bid'),
-    ),
-    'biblio_contributor_data' => array(
-      'table' => 'biblio__new_contributor_data',
-      'columns' => array('cid' => 'cid'),
-    ),
-    'biblio_contributor_type' => array(
-      'table' => 'biblio__new_contributor_type',
-      'columns' => array('auth_type' => 'auth_type'),
-    ),
-    'biblio_contributor_category' => array(
-      'table' => 'biblio__new_contributor_type',
-      'columns' => array('auth_category' => 'auth_category'),
-    ),
-  ),
-  'primary key' => array(
-    'vid',
-    'cid',
-    'auth_type',
-    'rank'
-  ),
-  );
-
-  $schema['biblio__new_contributor_data'] = array(
-  'description' => 'Contains Author information for each publication',
-  'fields' => array(
-    'cid' => array(
-      'type' => 'serial',
-      'not null' => TRUE,
-      'unsigned' => TRUE,
-      'description' => 'Primary Key: Author ID',
-      ),
-    'aka' => array(
-      'type' => 'int',
-      'not null' => TRUE,
-      'default'  => 0,
-      'unsigned' => TRUE,
-      'description' => 'Also known as, links this author entry with others so you can have variation on the name, but listing by cid will find all other (aka) author entries',
-      ),
-    'drupal_uid' => array(
-      'type' => 'int',
-      'not null' => FALSE,
-      'unsigned' => TRUE,
-      'description' => 'Drupal User ID',
-      ),
-    'name' => array(
-      'type' => 'varchar',
-      'length' => '255',
-      'not null' => TRUE,
-      'default' => '',
-      'description' => 'Full name',
-      ),
-    'lastname' => array(
-      'type' => 'varchar',
-      'length' => '128',
-      'not null' => TRUE,
-      'default' => '',
-      'description' => 'Author last name',
-      ),
-    'firstname' => array(
-      'type' => 'varchar',
-      'length' => '128',
-      'not null' => FALSE,
-      'default' => '',
-      'description' => 'Author first name',
-      ),
-    'prefix' => array(
-      'type' => 'varchar',
-      'length' => '128',
-      'not null' => FALSE,
-      'default' => '',
-      'description' => 'Author name prefix',
-      ),
-    'suffix' => array(
-      'type' => 'varchar',
-      'length' => '128',
-      'not null' => FALSE,
-      'default' => '',
-      'description' => 'Author name suffix',
-      ),
-    'initials' => array(
-      'type' => 'varchar',
-      'length' => '10',
-      'not null' => FALSE,
-      'default' => '',
-      'description' => 'Author initials (including first name initial)',
-      ),
-    'affiliation' => array(
-      'type' => 'varchar',
-      'length' => '255',
-      'not null' => FALSE,
-      'default' => '',
-      'description' => 'Author affiliation or address',
-      ),
-    'literal' => array(
-      'type' => 'int',
-      'not null' => TRUE,
-      'default'  => 0,
-      'unsigned' => TRUE,
-      'description' => 'Determines if the author name is allowed to be reformated by the variaous styles or should be used literally.',
-      ),
-    'md5' => array(
-      'type' => 'varchar',
-      'length' => '32',
-      'not null' => FALSE,
-      'description' => '',
-      )
-    ),
-  'foreign keys' => array(
-    'biblio_contributor' => array(
-      'table' => 'biblio__new_contributor',
-      'columns' => array('cid' => 'cid'),
-      ),
-    'biblio_author' => array(
-      'table' => 'users',
-      'columns' => array('drupal_uid' => 'uid'),
-    ),
-    ),
-  'primary key' => array('cid', 'aka'),
-  'indexes' => array(
-    'lastname' => array('lastname'),
-    'firstname' => array('firstname'),
-    'initials' => array('initials')
-    )
-  );
-  $schema['biblio__new_contributor_type'] = array(
-    'description' => 'Contains definitions of the contributor types',
-    'fields' => array(
-      'auth_category' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-        'unsigned' => TRUE,
-        'default' => 0,
-        'description' => 'There are 5 catagoies of author: Primary, Secondary, Tertiery, Subsidary and Corporate  ',
-      ),
-      'biblio_type' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-        'unsigned' => TRUE,
-        'default' => 0,
-        'description' => '',
-      ),
-      'auth_type' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-        'unsigned' => TRUE,
-        'default' => 0,
-        'description' => 'This is the pulication type specific verion of a particular catagory',
-      ),
-  ),
-  'foreign keys' => array(
-      'biblio' => array(
-        'table' => 'biblio__new',
-        'columns' => array('biblio_type' => 'biblio_type'),
-      ),
-      'biblio_contributor_type' => array(
-        'table' => 'biblio__new_contributor',
-        'columns' => array('auth_type' => 'auth_type'),
-      ),
-    'biblio_contributor_category' => array(
-        'table' => 'biblio__new_contributor',
-        'columns' => array('auth_category' => 'auth_category'),
-      ),
-    ),
-    'primary key' => array('auth_category', 'biblio_type', 'auth_type'),
-  );
-
-  $schema['biblio__new_contributor_type_data'] = array(
-    'description' => 'Data used to build the form elements on the input form',
-    'fields' => array(
-      'auth_type' => array(
-        'type' => 'serial',
-        'not null' => TRUE,
-        'unsigned' => TRUE,
-        'description' => '{biblio_contributor_type_data} ctdid of the node',
-      ),
-      'title' => array(
-        'type' => 'varchar',
-        'length' => '128',
-        'not null' => TRUE,
-        'default' => '',
-        'description' => 'The title, which will be displayed on the form, for a given field'
-      ),
-      'hint' => array(
-        'type' => 'varchar',
-        'length' => '255',
-        'not null' => FALSE,
-        'description' => 'The hint text printed below the input widget'
-      ),
-    ),
-    'primary key' => array('auth_type'),
-   );
-
-    $schema['biblio__new_keyword'] = array(
-      'description' => t('Relational table linking keywords to biblio nodes'),
-      'fields' => array(
-        'kid' => array(
-          'type' => 'int',
-          'not null' => TRUE,
-          'unsigned' => TRUE,
-          'default' => 0,
-          'description' => t('Primary Key: The {biblio_keyword_data}.kid of the keyword of the node.')
-        ),
-        'bid' => array(
-          'type' => 'int',
-          'not null' => TRUE,
-          'unsigned' => TRUE,
-          'default' => 0,
-          'description' => t('The {biblio}.bid of the node.'),
-        ),
-        'vid' => array(
-          'type' => 'int',
-          'not null' => TRUE,
-          'unsigned' => TRUE,
-          'default' => 0,
-          'description' => t('Primary Key: The {biblio}.vid of the node.'),
-        ),
-    ),
-    'foreign keys' => array(
-     'biblio_revision' => array(
-       'table' => 'biblio_revision',
-       'columns' => array('vid' => 'vid'),
-     ),
-     'biblio' => array(
-       'table' => 'biblio',
-       'columns' => array('bid' => 'bid'),
-     ),
-     'keyword' => array(
-       'table' => 'biblio_keyword_data',
-       'columns' => array('kid' => 'kid'),
-     ),
-    ),
-    'primary key' => array('kid', 'vid'),
-    'indexes' => array(
-      'vid' => array('vid'),
-      'bid' => array('bid'),
-    ),
-  );
-
-  $schema['biblio__new_keyword_data'] = array(
-    'description' => t('Stores the keywords related to nodes.'),
-    'fields' => array(
-      'kid' => array(
-        'type' => 'serial',
-        'not null' => TRUE,
-        'unsigned' => TRUE,
-        'description' => t('Primary Key: The id of the keyword assigned to the node')
-      ),
-      'word' => array(
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => TRUE,
-        'default' => '',
-        'description' => t('The keyword'),
-      ),
-    ),
-    'primary key' => array('kid'),
-    'indexes' => array(
-      'kword' => array('word'),
-    ),
-  );
-  $schema['biblio__new_collection'] = array(
-    'description' => t('Relational table grouping biblio nodes into collections'),
-    'fields' => array(
-      'cid' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-        'unsigned' => TRUE,
-        'default' => 0,
-        'description' => t('Primary Key: The {biblio_collection_data}.cid of the collection')
-      ),
-      'vid' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-        'unsigned' => TRUE,
-        'default' => 0,
-        'description' => t('Primary Key: The {biblio}.vid of the node.'),
-      ),
-      'pid' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-        'unsigned' => TRUE,
-        'default' => 0,
-        'description' => t('The parent id of the collection')
-      ),
-      'bid' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-        'unsigned' => TRUE,
-        'default' => 0,
-        'description' => t('The {biblio}.bid of the node.'),
-      ),
-      ),
-    'primary key' => array('cid', 'vid'),
-    'indexes' => array(
-      'pid' => array('pid'),
-      'bid' => array('bid'),
-    ),
-  );
-  $schema['biblio__new_collection_type'] = array(
-    'description' => t('Descriptions of the collections.'),
-    'fields' => array(
-      'cid' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-        'unsigned' => TRUE,
-        'default' => 0,
-        'description' => t('Primary Key: The id of the collection')
-      ),
-      'name' => array(
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => TRUE,
-        'default' => '',
-        'description' => t('The name of the collection'),
-      ),
-      'description' => array(
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => TRUE,
-        'default' => '',
-        'description' => t('The description of the collection'),
-      ),
-      ),
-    'primary key' => array('cid'),
-    'indexes' => array(
-        'name' => array('name'),
-    ),
-  );
-  $schema['biblio__new_duplicates'] = array(
-    'description' => t('Relational table linking possible duplicate biblio nodes'),
-    'fields' => array(
-      'vid' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-        'unsigned' => TRUE,
-        'default' => 0,
-        'description' => t('Primary Key: The {biblio}.nid of the original node')
-      ),
-      'did' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-        'unsigned' => TRUE,
-        'default' => 0,
-        'description' => t('The {biblio}.nid of the newly imported node which may be a duplicate.'),
-      ),
-      'type' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-        'unsigned' => TRUE,
-        'default' => 0,
-        'description' => t('The type of duplicate 0=biblio, 1=author.'),
-      ),
-      ),
-    'primary key' => array('vid', 'did'),
-      'indexes' => array(
-          'did' => array('vid'),
-      ),
-    );
-
-    $schema['biblio__new_import_cache'] = array(
-      'description' => 'tables used for caching data imported from file and then batch processed',
-      'fields' => array(
-        'id' => array(
-          'type' => 'serial',
-          'not null' => TRUE,
-          'unsigned' => TRUE),
-        'session_id' => array(
-          'type' => 'varchar',
-          'length' => 45,
-          'not null' => TRUE),
-        'data' => array(
-          'description' => t('A collection of data to cache.'),
-          'type' => 'blob',
-          'not null' => FALSE,
-          'size' => 'big'),
-      ),
-      'primary key' => array('id'));
-
-  $schema['biblio__new_type_maps'] = array(
-    'description' => 'Table used to store the mapping information between various file formats and the biblio schema',
-    'fields' => array(
-      'format' => array(
-        'description' => 'The import/export file format',
-        'type' => 'varchar',
-        'length' => 128,
-        'not null' => TRUE),
-      'type_map' => array(
-        'description' => 'The mapping between the publication types in the file format and biblio',
-        'type' => 'blob',
-        'not null' => FALSE,
-        'size' => 'big'),
-      'type_names' => array(
-        'description' => 'The human readable names of the publication types',
-        'type' => 'blob',
-        'not null' => FALSE,
-        'size' => 'big'),
-      'field_map' => array(
-        'description' => 'The mapping between the fields in the file format and biblio',
-        'type' => 'blob',
-        'not null' => FALSE,
-        'size' => 'big'),
-      'export_map' => array(
-        'description' => 'which fields are exported',
-        'type' => 'blob',
-        'not null' => FALSE,
-        'size' => 'big'),
-      ),
-    'primary key' => array('format'));
-
-  
-  // ---------- old tables -------------
-  $schema['biblio'] = array(
-    'fields' => array(
-      'nid' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-        'default' => 0,
-        'description' => '',
-      ),
-      'vid' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-        'default' => 0,
-        'description' => '',
-      ),
-      'biblio_type' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-        'default' => 0,
-        'description' => '',
-      ),
-      'biblio_number' => array(
-        'type' => 'varchar',
-        'not null' => FALSE,
-        'length' => '128',
-        'description' => '',
-      ),
-      'biblio_other_number' => array(
-        'type' => 'varchar',
-        'not null' => FALSE,
-        'length' => '128',
-        'description' => '',
-      ),
-      'biblio_sort_title' => array(
-        'type' => 'varchar',
-        'not null' => FALSE,
-        'length' => '64',
-        'description' => 'A normalized version of the title, used for sorting on titles. (only first 64 characters saved)',
-      ),
-      'biblio_secondary_title' => array(
-        'type' => 'varchar',
-        'not null' => FALSE,
-        'length' => '255',
-        'description' => '',
-      ),
-      'biblio_tertiary_title' => array(
-        'type' => 'varchar',
-        'not null' => FALSE,
-        'length' => '255',
-        'description' => '',
-      ),
-      'biblio_edition' => array(
-        'type' => 'varchar',
-        'not null' => FALSE,
-        'length' => '255',
-        'description' => '',
-      ),
-      'biblio_publisher' => array(
-        'type' => 'varchar',
-        'not null' => FALSE,
-        'length' => '255',
-        'description' => '',
-      ),
-      'biblio_place_published' => array(
-        'type' => 'varchar',
-        'not null' => FALSE,
-        'length' => '255',
-        'description' => '',
-      ),
-      'biblio_year' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-        'default' => 9999,
-        'description' => '',
-      ),
-      'biblio_volume' => array(
-        'type' => 'varchar',
-        'not null' => FALSE,
-        'length' => '128',
-        'description' => '',
-      ),
-      'biblio_pages' => array(
-        'type' => 'varchar',
-        'not null' => FALSE,
-        'length' => '128',
-        'description' => '',
-      ),
-      'biblio_date' => array(
-        'type' => 'varchar',
-        'not null' => FALSE,
-        'length' => '16',
-        'description' => '',
-      ),
-      'biblio_isbn' => array(
-        'type' => 'varchar',
-        'not null' => FALSE,
-        'length' => '128',
-        'description' => '',
-      ),
-      'biblio_lang' => array(
-        'type' => 'varchar',
-        'not null' => FALSE,
-        'length' => '24',
-        'default' => 'eng',
-        'description' => '',
-      ),
-      'biblio_abst_e' => array(
-        'type' => 'text',
-        'not null' => FALSE,
-        'description' => '',
-      ),
-      'biblio_abst_f' => array(
-        'not null' => FALSE,
-        'type' => 'text',
-        'description' => '',
-      ),
-      'biblio_full_text' => array(
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-        'description' => '',
-      ),
-      'biblio_url' => array(
-        'type' => 'varchar',
-        'not null' => FALSE,
-        'length' => '255',
-        'description' => '',
-      ),
-      'biblio_issue' => array(
-        'type' => 'varchar',
-        'not null' => FALSE,
-        'length' => '128',
-        'description' => '',
-      ),
-      'biblio_type_of_work' => array(
-        'type' => 'varchar',
-        'not null' => FALSE,
-        'length' => '128',
-        'description' => '',
-      ),
-      'biblio_accession_number' => array(
-        'type' => 'varchar',
-        'not null' => FALSE,
-        'length' => '128',
-        'description' => '',
-      ),
-      'biblio_call_number' => array(
-        'type' => 'varchar',
-        'not null' => FALSE,
-        'length' => '128',
-        'description' => '',
-      ),
-      'biblio_notes' => array(
-        'type' => 'text',
-        'not null' => FALSE,
-        'description' => '',
-      ),
-      'biblio_custom1' => array(
-        'type' => 'text',
-        'not null' => FALSE,
-        'description' => '',
-      ),
-      'biblio_custom2' => array(
-        'type' => 'text',
-        'not null' => FALSE,
-        'description' => '',
-      ),
-      'biblio_custom3' => array(
-        'type' => 'text',
-        'not null' => FALSE,
-        'description' => '',
-      ),
-      'biblio_custom4' => array(
-        'type' => 'text',
-        'not null' => FALSE,
-        'description' => '',
-      ),
-      'biblio_custom5' => array(
-        'type' => 'text',
-        'not null' => FALSE,
-        'description' => '',
-      ),
-      'biblio_custom6' => array(
-        'type' => 'text',
-        'not null' => FALSE,
-        'description' => '',
-      ),
-      'biblio_custom7' => array(
-        'type' => 'text',
-        'not null' => FALSE,
-        'description' => '',
-      ),
-      'biblio_research_notes' => array(
-        'type' => 'text',
-        'not null' => FALSE,
-        'description' => '',
-      ),
-      'biblio_number_of_volumes' => array(
-        'type' => 'varchar',
-        'not null' => FALSE,
-        'length' => '128',
-        'description' => '',
-      ),
-      'biblio_short_title' => array(
-        'type' => 'varchar',
-        'not null' => FALSE,
-        'length' => '255',
-        'description' => '',
-      ),
-      'biblio_alternate_title' => array(
-        'type' => 'varchar',
-        'not null' => FALSE,
-        'length' => '255',
-        'description' => '',
-      ),
-      'biblio_original_publication' => array(
-        'type' => 'varchar',
-        'not null' => FALSE,
-        'length' => '255',
-        'description' => '',
-      ),
-      'biblio_reprint_edition' => array(
-        'type' => 'varchar',
-        'not null' => FALSE,
-        'length' => '255',
-        'description' => '',
-      ),
-      'biblio_translated_title' => array(
-        'type' => 'varchar',
-        'not null' => FALSE,
-        'length' => '255',
-        'description' => '',
-      ),
-      'biblio_section' => array(
-        'type' => 'varchar',
-        'not null' => FALSE,
-        'length' => '128',
-        'description' => '',
-      ),
-      'biblio_citekey' => array(
-        'type' => 'varchar',
-        'not null' => FALSE,
-        'length' => '255',
-        'description' => '',
-      ),
-      'biblio_coins' => array(
-        'type' => 'text',
-        'not null' => FALSE,
-        'description' => '',
-      ),
-      'biblio_doi' => array(
-        'type' => 'varchar',
-        'not null' => FALSE,
-        'length' => '255',
-        'description' => '',
-      ),
-      'biblio_issn' => array(
-        'type' => 'varchar',
-        'not null' => FALSE,
-        'length' => '128',
-        'description' => '',
-      ),
-      'biblio_auth_address' => array(
-        'type' => 'text',
-        'not null' => FALSE,
-        'description' => '',
-      ),
-      'biblio_remote_db_name' => array(
-        'type' => 'varchar',
-        'not null' => FALSE,
-        'length' => '255',
-        'description' => '',
-      ),
-      'biblio_remote_db_provider' => array(
-        'type' => 'varchar',
-        'not null' => FALSE,
-        'length' => '255',
-        'description' => '',
-      ),
-      'biblio_label' => array(
-        'type' => 'varchar',
-        'not null' => FALSE,
-        'length' => '255',
-        'description' => '',
-      ),
-      'biblio_access_date' => array(
-        'type' => 'varchar',
-        'not null' => FALSE,
-        'length' => '255',
-        'description' => '',
-      ),
-      'biblio_refereed' => array(
-        'type' => 'varchar',
-        'not null' => FALSE,
-        'length' => '20',
-        'description' => '',
-      ),
-      'biblio_md5' => array(
-        'type' => 'varchar',
-        'not null' => FALSE,
-        'length' => '32',
-        'description' => '',
-      ),
-      'biblio_formats' => array(
-        'type' => 'blob',
-        'not null' => FALSE,
-        'description' => '',
-        'serialize' => TRUE,
-      ),
-    ),
-    'foreign keys' => array(
-      'node_revision' => array(
-        'table' => 'node_revision',
-        'columns' => array('vid' => 'vid'),
-       ),
-      'node' => array(
-        'table' => 'node',
-        'columns' => array('nid' => 'nid'),
-       ),
-      'biblio_type' => array(
-        'table' => 'biblio_types',
-        'columns' => array('biblio_type' => 'tid'),
-       ),
-     ),
-     'primary key' => array(
-      'vid'
-      ),
-    'indexes' => array(
-      'nid' => array('nid'),
-      'md5' => array('biblio_md5'),
-      'year' => array('biblio_year'),
-      'title_sort' => array('biblio_sort_title'),
-      'date' => array('biblio_date')
-      ),
-    );
-  $schema['biblio_revision'] = array(
-    'description' => 'Stores information about each saved version of a {biblio}.',
-    'fields' => array(
-      'bid' => array(
-        'description' => 'The {biblio} this version belongs to.',
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0,
-      ),
-      'vid' => array(
-        'description' => 'The primary identifier for this version.',
-        'type' => 'serial',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-      ),
-      'title' => array(
-        'description' => 'The title of this version.',
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => TRUE,
-        'default' => '',
-      ),
-      'created' => array(
-        'description' => 'The Unix timestamp when the biblio was created.',
-        'type' => 'int',
-        'not null' => TRUE,
-        'default' => 0,
-      ),
-    ),
-    'indexes' => array(
-      'bid' => array('bid'),
-    ),
-    'primary key' => array('vid'),
-    'foreign keys' => array(
-      'biblio' => array(
         'table' => 'biblio',
         'columns' => array(
-          'bid' => 'bid',
+          'vid' => 'vid',
         ),
       ),
     ),
@@ -1660,19 +629,19 @@ function biblio_schema() {
   $schema['biblio_contributor'] = array(
   'description' => 'Relational table linking authors to biblio entries',
   'fields' => array(
-  'nid' => array(
+  'bid' => array(
     'type' => 'int',
     'not null' => TRUE,
     'unsigned' => TRUE,
     'default' => 0,
-    'description' => '{node}.nid of the node',
+    'description' => '{biblio}.bid of the node',
   ),
   'vid' => array(
     'type' => 'int',
     'not null' => TRUE,
     'unsigned' => TRUE,
     'default' => 0,
-    'description' => '{node}.vid of the node',
+    'description' => '{biblio}.vid of the node',
   ),
   'cid' => array(
     'type' => 'int',
@@ -1704,13 +673,13 @@ function biblio_schema() {
   )
   ),
   'foreign keys' => array(
-    'node_revision' => array(
-      'table' => 'node_revision',
+    'biblio_revision' => array(
+      'table' => 'biblio_revision',
       'columns' => array('vid' => 'vid'),
     ),
-    'node' => array(
-      'table' => 'node',
-      'columns' => array('nid' => 'nid'),
+    'biblio' => array(
+      'table' => 'biblio',
+      'columns' => array('bid' => 'bid'),
     ),
     'biblio_contributor_data' => array(
       'table' => 'biblio_contributor_data',
@@ -1823,7 +792,7 @@ function biblio_schema() {
       'table' => 'biblio_contributor',
       'columns' => array('cid' => 'cid'),
       ),
-    'node_author' => array(
+    'biblio_author' => array(
       'table' => 'users',
       'columns' => array('drupal_uid' => 'uid'),
     ),
@@ -1913,29 +882,29 @@ function biblio_schema() {
           'default' => 0,
           'description' => t('Primary Key: The {biblio_keyword_data}.kid of the keyword of the node.')
         ),
-        'nid' => array(
+        'bid' => array(
           'type' => 'int',
           'not null' => TRUE,
           'unsigned' => TRUE,
           'default' => 0,
-          'description' => t('The {node}.nid of the node.'),
+          'description' => t('The {biblio}.bid of the node.'),
         ),
         'vid' => array(
           'type' => 'int',
           'not null' => TRUE,
           'unsigned' => TRUE,
           'default' => 0,
-          'description' => t('Primary Key: The {node}.vid of the node.'),
+          'description' => t('Primary Key: The {biblio}.vid of the node.'),
         ),
     ),
     'foreign keys' => array(
-     'node_revision' => array(
-       'table' => 'node_revision',
+     'biblio_revision' => array(
+       'table' => 'biblio_revision',
        'columns' => array('vid' => 'vid'),
      ),
-     'node' => array(
-       'table' => 'node',
-       'columns' => array('nid' => 'nid'),
+     'biblio' => array(
+       'table' => 'biblio',
+       'columns' => array('bid' => 'bid'),
      ),
      'keyword' => array(
        'table' => 'biblio_keyword_data',
@@ -1943,151 +912,151 @@ function biblio_schema() {
      ),
     ),
     'primary key' => array('kid', 'vid'),
-      'indexes' => array(
-           'vid' => array('vid'),
-           'nid' => array('nid'),
-        ),
-        );
+    'indexes' => array(
+      'vid' => array('vid'),
+      'bid' => array('bid'),
+    ),
+  );
 
-     $schema['biblio_keyword_data'] = array(
-      'description' => t('Stores the keywords related to nodes.'),
+  $schema['biblio_keyword_data'] = array(
+    'description' => t('Stores the keywords related to nodes.'),
+    'fields' => array(
+      'kid' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'description' => t('Primary Key: The id of the keyword assigned to the node')
+      ),
+      'word' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => t('The keyword'),
+      ),
+    ),
+    'primary key' => array('kid'),
+    'indexes' => array(
+      'kword' => array('word'),
+    ),
+  );
+  $schema['biblio_collection'] = array(
+    'description' => t('Relational table grouping biblio nodes into collections'),
+    'fields' => array(
+      'cid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'default' => 0,
+        'description' => t('Primary Key: The {biblio_collection_data}.cid of the collection')
+      ),
+      'vid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'default' => 0,
+        'description' => t('Primary Key: The {biblio}.vid of the node.'),
+      ),
+      'pid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'default' => 0,
+        'description' => t('The parent id of the collection')
+      ),
+      'bid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'default' => 0,
+        'description' => t('The {biblio}.bid of the node.'),
+      ),
+      ),
+    'primary key' => array('cid', 'vid'),
+    'indexes' => array(
+      'pid' => array('pid'),
+      'bid' => array('bid'),
+    ),
+  );
+  $schema['biblio_collection_type'] = array(
+    'description' => t('Descriptions of the collections.'),
+    'fields' => array(
+      'cid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'default' => 0,
+        'description' => t('Primary Key: The id of the collection')
+      ),
+      'name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => t('The name of the collection'),
+      ),
+      'description' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => t('The description of the collection'),
+      ),
+      ),
+    'primary key' => array('cid'),
+    'indexes' => array(
+        'name' => array('name'),
+    ),
+  );
+  $schema['biblio_duplicates'] = array(
+    'description' => t('Relational table linking possible duplicate biblio nodes'),
+    'fields' => array(
+      'vid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'default' => 0,
+        'description' => t('Primary Key: The {biblio}.nid of the original node')
+      ),
+      'did' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'default' => 0,
+        'description' => t('The {biblio}.nid of the newly imported node which may be a duplicate.'),
+      ),
+      'type' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'default' => 0,
+        'description' => t('The type of duplicate 0=biblio, 1=author.'),
+      ),
+      ),
+    'primary key' => array('vid', 'did'),
+      'indexes' => array(
+          'did' => array('vid'),
+      ),
+    );
+
+    $schema['biblio_import_cache'] = array(
+      'description' => 'tables used for caching data imported from file and then batch processed',
       'fields' => array(
-        'kid' => array(
+        'id' => array(
           'type' => 'serial',
           'not null' => TRUE,
-          'unsigned' => TRUE,
-          'description' => t('Primary Key: The id of the keyword assigned to the node')
-        ),
-        'word' => array(
+          'unsigned' => TRUE),
+        'session_id' => array(
           'type' => 'varchar',
-          'length' => 255,
-          'not null' => TRUE,
-          'default' => '',
-          'description' => t('The keyword'),
-        ),
-        ),
-      'primary key' => array('kid'),
-      'indexes' => array(
-           'kword' => array('word'),
-        ),
-        );
-     $schema['biblio_collection'] = array(
-      'description' => t('Relational table grouping biblio nodes into collections'),
-      'fields' => array(
-        'cid' => array(
-          'type' => 'int',
-          'not null' => TRUE,
-          'unsigned' => TRUE,
-          'default' => 0,
-          'description' => t('Primary Key: The {biblio_collection_data}.cid of the collection')
-        ),
-        'vid' => array(
-          'type' => 'int',
-          'not null' => TRUE,
-          'unsigned' => TRUE,
-          'default' => 0,
-          'description' => t('Primary Key: The {node}.vid of the node.'),
-        ),
-        'pid' => array(
-          'type' => 'int',
-          'not null' => TRUE,
-          'unsigned' => TRUE,
-          'default' => 0,
-          'description' => t('The parent id of the collection')
-        ),
-        'nid' => array(
-          'type' => 'int',
-          'not null' => TRUE,
-          'unsigned' => TRUE,
-          'default' => 0,
-          'description' => t('The {node}.nid of the node.'),
-        ),
-        ),
-      'primary key' => array('cid', 'vid'),
-      'indexes' => array(
-           'pid' => array('pid'),
-           'nid' => array('nid'),
-        ),
-        );
-     $schema['biblio_collection_type'] = array(
-      'description' => t('Descriptions of the collections.'),
-      'fields' => array(
-        'cid' => array(
-          'type' => 'int',
-          'not null' => TRUE,
-          'unsigned' => TRUE,
-          'default' => 0,
-          'description' => t('Primary Key: The id of the collection')
-        ),
-        'name' => array(
-          'type' => 'varchar',
-          'length' => 255,
-          'not null' => TRUE,
-          'default' => '',
-          'description' => t('The name of the collection'),
-        ),
-        'description' => array(
-          'type' => 'varchar',
-          'length' => 255,
-          'not null' => TRUE,
-          'default' => '',
-          'description' => t('The description of the collection'),
-        ),
-        ),
-      'primary key' => array('cid'),
-      'indexes' => array(
-           'name' => array('name'),
-        ),
-        );
-    $schema['biblio_duplicates'] = array(
-      'description' => t('Relational table linking possible duplicate biblio nodes'),
-      'fields' => array(
-        'vid' => array(
-          'type' => 'int',
-          'not null' => TRUE,
-          'unsigned' => TRUE,
-          'default' => 0,
-          'description' => t('Primary Key: The {biblio}.nid of the original node')
-        ),
-        'did' => array(
-          'type' => 'int',
-          'not null' => TRUE,
-          'unsigned' => TRUE,
-          'default' => 0,
-          'description' => t('The {biblio}.nid of the newly imported node which may be a duplicate.'),
-        ),
-        'type' => array(
-          'type' => 'int',
-          'not null' => TRUE,
-          'unsigned' => TRUE,
-          'default' => 0,
-          'description' => t('The type of duplicate 0=biblio, 1=author.'),
-        ),
-        ),
-      'primary key' => array('vid', 'did'),
-        'indexes' => array(
-           'did' => array('vid'),
-        ),
-        );
-
-      $schema['biblio_import_cache'] = array(
-        'description' => 'tables used for caching data imported from file and then batch processed',
-        'fields' => array(
-          'id' => array(
-            'type' => 'serial',
-            'not null' => TRUE,
-            'unsigned' => TRUE),
-          'session_id' => array(
-            'type' => 'varchar',
-            'length' => 45,
-            'not null' => TRUE),
-          'data' => array(
-            'description' => t('A collection of data to cache.'),
-            'type' => 'blob',
-            'not null' => FALSE,
-            'size' => 'big'),
-        ),
-        'primary key' => array('id'));
+          'length' => 45,
+          'not null' => TRUE),
+        'data' => array(
+          'description' => t('A collection of data to cache.'),
+          'type' => 'blob',
+          'not null' => FALSE,
+          'size' => 'big'),
+      ),
+      'primary key' => array('id'));
 
   $schema['biblio_type_maps'] = array(
     'description' => 'Table used to store the mapping information between various file formats and the biblio schema',
@@ -2120,39 +1089,6 @@ function biblio_schema() {
       ),
     'primary key' => array('format'));
 
-   $schema['biblio_vtabs'] = array(
-    'description' => 'Table used to store the information to create the vertical tabs on the input form',
-    'fields' => array(
-        'tab_id' => array(
-          'type' => 'int',
-          'not null' => TRUE,
-          'unsigned' => TRUE,
-          'default' => 0,
-          'description' => ''
-        ),
-        'weight' => array(
-          'type' => 'int',
-          'not null' => TRUE,
-          'unsigned' => TRUE,
-          'default' => 0,
-          'description' => ''
-        ),
-        'title' => array(
-          'type' => 'varchar',
-          'length' => 128,
-          'not null' => TRUE,
-          'default' => '',
-          'description' => t('The title of the tab'),
-        ),
-        'description' => array(
-          'type' => 'varchar',
-          'length' => 255,
-          'not null' => TRUE,
-          'default' => '',
-          'description' => t('The description of the tab'),
-        ),
-    ),
-    'primary key' => array('tab_id'));
 
    return ($schema);
 
@@ -2265,13 +1201,6 @@ function _add_publication_types() {
       'description'   => $record[2],
       'weight'        => $record[3],
     ))->execute();
-    db_insert('biblio__new_types')->fields(array(
-      'tid'           => $record[0],
-      'name'          => $record[1],
-      'description'   => $record[2],
-      'weight'        => $record[3],
-    ))->execute();
-    
   }
  return;
 }
