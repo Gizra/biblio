@@ -1602,24 +1602,26 @@ function _biblio_get_formatted_fields() {
   return (array) $fields;
 }
 /**
- * Prepare a node for submit to database. Contains code common to insert and update.
- * @param $node
+ * Prepare a biblio for submit to database. Contains code common to insert and update.
+ * @param $biblio
  * @return none
  */
-function _biblio_prepare_submit(&$node) {
-  if(!isset($node->biblio_type)) $node->biblio_type = 129;
+function _biblio_prepare_submit(&$biblio) {
+  $biblio->language = biblio_field_language('biblio_title', $biblio);
+  $lang = $biblio->language;
+  if(!isset($biblio->publication_type)) $biblio->publication_type = 'miscellaneous';
 
-  $node->biblio_sort_title = biblio_normalize_title($node->title);
-  if(!isset($node->biblio_year)) $node->biblio_year = 9999;
-  $node->biblio_year = _biblio_numeric_year($node->biblio_year);
+  $biblio->biblio_sort_title[$lang][0]['value'] = biblio_normalize_title($biblio->biblio_title[$lang][0]['value']);
+  if(!isset($biblio->biblio_year[$lang][0]['value'])) $biblio->biblio_year[$lang][0]['value'] = 9999;
+    $biblio->biblio_year[$lang][0]['value'] = _biblio_numeric_year($biblio->biblio_year[$lang][0]['value']);
 
-  if (variable_get('biblio_auto_citekey', 1) && empty($node->biblio_citekey)) {
-    $node->biblio_citekey = biblio_citekey_generate($node);
+  if (variable_get('biblio_auto_citekey', 1) && empty($biblio->biblio_citekey[$lang][0]['value'])) {
+    $biblio->biblio_citekey[$lang][0]['value'] = biblio_citekey_generate($biblio);
   }
   foreach (_biblio_get_formatted_fields() as $field) {
-    if (isset($node->$field) && is_array($node->$field)) {
-      $node->biblio_formats[$field] = $node->{$field}['format'];
-      $node->$field = $node->{$field}['value'];
+    if (isset($biblio->$field) && is_array($biblio->$field)) {
+      $biblio->biblio_formats[$field] = $biblio->{$field}['format'];
+      $biblio->$field = $biblio->{$field}['value'];
     }
   }
 }
@@ -1731,13 +1733,13 @@ function biblio_load_old($nodes) {
 
   }
 }
-function biblio_citekey_generate($node) {
+function biblio_citekey_generate($biblio) {
   $php = check_plain(variable_get('biblio_citekey_phpcode', ''));
   if (empty($php)) {
     $prefix          = variable_get('biblio_citekey_prefix', '');
     $primary_field   = variable_get('biblio_citekey_field1', 'nid');
     $secondary_field = variable_get('biblio_citekey_field2', 'nid');
-    $citekey = (!empty($node->$primary_field)) ? $node->$primary_field : ((!empty($node-> $secondary_field)) ? $node-> $secondary_field : $node->nid);
+    $citekey = (!empty($biblio->$primary_field)) ? $biblio->$primary_field : ((!empty($biblio-> $secondary_field)) ? $biblio-> $secondary_field : $biblio->bid);
     return check_plain($prefix . $citekey);
   }
   else {
@@ -2485,7 +2487,7 @@ function biblio_uri($biblio) {
 }
 
 /**
- * Load an biblio object from the database.
+ * Load a biblio object from the database.
  *
  * @param $bid
  *   The biblio ID.
@@ -2648,7 +2650,24 @@ function biblio_form_submit($form, &$form_state) {
  * @return type 
  */
 function biblio_save($biblio) {
+  module_load_include('inc', 'biblio', 'includes/biblio.util');
+  module_load_include('inc', 'biblio', 'includes/biblio.contributors');
+  module_load_include('inc', 'biblio', 'includes/biblio.keywords');
+  _biblio_prepare_submit($biblio);
+  biblio_insert_contributors($biblio);
+  // @todo: add keyword functionality
+//  biblio_insert_keywords($biblio);
+  // @todo: get COinS working
+  $biblio->biblio_coins[$biblio->language][0]['value'] = biblio_coins($biblio);
+  // @todo: get md5 working
+//  $duplicate = biblio_hash($biblio);
+//  if (isset($duplicate) && $duplicate != $biblio->bid) { // if this is a potential duplcate, write the bids of the pre-existing and new biblios
+//    $dup_map = array('vid' => $duplicate, 'did' => $biblio->bid);
+//    drupal_write_record('biblio_duplicates', $dup_map);
+//  }
+
   return entity_get_controller('biblio')->save($biblio);
+  
 }
 
 /**
