@@ -676,16 +676,16 @@ function theme_biblio_page_number($variables) {
 function theme_biblio_style($variables ) {
   $biblio       = $variables['biblio'];
   $style_name = $variables['style_name'];
-  $styled_node = '';
+  $styled_biblio = '';
   module_load_include('inc', 'biblio', "/styles/biblio_style_$style_name");
   $style_function = "biblio_style_$style_name";
   if (function_exists($style_function)) {
-    $styled_node = $style_function ($biblio);
+    $styled_biblio = $style_function ($biblio);
   }
   else {
     drupal_set_message(t('The style function: @funct does not exist', array('@funct' => $style_function)), 'error');
   }
-  return ($styled_node . filter_xss($biblio->biblio_coins, array('span')));
+  return ($styled_biblio . filter_xss($biblio->biblio_coins[$biblio->language][0]['value'], array('span')));
 }
 
 /**
