@@ -377,9 +377,9 @@ function biblio_build_query($arg_list) {
 //    case 'year':
     default:
       $query->addField('fdby', 'biblio_year_value');
-      $query->join('field_data_biblio_year', 'fdby', 'fdby.entity_id = b.bid');
+      $query->leftJoin('field_data_biblio_year', 'fdby', 'fdby.entity_id = b.bid');
       $query->addField('fdbd', 'biblio_date_value');
-      $query->join('field_data_biblio_date', 'fdbd', 'fdbd.entity_id = b.bid');
+      $query->leftJoin('field_data_biblio_date', 'fdbd', 'fdbd.entity_id = b.bid');
       $query->orderBy('biblio_year_value', $arg_list['o']);
       $query->orderBy('biblio_sort_title');
   } //end switch
@@ -529,7 +529,6 @@ function biblio_build_query($arg_list) {
   if ($user->uid != 1 && !biblio_access('admin')) {
     $query->condition('n.status', 1);
   }
-
   $result = $query->execute();
   $bids = array();
   $extras = array();
