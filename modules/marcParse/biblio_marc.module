@@ -32,15 +32,73 @@ function biblio_marc_node_insert($node) {
   drupal_write_record('biblio_marc', $node);
 }
 
+function biblio_marc_form_biblio_node_form_alter(&$form, &$form_state) {
+  global $user;
+  if (!$form_state['submitted'] && !isset($form_state['values']) && !isset($form['#node']->nid)) {
+    if (!$form_state['submitted']) {
+      $form['biblio_cut_paste'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Paste MARC Record'),
+        '#weight' => -20,
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE,
+      );
+      $form['biblio_cut_paste']['paste_data_marc'] = array(
+        '#type' => 'textarea',
+        '#title' => t('MARC'),
+        '#required' => FALSE,
+        '#default_value' => isset($form_state['values']['paste_data_marc']) ? $form_state['values']['paste_data_marc'] : '',
+        '#description' => t('Paste a  entry here'),
+        '#size' => 60,
+        '#weight' => -4
+      );
+      $form['biblio_cut_paste']['paste_submit'] = array(
+        '#type' => 'submit',
+        '#value' => t('Populate using MARC'),
+        '#submit' => array('biblio_marc_form_biblio_node_form_submit')
+      );
+    }
+  }
+  $biblio_marc_id = (isset($form_state['values']['biblio_marc_id'])) ? $form_state['values']['biblio_marc_id'] : '';
+  $biblio_marc_md5 = (isset($form_state['values']['biblio_marc_md5'])) ? $form_state['values']['biblio_marc_md5'] : '';
+  $form['biblio_marc_id'] = array('#type' => 'value', '#value'  => $biblio_marc_id);
+  $form['biblio_marc_md5'] = array('#type' => 'value', '#value' => $biblio_marc_md5);
+}
+
+function biblio_marc_form_biblio_node_form_submit($form, &$form_state) {
+  global $user;
+  $node_data = array();
+  $dups = array();
+
+  if (strlen($form_state['values']['paste_data_marc'])) {
+    list($node_data, $dups) = biblio_marc_biblio_import($form_state['values']['paste_data_marc'], array(), FALSE, NULL, FALSE, TRUE);
+  }
+  if (!empty($node_data) && is_object($node_data[0])) {
+    $form_state['values'] = array_merge($form_state['values'], (array)$node_data[0]);
+    $form_state['input']['biblio_type'] = $form_state['biblio_type'] =  $node_data[0]->biblio_type;
+
+    //    $form_state['storage']['biblio_type']  = $node_data[0]->biblio_type;
+  }
+  elseif (!empty($dups)) {
+    $message = t('The MARC node that you are trying to paste into the form already exists in the database, see !url', array('!url' => l('node/' . $dups[0], 'node/' . $dups[0])));
+    form_set_error('paste_data_marc', $message);
+  }
+  $form_state['rebuild'] = TRUE;
+
+  return;
+}
+
 function biblio_marc_biblio_import($file, $terms = array(), $batch = FALSE, $session_id = NULL, $save = TRUE, $string = FALSE) {
   $nids = array();
   $dups = array();
   module_load_include('php', 'biblio_marc', 'php-marc');
-  $marcfile = new File($file->uri);
+  if(is_object($file) && isset($file->uri) && !$string) {
+    $file = $file->uri;
+  }
+  $marcfile = new File($file);
   while ($record = $marcfile->next() ) {
     $node = new stdClass();
     $node->biblio_contributors = array();
-    $fields = $record->fields();
     $leader = $record->leader();
     $pubtype = $leader[6];
     $pubtype .= $leader[7];
@@ -107,9 +165,9 @@ function biblio_marc_biblio_import($file, $terms = array(), $batch = FALSE, $ses
             $value = $field->subfield('a');
             if (!empty($value)) {
               $node->biblio_contributors[] = array(
-              'name' => $value,
-              'auth_category' => 1,
-              'auth_type' => 1
+                'name' => $value,
+                'auth_category' => 1,
+                'auth_type' => 1
               );
             }
             break;
@@ -134,8 +192,13 @@ function biblio_marc_biblio_import($file, $terms = array(), $batch = FALSE, $ses
       $node->biblio_marc_md5 = md5(serialize($node));
 
       if (! ($dup = biblio_marc_check_md5($node->biblio_marc_md5))) {
-        biblio_save_node($node, $terms, $batch, $session_id);
-        if (!empty($node->nid)) $nids[] = $node->nid;
+        if ($save) {
+          biblio_save_node($node, $terms, $batch, $session_id);
+          if (!empty($node->nid)) $nids[] = $node->nid;
+        }
+        else {
+          $nids[] = $node;
+        }
       }
       else {
         $dups[] = $dup;

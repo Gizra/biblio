@@ -192,20 +192,20 @@ Class File {
    * @param string Name of the file
    * @return string Returns warning if issued during read
    */
-  function file($in) {
-    if (file_exists($in)) {
-      $input = file($in);
-      $recs = explode(END_OF_RECORD, join("", $input));
-      // Append END_OF_RECORD as we lost it when splitting
-      // Last is not record, as it is empty because every record ends
-      // with END_OF_RECORD.
-      for ($i = 0; $i < (count($recs)-1); $i++) {
-        $this->raw[] = $recs[$i].END_OF_RECORD;
-      }
-      $this->pointer = 0;
-    } else {
+  function file($input, $string = FALSE) {
+    if (!$string && file_exists($input)) {
+      $input = file_get_contents($input);
+    } elseif (!empty($in) && !file_exists($input) && !$string) {
       return $this->_warn("Invalid input file: $i");
     }
+    $recs = explode(END_OF_RECORD, $input);
+    // Append END_OF_RECORD as we lost it when splitting
+    // Last is not record, as it is empty because every record ends
+    // with END_OF_RECORD.
+    foreach ($recs as $rec) {
+      $this->raw[] = $rec . END_OF_RECORD;
+    }
+    $this->pointer = 0;
   }
 
   /**
