@@ -41,11 +41,18 @@ function biblio_style_cse_author_options() {
 function biblio_style_cse($biblio) {
   module_load_include('inc', 'biblio', '/includes/biblio.contributors');
   $output = $authors = '';
-  if (!empty($biblio->biblio_authors[$biblio->language])) {
-  $author_options = biblio_style_cse_author_options();
-  $primary_authors = biblio_get_contributor_category($biblio->biblio_authors, 1);
-  $editors = biblio_get_contributor_category($biblio->biblio_authors, 2);
-  $corp_authors = biblio_get_contributor_category($biblio->biblio_authors, 5);
+  
+  if (!empty($biblio->biblio_authors_primary)) {
+    $primary_authors = $biblio->biblio_authors_primary[$biblio->language];
+    $author_options = biblio_style_cse_author_options();
+  }
+  if (!empty($biblio->biblio_authors_secondary)) {
+    $editors = $biblio->biblio_authors_secondary[$biblio->language];
+  }
+  if (!empty($biblio->biblio_authors_corporate)) {
+    $corp_authors = $biblio->biblio_authors_corporate[$biblio->language];
+  }
+  
   if (!empty($primary_authors)) {
     $authors = theme('biblio_format_authors', array('contributors' => $primary_authors, 'options' => $author_options));
   }
@@ -55,7 +62,6 @@ function biblio_style_cse($biblio) {
       $authors .= (variable_get('biblio_author_links', 1)) ?  theme('biblio_author_link', array('author' => $author)) : $author['name'];
 
     }
-  }
   }
   if (empty($authors)) $authors = '[' . t('Anonymous') . ']';  // use anonymous if we still have nothing.
   if (!empty ($biblio->biblio_citekey[$biblio->language][0]['value'])&&(variable_get('biblio_display_citation_key',0))) {
@@ -72,8 +78,8 @@ function biblio_style_cse($biblio) {
       $output .= '<span class="biblio-title">';
       $url = biblio_get_title_url_info($biblio);
       $output .= l($biblio->biblio_title[$biblio->language][0]['value'], $url['link'], $url['options']);
-      $output .= (strpos($biblio->biblio_title, '?'))? " </span>" : ". </span>";  // if the title ends in a question mark, don't put a period after it.
-      $output .= (!empty ($biblio->biblio_secondary_title[$biblio->language][0]['value'])) ? check_plain($biblio->biblio_secondary_title[$biblio->language][0]['value']) . '. ' : '';
+      $output .= (strpos($biblio->biblio_title[$biblio->language][0]['value'], '?'))? " </span>" : ". </span>";  // if the title ends in a question mark, don't put a period after it.
+      $output .= (!empty ($biblio->biblio_title_secondary[$biblio->language][0]['value'])) ? check_plain($biblio->biblio_title_secondary[$biblio->language][0]['value']) . '. ' : '';
       $output .= (!empty ($biblio->biblio_volume[$biblio->language][0]['value']))          ? check_plain($biblio->biblio_volume[$biblio->language][0]['value']) : '';
       $output .= (!empty ($biblio->biblio_issue[$biblio->language][0]['value']))           ? '(' . check_plain($biblio->biblio_issue[$biblio->language][0]['value']) . ')' : '';
       $output .= (!empty ($biblio->biblio_pages[$biblio->language][0]['value']))           ? ':' . str_replace(" ", "", check_plain($biblio->biblio_pages[$biblio->language][0]['value'])) . '.' : '';
