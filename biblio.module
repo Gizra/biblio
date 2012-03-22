@@ -2377,8 +2377,8 @@ function biblio_entity_info() {
     // Custom controller that will extend from DrupalDefaultEntityController.
     // DDEC is for entities that behave similar to nodes.
     'controller class' => 'BiblioController',
-    'base table' => 'biblio__new',
-    'revision table' => 'biblio__new_revision',
+    'base table' => 'biblio',
+    'revision table' => 'biblio_revision',
     // Uses the biblio_uri() function to get the URI
     'uri callback' => 'biblio_uri',
     // Indicates to the Field API that we can attach fields to this entity,
@@ -2448,7 +2448,7 @@ function biblio_types() {
   // drupal_static() acts as a central collector for static PHP variables
   $types = &drupal_static(__FUNCTION__);
   if (empty($types)) {
-    $result = db_select('biblio__new_types', 'bt')
+    $result = db_select('biblio_types', 'bt')
         ->fields('bt', array('name', 'description'))
         ->execute();
     while ($row = $result->fetchAssoc()) {
