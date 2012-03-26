@@ -320,6 +320,7 @@ function _add_biblio_keywords() {
  * Implements hook_schema().
  */
 function biblio_schema() {
+  // @todo: remove unnecessary tables
   $schema['biblio'] = array(
     'fields' => array(
       'bid' => array(
@@ -624,53 +625,57 @@ function biblio_schema() {
 
       );
 
-
-
   $schema['biblio_contributor'] = array(
   'description' => 'Relational table linking authors to biblio entries',
   'fields' => array(
-  'bid' => array(
-    'type' => 'int',
-    'not null' => TRUE,
-    'unsigned' => TRUE,
-    'default' => 0,
-    'description' => '{biblio}.bid of the node',
-  ),
-  'vid' => array(
-    'type' => 'int',
-    'not null' => TRUE,
-    'unsigned' => TRUE,
-    'default' => 0,
-    'description' => '{biblio}.vid of the node',
-  ),
-  'cid' => array(
-    'type' => 'int',
-    'not null' => TRUE,
-    'unsigned' => TRUE,
-    'default' => 0,
-    'description' => '{biblio_contributor_data}.cid of the node',
-  ),
-  'auth_type' => array(
-    'type' => 'int',
-    'not null' => TRUE,
-    'unsigned' => TRUE,
-    'default' => 1,
-    'description' => '{biblio_contributor_type}.auth_type of the node',
-  ),
-  'auth_category' => array(
-    'type' => 'int',
-    'not null' => TRUE,
-    'unsigned' => TRUE,
-    'default' => 1,
-    'description' => '',
-  ),
-  'rank' => array(
-    'type' => 'int',
-    'not null' => TRUE,
-    'unsigned' => TRUE,
-    'default' => 0,
-    'description' => 'Position of the author name on the publication (first,second,third...)',
-  )
+    'bcid' => array(
+      'type' => 'serial',
+      'not null' => TRUE,
+      'unsigned' => TRUE,
+      'description' => 'Biblio Contributor ID. Unique ID for the contributor entity type.',
+    ),
+    'bid' => array(
+      'type' => 'int',
+      'not null' => TRUE,
+      'unsigned' => TRUE,
+      'default' => 0,
+      'description' => '{biblio}.bid of the biblio',
+    ),
+    'vid' => array(
+      'type' => 'int',
+      'not null' => TRUE,
+      'unsigned' => TRUE,
+      'default' => 0,
+      'description' => '{biblio}.vid of the biblio',
+    ),
+    'cid' => array(
+      'type' => 'int',
+      'not null' => TRUE,
+      'unsigned' => TRUE,
+      'default' => 0,
+      'description' => '{biblio_contributor_data}.cid of the biblio',
+    ),
+    'auth_type' => array(
+      'type' => 'int',
+      'not null' => TRUE,
+      'unsigned' => TRUE,
+      'default' => 1,
+      'description' => '{biblio_contributor_type}.auth_type of the biblio',
+    ),
+    'auth_category' => array(
+      'type' => 'int',
+      'not null' => TRUE,
+      'unsigned' => TRUE,
+      'default' => 1,
+      'description' => '',
+    ),
+    'rank' => array(
+      'type' => 'int',
+      'not null' => TRUE,
+      'unsigned' => TRUE,
+      'default' => 0,
+      'description' => 'Position of the author name on the publication (first,second,third...)',
+    )
   ),
   'foreign keys' => array(
     'biblio_revision' => array(
@@ -695,10 +700,7 @@ function biblio_schema() {
     ),
   ),
   'primary key' => array(
-    'vid',
-    'cid',
-    'auth_type',
-    'rank'
+    'bcid',
   ),
   );
 
