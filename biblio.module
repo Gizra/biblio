@@ -2437,30 +2437,41 @@ function biblio_entity_info() {
   }
   
   $return['biblio_contributor'] = array(
-    'label' => t('Task'),
-    'entity class' => 'ExampleTask',
-    'controller class' => 'ExampleTaskController',
-    'base table' => 'example_task',
+    'label' => t('Contributor'),
+    'entity class' => 'biblio_contributor',
+    'controller class' => 'BiblioContributorController',
+    'base table' => 'biblio_contributor',
     'fieldable' => TRUE,
     'entity keys' => array(
-      'id' => 'tkid',
+      'id' => 'bcid',
       'bundle' => 'type',
     ),
     'bundle keys' => array(
       'bundle' => 'type',
     ),
-    'bundles' => array(),
-    'load hook' => 'example_task_load',
+    // @todo: possibly figure out a better bundle name 
+    'bundles' => array(
+      'contributor' => array(
+        'label' => t('Contributor'),
+        'admin' => array(
+          'path' => 'admin/config/content/biblio/contributors',
+          'access arguments' => array('access biblio content'),
+        ),
+      ),
+    ),
+    'load hook' => 'biblio_contributor_load',
     'view modes' => array(
       'full' => array(
         'label' => t('Default'),
         'custom settings' => FALSE,
       ),
     ),
+    // Entity API label callback that takes a look at our entity class method defaultLabel()
     'label callback' => 'entity_class_label',
+    // This is also a standard Entity API callback for uri.
+    // It executes our entity defaultUri() method
     'uri callback' => 'entity_class_uri',
-    'module' => 'example_task',
-    'access callback' => 'example_task_access',
+    'module' => 'biblio',
   );
 
   return $return;
