@@ -1708,6 +1708,8 @@ function biblio_delete($node) {
  *
  * This hook is called
  * every time a node is loaded, and allows us to do some loading of our own.
+ * 
+ * @todo move new biblio_load code back to this function. 
  *
  */
 function biblio_load_old($nodes) {
@@ -2370,23 +2372,22 @@ function biblio_ctools_plugin_api() {
  * Inform the base system and the Field API about entity types.
  */
 function biblio_entity_info() {
-  // biblio will serve as the machine name of this entity
   $return['biblio'] = array(
-    // human readable entity name
     'label' => t('Biblio'),
     // Custom controller that will extend from DrupalDefaultEntityController.
-    // DDEC is for entities that behave similar to nodes.
+    // DDEC is for entities that behave similar to nodes. Note that this will
+    // change if Entity API module is used
     'controller class' => 'BiblioController',
     'base table' => 'biblio',
     'revision table' => 'biblio_revision',
     // Uses the biblio_uri() function to get the URI
     'uri callback' => 'biblio_uri',
-    // Indicates to the Field API that we can attach fields to this entity,
-    // in the same fashion as nodes.
     'fieldable' => TRUE,
     'entity keys' => array(
       'id' => 'bid',
       'revision' => 'vid',
+      // Biblio-specific name for bundle.
+      // This is referred to in many other places
       'bundle' => 'publication_type',
       'label' => 'bid',
     ),
@@ -2411,7 +2412,6 @@ function biblio_entity_info() {
       ),
     ),
   );
-  
   // Since we have multiple bundles, we will need to tell the Field API what 
   // bundles we have and what paths to put the extra field management interfaces
   // for our entity. To do that, we define, for each of our bundles, a label
@@ -2435,6 +2435,33 @@ function biblio_entity_info() {
       );
     }
   }
+  
+  $return['biblio_contributor'] = array(
+    'label' => t('Task'),
+    'entity class' => 'ExampleTask',
+    'controller class' => 'ExampleTaskController',
+    'base table' => 'example_task',
+    'fieldable' => TRUE,
+    'entity keys' => array(
+      'id' => 'tkid',
+      'bundle' => 'type',
+    ),
+    'bundle keys' => array(
+      'bundle' => 'type',
+    ),
+    'bundles' => array(),
+    'load hook' => 'example_task_load',
+    'view modes' => array(
+      'full' => array(
+        'label' => t('Default'),
+        'custom settings' => FALSE,
+      ),
+    ),
+    'label callback' => 'entity_class_label',
+    'uri callback' => 'entity_class_uri',
+    'module' => 'example_task',
+    'access callback' => 'example_task_access',
+  );
 
   return $return;
 }
