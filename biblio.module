@@ -1259,141 +1259,111 @@ function biblio_user_presave(&$edit, $account, $catagory) {
  * that will be later placed inside the form.
  * @todo get rid of this function, after re-using code for new hook_form implementation
  */
-function biblio_form_old($node, &$form_state) {
+function biblio_form($form, &$form_state, $node) {
   global $user;
+  module_load_include('inc', 'biblio', 'includes/biblio.fields');
   $fields = array();
   $form['biblio_tabs'] = $tabs = array();
 
   $tid = !empty($form_state['biblio_type']) ? $form_state['biblio_type'] :
-          ( isset($node->biblio_type) ? $node->biblio_type : 0);
-
-  $step_two = !empty($tid);
-
-  /* publication type */
-  $param['options'] = array("enctype" => "multipart/form-data");
-  $result = db_query('SELECT t.* FROM {biblio_types} as t WHERE tid > -2 AND visible = 1');
-  foreach ($result as $option) {
-    $results[$option->tid] = $option->name;
-  }
-  asort($results);
-  $options[0] = t('Select Type...');
-  $options += $results;
-  $form['biblio_type'] = array(
-    '#type' => 'select',
-    '#title' => t('Publication Type'),
-    '#default_value' =>  $tid,
-    '#options' => $options,
-    '#description' => NULL,
-    '#weight' => 2,
-    '#attributes' =>  array('onchange' => 'document.getElementById(\'edit-biblio-next\').click()'),
-    '#executes_submit_callback' => TRUE,
-    '#limit_validation_errors' => array(),
-    '#multiple' => FALSE,
-    '#required' => TRUE
-  );
-
-    $form['biblio_next'] = array(
-        '#type'   => 'submit',
-        '#value'  => $step_two ? t('Change Publication Type') : t('Next'),
-        '#limit_validation_errors' => array(),
-        '#attributes' =>  array('style' => array('display: none;')),
-        '#weight' => -10,
-        '#submit' => array(),
-    );
+          ( isset($node->publication_type) ? $node->publication_type : '');
   if (isset($_COOKIE['has_js']) && !$_COOKIE['has_js']) {
     unset($form['biblio_next']['#attributes']);
   }
 
-  if ($step_two) {
-    $form['title'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Title'),
-      '#required' => TRUE,
-      '#default_value' => trim((isset($form_state['values']['title'])?$form_state['values']['title']: $node->title)),
-      '#maxlength' => 255,
-      '#size' => 120,
-      '#weight' => 1
-    );
-    // Build the field array used to make the form
-    $result = db_query("SELECT * FROM {biblio_fields} b
-              INNER JOIN {biblio_field_type} bt ON b.fid = bt.fid
-              INNER JOIN {biblio_field_type_data} btd ON btd.ftdid=bt.ftdid
-              WHERE bt.tid=:tid ORDER BY bt.weight ASC", array(':tid' => $tid), array('fetch' => PDO::FETCH_ASSOC));
+  // $fielded_form becomes a placeholder for form values that are automatically
+  // returned to us from the Field Attach API
+  $fielded_form = $form;
+  field_attach_form('biblio', $node, $fielded_form, $form_state);
+  // Build the field array used to make the form
+  $result = db_query("SELECT * FROM {biblio_fields} b
+            INNER JOIN {biblio_field_type} bt ON b.fid = bt.fid
+            INNER JOIN {biblio_field_type_data} btd ON btd.ftdid=bt.ftdid
+            WHERE bt.tid=:tid ORDER BY bt.weight ASC", array(':tid' => $tid), array('fetch' => PDO::FETCH_ASSOC));
 
-    foreach ($result as $row) {
-      $fields[$row['name']] = $row;
-    }
-    _biblio_localize_fields($fields);
-
-    $tabs = array(
-      '#type' => 'vertical_tabs',
-      '#weight' => 10,
-    );
-    $tabs += biblio_node_form_vtabs();
-
-    $tabs['biblio_authors'] = array(
-      '#type' => 'fieldset',
-      '#group' => 'biblio_tabs',
-      '#collapsible' => TRUE,
-      '#collapsed' => TRUE,
-      '#title' => 'Authors',
-      '#description' => t('Enter a single name per line using a format such as "Smith, John K" or "John K Smith" or "J.K. Smith"'),
-    );
-
-    $tabs['biblio_authors'] += biblio_contributor_widget($node, $form_state);
-
-    $form_state['biblio_fields'] = $fields;
-
-    foreach ($fields as $key => $fld) {
-      $options = '';
-      if ($key == 'biblio_keywords' ) {
-        $sep = check_plain(variable_get('biblio_keyword_sep', ','));
-        // is the kewords are in array form, then implode them into a string.
-        if (isset($form_state['values']['biblio_keywords']) &&
-          is_array($form_state['values']['biblio_keywords'])) {
-          require_once(drupal_get_path('module', 'biblio') . '/includes/biblio.keywords.inc');
-          $form_state['values']['biblio_keywords'] = biblio_implode_keywords($form_state['values']['biblio_keywords']);
-        }
-        if (!empty($node->$key) && is_array($node->$key)) {
-          require_once(drupal_get_path('module', 'biblio') . '/includes/biblio.keywords.inc');
-          $node->$key = biblio_implode_keywords($node->$key);
-        }
-        if (empty($fld['hint'])) {
-          $fld['hint'] = t('Separate keywords using the " @sep " character', array('@sep' => $sep));
-        }
-      }
-
-      $element = array(
-            '#default_value' => (isset($form_state['values'][$key]) ? $form_state['values'][$key] : (isset($node->$key)?$node->$key:'')),
-            '#type' => $fld['type'],
-            '#title' => check_plain($fld['title']),
-            '#size' => $fld['size'],
-            '#rows' => 10,
-//            '#required' => $fld['required'],
-            '#maxlength' => $fld['maxsize'],
-            '#weight' => $fld['weight'] / 10,
-            '#autocomplete_path' => ($fld['autocomplete']) ? 'biblio/autocomplete/' . $fld['name'] : '',
-            '#description' => check_plain($fld['hint']),
-            '#format' => isset($node->biblio_formats[$key]) ? $node->biblio_formats[$key] :  filter_default_format(),
-      );
-
-      if ($key == 'biblio_refereed' ) {
-        $element['#options'] = array(
-              '' => t('None'),
-              'Refereed' => t('Refereed'),
-              'Non-Refereed' => t('Non-Refereed'),
-              'Does Not Apply' => t('Does Not Apply'),
-              'Unknown' => t('Unknown'),
-        );
-        $element['#description'] = t('If you are not sure, set this to Unknown or Does Not Apply');
-      }
-
-      if ( $fld['common']  || $fld['visible'] ) {
-        $tabs[$fld['vtab']][$key] = $element;
-      }
-
-    }
+  foreach ($result as $row) {
+    $fields[$row['name']] = $row;
   }
+  _biblio_localize_fields($fields);
+
+  $tabs = array(
+    '#type' => 'vertical_tabs',
+    '#weight' => -10,
+  );
+  $tabs += biblio_node_form_vtabs();
+  $test_tabs = $tabs;
+  
+  $field_options = biblio_parse_field_link_data_csv();
+  foreach($field_options as $row => $data) {
+    $fielded_form[$data['field name']]['#vtab'] = $data['vtab'];
+//    $test_tabs[$data['vtab']][$data['field name']] = array();
+  }
+  foreach ($fielded_form as $field => $data) {
+    $test_tabs[$data['#vtab']][$field] = $data;
+//    $test_tabs[10][$field] = $data;
+  }
+
+  $tabs['biblio_authors'] = array(
+    '#type' => 'fieldset',
+    '#group' => 'biblio_tabs',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#title' => 'Authors',
+    '#description' => t('Enter a single name per line using a format such as "Smith, John K" or "John K Smith" or "J.K. Smith"'),
+  );
+
+  $tabs['biblio_authors'] += biblio_contributor_widget($node, $form_state);
+
+  $form_state['biblio_fields'] = $fields;
+//  foreach ($fields as $key => $fld) {
+//    $options = '';
+//    if ($key == 'biblio_keywords' ) {
+//      $sep = check_plain(variable_get('biblio_keyword_sep', ','));
+//      // is the kewords are in array form, then implode them into a string.
+//      if (isset($form_state['values']['biblio_keywords']) &&
+//        is_array($form_state['values']['biblio_keywords'])) {
+//        require_once(drupal_get_path('module', 'biblio') . '/includes/biblio.keywords.inc');
+//        $form_state['values']['biblio_keywords'] = biblio_implode_keywords($form_state['values']['biblio_keywords']);
+//      }
+//      if (!empty($node->$key) && is_array($node->$key)) {
+//        require_once(drupal_get_path('module', 'biblio') . '/includes/biblio.keywords.inc');
+//        $node->$key = biblio_implode_keywords($node->$key);
+//      }
+//      if (empty($fld['hint'])) {
+//        $fld['hint'] = t('Separate keywords using the " @sep " character', array('@sep' => $sep));
+//      }
+//    }
+//
+//    $element = array(
+//          '#default_value' => (isset($form_state['values'][$key]) ? $form_state['values'][$key] : (isset($node->$key)?$node->$key:'')),
+//          '#type' => $fld['type'],
+//          '#title' => check_plain($fld['title']),
+//          '#size' => $fld['size'],
+//          '#rows' => 10,
+////            '#required' => $fld['required'],
+//          '#maxlength' => $fld['maxsize'],
+//          '#weight' => $fld['weight'] / 10,
+//          '#autocomplete_path' => ($fld['autocomplete']) ? 'biblio/autocomplete/' . $fld['name'] : '',
+//          '#description' => check_plain($fld['hint']),
+//          '#format' => isset($node->biblio_formats[$key]) ? $node->biblio_formats[$key] :  filter_default_format(),
+//    );
+//
+//    if ($key == 'biblio_refereed' ) {
+//      $element['#options'] = array(
+//            '' => t('None'),
+//            'Refereed' => t('Refereed'),
+//            'Non-Refereed' => t('Non-Refereed'),
+//            'Does Not Apply' => t('Does Not Apply'),
+//            'Unknown' => t('Unknown'),
+//      );
+//      $element['#description'] = t('If you are not sure, set this to Unknown or Does Not Apply');
+//    }
+//
+//    if ( $fld['common']  || $fld['visible'] ) {
+//      $tabs[$fld['vtab']][$key] = $element;
+//    }
+//
+//  }
   foreach (element_children($tabs) as $key) {
     $tab_children = element_children($tabs[$key]);
     if (empty($tab_children) && $key != 'biblio_full_text') {
@@ -1404,8 +1374,8 @@ function biblio_form_old($node, &$form_state) {
  //$biblio_form['#tree']  = TRUE;
   $form['#validate']= array('biblio_node_form_validate');
   $form['#cache'] = TRUE;
-  $form['biblio_tabs'] += $tabs;
-
+  $form['biblio_tabs'] += $test_tabs;
+  
   return $form;
 }
 
@@ -2636,7 +2606,7 @@ function biblio_load_multiple($bids = array(), $conditions = array(), $reset = F
  * @param $biblio
  *   The biblio object to edit, which may be brand new.
  */
-function biblio_form($form, &$form_state, $biblio) {
+function biblio_form_new($form, &$form_state, $biblio) {
   // Set the id to identify this as an biblio edit form.
   $form['#id'] = 'biblio-form';
   
@@ -3018,4 +2988,10 @@ function biblio_contributor_delete($contributor) {
 */
 function biblio_contributor_delete_multiple($contributor_ids) {
   entity_delete_multiple('biblio_contributor', $contributor_ids);
+}
+
+function biblio_get_associated_contributors($bids) {
+  foreach ($bids as $bid) {
+    // do some stuff here eventually
+  }
 }
