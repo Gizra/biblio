@@ -131,16 +131,16 @@ function biblio_parse_contributors($contributors) {
   return $result;
 }
 
-function biblio_delete_contributors($node) {
+function biblio_delete_contributors($bid) {
   $count = db_delete('biblio_contributor')
-            ->condition('nid', $node->nid)
+            ->condition('bid', $bid)
             ->execute();
   return $count;
 }
 
-function biblio_delete_contributors_revision($node) {
+function biblio_delete_contributors_revision($vid) {
   $count = db_delete('biblio_contributor')
-            ->condition('vid', $node->vid)
+            ->condition('vid', $vid)
             ->execute();
   return $count;
 }
