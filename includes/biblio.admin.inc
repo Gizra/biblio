@@ -2555,6 +2555,21 @@ function biblio_add($type) {
 }
 
 /**
+ * Presents the biblio editing form, or redirects to delete confirmation.
+ *
+ * @param type $biblio
+ * @return type 
+ */
+function biblio_page_edit($biblio) {
+  $lang = biblio_field_language('biblio_title', $biblio);
+  $types = biblio_types();
+  drupal_set_title(t('<em>Edit @type</em> @title', array('@type' =>
+    $types[$biblio->publication_type]->name, '@title' =>$biblio->biblio_title[$lang][0]['value'])), PASS_THROUGH);
+  
+  return drupal_get_form($biblio->publication_type . '_biblio_form', $biblio);
+}
+
+/**
  * Menu title callback.
  *
  * We want the tile of each page to be a string based on the type that is
