@@ -271,9 +271,9 @@ function biblio_delete_orphan_keywords($force = FALSE) {
  * @return
  *   The number of links removed
  */
-function biblio_delete_keywords($node) {
+function biblio_delete_keywords($bid) {
   $count = db_delete('biblio_keyword')
-            ->condition('nid', $node->nid)
+            ->condition('bid', $bid)
             ->execute();
   return $count;
 }
@@ -285,9 +285,9 @@ function biblio_delete_keywords($node) {
  * @return
  *   The number of links removed
  */
-function biblio_delete_revision_keywords($node) {
+function biblio_delete_revision_keywords($vid) {
   return db_delete('biblio_keyword')
-            ->condition('vid', $node->vid)
+            ->condition('vid', $vid)
             ->execute();
 }
 
