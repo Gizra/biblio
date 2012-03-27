@@ -1624,9 +1624,7 @@ function _biblio_prepare_submit(&$biblio) {
   $biblio->language = biblio_field_language('biblio_title', $biblio);
   $lang = $biblio->language;
   if(!isset($biblio->publication_type)) $biblio->publication_type = 'miscellaneous';
-  // @todo: figure out why this isn't an array up to this point.
-  if (!is_array($biblio->biblio_sort_title)) $biblio->biblio_sort_title = array();
-  $biblio->biblio_sort_title[$lang][0]['value'] = biblio_normalize_title($biblio->biblio_title[$lang][0]['value']);
+  $biblio->biblio_sort_title = biblio_normalize_title($biblio->biblio_title[$lang][0]['value']);
   if(!isset($biblio->biblio_year[$lang][0]['value'])) $biblio->biblio_year[$lang][0]['value'] = 9999;
     $biblio->biblio_year[$lang][0]['value'] = _biblio_numeric_year($biblio->biblio_year[$lang][0]['value']);
 
@@ -2655,8 +2653,7 @@ function biblio_form_validate($form, &$form_state) {
 }
 
 /**
- * The Submit callback is doing extremely little. It's just glue code between
- * the form and the biblio_save() function.
+ * Glue code between the form and the biblio_save() function.
  *
  * @global type $user
  * @param type $form
