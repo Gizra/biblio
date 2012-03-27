@@ -1012,7 +1012,7 @@ function biblio_menu() {
     'access arguments'  => array('rss'),
     'type'              => MENU_CALLBACK
   );
-  $items['biblio/%biblio'] = array(
+  $items["$base/%biblio"] = array(
     'title callback' => 'biblio_page_title',
     'title arguments' => array(1),
     'page callback' => 'biblio_page_view',
@@ -1082,6 +1082,49 @@ function biblio_menu() {
     'type' => MENU_LOCAL_TASK, 
     'context' => MENU_CONTEXT_INLINE,
     'file' => 'includes/biblio.admin.inc',
+  );
+  $items['admin/content/biblio/contributor/add'] = array(
+    'title' => 'Add Contributor',
+    'page callback' => 'biblio_contributor_admin_add_page', // callback
+    'access arguments' => array('administer biblio'),
+    'file' => 'includes/biblio.admin.inc',
+    'type' => MENU_LOCAL_ACTION,
+//    'tab_parent' => 'task',
+//    'tab_root' => 'task',
+  );
+  $items['biblio/contributor/%biblio_contributor'] = array(
+    'title callback' => 'entity_label',
+    'title arguments' => array('biblio_contributor', 2), //callback
+    'page callback' => 'biblio_contributor_view', //callback
+    'page arguments' => array(2),
+    'access arguments' => array('access biblio content'),
+    'file' => 'includes/biblio.pages.inc',
+  );
+
+  $items['biblio/contributor/%biblio_contributor/view'] = array(
+    'title' => 'View',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+  );
+
+  $items['biblio/contributor/%biblio_contributor/delete'] = array(
+    'title' => 'Delete Contributor',
+    'title callback' => 'biblio_contributor_label', //callback
+    'title arguments' => array(2),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('biblio_contributor_delete_form', 2), //callback
+    'access arguments' => array('administer biblio'),
+    'file' => 'includes/biblio.admin.inc',
+  );
+
+  $items['biblio/contributor/%biblio_contributor/edit'] = array(
+    'title' => 'Edit',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('biblio_contributor_form', 2),
+    'access arguments' => array('administer biblio'),
+    'file' => 'includes/biblio.admin.inc',
+    'type' => MENU_LOCAL_TASK,
+    'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
   );
   return $items;
 }
@@ -2939,4 +2982,40 @@ function biblio_form_delete_submit($form, &$form_state) {
  */
 function biblio_delete_multiple($bids) {
   return entity_get_controller('biblio')->delete($bids);
+}
+
+/**
+ * Load a contributor.
+ */
+function biblio_contributor_load($bcid, $reset = FALSE) {
+  $contributors = biblio_contributor_load_multiple(array($bcid), array(), $reset);
+  return reset($contributors);
+}
+
+/**
+* Load multiple contributors based on certain conditions.
+*/
+function biblio_contributor_load_multiple($bcids = array(), $conditions = array(), $reset = FALSE) {
+  return entity_load('biblio_contributor', $bcids, $conditions, $reset);
+}
+
+/**
+* Save contributor.
+*/
+function biblio_contributor_save($contributor) {
+  entity_save('biblio_contributor', $contributor);
+}
+
+/**
+* Delete single contributor.
+*/
+function biblio_contributor_delete($contributor) {
+  entity_delete('biblio_contributor', entity_id('biblio_contributor' ,$contributor));
+}
+
+/**
+* Delete multiple contributors.
+*/
+function biblio_contributor_delete_multiple($contributor_ids) {
+  entity_delete_multiple('biblio_contributor', $contributor_ids);
 }

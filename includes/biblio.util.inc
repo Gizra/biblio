@@ -24,7 +24,7 @@ function biblio_normalize_title($title) {
   while (array_search(drupal_strtolower($title_words[0]), $stop_words) !== FALSE) {
     array_shift($title_words);
   }
-
+  
   return drupal_substr(implode(' ', $title_words), 0, 64);
 }
 function biblio_coins($biblio) {
