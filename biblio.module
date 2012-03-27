@@ -1058,31 +1058,31 @@ function biblio_menu() {
 //      'description' => $type->description,
     );
   }
-//  $items['biblio/%biblio/view'] = array(
-//    'title' => 'View',
-//    'type' => MENU_DEFAULT_LOCAL_TASK,
-//    'weight' => -10,
-//  );
-//  $items['biblio/%biblio/edit'] = array(
-//    'title' => 'Edit',
-//    'page callback' => 'biblio_page_edit',
-//    'page arguments' => array(1),
-//    'access arguments' => array('update biblios'),
-//    'weight' => 0,
-//    'type' => MENU_LOCAL_TASK,
-//    'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
-//    'file' => 'biblio.pages.inc',
-//  );
-//  $items['biblio/%biblio/delete'] = array(
-//    'title' => 'Delete',
-//    'page callback' => 'drupal_get_form',
-//    'page arguments' => array('biblio_delete_confirm', 1),
-//    'access arguments' => array('delete biblios'),
-//    'weight' => 1,
-//    'type' => MENU_LOCAL_TASK, 
-//    'context' => MENU_CONTEXT_INLINE,
-//    'file' => 'biblio.pages.inc',
-//  );
+  $items['biblio/%biblio/view'] = array(
+    'title' => 'View',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+  );
+  $items['biblio/%biblio/edit'] = array(
+    'title' => 'Edit',
+    'page callback' => 'biblio_page_edit',
+    'page arguments' => array(1),
+    'access arguments' => array('administer biblio'),
+    'weight' => 0,
+    'type' => MENU_LOCAL_TASK,
+    'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
+    'file' => 'includes/biblio.admin.inc',
+  );
+  $items['biblio/%biblio/delete'] = array(
+    'title' => 'Delete',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('biblio_delete_confirm', 1),
+    'access arguments' => array('administer biblio'),
+    'weight' => 1,
+    'type' => MENU_LOCAL_TASK, 
+    'context' => MENU_CONTEXT_INLINE,
+    'file' => 'includes/biblio.admin.inc',
+  );
   return $items;
 }
 
@@ -1624,7 +1624,8 @@ function _biblio_prepare_submit(&$biblio) {
   $biblio->language = biblio_field_language('biblio_title', $biblio);
   $lang = $biblio->language;
   if(!isset($biblio->publication_type)) $biblio->publication_type = 'miscellaneous';
-
+  // @todo: figure out why this isn't an array up to this point.
+  if (!is_array($biblio->biblio_sort_title)) $biblio->biblio_sort_title = array();
   $biblio->biblio_sort_title[$lang][0]['value'] = biblio_normalize_title($biblio->biblio_title[$lang][0]['value']);
   if(!isset($biblio->biblio_year[$lang][0]['value'])) $biblio->biblio_year[$lang][0]['value'] = 9999;
     $biblio->biblio_year[$lang][0]['value'] = _biblio_numeric_year($biblio->biblio_year[$lang][0]['value']);
@@ -1691,17 +1692,16 @@ function biblio_update($node) {
  *
  * When a node is deleted, we need to clean up related tables.
  */
-function biblio_delete($node) {
+function biblio_delete($bid) {
   module_load_include('inc', 'biblio', 'includes/biblio.contributors');
   module_load_include('inc', 'biblio', 'includes/biblio.keywords');
     //first remove data from the biblio table
 
-  db_delete('biblio')
-    ->condition('nid', $node->nid)
-    ->execute();
   //now remove the entries from the contributor linking table
-  biblio_delete_contributors($node);
-  biblio_delete_keywords($node);
+  biblio_delete_contributors($bid);
+  biblio_delete_keywords($bid);
+  
+  return biblio_delete_multiple(array($bid));
 }
 /**
  * Implementation of hook_load().
@@ -2555,6 +2555,10 @@ function biblio_load($bid = NULL, $vid = NULL, $reset = FALSE) {
   $bids = (isset($bid) ? array($bid) : array());
   $conditions = (isset($vid) ? array ('vid' => $vid) : array());
   $biblio = biblio_load_multiple($bids, $conditions, $reset);
+  
+  $language = biblio_field_language('biblio_title', $biblio[$bid]);
+  $biblio[$bid]->language = $language;
+
   return $biblio ? reset($biblio) : FALSE;
 }
 
@@ -2581,20 +2585,6 @@ function biblio_load_multiple($bids = array(), $conditions = array(), $reset = F
   // entity_load() will create a new instance of biblioController as needed
   // and call the load() method on it. 
   return entity_load('biblio', $bids, $conditions, $reset);
-}
-
-/**
- * Presents the biblio editing form, or redirects to delete confirmation.
- *
- * @param type $biblio
- * @return type 
- */
-function biblio_page_edit($biblio) {
-  $types = biblio_types();
-  drupal_set_title(t('<em>Edit @type</em> @title', array('@type' =>
-    $types[$biblio->publication_type]->name, '@title' =>$biblio->title)), PASS_THROUGH);
-  
-  return drupal_get_form($biblio->publication_type . '_biblio_form', $biblio);
 }
 
 /**
@@ -2723,24 +2713,7 @@ function biblio_save($biblio) {
 }
 
 /**
- * Redirects the user to biblio/$bid/delete
- *
- * @param type $form
- * @param type $form_state 
- */
-function biblio_form_delete_submit($form, &$form_state) {
-  $destination = array();
-  if (isset($_GET['destination'])) {
-    $destination = drupal_get_destination();
-    unset($_GET['destination']);
-  }
-  $biblio = $form['#biblio'];
-  $form_state['redirect'] = array('biblio/' . $biblio->bid . '/delete',
-      array('query' => $destination));
-}
-
-/**
- * Displays an biblio; Hands data off to the Field API
+ * Displays a biblio; Hands data off to the Field API
  *
  * @param type $biblio
  * @param type $view_mode View mode defined in biblio_entity_info().
@@ -2765,47 +2738,6 @@ function biblio_page_view($biblio, $view_mode = 'full') {
   $biblio->content += field_attach_view('biblio', $biblio, $view_mode);
   
   return $biblio->content;
-}
-
-/**
- * Rather than build a complete form, we will simply pass data on to a utility
- * function of the Form API called confirm_form().
- *
- * @param type $form
- * @param type $form_state
- * @param type $biblio
- * @return type 
- */
-function biblio_delete_confirm($form, &$form_state, $biblio) {
-  $form['#biblio'] = $biblio;
-  // Always provide entity id in the same form key as in the entity edit form
-  $form['bid'] = array('#type' => 'value', '#value' => $biblio->bid);
-  return confirm_form($form,
-    t('Are you sure you want to delete %title?', array('%title' => $biblio->title)),
-    'biblio/' . $biblio->bid,
-    t('This action cannot be undone.'),
-    t('Delete'),
-    t('Cancel')
-  );
-}
-
-function biblio_delete_confirm_submit($form, &$form_state) {
-  if ($form_state['values']['confirm']) {
-    $biblio = biblio_load($form_state['values']['bid']);
-    biblio_delete($form_state['values']['bid']);
-    watchdog('biblio', '@type: deleted %title.',
-        array('@type' => $biblio->publication_type, '%title' => $biblio->title));
-    
-    $types = biblio_types();
-    drupal_set_message(t('@type %title has been deleted.',
-        array(
-          '@type' => $types[$biblio->publication_type]-> name, 
-          '%title' => $biblio->title)
-        )
-    );
-  }
-  
-  $form_state['redirect'] = '<front>';
 }
 
 /**
@@ -2934,4 +2866,80 @@ function biblio_page_title($biblio) {
 function biblio_field_language($field_name, $biblio) {
   $field_languages = field_language('biblio', $biblio);
   return $field_languages[$field_name];
+}
+
+/**
+ * Rather than build a complete form, we will simply pass data on to a utility
+ * function of the Form API called confirm_form().
+ *
+ * @param type $form
+ * @param type $form_state
+ * @param type $biblio
+ * @return type 
+ */
+function biblio_delete_confirm($form, &$form_state, $biblio) {
+  $lang = $biblio->language;
+  $form['#biblio'] = $biblio;
+  // Always provide entity id in the same form key as in the entity edit form
+  $form['bid'] = array('#type' => 'value', '#value' => $biblio->bid);
+  return confirm_form($form,
+    t('Are you sure you want to delete %title?', array('%title' => $biblio->biblio_title[$lang][0]['value'])),
+    'biblio/' . $biblio->bid,
+    t('This action cannot be undone.'),
+    t('Delete'),
+    t('Cancel')
+  );
+}
+
+function biblio_delete_confirm_submit($form, &$form_state) {
+  if ($form_state['values']['confirm']) {
+    $biblio = biblio_load($form_state['values']['bid']);
+    biblio_delete($form_state['values']['bid']);
+    watchdog('biblio', '@type: deleted %title.',
+      array(
+        '@type' => $biblio->publication_type, 
+        '%title' => $biblio->biblio_title[$biblio->language][0]['value'],
+      )
+    );
+    
+    $types = biblio_types();
+    drupal_set_message(t('@type %title has been deleted.',
+        array(
+          '@type' => $types[$biblio->publication_type]-> name, 
+          '%title' => $biblio->biblio_title[$biblio->language][0]['value'])
+        )
+    );
+  }
+  
+  $form_state['redirect'] = '<front>';
+}
+
+/**
+ * Redirects the user to biblio/$bid/delete
+ *
+ * @param type $form
+ * @param type $form_state 
+ */
+function biblio_form_delete_submit($form, &$form_state) {
+  $destination = array();
+  if (isset($_GET['destination'])) {
+    $destination = drupal_get_destination();
+    unset($_GET['destination']);
+  }
+  $biblio = $form['#biblio'];
+  $form_state['redirect'] = array('biblio/' . $biblio->bid . '/delete',
+      array('query' => $destination));
+}
+
+/**
+ * Deletes multiple biblio by ID.
+ *
+ * @param $bids
+ *   An array of biblios IDs to delete.
+ *
+ * @return
+ *   TRUE on success, FALSE otherwise.
+ */
+function biblio_delete_multiple($bids) {
+  return entity_get_controller('biblio')->delete($bids);
 }
