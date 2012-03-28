@@ -31,7 +31,7 @@ function biblio_install() {
   $result[] = _add_publication_types();
 
   // @todo: add contributor field data contained in this function
-//  $result[] = _add_custom_field_data();
+  $result[] = _add_custom_field_data();
 
   //_enable_biblio_keyword_vocabulary();
 
@@ -1339,7 +1339,7 @@ function _add_db_field_data() {
       ))->execute();
 
       // add contributor type data
-      if ($row[9] == 'contrib_widget') {
+      if (strstr($row[8], 'biblio_authors')) {
         // use field name without trailing 's' as initial guess for author type
         $auth_type = (substr($row[1], -1, 1) == 's') ? substr($row[1], 0, -1) : $row[1];
 
