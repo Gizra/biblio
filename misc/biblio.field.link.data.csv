@@ -45,4 +45,4 @@ fid,title,hint,common,autocomplete,required,weight,visible,"field name",type,wid
 44,Label,,0,0,0,44,0,biblio_label,text,60,255,9
 45,"Access Date",,0,0,0,45,0,biblio_access_date,text,60,255,9
 46,"Refereed Designation",,0,0,0,46,0,biblio_refereed,text,0,128,9
-47,Title,,1,0,1,1.1,1,biblio_title,text,60,255,1
+47,Title,,1,0,1,1.1,1,biblio_title,text,60,255,0
