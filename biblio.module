@@ -1263,6 +1263,11 @@ function biblio_form($form, &$form_state, $node) {
   global $user;
   module_load_include('inc', 'biblio', 'includes/biblio.fields');
   $fields = array();
+  
+  // Save the biblio for later, in case we need it.
+  $form['#biblio'] = $node;
+  $form_state['biblio'] = $node;
+  
   $form['biblio_tabs'] = $tabs = array();
 
   $tid = !empty($form_state['biblio_type']) ? $form_state['biblio_type'] :
@@ -1288,19 +1293,15 @@ function biblio_form($form, &$form_state, $node) {
 
   $tabs = array(
     '#type' => 'vertical_tabs',
-    '#weight' => -10,
+    '#weight' => 2,
   );
   $tabs += biblio_node_form_vtabs();
-  $test_tabs = $tabs;
   
+  // Get the vtabs of all biblio fields, 
+  // specified in misc/biblio.field.link.data.csv
   $field_options = biblio_parse_field_link_data_csv();
   foreach($field_options as $row => $data) {
     $fielded_form[$data['field name']]['#vtab'] = $data['vtab'];
-//    $test_tabs[$data['vtab']][$data['field name']] = array();
-  }
-  foreach ($fielded_form as $field => $data) {
-    $test_tabs[$data['#vtab']][$field] = $data;
-//    $test_tabs[10][$field] = $data;
   }
 
   $tabs['biblio_authors'] = array(
@@ -1314,6 +1315,20 @@ function biblio_form($form, &$form_state, $node) {
 
   $tabs['biblio_authors'] += biblio_contributor_widget($node, $form_state);
 
+  // Add the values we created above to the real form
+  foreach ($fielded_form as $field => $data) {
+    if (is_array($data) && isset($data['#vtab'])) {
+      if ($data['#vtab'] === '0') {
+        // Fields outside of the vtabs
+        $form['main'] = $data;
+      }
+      else {
+        // Add all other fields to the vtabs
+        $tabs[$data['#vtab']][$field] = $data;
+      }
+    }
+  }
+  
   $form_state['biblio_fields'] = $fields;
 //  foreach ($fields as $key => $fld) {
 //    $options = '';
@@ -1370,11 +1385,33 @@ function biblio_form($form, &$form_state, $node) {
       unset($tabs[$key]);
     }
   }
+  
+  // Add the buttons.
+  // Save button is always available
+  $form['buttons'] = array();
+  $form['buttons']['#weight'] = 100;
+  $form['buttons']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save'),
+    '#weight' => 5,
+    '#submit' => array('biblio_form_submit'),
+  );
+  // Delete button is available if we're editing an existing biblio.
+  if (!empty($biblio->bid)) {
+    $form['buttons']['delete'] = array(
+      '#access' => user_access('delete biblios'),
+      '#type' => 'submit',
+      '#value' => t('Delete'),
+      '#weight' => 15,
+      '#submit' => array('biblio_form_delete_submit'),
+    );
+  }
+  
   // $form['format'] = filter_form($node->format, 20);
  //$biblio_form['#tree']  = TRUE;
-  $form['#validate']= array('biblio_node_form_validate');
+  $form['#validate']= array('biblio_form_validate');
   $form['#cache'] = TRUE;
-  $form['biblio_tabs'] += $test_tabs;
+  $form['biblio_tabs'] += $tabs;
   
   return $form;
 }
@@ -2610,10 +2647,6 @@ function biblio_form_new($form, &$form_state, $biblio) {
   // Set the id to identify this as an biblio edit form.
   $form['#id'] = 'biblio-form';
   
-  // Save the biblio for later, in case we need it.
-  $form['#biblio'] = $biblio;
-  $form_state['biblio'] = $biblio;
-  
   // Checkbox to indicate whether we should save a new revision or overwrite the
   // existing revision.
 //  $form['revision'] = array(
@@ -2623,26 +2656,6 @@ function biblio_form_new($form, &$form_state, $biblio) {
 //    '#default_value' => 0,
 //  );
   
-  // Add the buttons.
-  // Save button is always available
-  $form['buttons'] = array();
-  $form['buttons']['#weight'] = 100;
-  $form['buttons']['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Save'),
-    '#weight' => 5,
-    '#submit' => array('biblio_form_submit'),
-  );
-  // Delete button is available if we're editing an existing biblio.
-  if (!empty($biblio->bid)) {
-    $form['buttons']['delete'] = array(
-      '#access' => user_access('delete biblios'),
-      '#type' => 'submit',
-      '#value' => t('Delete'),
-      '#weight' => 15,
-      '#submit' => array('biblio_form_delete_submit'),
-    );
-  }
   
   $form['#validate'][] = 'biblio_form_validate';
   
