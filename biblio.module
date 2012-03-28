@@ -1304,7 +1304,7 @@ function biblio_form($form, &$form_state, $node) {
     $fielded_form[$data['field name']]['#vtab'] = $data['vtab'];
   }
 
-  $tabs['biblio_authors'] = array(
+  $tabs[1] = array(
     '#type' => 'fieldset',
     '#group' => 'biblio_tabs',
     '#collapsible' => TRUE,
@@ -1313,7 +1313,7 @@ function biblio_form($form, &$form_state, $node) {
     '#description' => t('Enter a single name per line using a format such as "Smith, John K" or "John K Smith" or "J.K. Smith"'),
   );
 
-  $tabs['biblio_authors'] += biblio_contributor_widget($node, $form_state);
+  $tabs[1] += biblio_contributor_widget($node, $form_state);
 
   // Add the values we created above to the real form
   foreach ($fielded_form as $field => $data) {
@@ -1418,16 +1418,16 @@ function biblio_form($form, &$form_state, $node) {
 
 function biblio_node_form_vtab_info() {
   return array(
-    array('tab_id' => 1, 'weight' => 10, 'title' => 'Abstract', 'description' => ''),
+    array('tab_id' => 2, 'weight' => 10, 'title' => 'Abstract', 'description' => ''),
     array('tab_id' => 'biblio_full_text', 'weight' => 11, 'title' => 'Full text', 'description' => ''),
-    array('tab_id' => 2, 'weight' => 12, 'title' => 'Publication', 'description' => ''),
-    array('tab_id' => 3, 'weight' => 13, 'title' => 'Publisher', 'description' => ''),
-    array('tab_id' => 4, 'weight' => 14, 'title' => 'Identifiers', 'description' => ''),
-    array('tab_id' => 5, 'weight' => 15, 'title' => 'Locators', 'description' => 'URL\'s etc'),
-    array('tab_id' => 6, 'weight' => 16, 'title' => 'Keywords', 'description' => ''),
-    array('tab_id' => 7, 'weight' => 17, 'title' => 'Notes', 'description' => ''),
-    array('tab_id' => 8, 'weight' => 18, 'title' => 'Alternate Titles', 'description' => ''),
-    array('tab_id' => 9, 'weight' => 19, 'title' => 'Other', 'description' => ''),
+    array('tab_id' => 3, 'weight' => 12, 'title' => 'Publication', 'description' => ''),
+    array('tab_id' => 4, 'weight' => 13, 'title' => 'Publisher', 'description' => ''),
+    array('tab_id' => 5, 'weight' => 14, 'title' => 'Identifiers', 'description' => ''),
+    array('tab_id' => 6, 'weight' => 15, 'title' => 'Locators', 'description' => 'URL\'s etc'),
+    array('tab_id' => 7, 'weight' => 16, 'title' => 'Keywords', 'description' => ''),
+    array('tab_id' => 8, 'weight' => 17, 'title' => 'Notes', 'description' => ''),
+    array('tab_id' => 9, 'weight' => 18, 'title' => 'Alternate Titles', 'description' => ''),
+    array('tab_id' => 10, 'weight' => 19, 'title' => 'Other', 'description' => ''),
     );
 }
 
