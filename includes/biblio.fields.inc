@@ -217,17 +217,17 @@ function modify_biblio_field_link_data_csv() {
     if (isset($row['fid'])) {
       // Modify data here...
 
-      // get rid of unsupported field types listed in the CSV
-      // @todo clean up the CSV and replace with applicable field types
-      if ($row['type'] == 'contrib_widget' ||
-          $row['type'] == 'textfield' ||
-          $row['type'] == 'select'
-          ) {
-        $data_to_write[$key]['type'] = 'text';
-      }
-      if ($row['type'] == 'text_format') {
-        $data_to_write[$key]['type'] = 'text_long';
-      }
+        // get rid of unsupported field types listed in the CSV
+        // @todo clean up the CSV and replace with applicable field types
+        if ($row['type'] == 'contrib_widget' ||
+            $row['type'] == 'textfield' ||
+            $row['type'] == 'select'
+            ) {
+          $data_to_write[$key]['type'] = 'text';
+        }
+        if ($row['type'] == 'text_format') {
+          $data_to_write[$key]['type'] = 'text_long';
+        }
     }
   }
   foreach ($data_to_write as $key => $value) {

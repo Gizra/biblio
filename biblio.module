@@ -1259,19 +1259,19 @@ function biblio_user_presave(&$edit, $account, $catagory) {
  * that will be later placed inside the form.
  * @todo get rid of this function, after re-using code for new hook_form implementation
  */
-function biblio_form($form, &$form_state, $node) {
+function biblio_form($form, &$form_state, $biblio) {
   global $user;
   module_load_include('inc', 'biblio', 'includes/biblio.fields');
   $fields = array();
   
   // Save the biblio for later, in case we need it.
-  $form['#biblio'] = $node;
-  $form_state['biblio'] = $node;
+  $form['#biblio'] = $biblio;
+  $form_state['biblio'] = $biblio;
   
   $form['biblio_tabs'] = $tabs = array();
 
   $tid = !empty($form_state['biblio_type']) ? $form_state['biblio_type'] :
-          ( isset($node->publication_type) ? $node->publication_type : '');
+          ( isset($biblio->publication_type) ? $biblio->publication_type : '');
   if (isset($_COOKIE['has_js']) && !$_COOKIE['has_js']) {
     unset($form['biblio_next']['#attributes']);
   }
@@ -1279,7 +1279,7 @@ function biblio_form($form, &$form_state, $node) {
   // $fielded_form becomes a placeholder for form values that are automatically
   // returned to us from the Field Attach API
   $fielded_form = $form;
-  field_attach_form('biblio', $node, $fielded_form, $form_state);
+  field_attach_form('biblio', $biblio, $fielded_form, $form_state);
   // Build the field array used to make the form
   $result = db_query("SELECT * FROM {biblio_fields} b
             INNER JOIN {biblio_field_type} bt ON b.fid = bt.fid
@@ -1313,14 +1313,14 @@ function biblio_form($form, &$form_state, $node) {
     '#description' => t('Enter a single name per line using a format such as "Smith, John K" or "John K Smith" or "J.K. Smith"'),
   );
 
-  $tabs[1] += biblio_contributor_widget($node, $form_state);
+  $tabs[1] += biblio_contributor_widget($biblio, $form_state);
 
   // Add the values we created above to the real form
   foreach ($fielded_form as $field => $data) {
     if (is_array($data) && isset($data['#vtab'])) {
       if ($data['#vtab'] === '0') {
         // Fields outside of the vtabs
-        $form['main'] = $data;
+        $form[$field] = $data;
       }
       else {
         // Add all other fields to the vtabs
@@ -2604,8 +2604,10 @@ function biblio_load($bid = NULL, $vid = NULL, $reset = FALSE) {
   $conditions = (isset($vid) ? array ('vid' => $vid) : array());
   $biblio = biblio_load_multiple($bids, $conditions, $reset);
   
-  $language = biblio_field_language('biblio_title', $biblio[$bid]);
-  $biblio[$bid]->language = $language;
+  if (isset($biblio[$bid])) {
+    $language = biblio_field_language('biblio_title', $biblio[$bid]);
+    $biblio[$bid]->language = $language;
+  }
 
   return $biblio ? reset($biblio) : FALSE;
 }
@@ -2673,7 +2675,6 @@ function biblio_form_new($form, &$form_state, $biblio) {
  */
 function biblio_form_validate($form, &$form_state) {
   $biblio = $form_state['biblio'];
-  
   // Field validation.
   field_attach_form_validate('biblio', $biblio, $form, $form_state);
 }
