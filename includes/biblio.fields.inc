@@ -187,7 +187,7 @@ function biblio_field_list() {
 function biblio_delete_fields() {
   $fields = biblio_field_list();
   foreach ($fields as $field) {
-    // Each iteration takes ~90ms to run :(
+    // Each iteration takes ~90ms to run
     field_delete_field($field);
   }
   

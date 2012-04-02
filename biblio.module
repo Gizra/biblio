@@ -1085,7 +1085,7 @@ function biblio_menu() {
   );
   $items['admin/content/biblio/contributor/add'] = array(
     'title' => 'Add Contributor',
-    'page callback' => 'biblio_contributor_admin_add_page', // callback
+    'page callback' => 'biblio_contributor_add', // callback
     'access arguments' => array('administer biblio'),
     'file' => 'includes/biblio.admin.inc',
     'type' => MENU_LOCAL_ACTION,
@@ -1095,10 +1095,9 @@ function biblio_menu() {
   $items['biblio/contributor/%biblio_contributor'] = array(
     'title callback' => 'entity_label',
     'title arguments' => array('biblio_contributor', 2), //callback
-    'page callback' => 'biblio_contributor_view', //callback
+    'page callback' => 'biblio_contributor_page_view', //callback
     'page arguments' => array(2),
     'access arguments' => array('access biblio content'),
-    'file' => 'includes/biblio.pages.inc',
   );
 
   $items['biblio/contributor/%biblio_contributor/view'] = array(
@@ -1255,9 +1254,8 @@ function biblio_user_presave(&$edit, $account, $catagory) {
  * Implementation of hook_form().
  *
  * Create the form for collecting the information
- * specific to this node type. This hook requires us to return some HTML
+ * specific to this biblio. This hook requires us to return some HTML
  * that will be later placed inside the form.
- * @todo get rid of this function, after re-using code for new hook_form implementation
  */
 function biblio_form($form, &$form_state, $biblio) {
   global $user;
@@ -1459,19 +1457,8 @@ function biblio_contributor_widget($node, &$form_state) {
   else {
     $contributors = array();
   }
-
-  $ctypes = db_query('SELECT * FROM {biblio_contributor_type_data}');
-
-  foreach ($ctypes as $ctype ) {
-    $options['roles'][$ctype->auth_type] = $ctype->title;
-  }
-  $options['categories'] = array(
-    1 => t('Primary'),
-    2 => t('Secondary'),
-    3 => t('Tertiary'),
-    4 => t('Subsidiary'),
-    5 => t('Corporate/Institutional')
-  );
+  
+  $options = biblio_get_contributor_options();
 
   // Container for just the contributors.
   $wrapper = array();
@@ -1515,34 +1502,53 @@ function biblio_contributor_widget($node, &$form_state) {
   return $wrapper;
 }
 
+function biblio_get_contributor_options() {
+  
+
+  $ctypes = db_query('SELECT * FROM {biblio_contributor_type_data}');
+
+  foreach ($ctypes as $ctype ) {
+    $options['roles'][$ctype->auth_type] = $ctype->title;
+  }
+  $options['categories'] = array(
+    1 => t('Primary'),
+    2 => t('Secondary'),
+    3 => t('Tertiary'),
+    4 => t('Subsidiary'),
+    5 => t('Corporate/Institutional')
+  );
+  
+  return $options;
+}
+
 function biblio_contributor_form($contributor, $options) {
-    $form = array('#tree' => TRUE);
+  $form = array('#tree' => TRUE);
 
   $form['name'] = array(
     '#type' => 'textfield',
     '#autocomplete_path' =>  'biblio/autocomplete/contributor',
-    '#default_value' => isset($contributor['name']) ? $contributor['name'] : '',
+    '#default_value' => isset($contributor->name) ? $contributor->name : '',
   );
   $form['auth_category'] = array(
       '#type' => 'select',
-      '#default_value' => isset($contributor['auth_category']) ? $contributor['auth_category'] : '',
+      '#default_value' => isset($contributor->auth_category) ? $contributor->auth_category : '',
       '#options' => $options['categories'],
       '#multiple' => FALSE,
       );
   $form['auth_type'] = array(
       '#type' => 'select',
-      '#default_value' => isset($contributor['auth_type']) ? $contributor['auth_type'] : '',
+      '#default_value' => isset($contributor->auth_type) ? $contributor->auth_type : '',
       '#options' => $options['roles'],
       '#multiple' => FALSE,
       );
   $form['cid'] = array(
     '#type' => 'hidden',
-    '#default_value' => isset($contributor['cid']) ? $contributor['cid'] : '',
+    '#default_value' => isset($contributor->cid) ? $contributor->cid : '',
   );
   $form['rank'] = array(
     '#type' => 'textfield',
     '#size' => 6,
-    '#default_value' => isset($contributor['rank']) ? $contributor['rank'] : '',
+    '#default_value' => isset($contributor->rank) ? $contributor->rank : '',
    );
   return $form;
 }
@@ -2486,7 +2492,7 @@ function biblio_entity_info() {
   
   $return['biblio_contributor'] = array(
     'label' => t('Contributor'),
-    'entity class' => 'biblio_contributor',
+    'entity class' => 'BiblioContributor',
     'controller class' => 'BiblioContributorController',
     'base table' => 'biblio_contributor',
     'fieldable' => TRUE,
@@ -2502,7 +2508,7 @@ function biblio_entity_info() {
       'contributor' => array(
         'label' => t('Contributor'),
         'admin' => array(
-          'path' => 'admin/config/content/biblio/contributors',
+          'path' => 'admin/config/content/biblio/author/contributor',
           'access arguments' => array('access biblio content'),
         ),
       ),
@@ -3008,4 +3014,31 @@ function biblio_get_associated_contributors($bids) {
   foreach ($bids as $bid) {
     // do some stuff here eventually
   }
+}
+
+/**
+ * Displays a biblio contributor; Hands data off to the Field API
+ *
+ * @param type $contributor
+ * @param type $view_mode View mode defined in biblio_entity_info().
+ * @return type 
+ */
+function biblio_contributor_page_view($contributor, $view_mode = 'full') {
+  // Remove previously built content, if exists.
+  $contributor->content = array();
+  
+  // If we're in teaser mode, we want to inject the title of the contributor into
+  // the viewable result.
+  if ($view_mode == 'teaser') {
+    $contributor->content['title'] = array(
+      '#markup' => filter_xss($contributor->title),
+      'weight' => -5,
+    );
+  }
+  // Build fields content. Standard stuff.
+  field_attach_prepare_view('biblio_contributor', array($contributor->bcid => $contributor), $view_mode);
+  entity_prepare_view('biblio_contributor', array($contributor->bcid => $contributor));
+  $contributor->content += field_attach_view('biblio_contributor', $contributor, $view_mode);
+  
+  return $contributor->content;
 }
