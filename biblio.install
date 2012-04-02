@@ -641,19 +641,27 @@ function biblio_schema() {
         'default' => 0,
         'description' => '{biblio}.bid of the biblio',
       ),
-      'vid' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-        'unsigned' => TRUE,
-        'default' => 0,
-        'description' => '{biblio}.vid of the biblio',
-      ),
+      // versions not supported with entity api
+//      'vid' => array(
+//        'type' => 'int',
+//        'not null' => TRUE,
+//        'unsigned' => TRUE,
+//        'default' => 0,
+//        'description' => '{biblio}.vid of the biblio',
+//      ),
       'cid' => array(
         'type' => 'int',
         'not null' => TRUE,
         'unsigned' => TRUE,
         'default' => 0,
         'description' => '{biblio_contributor_data}.cid of the biblio',
+      ),
+      'type' => array(
+        'description' => 'The bundle name of the contributor entity',
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'default' => '',
       ),
       'auth_type' => array(
         'type' => 'int',
@@ -675,7 +683,17 @@ function biblio_schema() {
         'unsigned' => TRUE,
         'default' => 0,
         'description' => 'Position of the author name on the publication (first,second,third...)',
-      )
+      ),
+      'created' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'description' => '',
+      ),
+      'changed' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'description' => '',
+      ),
     ),
     'foreign keys' => array(
       'biblio_revision' => array(
