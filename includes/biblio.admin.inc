@@ -2608,3 +2608,94 @@ function menu_get_children($menu_item) {
   
   return $children;
 }
+
+/**
+ * hook_menu callback function for biblio/add/[publication-type]
+ * 
+ * @global type $user
+ * @param type $type
+ * @return string 
+ */
+function biblio_contributor_add() {
+  // Create a new, empty biblio contributor object
+  $contributor = entity_create('biblio_contributor', array());
+  // Set page title
+  // PASS_TRHOUGH as the second param tells the function to allow HTML in the
+  // string we're giving because we've already checked to make sure it's safe.
+  drupal_set_title(t('Create Contributor'), PASS_THROUGH);
+  
+  // Display the form
+  return drupal_get_form('biblio_contributor_add_form', $contributor);
+}
+
+/**
+ * Build the contributor add form
+ * Called by the Form API
+ * 
+ * @param array $form
+ * @param array $form_state
+ * @param object $contributor
+ * @return type 
+ */
+function biblio_contributor_add_form($form, &$form_state, $contributor) {
+  
+  // Save the biblio for later, in case we need it.
+  $form['#contributor'] = $contributor;
+  $form_state['contributor'] = $contributor;
+  
+  field_attach_form('biblio_contributor', $contributor, $form, $form_state);
+  
+  $form['contributors'] = biblio_contributor_widget($contributor, $form_state);
+  
+  // Add the buttons.
+  // Save button is always available
+  $form['buttons'] = array();
+  $form['buttons']['#weight'] = 100;
+  $form['buttons']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save'),
+    '#weight' => 5,
+    '#submit' => array('biblio_contributor_form_submit'),
+  );
+  // Delete button is available if we're editing an existing biblio.
+  if (!empty($contributor->bcid)) {
+    $form['buttons']['delete'] = array(
+      '#access' => user_access('delete biblios'),
+      '#type' => 'submit',
+      '#value' => t('Delete'),
+      '#weight' => 15,
+      '#submit' => array('biblio_contributor_form_delete_submit'),
+    );
+  }
+  
+  return $form;
+}
+
+/**
+ * Glue code between the form and the biblio_contributor_save() function.
+ *
+ * @global type $user
+ * @param type $form
+ * @param array $form_state 
+ */
+function biblio_contributor_form_submit($form, &$form_state) {
+  global $user;
+  
+  // Pull the old biblio object out of the $form_state variable.
+  $contributor = &$form_state['contributor'];
+  
+  // Set the biblio's uid if it's being created at this time.
+  if (empty($contributor->uid)) {
+    $contributor->uid = $user->uid;
+  }
+  
+  // Notify field widgets.
+  field_attach_submit('biblio_contributor', $contributor, $form, $form_state);
+  // Save the contributor.
+  biblio_contributor_save($contributor);
+  
+  // Notify the user.
+  drupal_set_message(t('Contributor saved.'));
+  
+  $form_state['redirect'] = 'biblio/contributor/' . $contributor->bcid;
+}
