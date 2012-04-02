@@ -164,7 +164,9 @@ class BiblioController extends DrupalDefaultEntityController {
  */
 class BiblioContributor extends Entity {
   protected function defaultLabel() {
-    return $this->title;
+    // @todo: return something useful as the title
+//    return $this->title;
+    return;
   }
   protected function defaultUri() {
     return array('path' => 'biblio/contributor/' . $this->identifier());
@@ -186,7 +188,10 @@ class BiblioContributorController extends EntityAPIController {
   public function create(array $values = array()) {
     global $user;
     $values += array(
+      'bcid' => '',
       'title' => '',
+      // Default value, because we only have one bundle for this entity
+      'type' => 'contributor',
       'description' => '',
       'created' => REQUEST_TIME,
       'changed' => REQUEST_TIME,
