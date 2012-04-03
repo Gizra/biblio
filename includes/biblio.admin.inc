@@ -2643,9 +2643,15 @@ function biblio_contributor_add_form($form, &$form_state, $contributor) {
   $form['#contributor'] = $contributor;
   $form_state['contributor'] = $contributor;
   
+  // Get all fields from the Field API
   field_attach_form('biblio_contributor', $contributor, $form, $form_state);
   
-  $form['contributors'] = biblio_contributor_widget($contributor, $form_state);
+  // Add autocomplete to name field
+  foreach ($form['field_author_name']['und'] as $key => $field_data) {
+    if (is_numeric($key)) {
+      $form['field_author_name']['und'][$key]['value']['#autocomplete_path'] = 'biblio/autocomplete/contributor';
+    }
+  }
   
   // Add the buttons.
   // Save button is always available
@@ -2667,7 +2673,6 @@ function biblio_contributor_add_form($form, &$form_state, $contributor) {
       '#submit' => array('biblio_contributor_form_delete_submit'),
     );
   }
-  
   return $form;
 }
 
@@ -2688,7 +2693,6 @@ function biblio_contributor_form_submit($form, &$form_state) {
   if (empty($contributor->uid)) {
     $contributor->uid = $user->uid;
   }
-  
   // Notify field widgets.
   field_attach_submit('biblio_contributor', $contributor, $form, $form_state);
   // Save the contributor.
