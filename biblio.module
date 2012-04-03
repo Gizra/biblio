@@ -301,9 +301,10 @@ function biblio_autocomplete($field, $string = '') {
   switch ($field) {
     case 'contributor':
     case 'a':
-      $result = db_query_range("SELECT name FROM {biblio_contributor_data} WHERE LOWER(lastname) LIKE LOWER(:name) OR LOWER(firstname) LIKE LOWER(:firstname) ORDER BY lastname ASC ", 0, 10, array(':name' => $string . '%', ':firstname' => $string . '%'));
+      // @todo: change this to use a real field
+      $result = db_query_range("SELECT field_author_name_value FROM {field_data_field_author_name} WHERE LOWER(field_author_name_value) LIKE LOWER(:name) OR LOWER(field_author_name_value) LIKE LOWER(:firstname) ORDER BY field_author_name_value ASC ", 0, 10, array(':name' => $string . '%', ':firstname' => $string . '%'));
       foreach ($result as $data ) {
-        $matches[$data->name] = check_plain($data->name);
+        $matches[$data->field_author_name_value] = check_plain($data->field_author_name_value);
       }
       break;
     case 'biblio_keywords':
