@@ -1,4 +1,5 @@
 <?php
+// @todo: split into two files
 
 class BiblioController extends DrupalDefaultEntityController {
   public function create($pub_type = '') {

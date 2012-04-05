@@ -136,6 +136,12 @@ function biblio_locale_refresh_types($tid = NULL) {
   }
 }
 
+/**
+ * Implements hook_init().
+ *
+ * @global object $user
+ * @global array $conf 
+ */
 function biblio_init() {
   global $user, $conf;
   drupal_add_css(drupal_get_path('module', 'biblio') . '/biblio.css');
@@ -147,6 +153,9 @@ function biblio_init() {
   }
 }
 
+/**
+ * Implements hook_cron(). 
+ */
 function biblio_cron() {
   require_once(drupal_get_path('module', 'biblio') .'/includes/biblio.contributors.inc');
   require_once(drupal_get_path('module', 'biblio') .'/includes/biblio.keywords.inc');
@@ -160,6 +169,9 @@ function biblio_cron() {
   }
 }
 
+/**
+ * Implements hook_theme().
+ */
 function biblio_theme($existing, $type, $theme, $path) {
   $path = drupal_get_path('module', 'biblio');
   return array(
@@ -296,6 +308,12 @@ function biblio_theme($existing, $type, $theme, $path) {
     );
 }
 
+/**
+ * Page callback for biblio/autocomplete in hook_menu().
+ *
+ * @param string $field
+ * @param string $string 
+ */
 function biblio_autocomplete($field, $string = '') {
   $matches = array();
   switch ($field) {
@@ -340,6 +358,11 @@ function biblio_autocomplete($field, $string = '') {
   exit();
 }
 
+/**
+ * Page callback for base/help in hook_menu().
+ *
+ * @return string The markup to display on the help page 
+ */
 function biblio_help_page() {
   $base = variable_get('biblio_base', 'biblio');
   $text = "<h3>" . t('General:') . "</h3>";
@@ -363,15 +386,15 @@ function biblio_help_page() {
   $text .= "<p>" . t('Clicking on one of the export links should cause your browser to ask you whether you want to Open, or Save To Disk, the file endnote.enw.  If you choose to open it, Endnote should start and ask you which library you would like store the results in.  Alternatively, you can save the file to disk and manually import it into EndNote.') . "</p>";
   return ($text);
 }
+
 /**
- * Implementation of hook_help().
+ * Implements hook_help().
  *
  * Throughout Drupal, hook_help() is used to display help text at the top of
  * pages. Some other parts of Drupal pages get explanatory text from these hooks
  * as well. We use it here to provide a description of the module on the
  * module administration page.
  */
-
 function biblio_help($path, $arg) {
   switch ($path) {
     case 'admin/help#biblio' :
@@ -385,17 +408,9 @@ function biblio_help($path, $arg) {
   }
 }
 
-// @todo: ditch this after development
-function biblio_node_info_old() {
-  return array(
-    'biblio' => array(
-      'name' => t('Biblio'),
-      'base' => 'biblio',
-      'description' => t('Use Biblio for scholarly content, such as journal papers and books.'),
-    )
-  );
-}
-
+/**
+ * Implements hook_node_access.
+ */
 function biblio_node_access($node, $op, $account) {
   if (is_string($node)) {
     return NODE_ACCESS_IGNORE;
@@ -427,6 +442,9 @@ function biblio_node_access($node, $op, $account) {
   return NODE_ACCESS_IGNORE;
 }
 
+/**
+ * Implements hook_access().
+ */
 function biblio_access($op, $node = '') {
   global $user;
 
@@ -449,8 +467,9 @@ function biblio_access($op, $node = '') {
   }
   return NODE_ACCESS_IGNORE;
 }
+
 /**
- * Implementation of hook_permission().
+ * Implements hook_permission().
  *
  * Since we are limiting the ability to create new nodes to certain users,
  * we need to define what those permissions are here. We also define a permission
@@ -514,7 +533,7 @@ function biblio_permission() {
 }
 
 /**
- * Implementation of hook_user().
+ * Implements hook_user().
  */
 function biblio_form_user_profile_form_alter(&$form, &$form_state, $form_id) {
    $account = $form['#user'];
@@ -544,6 +563,10 @@ function biblio_form_user_profile_form_alter(&$form, &$form_state, $form_id) {
 
     }
   }
+  
+/**
+ * Implements hook_forms().
+ */
 function biblio_forms() {
   $forms['biblio_admin_author_types_form_new'] = array(
     'callback' => 'biblio_admin_author_types_form',
@@ -551,21 +574,15 @@ function biblio_forms() {
   $forms['biblio_admin_author_types_form_edit'] = array(
     'callback' => 'biblio_admin_author_types_form',
   );
-  if ($types = biblio_types()) {
-    foreach (array_keys($types) as $type) {
-      $forms[$type . '_biblio_form']['callback'] = 'biblio_form';
-    }
-  }
   
   return $forms;
 
 }
+
 /**
- * Implementation of hook_menu().
+ * Implements hook_menu().
  *
  * Here we define some built in links for the biblio module, links exposed are:
- *
- *
  */
 function biblio_menu() {
   global $user;
@@ -1129,6 +1146,9 @@ function biblio_menu() {
   return $items;
 }
 
+/**
+ * Page callback for base/filter/clear in hook_menu(). 
+ */
 function biblio_filter_clear() {
   $options = array();
   $_SESSION['biblio_filter'] = array();
@@ -1142,6 +1162,12 @@ function biblio_filter_clear() {
   drupal_goto($base, $options);
 }
 
+/**
+ * Removes brace from a string
+ *
+ * @param string $title_string
+ * @return string 
+ */
 function biblio_remove_brace($title_string) {
     //$title_string = utf8_encode($title_string);
     $matchpattern = '/\{\$(?:(?!\$\}).)*\$\}|(\{[^}]*\})/';
@@ -1149,6 +1175,12 @@ function biblio_remove_brace($title_string) {
     return $output;
 }
 
+/**
+ * Callback from preg_replace_callback
+ *
+ * @param array $match
+ * @return array 
+ */
 function biblio_remove_brace_callback($match) {
         if (isset($match[1])) {
                 $braceless = str_replace('{', '', $match[1]);
@@ -1158,6 +1190,9 @@ function biblio_remove_brace_callback($match) {
         return $match[0];
 }
 
+/**
+ * Implements hook_node_revision_delete().
+ */
 function biblio_node_revision_delete($node) {
   if ($node->type == 'biblio') {
     db_delete('biblio')
@@ -1174,6 +1209,9 @@ function biblio_node_revision_delete($node) {
   }
 }
 
+/**
+ * Implements hook_node_insert().
+ */
 function biblio_node_insert($node) {
   if ($node->type == 'biblio') {
     if (variable_get('biblio_index', 0)) {
@@ -1183,6 +1221,9 @@ function biblio_node_insert($node) {
   }
 }
 
+/**
+ * Implements hook_node_update().
+ */
 function biblio_node_update($node) {
   if ($node->type == 'biblio') {
     if (variable_get('biblio_index', 0)) {
@@ -1196,6 +1237,9 @@ function biblio_node_update($node) {
   }
 }
 
+/**
+ * Implements hook_node_view
+ */
 function biblio_node_view($node, $view_mode) {
   if ($node->type == 'biblio') {
     switch ($view_mode) {
@@ -1216,6 +1260,14 @@ function biblio_node_view($node, $view_mode) {
   }
 }
 
+/**
+ * Doesn't seem to do anything
+ * @todo remove if possible
+ * 
+ * @global object $user
+ * @param QueryAlterableInterface $query
+ * @return type 
+ */
 function biblio_query_node_access_alter(QueryAlterableInterface $query) {
   global $user;
   if (user_access('access biblio content', $user)) return;
@@ -1231,6 +1283,9 @@ function biblio_query_node_access_alter(QueryAlterableInterface $query) {
 
 }
 
+/**
+ * Implements hook_user_presave
+ */
 function biblio_user_presave(&$edit, $account, $catagory) {
   $keys = array_keys($edit);
   foreach ($keys as $key) {
@@ -1252,13 +1307,15 @@ function biblio_user_presave(&$edit, $account, $catagory) {
 }
 
 /**
- * Implementation of hook_form().
+ * Displays the Add/Edit form for a biblio entity
  *
- * Create the form for collecting the information
- * specific to this biblio. This hook requires us to return some HTML
- * that will be later placed inside the form.
+ * @global object $user
+ * @param array $form
+ * @param array $form_state
+ * @param object $biblio
+ * @return array
  */
-function biblio_form($form, &$form_state, $biblio) {
+function biblio_add_form($form, &$form_state, $biblio) {
   global $user;
   module_load_include('inc', 'biblio', 'includes/biblio.fields');
   $fields = array();
@@ -1415,21 +1472,11 @@ function biblio_form($form, &$form_state, $biblio) {
   return $form;
 }
 
-function biblio_node_form_vtab_info() {
-  return array(
-    array('tab_id' => 2, 'weight' => 10, 'title' => 'Abstract', 'description' => ''),
-    array('tab_id' => 'biblio_full_text', 'weight' => 11, 'title' => 'Full text', 'description' => ''),
-    array('tab_id' => 3, 'weight' => 12, 'title' => 'Publication', 'description' => ''),
-    array('tab_id' => 4, 'weight' => 13, 'title' => 'Publisher', 'description' => ''),
-    array('tab_id' => 5, 'weight' => 14, 'title' => 'Identifiers', 'description' => ''),
-    array('tab_id' => 6, 'weight' => 15, 'title' => 'Locators', 'description' => 'URL\'s etc'),
-    array('tab_id' => 7, 'weight' => 16, 'title' => 'Keywords', 'description' => ''),
-    array('tab_id' => 8, 'weight' => 17, 'title' => 'Notes', 'description' => ''),
-    array('tab_id' => 9, 'weight' => 18, 'title' => 'Alternate Titles', 'description' => ''),
-    array('tab_id' => 10, 'weight' => 19, 'title' => 'Other', 'description' => ''),
-    );
-}
-
+/**
+ * Creates the vertical tab form structure as used in the add/edit form
+ *
+ * @return array 
+ */
 function biblio_node_form_vtabs() {
   $vtabs = biblio_node_form_vtab_info();
 
@@ -1446,6 +1493,34 @@ function biblio_node_form_vtabs() {
   }
   return $form;
 }
+
+/**
+ * Get info specific to each vertical tab
+ *
+ * @return array 
+ */
+function biblio_node_form_vtab_info() {
+  return array(
+    array('tab_id' => 2, 'weight' => 10, 'title' => 'Abstract', 'description' => ''),
+    array('tab_id' => 'biblio_full_text', 'weight' => 11, 'title' => 'Full text', 'description' => ''),
+    array('tab_id' => 3, 'weight' => 12, 'title' => 'Publication', 'description' => ''),
+    array('tab_id' => 4, 'weight' => 13, 'title' => 'Publisher', 'description' => ''),
+    array('tab_id' => 5, 'weight' => 14, 'title' => 'Identifiers', 'description' => ''),
+    array('tab_id' => 6, 'weight' => 15, 'title' => 'Locators', 'description' => 'URL\'s etc'),
+    array('tab_id' => 7, 'weight' => 16, 'title' => 'Keywords', 'description' => ''),
+    array('tab_id' => 8, 'weight' => 17, 'title' => 'Notes', 'description' => ''),
+    array('tab_id' => 9, 'weight' => 18, 'title' => 'Alternate Titles', 'description' => ''),
+    array('tab_id' => 10, 'weight' => 19, 'title' => 'Other', 'description' => ''),
+    );
+}
+
+/**
+ * Get form structure for the multivalued add contributor widget
+ *
+ * @param object $node
+ * @param array $form_state
+ * @return array 
+ */
 function biblio_contributor_widget($node, &$form_state) {
   $init_count = variable_get('biblio_init_auth_count', 4);
   $contributor_count = 0;
@@ -1503,9 +1578,12 @@ function biblio_contributor_widget($node, &$form_state) {
   return $wrapper;
 }
 
+/**
+ * Get the options for category dropdown field in contributor add/edit form
+ * 
+ * @return array
+ */
 function biblio_get_contributor_options() {
-  
-
   $ctypes = db_query('SELECT * FROM {biblio_contributor_type_data}');
 
   foreach ($ctypes as $ctype ) {
@@ -1522,6 +1600,13 @@ function biblio_get_contributor_options() {
   return $options;
 }
 
+/**
+ * Set up the structure for the contributor add/edit form
+ *
+ * @param object $contributor
+ * @param array $options
+ * @return string 
+ */
 function biblio_contributor_form($contributor, $options) {
   $form = array('#tree' => TRUE);
 
@@ -1554,15 +1639,31 @@ function biblio_contributor_form($contributor, $options) {
   return $form;
 }
 
+/**
+ * Callback from the Biblio Contributor Widget's "add more" button
+ *
+ * @param array $form
+ * @param array $form_state
+ * @return array 
+ */
 function biblio_contributors_add_more_callback($form, &$form_state) {
   return $form['biblio_tabs']['biblio_authors']['biblio_contributors'];
 }
 
+/**
+ * Submit action for the "add more" button
+ * 
+ * @param array $form
+ * @param array $form_state 
+ */
 function biblio_contributors_add_more($form, &$form_state) {
   $form_state['biblio_contrib_count'] += variable_get('biblio_contrib_fields_delta', 2);
   $form_state['rebuild'] = TRUE;
 }
 
+/**
+ * Implements hook_form_FORM_ID_alter
+ */
 function biblio_form_node_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'biblio_node_form') {
     $form['#pre_render'][] = 'biblio_node_form_pre_render';
@@ -1582,6 +1683,13 @@ function biblio_form_node_form_alter(&$form, &$form_state, $form_id) {
 
   }
 }
+
+/**
+ * Callback function for pre-render in the node form
+ * 
+ * @param array $form
+ * @return array 
+ */
 function biblio_node_form_pre_render($form) {
     if (isset($form['biblio_tabs']['biblio_full_text']) && isset($form['body'])) {
       $form['biblio_tabs']['biblio_full_text']['body'] = $form['body'];
@@ -1589,9 +1697,9 @@ function biblio_node_form_pre_render($form) {
     }
   return $form;
 }
+
 /**
- * Implementation of hook_validate().
- *
+ * Implements hook_validate().
  *
  * Errors should be signaled with form_set_error().
  */
@@ -1643,6 +1751,12 @@ function biblio_node_form_validate($form, &$form_state) {
 
 }
 
+/**
+ * Gets the numeric year values associated with "In Press"/"Submitted
+ * 
+ * @param mixed $year
+ * @return int 
+ */
 function _biblio_numeric_year($year) {
   if (!is_numeric($year)) {
     if (drupal_strtoupper($year) == drupal_strtoupper(t("In Press")))  return 9998;
@@ -1653,12 +1767,24 @@ function _biblio_numeric_year($year) {
   }
 }
 
+/**
+ * Gets the string values (in press/submitted) of the years 9999 and 9998
+ * 
+ * @param int $year
+ * @return string The associated year string 
+ */
 function _biblio_text_year($year) {
   if ($year == 9998) return check_plain(variable_get('biblio_inpress_year_text', t('In Press')));
   if ($year == 9999) return check_plain(variable_get('biblio_no_year_text', t('Submitted')));
   return $year;
 }
 
+/**
+ * Gets a list of machine-readable field names from the biblio_fields db table
+ *
+ * @todo check if needed in 7.x-2.x 
+ * @return array
+ */
 function _biblio_get_formatted_fields() {
   $fields = &drupal_static(__FUNCTION__);
   if (!isset($fields)) {
@@ -1672,10 +1798,12 @@ function _biblio_get_formatted_fields() {
   }
   return (array) $fields;
 }
+
 /**
- * Prepare a biblio for submit to database. Contains code common to insert and update.
- * @param $biblio
- * @return none
+ * Prepare a biblio for submit to database.
+ * Contains code common to insert and update.
+ * 
+ * @param object $biblio
  */
 function _biblio_prepare_submit(&$biblio) {
   $biblio->language = biblio_field_language('biblio_title', $biblio);
@@ -1695,11 +1823,15 @@ function _biblio_prepare_submit(&$biblio) {
     }
   }
 }
+
 /**
  * Implementation of hook_insert().
  *
  * As a new node is being inserted into the database, we need to do our own
  * database inserts.
+ *
+ * @param object $node
+ * @todo check if needed in 7.x-2.x
  */
 function biblio_insert($node) {
   module_load_include('inc', 'biblio', 'includes/biblio.util');
@@ -1717,11 +1849,14 @@ function biblio_insert($node) {
   }
 
 }
+
 /**
  * Implementation of hook_update().
  *
  * As an existing node is being updated in the database, we need to do our own
  * database updates.
+ * 
+ * @param object $node
  */
 function biblio_update($node) {
   module_load_include('inc', 'biblio', 'includes/biblio.util');
@@ -1758,6 +1893,7 @@ function biblio_delete($bid) {
   
   return biblio_delete_multiple(array($bid));
 }
+
 /**
  * Implementation of hook_load().
  *
@@ -1804,6 +1940,13 @@ function biblio_load_old($nodes) {
 
   }
 }
+
+/**
+ * Generates automated citation keys
+ *
+ * @param object $biblio
+ * @return string The citation key data 
+ */
 function biblio_citekey_generate($biblio) {
   $php = check_plain(variable_get('biblio_citekey_phpcode', ''));
   if (empty($php)) {
@@ -1823,7 +1966,6 @@ function biblio_citekey_generate($biblio) {
 
 /**
  * Implementation of hook_view().
- *
  */
 function biblio_view($node, $buildmode = 'full') {
   global $user;
@@ -1832,6 +1974,7 @@ function biblio_view($node, $buildmode = 'full') {
   $base  = variable_get('biblio_base', 'biblio');
   $base_title = check_plain(variable_get('biblio_base_title', 'Biblio'));
 
+  // @todo: get these view modes implemented with our new entities
   switch ($buildmode) {
     case 'full':
       if (variable_get('biblio_hide_bibtex_braces', 0) && !isset($node->view )) {
@@ -1857,6 +2000,7 @@ function biblio_view($node, $buildmode = 'full') {
 
   return $node;
 }
+
 /**
  * Implementation of hook_block().
  *
@@ -1869,6 +2013,9 @@ function biblio_block_info() {
   return $blocks;
 }
 
+/**
+ * Implements hook_block_configure().
+ */
 function biblio_block_configure($delta = '') {
   $form = array();
   $form['block'] = array(
@@ -1898,6 +2045,9 @@ function biblio_block_configure($delta = '') {
   return $form;
 }
 
+/**
+ * Implements hook_block_save().
+ */
 function biblio_block_save($delta = '', $edit = array()) {
   if ($delta == 'recent') {
     variable_set('biblio_rowsperblock', $edit['biblio_rowsperblock']);
@@ -1905,6 +2055,9 @@ function biblio_block_save($delta = '', $edit = array()) {
   }
 }
 
+/**
+ * Implements hook_block_view().
+ */
 function biblio_block_view($delta = '') {
   switch ($delta) {
     case 'recent':
@@ -1945,6 +2098,9 @@ function biblio_block_view($delta = '') {
   }
 }
 
+/**
+ * hook_menu callback function for $base/recent/rss.xml
+ */
 function biblio_recent_feed() {
   $numberInFeed = variable_get('biblio_rss_number_of_entries', 10);
 
@@ -1971,6 +2127,12 @@ function biblio_recent_feed() {
   node_feed($nids, $channel);
 }
 
+/**
+ * @todo create relevant documentation for this function
+ *
+ * @param array $rss_info
+ * @param array $nids 
+ */
 function biblio_filter_feed($rss_info, $nids) {
   $base = variable_get('biblio_base', 'biblio');
   $channel['title'] = $rss_info['title'];
@@ -1979,6 +2141,13 @@ function biblio_filter_feed($rss_info, $nids) {
   node_feed($nids, $channel);
 }
 
+/**
+ * Gets a list of machine-readable field names
+ * 
+ * @return array Iterative array of field names
+ *
+ * @todo: possibly get rid of this
+ */
 function biblio_get_db_fields() {
   $fields = array();
   $fields[] = 'nid';
@@ -1996,6 +2165,13 @@ function biblio_get_db_fields() {
  * Largely inspired from the footnote module
  *
  *******************************************/
+
+/**
+ * @todo create relevant documentation for this function
+ * 
+ * @param type $citekey
+ * @return array 
+ */
 function _biblio_citekey_print($citekey) {
 
   $nid = db_query("SELECT nid FROM {biblio} WHERE biblio_citekey = :key", array(':key' => $citekey))->fetchObject();
@@ -2009,6 +2185,10 @@ function _biblio_citekey_print($citekey) {
     return t("Citekey @cite not found", array('@cite' => $citekey));
   }
 }
+
+/**
+ * Implements hook_filter_info().
+ */
 function biblio_filter_info() {
   $filters['biblio_filter_reference'] = array(
     'title' => t('Biblio module references &lt;bib&gt; <i>or</i> [bib]'),
@@ -2027,6 +2207,9 @@ function biblio_filter_info() {
   return $filters;
 }
 
+/**
+ * Tips callback for hook_filter_info().
+ */
 function _biblio_filter_reference_tips($filter, $format, $long = FALSE) {
   if (!$long) {
     // This string will be shown in the content add/edit form
@@ -2037,18 +2220,30 @@ function _biblio_filter_reference_tips($filter, $format, $long = FALSE) {
   }
 }
 
+/**
+ * Tips callback function for hook_filter_info()
+ */
 function _biblio_filter_inline_reference_tips($filter, $format, $long = FALSE) {
   return t('This creates an in line reference to another publication.');
 }
 
+/**
+ * Prepare callback function for hook_filter_info()
+ */
 function _biblio_filter_reference_prepare($text, $filter, $format, $langcode, $cache, $cache_id) {
   return $text;
 }
 
+/**
+ * Prepare callback function for hook_filter_info() 
+ */
 function _biblio_filter_inline_reference_prepare($text, $filter, $format, $langcode, $cache, $cache_id) {
   return $text;
 }
 
+/**
+ * Process callback function for hook_filter_info()
+ */
 function _biblio_filter_reference_process($text, $filter, $format, $langcode, $cache, $cache_id) {
   $pattern = array('|\[bib](.*?)\[/bib]|s', '|<bib>(.*?)</bib>|s');
   if (variable_get('biblio_footnotes_integration', 0) && module_exists('footnotes')) { // this is used with footnote module integration to replace the <bib> tags with <fn> tags
@@ -2072,17 +2267,26 @@ function _biblio_filter_reference_process($text, $filter, $format, $langcode, $c
   }
 }
 
+/**
+ * Process callback function for hook_filter_info()
+ */
 function _biblio_filter_inline_reference_process($text, $filter, $format, $langcode, $cache, $cache_id) {
   $pattern = array('|\[ibib](.*?)\[/ibib]|s', '|<ibib>(.*?)</ibib>|s');
   $text = preg_replace_callback($pattern, '_biblio_inline_filter_replace_callback', $text);
   return $text;
 }
 
+/**
+ * preg_replace_callback() callback function
+ */
 function _biblio_inline_filter_replace_callback($matches) {
     $text =  _biblio_citekey_print($matches[1]) ;
   return $text;
 }
 
+/**
+ * preg_replace_callback() callback function
+ */
 function _biblio_filter_footnote_callback($matches, $square_brackets = FALSE) {
   if ($square_brackets)  {
     $text = '[fn]' . _biblio_citekey_print($matches[1]) . "</fn>";
@@ -2092,8 +2296,9 @@ function _biblio_filter_footnote_callback($matches, $square_brackets = FALSE) {
   }
   return $text;
 }
+
 /**
- * Helper function called from preg_replace_callback() above
+ * preg_replace_callback() callback function
  *
  * Uses static vars to temporarily store footnotes found.
  * In my understanding, this is not threadsafe?!
@@ -2148,6 +2353,9 @@ function _biblio_filter_replace_callback($matches, $op = '') {
   return $text;
 }
 
+/**
+ * Implements hook_taxonomy_vocabulary_delete.
+ */
 function hook_taxonomy_vocabulary_delete($vocabulary) {
   if ($vocabulary->vid == variable_get('biblio_keyword_vocabulary', FALSE)) {
     variable_del('biblio_keyword_freetagging');
@@ -2155,6 +2363,11 @@ function hook_taxonomy_vocabulary_delete($vocabulary) {
   }
 }
 
+/**
+ * Implements hook_term_path().
+ * 
+ * Not supported in Drupal 7
+ */
 function biblio_term_path($term) {
   $base = variable_get('biblio_base', 'biblio');
   if ($term->vid == variable_get('biblio_collection_vocabulary', 0) ) {
@@ -2166,6 +2379,13 @@ function biblio_term_path($term) {
   else return;
 }
 
+/**
+ * Gets potential duplicate of a node
+ *
+ * @staticvar array $sums
+ * @param object $node
+ * @return int the nid of the potential duplicate
+ */
 function biblio_hash($node) {
   static $sums = array();
   $duplicate = NULL;
@@ -2194,6 +2414,9 @@ function biblio_hash($node) {
   return $duplicate; //return the nid of the potential duplicate
 }
 
+/**
+ * Implements hook_token_info().
+ */
 function biblio_token_info() {
 
   $node['biblio_year'] = array(
@@ -2221,6 +2444,9 @@ function biblio_token_info() {
   );
 }
 
+/**
+ * Implements hook_tokens().
+ */
 function biblio_tokens($type, $tokens, $data = array(), $options = array()) {
   $replacements = array();
   if ($type == 'node' && !empty($data['node']) && $data['node']->type == 'biblio') {
@@ -2252,6 +2478,9 @@ function biblio_tokens($type, $tokens, $data = array(), $options = array()) {
   return $replacements;
 }
 
+/**
+ * Callback for $base/user/[user] in hook_menu().
+ */
 function _biblio_profile_access($user, $type = 'profile') {
   if ($type == 'profile') {
     $key = 'biblio_show_profile';
@@ -2270,8 +2499,12 @@ function _biblio_profile_access($user, $type = 'profile') {
     return $user->data[$key]; // return user setting
   }
 }
-/*
+
+/**
  * Helper function to get either the user or system style
+ * 
+ * @global object $user
+ * @return type
  */
 function biblio_get_style() {
   global $user;
@@ -2281,6 +2514,11 @@ function biblio_get_style() {
   return  module_exists('biblio_citeproc') ? variable_get('biblio_citeproc_style', 'cse.csl') : variable_get('biblio_style', 'cse');
 }
 
+/**
+ * Gets a list of available bibliography format styles
+ *
+ * @return array
+ */
 function biblio_get_styles() {
   $styles = array();
   if (module_exists('biblio_citeproc')) {
@@ -2308,7 +2546,7 @@ function biblio_get_styles() {
 }
 
 /**
- * Implementation of hook_views_api().
+ * Implements hook_views_api().
  */
 function biblio_views_api() {
   return array(
@@ -2317,6 +2555,11 @@ function biblio_views_api() {
   );
 }
 
+/**
+ * @todo add relevant documentation
+ *
+ * @param object $node 
+ */
 function biblio_fix_isi_links(&$node) {
   $isi = check_plain(variable_get('biblio_isi_url', 'http://apps.isiknowledge.com/InboundService.do?Func=Frame&product=WOS&action=retrieve&SrcApp=EndNote&Init=Yes&SrcAuth=ResearchSoft&mode=FullRecord&UT='));
   if (isset($node['biblio_url']) && preg_match ('/Go\s*to\s*ISI/', $node['biblio_url'])) {
@@ -2327,10 +2570,21 @@ function biblio_fix_isi_links(&$node) {
   }
 }
 
+/**
+ * Gets a list of allowed HTML tags
+ * 
+ * @return array iterative array of allowed tags
+ */
 function biblio_get_allowed_tags() {
   return array('a', 'b', 'i', 'u', 'sub', 'sup', 'span');
 }
 
+/**
+ * @todo add relevant documentation
+ * 
+ * @param object $biblio
+ * @return array 
+ */
 function biblio_get_title_url_info($biblio) {
   return array('link' =>  ((variable_get('biblio_link_title_url', 0) && !empty($biblio->biblio_url)) ? $biblio->biblio_url : "biblio/$biblio->bid"  ),
                'options' =>
@@ -2339,8 +2593,9 @@ function biblio_get_title_url_info($biblio) {
                 );
 }
 
-
 /**
+ * Get publication type mapping for a biblio import type
+ * 
  * @param string $type (can be one of "type_names", "type_map" or "field_map")
  * @param string $format (tagged, ris, endnote_xml8 etc...)
  * @return array $map
@@ -2361,12 +2616,20 @@ function biblio_get_map($type, $format) {
  return $map;
 }
 
+/**
+ * Inserts the publication type mapping to the database
+ *
+ * @param string $maps serialized type mapping data
+ */
 function biblio_save_map($maps) {
     db_insert('biblio_type_maps')
       ->fields($maps)
       ->execute();
 }
+
 /**
+ * Saves a new publication type mapping to the database
+ *
  * @param string $type (can be one of "type_names", "type_map" or "field_map")
  * @param string $format (tagged, ris, endnote_xml8 etc...)
  * @param array  $map
@@ -2377,16 +2640,30 @@ function biblio_set_map($type, $format, $map) {
     drupal_write_record('biblio_type_maps', $map, 'format');
 }
 
+/**
+ * Resets the publication type mapping of an import type
+ * @param type $type
+ * @param type $format 
+ */
 function biblio_reset_map($type, $format) {
   module_invoke_all($format . '_map_reset', $type);
 }
 
+/**
+ * Implements hook_field_extra_fields().
+ */
 function biblio_field_extra_fields() {
   module_load_include('inc', 'biblio', 'includes/biblio.fields');
   return  _biblio_field_extra_fields();
 }
 
-//Fixes node export importing issue #826506
+/**
+ * Removes the cid field from the contributors of a biblio node
+ * Fixes node export importing issue #826506
+ * 
+ * @param object $node
+ * @param type $original_node 
+ */
 function biblio_node_export_node_alter($node, $original_node) {
   if ($node->type == 'biblio' && isset($node->biblio_contributors) && is_array($node->biblio_contributors)) {
     foreach ($node->biblio_contributors as $n => $value) {
@@ -2395,11 +2672,22 @@ function biblio_node_export_node_alter($node, $original_node) {
   }
 }
 
+/**
+ * Implements hook_feeds_processor_targets_alter
+ *
+ * Alters mapping targets for nodes. 
+ * Use this hook to add additional target options to the mapping form of Node processors.
+ */
 function biblio_feeds_processor_targets_alter(&$targets, $entity_type, $bundle_name) {
   module_load_include('inc', 'biblio', 'includes/biblio.feeds');
   return  _biblio_feeds_processor_targets_alter($targets, $entity_type, $bundle_name);
 }
 
+/**
+ * @todo create relevant documentation for this function
+ * 
+ * @return type 
+ */
 function biblio_feeds_importer_default() {
   module_load_include('inc', 'biblio', 'includes/biblio.feeds');
   $defaults = array();
@@ -2410,6 +2698,11 @@ function biblio_feeds_importer_default() {
   return $defaults;
 }
 
+/**
+ * @todo create relevant documentation for this function
+ * 
+ * @return array
+ */
 function biblio_ctools_plugin_api() {
   list($module, $api) = func_get_args();
   if ($module == "feeds" && $api == "feeds_importer_default") {
@@ -2922,6 +3215,12 @@ function biblio_delete_confirm($form, &$form_state, $biblio) {
   );
 }
 
+/**
+ * Delete form confirmation page
+ *
+ * @param array $form
+ * @param array $form_state 
+ */
 function biblio_delete_confirm_submit($form, &$form_state) {
   if ($form_state['values']['confirm']) {
     $biblio = biblio_load($form_state['values']['bid']);
@@ -3011,6 +3310,12 @@ function biblio_contributor_delete_multiple($contributor_ids) {
   entity_delete_multiple('biblio_contributor', $contributor_ids);
 }
 
+/**
+ * @todo finish writing this function. It will eventually get all contributors
+ * of a biblio entity.
+ * 
+ * @param type $bids 
+ */
 function biblio_get_associated_contributors($bids) {
   foreach ($bids as $bid) {
     // do some stuff here eventually
@@ -3042,4 +3347,231 @@ function biblio_contributor_page_view($contributor, $view_mode = 'full') {
   $contributor->content += field_attach_view('biblio_contributor', $contributor, $view_mode);
   
   return $contributor->content;
+}
+
+
+/**
+ * hook_menu callback function for admin/config/content/biblio
+ *
+ * @return string
+ * @todo list all biblio entries (similar to admin/content does for nodes)
+ */
+function biblio_content() {
+  $query = db_select('biblio', 'b')
+      ->extend('PagerDefault')
+      ->extend('TableSort')
+      ->fields('b', array('bid'))
+      ->limit(50);
+//      ->orderByHeader($header)
+  $bids = $query->execute()
+      ->fetchCol();
+  $biblios = biblio_load_multiple($bids);
+  return '[Insert table of biblio entries here]';
+}
+
+/**
+ * hook_menu callback function for admin/content/biblio/add
+ *
+ * Generates a bulleted list of menu items that are immediate children of the
+ * current page being viewed.
+ * @return type
+ * @todo: make this not hideous 
+ */
+function biblio_add_page() {
+  // Returns the current menu item
+  $item = menu_get_item();
+  $links = menu_get_children($item);
+  foreach ($links as $title => $path) {
+    $items[] = l($title, 
+                 $path,
+                 // Allows the menu system to handle what attributes the link
+                 // should have, any interaction witht he translation system, etc.
+                 $item['localized_options']);
+  }
+  
+  return theme('item_list', array('items' => $items));
+}
+
+/**
+ * hook_menu callback function for admin/content/biblio/add/[publication-type]
+ * 
+ * @global type $user
+ * @param type $type
+ * @return string 
+ */
+function biblio_add($type) {
+  module_load_include('inc', 'biblio', 'includes/biblio.fields');
+  global $user;
+  
+  $types = biblio_types();
+  $type = isset($type) ? str_replace('-', '_', $type) : NULL;
+  // If no such biblio type, return a 404 page
+  if (empty($types[$type])) {
+    return MENU_NOT_FOUND;
+  }
+  
+  // Add field instances only if they dont already exist.
+  if (biblio_field_instances_missing($type)) {
+    biblio_add_field_instances($type);
+  }
+  
+  // Create a new, empty biblio object
+  $biblio = entity_get_controller('biblio')->create($type);
+  // Set page title
+  // PASS_TRHOUGH as the second param tells the function to allow HTML in the
+  // string we're giving because we've already checked to make sure it's safe.
+  drupal_set_title(t('Create @name', array('@name' => $types[$type]->name)), PASS_THROUGH);
+  
+  // Display the form
+  return drupal_get_form('biblio_add_form', $biblio);
+}
+
+/**
+ * Presents the biblio editing form, or redirects to delete confirmation.
+ *
+ * @param type $biblio
+ * @return type 
+ */
+function biblio_page_edit($biblio) {
+  $lang = biblio_field_language('biblio_title', $biblio);
+  $types = biblio_types();
+  drupal_set_title(t('<em>Edit @type</em> @title', array('@type' =>
+    $types[$biblio->publication_type]->name, '@title' =>$biblio->biblio_title[$lang][0]['value'])), PASS_THROUGH);
+  
+  return drupal_get_form($biblio->publication_type . '_biblio_form', $biblio);
+}
+
+/**
+ * Menu title callback.
+ *
+ * We want the tile of each page to be a string based on the type that is
+ * passed in, so we need to specify a title callback.
+ *
+ * @param type $publication_type
+ *    The biblio type.
+ * @return string
+ *    The human-friendly name of the publication type.
+ */
+function biblio_type_page_title($publication_type) {
+  return t('Manage @type', array('@type' => $publication_type->name));
+}
+
+/**
+ * Show the title and description of the publication type.
+ *
+ * @param type $publication_type
+ * @return type 
+ */
+function biblio_information($publication_type) {
+  return $publication_type->name . ': ' . $publication_type->description;
+}
+
+function menu_get_children($menu_item) {
+  $leading_path = db_like($menu_item['path']);
+  $result = db_query(
+    'SELECT * FROM menu_router WHERE path LIKE :leading_path',
+    array(':leading_path' => db_like($leading_path) . '/%')
+  );
+  
+  $children = array();
+  foreach($result as $row) {
+    $children[$row->title] = $row->path;
+  }
+  
+  return $children;
+}
+
+/**
+ * hook_menu callback function for biblio/add/[publication-type]
+ * 
+ * @global type $user
+ * @param type $type
+ * @return string 
+ */
+function biblio_contributor_add() {
+  // Create a new, empty biblio contributor object
+  $contributor = entity_create('biblio_contributor', array());
+  // Set page title
+  // PASS_TRHOUGH as the second param tells the function to allow HTML in the
+  // string we're giving because we've already checked to make sure it's safe.
+  drupal_set_title(t('Create Contributor'), PASS_THROUGH);
+  
+  // Display the form
+  return drupal_get_form('biblio_contributor_add_form', $contributor);
+}
+
+/**
+ * Build the contributor add form
+ * Called by the Form API
+ * 
+ * @param array $form
+ * @param array $form_state
+ * @param object $contributor
+ * @return type 
+ */
+function biblio_contributor_add_form($form, &$form_state, $contributor) {
+  
+  // Save the biblio for later, in case we need it.
+  $form['#contributor'] = $contributor;
+  $form_state['contributor'] = $contributor;
+  
+  // Get all fields from the Field API
+  field_attach_form('biblio_contributor', $contributor, $form, $form_state);
+  
+  // Add autocomplete to name field
+  foreach ($form['field_author_name']['und'] as $key => $field_data) {
+    if (is_numeric($key)) {
+      $form['field_author_name']['und'][$key]['value']['#autocomplete_path'] = 'biblio/autocomplete/contributor';
+    }
+  }
+  
+  // Add the buttons.
+  // Save button is always available
+  $form['buttons'] = array();
+  $form['buttons']['#weight'] = 100;
+  $form['buttons']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save'),
+    '#weight' => 5,
+    '#submit' => array('biblio_contributor_form_submit'),
+  );
+  // Delete button is available if we're editing an existing biblio.
+  if (!empty($contributor->bcid)) {
+    $form['buttons']['delete'] = array(
+      '#access' => user_access('delete biblios'),
+      '#type' => 'submit',
+      '#value' => t('Delete'),
+      '#weight' => 15,
+      '#submit' => array('biblio_contributor_form_delete_submit'),
+    );
+  }
+  return $form;
+}
+
+/**
+ * Glue code between the form and the biblio_contributor_save() function.
+ *
+ * @global type $user
+ * @param type $form
+ * @param array $form_state 
+ */
+function biblio_contributor_form_submit($form, &$form_state) {
+  global $user;
+  
+  // Pull the old biblio object out of the $form_state variable.
+  $contributor = &$form_state['contributor'];
+  
+  // Set the biblio's uid if it's being created at this time.
+  if (empty($contributor->uid)) {
+    $contributor->uid = $user->uid;
+  }
+  // Notify field widgets.
+  field_attach_submit('biblio_contributor', $contributor, $form, $form_state);
+  // Save the contributor.
+  biblio_contributor_save($contributor);
+  
+  // Notify the user.
+  drupal_set_message(t('Contributor saved.'));
+  
+  $form_state['redirect'] = 'biblio/contributor/' . $contributor->bcid;
 }
