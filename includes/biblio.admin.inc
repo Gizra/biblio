@@ -2465,15 +2465,3 @@ function biblio_overview_types() {
   
   return theme('item_list', array('items' => $items));
 }
-
-/**
- * hook_menu callback function for admin/config/content/biblio/pubtypes/%publication_type
- *
- * @todo change this to something useful.
- *
- * @param type $publication_type
- * @return type 
- */
-function biblio_field_settings($publication_type) {
-  return 'You are editing the ' .$publication_type->name . ' publication type.';
-}
