@@ -848,6 +848,7 @@ function biblio_menu() {
     'file'              => '/includes/biblio.admin.inc',
     'type'              => MENU_CALLBACK
   );
+  // @todo get this working with new contributor entity
   $items['admin/config/content/biblio/author'] = array(
     'title'             => 'Authors',
     'page callback'     => 'biblio_author_page',
@@ -1353,12 +1354,13 @@ function biblio_add_form($form, &$form_state, $biblio) {
   );
   $tabs += biblio_node_form_vtabs();
   
-  // Get the vtabs of all biblio fields, 
-  // specified in misc/biblio.field.link.data.csv
-  $field_options = biblio_parse_field_link_data_csv();
-  foreach($field_options as $row => $data) {
-    $fielded_form[$data['field name']]['#vtab'] = $data['vtab'];
-  }
+  
+//  // Get the vtabs of all biblio fields, 
+//  // specified in misc/biblio.field.link.data.csv
+//  $field_options = biblio_parse_field_link_data_csv();
+//  foreach($field_options as $row => $data) {
+//    $fielded_form[$data['field name']]['#vtab'] = $data['vtab'];
+//  }
 
   $tabs[1] = array(
     '#type' => 'fieldset',
@@ -1372,15 +1374,19 @@ function biblio_add_form($form, &$form_state, $biblio) {
   $tabs[1] += biblio_contributor_widget($biblio, $form_state);
 
   // Add the values we created above to the real form
+  dpm($fielded_form);
   foreach ($fielded_form as $field => $data) {
-    if (is_array($data) && isset($data['#vtab'])) {
-      if ($data['#vtab'] === '0') {
+    //  @todo get language support working, instead of using 'und'
+    // also get multi-valued support, instead of using 0
+    
+    if (is_array($data) && isset($data['und'][0]['value']['#vtab'])) {
+      if ($data['und'][0]['value']['#vtab'] === '0') {
         // Fields outside of the vtabs
         $form[$field] = $data;
       }
       else {
         // Add all other fields to the vtabs
-        $tabs[$data['#vtab']][$field] = $data;
+        $tabs[$data['und'][0]['value']['#vtab']][$field] = $data;
       }
     }
   }
@@ -1468,7 +1474,7 @@ function biblio_add_form($form, &$form_state, $biblio) {
   $form['#validate']= array('biblio_form_validate');
   $form['#cache'] = TRUE;
   $form['biblio_tabs'] += $tabs;
-  
+  dpm($form);
   return $form;
 }
 
@@ -2711,13 +2717,13 @@ function biblio_ctools_plugin_api() {
 }
 
 /*********************************
- * Entity/Field API Additions
+ * Entity Additions
  *********************************/
 
 /**
  * Implements hook_entity_info(). 
  * 
- * Inform the base system and the Field API about entity types.
+ * Inform the Drupal and the Field API about entity types.
  */
 function biblio_entity_info() {
   $return['biblio'] = array(
@@ -2797,7 +2803,8 @@ function biblio_entity_info() {
     'bundle keys' => array(
       'bundle' => 'type',
     ),
-    // @todo: possibly figure out a better bundle name 
+    // @todo: possibly figure out a better bundle name and/or figure out what
+    // bundles we can have for contributors
     'bundles' => array(
       'contributor' => array(
         'label' => t('Contributor'),
@@ -3065,115 +3072,6 @@ function biblio_page_view($biblio, $view_mode = 'full') {
 }
 
 /**
- * Implements hook_field_info().
- */
-function biblio_field_info() {
-  return array(
-    'biblio_text_with_id' => array(
-      'label' => t('Biblio Text with ID'),
-      'description' => t(
-        'Standard Text Field with the addition of an ID database column to differentiate between similar entries'),
-      'default_widget' => 'biblio_text_with_id_widget',
-      'default_formatter' => 'biblio_text_with_id_formatter', 
-    ), 
-  );
-}
-
-/**
- * Implements hook_field_is_empty().
- *
- * Pseudo-hook.
- */
-function biblio_field_is_empty($item, $field) {
-  if ($field['type'] == 'biblio_text_with_id') {
-    if (empty($item['value']) && empty($item['id'])) {
-      return TRUE;
-    }
-  }
-  return FALSE;
-}
-
-/**
- * Implements hook_field_widget_info().
- */
-function biblio_field_widget_info() {
-  return array(
-    'biblio_text_with_id_widget' => array(
-      'label' => t('Biblio Text with ID'),
-      'description' => t('Shows as a standard text field. The ID is not displayed'),
-      'field types' => array('biblio_text_with_id'),
-      'behaviors' => array(
-        'multiple values' => FIELD_BEHAVIOR_DEFAULT,
-        'default value' => FIELD_BEHAVIOR_DEFAULT,
-      ),
-    ),
-  );
-}
-
-/**
- * Implements hook_field_widget_form().
- *
- * Pseudo-hook.
- */
-function biblio_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
-  // @todo: form validation
-  $base = $element;
-  // Assemble our default value for the form element out of the values available
-  // in the field
-  if ($instance['widget']['type'] == 'biblio_text_with_id_widget') {
-    $element['value'] = array(
-      '#type' => 'textfield',
-      '#default_value' => isset($items[$delta]['value']) ? $items[$delta]['value'] : NULL,
-    ) + $base;
-  }
-  return $element;
-}
-
-/**
- * Implements hook_field_formatter_info().
- */
-function biblio_field_formatter_info() {
-  return array(
-    'biblio_text_with_id_formatter' => array(
-      'label' => t('Default'),
-      'field types' => array('biblio_text_with_id'),
-    ),
-  );
-}
-
-/**
- * Implements hook_field_formatter_view().
- */
-function biblio_field_formatter_view($obj_type, $object, $field, $instance, $langcode, $items, $display) {
-  $element = array();
-  foreach ($items as $delta => $item) {
-    $element[$delta] = biblio_format_field($item);
-  }
-  return $element;
-}
-
-/**
- * Helper function for creating field formatters
- * @param type $item 
- */
-function biblio_format_field($item) {
-  $element = array(
-    '#type' => 'container',
-    '#attributes' => array( 'class' => array( 'field-item') ),
-  );
-  $element['value'] = array(
-    'item' => array(
-      '#type' => 'container',
-      '#attributes' => array( 'class' => array( 'field-item') ),
-      'text' => array(
-        '#markup' => $item['value'],
-      ),
-    ),
-  );     
-  return $element;
-}
-
-/**
  * hook_menu() callback
  */
 function biblio_page_title($biblio) {
@@ -3438,7 +3336,7 @@ function biblio_page_edit($biblio) {
   drupal_set_title(t('<em>Edit @type</em> @title', array('@type' =>
     $types[$biblio->publication_type]->name, '@title' =>$biblio->biblio_title[$lang][0]['value'])), PASS_THROUGH);
   
-  return drupal_get_form($biblio->publication_type . '_biblio_form', $biblio);
+  return drupal_get_form('biblio_add_form', $biblio);
 }
 
 /**
@@ -3466,6 +3364,12 @@ function biblio_information($publication_type) {
   return $publication_type->name . ': ' . $publication_type->description;
 }
 
+/**
+ * Get the child elements of a menu item.
+ *
+ * @param string $menu_item
+ * @return array 
+ */
 function menu_get_children($menu_item) {
   $leading_path = db_like($menu_item['path']);
   $result = db_query(
@@ -3574,4 +3478,153 @@ function biblio_contributor_form_submit($form, &$form_state) {
   drupal_set_message(t('Contributor saved.'));
   
   $form_state['redirect'] = 'biblio/contributor/' . $contributor->bcid;
+}
+
+/*********************************
+ * Field API Additions
+ *********************************/
+
+/**
+ * Implements hook_field_info().
+ */
+function biblio_field_info() {
+  return array(
+    'biblio_text' => array(
+      'label' => t('Biblio Text'),
+      'description' => t(
+        'Standard Text Field with the addition of the option to select a vertical tab for the add/edit form.'),
+      'default_widget' => 'biblio_text_widget',
+      'default_formatter' => 'biblio_text_formatter',
+      'instance_settings' => array(
+        'vtab' => t('None'),
+      ),
+    ), 
+  );
+}
+
+/**
+ * Implements hook_field_is_empty().
+ *
+ * Pseudo-hook.
+ */
+function biblio_field_is_empty($item, $field) {
+  if ($field['type'] == 'biblio_text') {
+    if (empty($item['value']) && empty($item['vtab'])) {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+/**
+ * Implements hook_field_instance_settings_form().
+ *
+ * Pseudo-hook.
+ */
+function biblio_field_instance_settings_form($field, $instance) {
+  if ($field['type'] == 'biblio_text') {
+    $form['vtab'] = array(
+      '#type' => 'select',
+      '#title' => t('Add/Edit form Vertical Tab'),
+      '#options' => array(
+        t('None'),
+        t('Authors'),
+        t('Abstract'),
+        t('Full Text'),
+        t('Publication'),
+        t('Publisher'),
+        t('Identifiers'),
+        t('Locators'),
+        t('Keywords'),
+        t('Notes'),
+        t('Alternate Titles'),
+        t('Other'),
+      ),
+      '#default_value' => t('None'),
+      '#required' => TRUE,
+      '#description' => t('The vertical tab location of the field in the Biblio add/edit form. Select "None" to leave the field out of the vertical tabs.'),
+    );
+    return $form;
+  }
+}
+
+/**
+ * Implements hook_field_widget_info().
+ */
+function biblio_field_widget_info() {
+  return array(
+    'biblio_text_widget' => array(
+      'label' => t('Text field'),
+      'description' => t('Shows as a standard text field'),
+      'field types' => array('biblio_text'),
+      'behaviors' => array(
+        'multiple values' => FIELD_BEHAVIOR_DEFAULT,
+        'default value' => FIELD_BEHAVIOR_DEFAULT,
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_widget_form().
+ *
+ * Pseudo-hook.
+ */
+function biblio_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
+  // @todo: form validation
+  $base = $element;
+  // Assemble our default value for the form element out of the values available
+  // in the field
+  if ($instance['widget']['type'] == 'biblio_text_widget') {
+    $element['value'] = array(
+      '#type' => 'textfield',
+      '#default_value' => isset($items[$delta]['value']) ? $items[$delta]['value'] : NULL,
+      '#vtab' => $instance['settings']['vtab'],
+    ) + $base;
+  }
+  return $element;
+}
+
+/**
+ * Implements hook_field_formatter_info().
+ */
+function biblio_field_formatter_info() {
+  return array(
+    'biblio_text_formatter' => array(
+      'label' => t('Default'),
+      'field types' => array('biblio_text'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_formatter_view().
+ */
+function biblio_field_formatter_view($obj_type, $object, $field, $instance, $langcode, $items, $display) {
+  $element = array();
+  foreach ($items as $delta => $item) {
+    $element[$delta] = biblio_format_field($item);
+  }
+  return $element;
+}
+
+/**
+ * Helper function for creating field formatters
+ * @param type $item 
+ */
+function biblio_format_field($item) {
+  $element = array(
+    '#type' => 'container',
+    '#attributes' => array( 'class' => array( 'field-item') ),
+  );
+  $element['value'] = array(
+    'item' => array(
+      '#type' => 'container',
+      '#attributes' => array( 'class' => array( 'field-item') ),
+      'text' => array(
+        '#markup' => $item['value'],
+      ),
+    ),
+  );     
+  return $element;
 }
