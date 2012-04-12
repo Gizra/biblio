@@ -1230,19 +1230,21 @@ function _biblio_get_authors($filter = NULL) {
     $suspects[] = $author->lastname;
   }
 
-  $db_result = db_query('SELECT bd.cid, bd.drupal_uid, bd.name, bd.lastname,
-                                bd.firstname, bd.prefix, bd.suffix,
-                                bd.initials, bd.affiliation, bd.md5, bd.literal,
-                                COUNT(*) AS cnt
-                            FROM {biblio_contributor} b
-                                 LEFT JOIN {biblio_contributor_data} bd ON b.cid = bd.cid
-                                 INNER JOIN {node} n on n.vid = b.vid
-                            ' . $where_clause . '
-                            GROUP BY bd.cid, bd.drupal_uid, bd.name, bd.lastname,
-                                     bd.firstname, bd.prefix, bd.suffix,
-                                     bd.initials, bd.affiliation, bd.md5, bd.literal
-                            ORDER BY  lastname ASC, SUBSTRING(firstname,1,1) ASC,
-                            initials ASC', array(':filter' => $filter));
+//  $db_result = db_query('SELECT bd.cid, bd.drupal_uid, bd.name, bd.lastname,
+//                                bd.firstname, bd.prefix, bd.suffix,
+//                                bd.initials, bd.affiliation, bd.md5, bd.literal,
+//                                COUNT(*) AS cnt
+//                            FROM {biblio_contributor} b
+//                                 LEFT JOIN {biblio_contributor_data} bd ON b.cid = bd.cid
+//                                 INNER JOIN {node} n on n.vid = b.vid
+//                            ' . $where_clause . '
+//                            GROUP BY bd.cid, bd.drupal_uid, bd.name, bd.lastname,
+//                                     bd.firstname, bd.prefix, bd.suffix,
+//                                     bd.initials, bd.affiliation, bd.md5, bd.literal
+//                            ORDER BY  lastname ASC, SUBSTRING(firstname,1,1) ASC,
+//                            initials ASC', array(':filter' => $filter));
+  // Placeholder so page loads without errors
+  $db_result = db_query('SELECT * from biblio_contributor');
 
   foreach ($db_result as $author) {
     if (array_search($author->lastname, $suspects) !== FALSE) {
