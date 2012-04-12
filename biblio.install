@@ -329,12 +329,12 @@ function biblio_schema() {
         'description' => '',
         'unsigned' => TRUE,
       ),
-      'vid' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-        'default' => 0,
-        'description' => '',
-      ),
+//      'vid' => array(
+//        'type' => 'int',
+//        'not null' => TRUE,
+//        'default' => 0,
+//        'description' => '',
+//      ),
       'publication_type' => array(
         'description' => 'The publication type of the biblio',
         'type' => 'varchar',
@@ -384,66 +384,66 @@ function biblio_schema() {
       'title_sort' => array('biblio_sort_title'),
     ),
   );
-  $schema['biblio_revision'] = array(
-    'description' => 'Stores information about each saved version of a {biblio}.',
-    'fields' => array(
-      'bid' => array(
-        'description' => 'The {biblio} this version belongs to.',
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0,
-      ),
-      'vid' => array(
-        'description' => 'The primary identifier for this version.',
-        'type' => 'serial',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-      ),
-      'biblio_type' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-        'default' => 0,
-        'description' => '',
-      ),
-      'biblio_md5' => array(
-        'type' => 'varchar',
-        'not null' => FALSE,
-        'length' => '32',
-        'description' => '',
-      ),
-      'biblio_sort_title' => array(
-        'type' => 'varchar',
-        'not null' => FALSE,
-        'length' => '64',
-        'description' => 'A normalized version of the title, used for sorting on titles. (only first 64 characters saved)',
-      ),
-      'biblio_formats' => array(
-        'type' => 'blob',
-        'not null' => FALSE,
-        'description' => '',
-        'serialize' => TRUE,
-      ),
-      'created' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-        'description' => '',
-        'default' => 0,
-      ),
-    ),
-    'indexes' => array(
-      'bid' => array('bid'),
-    ),
-    'primary key' => array('vid'),
-    'foreign keys' => array(
-      'biblio_vid' => array(
-        'table' => 'biblio',
-        'columns' => array(
-          'vid' => 'vid',
-        ),
-      ),
-    ),
-  );
+//  $schema['biblio_revision'] = array(
+//    'description' => 'Stores information about each saved version of a {biblio}.',
+//    'fields' => array(
+//      'bid' => array(
+//        'description' => 'The {biblio} this version belongs to.',
+//        'type' => 'int',
+//        'unsigned' => TRUE,
+//        'not null' => TRUE,
+//        'default' => 0,
+//      ),
+//      'vid' => array(
+//        'description' => 'The primary identifier for this version.',
+//        'type' => 'serial',
+//        'unsigned' => TRUE,
+//        'not null' => TRUE,
+//      ),
+//      'biblio_type' => array(
+//        'type' => 'int',
+//        'not null' => TRUE,
+//        'default' => 0,
+//        'description' => '',
+//      ),
+//      'biblio_md5' => array(
+//        'type' => 'varchar',
+//        'not null' => FALSE,
+//        'length' => '32',
+//        'description' => '',
+//      ),
+//      'biblio_sort_title' => array(
+//        'type' => 'varchar',
+//        'not null' => FALSE,
+//        'length' => '64',
+//        'description' => 'A normalized version of the title, used for sorting on titles. (only first 64 characters saved)',
+//      ),
+//      'biblio_formats' => array(
+//        'type' => 'blob',
+//        'not null' => FALSE,
+//        'description' => '',
+//        'serialize' => TRUE,
+//      ),
+//      'created' => array(
+//        'type' => 'int',
+//        'not null' => TRUE,
+//        'description' => '',
+//        'default' => 0,
+//      ),
+//    ),
+//    'indexes' => array(
+//      'bid' => array('bid'),
+//    ),
+//    'primary key' => array('vid'),
+//    'foreign keys' => array(
+//      'biblio_vid' => array(
+//        'table' => 'biblio',
+//        'columns' => array(
+//          'vid' => 'vid',
+//        ),
+//      ),
+//    ),
+//  );
 
   $schema['biblio_fields'] = array(
   'fields' => array(

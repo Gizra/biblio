@@ -2724,24 +2724,17 @@ function biblio_ctools_plugin_api() {
  * Implements hook_entity_info(). 
  * 
  * Inform the Drupal and the Field API about entity types.
+ * Uses the contrib Entity API module to create entities
  */
 function biblio_entity_info() {
   $return['biblio'] = array(
     'label' => t('Biblio'),
-    // Custom controller that will extend from DrupalDefaultEntityController.
-    // DDEC is for entities that behave similar to nodes. Note that this will
-    // change if Entity API module is used
+    'entity class' => 'Biblio',
     'controller class' => 'BiblioController',
     'base table' => 'biblio',
-    'revision table' => 'biblio_revision',
-    // Uses the biblio_uri() function to get the URI
-    'uri callback' => 'biblio_uri',
     'fieldable' => TRUE,
     'entity keys' => array(
       'id' => 'bid',
-      'revision' => 'vid',
-      // Biblio-specific name for bundle.
-      // This is referred to in many other places
       'bundle' => 'publication_type',
       'label' => 'bid',
     ),
@@ -2751,8 +2744,8 @@ function biblio_entity_info() {
     'static cache' => TRUE,
     // Will be retrieved using biblio_types()
     'bundles' => array(),
-    // Defines different ways that our entity can be viewed. In this case,
-    // we're defining a "full" and a "teaser version, just as nodes use.
+    'load hook' => 'biblio_load',
+    // @todo: implement biblio node view modes
     'view modes' => array(
       'full' => array(
         'label' => t('Full Content'),
@@ -2765,6 +2758,12 @@ function biblio_entity_info() {
         'custom settings' => FALSE,
       ),
     ),
+    // Entity API label callback that takes a look at our entity class method defaultLabel()
+    'label callback' => 'entity_class_label',
+    // This is also a standard Entity API callback for uri.
+    // It executes our entity defaultUri() method
+    'uri callback' => 'entity_class_uri',
+    'module' => 'biblio',
   );
   // Since we have multiple bundles, we will need to tell the Field API what 
   // bundles we have and what paths to put the extra field management interfaces
@@ -2821,10 +2820,7 @@ function biblio_entity_info() {
         'custom settings' => FALSE,
       ),
     ),
-    // Entity API label callback that takes a look at our entity class method defaultLabel()
     'label callback' => 'entity_class_label',
-    // This is also a standard Entity API callback for uri.
-    // It executes our entity defaultUri() method
     'uri callback' => 'entity_class_uri',
     'module' => 'biblio',
   );
