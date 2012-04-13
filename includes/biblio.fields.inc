@@ -233,9 +233,28 @@ function modify_biblio_field_link_data_csv() {
       if($row['type'] == 'text') {
         $data_to_write[$key]['type'] = 'biblio_text';
       }
+      // change all field ids to the order in which they are placed in the file.
+      $data_to_write[$key]['fid'] = $key;
       
     }
   }
+  // Add a new row
+//  $data_to_write[] = array(
+//    'fid' => $key+1,
+//    'title' => 'Author Role',
+//    'hint' => '',
+//    'common' => '',
+//    'autocomplete' => '',
+//    'required' => '1',
+//    'weight' => '2',
+//    'visible' => '',
+//    'field name' => 'contributor_role',
+//    'type' => 'biblio_text',
+//    'width' => '60',
+//    'maxlength' => '255',
+//    'vtab' => '0',
+//    'entity' => 'biblio_contribution',
+//  );
   foreach ($data_to_write as $key => $value) {
     if (isset($value['fid']) || isset($value[0])) {
       fputcsv($handle, $value);
