@@ -42,7 +42,7 @@ function biblio_install() {
   
   // @todo remove after development
   timer_stop($timer_name);
-  dpm($timer_name . ' run time: ' . timer_read($timer_name) . 'ms.');
+  drupal_set_message($timer_name . ' run time: ' . timer_read($timer_name) . 'ms.');
 //  if (count($result) == count(array_filter($result))) {
 //    drupal_set_message(t('The biblio module has successfully added its tables to the database.'));
 //  }
@@ -120,7 +120,7 @@ function biblio_uninstall() {
   
   // @todo remove after development
   timer_stop($timer_name);
-  dpm($timer_name . ' run time: ' . timer_read($timer_name) . 'ms.');
+  drupal_set_message($timer_name . ' run time: ' . timer_read($timer_name) . 'ms.');
 }
 
 function biblio_requirements($phase) {
