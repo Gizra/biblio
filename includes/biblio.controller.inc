@@ -21,9 +21,7 @@ class BiblioController extends EntityAPIController {
     global $user;
     $values += array(
       'bid' => '',
-      'title' => '',
       'publication_type' => $values['publication_type'],
-      'description' => '',
       'created' => REQUEST_TIME,
       'changed' => REQUEST_TIME,
       'uid' => $user->uid,
