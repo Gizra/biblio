@@ -342,12 +342,19 @@ function biblio_schema() {
         'not null' => TRUE,
         'default' => '',
       ),
+      'uid' => array(
+        'description' => 'The Drupal user ID who created this biblio.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
       'biblio_md5' => array(
         'type' => 'varchar',
         'not null' => FALSE,
         'length' => '32',
         'description' => '',
       ),
+      // @todo: take this out and stick it into a field
       'biblio_sort_title' => array(
         'type' => 'varchar',
         'not null' => FALSE,
