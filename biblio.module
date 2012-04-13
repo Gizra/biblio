@@ -1031,6 +1031,7 @@ function biblio_menu() {
     'access arguments'  => array('rss'),
     'type'              => MENU_CALLBACK
   );
+  // calls biblio_load() to send the biblio object to biblio_page_view()
   $items["$base/%biblio"] = array(
     'title callback' => 'biblio_page_title',
     'title arguments' => array(1),
@@ -1321,6 +1322,7 @@ function biblio_add_form($form, &$form_state, $biblio) {
   module_load_include('inc', 'biblio', 'includes/biblio.fields');
   $fields = array();
   
+  $form['#id'] = 'biblio-form';
   // Save the biblio for later, in case we need it.
   $form['#biblio'] = $biblio;
   $form_state['biblio'] = $biblio;
@@ -1374,7 +1376,6 @@ function biblio_add_form($form, &$form_state, $biblio) {
   $tabs[1] += biblio_contributor_widget($biblio, $form_state);
 
   // Add the values we created above to the real form
-  dpm($fielded_form);
   foreach ($fielded_form as $field => $data) {
     //  @todo get language support working, instead of using 'und'
     // also get multi-valued support, instead of using 0
@@ -1474,7 +1475,6 @@ function biblio_add_form($form, &$form_state, $biblio) {
   $form['#validate']= array('biblio_form_validate');
   $form['#cache'] = TRUE;
   $form['biblio_tabs'] += $tabs;
-  dpm($form);
   return $form;
 }
 
@@ -1882,22 +1882,6 @@ function biblio_update($node) {
   }
 
 
-}
-/**
- * Implementation of hook_delete().
- *
- * When a node is deleted, we need to clean up related tables.
- */
-function biblio_delete($bid) {
-  module_load_include('inc', 'biblio', 'includes/biblio.contributors');
-  module_load_include('inc', 'biblio', 'includes/biblio.keywords');
-    //first remove data from the biblio table
-
-  //now remove the entries from the contributor linking table
-  biblio_delete_contributors($bid);
-  biblio_delete_keywords($bid);
-  
-  return biblio_delete_multiple(array($bid));
 }
 
 /**
@@ -2877,16 +2861,18 @@ function publication_type_load($type) {
 }
 
 /**
- * Allows us to abstract out the definition of the path within Drupal where this
- * biblio will be accessed. Instead of hard coding a path, such as biblio/$bid,
- * we call back this function to generate it for us.
- * @param type $biblio
- * @return array
+ * Create an empty biblio object
+ * @param string $publication_type
+ *  The publication type of the biblio to be created (bundle)
+ * @param array $values
+ *  An associative array of any additional values to be set when creating this 
+ *  entity. These values will be carried throughout the biblio object's life.
+ *  Example: $values['language'] => 'en';
+ * @return object The biblio object, with default values. 
  */
-function biblio_uri($biblio) {
-  return array(
-    'path' => 'biblio/' . $biblio->bid,
-  );
+function biblio_create($publication_type, $values = array()) {
+  $values['publication_type'] = $publication_type;
+  return entity_create('biblio', $values);
 }
 
 /**
@@ -2894,25 +2880,23 @@ function biblio_uri($biblio) {
  *
  * @param $bid
  *   The biblio ID.
- * @param $vid
- *   The revision ID.
  * @param $reset
  *   Whether to reset the biblio_load_multiple cache.
  *
  * @return
  *   A fully-populated node object.
  */
-function biblio_load($bid = NULL, $vid = NULL, $reset = FALSE) {
-  $bids = (isset($bid) ? array($bid) : array());
-  $conditions = (isset($vid) ? array ('vid' => $vid) : array());
-  $biblio = biblio_load_multiple($bids, $conditions, $reset);
+function biblio_load($bid, $reset = FALSE) {
+  module_load_include('inc', 'biblio', 'includes/biblio.fields');
+  modify_biblio_field_link_data_csv();
+  $biblio = biblio_load_multiple(array($bid), array(), $reset);
   
+  // @todo check to see if we need this with the Entity API's entity object structure
   if (isset($biblio[$bid])) {
     $language = biblio_field_language('biblio_title', $biblio[$bid]);
     $biblio[$bid]->language = $language;
   }
-
-  return $biblio ? reset($biblio) : FALSE;
+  return reset($biblio);
 }
 
 /**
@@ -2938,6 +2922,46 @@ function biblio_load_multiple($bids = array(), $conditions = array(), $reset = F
   // entity_load() will create a new instance of biblioController as needed
   // and call the load() method on it. 
   return entity_load('biblio', $bids, $conditions, $reset);
+}
+
+/**
+ * Save a biblio object to the database
+ */
+function biblio_save($biblio) {
+  module_load_include('inc', 'biblio', 'includes/biblio.util');
+  module_load_include('inc', 'biblio', 'includes/biblio.contributors');
+  module_load_include('inc', 'biblio', 'includes/biblio.keywords');
+  _biblio_prepare_submit($biblio);
+  biblio_insert_contributors($biblio);
+  // @todo: add keyword functionality
+//  biblio_insert_keywords($biblio);
+  // @todo: get COinS working
+  $biblio->biblio_coins[$biblio->language][0]['value'] = biblio_coins($biblio);
+  // @todo: get md5 working
+//  $duplicate = biblio_hash($biblio);
+//  if (isset($duplicate) && $duplicate != $biblio->bid) { // if this is a potential duplcate, write the bids of the pre-existing and new biblios
+//    $dup_map = array('vid' => $duplicate, 'did' => $biblio->bid);
+//    drupal_write_record('biblio_duplicates', $dup_map);
+//  }
+  
+  entity_save('biblio', $biblio);
+}
+
+/**
+ * Delete single contributor.
+ */
+function biblio_delete($contributor) {
+  entity_delete('biblio_contributor', entity_id('biblio_contributor' ,$contributor));
+}
+
+/**
+ * Deletes multiple biblio records from the database
+ *
+ * @param array $contributor_ids An array of biblio ids of the entities to delete
+ */
+function biblio_delete_multiple($bids) {
+  // @todo delete keywords and contributors associated with a biblio
+  entity_delete_multiple('biblio_contributor', $bids);
 }
 
 /**
@@ -2973,8 +2997,8 @@ function biblio_form_new($form, &$form_state, $biblio) {
 /**
  * Let the Form API validate our form for us.
  * 
- * @param type $form
- * @param type $form_state 
+ * @param array $form
+ * @param array $form_state 
  */
 function biblio_form_validate($form, &$form_state) {
   $biblio = $form_state['biblio'];
@@ -3013,31 +3037,6 @@ function biblio_form_submit($form, &$form_state) {
   $form_state['redirect'] = 'biblio/' . $biblio->bid;
 }
 
-/**
- *
- * @param type $biblio
- * @return type 
- */
-function biblio_save($biblio) {
-  module_load_include('inc', 'biblio', 'includes/biblio.util');
-  module_load_include('inc', 'biblio', 'includes/biblio.contributors');
-  module_load_include('inc', 'biblio', 'includes/biblio.keywords');
-  _biblio_prepare_submit($biblio);
-  biblio_insert_contributors($biblio);
-  // @todo: add keyword functionality
-//  biblio_insert_keywords($biblio);
-  // @todo: get COinS working
-  $biblio->biblio_coins[$biblio->language][0]['value'] = biblio_coins($biblio);
-  // @todo: get md5 working
-//  $duplicate = biblio_hash($biblio);
-//  if (isset($duplicate) && $duplicate != $biblio->bid) { // if this is a potential duplcate, write the bids of the pre-existing and new biblios
-//    $dup_map = array('vid' => $duplicate, 'did' => $biblio->bid);
-//    drupal_write_record('biblio_duplicates', $dup_map);
-//  }
-
-  return entity_get_controller('biblio')->save($biblio);
-  
-}
 
 /**
  * Displays a biblio; Hands data off to the Field API
@@ -3153,19 +3152,6 @@ function biblio_form_delete_submit($form, &$form_state) {
   $biblio = $form['#biblio'];
   $form_state['redirect'] = array('biblio/' . $biblio->bid . '/delete',
       array('query' => $destination));
-}
-
-/**
- * Deletes multiple biblio by ID.
- *
- * @param $bids
- *   An array of biblios IDs to delete.
- *
- * @return
- *   TRUE on success, FALSE otherwise.
- */
-function biblio_delete_multiple($bids) {
-  return entity_get_controller('biblio')->delete($bids);
 }
 
 /**
@@ -3310,10 +3296,9 @@ function biblio_add($type) {
   }
   
   // Create a new, empty biblio object
-  $biblio = entity_get_controller('biblio')->create($type);
-  // Set page title
-  // PASS_TRHOUGH as the second param tells the function to allow HTML in the
-  // string we're giving because we've already checked to make sure it's safe.
+  $biblio = biblio_create($type);
+  
+  // Set the title. PASS_TRHOUGH allows us to include HTML in the string.
   drupal_set_title(t('Create @name', array('@name' => $types[$type]->name)), PASS_THROUGH);
   
   // Display the form
@@ -3329,35 +3314,11 @@ function biblio_add($type) {
 function biblio_page_edit($biblio) {
   $lang = biblio_field_language('biblio_title', $biblio);
   $types = biblio_types();
+  
   drupal_set_title(t('<em>Edit @type</em> @title', array('@type' =>
     $types[$biblio->publication_type]->name, '@title' =>$biblio->biblio_title[$lang][0]['value'])), PASS_THROUGH);
   
   return drupal_get_form('biblio_add_form', $biblio);
-}
-
-/**
- * Menu title callback.
- *
- * We want the tile of each page to be a string based on the type that is
- * passed in, so we need to specify a title callback.
- *
- * @param type $publication_type
- *    The biblio type.
- * @return string
- *    The human-friendly name of the publication type.
- */
-function biblio_type_page_title($publication_type) {
-  return t('Manage @type', array('@type' => $publication_type->name));
-}
-
-/**
- * Show the title and description of the publication type.
- *
- * @param type $publication_type
- * @return type 
- */
-function biblio_information($publication_type) {
-  return $publication_type->name . ': ' . $publication_type->description;
 }
 
 /**
