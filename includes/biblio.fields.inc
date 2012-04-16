@@ -41,7 +41,7 @@ function _biblio_field_extra_fields() {
   return $extras;
 }
 /**
- * Adds fields and field instances to Drupal's Field API 
+ * Adds fields to Drupal's Field API 
  * @todo Add biblio.field.type.data.csv data (field instance labels, etc)
  */
 function biblio_add_fields() { 
@@ -57,9 +57,20 @@ function biblio_add_fields() {
   }
 }
 
-function biblio_add_field_instances($publication_type) {
+/**
+ * Add all field instances for a given entity type and bundle.
+ * Adding field instances takes a long amount of time for the number of fields
+ * and bundles we have. Fields for a biblio publication type are added the first
+ * time a user visits the Biblio Add page for that publication type.
+ * Contributor and Contribution fields are added upon install, becasue there are
+ * so few fields.
+ * 
+ * @param type $entity biblio, biblio_contributor, or biblio_contribution
+ * @param type $bundle The bundle for which field instances should be created.
+ * for example, a biblio publication type
+ */
+function biblio_add_field_instances($entity, $bundle) {
   $file_data = biblio_parse_field_link_data_csv();
-  $publication_types = biblio_types();
   
   // @todo: remove all timers after development
   timer_start('field_instances_creation');
@@ -69,20 +80,24 @@ function biblio_add_field_instances($publication_type) {
     $instance = array(
       'field_name' => $row['field name'],
       'entity_type' => $row['entity'],
-      'bundle' => $publication_type, 
+      'bundle' => $bundle, 
       'label' => $row['title'],
       'required' => $row['required'],
       'widget' => array('weight' =>$row['weight']),
       'settings' => array('vtab' => $row['vtab']),
     );
+    // If row has a field name specified (this excludes blank lines in the CSV)
+    // && If the field instance doesn't already exist
+    // && Only add field instances for the specified entity type
     if (isset($row['field name']) && 
-        !field_info_instance($row['entity'], $row['field name'], $publication_type)) {
+        !field_info_instance($row['entity'], $row['field name'], $bundle) &&
+        $row['entity'] == $entity) {
       field_create_instance($instance);
     }
   }
   timer_stop('field_instances_creation');
   drupal_set_message('Biblio field instances have been added for the ' 
-      . $publication_type . ' publication type. Time elapsed: ' 
+      . $bundle . ' bundle. Time elapsed: ' 
       . timer_read('field_instances_creation') . 'ms');
 }
 
@@ -92,7 +107,14 @@ function biblio_add_field_instances($publication_type) {
  *
  * @return array
  * Array of rows from the biblio.field.link.data.csv file, each row containing
- * an array of values from the csv.
+ * an array of values from the csv. Array is structured like so:
+ *  0 => array(
+ *    'title' => 'Human-Readable Field Title',
+ *    'hint' => 'This is a hint to give to the user next to the field',
+ *    ... other attrubutes
+ *  1 => array(
+ *    'title' => 'Another Title',
+ *    and so on...
  */
 function biblio_parse_field_link_data_csv() {
   // lines have been removed from the csv file to remove some fields for
@@ -123,7 +145,7 @@ function biblio_parse_field_link_data_csv() {
 /**
  * Determines if the field instances for a publication type have been created.
  * Used to decide whether or not to run biblio_add_field_instances when
- * biblio/add is accessed for the first time for a specific publication type.
+ * admin/content/biblio/add is accessed for the first time for a specific publication type.
  *
  * @param string $publication_type
  * @return boolean Whether or not biblio's required field instances are indeed missing.
@@ -151,7 +173,8 @@ function biblio_field_instances_missing($publication_type) {
 }
 
 /**
- * Get a list of all biblio fields
+ * Get a list of all biblio fields that have been created, and prepended
+ * with "biblio_"
  *
  * @return array 
  */
@@ -188,7 +211,7 @@ function biblio_delete_fields() {
 //  module_load_include('inc', 'biblio', 'includes/biblio.fields');
 //  modify_biblio_field_link_data_csv();
 /**
- * This function only  exists because I'm lazy and don't want to manipulate
+ * This function only exists because I'm lazy and don't want to manipulate
  * CSV data by hand. Copy the above lines to call this function quickly
  * @todo remove after development
  */
