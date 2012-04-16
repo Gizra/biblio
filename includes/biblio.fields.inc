@@ -51,17 +51,6 @@ function biblio_add_fields() {
       'field_name' => $row['field name'], 
       'type' => $row['type'],
     );
-    // Allow user to add multivalued author fields
-    //@todo add field settings like this to the CSV file
-    switch ($field['field_name']) {
-      case 'biblio_authors_primary':
-      case 'biblio_authors_secondary':
-      case 'biblio_authors_tertiary':
-      case 'biblio_authors_subsidiary':
-      case 'biblio_authors_corporate':
-      case 'biblio_keywords':
-        $field['cardinality'] = FIELD_CARDINALITY_UNLIMITED;
-    }
     if (isset($row['field name'])) {
       field_create_field($field);
     }
@@ -79,7 +68,7 @@ function biblio_add_field_instances($publication_type) {
     $row['required'] = ($row['required'] == '1' ? TRUE : FALSE);
     $instance = array(
       'field_name' => $row['field name'],
-      'entity_type' => 'biblio',
+      'entity_type' => $row['entity'],
       'bundle' => $publication_type, 
       'label' => $row['title'],
       'required' => $row['required'],
@@ -87,7 +76,7 @@ function biblio_add_field_instances($publication_type) {
       'settings' => array('vtab' => $row['vtab']),
     );
     if (isset($row['field name']) && 
-        !field_info_instance('biblio', $row['field name'], $publication_type)) {
+        !field_info_instance($row['entity'], $row['field name'], $publication_type)) {
       field_create_instance($instance);
     }
   }
