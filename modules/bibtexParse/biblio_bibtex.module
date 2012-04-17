@@ -213,7 +213,7 @@ function _biblio_bibtex_import($entries, $terms = array(), $batch = FALSE, $sess
     $instances = field_read_instances($params);
     // Add field instances only if they dont already exist.
     if (!isset($instances) || empty($instances)) {
-      biblio_add_field_instances($type);
+      biblio_add_field_instances('biblio', $type);
     }
   
     // Create a new, empty biblio object
