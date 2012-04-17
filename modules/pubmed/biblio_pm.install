@@ -11,6 +11,13 @@ function biblio_pm_install() {
 }
 
 function biblio_pm_uninstall() {
+  variable_del('biblio_pm_dup_action');
+  variable_del('biblio_pm_auto_update');
+  variable_del('biblio_pm_update_interval');
+  variable_del('biblio_pm_update_limit');
+  variable_del('biblio_pm_age_limit');
+  variable_del('biblio_pm_update_next_execution');
+
 }
 
 function biblio_pm_enable() {
@@ -34,11 +41,55 @@ function biblio_pm_schema() {
   $schema = array();
   $schema['biblio_pubmed'] = array(
     'fields' => array(
-      'biblio_pubmed_id' => array('type' => 'int', 'not null' => TRUE),
-      'nid' => array('type' => 'int', 'not null' => TRUE),
-      'biblio_pubmed_md5' => array('type' => 'char', 'length' => 32, 'not null' => TRUE),
+      'biblio_pubmed_id' => array(
+        'type'     => 'int',
+        'not null' => TRUE
       ),
+      'biblio_pmcid' => array(
+        'type'     => 'int',
+        'not null' => TRUE,
+        'default'  => 0,
+      ),
+        'nid' => array(
+        'type' => 'int',
+        'not null' => TRUE
+      ),
+      'biblio_pubmed_md5' => array(
+        'type' => 'char',
+        'length' => 32,
+        'not null' => TRUE
+      ),
+      'biblio_pm_changed' => array(
+        'description' => 'The Unix timestamp when the pmid was most recently saved.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0
+      ),
+    ),
     'primary key' => array('nid'),
   );
   return $schema;
+}
+
+/**
+*
+* add two new fields to the biblio_pubmed table
+*
+*/
+
+function biblio_pm_update_7001() {
+  $spec =  array(
+    'description' => 'The Unix timestamp when the pmid was most recently saved.',
+    'type' => 'int',
+    'not null' => TRUE,
+    'default' => 0
+  );
+  db_add_field('biblio_pubmed', 'biblio_pm_changed', $spec);
+  $spec =  array(
+    'type'     => 'int',
+    'not null' => TRUE,
+    'default'  => 0,
+  );
+  db_add_field('biblio_pubmed', 'biblio_pmcid', $spec);
+
 }

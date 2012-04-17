@@ -3,8 +3,66 @@
  * @file pubmed.module
  *
  */
+function biblio_pm_cron() {
+  if (variable_get('biblio_pm_auto_update', 0)) {
+    $interval    = variable_get('biblio_pm_update_interval', 3600);    // defaults to once per hour
+    $count_limit = variable_get('biblio_pm_update_limit', 100);         // only update 100 at a time
+    $age         = variable_get('biblio_pm_age_limit', 2419200); // defaults to one month since last update
+    $age_limit   = time() - $age;
 
-function biblio_pm_form_biblio_admin_settings_alter(&$form, &$form_state, $form_id) {
+    if (time() >= variable_get('biblio_pm_update_next_execution', 0)) {
+      $ids = array();
+      $result = db_select('biblio_pubmed', 'bpm')
+          ->fields('bpm', array('nid', 'biblio_pubmed_id'))
+          ->condition('biblio_pm_changed', $age_limit, '<')
+          ->orderBy('nid', 'ASC')
+          ->range(0, $count_limit)
+          ->execute();
+      foreach ($result as $pm) {
+        $ids[$pm->nid] = $pm->biblio_pubmed_id;
+      }
+      if (count($ids)) {
+
+        list($nids, $dups) = biblio_pm_import_ids($ids);
+
+        if (count($nids)) {
+          foreach ($nids as $nid) {
+            $message = '';
+            $message = t('!nid was updated due to changes originating at !url', array(
+                '!nid' => l($nid, 'node/'. $nid),
+                '!url' => l('PubMed', 'http://www.ncbi.nlm.nih.gov/pubmed/'. $ids[$nid]),
+              )
+            );
+            watchdog('biblio_pm', $message, array(), WATCHDOG_WARNING);
+          }
+        }
+
+        if (count($dups)) {
+          $count = count($dups);
+          $message = format_plural($count, 'One duplicate PubMed entry was checked, but no changes were found.',
+              '@count PubMed entries were checked, but no changes were found.');
+          watchdog('biblio_pm', $message, array('@count' => $count), WATCHDOG_INFO);
+
+          $now = time();
+
+          db_update('biblio_pubmed')
+            ->fields(array('biblio_pm_changed' => $now))
+            ->condition('nid', $dups, 'IN')
+            ->execute();
+        }
+      }
+
+      $message = t('There were no PubMed entries older than @age to check.', array(
+          '@age' => format_interval($age),
+        )
+      );
+      watchdog('biblio_pm', $message, array(), WATCHDOG_INFO);
+      variable_set('biblio_pm_update_next_execution', time() + $interval);
+    }
+  }
+}
+
+function biblio_pm_form_biblio_admin_settings_alter(&$form, &$form_state) {
   module_load_include('inc', 'biblio_pm', 'biblio_pm.admin');
   $form += biblio_pm_settings_form();
 }
@@ -224,12 +282,14 @@ function biblio_pm_node_delete($node) {
 
 function biblio_pm_node_insert($node) {
   if (isset($node->biblio_pubmed_id) && !empty($node->biblio_pubmed_id)) {
+    $node->biblio_pm_changed = time();
     drupal_write_record('biblio_pubmed', $node);
   }
 }
 
 function biblio_pm_node_update($node) {
   if (isset($node->biblio_pubmed_id) && !empty($node->biblio_pubmed_id)) {
+    $node->biblio_pm_changed = time();
     drupal_write_record('biblio_pubmed', $node, 'nid');
   }
 }

@@ -4,7 +4,8 @@
  * @return unknown_type
  */
 function biblio_get_contributor($aid) {
-  static $contributor = array();
+  $contributor = &drupal_static(__FUNCTION__);
+
   if (!isset($contributor[$aid])) {
     $contributor[$aid] = db_query('SELECT * FROM {biblio_contributor_data} WHERE cid = :cid', array(':cid' => $aid))->fetchObject();
   }
@@ -23,9 +24,14 @@ function biblio_get_contributor_category($contributors, $category) {
 }
 
 function biblio_get_contributor_by_name($name) {
+  $contributors = &drupal_static(__FUNCTION__);
+
+  if (!isset($contributors[$name])) {
   $query = db_select('biblio_contributor_data', 'bcd');
-  $query->condition('bcd.name', $name);
-  return $query->execute()->fetchObject();
+    $contributors[$name] = $query->fields('bcd')->condition('bcd.name', $name)->execute()->fetchObject();
+  }
+
+  return $contributors[$name];
 }
 
 function biblio_get_first_contributor($vid) {
@@ -246,7 +252,6 @@ function _biblio_contributor_usort($a, $b) {
  * @return success of database operations
  */
 function _save_contributors(&$contributors, $nid, $vid, $update = FALSE) {
-  $md5 = _loadMD5();
   $rank = 0;
 
   db_delete('biblio_contributor')
@@ -256,15 +261,25 @@ function _save_contributors(&$contributors, $nid, $vid, $update = FALSE) {
   _biblio_contributor_sort($contributors);// re-sort the authors by rank because the rank may have changed due to tabledrag on the input form
 
   foreach ($contributors as  $key => $author) {
- //   foreach ($authors as $key => $author) {
       if (!empty($author['name'])) {
-        if (empty($author['lastname'])) {
+      if (isset($author['cid']) && !empty($author['cid'])) {
+        $auth = biblio_get_contributor($author['cid']);
+        if (!empty($auth) && isset($auth->name) && $auth->name != $author['name']) {
+          $author['cid'] = '';
+        }
+      }
+      // if we don't have a cid, lets see if we can find and exact match to the name and use that cid
+      if (!isset($author['cid']) || empty($author['cid'])) {
+        $auth = biblio_get_contributor_by_name($author['name']);
+        if (!empty($auth) && isset($auth->cid)) {
+          $author['cid'] = $auth->cid;
+        }
+      }
+
+      if (empty($author['cid'])) {
           $contributors[$key] = $author = biblio_parse_author($author);
         }
-        if ($update && !empty($author['cid']))  $author['cid'] = NULL; // null out the cid so we don't do a global change
-        if (empty ($author['cid']) && isset($author['md5']) && !empty ($md5)) {
-          $author['cid'] = array_search($author['md5'], $md5);
-        }
+
         if (empty ($author['cid'])) {
           biblio_save_contributor($author);
           if (empty ($author['cid'])) return FALSE;
@@ -281,7 +296,6 @@ function _save_contributors(&$contributors, $nid, $vid, $update = FALSE) {
 
         if (!drupal_write_record('biblio_contributor', $link_array)) return FALSE;
       }
-   // }
   }
   //TODO  check if it is necessary to reset aka here...
   //  db_query("UPDATE {biblio_contributor_data} SET aka = cid WHERE aka = 0 OR aka IS NULL");
@@ -325,7 +339,7 @@ function _save_contributors(&$contributors, $nid, $vid, $update = FALSE) {
  */
 function biblio_parse_author($author_array, $cat = 0) {
 
-  if ($author_array['auth_category'] == 5) {
+  if (isset($author_array['auth_category']) && $author_array['auth_category'] == 5) {
     $author_array['firstname'] = '';
     $author_array['initials'] = '';
     $author_array['lastname'] = trim($author_array['name']);
@@ -462,7 +476,7 @@ function _grabSurname($input) {
 function _loadMD5() {
   static $md5   = array();
   static $count = 0;
-  $db_count = db_query("SELECT COUNT(*) FROM {biblio_contributor_data}")->fetchField();;
+  $db_count = db_query("SELECT COUNT(*) FROM {biblio_contributor_data}")->fetchField();
   if ($db_count != $count) { //refresh the cached data as some new authors may have been added or removed
     $count = $db_count;
     $md5 = array();
