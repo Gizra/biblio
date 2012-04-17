@@ -1064,7 +1064,7 @@ function biblio_menu() {
     'type' => MENU_LOCAL_ACTION,
   );
   // Create a menu item for each biblio type, converting underscores to dashes.
-  foreach (biblio_types() as $type) {
+  foreach (biblio_types('biblio') as $type) {
     $type_url_str = str_replace('_', '-', $type->publication_type);
     $items['admin/content/biblio/add/' . $type_url_str] = array(
       'title' => $type->name,
@@ -1590,11 +1590,6 @@ function biblio_contributor_widget($node, &$form_state) {
  * @return array
  */
 function biblio_get_contributor_options() {
-  $ctypes = db_query('SELECT * FROM {biblio_contributor_type_data}');
-
-  foreach ($ctypes as $ctype ) {
-    $options['roles'][$ctype->auth_type] = $ctype->title;
-  }
   $options['categories'] = array(
     1 => t('Primary'),
     2 => t('Secondary'),
@@ -1625,12 +1620,6 @@ function biblio_contributor_form($contributor, $options) {
       '#type' => 'select',
       '#default_value' => isset($contributor->auth_category) ? $contributor->auth_category : '',
       '#options' => $options['categories'],
-      '#multiple' => FALSE,
-      );
-  $form['auth_type'] = array(
-      '#type' => 'select',
-      '#default_value' => isset($contributor->auth_type) ? $contributor->auth_type : '',
-      '#options' => $options['roles'],
       '#multiple' => FALSE,
       );
   $form['cid'] = array(
@@ -2754,7 +2743,7 @@ function biblio_entity_info() {
   // for our entity. To do that, we define, for each of our bundles, a label
   // that is shown to the user and the menu information that the Field API will
   // need to add itself to the menu.
-  $publication_types = biblio_types();
+  $publication_types = biblio_types('biblio');
   if (!empty($publication_types)){
     foreach ($publication_types as $type => $info) {
       $return['biblio']['bundles'][$type] = array(
@@ -2808,21 +2797,58 @@ function biblio_entity_info() {
     'uri callback' => 'entity_class_uri',
     'module' => 'biblio',
   );
+  
+//  $return['biblio_contribution'] = array(
+//    'label' => t('Contribution'),
+//    'entity class' => 'BiblioContribution',
+//    'controller class' => 'BiblioContributionController',
+//    'base table' => 'biblio_contribution',
+//    'fieldable' => TRUE,
+//    'entity keys' => array(
+//      'id' => 'cnid',
+//      'bundle' => 'type',
+//    ),
+//    'bundle keys' => array(
+//      'bundle' => 'type',
+//    ),
+//    // @todo: possibly figure out a better bundle name and/or figure out what
+//    // bundles we can have for contributions
+//    'bundles' => array(
+//      'contribution' => array(
+//        'label' => t('Contribution'),
+//        'admin' => array(
+//          'path' => 'admin/config/content/biblio/author/contribution',
+//          'access arguments' => array('access biblio content'),
+//        ),
+//      ),
+//    ),
+//    'load hook' => 'biblio_contribution_load',
+//    'view modes' => array(
+//      'full' => array(
+//        'label' => t('Default'),
+//        'custom settings' => FALSE,
+//      ),
+//    ),
+//    'label callback' => 'entity_class_label',
+//    'uri callback' => 'entity_class_uri',
+//    'module' => 'biblio',
+//  );
 
   return $return;
 }
 
 /**
- * Gets all publication types that are set up by default. 
- * @return type 
+ * Gets all publication types that are set up by default.
+ * @return type
  */
-function biblio_types() {
+function biblio_types($entity) {
   // Gives the variable a name that matches our function
   // drupal_static() acts as a central collector for static PHP variables
   $types = &drupal_static(__FUNCTION__);
   if (empty($types)) {
     $result = db_select('biblio_types', 'bt')
         ->fields('bt', array('name', 'description'))
+        ->condition('entity', $entity)
         ->execute();
     while ($row = $result->fetchAssoc()) {
       // computer-friendly version of the human-readable content type stored in the database
@@ -2852,7 +2878,7 @@ function biblio_types() {
  *  The specified publication type.
  */
 function publication_type_load($type) {
-  $types = biblio_types();
+  $types = biblio_types('biblio');
   // Replace dashes in a type name with underscores.
   // All Drupal paths use dashes in place of underscores in the URI, but
   // bundle names need to use underscores, not dashes.
@@ -3125,7 +3151,7 @@ function biblio_delete_confirm_submit($form, &$form_state) {
       )
     );
     
-    $types = biblio_types();
+    $types = biblio_types('biblio');
     drupal_set_message(t('@type %title has been deleted.',
         array(
           '@type' => $types[$biblio->publication_type]-> name, 
@@ -3283,7 +3309,7 @@ function biblio_add($type) {
   module_load_include('inc', 'biblio', 'includes/biblio.fields');
   global $user;
   
-  $types = biblio_types();
+  $types = biblio_types('biblio');
   $type = isset($type) ? str_replace('-', '_', $type) : NULL;
   // If no such biblio type, return a 404 page
   if (empty($types[$type])) {
@@ -3292,7 +3318,7 @@ function biblio_add($type) {
   
   // Add field instances only if they dont already exist.
   if (biblio_field_instances_missing($type)) {
-    biblio_add_field_instances($type);
+    biblio_add_field_instances('biblio', $type);
   }
   
   // Create a new, empty biblio object
@@ -3313,7 +3339,7 @@ function biblio_add($type) {
  */
 function biblio_page_edit($biblio) {
   $lang = biblio_field_language('biblio_title', $biblio);
-  $types = biblio_types();
+  $types = biblio_types('biblio');
   
   drupal_set_title(t('<em>Edit @type</em> @title', array('@type' =>
     $types[$biblio->publication_type]->name, '@title' =>$biblio->biblio_title[$lang][0]['value'])), PASS_THROUGH);
