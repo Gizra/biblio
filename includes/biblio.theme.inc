@@ -287,10 +287,10 @@ function theme_biblio_tabular($variables) {
 }
 
 function _biblio_get_latin1_regex() {
-  $alnum = "[:alnum:]ÄÅ�?ÀÂÃÇÉÈÊËÑÖØÓÒÔÕÜÚÙÛ�?ÌÎ�?Æäåáàâãçéèêëñöøóòôõüúùûíìîïæÿß";
+  $alnum = "[:alnum:]ÄÅ�?ÀÂÃÇÉÈÊËÑÖØÓÒÔÕÜÚÙÛ�?ÌÎ�?Æäåáàâãçéèêëñöøóòôõüúùûíìîïæÿß";
 
   // Matches ISO-8859-1 letters:
-  $alpha = "[:alpha:]ÄÅ�?ÀÂÃÇÉÈÊËÑÖØÓÒÔÕÜÚÙÛ�?ÌÎ�?Æäåáàâãçéèêëñöøóòôõüúùûíìîïæÿß";
+  $alpha = "[:alpha:]ÄÅ�?ÀÂÃÇÉÈÊËÑÖØÓÒÔÕÜÚÙÛ�?ÌÎ�?Æäåáàâãçéèêëñöøóòôõüúùûíìîïæÿß";
 
   // Matches ISO-8859-1 control characters:
   $cntrl = "[:cntrl:]";
@@ -302,13 +302,13 @@ function _biblio_get_latin1_regex() {
   $digit = "[\d]";
 
   // Matches ISO-8859-1 printing characters (excluding space):
-  $graph = "[:graph:]ÄÅ�?ÀÂÃÇÉÈÊËÑÖØÓÒÔÕÜÚÙÛ�?ÌÎ�?Æäåáàâãçéèêëñöøóòôõüúùûíìîïæÿß";
+  $graph = "[:graph:]ÄÅ�?ÀÂÃÇÉÈÊËÑÖØÓÒÔÕÜÚÙÛ�?ÌÎ�?Æäåáàâãçéèêëñöøóòôõüúùûíìîïæÿß";
 
   // Matches ISO-8859-1 lower case letters:
   $lower = "[:lower:]äåáàâãçéèêëñöøóòôõüúùûíìîïæÿß";
 
   // Matches ISO-8859-1 printing characters (including space):
-  $print = "[:print:]ÄÅ�?ÀÂÃÇÉÈÊËÑÖØÓÒÔÕÜÚÙÛ�?ÌÎ�?Æäåáàâãçéèêëñöøóòôõüúùûíìîïæÿß";
+  $print = "[:print:]ÄÅ�?ÀÂÃÇÉÈÊËÑÖØÓÒÔÕÜÚÙÛ�?ÌÎ�?Æäåáàâãçéèêëñöøóòôõüúùûíìîïæÿß";
 
   // Matches ISO-8859-1 punctuation:
   $punct = "[:punct:]";
@@ -317,10 +317,10 @@ function _biblio_get_latin1_regex() {
   $space = "[\s]";
 
   // Matches ISO-8859-1 upper case letters:
-  $upper = "[:upper:]ÄÅ�?ÀÂÃÇÉÈÊËÑÖØÓÒÔÕÜÚÙÛ�?ÌÎ�?Æ";
+  $upper = "[:upper:]ÄÅ�?ÀÂÃÇÉÈÊËÑÖØÓÒÔÕÜÚÙÛ�?ÌÎ�?Æ";
 
   // Matches ISO-8859-1 "word" characters:
-  $word = "_[:alnum:]ÄÅ�?ÀÂÃÇÉÈÊËÑÖØÓÒÔÕÜÚÙÛ�?ÌÎ�?Æäåáàâãçéèêëñöøóòôõüúùûíìîïæÿß";
+  $word = "_[:alnum:]ÄÅ�?ÀÂÃÇÉÈÊËÑÖØÓÒÔÕÜÚÙÛ�?ÌÎ�?Æäåáàâãçéèêëñöøóòôõüúùûíìîïæÿß";
 
   // Defines the PCRE pattern modifier(s) to be used in conjunction with the above variables:
   // More info: <http://www.php.net/manual/en/reference.pcre.pattern.modifiers.php>
@@ -947,7 +947,7 @@ function theme_google_scholar_link($variables) {
 function theme_biblio_contributors($variables) {
   $form = $variables['form'];
   $rows = array();
-  $headers = array('', t('Name'), t('Category'), t('Role'), t('Weight'));
+  $headers = array('', t('Name'), t('Category'), t('Weight'));
   drupal_add_tabledrag($form['#id'], 'order', 'sibling', 'rank');
 
   foreach (element_children($form) as $key) {
@@ -962,8 +962,6 @@ function theme_biblio_contributors($variables) {
                    'class' => array('biblio-contributor'));
     $row[] = array('data' => drupal_render($form[$key]['auth_category']),
                      'class' => array('biblio-contributor-category'));
-    $row[] = array('data' => drupal_render($form[$key]['auth_type']),
-                     'class' => array('biblio-contributor-type'));
     $row[] = drupal_render($form[$key]['rank']);
     $rows[] = array('data' => $row, 'class' => array('draggable'));
   }
