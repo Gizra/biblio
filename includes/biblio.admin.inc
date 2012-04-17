@@ -2457,7 +2457,7 @@ function biblio_admin_keyword_edit_form_submit($form, &$form_state) {
  * @return type 
  */
 function biblio_overview_types() {
-  foreach (biblio_types() as $type => $info) {
+  foreach (biblio_types('biblio') as $type => $info) {
     $type_url_str = str_replace('_', '-', $type);
     $label = t('Edit  @type fields', array('@type' => $info->name));
     $items[] = l($label, 'admin/config/content/biblio/pubtypes/' . $type_url_str . '/fields');
