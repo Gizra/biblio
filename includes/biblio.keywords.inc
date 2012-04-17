@@ -120,6 +120,7 @@ function biblio_insert_keywords($node, $update = FALSE) {
   $kw_vocab = variable_get('biblio_keyword_vocabulary', 0);
   $freetagging = variable_get('biblio_keyword_freetagging', 0);
   $taxo_terms = $typed_keywords = array();
+  $freetag_vocab = FALSE;
   if (!is_array($node->biblio_keywords)) {
     $typed_keywords = biblio_explode_keywords($node->biblio_keywords);
   }
@@ -135,7 +136,8 @@ function biblio_insert_keywords($node, $update = FALSE) {
             ->execute();
   }
   $vocabularies = module_invoke('taxonomy', 'get_vocabularies', 'biblio');
-  if (variable_get('biblio_keyword_freetagging', 0)) {
+  $vid = variable_get('biblio_keyword_vocabulary', 0);
+  if (variable_get('biblio_keyword_freetagging', 0) && $vid) {
     $freetag_vocab = $vocabularies[variable_get('biblio_keyword_vocabulary', 0)];
   }
   if (isset($node->taxonomy) && is_array($node->taxonomy) && variable_get('biblio_copy_taxo_terms_to_keywords', 0)) { //add any taxonomy terms to our keyword list

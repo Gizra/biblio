@@ -760,7 +760,7 @@ function biblio_schema() {
       ),
     'lastname' => array(
       'type' => 'varchar',
-      'length' => '128',
+      'length' => '255',
       'not null' => TRUE,
       'default' => '',
       'description' => 'Author last name',
@@ -1906,4 +1906,19 @@ function biblio_update_7017() {
   if (module_exists('views')) { // rebuild the data tables
     views_invalidate_cache();
   }
+}/**
+ *
+ * Widen the biblio_contributor_data.lastname column to 255 characters
+ */
+function biblio_update_7018() {
+  $spec =  array(
+    'type' => 'varchar',
+    'length' => '255',
+    'not null' => TRUE,
+    'default' => '',
+    'description' => 'Author last name',
+  );
+  db_change_field('biblio_contributor_data', 'lastname', 'lastname', $spec);
+
 }
+

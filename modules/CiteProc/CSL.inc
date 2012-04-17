@@ -617,7 +617,6 @@ class csl_name extends csl_format {
       }
       if (variable_get('biblio_author_links', 1)) {
         $text = theme('biblio_author_link', array('author' => $name));
-        //$text = $this->author_link($name);
       }
 
       $authors[] = $this->format($text);
@@ -625,9 +624,10 @@ class csl_name extends csl_format {
       if (isset($this->{'et-al-min'}) && $count >= $this->{'et-al-min'}) break;
     }
     if (isset($this->{'et-al-min'}) &&
-    $count >= $this->{'et-al-min'} &&
-    isset($this->{'et-al-use-first'}) &&
-    $count > $this->{'et-al-use-first'}) {
+      $count >= $this->{'et-al-min'} &&
+      isset($this->{'et-al-use-first'}) &&
+      $count >= $this->{'et-al-use-first'} &&
+      count($names) >  $this->{'et-al-use-first'}) {
       if ($this->{'et-al-use-first'} < $this->{'et-al-min'}) {
         for ($i = $this->{'et-al-use-first'}; $i < $count; $i++) {
           unset($authors[$i]);
@@ -792,7 +792,7 @@ class csl_names extends csl_format {
     }
   }
 
-  function render($data, $mode) {
+  function render($data, $mode = NULL) {
     $matches = 0;
     $variable_parts = array();
     if (!isset($this->delimiter)) {
@@ -931,7 +931,7 @@ class csl_date extends csl_format {
 
   }
 
-  function render($data, $mode) {
+  function render($data, $mode = NULL) {
     $date_parts = array();
     $date = '';
     $text = '';
@@ -953,7 +953,7 @@ class csl_date extends csl_format {
 
 class csl_date_part extends csl_format {
 
-  function render($date, $mode) {
+  function render($date, $mode = NULL) {
     $text = '';
 
     switch ($this->name) {
@@ -1001,7 +1001,7 @@ class csl_date_part extends csl_format {
 
 class csl_number extends csl_format {
 
-  function render($data, $mode) {
+  function render($data, $mode = NULL) {
     $var = $this->variable;
 
     if (!$var || empty($data->$var)) return;
@@ -1129,11 +1129,12 @@ class csl_text extends csl_format {
     }
 
     if (empty($text)) return;
+    $text = $this->format($text);
     if ($this->variable == 'title') {
       $url = biblio_get_title_url_info($data);
       $text =  l($text, $url['link'], $url['options']) ;
     }
-    return $this->format($text);
+    return $text;
   }
 }
 
@@ -1207,12 +1208,13 @@ class csl_macros extends csl_collection{
 
 class csl_group extends csl_format{
 
-  function render($data, $mode) {
+  function render($data, $mode = NULL) {
     $text = '';
     $text_parts = array();
 
-    $terms = $variables = $have_variables = 0;
+    $terms = $variables = $have_variables = $element_count = 0;
     foreach ($this->elements as $element) {
+      $element_count++;
       if (($element instanceof csl_text) &&
           ($element->source == 'term' ||
            $element->source == 'value' )) {
@@ -1228,7 +1230,18 @@ class csl_group extends csl_format{
 
       $text = $element->render($data, $mode);
 
+      $delimiter = $this->delimiter;
       if (!empty($text)) {
+        if ($delimiter && ($element_count < count($this->elements))) {
+          //check to see if the delimiter is already the last character of the text string
+          //if so, remove it so we don't have two of them when we paste together the group
+          $stext = strip_tags(trim($text));
+          if((strrpos($stext, $delimiter[0])+1) == drupal_strlen($stext)) {
+            $text = str_replace($stext, '----REPLACE----', $text);
+            $stext = drupal_substr($stext, 0, -1);
+            $text = str_replace('----REPLACE----', $stext, $text);
+          }
+        }
         $text_parts[] = $text;
         if ($element->source == 'variable' || isset($element->variable)) $have_variables++;
         if ($element->source == 'macro') $have_variables++;
@@ -1254,7 +1267,7 @@ class csl_layout extends csl_format {
     parent::init_formatting();
   }
 
-  function render($data, $mode) {
+  function render($data, $mode = NULL) {
     $text = '';
     $parts = array();
    // $delimiter = $this->delimiter;
