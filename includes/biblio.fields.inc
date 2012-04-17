@@ -148,6 +148,7 @@ function biblio_parse_field_link_data_csv() {
  * admin/content/biblio/add is accessed for the first time for a specific publication type.
  *
  * @param string $publication_type
+ * @param string $entity_type biblio, biblio_contributor, etc...
  * @return boolean Whether or not biblio's required field instances are indeed missing.
  */
 function biblio_field_instances_missing($publication_type, $entity_type = 'biblio') {
