@@ -117,9 +117,6 @@ function biblio_add_field_instances($entity, $bundle) {
  *    and so on...
  */
 function biblio_parse_field_link_data_csv() {
-  // lines have been removed from the csv file to remove some fields for
-  // development purposes. This is only to reduce install time. 
-  // @todo: put back full csv file. 
   $csv_file = drupal_get_path('module', 'biblio') . '/misc/biblio.field.link.data.csv';
   $file_handle = fopen($csv_file, 'r');
   // array containing an array for each row in the csv
@@ -200,7 +197,6 @@ function biblio_field_list() {
  * Deletes all Biblio fields
  * 
  * @return array Array of all fields that were deleted.
- * @todo make this function not run so slow. field_d
  */
 function biblio_delete_fields() {
   $fields = biblio_field_list();

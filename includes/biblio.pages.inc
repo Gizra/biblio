@@ -236,7 +236,7 @@ function biblio_entry($biblio) {
 */
   $prefix = '<div class="biblio-entry">';
   $suffix = '</div>';
-  // @todo: get rid of below line and add published/unpublished support
+  // @todo: get rid of below line and add published/unpublished support. See http://drupal.org/node/1537396
   $biblio->status = 1;
   if (!$biblio->status) {
     $prefix .= '<div id="node-' . $biblio->bid . '" class="node node-unpublished">';

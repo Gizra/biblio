@@ -1377,7 +1377,7 @@ function biblio_add_form($form, &$form_state, $biblio) {
 
   // Add the values we created above to the real form
   foreach ($fielded_form as $field => $data) {
-    //  @todo get language support working, instead of using 'und'
+    //  @todo get language support working, instead of using 'und'. See http://drupal.org/node/1537332
     // also get multi-valued support, instead of using 0
     
     if (is_array($data) && isset($data['und'][0]['value']['#vtab'])) {
@@ -1879,7 +1879,7 @@ function biblio_update($node) {
  * This hook is called
  * every time a node is loaded, and allows us to do some loading of our own.
  * 
- * @todo move new biblio_load code back to this function. 
+ * @todo move necessary code from this function to the new biblio_load() function. See http://drupal.org/node/1537326
  *
  */
 function biblio_load_old($nodes) {
@@ -1953,7 +1953,7 @@ function biblio_view($node, $buildmode = 'full') {
   $base  = variable_get('biblio_base', 'biblio');
   $base_title = check_plain(variable_get('biblio_base_title', 'Biblio'));
 
-  // @todo: get these view modes implemented with our new entities
+  // @todo: get these view modes implemented with our new entities. See http://drupal.org/node/1537320
   switch ($buildmode) {
     case 'full':
       if (variable_get('biblio_hide_bibtex_braces', 0) && !isset($node->view )) {
@@ -2718,7 +2718,7 @@ function biblio_entity_info() {
     // Will be retrieved using biblio_types()
     'bundles' => array(),
     'load hook' => 'biblio_load',
-    // @todo: implement biblio node view modes
+    // @todo: implement biblio node view modes. See http://drupal.org/node/1537320
     'view modes' => array(
       'full' => array(
         'label' => t('Full Content'),
@@ -2917,7 +2917,7 @@ function biblio_load($bid, $reset = FALSE) {
   modify_biblio_field_link_data_csv();
   $biblio = biblio_load_multiple(array($bid), array(), $reset);
   
-  // @todo check to see if we need this with the Entity API's entity object structure
+  // @todo check to see if we need this with the Entity API's entity object structure. See http://drupal.org/node/1537332
   if (isset($biblio[$bid])) {
     $language = biblio_field_language('biblio_title', $biblio[$bid]);
     $biblio[$bid]->language = $language;
@@ -2959,11 +2959,11 @@ function biblio_save($biblio) {
   module_load_include('inc', 'biblio', 'includes/biblio.keywords');
   _biblio_prepare_submit($biblio);
   biblio_insert_contributors($biblio);
-  // @todo: add keyword functionality
+  // @todo: add keyword functionality. See http://drupal.org/node/1537350
 //  biblio_insert_keywords($biblio);
-  // @todo: get COinS working
+  // @todo: get COinS working. See http://drupal.org/node/1537360
   $biblio->biblio_coins[$biblio->language][0]['value'] = biblio_coins($biblio);
-  // @todo: get md5 working
+  // @todo: get md5 working. See http://drupal.org/node/1537364
 //  $duplicate = biblio_hash($biblio);
 //  if (isset($duplicate) && $duplicate != $biblio->bid) { // if this is a potential duplcate, write the bids of the pre-existing and new biblios
 //    $dup_map = array('vid' => $duplicate, 'did' => $biblio->bid);
@@ -2986,7 +2986,7 @@ function biblio_delete($contributor) {
  * @param array $contributor_ids An array of biblio ids of the entities to delete
  */
 function biblio_delete_multiple($bids) {
-  // @todo delete keywords and contributors associated with a biblio
+  // @todo delete keywords and contributors associated with a biblio. See http://drupal.org/node/1537326
   entity_delete_multiple('biblio_contributor', $bids);
 }
 
@@ -3257,10 +3257,10 @@ function biblio_contributor_page_view($contributor, $view_mode = 'full') {
 
 
 /**
- * hook_menu callback function for admin/config/content/biblio
+ * hook_menu callback function for admin/content/biblio
  *
  * @return string
- * @todo list all biblio entries (similar to admin/content does for nodes)
+ * @todo list all biblio entries (similar to admin/content does for nodes). See http://drupal.org/node/1537378
  */
 function biblio_content() {
   $query = db_select('biblio', 'b')
@@ -3281,7 +3281,7 @@ function biblio_content() {
  * Generates a bulleted list of menu items that are immediate children of the
  * current page being viewed.
  * @return type
- * @todo: make this not hideous 
+ * @todo: make this not hideous. See http://drupal.org/node/1537378
  */
 function biblio_add_page() {
   // Returns the current menu item

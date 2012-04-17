@@ -2480,7 +2480,7 @@ function biblio_admin_keyword_edit_form_submit($form, &$form_state) {
  * Gives an unordered list of all the publication types we have available.
  * Each one is presented as a link to the manage page for that type.
  * 
- * @todo make this a table similar to the original publication type list.
+ * @todo make this a table similar to the original publication type list. See http://drupal.org/node/1537390
  *
  * @return type 
  */
