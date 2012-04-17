@@ -150,22 +150,25 @@ function biblio_parse_field_link_data_csv() {
  * @param string $publication_type
  * @return boolean Whether or not biblio's required field instances are indeed missing.
  */
-function biblio_field_instances_missing($publication_type) {
+function biblio_field_instances_missing($publication_type, $entity_type = 'biblio') {
   // Array of fields defined in /misc/biblio.field.link.data.csv
   $biblio_instances = biblio_parse_field_link_data_csv();
   // Get array of field instances that exist (if any) for the current pub type
   $params = array('entity_type' => 'biblio', 'bundle' => $publication_type);
   $existing_instances = field_read_instances($params);
+  $existing_instance_names = array();
   foreach ($existing_instances as $key => $instance_data) {
     // change the array values to the field name, so we can search for the 
     // field instance in the array using in_array()
-    $existing_instances[$key] = $instance_data['field_name'];
+    $existing_instance_names[] = $instance_data['field_name'];
   }
   foreach ($biblio_instances as $key => $field_data) {
-    // If CSV line isn't blank and field name isn't already in the list of 
-    // existing field instances
+    // If CSV line isn't blank &&
+    // The field name isn't already in the list of existing field instances &&
+    // Only for instances of the entity type given
     if (isset($biblio_instances[$key]['field name']) && 
-        !in_array($field_data['field name'], $existing_instances)) {
+        !in_array($field_data['field name'], $existing_instance_names) &&
+        $biblio_instances[$key]['entity'] == $entity_type) {
       return TRUE;
     }
   }
