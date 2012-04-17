@@ -1,45 +1,24 @@
 <?php
+/**
+ * Implements hook_install(). 
+ */
 function biblio_install() {
   // @todo remove after development
   $timer_name = 'biblio_install()';
   timer_start($timer_name);
   
-  $t = get_t();
-
-  // Define the node type.
-  $biblio = array(
-    'type' => 'biblio',
-    'name' => $t('Biblio'),
-    'base' => 'biblio',
-    'description' => $t('Use Biblio for scholarly content, such as journal papers and books.'),
-    'body_label' => $t('Full text')
-  );
-
-  // Complete the node type definition by setting any defaults not explicitly
-  // declared above.
-  // http://api.drupal.org/api/function/node_type_set_defaults/7
-  $content_type = node_type_set_defaults($biblio);
-  node_add_body_field($content_type);
-
-  // Save the content type
-  node_type_save($content_type);
-
-  set_time_limit(300);
-
-  $result[] = _add_db_field_data();
-
-  $result[] = _add_publication_types();
-
-  // @todo: add contributor field data contained in this function
-  $result[] = _add_custom_field_data();
-
-  //_enable_biblio_keyword_vocabulary();
-
-  $result[] = _set_system_weight();
-  
   module_load_include('inc', 'biblio', 'includes/biblio.fields');
-  biblio_add_fields();
   
+  $t = get_t();
+  set_time_limit(300);
+  // we don't need custom fields
+//  $result[] = _add_db_field_data();
+  $result[] = _add_bundles();
+  // @todo: add contributor field data contained in this function
+//  $result[] = _add_custom_field_data();
+  //_enable_biblio_keyword_vocabulary();
+  $result[] = _set_system_weight();
+  biblio_add_fields();
   // @todo remove after development
   timer_stop($timer_name);
   drupal_set_message($timer_name . ' run time: ' . timer_read($timer_name) . 'ms.');
@@ -594,43 +573,49 @@ function biblio_schema() {
       );
 
   $schema['biblio_types'] = array(
-  'fields' => array(
+    'fields' => array(
       'tid' => array(
-      'type' => 'int',
-      'not null' => TRUE,
-      'default' => 0,
-      'description' => '{biblio_types}.tid of the publication type',
+        'type' => 'serial',
+        'not null' => TRUE,
+        'description' => '{biblio_types}.tid of the type',
       ),
-    'name' => array(
-      'type' => 'varchar',
-      'length' => '64',
-      'not null' => TRUE,
-      'default' => '',
-      'description' => 'The name of the publication type'
+      'name' => array(
+        'type' => 'varchar',
+        'length' => '64',
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The name of the type'
       ),
-    'description' => array(
-      'type' => 'varchar',
-      'not null' => FALSE,
-      'length' => '255',
-      'description' => 'Description of the publication type'
+      'description' => array(
+        'type' => 'varchar',
+        'not null' => FALSE,
+        'length' => '255',
+        'description' => 'Description of the type'
       ),
-    'weight' => array(
-      'type' => 'int',
-      'not null' => TRUE,
-      'default' => 0,
-      'description' => 'Controls the order the types are listed in'
+      'weight' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Controls the order the types are listed in'
       ),
-    'visible' => array(
-      'type' => 'int',
-      'not null' => TRUE,
-      'unsigned' => TRUE,
-      'default' => 1,
-      'description' => 'Determines if the publication type is visible in the list'
+      'visible' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'default' => 1,
+        'description' => 'Determines if the type is visible in the list'
       ),
+      'entity' => array(
+        'type' => 'varchar',
+        'length' => '64',
+        'not null' => TRUE,
+        'default' => ''
+//        'default' => 'biblio',
+//        'description' => 'The entity -biblio, contributor, contribution - that this type/entity bundle belongs to.'
       ),
+    ),
     'primary key' => array('tid'),
-
-      );
+  );
 
   $schema['biblio_contributor'] = array(
     'description' => 'Relational table linking authors to biblio entries',
@@ -1177,53 +1162,61 @@ function _biblio_add_vtabs() {
 
 }
 
-function _add_publication_types() {
+function _add_bundles() {
 //  _biblio_add_field('Publication Types');
-  $types[] = array(100, 'Book', NULL, 1);
-  $types[] = array(101, 'Book Chapter', NULL, 2);
-  $types[] = array(102, 'Journal Article', NULL, 3);
-  $types[] = array(131,'Journal',NULL,3);
-  $types[] = array(103, 'Conference Paper', NULL, 4);
-  $types[] = array(104, 'Conference Proceedings', NULL, 5);
-  $types[] = array(105, 'Newspaper Article', NULL, 6);
-  $types[] = array(106, 'Magazine Article', NULL, 7);
-  $types[] = array(107, 'Web Article', NULL, 8);
-  $types[] = array(132,'Website',NULL,8);
-  $types[] = array(133,'Web service',NULL,8);
-  $types[] = array(134,'Web project page',NULL,8);
-  $types[] = array(108, 'Thesis', NULL, 9);
-  $types[] = array(109, 'Report', NULL, 10);
-  $types[] = array(110, 'Film', NULL, 11);
-  $types[] = array(111, 'Broadcast', NULL, 12);
-  $types[] = array(112, 'Artwork', NULL, 13);
-  $types[] = array(113, 'Software', NULL, 14);
-  $types[] = array(114, 'Audiovisual', NULL, 15);
-  $types[] = array(115, 'Hearing', NULL, 16);
-  $types[] = array(116, 'Case', NULL, 17);
-  $types[] = array(117, 'Bill', NULL, 18);
-  $types[] = array(118, 'Statute', NULL, 19);
-  $types[] = array(119, 'Patent', NULL, 20);
-  $types[] = array(120, 'Personal', NULL, 21);
-  $types[] = array(121, 'Manuscript', NULL, 22);
-  $types[] = array(122, 'Map', NULL, 23);
-  $types[] = array(123, 'Chart', NULL, 24);
-  $types[] = array(124, 'Unpublished', NULL, 25);
-  $types[] = array(125, 'Database', NULL, 26);
-  $types[] = array(126, 'Government Report', NULL, 27);
-  $types[] = array(127, 'Classical'  , NULL, 28);
-  $types[] = array(128, 'Legal Ruling', NULL, 29);
-  $types[] = array(129, 'Miscellaneous',NULL, 30);
-  $types[] = array(130, 'Miscellaneous Section', NULL, 31);
-  $types[] = array(135,'Presentation',NULL,8);
+  $types[] = array('Book', NULL, 1, 'biblio');
+  $types[] = array('Book Chapter', NULL, 2, 'biblio');
+  $types[] = array('Journal Article', NULL, 3, 'biblio');
+  $types[] = array('Journal',NULL,3, 'biblio');
+  $types[] = array('Conference Paper', NULL, 4, 'biblio');
+  $types[] = array('Conference Proceedings', NULL, 5, 'biblio');
+  $types[] = array('Newspaper Article', NULL, 6, 'biblio');
+  $types[] = array('Magazine Article', NULL, 7, 'biblio');
+  $types[] = array('Web Article', NULL, 8, 'biblio');
+  $types[] = array('Website',NULL,8, 'biblio');
+  $types[] = array('Web service',NULL,8, 'biblio');
+  $types[] = array('Web project page',NULL,8, 'biblio');
+  $types[] = array('Thesis', NULL, 9, 'biblio');
+  $types[] = array('Report', NULL, 10, 'biblio');
+  $types[] = array('Film', NULL, 11, 'biblio');
+  $types[] = array('Broadcast', NULL, 12, 'biblio');
+  $types[] = array('Artwork', NULL, 13, 'biblio');
+  $types[] = array('Software', NULL, 14, 'biblio');
+  $types[] = array('Audiovisual', NULL, 15, 'biblio');
+  $types[] = array('Hearing', NULL, 16, 'biblio');
+  $types[] = array('Case', NULL, 17, 'biblio');
+  $types[] = array('Bill', NULL, 18, 'biblio');
+  $types[] = array('Statute', NULL, 19, 'biblio');
+  $types[] = array('Patent', NULL, 20, 'biblio');
+  $types[] = array('Personal', NULL, 21, 'biblio');
+  $types[] = array('Manuscript', NULL, 22, 'biblio');
+  $types[] = array('Map', NULL, 23, 'biblio');
+  $types[] = array('Chart', NULL, 24, 'biblio');
+  $types[] = array('Unpublished', NULL, 25, 'biblio');
+  $types[] = array('Database', NULL, 26, 'biblio');
+  $types[] = array('Government Report', NULL, 27, 'biblio');
+  $types[] = array('Classical'  , NULL, 28, 'biblio');
+  $types[] = array('Legal Ruling', NULL, 29, 'biblio');
+  $types[] = array('Miscellaneous',NULL, 30, 'biblio');
+  $types[] = array('Miscellaneous Section', NULL, 31, 'biblio');
+  $types[] = array('Presentation',NULL,8, 'biblio');
+  $types[] = array('Contributor', NULL, 1, 'biblio_contributor');
+  $types[] = array('Primary', NULL, 1, 'biblio_contribution');
+  $types[] = array('Secondary', NULL, 2, 'biblio_contribution');
+  $types[] = array('Tertiary', NULL, 3, 'biblio_contribution');
+  $types[] = array('Subsidiary', NULL, 4, 'biblio_contribution');
+  $types[] = array('Corporate/Institutional', NULL, 5, 'biblio_contribution');
 
   foreach ($types as $record) {
 //    $result[] = update_sql("INSERT INTO {biblio_types} (tid, name, description, weight) VALUES ('" . implode("', '", $record) . "')");
-    db_insert('biblio_types')->fields(array(
-      'tid'           => $record[0],
-      'name'          => $record[1],
-      'description'   => $record[2],
-      'weight'        => $record[3],
-    ))->execute();
+    $query = db_insert('biblio_types')->fields(array(
+      'tid'           => NULL,
+      'name'          => $record[0],
+      'description'   => $record[1],
+      'weight'        => $record[2],
+      'entity'        => $record[3],
+    ));
+    $query->execute();
   }
  return;
 }
