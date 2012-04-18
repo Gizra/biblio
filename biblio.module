@@ -3481,6 +3481,12 @@ function biblio_field_info() {
       'instance_settings' => array(
         'vtab' => t('None'),
       ),
+      // property_type and property_callbacks keys are neccessary to use the
+      // entity API to get/set custom fields in entities.
+      'property_type' => 'text',
+      'property_callbacks' => array(
+        'entity_metadata_field_text_property_callback',
+      ),
     ), 
   );
 }
