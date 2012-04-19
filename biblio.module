@@ -1320,6 +1320,8 @@ function biblio_user_presave(&$edit, $account, $catagory) {
 function biblio_add_form($form, &$form_state, $biblio) {
   global $user;
   module_load_include('inc', 'biblio', 'includes/biblio.fields');
+  $wrapper = biblio_wrapper($biblio);
+  $instance_info = field_info_instances('biblio', $biblio->publication_type);
   $fields = array();
   
   $form['#id'] = 'biblio-form';
@@ -1374,20 +1376,23 @@ function biblio_add_form($form, &$form_state, $biblio) {
   );
 
   $tabs[1] += biblio_contributor_widget($biblio, $form_state);
-
+  
+    dpm($instance_info);
+  
   // Add the values we created above to the real form
   foreach ($fielded_form as $field => $data) {
-    //  @todo get language support working, instead of using 'und'. See http://drupal.org/node/1537332
-    // also get multi-valued support, instead of using 0
-    
-    if (is_array($data) && isset($data['und'][0]['value']['#vtab'])) {
-      if ($data['und'][0]['value']['#vtab'] === '0') {
+    $vtab = (isset($instance_info[$field]['settings']['vtab']))? 
+      $instance_info[$field]['settings']['vtab'] : FALSE;
+    // We don't want extra theme elements from $fielded_form. 
+    // Just field instances with a set vtab.
+    if ($vtab) {
+      if ($vtab === '0') {
         // Fields outside of the vtabs
         $form[$field] = $data;
       }
       else {
         // Add all other fields to the vtabs
-        $tabs[$data['und'][0]['value']['#vtab']][$field] = $data;
+        $tabs[$vtab][$field] = $data;
       }
     }
   }
@@ -2887,6 +2892,25 @@ function publication_type_load($type) {
 }
 
 /**
+ * Helper function to get a wrapper object, built by the Entity API, to help
+ * ease the pain of getting/setting field data. Fields for entities can be get
+ * and set using the following syntax:
+ * @example
+ * // set biblio field data (in this case, the title);
+ * $wrapper = biblio_wrapper($biblio, 'biblio')
+ * $wrapper->biblio_title->set('My Special Publication');
+ * // get biblio field data
+ * $title = $wrapper->biblio_title->value();
+ * 
+ * @param object standard entity object ($biblio, $contributor, etc.)
+ * @param type $entity_type biblio, biblio_contributor, biblio_contribution
+ * @return object A fully structured entity wrapper built by the Entity API
+ */
+function biblio_wrapper($entity, $entity_type = 'biblio') {
+  return entity_metadata_wrapper($entity_type, $entity);
+}
+
+/**
  * Create an empty biblio object
  * @param string $publication_type
  *  The publication type of the biblio to be created (bundle)
@@ -2917,11 +2941,6 @@ function biblio_load($bid, $reset = FALSE) {
   modify_biblio_field_link_data_csv();
   $biblio = biblio_load_multiple(array($bid), array(), $reset);
   
-  // @todo check to see if we need this with the Entity API's entity object structure. See http://drupal.org/node/1537332
-  if (isset($biblio[$bid])) {
-    $language = biblio_field_language('biblio_title', $biblio[$bid]);
-    $biblio[$bid]->language = $language;
-  }
   return reset($biblio);
 }
 
@@ -2957,12 +2976,15 @@ function biblio_save($biblio) {
   module_load_include('inc', 'biblio', 'includes/biblio.util');
   module_load_include('inc', 'biblio', 'includes/biblio.contributors');
   module_load_include('inc', 'biblio', 'includes/biblio.keywords');
+  
+  $wrapper = biblio_wrapper($biblio);
+  
   _biblio_prepare_submit($biblio);
   biblio_insert_contributors($biblio);
   // @todo: add keyword functionality. See http://drupal.org/node/1537350
 //  biblio_insert_keywords($biblio);
   // @todo: get COinS working. See http://drupal.org/node/1537360
-  $biblio->biblio_coins[$biblio->language][0]['value'] = biblio_coins($biblio);
+  $wrapper->biblio_coins = biblio_coins($biblio);
   // @todo: get md5 working. See http://drupal.org/node/1537364
 //  $duplicate = biblio_hash($biblio);
 //  if (isset($duplicate) && $duplicate != $biblio->bid) { // if this is a potential duplcate, write the bids of the pre-existing and new biblios
@@ -2974,10 +2996,10 @@ function biblio_save($biblio) {
 }
 
 /**
- * Delete single contributor.
+ * Delete single biblio entry.
  */
-function biblio_delete($contributor) {
-  entity_delete('biblio_contributor', entity_id('biblio_contributor' ,$contributor));
+function biblio_delete($biblio) {
+  entity_delete('biblio', entity_id('biblio' ,$biblio));
 }
 
 /**
@@ -2987,7 +3009,7 @@ function biblio_delete($contributor) {
  */
 function biblio_delete_multiple($bids) {
   // @todo delete keywords and contributors associated with a biblio. See http://drupal.org/node/1537326
-  entity_delete_multiple('biblio_contributor', $bids);
+  entity_delete_multiple('biblio', $bids);
 }
 
 /**
@@ -3096,8 +3118,8 @@ function biblio_page_view($biblio, $view_mode = 'full') {
  * hook_menu() callback
  */
 function biblio_page_title($biblio) {
-  $langcode = biblio_field_language('biblio_title', $biblio);
-  return $biblio->biblio_title[$langcode][0]['value'];
+  $wrapper = biblio_wrapper($biblio);
+  return $wrapper->biblio_title->value();
 }
 
 /**
@@ -3121,12 +3143,12 @@ function biblio_field_language($field_name, $biblio) {
  * @return type 
  */
 function biblio_delete_confirm($form, &$form_state, $biblio) {
-  $lang = $biblio->language;
+  $wrapper = biblio_wrapper($biblio);
   $form['#biblio'] = $biblio;
   // Always provide entity id in the same form key as in the entity edit form
   $form['bid'] = array('#type' => 'value', '#value' => $biblio->bid);
   return confirm_form($form,
-    t('Are you sure you want to delete %title?', array('%title' => $biblio->biblio_title[$lang][0]['value'])),
+    t('Are you sure you want to delete %title?', array('%title' => $wrapper->biblio_title->value())),
     'biblio/' . $biblio->bid,
     t('This action cannot be undone.'),
     t('Delete'),
@@ -3142,22 +3164,22 @@ function biblio_delete_confirm($form, &$form_state, $biblio) {
  */
 function biblio_delete_confirm_submit($form, &$form_state) {
   if ($form_state['values']['confirm']) {
-    $biblio = biblio_load($form_state['values']['bid']);
-    biblio_delete($form_state['values']['bid']);
+    $wrapper = biblio_wrapper($form['#biblio']);
+    biblio_delete($form['#biblio']);
     watchdog('biblio', '@type: deleted %title.',
       array(
-        '@type' => $biblio->publication_type, 
-        '%title' => $biblio->biblio_title[$biblio->language][0]['value'],
+        '@type' => $wrapper->publication_type, 
+        '%title' => $wrapper->biblio_title->value(),
       )
     );
     
     $types = biblio_types('biblio');
     drupal_set_message(t('@type %title has been deleted.',
         array(
-          '@type' => $types[$biblio->publication_type]-> name, 
-          '%title' => $biblio->biblio_title[$biblio->language][0]['value'])
+          '@type' => $types[$wrapper->publication_type->value()]-> name, 
+          '%title' => $wrapper->biblio_title->value(),
         )
-    );
+    ));
   }
   
   $form_state['redirect'] = '<front>';
@@ -3338,11 +3360,12 @@ function biblio_add($type) {
  * @return type 
  */
 function biblio_page_edit($biblio) {
+  $wrapper = biblio_wrapper($biblio);
   $lang = biblio_field_language('biblio_title', $biblio);
   $types = biblio_types('biblio');
   
   drupal_set_title(t('<em>Edit @type</em> @title', array('@type' =>
-    $types[$biblio->publication_type]->name, '@title' =>$biblio->biblio_title[$lang][0]['value'])), PASS_THROUGH);
+    $types[$biblio->publication_type]->name, '@title' =>$wrapper->biblio_title->value())), PASS_THROUGH);
   
   return drupal_get_form('biblio_add_form', $biblio);
 }
