@@ -69,7 +69,7 @@ function biblio_style_cse($biblio) {
   }
   $output .= '<span class="biblio-authors">' . $authors . "</span>.&nbsp; \n";
 
-  switch ($biblio->biblio_type) {
+  switch ($biblio->publication_type) {
 
     default :
       if (isset ($biblio->biblio_year[$biblio->language][0]['value'])) {
