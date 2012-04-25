@@ -19,6 +19,7 @@ function biblio_install() {
   //_enable_biblio_keyword_vocabulary();
   $result[] = _set_system_weight();
   biblio_add_fields();
+  biblio_add_field_instances('biblio_contributor', 'contributor');
   // @todo remove after development
   timer_stop($timer_name);
   drupal_set_message($timer_name . ' run time: ' . timer_read($timer_name) . 'ms.');
