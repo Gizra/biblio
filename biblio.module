@@ -1377,16 +1377,14 @@ function biblio_add_form($form, &$form_state, $biblio) {
 
   $tabs[1] += biblio_contributor_widget($biblio, $form_state);
   
-    dpm($instance_info);
-  
   // Add the values we created above to the real form
   foreach ($fielded_form as $field => $data) {
     $vtab = (isset($instance_info[$field]['settings']['vtab']))? 
       $instance_info[$field]['settings']['vtab'] : FALSE;
     // We don't want extra theme elements from $fielded_form. 
     // Just field instances with a set vtab.
-    if ($vtab) {
-      if ($vtab === '0') {
+    if ($vtab !== FALSE) {
+      if ($vtab == '0') {
         // Fields outside of the vtabs
         $form[$field] = $data;
       }
@@ -1822,32 +1820,6 @@ function _biblio_prepare_submit(&$biblio) {
       $biblio->$field = $biblio->{$field}['value'];
     }
   }
-}
-
-/**
- * Implementation of hook_insert().
- *
- * As a new node is being inserted into the database, we need to do our own
- * database inserts.
- *
- * @param object $node
- * @todo check if needed in 7.x-2.x
- */
-function biblio_insert($node) {
-  module_load_include('inc', 'biblio', 'includes/biblio.util');
-  module_load_include('inc', 'biblio', 'includes/biblio.contributors');
-  module_load_include('inc', 'biblio', 'includes/biblio.keywords');
-  _biblio_prepare_submit($node);
-  biblio_insert_contributors($node);
-  biblio_insert_keywords($node);
-  $node->biblio_coins = biblio_coins($node);
-  drupal_write_record('biblio', $node);
-  $duplicate = biblio_hash($node);
-  if (isset($duplicate) && $duplicate != $node->nid) { // if this is a potential duplcate, write the nids of the pre-existing and new nodes
-    $dup_map = array('vid' => $duplicate, 'did' => $node->nid);
-    drupal_write_record('biblio_duplicates', $dup_map);
-  }
-
 }
 
 /**
@@ -2974,13 +2946,11 @@ function biblio_load_multiple($bids = array(), $conditions = array(), $reset = F
  */
 function biblio_save($biblio) {
   module_load_include('inc', 'biblio', 'includes/biblio.util');
-  module_load_include('inc', 'biblio', 'includes/biblio.contributors');
   module_load_include('inc', 'biblio', 'includes/biblio.keywords');
   
   $wrapper = biblio_wrapper($biblio);
   
   _biblio_prepare_submit($biblio);
-  biblio_insert_contributors($biblio);
   // @todo: add keyword functionality. See http://drupal.org/node/1537350
 //  biblio_insert_keywords($biblio);
   // @todo: get COinS working. See http://drupal.org/node/1537360
@@ -3055,7 +3025,8 @@ function biblio_form_validate($form, &$form_state) {
 }
 
 /**
- * Glue code between the form and the biblio_save() function.
+ * Process data that was submitted from the biblio add form. This handles the
+ * additions of Biblio, Contributor, and Contribution entities.
  *
  * @global type $user
  * @param type $form
@@ -3072,19 +3043,53 @@ function biblio_form_submit($form, &$form_state) {
     $biblio->uid = $user->uid;
   }
   
-//  $biblio->revision = $form_state['values']['revision'];
-  
-  // Notify field widgets.
+  // Notify field widgets. 
   field_attach_submit('biblio', $biblio, $form, $form_state);
   // Save the biblio.
   biblio_save($biblio);
+  $contributor_names = biblio_form_get_contributors($form);
+  // Create an array of contributor objects
+  foreach ($contributor_names as $name) {
+    $contributors[] = entity_create('biblio_contributor', array());
+  }
   
   // Notify the user.
   drupal_set_message(t('Biblio saved.'));
   
-  $form_state['redirect'] = 'biblio/' . $biblio->bid;
+  $form_state['redirect'] = 'biblio/' . $biblio->bid; 
 }
 
+/**
+ * Get an array of contributors that were submitted from the biblio add form
+ *
+ * @param array $form The full form array
+ * @return array an iterative array of contributors, sorted by rank
+ */
+function biblio_form_get_contributors($form) {
+  $i = 0;
+  foreach ($form['biblio_tabs'][1]['biblio_contributors'] as $key => $value) {
+    // Contributors are keyed by a standard numeric iteration, but are mixed
+    // in with other form array values.
+    if (is_numeric($key)) {
+      // Get the name that the user entered in the name field
+      $name_value = $value['name']['#value'];
+      // If user didn't set rankings for the contributors, the value defaults
+      // to an empty string
+      $rank_value = ($value['rank']['#value'] == '') ?
+        $i : $value['rank']['#value'];
+      // Name fields left blank are empty strings
+      if (isset($name_value) && $name_value != '') {
+        $contributors[$rank_value] = $name_value;
+        $i++;
+        
+      }
+    }
+  }
+  // Sort contributors in order of rank
+  ksort($contributors);
+  
+  return $contributors;
+}
 
 /**
  * Displays a biblio; Hands data off to the Field API
@@ -3211,29 +3216,31 @@ function biblio_contributor_load($bcid, $reset = FALSE) {
 }
 
 /**
-* Load multiple contributors based on certain conditions.
-*/
+ * Load multiple contributors based on certain conditions.
+ */
 function biblio_contributor_load_multiple($bcids = array(), $conditions = array(), $reset = FALSE) {
   return entity_load('biblio_contributor', $bcids, $conditions, $reset);
 }
 
 /**
-* Save contributor.
-*/
+ * Save contributor.
+ */
 function biblio_contributor_save($contributor) {
+  module_load_include('inc', 'biblio', 'includes/biblio.contributors');
+  biblio_insert_contributors($contributor);
   entity_save('biblio_contributor', $contributor);
 }
 
 /**
-* Delete single contributor.
-*/
+ * Delete single contributor.
+ */
 function biblio_contributor_delete($contributor) {
   entity_delete('biblio_contributor', entity_id('biblio_contributor' ,$contributor));
 }
 
 /**
-* Delete multiple contributors.
-*/
+ * Delete multiple contributors.
+ */
 function biblio_contributor_delete_multiple($contributor_ids) {
   entity_delete_multiple('biblio_contributor', $contributor_ids);
 }
@@ -3396,7 +3403,7 @@ function menu_get_children($menu_item) {
  * 
  * @global type $user
  * @param type $type
- * @return string 
+ * @return array 
  */
 function biblio_contributor_add() {
   // Create a new, empty biblio contributor object
