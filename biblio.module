@@ -1478,6 +1478,7 @@ function biblio_add_form($form, &$form_state, $biblio) {
   $form['#validate']= array('biblio_form_validate');
   $form['#cache'] = TRUE;
   $form['biblio_tabs'] += $tabs;
+  
   return $form;
 }
 
@@ -1568,7 +1569,13 @@ function biblio_contributor_widget($node, &$form_state) {
   if ($form_count > $contributor_count) {
     $author = array();
     for ($i = 0; $i < ($form_count - $contributor_count); $i++) {
-       $wrapper['biblio_contributors'][] = biblio_contributor_form($author, $options);
+      $contributor = entity_create('biblio_contributor', array());
+      $contributor_form = biblio_contributor_form($contributor, $options, $form_state);
+      field_attach_form('biblio_contributor', $contributor, $contributor_form, $form_state);
+      // add this deeper into the form structure
+//      $contributor_form['biblio_contributor_name']['#autocomplete_path'] = 'biblio/autocomplete/contributor';
+      $wrapper['biblio_contributors'][] = $contributor_form;
+      $contributors[] = $contributor;
     }
   }
   $wrapper['add_more'] = array(
@@ -1583,6 +1590,7 @@ function biblio_contributor_widget($node, &$form_state) {
            'wrapper'  => 'biblio-contributors-wrapper',
       ),
     );
+  dpm($wrapper);
 
   return $wrapper;
 }
@@ -1611,7 +1619,7 @@ function biblio_get_contributor_options() {
  * @param array $options
  * @return string 
  */
-function biblio_contributor_form($contributor, $options) {
+function biblio_contributor_form($contributor, $options, &$form_state) {
   $form = array('#tree' => TRUE);
 
   $form['name'] = array(
@@ -2874,8 +2882,8 @@ function publication_type_load($type) {
  * // get biblio field data
  * $title = $wrapper->biblio_title->value();
  * 
- * @param object standard entity object ($biblio, $contributor, etc.)
- * @param type $entity_type biblio, biblio_contributor, biblio_contribution
+ * @param object $entity standard entity object - $biblio, $contributor, etc.
+ * @param string $entity_type biblio, biblio_contributor, biblio_contribution
  * @return object A fully structured entity wrapper built by the Entity API
  */
 function biblio_wrapper($entity, $entity_type = 'biblio') {
@@ -2909,8 +2917,6 @@ function biblio_create($publication_type, $values = array()) {
  *   A fully-populated node object.
  */
 function biblio_load($bid, $reset = FALSE) {
-  module_load_include('inc', 'biblio', 'includes/biblio.fields');
-  modify_biblio_field_link_data_csv();
   $biblio = biblio_load_multiple(array($bid), array(), $reset);
   
   return reset($biblio);
@@ -3049,8 +3055,12 @@ function biblio_form_submit($form, &$form_state) {
   biblio_save($biblio);
   $contributor_names = biblio_form_get_contributors($form);
   // Create an array of contributor objects
-  foreach ($contributor_names as $name) {
-    $contributors[] = entity_create('biblio_contributor', array());
+  foreach ($contributor_names as $delta => $name) {
+    // Create blank entity object
+    $contributors[$delta] = entity_create('biblio_contributor', array());
+//    $contributors[$delta]['entity'] = entity_create('biblio_contributor', array());
+//    $contributors[$delta]['wrapper'] =  biblio_wrapper($contributors[$delta]['entity'], 'contributor');
+    biblio_contributor_save($contributors[$delta]);
   }
   
   // Notify the user.
