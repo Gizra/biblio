@@ -1575,14 +1575,15 @@ function biblio_contributor_widget($node, &$form_state) {
       $contributor_form = biblio_contributor_form($contributor, $options, $form_state);
       // attach the form (containing fields) for the current contributor
       field_attach_form('biblio_contributor', $contributor, $contributor_form, $form_state);
+      $lang = $contributor_form['biblio_contributor_name']['#language'];
       // Set up autocomplete for the Name field
-      $contributor_form['biblio_contributor_name']['und'][0]['value']['#autocomplete_path'] = 'biblio/autocomplete/contributor';
+      $contributor_form['biblio_contributor_name'][$lang][0]['value']['#autocomplete_path'] = 'biblio/autocomplete/contributor';
       // Set the form's parents so FAPI can distinguish between the multiple Name fields
       $contributor_form['biblio_contributor_name']['#parents'] = array('biblio_tabs', 1, 'biblio_contributors', $i);
       // Only the first contributor form should be required
       if ($i == 0) {
-        $contributor_form['biblio_contributor_name']['und'][0]['#required'] = TRUE;
-        $contributor_form['biblio_contributor_name']['und'][0]['value']['#required'] = TRUE;
+        $contributor_form['biblio_contributor_name'][$lang][0]['#required'] = TRUE;
+        $contributor_form['biblio_contributor_name'][$lang][0]['value']['#required'] = TRUE;
       }
       // Put the current contributor form in our main form
       $wrapper['biblio_contributors'][] = $contributor_form;
