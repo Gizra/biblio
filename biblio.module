@@ -320,7 +320,7 @@ function biblio_autocomplete($field, $string = '') {
     case 'contributor':
     case 'a':
       // @todo: change this to use a real field
-      $result = db_query_range("SELECT field_author_name_value FROM {field_data_field_author_name} WHERE LOWER(field_author_name_value) LIKE LOWER(:name) OR LOWER(field_author_name_value) LIKE LOWER(:firstname) ORDER BY field_author_name_value ASC ", 0, 10, array(':name' => $string . '%', ':firstname' => $string . '%'));
+      $result = db_query_range("SELECT biblio_contributor_name_value FROM {field_data_biblio_contributor_name} WHERE LOWER(biblio_contributor_name_value) LIKE LOWER(:name) OR LOWER(biblio_contributor_name_value) LIKE LOWER(:firstname) ORDER BY biblio_contributor_name_value ASC ", 0, 10, array(':name' => $string . '%', ':firstname' => $string . '%'));
       foreach ($result as $data ) {
         $matches[$data->field_author_name_value] = check_plain($data->field_author_name_value);
       }
@@ -1569,12 +1569,24 @@ function biblio_contributor_widget($node, &$form_state) {
   if ($form_count > $contributor_count) {
     $author = array();
     for ($i = 0; $i < ($form_count - $contributor_count); $i++) {
+      // Create blank entity object
       $contributor = entity_create('biblio_contributor', array());
+      // Put the form in a variable so we can modify it
       $contributor_form = biblio_contributor_form($contributor, $options, $form_state);
+      // attach the form (containing fields) for the current contributor
       field_attach_form('biblio_contributor', $contributor, $contributor_form, $form_state);
-      // add this deeper into the form structure
-//      $contributor_form['biblio_contributor_name']['#autocomplete_path'] = 'biblio/autocomplete/contributor';
+      // Set up autocomplete for the Name field
+      $contributor_form['biblio_contributor_name']['und'][0]['value']['#autocomplete_path'] = 'biblio/autocomplete/contributor';
+      // Set the form's parents so FAPI can distinguish between the multiple Name fields
+      $contributor_form['biblio_contributor_name']['#parents'] = array('biblio_tabs', 1, 'biblio_contributors', $i);
+      // Only the first contributor form should be required
+      if ($i == 0) {
+        $contributor_form['biblio_contributor_name']['und'][0]['#required'] = TRUE;
+        $contributor_form['biblio_contributor_name']['und'][0]['value']['#required'] = TRUE;
+      }
+      // Put the current contributor form in our main form
       $wrapper['biblio_contributors'][] = $contributor_form;
+      // Create an array of our entity objects for later use
       $contributors[] = $contributor;
     }
   }
@@ -1590,8 +1602,7 @@ function biblio_contributor_widget($node, &$form_state) {
            'wrapper'  => 'biblio-contributors-wrapper',
       ),
     );
-  dpm($wrapper);
-
+  
   return $wrapper;
 }
 

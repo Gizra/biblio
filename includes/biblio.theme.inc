@@ -949,7 +949,6 @@ function theme_biblio_contributors($variables) {
   $rows = array();
   $headers = array('', t('Name'), t('Category'), t('Weight'));
   drupal_add_tabledrag($form['#id'], 'order', 'sibling', 'rank');
-dpm($form);
   foreach (element_children($form) as $key) {
     // No need to print the field title every time.
 //    unset($form[$key]['name']['#title'], $form[$key]['auth_type']['#title'], $form[$key]['auth_category']['#title']);

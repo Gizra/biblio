@@ -1,6 +1,6 @@
 fid,title,hint,common,autocomplete,required,weight,visible,"field name",type,width,maxlength,vtab,entity
 1,Title,,1,0,1,1.1,1,biblio_title,biblio_text,60,255,0,biblio
-2,"Author Name",,1,1,1,1.2,1,biblio_contributor_name,biblio_text,60,255,1,biblio_contributor
+2,"Author Name",,1,1,0,1.2,1,biblio_contributor_name,biblio_text,60,255,1,biblio_contributor
 3,"Author Category",,,,1,2,,biblio_contributor_category,biblio_text,60,255,0,biblio_contribution
 4,"Author Role",,,,1,2,,biblio_contributor_role,biblio_text,60,255,0,biblio_contribution
 5,"Secondary Title",,0,0,0,6,0,biblio_title_secondary,biblio_text,60,255,3,biblio
