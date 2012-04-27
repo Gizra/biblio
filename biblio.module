@@ -2808,41 +2808,50 @@ function biblio_entity_info() {
     'module' => 'biblio',
   );
   
-//  $return['biblio_contribution'] = array(
-//    'label' => t('Contribution'),
-//    'entity class' => 'BiblioContribution',
-//    'controller class' => 'BiblioContributionController',
-//    'base table' => 'biblio_contribution',
-//    'fieldable' => TRUE,
-//    'entity keys' => array(
-//      'id' => 'cnid',
-//      'bundle' => 'type',
-//    ),
-//    'bundle keys' => array(
-//      'bundle' => 'type',
-//    ),
-//    // @todo: possibly figure out a better bundle name and/or figure out what
-//    // bundles we can have for contributions
-//    'bundles' => array(
-//      'contribution' => array(
-//        'label' => t('Contribution'),
-//        'admin' => array(
-//          'path' => 'admin/config/content/biblio/author/contribution',
-//          'access arguments' => array('access biblio content'),
-//        ),
-//      ),
-//    ),
-//    'load hook' => 'biblio_contribution_load',
-//    'view modes' => array(
-//      'full' => array(
-//        'label' => t('Default'),
-//        'custom settings' => FALSE,
-//      ),
-//    ),
-//    'label callback' => 'entity_class_label',
-//    'uri callback' => 'entity_class_uri',
-//    'module' => 'biblio',
-//  );
+  $return['biblio_contribution'] = array(
+    'label' => t('Contribution'),
+    'entity class' => 'BiblioContribution',
+    'controller class' => 'BiblioContributionController',
+    'base table' => 'biblio_contribution',
+    'fieldable' => TRUE,
+    'entity keys' => array(
+      'id' => 'cnid',
+      'bundle' => 'category',
+    ),
+    'bundle keys' => array(
+      'bundle' => 'category',
+    ),
+    'bundles' => array(),
+    'load hook' => 'biblio_contribution_load',
+    'view modes' => array(
+      'full' => array(
+        'label' => t('Default'),
+        'custom settings' => FALSE,
+      ),
+    ),
+    'label callback' => 'entity_class_label',
+    'uri callback' => 'entity_class_uri',
+    'module' => 'biblio',
+  );
+  
+  $contribution_categories = biblio_types('biblio_contribution');
+  if (!empty($contribution_categories)){
+    foreach ($contribution_categories as $type => $info) {
+      $return['biblio_contribution']['bundles'][$type] = array(
+        'label' => $info->name,
+        'admin' => array(
+          // defines the path that should be used in hook_menu() for the Fields UI pages
+          'path' => 'admin/config/content/biblio/contributors/categories/%contribution_category',
+          // The exact path that should be used when generating links within the admin interface
+          'real path' => 'admin/config/content/biblio/contributors/categories/' . str_replace('_', '-', $type),
+          // menu args are 0 based, so  is the seventh part of the path, which
+          // here is %publication_type.
+          'bundle argument' => 6,
+          'access arguments' => array('access biblio content'),
+        ),
+      );
+    }
+  }
 
   return $return;
 }
@@ -2851,14 +2860,10 @@ function biblio_entity_info() {
  * Gets all publication types that are set up by default.
  * @return type
  */
-function biblio_types($entity) {
-  // Gives the variable a name that matches our function
-  // drupal_static() acts as a central collector for static PHP variables
-  $types = &drupal_static(__FUNCTION__);
-  if (empty($types)) {
+function biblio_types($entity_type) {
     $result = db_select('biblio_types', 'bt')
         ->fields('bt', array('name', 'description'))
-        ->condition('entity', $entity)
+        ->condition('entity', $entity_type)
         ->execute();
     while ($row = $result->fetchAssoc()) {
       // computer-friendly version of the human-readable content type stored in the database
@@ -2874,7 +2879,6 @@ function biblio_types($entity) {
       
     }
     
-  }
   return $types;
 }
 
@@ -3061,7 +3065,7 @@ function biblio_form_submit($form, &$form_state) {
   
   // re-sort the authors by rank because the rank may have changed due to tabledrag on the input form
   // @todo get this working. Will need to add propery to 
-  _biblio_contributor_sort($biblio->contributors);
+//  _biblio_contributor_sort($biblio->contributors);
   
   // Save each populated contributor entity
   foreach ($biblio->contributors as $contributor) {

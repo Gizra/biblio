@@ -371,6 +371,7 @@ function biblio_schema() {
       'title_sort' => array('biblio_sort_title'),
     ),
   );
+  // Entity API doesn't support revisions yet... 
 //  $schema['biblio_revision'] = array(
 //    'description' => 'Stores information about each saved version of a {biblio}.',
 //    'fields' => array(
@@ -884,6 +885,45 @@ function biblio_schema() {
     ),
     'primary key' => array('auth_type'),
    );
+  
+  $schema['biblio_contribution'] = array(
+    'description' => 'Entity table linking contributors to biblio entries',
+    'fields' => array(
+      'cnid' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'description' => 'Biblio Contribution ID. Unique ID for the contribution entity type.',
+      ),
+      'category' => array(
+        'description' => 'The contributor type for this contribution.',
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'default' => 'Primary',
+      ),
+      'rank' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'unsigned' => TRUE,
+        'default' => 0,
+        'description' => 'Position of the author name on the publication (first,second,third...)',
+      ),
+      'created' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'description' => '',
+      ),
+      'changed' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'description' => '',
+      ),
+    ),
+    'primary key' => array(
+      'cnid',
+    ),
+  );
 
     $schema['biblio_keyword'] = array(
       'description' => t('Relational table linking keywords to biblio nodes'),

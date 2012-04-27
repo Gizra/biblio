@@ -35,3 +35,4 @@ files[] = views/biblio_plugin_display_page.inc
 
 files[] = includes/biblio.controller.inc
 files[] = includes/biblio.contributor.controller.inc
+files[] = includes/biblio.contribution.controller.inc
