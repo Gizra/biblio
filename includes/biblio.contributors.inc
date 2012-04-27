@@ -208,9 +208,10 @@ function biblio_delete_orphan_authors($force = FALSE) {
   }
 }
 
-function biblio_insert_contributors($biblio) {
-  if (!empty($biblio->biblio_contributors[$biblio->language][0]['value'])) {
-    return _save_contributors($biblio->biblio_contributors[$biblio->language][0]['value'], $biblio->bid, $biblio->vid);
+// @todo we may not need this
+function biblio_insert_contributors($contributor) {
+  if (!empty($contributor)) {
+    return _save_contributors($contributor, $biblio->bid, $biblio->vid);
   }
 }
 
@@ -251,51 +252,43 @@ function _biblio_contributor_usort($a, $b) {
  * @param $update
  * @return success of database operations
  */
-function _save_contributors(&$contributors, $nid, $vid, $update = FALSE) {
+function _save_contributors($contributor) {
   $rank = 0;
 
-  db_delete('biblio_contributor')
-      ->condition(db_and()->condition('nid', $nid)->condition('vid', $vid))
-      ->execute();
-
-  _biblio_contributor_sort($contributors);// re-sort the authors by rank because the rank may have changed due to tabledrag on the input form
-
-  foreach ($contributors as  $key => $author) {
-      if (!empty($author['name'])) {
-      if (isset($author['cid']) && !empty($author['cid'])) {
-        $auth = biblio_get_contributor($author['cid']);
-        if (!empty($auth) && isset($auth->name) && $auth->name != $author['name']) {
-          $author['cid'] = '';
-        }
+  if (!empty($author['name'])) {
+    if (isset($author['cid']) && !empty($author['cid'])) {
+      $auth = biblio_get_contributor($author['cid']);
+      if (!empty($auth) && isset($auth->name) && $auth->name != $author['name']) {
+        $author['cid'] = '';
       }
-      // if we don't have a cid, lets see if we can find and exact match to the name and use that cid
-      if (!isset($author['cid']) || empty($author['cid'])) {
-        $auth = biblio_get_contributor_by_name($author['name']);
-        if (!empty($auth) && isset($auth->cid)) {
-          $author['cid'] = $auth->cid;
-        }
+    }
+    // if we don't have a cid, lets see if we can find and exact match to the name and use that cid
+    if (!isset($author['cid']) || empty($author['cid'])) {
+      $auth = biblio_get_contributor_by_name($author['name']);
+      if (!empty($auth) && isset($auth->cid)) {
+        $author['cid'] = $auth->cid;
       }
+    }
 
-      if (empty($author['cid'])) {
-          $contributors[$key] = $author = biblio_parse_author($author);
-        }
+    if (empty($author['cid'])) {
+      $contributors[$key] = $author = biblio_parse_author($author);
+    }
 
-        if (empty ($author['cid'])) {
-          biblio_save_contributor($author);
-          if (empty ($author['cid'])) return FALSE;
-        }
+    if (empty ($author['cid'])) {
+      biblio_save_contributor($author);
+      if (empty ($author['cid'])) return FALSE;
+    }
 
-        $link_array = array(
-        'nid' => $nid,
-        'vid' => $vid,
-        'cid' => $author['cid'],
-        'rank' => $rank++, //((isset($author['rank']) && is_numeric($author['rank'])) ? $author['rank'] : $key),
-        'auth_type' => !empty($author['auth_type']) ? $author['auth_type'] :  $author['auth_category'],
-        'auth_category' =>  $author['auth_category'],
-        );
+    $link_array = array(
+      'nid' => $nid,
+      'vid' => $vid,
+      'cid' => $author['cid'],
+      'rank' => $rank++, //((isset($author['rank']) && is_numeric($author['rank'])) ? $author['rank'] : $key),
+      'auth_type' => !empty($author['auth_type']) ? $author['auth_type'] :  $author['auth_category'],
+      'auth_category' =>  $author['auth_category'],
+    );
 
-        if (!drupal_write_record('biblio_contributor', $link_array)) return FALSE;
-      }
+    if (!drupal_write_record('biblio_contributor', $link_array)) return FALSE;
   }
   //TODO  check if it is necessary to reset aka here...
   //  db_query("UPDATE {biblio_contributor_data} SET aka = cid WHERE aka = 0 OR aka IS NULL");

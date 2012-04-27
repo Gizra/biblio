@@ -319,10 +319,10 @@ function biblio_autocomplete($field, $string = '') {
   switch ($field) {
     case 'contributor':
     case 'a':
-      // @todo: change this to use a real field
+      // @todo: get this working on first OR last name
       $result = db_query_range("SELECT biblio_contributor_name_value FROM {field_data_biblio_contributor_name} WHERE LOWER(biblio_contributor_name_value) LIKE LOWER(:name) OR LOWER(biblio_contributor_name_value) LIKE LOWER(:firstname) ORDER BY biblio_contributor_name_value ASC ", 0, 10, array(':name' => $string . '%', ':firstname' => $string . '%'));
       foreach ($result as $data ) {
-        $matches[$data->field_author_name_value] = check_plain($data->field_author_name_value);
+        $matches[$data->biblio_contributor_name_value] = check_plain($data->biblio_contributor_name_value);
       }
       break;
     case 'biblio_keywords':
@@ -3045,6 +3045,7 @@ function biblio_form_validate($form, &$form_state) {
  */
 function biblio_form_submit($form, &$form_state) {
   global $user;
+  module_load_include('inc', 'biblio', 'includes/biblio.contributors');
   
   // Pull the old biblio object out of the $form_state variable.
   $biblio = &$form_state['biblio'];
@@ -3055,18 +3056,30 @@ function biblio_form_submit($form, &$form_state) {
   }
   // Notify field widgets. 
   field_attach_submit('biblio', $biblio, $form, $form_state);
-  dpm($biblio);
   // Save the biblio.
   biblio_save($biblio);
-  $contributor_names = biblio_form_get_contributors($form);
-  // Create an array of contributor objects
-  foreach ($contributor_names as $delta => $name) {
-    // Create blank entity object
-    $contributors[$delta] = entity_create('biblio_contributor', array());
-//    $contributors[$delta]['entity'] = entity_create('biblio_contributor', array());
-//    $contributors[$delta]['wrapper'] =  biblio_wrapper($contributors[$delta]['entity'], 'contributor');
-    biblio_contributor_save($contributors[$delta]);
+  
+  // re-sort the authors by rank because the rank may have changed due to tabledrag on the input form
+  // @todo get this working. Will need to add propery to 
+  _biblio_contributor_sort($biblio->contributors);
+  
+  // Save each populated contributor entity
+  foreach ($biblio->contributors as $contributor) {
+    $wrapper = biblio_wrapper($contributor, 'biblio_contributor');
+    $name = $wrapper->biblio_contributor_name->value();
+    if (isset($name) && !empty($name)) {
+      biblio_contributor_save($contributor);
+    }
   }
+//  $contributor_names = biblio_form_get_contributors($form);
+//  // Create an array of contributor objects
+//  foreach ($contributor_names as $delta => $name) {
+//    // Create blank entity object
+//    $contributors[$delta] = entity_create('biblio_contributor', array());
+////    $contributors[$delta]['entity'] = entity_create('biblio_contributor', array());
+////    $contributors[$delta]['wrapper'] =  biblio_wrapper($contributors[$delta]['entity'], 'contributor');
+//    biblio_contributor_save($contributors[$delta]);
+//  }
   
   // Notify the user.
   drupal_set_message(t('Biblio saved.'));
@@ -3242,7 +3255,7 @@ function biblio_contributor_load_multiple($bcids = array(), $conditions = array(
  */
 function biblio_contributor_save($contributor) {
   module_load_include('inc', 'biblio', 'includes/biblio.contributors');
-  biblio_insert_contributors($contributor);
+  _save_contributors($contributor);
   entity_save('biblio_contributor', $contributor);
 }
 
