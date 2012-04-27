@@ -1325,7 +1325,7 @@ function biblio_add_form($form, &$form_state, $biblio) {
   $fields = array();
   
   $form['#id'] = 'biblio-form';
-  // Save the biblio for later, in case we need it.
+  // Save the biblio in the form, so we can keep it after the form is submitted
   $form['#biblio'] = $biblio;
   $form_state['biblio'] = $biblio;
   
@@ -1376,6 +1376,16 @@ function biblio_add_form($form, &$form_state, $biblio) {
   );
 
   $tabs[1] += biblio_contributor_widget($biblio, $form_state);
+  // Insert the array of contributor objects into the biblio object
+  $biblio->contributors
+    = $tabs[1]['contributor_objects'];
+  foreach ($tabs[1]['contributor_objects'] as $delta => $object) {
+    $form_state['contributor_' . $delta] = $object;
+  }
+  // Destroy the contributor entity objects from the form strucure. Keeping them
+  // causes the FAPI to try to iterate through the objects as an array, causing
+  // errors.
+  unset($tabs[1]['contributor_objects']);
   
   // Add the values we created above to the real form
   foreach ($fielded_form as $field => $data) {
@@ -1568,6 +1578,9 @@ function biblio_contributor_widget($node, &$form_state) {
   }
   if ($form_count > $contributor_count) {
     $author = array();
+    // array to hold the entity objects that will be generated for each contributor name field
+    // (only those submitted with values will actually be saved)
+    $wrapper['contributor_objects'] = array();
     for ($i = 0; $i < ($form_count - $contributor_count); $i++) {
       // Create blank entity object
       $contributor = entity_create('biblio_contributor', array());
@@ -1579,7 +1592,7 @@ function biblio_contributor_widget($node, &$form_state) {
       // Set up autocomplete for the Name field
       $contributor_form['biblio_contributor_name'][$lang][0]['value']['#autocomplete_path'] = 'biblio/autocomplete/contributor';
       // Set the form's parents so FAPI can distinguish between the multiple Name fields
-      $contributor_form['biblio_contributor_name']['#parents'] = array('biblio_tabs', 1, 'biblio_contributors', $i);
+      $contributor_form['#parents'] = array('biblio_tabs', 1, 'biblio_contributors', $i, 'biblio_contributor_name');
       // Only the first contributor form should be required
       if ($i == 0) {
         $contributor_form['biblio_contributor_name'][$lang][0]['#required'] = TRUE;
@@ -1587,8 +1600,8 @@ function biblio_contributor_widget($node, &$form_state) {
       }
       // Put the current contributor form in our main form
       $wrapper['biblio_contributors'][] = $contributor_form;
-      // Create an array of our entity objects for later use
-      $contributors[] = $contributor;
+      // Add the entity object to the array for later use
+      $wrapper['contributor_objects'][] = $contributor;
     }
   }
   $wrapper['add_more'] = array(
@@ -3001,36 +3014,6 @@ function biblio_delete_multiple($bids) {
 }
 
 /**
- * Form builder; Displays the biblio add/edit form.
- *
- * @param $form
- * @param $form_state
- * @param $biblio
- *   The biblio object to edit, which may be brand new.
- */
-function biblio_form_new($form, &$form_state, $biblio) {
-  // Set the id to identify this as an biblio edit form.
-  $form['#id'] = 'biblio-form';
-  
-  // Checkbox to indicate whether we should save a new revision or overwrite the
-  // existing revision.
-//  $form['revision'] = array(
-//    '#access' => user_access('administer biblios'),
-//    '#type' => 'checkbox',
-//    '#title' => t('Create new revision'),
-//    '#default_value' => 0,
-//  );
-  
-  
-  $form['#validate'][] = 'biblio_form_validate';
-  
-  // Passes our form off to the field system so that any fields we've added to
-  // this biblio type can be added to the form.
-  field_attach_form('biblio', $biblio, $form, $form_state);
-  return $form;
-}
-
-/**
  * Let the Form API validate our form for us.
  * 
  * @param array $form
@@ -3039,6 +3022,16 @@ function biblio_form_new($form, &$form_state, $biblio) {
 function biblio_form_validate($form, &$form_state) {
   $biblio = $form_state['biblio'];
   // Field validation.
+  $i = 0;
+  foreach ($biblio->contributors as $contributor) {
+    field_attach_form_validate(
+        'biblio_contributor', 
+        $contributor,
+        $form['biblio_tabs'][1]['biblio_contributors'][$i],
+        $form_state
+    );
+    $i++;
+  }
   field_attach_form_validate('biblio', $biblio, $form, $form_state);
 }
 
@@ -3060,9 +3053,9 @@ function biblio_form_submit($form, &$form_state) {
   if (empty($biblio->uid)) {
     $biblio->uid = $user->uid;
   }
-  
   // Notify field widgets. 
   field_attach_submit('biblio', $biblio, $form, $form_state);
+  dpm($biblio);
   // Save the biblio.
   biblio_save($biblio);
   $contributor_names = biblio_form_get_contributors($form);
