@@ -10,7 +10,7 @@ fid,title,hint,common,autocomplete,required,weight,visible,"field name",type,wid
 11,"Other Author Affiliations",,0,0,0,12,0,biblio_other_author_affiliations,biblio_text,60,255,10,biblio
 12,Publisher,,0,0,0,13,0,biblio_publisher,biblio_text,60,255,4,biblio
 13,"Place Published",,0,0,0,14,0,biblio_place_published,biblio_text,60,255,4,biblio
-14,"Year of Publication","Enter YYYY, Submitted or In Press",1,0,1,15,1,biblio_year,biblio_text,4,20,3,biblio
+14,"Year of Publication","Enter YYYY, Submitted or In Press",1,0,1,2,1,biblio_year,biblio_text,4,20,0,biblio
 15,Edition,,0,0,0,16,0,biblio_edition,biblio_text,60,255,3,biblio
 16,Volume,,0,0,0,17,0,biblio_volume,biblio_text,10,128,3,biblio
 17,Number,,0,0,0,18,0,biblio_number,biblio_text,10,128,3,biblio
@@ -42,5 +42,6 @@ fid,title,hint,common,autocomplete,required,weight,visible,"field name",type,wid
 43,Label,,0,0,0,44,0,biblio_label,biblio_text,60,255,10,biblio
 44,"Access Date",,0,0,0,45,0,biblio_access_date,biblio_text,60,255,10,biblio
 45,"Refereed Designation",,0,0,0,46,0,biblio_refereed,biblio_text,0,128,10,biblio
-46,Biblio Reference,,0,0,1,1,0,biblio_biblio_ref,entityreference,0,128,0,biblio_contribution
-47,Contributor Reference,,0,0,1,1,0,biblio_contributor_ref,entityreference,0,128,0,biblio_contribution
+46,Biblio Reference,,0,0,0,1,0,biblio_biblio_ref,entityreference,0,128,0,biblio_contribution
+47,Contributor Reference,,0,0,0,1,0,biblio_contributor_ref,entityreference,0,128,0,biblio_contribution
+48,Contributor Category,,,,0,2,,biblio_contributor_category,list_text,60,255,0,biblio_contribution
