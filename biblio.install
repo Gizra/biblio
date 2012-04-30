@@ -20,6 +20,10 @@ function biblio_install() {
   $result[] = _set_system_weight();
   biblio_add_fields();
   biblio_add_field_instances('biblio_contributor', 'contributor');
+  $entity_info = entity_get_info('biblio_contribution');
+  foreach ($entity_info['bundles'] as $bundle => $data) {
+    biblio_add_field_instances('biblio_contribution', $bundle);
+  }
   // @todo remove after development
   timer_stop($timer_name);
   drupal_set_message($timer_name . ' run time: ' . timer_read($timer_name) . 'ms.');
