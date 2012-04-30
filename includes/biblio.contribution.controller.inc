@@ -30,7 +30,7 @@ class BiblioContributionController extends EntityAPIController {
     global $user;
     $values += array(
       'cnid' => '',
-      'category' => 'Primary',
+      'type' => 'contribution',
       'rank' => 0,
       'created' => REQUEST_TIME,
       'changed' => REQUEST_TIME,
