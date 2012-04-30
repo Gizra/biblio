@@ -1354,7 +1354,7 @@ function biblio_add_form($form, &$form_state, $biblio) {
 
   $tabs = array(
     '#type' => 'vertical_tabs',
-    '#weight' => 2,
+    '#weight' => 3,
   );
   $tabs += biblio_node_form_vtabs();
   
@@ -1377,15 +1377,19 @@ function biblio_add_form($form, &$form_state, $biblio) {
 
   $tabs[1] += biblio_contributor_widget($biblio, $form_state);
   // Insert the array of contributor objects into the biblio object
-  $biblio->contributors
-    = $tabs[1]['contributor_objects'];
-  foreach ($tabs[1]['contributor_objects'] as $delta => $object) {
+  $biblio->contributors = $tabs[1]['contributor_objects'];
+  foreach ($biblio->contributors as $delta => $object) {
     $form_state['contributor_' . $delta] = $object;
   }
-  // Destroy the contributor entity objects from the form strucure. Keeping them
-  // causes the FAPI to try to iterate through the objects as an array, causing
-  // errors.
+  $biblio->contributions = $tabs[1]['contribution_objects'];
+  foreach ($biblio->contributions as $delta => $object) {
+    $form_state['contributor_' . $delta] = $object;
+  }
+  // Destroy the contributor  and contribution entity objects from the form 
+  // strucure. Keeping them causes the FAPI to try to iterate through the 
+  // objects as an array, causing errors.
   unset($tabs[1]['contributor_objects']);
+  unset($tabs[1]['contribution_objects']);
   
   // Add the values we created above to the real form
   foreach ($fielded_form as $field => $data) {
@@ -1582,26 +1586,32 @@ function biblio_contributor_widget($node, &$form_state) {
     // (only those submitted with values will actually be saved)
     $wrapper['contributor_objects'] = array();
     for ($i = 0; $i < ($form_count - $contributor_count); $i++) {
-      // Create blank entity object
+      // Create blank entity objects
       $contributor = entity_create('biblio_contributor', array());
+      $contribution = entity_create('biblio_contribution', array());
       // Put the form in a variable so we can modify it
       $contributor_form = biblio_contributor_form($contributor, $options, $form_state);
-      // attach the form (containing fields) for the current contributor
+      // attach the field forms (contains Drupal fields) for the current contributor
       field_attach_form('biblio_contributor', $contributor, $contributor_form, $form_state);
+      field_attach_form('biblio_contribution', $contribution, $contributor_form, $form_state);
       $lang = $contributor_form['biblio_contributor_name']['#language'];
       // Set up autocomplete for the Name field
       $contributor_form['biblio_contributor_name'][$lang][0]['value']['#autocomplete_path'] = 'biblio/autocomplete/contributor';
       // Set the form's parents so FAPI can distinguish between the multiple Name fields
       $contributor_form['#parents'] = array('biblio_tabs', 1, 'biblio_contributors', $i, 'biblio_contributor_name');
-      // Only the first contributor form should be required
-      if ($i == 0) {
-        $contributor_form['biblio_contributor_name'][$lang][0]['#required'] = TRUE;
-        $contributor_form['biblio_contributor_name'][$lang][0]['value']['#required'] = TRUE;
-      }
+      // Remove the title above each field
+      $contributor_form['biblio_contributor_name'][$lang][0]['value']['#title'] = '';
+      // Reset the language to the language set for biblio_contributor_category field
+      $lang = $contributor_form['biblio_contributor_category']['#language'];
+      // Remove the "- None -" option from the select list
+      unset($contributor_form['biblio_contributor_category'][$lang]['#options']['_none']);
+      // Remove the title above each field
+      $contributor_form['biblio_contributor_category'][$lang]['#title'] = '';
       // Put the current contributor form in our main form
       $wrapper['biblio_contributors'][] = $contributor_form;
       // Add the entity object to the array for later use
       $wrapper['contributor_objects'][] = $contributor;
+      $wrapper['contribution_objects'][] = $contribution;
     }
   }
   $wrapper['add_more'] = array(
@@ -1626,7 +1636,7 @@ function biblio_contributor_widget($node, &$form_state) {
  * @return array
  */
 function biblio_get_contributor_options() {
-  $options['categories'] = array(
+  $options = array(
     1 => t('Primary'),
     2 => t('Secondary'),
     3 => t('Tertiary'),
@@ -1646,18 +1656,6 @@ function biblio_get_contributor_options() {
  */
 function biblio_contributor_form($contributor, $options, &$form_state) {
   $form = array('#tree' => TRUE);
-
-  $form['name'] = array(
-    '#type' => 'textfield',
-    '#autocomplete_path' =>  'biblio/autocomplete/contributor',
-    '#default_value' => isset($contributor->name) ? $contributor->name : '',
-  );
-  $form['auth_category'] = array(
-      '#type' => 'select',
-      '#default_value' => isset($contributor->auth_category) ? $contributor->auth_category : '',
-      '#options' => $options['categories'],
-      '#multiple' => FALSE,
-      );
   $form['cid'] = array(
     '#type' => 'hidden',
     '#default_value' => isset($contributor->cid) ? $contributor->cid : '',
@@ -2799,7 +2797,7 @@ function biblio_entity_info() {
     'load hook' => 'biblio_contributor_load',
     'view modes' => array(
       'full' => array(
-        'label' => t('Default'),
+        'label' => t('Full'),
         'custom settings' => FALSE,
       ),
     ),
@@ -2816,16 +2814,16 @@ function biblio_entity_info() {
     'fieldable' => TRUE,
     'entity keys' => array(
       'id' => 'cnid',
-      'bundle' => 'category',
+      'bundle' => 'type',
     ),
     'bundle keys' => array(
-      'bundle' => 'category',
+      'bundle' => 'type',
     ),
     'bundles' => array(),
     'load hook' => 'biblio_contribution_load',
     'view modes' => array(
       'full' => array(
-        'label' => t('Default'),
+        'label' => t('Full'),
         'custom settings' => FALSE,
       ),
     ),
@@ -3036,7 +3034,18 @@ function biblio_form_validate($form, &$form_state) {
     );
     $i++;
   }
+  $i = 0;
+  foreach ($biblio->contributions as $contribution) {
+    field_attach_form_validate(
+        'biblio_contribution', 
+        $contribution,
+        $form['biblio_tabs'][1]['biblio_contributors'][$i],
+        $form_state
+    );
+    $i++;
+  }
   field_attach_form_validate('biblio', $biblio, $form, $form_state);
+  dpm($biblio);
 }
 
 /**
@@ -3073,6 +3082,14 @@ function biblio_form_submit($form, &$form_state) {
     $name = $wrapper->biblio_contributor_name->value();
     if (isset($name) && !empty($name)) {
       biblio_contributor_save($contributor);
+    }
+  }
+  // Save each populated contribution entity
+  foreach ($biblio->contributions as $contribution) {
+    $wrapper = biblio_wrapper($contribution, 'biblio_contribution');
+    $name = $wrapper->biblio_contributor_category->value();
+    if (isset($name) && !empty($name)) {
+      biblio_contributor_save($contribution);
     }
   }
 //  $contributor_names = biblio_form_get_contributors($form);
