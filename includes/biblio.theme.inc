@@ -959,7 +959,7 @@ function theme_biblio_contributors($variables) {
     $row = array('');
     $row[] = array('data' => drupal_render($form[$key]['biblio_contributor_name']),
                    'class' => array('biblio-contributor'));
-    $row[] = array('data' => drupal_render($form[$key]['auth_category']),
+    $row[] = array('data' => drupal_render($form[$key]['biblio_contributor_category']),
                      'class' => array('biblio-contributor-category'));
     $row[] = drupal_render($form[$key]['rank']);
     $rows[] = array('data' => $row, 'class' => array('draggable'));
