@@ -18,12 +18,11 @@ function biblio_install() {
 //  $result[] = _add_custom_field_data();
   //_enable_biblio_keyword_vocabulary();
   $result[] = _set_system_weight();
+  
   biblio_add_fields();
   biblio_add_field_instances('biblio_contributor', 'contributor');
-  $entity_info = entity_get_info('biblio_contribution');
-  foreach ($entity_info['bundles'] as $bundle => $data) {
-    biblio_add_field_instances('biblio_contribution', $bundle);
-  }
+  biblio_add_field_instances('biblio_contribution', 'contribution');
+  
   // @todo remove after development
   timer_stop($timer_name);
   drupal_set_message($timer_name . ' run time: ' . timer_read($timer_name) . 'ms.');
@@ -1246,11 +1245,7 @@ function _add_bundles() {
   $types[] = array('Miscellaneous Section', NULL, 31, 'biblio');
   $types[] = array('Presentation',NULL,8, 'biblio');
   $types[] = array('Contributor', NULL, 1, 'biblio_contributor');
-  $types[] = array('Primary', NULL, 1, 'biblio_contribution');
-  $types[] = array('Secondary', NULL, 2, 'biblio_contribution');
-  $types[] = array('Tertiary', NULL, 3, 'biblio_contribution');
-  $types[] = array('Subsidiary', NULL, 4, 'biblio_contribution');
-  $types[] = array('Corporate/Institutional', NULL, 5, 'biblio_contribution');
+  $types[] = array('Contribution', NULL, 1, 'biblio_contribution');
 
   foreach ($types as $record) {
 //    $result[] = update_sql("INSERT INTO {biblio_types} (tid, name, description, weight) VALUES ('" . implode("', '", $record) . "')");
