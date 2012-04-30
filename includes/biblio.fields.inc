@@ -51,6 +51,11 @@ function biblio_add_fields() {
       'field_name' => $row['field name'], 
       'type' => $row['type'],
     );
+    
+    if (isset($row['field name']) && $row['field name'] == 'biblio_contributor_category') {
+      $field['settings']['allowed_values'] = biblio_get_contributor_options();
+    }
+    
     if (isset($row['field name'])) {
       field_create_field($field);
     }
@@ -86,6 +91,11 @@ function biblio_add_field_instances($entity, $bundle) {
       'widget' => array('weight' =>$row['weight']),
       'settings' => array('vtab' => $row['vtab']),
     );
+    
+    if (isset($row['field name']) && $row['field name'] == 'biblio_contributor_category') {
+      $instance['default_value'] = array(0 => array('value' => 1));
+    }
+    
     // If row has a field name specified (this excludes blank lines in the CSV)
     // && If the field instance doesn't already exist
     // && Only add field instances for the specified entity type
