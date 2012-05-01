@@ -2966,7 +2966,9 @@ function biblio_load($bid, $reset = FALSE) {
 function biblio_load_multiple($bids = array(), $conditions = array(), $reset = FALSE) {
   // entity_load() will create a new instance of biblioController as needed
   // and call the load() method on it. 
-  return entity_load('biblio', $bids, $conditions, $reset);
+  $biblios = entity_load('biblio', $bids, $conditions, $reset);
+  $contributions = biblio_get_associated_contributions($bids);
+  return $biblios;
 }
 
 /**
@@ -3083,7 +3085,6 @@ function biblio_form_submit($form, &$form_state) {
       entity_save('biblio_contribution', $contribution);
     }
   }
-  dpm($biblio);
 //  $contributor_names = biblio_form_get_contributors($form);
 //  // Create an array of contributor objects
 //  foreach ($contributor_names as $delta => $name) {
@@ -3287,15 +3288,48 @@ function biblio_contributor_delete_multiple($contributor_ids) {
 }
 
 /**
- * @todo finish writing this function. It will eventually get all contributors
- * of a biblio entity.
- * 
- * @param type $bids 
+ * Given an array of biblio object IDs, retrieves contribution entity objects
+ * associated with each biblio.
+ *
+ * @param array $bids an iterative array of biblio IDs with which to associate
+ *  contributions and contributors
+ * @return array an array, keyed by bid, of arrays containing contribution 
+ *  entity objects, keyed by cnid. This return array has the following 
+ *  structure: 
+ *  $returnarray[$bid][$cnid] would give the Contribution object,
+ *  which contains contributor properties/fields, plus the Contributor object.
  */
-function biblio_get_associated_contributors($bids) {
+function biblio_get_associated_contributions($bids) {
+  // Query to fetch the ids of all Contribution entities that reference the
+  // specified Biblio ID(s)
+  $query = new EntityFieldQuery;
+  $query->entityCondition('entity_type', 'biblio_contribution');
   foreach ($bids as $bid) {
-    // do some stuff here eventually
+    $query->fieldCondition('biblio_biblio_ref', 'target_id', $bid, '=');
   }
+  $result = $query->execute();
+  // Extract the cnids from the objects returned by the query (not full
+  // contribution objects) and put them in an array.
+  foreach ($result['biblio_contribution'] as $id => $return_object) {
+    $cnids[] = $return_object->cnid;
+  }
+  
+  // Load the contribution entity objects from the database
+  $contributions = entity_load('biblio_contribution', $cnids);
+  
+  foreach ($contributions as $cnid => $contribution) {
+    $wrapper = biblio_wrapper($contribution, 'biblio_contribution');
+    // Attach the Contributor object to the Contribution object. 
+    // The Contributor object is automatically loaded by EntityReference
+    $contributions[$cnid]->contributor = $wrapper->biblio_contributor_ref->value();
+    // Extract the Biblio ID from the Biblio object that EntityReference
+    // automatically loads for us.
+    $bid = $wrapper->biblio_biblio_ref->value()->bid;
+    // Build the array to return
+    $return[$bid][$cnid] = $contributions[$cnid];
+  }
+  
+  return $return;
 }
 
 /**
