@@ -898,12 +898,12 @@ function biblio_schema() {
         'unsigned' => TRUE,
         'description' => 'Biblio Contribution ID. Unique ID for the contribution entity type.',
       ),
-      'category' => array(
+      'type' => array(
         'description' => 'The contributor type for this contribution.',
         'type' => 'varchar',
         'length' => 32,
         'not null' => TRUE,
-        'default' => 'Primary',
+        'default' => '',
       ),
       'rank' => array(
         'type' => 'int',
