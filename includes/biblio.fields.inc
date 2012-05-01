@@ -52,11 +52,21 @@ function biblio_add_fields() {
       'type' => $row['type'],
     );
     
-    if (isset($row['field name']) && $row['field name'] == 'biblio_contributor_category') {
-      $field['settings']['allowed_values'] = biblio_get_contributor_options();
-    }
-    
+    // Only act on CSV rows that have a name (not blank rows)
     if (isset($row['field name'])) {
+      // Add any field-specific settings or other values here...
+      switch ($row['field name']) {
+        case 'biblio_contributor_category':
+          $field['settings']['allowed_values'] = biblio_get_contributor_options();
+          break;
+        case 'biblio_biblio_ref':
+          $field['settings']['target_type'] = 'biblio';
+          break;
+        case 'biblio_contributor_ref':
+          $field['settings']['target_type'] = 'biblio_contributor';
+          break;
+      }
+      
       field_create_field($field);
     }
   }
