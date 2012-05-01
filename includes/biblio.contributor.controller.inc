@@ -29,7 +29,7 @@ class BiblioContributorController extends EntityAPIController {
   public function create(array $values = array()) {
     global $user;
     $values += array(
-      'bcid' => '',
+      'cid' => '',
       'title' => '',
       // Default value, because we only have one bundle for this entity
       'type' => 'contributor',

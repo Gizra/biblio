@@ -2772,7 +2772,7 @@ function biblio_entity_info() {
     'base table' => 'biblio_contributor',
     'fieldable' => TRUE,
     'entity keys' => array(
-      'id' => 'bcid',
+      'id' => 'cid',
       'bundle' => 'type',
     ),
     'bundle keys' => array(
@@ -3085,7 +3085,7 @@ function biblio_form_submit($form, &$form_state) {
       // Associate the contribution with the biblio
       $contribution_wrapper->biblio_biblio_ref->set($biblio->bid);
       // Associate the contribution with a contributor
-      $contribution_wrapper->biblio_contributor_ref->set($contribution->contributor->bcid);
+      $contribution_wrapper->biblio_contributor_ref->set($contribution->contributor->cid);
       entity_save('biblio_contribution', $contribution);
     }
   }
@@ -3273,16 +3273,16 @@ function biblio_form_delete_submit($form, &$form_state) {
 /**
  * Load a contributor.
  */
-function biblio_contributor_load($bcid, $reset = FALSE) {
-  $contributors = biblio_contributor_load_multiple(array($bcid), array(), $reset);
+function biblio_contributor_load($cid, $reset = FALSE) {
+  $contributors = biblio_contributor_load_multiple(array($cid), array(), $reset);
   return reset($contributors);
 }
 
 /**
  * Load multiple contributors based on certain conditions.
  */
-function biblio_contributor_load_multiple($bcids = array(), $conditions = array(), $reset = FALSE) {
-  return entity_load('biblio_contributor', $bcids, $conditions, $reset);
+function biblio_contributor_load_multiple($cids = array(), $conditions = array(), $reset = FALSE) {
+  return entity_load('biblio_contributor', $cids, $conditions, $reset);
 }
 
 /**
@@ -3381,8 +3381,8 @@ function biblio_contributor_page_view($contributor, $view_mode = 'full') {
     );
   }
   // Build fields content. Standard stuff.
-  field_attach_prepare_view('biblio_contributor', array($contributor->bcid => $contributor), $view_mode);
-  entity_prepare_view('biblio_contributor', array($contributor->bcid => $contributor));
+  field_attach_prepare_view('biblio_contributor', array($contributor->cid => $contributor), $view_mode);
+  entity_prepare_view('biblio_contributor', array($contributor->cid => $contributor));
   $contributor->content += field_attach_view('biblio_contributor', $contributor, $view_mode);
   
   return $contributor->content;
@@ -3557,7 +3557,7 @@ function biblio_contributor_add_form($form, &$form_state, $contributor) {
     '#submit' => array('biblio_contributor_form_submit'),
   );
   // Delete button is available if we're editing an existing biblio.
-  if (!empty($contributor->bcid)) {
+  if (!empty($contributor->cid)) {
     $form['buttons']['delete'] = array(
       '#access' => user_access('delete biblios'),
       '#type' => 'submit',
@@ -3594,7 +3594,7 @@ function biblio_contributor_form_submit($form, &$form_state) {
   // Notify the user.
   drupal_set_message(t('Contributor saved.'));
   
-  $form_state['redirect'] = 'biblio/contributor/' . $contributor->bcid;
+  $form_state['redirect'] = 'biblio/contributor/' . $contributor->cid;
 }
 
 /*********************************

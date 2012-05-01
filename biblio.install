@@ -625,7 +625,7 @@ function biblio_schema() {
   $schema['biblio_contributor'] = array(
     'description' => 'Relational table linking authors to biblio entries',
     'fields' => array(
-      'bcid' => array(
+      'cid' => array(
         'type' => 'serial',
         'not null' => TRUE,
         'unsigned' => TRUE,
@@ -715,7 +715,7 @@ function biblio_schema() {
       ),
     ),
     'primary key' => array(
-      'bcid',
+      'cid',
     ),
   );
 
