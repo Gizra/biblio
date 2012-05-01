@@ -2968,6 +2968,10 @@ function biblio_load_multiple($bids = array(), $conditions = array(), $reset = F
   // and call the load() method on it. 
   $biblios = entity_load('biblio', $bids, $conditions, $reset);
   $contributions = biblio_get_associated_contributions($bids);
+  foreach($biblios as $bid => $biblio) {
+    $biblios[$bid]->contributions = $contributions[$bid];
+  }
+  
   return $biblios;
 }
 
@@ -3156,8 +3160,25 @@ function biblio_page_view($biblio, $view_mode = 'full') {
   // Build fields content. Standard stuff.
   field_attach_prepare_view('biblio', array($biblio->bid => $biblio), $view_mode);
   entity_prepare_view('biblio', array($biblio->bid => $biblio));
-  $biblio->content += field_attach_view('biblio', $biblio, $view_mode);
   
+  field_attach_prepare_view('biblio_contribution', $biblio->contributions, $view_mode);
+  entity_prepare_view('biblio_contribution', $biblio->contributions);
+  
+  $biblio->content += field_attach_view('biblio', $biblio, $view_mode);
+  foreach ($biblio->contributions as $cnid => $contribution) {
+    $biblio->content['contributions'][$cnid] = field_attach_view(
+      'biblio_contribution',
+      $contribution, 
+      $view_mode
+    );
+    $biblio->content['contributions'][$cnid]+= field_attach_view(
+      'biblio_contributor', 
+      $contribution->contributor, 
+      $view_mode
+    );
+  }
+  
+  dpm($biblio);
   return $biblio->content;
 }
 
@@ -3300,18 +3321,19 @@ function biblio_contributor_delete_multiple($contributor_ids) {
  *  which contains contributor properties/fields, plus the Contributor object.
  */
 function biblio_get_associated_contributions($bids) {
-  // Query to fetch the ids of all Contribution entities that reference the
-  // specified Biblio ID(s)
-  $query = new EntityFieldQuery;
-  $query->entityCondition('entity_type', 'biblio_contribution');
   foreach ($bids as $bid) {
+    // Query to fetch the ids of all Contribution entities that reference the
+    // specified Biblio ID(s)
+    $query = new EntityFieldQuery;
+    $query->entityCondition('entity_type', 'biblio_contribution');
     $query->fieldCondition('biblio_biblio_ref', 'target_id', $bid, '=');
-  }
-  $result = $query->execute();
-  // Extract the cnids from the objects returned by the query (not full
-  // contribution objects) and put them in an array.
-  foreach ($result['biblio_contribution'] as $id => $return_object) {
-    $cnids[] = $return_object->cnid;
+    $result = $query->execute();
+    
+    // Extract the cnids from the objects returned by the query (not full
+    // contribution objects) and put them in an array.
+    foreach ($result['biblio_contribution'] as $id => $return_object) {
+      $cnids[] = $return_object->cnid;
+    }
   }
   
   // Load the contribution entity objects from the database
@@ -3324,12 +3346,19 @@ function biblio_get_associated_contributions($bids) {
     $contributions[$cnid]->contributor = $wrapper->biblio_contributor_ref->value();
     // Extract the Biblio ID from the Biblio object that EntityReference
     // automatically loads for us.
-    $bid = $wrapper->biblio_biblio_ref->value()->bid;
-    // Build the array to return
-    $return[$bid][$cnid] = $contributions[$cnid];
+    // @todo: figure out why biblio_biblio_ref isn't set for all but the first
+    // entity object
+    if (is_object($wrapper->biblio_biblio_ref->value())) {
+      $bid = $wrapper->biblio_biblio_ref->value()->bid;
+      // Build the array to return
+      $return[$bid][$cnid] = $contributions[$cnid];
+    }
+    else {
+      return;
+    }
   }
   
-  return $return;
+    return $return;
 }
 
 /**
