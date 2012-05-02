@@ -1048,25 +1048,15 @@ function biblio_menu() {
     'access arguments' => array('administer biblio'),
     'type' => MENU_LOCAL_TASK,
   );
-//  $items['admin/content/biblio'] = array(
-//    'title' => 'Biblio Content',
-//    'page callback' => 'biblio_content',
-//    'file' => '/includes/biblio.admin.inc',
-//    'access arguments' => array('administer biblio'),
-//    'weight' => 1,
-//    'type' => MENU_LOCAL_TASK,
-//  );
-  $items['admin/content/biblio/add'] = array(
-    'title' => 'Add a new Biblio entry',
-    'page callback' => 'biblio_add_page',
-    'file' => '/includes/biblio.admin.inc',
+  $items['admin/structure/biblio/add'] = array(
+    'title' => 'Add Biblio',
     'access arguments' => array('administer biblio'),
     'type' => MENU_LOCAL_ACTION,
   );
   // Create a menu item for each biblio type, converting underscores to dashes.
   foreach (biblio_types('biblio') as $type) {
     $type_url_str = str_replace('_', '-', $type->publication_type);
-    $items['admin/content/biblio/add/' . $type_url_str] = array(
+    $items['admin/structure/biblio/add/' . $type_url_str] = array(
       'title' => $type->name,
       // check_plain() will take whatever is specified in the title and escape
       // any and all HTML in it, making it safe to use as the page title.
@@ -1075,6 +1065,7 @@ function biblio_menu() {
       'file' => '/includes/biblio.admin.inc',
       'page arguments' => array(4),
       'access arguments' => array('administer biblio'),
+      'type' => MENU_LOCAL_ACTION,
 //      'description' => $type->description,
     );
   }
@@ -1103,7 +1094,7 @@ function biblio_menu() {
     'context' => MENU_CONTEXT_INLINE,
     'file' => 'includes/biblio.admin.inc',
   );
-  $items['admin/content/biblio/contributor/add'] = array(
+  $items['admin/structure/biblio/contributor/add'] = array(
     'title' => 'Add Contributor',
     'page callback' => 'biblio_contributor_add', // callback
     'access arguments' => array('administer biblio'),
@@ -3191,7 +3182,6 @@ function biblio_page_view($biblio, $view_mode = 'full') {
   field_attach_prepare_view('biblio', array($biblio->bid => $biblio), $view_mode);
   entity_prepare_view('biblio', array($biblio->bid => $biblio));
   $biblio->content += field_attach_view('biblio', $biblio, $view_mode);
-  
   return $biblio->content;
 }
 
@@ -3406,51 +3396,8 @@ function biblio_contributor_page_view($contributor, $view_mode = 'full') {
   return $contributor->content;
 }
 
-
 /**
- * hook_menu callback function for admin/content/biblio
- *
- * @return string
- * @todo list all biblio entries (similar to admin/content does for nodes). See http://drupal.org/node/1537378
- */
-function biblio_content() {
-  $query = db_select('biblio', 'b')
-      ->extend('PagerDefault')
-      ->extend('TableSort')
-      ->fields('b', array('bid'))
-      ->limit(50);
-//      ->orderByHeader($header)
-  $bids = $query->execute()
-      ->fetchCol();
-  $biblios = biblio_load_multiple($bids);
-  return '[Insert table of biblio entries here]';
-}
-
-/**
- * hook_menu callback function for admin/content/biblio/add
- *
- * Generates a bulleted list of menu items that are immediate children of the
- * current page being viewed.
- * @return type
- * @todo: make this not hideous. See http://drupal.org/node/1537378
- */
-function biblio_add_page() {
-  // Returns the current menu item
-  $item = menu_get_item();
-  $links = menu_get_children($item);
-  foreach ($links as $title => $path) {
-    $items[] = l($title, 
-                 $path,
-                 // Allows the menu system to handle what attributes the link
-                 // should have, any interaction witht he translation system, etc.
-                 $item['localized_options']);
-  }
-  
-  return theme('item_list', array('items' => $items));
-}
-
-/**
- * hook_menu callback function for admin/content/biblio/add/[publication-type]
+ * hook_menu callback function for admin/structure/biblio/add/[publication-type]
  * 
  * @global type $user
  * @param type $type
