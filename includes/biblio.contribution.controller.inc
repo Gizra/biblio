@@ -4,11 +4,6 @@
  * Contribution class.
  */
 class BiblioContribution extends Entity {
-  protected function defaultLabel() {
-    // @todo: return something useful as the title
-//    return $this->title;
-    return;
-  }
   protected function defaultUri() {
     return array('path' => 'biblio/contribution/' . $this->identifier());
   }

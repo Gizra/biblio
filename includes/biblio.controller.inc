@@ -5,8 +5,8 @@
  */
 class Biblio extends Entity {
   protected function defaultLabel() {
-    // This may not work @todo figure it out
-    return $this->biblio_title;
+    $wrapper = entity_metadata_wrapper('biblio', $this);
+    return $wrapper->biblio_title->value();
   }
   protected function defaultUri() {
     return array('path' => 'biblio/' . $this->identifier());

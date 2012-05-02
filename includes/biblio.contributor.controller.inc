@@ -5,9 +5,8 @@
  */
 class BiblioContributor extends Entity {
   protected function defaultLabel() {
-    // @todo: return something useful as the title
-//    return $this->title;
-    return;
+    $wrapper = entity_metadata_wrapper('bilio_contributor', $this);
+    return $wrapper->biblio_contributor_name->value();
   }
   protected function defaultUri() {
     return array('path' => 'biblio/contributor/' . $this->identifier());
