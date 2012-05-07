@@ -194,38 +194,37 @@ function _biblio_get_field_information($biblio_type, $only_visible = FALSE) {
  */
 function theme_biblio_tabular($variables) {
   module_load_include('inc', 'biblio', '/includes/biblio.contributors');
-  $node = $variables['node'];
+  $biblio = $variables['biblio'];
+  $wrapper = biblio_wrapper($biblio);
   $base = $variables['base'];
   static $citeproc;
 
   if (module_exists('popups')) {
      popups_add_popups();
   }
-  $tid = $node->biblio_type;
-  $fields = _biblio_get_field_information($node->biblio_type, TRUE);
+  $tid = $biblio->publication_type;
+  $fields = _biblio_get_field_information($biblio->publication_type, TRUE);
   $rows[] = array(
     array('data' => t('Title'), 'class' => array('biblio-row-title')),
-    array('data' => filter_xss($node->title, biblio_get_allowed_tags()))
+    array('data' => filter_xss($wrapper->biblio_title->value(), biblio_get_allowed_tags()))
   );
 
-  if (!isset($node->biblio_type_name) && isset($node->biblio_type)) { // needed for preview
-    if (($pub_type = db_query('SELECT t.tid, t.name FROM {biblio_types} as t WHERE t.tid=:tid', array(':tid' => $node->biblio_type))->fetchObject())) {
-      $node->biblio_type_name = drupal_ucfirst(_biblio_localize_type($pub_type->tid, $pub_type->name));
-    }
+  if (!isset($biblio->biblio_type_name) && isset($biblio->publication_type)) { // needed for preview
+    $biblio->biblio_type_name = drupal_ucfirst(_biblio_localize_type($biblio->publication_type));
   }
 
   $rows[] = array(
     array('data' => t('Publication Type'), 'class' => array('biblio-row-title')),
-    array('data' => $node->biblio_type_name)
+    array('data' => $biblio->biblio_type_name)
   );
 
   $attrib = (variable_get('biblio_links_target_new_window', FALSE)) ? array('target' => '_blank') : array();
 
-  $doi = '';
-  if (!empty($node->biblio_doi)) {
+  $doi = $wrapper->biblio_doi->value();
+  if (!empty($doi)) {
     $doi_url = '';
-    if ( ($doi_start = strpos($node->biblio_doi, '10.')) !== FALSE) {
-      $doi = substr($node->biblio_doi, $doi_start);
+    if ( ($doi_start = strpos($wrapper->biblio_doi->value(), '10.')) !== FALSE) {
+      $doi = substr($wrapper->biblio_doi->value(), $doi_start);
       $doi_url .= 'http://dx.doi.org/' . $doi;
       $doi = l($doi, $doi_url, $attrib);
     }
@@ -234,29 +233,29 @@ function theme_biblio_tabular($variables) {
 
   foreach ($fields as $key => $row) {
     // handling the contributor categories like any other field orders them correctly by weight
-    if ($row['type'] == 'contrib_widget' && ($authors = biblio_get_contributor_category($node->biblio_contributors, $row['fid']))) {
+    if ($row['type'] == 'contrib_widget' && ($authors = biblio_get_contributor_category($biblio->biblio_contributors, $row['fid']))) {
       $data = biblio_format_authors($authors);
     }
-    elseif (empty ($node->$row['name']) || $row['name'] == 'biblio_coins') {
+    elseif (empty ($biblio->$row['name']) || $row['name'] == 'biblio_coins') {
       continue;
     }
     else {
       switch ($row['name']) {
         case 'biblio_keywords' :
-         $data = _biblio_keyword_links($node->$row['name'], $base);
+         $data = _biblio_keyword_links($biblio->$row['name'], $base);
           break;
         case 'biblio_url' :
-          $data = l($node->$row['name'], $node->$row['name'], $attrib);
+          $data = l($biblio->$row['name'], $biblio->$row['name'], $attrib);
           break;
         case 'biblio_doi' :
            $data = $doi;
           break;
         default:
           if ($row['type'] == 'text_format') {
-            $data = check_markup($node->$row['name'], $node->biblio_formats[$row['name']]);
+            $data = check_markup($biblio->$row['name'], $biblio->biblio_formats[$row['name']]);
           }
           else {
-            $data = check_plain($node->$row['name']);
+            $data = check_plain($biblio->$row['name']);
           }
       }
     }
@@ -270,15 +269,15 @@ function theme_biblio_tabular($variables) {
       )
     );
   }
-  if (isset($node->body) && !empty($node->body) && user_access('view full text')) {
+  if (isset($biblio->body) && !empty($biblio->body) && user_access('view full text')) {
     $rows[] = array(
         array('data' => t('Full Text'),  'valign' => 'top'),
-        array('data' =>  drupal_render(field_view_field('node', $node, 'body', array('label' => 'hidden')))),
+        array('data' =>  drupal_render(field_view_field('biblio', $biblio, 'body', array('label' => 'hidden')))),
     );
 
   }
   $output = '<div id="biblio-node">';
-  $output .= filter_xss($node->biblio_coins, array('span'));
+  $output .= filter_xss($biblio->biblio_coins, array('span'));
   $header = array();
   $output .= theme('table', array('header' => $header, 'rows' => $rows));
   $output .= '</div>';
