@@ -68,11 +68,11 @@ function _biblio_localize_fields(&$fields) {
  * @return
  *   Translated value.
  */
-function _biblio_localize_type($tid, $value, $field = 'name') {
+function _biblio_localize_type($publication_type, $field = 'name') {
   if (module_exists('i18nstrings')) {
-    return tt("biblio:type:$tid:$field", $value);
+    return tt("biblio:type:$field", $publication_type);
   }
-  return $value;
+  return $publication_type;
 }
 
 /**
@@ -1962,43 +1962,6 @@ function biblio_citekey_generate($biblio) {
 }
 
 /**
- * Implementation of hook_view().
- */
-function biblio_view($node, $buildmode = 'full') {
-  global $user;
-  $links = array();
-  $style = biblio_get_style();
-  $base  = variable_get('biblio_base', 'biblio');
-  $base_title = check_plain(variable_get('biblio_base_title', 'Biblio'));
-
-  // @todo: get these view modes implemented with our new entities. See http://drupal.org/node/1537320
-  switch ($buildmode) {
-    case 'full':
-      if (variable_get('biblio_hide_bibtex_braces', 0) && !isset($node->view )) {
-        $node->title = biblio_remove_brace($node->title);
-        drupal_set_title(filter_xss($node->title, biblio_get_allowed_tags()));
-      }  // fall through...
-    case 'search_index':
-      switch (variable_get('biblio_node_layout', 'tabular')) {
-        case 'orig' :
-        case 'ft' :
-          $node->content['body']['#markup'] = theme('biblio_long', array('node' => $node, 'base' => $base, 'style' => $style));
-          break;
-        case 'tabular' :
-        default :
-          $node->content['body']['#markup'] = theme('biblio_tabular', array('node' => $node, 'base' => $base));
-          break;
-      }
-      break;
-    case 'teaser':
-      $node->content['teaser']['#markup'] = theme('biblio_style', array('node' => $node, 'base' => $base, 'style_name' => $style));
-      break;
-  }
-
-  return $node;
-}
-
-/**
  * Implementation of hook_block().
  *
  * Generates a block containing the latest poll.
@@ -2932,7 +2895,8 @@ function publication_type_load($type) {
  * $title = $wrapper->biblio_title->value();
  * 
  * @param object $entity standard entity object - $biblio, $contributor, etc.
- * @param string $entity_type biblio, biblio_contributor, biblio_contribution
+ * @param string $entity_type biblio, biblio_contributor, biblio_contribution.
+ *  Defaults to 'biblio'
  * @return object A fully structured entity wrapper built by the Entity API
  */
 function biblio_wrapper($entity, $entity_type = 'biblio') {
@@ -3210,16 +3174,35 @@ function biblio_form_get_contributors($form) {
  * @return type 
  */
 function biblio_page_view($biblio, $view_mode = 'full') {
+  global $user;
+  $links = array();
+  $style = biblio_get_style();
+  $base  = variable_get('biblio_base', 'biblio');
+  $base_title = check_plain(variable_get('biblio_base_title', 'Biblio'));
   // Remove previously built content, if exists.
   $biblio->content = array();
   
-  // If we're in teaser mode, we want to inject the title of the biblio into
-  // the viewable result.
-  if ($view_mode == 'teaser') {
-    $biblio->content['title'] = array(
-      '#markup' => filter_xss($biblio->title),
-      'weight' => -5,
-    );
+  switch ($view_mode) {
+    case 'full':
+      if (variable_get('biblio_hide_bibtex_braces', 0) && !isset($biblio->view )) {
+        $biblio->title = biblio_remove_brace($biblio->title);
+        drupal_set_title(filter_xss($biblio->title, biblio_get_allowed_tags()));
+      }  // fall through...
+    case 'search_index':
+      switch (variable_get('biblio_node_layout', 'tabular')) {
+        case 'orig' :
+        case 'ft' :
+          $biblio->content['body']['#markup'] = theme('biblio_long', array('biblio' => $biblio, 'base' => $base, 'style' => $style));
+          break;
+        case 'tabular' :
+        default :
+          $biblio->content['body']['#markup'] = theme('biblio_tabular', array('biblio' => $biblio, 'base' => $base));
+          break;
+      }
+      break;
+    case 'teaser':
+      $biblio->content['teaser']['#markup'] = theme('biblio_style', array('biblio' => $biblio, 'base' => $base, 'style_name' => $style));
+      break;
   }
   
   // Build field content for contribution/contributor entities
