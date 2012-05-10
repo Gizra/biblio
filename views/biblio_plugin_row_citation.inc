@@ -1,8 +1,8 @@
 <?php
 class biblio_plugin_row_citation extends views_plugin_row {
   // Basic properties that let the row style follow relationships.
-  var $base_table = 'node';
-  var $base_field = 'nid';
+  var $base_table = 'biblio';
+  var $base_field = 'bid';
 
   // Stores the nodes loaded with pre_render.
   var $nodes = array();
