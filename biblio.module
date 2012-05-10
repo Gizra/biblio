@@ -1380,18 +1380,25 @@ function biblio_form($form, &$form_state, $biblio) {
   
   // Add the values we created above to the real form
   foreach ($fielded_form as $field => $data) {
+    // Set a vtab value, if it exists (not all array keys are valid fields)
     $vtab = (isset($instance_info[$field]['settings']['vtab']))? 
       $instance_info[$field]['settings']['vtab'] : FALSE;
     // We don't want extra theme elements from $fielded_form. 
     // Just field instances with a set vtab.
     if ($vtab !== FALSE) {
       if ($vtab == '0') {
-        // Fields outside of the vtabs
+        // Fields specified to be outside of the vtabs
         $form[$field] = $data;
       }
       else {
         // Add all other fields to the vtabs
         $tabs[$vtab][$field] = $data;
+      }
+    }
+    // No vtab specified. Includes user-created fields
+    else {
+      if (biblio_is_field_instance($field, 'biblio', $biblio->publication_type)) {
+        $form[$field] = $data;
       }
     }
   }
@@ -2685,12 +2692,12 @@ function biblio_entity_info() {
     'label' => t('Biblio'),
     'entity class' => 'Biblio',
     'controller class' => 'BiblioController',
+    'views controller class' => 'EntityDefaultViewsController',
     'base table' => 'biblio',
     'fieldable' => TRUE,
     'entity keys' => array(
       'id' => 'bid',
       'bundle' => 'publication_type',
-      'label' => 'bid',
     ),
     'bundle keys' => array(
       'bundle' => 'publication_type',
