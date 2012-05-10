@@ -228,6 +228,28 @@ function biblio_delete_fields() {
   return $fields;
 }
 
+/**
+ * Checks all existing fields instances for a given instance, and returns wheter
+ * or not it actually exists
+ *
+ * @param string $instance_name The machine name to check whether or not it is
+ *  a valid field instance
+ * @param string $entity_type biblio, contributor, etc.
+ * @param string $bundle book, journal_article, etc.
+ * @return boolean whether or not the given string exists as a field instance 
+ */
+function biblio_is_field_instance($instance_name, $entity_type, $bundle) {
+  // We only need to fetch an instance list once, so make it static
+  $instances = &drupal_static(__FUNCTION__);
+  if (!isset($instances)) {
+    $instances = field_info_instances($entity_type, $bundle);
+  }
+  if (isset($instances[$instance_name])) {
+    return TRUE;
+  }
+  return FALSE;
+}
+
 //  module_load_include('inc', 'biblio', 'includes/biblio.fields');
 //  modify_biblio_field_link_data_csv();
 /**
