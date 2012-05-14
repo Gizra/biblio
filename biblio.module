@@ -1693,7 +1693,7 @@ function biblio_contributor_form($contribution, &$form_state, $delta) {
  * @return array 
  */
 function biblio_contributors_add_more_callback($form, &$form_state) {
-  return $form['biblio_tabs']['biblio_authors']['biblio_contributors'];
+  return $form['biblio_tabs'][1]['biblio_contributors'];
 }
 
 /**
