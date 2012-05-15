@@ -2907,6 +2907,15 @@ function publication_type_load($type) {
  * @return object A fully structured entity wrapper built by the Entity API
  */
 function biblio_wrapper($entity, $entity_type = 'biblio') {
+  $entity_types = array('biblio', 'biblio_contributor', 'biblio_contribution');
+  if (!in_array($entity_type, $entity_types)) {
+    // We're not dealing with one of biblio's entity types
+    $info = entity_get_info($entity_type);
+    if (empty($info)) {
+      // We're not even dealing with a real entity type.
+      throw new Exception('Invalid entity type: ' . $entity_type);
+    }
+  }
   return entity_metadata_wrapper($entity_type, $entity);
 }
 
