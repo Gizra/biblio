@@ -203,7 +203,8 @@ function theme_biblio_tabular($variables) {
      popups_add_popups();
   }
   $tid = $biblio->publication_type;
-  $fields = _biblio_get_field_information($biblio->publication_type, TRUE);
+  
+//  $fields = _biblio_get_field_information($biblio->publication_type, TRUE);
   $rows[] = array(
     array('data' => t('Title'), 'class' => array('biblio-row-title')),
     array('data' => filter_xss($wrapper->biblio_title->value(), biblio_get_allowed_tags()))
@@ -230,38 +231,59 @@ function theme_biblio_tabular($variables) {
     }
 
   }
-
-  foreach ($fields as $key => $row) {
-    // handling the contributor categories like any other field orders them correctly by weight
-    if ($row['type'] == 'contrib_widget' && ($authors = biblio_get_contributor_category($biblio->biblio_contributors, $row['fid']))) {
-      $data = biblio_format_authors($authors);
+  
+  $biblio_fields['contributors'] = array(
+    'value' => biblio_format_authors($biblio->contributions),
+    'label' => 'Authors',
+  );
+  foreach ($biblio->contributions as $cnid => $contribution) {
+    
+  }
+  foreach($biblio as $field_name => $data) {
+    if (isset($wrapper->$field_name)) {
+      $field_value = $wrapper->$field_name->value();
+      $field_info = field_info_instance('biblio', $field_name, $biblio->publication_type);
+      if (isset($field_value) && !empty($field_info)) {
+        $biblio_fields[$field_name]['value'] = $wrapper->$field_name->value();
+        $biblio_fields[$field_name]['label'] = $field_info['label'];
+      }
     }
-    elseif (empty ($biblio->$row['name']) || $row['name'] == 'biblio_coins') {
+  }
+  foreach ($biblio_fields as $field => $row) {
+    if (isset($wrapper->$field)) {
+      $value = $wrapper->$field->value();
+    }
+    
+    // handling the contributor categories like any other field orders them correctly by weight
+    if ($field == 'contributors') {
+      $data = $row['value'];
+    }
+    elseif (empty ($value) || $field == 'biblio_coins') {
       continue;
     }
     else {
-      switch ($row['name']) {
+      switch ($field) {
         case 'biblio_keywords' :
-         $data = _biblio_keyword_links($biblio->$row['name'], $base);
+         $data = _biblio_keyword_links($value, $base);
           break;
         case 'biblio_url' :
-          $data = l($biblio->$row['name'], $biblio->$row['name'], $attrib);
+          $data = l($value, $value, $attrib);
           break;
         case 'biblio_doi' :
            $data = $doi;
           break;
         default:
-          if ($row['type'] == 'text_format') {
-            $data = check_markup($biblio->$row['name'], $biblio->biblio_formats[$row['name']]);
+          if (isset($row['type']) && $row['type'] == 'text_format') {
+            $data = check_markup($value, $wrapper->biblio_formats[$field]);
           }
           else {
-            $data = check_plain($biblio->$row['name']);
+            $data = check_plain($value);
           }
       }
     }
     $rows[] = array(
       array(
-        'data' => t($row['title']),
+        'data' => t($row['label']),
         'class' => array('biblio-row-title')
       ),
       array(
@@ -269,6 +291,7 @@ function theme_biblio_tabular($variables) {
       )
     );
   }
+  // @todo: get rid of body and make a full text field
   if (isset($biblio->body) && !empty($biblio->body) && user_access('view full text')) {
     $rows[] = array(
         array('data' => t('Full Text'),  'valign' => 'top'),
@@ -277,7 +300,7 @@ function theme_biblio_tabular($variables) {
 
   }
   $output = '<div id="biblio-node">';
-  $output .= filter_xss($biblio->biblio_coins, array('span'));
+  $output .= filter_xss($wrapper->biblio_coins->value(), array('span'));
   $header = array();
   $output .= theme('table', array('header' => $header, 'rows' => $rows));
   $output .= '</div>';
@@ -390,7 +413,7 @@ function _biblio_get_regex_patterns() {
   }
 }
 
-function biblio_format_authors($authors) {
+function biblio_format_authors($contributions) {
   if (module_exists('biblio_citeproc')) {
     static $auth_proc;
     if (!isset($auth_proc)) {
@@ -400,7 +423,7 @@ function biblio_format_authors($authors) {
       $csl_doc->loadXML($csl);
       $auth_proc = new csl_rendering_element($csl_doc);
     }
-    $data = $auth_proc->render($authors);
+    $data = $auth_proc->render($contributions);
   }
   else {
     $style_name = biblio_get_style();
@@ -410,129 +433,138 @@ function biblio_format_authors($authors) {
     }
     $author_options = $style_function();
     $author_options['numberOfAuthorsTriggeringEtAl'] = 100; //set really high so we see all authors
-    $data = theme('biblio_format_authors', array('contributors' => $authors, 'options' => $author_options));
+    $data = theme('biblio_format_authors', array('contributions' => $contributions, 'options' => $author_options));
   }
 
   return $data;
 }
 function theme_biblio_format_authors($variables) {
-  $contributors = $variables['contributors'];
-  $options      = $variables['options'];
+  $contributions = $variables['contributions'];
+  $options = $variables['options'];
 
-  if (empty($contributors)) return;
+  if (empty($contributions)) return;
   list($alnum, $alpha, $cntrl, $dash, $digit, $graph, $lower,
        $print, $punct, $space, $upper, $word, $patternModifiers) = _biblio_get_regex_patterns();
   $base  = variable_get('biblio_base', 'biblio');
   $author_links = variable_get('biblio_author_links', 1);
 
-  $authorCount = count($contributors); // check how many authors we have to deal with
+  $contributionCount = count($contributions); // check how many authors we have to deal with
   $output = ""; // this variable will hold the final author string
   $includeStringAfterFirstAuthor = FALSE;
 
   if (empty($options['numberOfAuthorsTriggeringEtAl']))  $options['numberOfAuthorsTriggeringEtAl'] = $authorCount;
 
   if (empty($options['includeNumberOfAuthors']))  $options['includeNumberOfAuthors'] = $authorCount;
-
-  foreach ($contributors as $rank => $author) {
-    if (empty($author['name'])) continue;
-    if (!isset($author['lastname']) && empty($author['literal'])) {
+  
+  // Temporary until contribution ranks are implemented. @todo: add rank field
+  static $rank = 0;
+  foreach ($contributions as $cnid => $contribution) {
+    // Contribution entity wrapper
+    $cn_wrap = biblio_wrapper($contribution, 'biblio_contribution');
+    // Contributor entity wrapper
+    $cr_wrap = biblio_wrapper($contribution->contributor, 'biblio_contributor');
+    
+    $rank++;
+    
+    if (!isset($contribution->lastname) && empty($contribution->literal)) {
       module_load_include('inc', 'biblio', '/includes/biblio.contributors');
-      $author = biblio_parse_author($author, $author['auth_type']); // this is needed for form preview to fill in all fields
+      $category = $cn_wrap->biblio_contributor_category->value();
+      $author = biblio_parse_author($contribution->contributor, (string)$category); // this is needed for form preview to fill in all fields
     }
-    if (empty($author['literal'])) {
-      if (!empty($author['firstname'])) {
+    if (empty($author->literal)) {
+      if (!empty($author->firstname)) {
         if ($options['shortenGivenNames']) {// if we're supposed to abbreviate given names
           // within initials, reduce all full first names (-> defined by a starting uppercase character, followed by one ore more lowercase characters)
           // to initials, i.e., only retain their first character
-          $author['firstname'] = preg_replace("/([$upper])[$lower]+/$patternModifiers", '\\1', $author['firstname']);
-          //$author['firstname'] = drupal_substr($author['firstname'], 0, 1);
+          $author->firstname = preg_replace("/([$upper])[$lower]+/$patternModifiers", '\\1', $author->firstname);
+          //$author->firstname = drupal_substr($author->firstname, 0, 1);
           // the next line caused extra betweenInitialsDelim to appear in some circumstances
-          //$author['firstname'] = preg_replace("/($space|$dash)?/$patternModifier", $options['betweenInitialsDelim'], $author['firstname']);
+          //$author->firstname = preg_replace("/($space|$dash)?/$patternModifier", $options['betweenInitialsDelim'], $author->firstname);
         }
       }
-      if (isset($author['initials'])) {
+      if (isset($author->initials)) {
         // within initials, remove any dots:
-        $author['initials'] = preg_replace("/([$upper])\.+/$patternModifiers", "\\1", $author['initials']);
-        //$author['initials'] = str_replace('.', '',  $author['initials']);
+        $author->initials = preg_replace("/([$upper])\.+/$patternModifiers", "\\1", $author->initials);
+        //$author->initials = str_replace('.', '',  $author->initials);
 
         // within initials, remove any spaces *between* initials:
-        $author['initials'] = preg_replace("/(?<=[-$upper]) +(?=[-$upper])/$patternModifiers", "", $author['initials']);
-        //$author['initials'] = str_replace(' ', '',  $author['initials']);
+        $author->initials = preg_replace("/(?<=[-$upper]) +(?=[-$upper])/$patternModifiers", "", $author->initials);
+        //$author->initials = str_replace(' ', '',  $author->initials);
 
         // within initials, add a space after a hyphen, but only if ...
         if (preg_match('/ $/', $options['betweenInitialsDelim'])) { // ... the delimiter that separates initials ends with a space
-          $author['initials'] = preg_replace("/-(?=[$upper])/$patternModifiers", "- ", $author['initials']);
+          $author->initials = preg_replace("/-(?=[$upper])/$patternModifiers", "- ", $author->initials);
         }
         // then, separate initials with the specified delimiter:
         $delim = $options['betweenInitialsDelim'];
-        $author['initials'] = preg_replace("/([$upper])(?=[^$lower]+|$)/$patternModifiers", "\\1$delim", $author['initials']);
+        $author->initials = preg_replace("/([$upper])(?=[^$lower]+|$)/$patternModifiers", "\\1$delim", $author->initials);
 
         $shortenInitials = (isset($options['numberOfInitialsToKeep'])) ? $options['numberOfInitialsToKeep'] : FALSE;
-        if ($shortenInitials) $author['initials'] = drupal_substr($author['initials'], 0, $shortenInitials);
+        if ($shortenInitials) $author->initials = drupal_substr($author->initials, 0, $shortenInitials);
 
-        if ($options['shortenGivenNames'] && !empty($author['firstname'])) {
-          $author['firstname'] = $author['firstname'] . $options['betweenInitialsDelim'] . $author['initials'];
-          if ($shortenInitials) $author['firstname'] = drupal_substr($author['firstname'], 0, $shortenInitials);
+        if ($options['shortenGivenNames'] && !empty($author->firstname)) {
+          $author->firstname = $author->firstname . $options['betweenInitialsDelim'] . $author->initials;
+          if ($shortenInitials) $author->firstname = drupal_substr($author->firstname, 0, $shortenInitials);
         }
-        elseif (!empty($author['firstname'])) {
-          $author['firstname'] = $author['firstname'] . ' ' . $author['initials'];
+        elseif (!empty($author->firstname)) {
+          $author->firstname = $author->firstname . ' ' . $author->initials;
         }
-        elseif (empty($author['firstname'])) {
-          $author['firstname'] = $author['initials'];
+        elseif (empty($author->firstname)) {
+          $author->firstname = $author->initials;
         }
       }
 
       // if there is a surname prefix like "van", "von" etc, stick it back before the last name.
-      if (!empty($author['prefix'])) $author['lastname'] = $author['prefix'] . ' ' . $author['lastname'];
-      if (!empty($author['suffix'])) $author['lastname'] = $author['lastname'] . ', ' . $author['suffix'];
+      if (!empty($author->prefix)) $author->lastname = $author->prefix . ' ' . $author->lastname;
+      if (!empty($author->suffix)) $author->lastname = $author->lastname . ', ' . $author->suffix;
 
-      if (!empty($author['firstname'])) {
-        if ($rank == 0) { // -> first author
+      if (!empty($author->firstname)) {
+        if ($cnid == 0) { // -> first author
           if ($options['initialsBeforeAuthorFirstAuthor']) {
-            $author['name'] = $author['firstname'] . $options['AuthorsInitialsDelimFirstAuthor'] . $author['lastname'];
+            $author->name = $author->firstname . $options['AuthorsInitialsDelimFirstAuthor'] . $author->lastname;
           }
           else{
-            $author['name'] = $author['lastname'] . $options['AuthorsInitialsDelimFirstAuthor'] . $author['firstname'];
+            $author->name = $author->lastname . $options['AuthorsInitialsDelimFirstAuthor'] . $author->firstname;
           }
         }
-        else { // $rank > 0 // -> all authors except the first one
+        else { // $cnid > 0 // -> all authors except the first one
           if ($options['initialsBeforeAuthorStandard']) {
-            $author['name'] = $author['firstname'] . $options['AuthorsInitialsDelimStandard'] . $author['lastname'];
+            $author->name = $author->firstname . $options['AuthorsInitialsDelimStandard'] . $author->lastname;
           }
           else{
-            $author['name'] = $author['lastname'] . $options['AuthorsInitialsDelimStandard'] . $author['firstname'];
+            $author->name = $author->lastname . $options['AuthorsInitialsDelimStandard'] . $author->firstname;
           }
         }
       }
       else {
-        $author['name'] = $author['lastname'];
+        $author->name = $author->lastname;
       }
     }
     if ($author_links) {
-      $author['name'] = theme('biblio_author_link', array('author' => $author));
+      $author->name = theme('biblio_author_link', array('author' => $author));
     }
     else {
-      $author['name'] = check_plain($author['name']);
+      $author->name = check_plain($author->name);
     }
     // append this author to the final author string:
-    if (($rank == 0) OR ($rank + 1) < $authorCount) {// -> first author, or (for multiple authors) all authors except the last one
+    if (($rank == 0) OR ($rank + 1) < $contributionCount) {// -> first author, or (for multiple authors) all authors except the last one
       if ($rank == 0) { // -> first author
-        $output .= $author['name'];
+        $output .= $author->name;
       }
       else {// -> for multiple authors, all authors except the first or the last one
-        $output .= $options['BetweenAuthorsDelimStandard'] . $author['name'];
+        $output .= $options['BetweenAuthorsDelimStandard'] . $author->name;
       }
       // we'll append the string in '$customStringAfterFirstAuthors' to the number of authors given in '$includeNumberOfAuthors' if the total number of authors is greater than the number given in '$numberOfAuthorsTriggeringEtAl':
-      if ((($rank + 1) == $options['includeNumberOfAuthors']) AND ($authorCount > $options['numberOfAuthorsTriggeringEtAl'])) {
+      if ((($rank + 1) == $options['includeNumberOfAuthors']) AND ($contributionCount > $options['numberOfAuthorsTriggeringEtAl'])) {
         if (preg_match("/__NUMBER_OF_AUTHORS__/", $options['customStringAfterFirstAuthors'])) {
-          $customStringAfterFirstAuthors = preg_replace("/__NUMBER_OF_AUTHORS__/", ($authorCount - $options['includeNumberOfAuthors']), $options['customStringAfterFirstAuthors']); // resolve placeholder
+          $customStringAfterFirstAuthors = preg_replace("/__NUMBER_OF_AUTHORS__/", ($contributionCount - $options['includeNumberOfAuthors']), $options['customStringAfterFirstAuthors']); // resolve placeholder
         }
         $includeStringAfterFirstAuthor = TRUE;
         break;
       }
     }
-    elseif (($authorCount > 1) AND (($rank + 1) == $authorCount)) {// -> last author (if multiple authors)
-      $output .= $options['BetweenAuthorsDelimLastAuthor'] . $author['name'];
+    elseif (($contributionCount > 1) AND (($rank + 1) == $contributionCount)) {// -> last author (if multiple authors)
+      $output .= $options['BetweenAuthorsDelimLastAuthor'] . $author->name;
     }
   }
 
@@ -558,9 +590,9 @@ function theme_biblio_author_link($variables) {
   }
   $path = $uri['path'];
   $uri['path'] = variable_get('biblio_base', 'biblio');
-  $uri['query']['f']['author'] = $author['cid'];
+  $uri['query']['f']['author'] = $author->cid;
 
-  if (isset($author['drupal_uid']) && $author['drupal_uid'] > 0) {
+  if (isset($author->drupal_uid) && $author->drupal_uid > 0) {
     $uri['attributes'] += array('class' => array('biblio-local-author'));
   }
   if (variable_get('biblio_links_target_new_window', null)){
@@ -569,14 +601,14 @@ function theme_biblio_author_link($variables) {
   }
 
   if (variable_get('biblio_author_link_profile', 0) && isset($author['drupal_uid']) &&  $author['drupal_uid'] > 0) {
-    $profile_path = 'user/' . $author['drupal_uid'] . '/' . $uri['path'];
+    $profile_path = 'user/' . $author->drupal_uid . '/' . $uri['path'];
     if ($path != '/' . $profile_path) {  // we only create links to the profile page if we are not already on it.
       $uri['path'] = $profile_path;
       unset($uri['query']);
     }
   }
 
-  return l(trim($author['name']), $uri['path'], $uri );
+  return l(trim($author->name), $uri['path'], $uri );
 
 }
 

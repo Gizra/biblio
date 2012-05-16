@@ -16,7 +16,8 @@ function biblio_get_contributor($aid) {
 function biblio_get_contributor_category($contributors, $category) {
   $authors = array();
   foreach ($contributors as $author) {
-    if ($author['auth_category'] == $category) {
+    $wrapper = biblio_wrapper($author, 'biblio_contributor');
+    if ($wrapper->biblio_contributor_category == $category) {
       $authors[] = $author;
     }
   }
@@ -327,20 +328,22 @@ function _save_contributors($contributor) {
  3. <von-tokens> <last-tokens>, <jr-tokens>, <first-tokens>
  */
 /**
- * @param $author_array
+ * @param $contribution Contributor entity object
  * @return unknown_type
  */
-function biblio_parse_author($author_array, $cat = 0) {
-
-  if (isset($author_array['auth_category']) && $author_array['auth_category'] == 5) {
-    $author_array['firstname'] = '';
-    $author_array['initials'] = '';
-    $author_array['lastname'] = trim($author_array['name']);
-    $author_array['prefix'] = '';
-    $author_array['literal'] = 1;
+function biblio_parse_author($author_object, $category = 0) {
+  $author_wrapper = biblio_wrapper($author_object, 'biblio_contributor');
+  $author_name = $author_wrapper->biblio_contributor_name->value();
+  
+  if (isset($category) && $category == 5) {
+    $author_object->firstname = '';
+    $author_object->initials = '';
+    $author_object->lastname = trim($author_object->name);
+    $author_object->prefix = '';
+    $author_object->literal = 1;
   }
   else {
-    $value = trim($author_array['name']);
+    $value = trim($author_name);
     $appellation = $prefix = $surname = $firstname = $initials = '';
     $prefix = "";
     $value = preg_replace("/\s{2,}/", ' ', $value); // replace multiple white space by single space
@@ -382,21 +385,21 @@ function biblio_parse_author($author_array, $cat = 0) {
     $prefix .= $prefix2;
     //var_dump($prefix);
     //$surname = $surname . ' ' . $appellation;
-    $author_array['firstname'] = trim($firstname);
-    $author_array['initials'] = (strlen(trim($initials)) > 10) ? drupal_substr(trim($initials), 0, 10) : trim($initials);
-    $author_array['lastname'] = trim($surname);
-    $author_array['prefix'] = trim($prefix);
-    $author_array['suffix'] = trim($appellation);
+    $author_object->firstname = trim($firstname);
+    $author_object->initials = (strlen(trim($initials)) > 10) ? drupal_substr(trim($initials), 0, 10) : trim($initials);
+    $author_object->lastname = trim($surname);
+    $author_object->prefix = trim($prefix);
+    $author_object->suffix = trim($appellation);
   }
-  $author_array['md5'] =  _md5sum($author_array);
-  return $author_array;
+  $author_object->md5 =  _md5sum($author_object);
+  return $author_object;
 }
 /**
  * @param $creator
  * @return unknown_type
  */
 function _md5sum($creator) {
-  $string = $creator['firstname'] . $creator['initials'] . $creator['prefix'] . $creator['lastname'];
+  $string = $creator->firstname . $creator->initials . $creator->prefix . $creator->lastname;
   $string = str_replace(' ', '', drupal_strtolower($string));
   return md5($string);
 }
