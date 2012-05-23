@@ -583,13 +583,12 @@ function biblio_save_node($biblio, $terms = array(), $batch = FALSE, $session_id
     $biblio->biblio_type = 'miscellaneous'; // default to misc if not set.
   }
 
-
   if ($save_node) { // $save_node = TRUE, the normal save path
     $validation_errors = array();
     //@todo: uncomment validation below and make it work
 //    $validation_errors = biblio_save_node_validate($biblio);
 //    node_save($biblio);
-    $biblio = biblio_save($biblio);
+    biblio_save($biblio);
     
     // Get all possible field instances for the current publication type
     $instances = field_info_instances('biblio', $biblio->publication_type);
