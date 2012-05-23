@@ -1114,21 +1114,6 @@ function biblio_schema() {
    return ($schema);
 
 }
-/**
- * Implements hook_field_schema().
- * Create a field type so that we can store additional data with our fields
- */
-function biblio_field_schema($field) {
-  if ($field['type'] == 'biblio_text') {
-    $schema['columns']['value'] = array(
-      'type' => 'text',
-      'not null' => FALSE,
-    );
-    $schema['indexes'] = array(
-    );
-    return $schema;
-  }
-}
 
 function biblio_reset_types() {
   $result = array();

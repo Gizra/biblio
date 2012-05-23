@@ -3,6 +3,8 @@ description = Maintains bibliographic lists.
 core = 7.x
 dependencies[] = taxonomy
 dependencies[] = entity
+dependencies[] = entityreference
+dependencies[] = biblio_fields
 package = Biblio
 
 configure = admin/config/content/biblio
