@@ -217,7 +217,7 @@ function _biblio_bibtex_import($entries, $terms = array(), $batch = FALSE, $sess
     }
   
     // Create a new, empty biblio object
-    $biblio = entity_get_controller('biblio')->create($type);
+    $biblio = biblio_create($type);
     $biblio->uid = $user->uid;
     $biblio->biblio_contributors = array();
     switch ($entry['bibtexEntryType']) {
