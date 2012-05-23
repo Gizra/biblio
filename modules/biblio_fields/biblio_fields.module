@@ -3,7 +3,7 @@
 /**
  * Implements hook_field_info().
  */
-function biblio_field_info() {
+function biblio_fields_field_info() {
   return array(
     'biblio_text' => array(
       'label' => t('Biblio Text'),
@@ -29,7 +29,7 @@ function biblio_field_info() {
  *
  * Pseudo-hook.
  */
-function biblio_field_is_empty($item, $field) {
+function biblio_fields_field_is_empty($item, $field) {
   if ($field['type'] == 'biblio_text') {
     if (empty($item['value']) && empty($item['vtab'])) {
       return TRUE;
@@ -43,7 +43,7 @@ function biblio_field_is_empty($item, $field) {
  *
  * Pseudo-hook.
  */
-function biblio_field_instance_settings_form($field, $instance) {
+function biblio_fields_field_instance_settings_form($field, $instance) {
   if ($field['type'] == 'biblio_text') {
     $form['vtab'] = array(
       '#type' => 'select',
@@ -73,7 +73,7 @@ function biblio_field_instance_settings_form($field, $instance) {
 /**
  * Implements hook_field_widget_info().
  */
-function biblio_field_widget_info() {
+function biblio_fields_field_widget_info() {
   return array(
     'biblio_text_widget' => array(
       'label' => t('Text field'),
@@ -92,7 +92,7 @@ function biblio_field_widget_info() {
  *
  * Pseudo-hook.
  */
-function biblio_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
+function biblio_fields_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
   // @todo: form validation
   $base = $element;
   // Assemble our default value for the form element out of the values available
@@ -110,7 +110,7 @@ function biblio_field_widget_form(&$form, &$form_state, $field, $instance, $lang
 /**
  * Implements hook_field_formatter_info().
  */
-function biblio_field_formatter_info() {
+function biblio_fields_field_formatter_info() {
   return array(
     'biblio_text_formatter' => array(
       'label' => t('Default'),
@@ -122,7 +122,7 @@ function biblio_field_formatter_info() {
 /**
  * Implements hook_field_formatter_view().
  */
-function biblio_field_formatter_view($obj_type, $object, $field, $instance, $langcode, $items, $display) {
+function biblio_fields_field_formatter_view($obj_type, $object, $field, $instance, $langcode, $items, $display) {
   $element = array();
   foreach ($items as $delta => $item) {
     $element[$delta] = biblio_format_field($item);
