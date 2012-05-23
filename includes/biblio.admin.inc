@@ -2475,7 +2475,7 @@ function biblio_admin_keyword_edit_form_submit($form, &$form_state) {
 
 
 /**
- * hook_menu callback function for admin/config/content/biblio/pubtypes
+ * hook_menu callback function for admin/config/content/biblio/fields
  * 
  * Gives an unordered list of all the publication types we have available.
  * Each one is presented as a link to the manage page for that type.
@@ -2485,10 +2485,12 @@ function biblio_admin_keyword_edit_form_submit($form, &$form_state) {
  * @return type 
  */
 function biblio_overview_types() {
-  foreach (biblio_types('biblio') as $type => $info) {
-    $type_url_str = str_replace('_', '-', $type);
-    $label = t('Edit  @type fields', array('@type' => $info->name));
-    $items[] = l($label, 'admin/config/content/biblio/pubtypes/' . $type_url_str . '/fields');
+  foreach(biblio_entities() as $entity) {
+    foreach (biblio_types($entity) as $type => $info) {
+      $type_url_str = str_replace('_', '-', $type);
+      $label = t('Edit  @type fields', array('@type' => $info->name));
+      $items[] = l($label, 'admin/config/content/biblio/field-settings/' . $type_url_str . '/fields');
+    }
   }
   
   return theme('item_list', array('items' => $items));
