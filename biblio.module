@@ -736,24 +736,24 @@ function biblio_menu() {
     'type'              => MENU_LOCAL_TASK,
     'weight'            => 2
   );
-  $items['admin/config/content/biblio/fields'] = array(
-    'title'             => 'Fields',
-    'page callback'     => 'drupal_get_form',
-    'page arguments'    => array('biblio_admin_types_edit_form'),
-    'access arguments'  => array('administer biblio'),
-    'file'              => '/includes/biblio.admin.inc',
-    'type'              => MENU_LOCAL_TASK,
-    'weight'            => -9
-  );
-  $items['admin/config/content/biblio/fields/common'] = array(
-    'title'             => 'Common',
-    'page callback'     => 'drupal_get_form',
-    'page arguments'    => array('biblio_admin_types_edit_form'),
-    'access arguments'  => array('administer biblio'),
-    'file'              => '/includes/biblio.admin.inc',
-    'type'              => MENU_DEFAULT_LOCAL_TASK,
-    'weight'            => -10
-  );
+//  $items['admin/config/content/biblio/fields'] = array(
+//    'title'             => 'Fields',
+//    'page callback'     => 'drupal_get_form',
+//    'page arguments'    => array('biblio_admin_types_edit_form'),
+//    'access arguments'  => array('administer biblio'),
+//    'file'              => '/includes/biblio.admin.inc',
+//    'type'              => MENU_LOCAL_TASK,
+//    'weight'            => -9
+//  );
+//  $items['admin/config/content/biblio/fields/common'] = array(
+//    'title'             => 'Common',
+//    'page callback'     => 'drupal_get_form',
+//    'page arguments'    => array('biblio_admin_types_edit_form'),
+//    'access arguments'  => array('administer biblio'),
+//    'file'              => '/includes/biblio.admin.inc',
+//    'type'              => MENU_DEFAULT_LOCAL_TASK,
+//    'weight'            => -10
+//  );
   $items['admin/config/content/biblio/iomap'] = array(
     'title'             => 'Import/Export Mapping',
     'page callback'     => 'biblio_admin_io_mapper_page',
@@ -793,61 +793,61 @@ function biblio_menu() {
     'type'              => MENU_CALLBACK,
     'weight'            => -1
   );
-  $items['admin/config/content/biblio/pubtype'] = array(
-    'title'             => 'Publication types',
-    'page callback'     => 'biblio_admin_types_form',
-    'access arguments'  => array('administer biblio'),
-    'file'              => '/includes/biblio.admin.inc',
-    'type'              => MENU_LOCAL_TASK,
-    'weight'            => -9
-  );
-  $items['admin/config/content/biblio/pubtype/list'] = array(
-    'title'             => 'List',
-    'page callback'     => 'biblio_admin_types_form',
-    'access arguments'  => array('administer biblio'),
-    'file'              => '/includes/biblio.admin.inc',
-    'type'              => MENU_DEFAULT_LOCAL_TASK,
-    'weight'            => -10
-  );
-  $items['admin/config/content/biblio/pubtype/delete/%'] = array(
-    'title'             => '',
-    'page callback'     => 'drupal_get_form',
-    'page arguments'    => array('biblio_admin_types_delete_form', 6),
-    'access arguments'  => array('administer biblio'),
-    'file'              => '/includes/biblio.admin.inc',
-    'type'              => MENU_CALLBACK
-  );
-  $items['admin/config/content/biblio/pubtype/new'] = array(
-    'title'             => 'Add New Type',
-    'page callback'     => 'drupal_get_form',
-    'page arguments'    => array('biblio_admin_types_add_form'),
-    'access arguments'  => array('administer biblio'),
-    'file'              => '/includes/biblio.admin.inc',
-    'type'              => MENU_LOCAL_TASK,
-    'weight'            => -9
-  );
-  $items['admin/config/content/biblio/fields/reset'] = array(
-    'title'             => 'Reset all types to defaults',
-    'page callback'     => 'drupal_get_form',
-    'page arguments'    => array('biblio_admin_types_reset_form'),
-    'access arguments'  => array('administer biblio'),
-    'file'              => '/includes/biblio.admin.inc',
-    'type'              => MENU_LOCAL_TASK
-  );
-  $items['admin/config/content/biblio/pubtype/hide'] = array(
-    'title'             => '',
-    'page callback'     => 'biblio_admin_types_hide',
-    'access arguments'  => array('administer biblio'),
-    'file'              => '/includes/biblio.admin.inc',
-    'type'              => MENU_CALLBACK
-  );
-  $items['admin/config/content/biblio/pubtype/show'] = array(
-    'title'             => '',
-    'page callback'     => 'biblio_admin_types_show',
-    'access arguments'  => array('administer biblio'),
-    'file'              => '/includes/biblio.admin.inc',
-    'type'              => MENU_CALLBACK
-  );
+//  $items['admin/config/content/biblio/pubtype'] = array(
+//    'title'             => 'Publication types',
+//    'page callback'     => 'biblio_admin_types_form',
+//    'access arguments'  => array('administer biblio'),
+//    'file'              => '/includes/biblio.admin.inc',
+//    'type'              => MENU_LOCAL_TASK,
+//    'weight'            => -9
+//  );
+//  $items['admin/config/content/biblio/pubtype/list'] = array(
+//    'title'             => 'List',
+//    'page callback'     => 'biblio_admin_types_form',
+//    'access arguments'  => array('administer biblio'),
+//    'file'              => '/includes/biblio.admin.inc',
+//    'type'              => MENU_DEFAULT_LOCAL_TASK,
+//    'weight'            => -10
+//  );
+//  $items['admin/config/content/biblio/pubtype/delete/%'] = array(
+//    'title'             => '',
+//    'page callback'     => 'drupal_get_form',
+//    'page arguments'    => array('biblio_admin_types_delete_form', 6),
+//    'access arguments'  => array('administer biblio'),
+//    'file'              => '/includes/biblio.admin.inc',
+//    'type'              => MENU_CALLBACK
+//  );
+//  $items['admin/config/content/biblio/pubtype/new'] = array(
+//    'title'             => 'Add New Type',
+//    'page callback'     => 'drupal_get_form',
+//    'page arguments'    => array('biblio_admin_types_add_form'),
+//    'access arguments'  => array('administer biblio'),
+//    'file'              => '/includes/biblio.admin.inc',
+//    'type'              => MENU_LOCAL_TASK,
+//    'weight'            => -9
+//  );
+//  $items['admin/config/content/biblio/fields/reset'] = array(
+//    'title'             => 'Reset all types to defaults',
+//    'page callback'     => 'drupal_get_form',
+//    'page arguments'    => array('biblio_admin_types_reset_form'),
+//    'access arguments'  => array('administer biblio'),
+//    'file'              => '/includes/biblio.admin.inc',
+//    'type'              => MENU_LOCAL_TASK
+//  );
+//  $items['admin/config/content/biblio/pubtype/hide'] = array(
+//    'title'             => '',
+//    'page callback'     => 'biblio_admin_types_hide',
+//    'access arguments'  => array('administer biblio'),
+//    'file'              => '/includes/biblio.admin.inc',
+//    'type'              => MENU_CALLBACK
+//  );
+//  $items['admin/config/content/biblio/pubtype/show'] = array(
+//    'title'             => '',
+//    'page callback'     => 'biblio_admin_types_show',
+//    'access arguments'  => array('administer biblio'),
+//    'file'              => '/includes/biblio.admin.inc',
+//    'type'              => MENU_CALLBACK
+//  );
   // @todo get this working with new contributor entity
   $items['admin/config/content/biblio/author'] = array(
     'title'             => 'Authors',
@@ -1040,8 +1040,8 @@ function biblio_menu() {
     'access arguments' => array('access biblio content'),
     'type' => MENU_CALLBACK,
   );
-  $items["admin/config/content/biblio/pubtypes"] = array(
-    'title' => 'Publication Types (new)',
+  $items["admin/config/content/biblio/field-settings"] = array(
+    'title' => 'Fields',
     'description' => 'Manage Biblio publication types',
     'page callback'=> 'biblio_overview_types',
     'file' => '/includes/biblio.admin.inc',
@@ -1852,15 +1852,26 @@ function _biblio_get_formatted_fields() {
  * @param object $biblio
  */
 function _biblio_prepare_submit(&$biblio) {
-  $biblio->language = biblio_field_language('biblio_title', $biblio);
-  $lang = $biblio->language;
-  if(!isset($biblio->publication_type)) $biblio->publication_type = 'miscellaneous';
-  $biblio->biblio_sort_title = biblio_normalize_title($biblio->biblio_title[$lang][0]['value']);
-  if(!isset($biblio->biblio_year[$lang][0]['value'])) $biblio->biblio_year[$lang][0]['value'] = 9999;
-    $biblio->biblio_year[$lang][0]['value'] = _biblio_numeric_year($biblio->biblio_year[$lang][0]['value']);
+  $wrapper = biblio_wrapper($biblio);
+  $publication_type = $wrapper->publication_type->value();
+  $title = $wrapper->biblio_title->value();
+  $year = $wrapper->biblio_year->value();
+  $citekey = $wrapper->biblio_citekey->value();
+  
+  if (!isset($publication_type)) {
+    $biblio->publication_type = ('miscellaneous');
+  }
+  
+  $biblio->biblio_sort_title = biblio_normalize_title($title);
+  
+  if (!isset($year)) {
+    $biblio->biblio_year = 9999;
+  }
+  
+  $biblio->biblio_year = _biblio_numeric_year($year);
 
-  if (variable_get('biblio_auto_citekey', 1) && empty($biblio->biblio_citekey[$lang][0]['value'])) {
-    $biblio->biblio_citekey[$lang][0]['value'] = biblio_citekey_generate($biblio);
+  if (variable_get('biblio_auto_citekey', 1) && empty($citekey)) {
+    $biblio->biblio_citekey = biblio_citekey_generate($biblio);
   }
   foreach (_biblio_get_formatted_fields() as $field) {
     if (isset($biblio->$field) && is_array($biblio->$field)) {
@@ -2743,9 +2754,9 @@ function biblio_entity_info() {
         'label' => $info->name,
         'admin' => array(
           // defines the path that should be used in hook_menu() for the Fields UI pages
-          'path' => 'admin/config/content/biblio/pubtypes/%publication_type',
+          'path' => 'admin/config/content/biblio/field-settings/%publication_type',
           // The exact path that should be used when generating links within the admin interface
-          'real path' => 'admin/config/content/biblio/pubtypes/' . str_replace('_', '-', $type),
+          'real path' => 'admin/config/content/biblio/field-settings/' . str_replace('_', '-', $type),
           // menu args are 0 based, so  is the seventh part of the path, which
           // here is %publication_type.
           'bundle argument' => 5,
@@ -2774,7 +2785,8 @@ function biblio_entity_info() {
       'contributor' => array(
         'label' => t('Contributor'),
         'admin' => array(
-          'path' => 'admin/config/content/biblio/author/contributor',
+          'path' => 'admin/config/content/biblio/field-settings/contributor',
+          'bundle argument' => 5,
           'access arguments' => array('access biblio content'),
         ),
       ),
@@ -2824,18 +2836,15 @@ function biblio_entity_info() {
         'label' => $info->name,
         'admin' => array(
           // defines the path that should be used in hook_menu() for the Fields UI pages
-          'path' => 'admin/config/content/biblio/contributors/categories/%contribution_category',
+          'path' => 'admin/config/content/biblio/field-settings/%publication_type',
           // The exact path that should be used when generating links within the admin interface
-          'real path' => 'admin/config/content/biblio/contributors/categories/' . str_replace('_', '-', $type),
-          // menu args are 0 based, so  is the seventh part of the path, which
-          // here is %publication_type.
-          'bundle argument' => 6,
+          'real path' => 'admin/config/content/biblio/field-settings/' . str_replace('_', '-', $type),
+          'bundle argument' => 5,
           'access arguments' => array('access biblio content'),
         ),
       );
     }
   }
-
   return $return;
 }
 
@@ -2882,12 +2891,26 @@ function biblio_entity_access($op, $type = NULL, $account = NULL) {
  *  The specified publication type.
  */
 function publication_type_load($type) {
-  $types = biblio_types('biblio');
+  foreach (biblio_entities() as $entity) {
+    foreach (biblio_types($entity) as $type => $info) {
+      $types[$type] = $info;
+    }
+  }
+  
   // Replace dashes in a type name with underscores.
   // All Drupal paths use dashes in place of underscores in the URI, but
   // bundle names need to use underscores, not dashes.
   $type = str_replace('-', '_', $type);
   return isset($types[$type]) ? $types[$type] : FALSE;
+}
+
+/**
+ * Very simply returns an array of all the entity types that biblio creates.
+ *
+ * @return array Iterative array containing the biblio entity types
+ */
+function biblio_entities() {
+  return array('biblio', 'biblio_contribution', 'biblio_contributor');
 }
 
 /**
@@ -2989,20 +3012,17 @@ function biblio_save($biblio) {
   module_load_include('inc', 'biblio', 'includes/biblio.util');
   module_load_include('inc', 'biblio', 'includes/biblio.keywords');
   
-  $wrapper = biblio_wrapper($biblio);
-  
   _biblio_prepare_submit($biblio);
   // @todo: add keyword functionality. See http://drupal.org/node/1537350
 //  biblio_insert_keywords($biblio);
   // @todo: get COinS working. See http://drupal.org/node/1537360
-  $wrapper->biblio_coins = biblio_coins($biblio);
+  $biblio->biblio_coins = biblio_coins($biblio);
   // @todo: get md5 working. See http://drupal.org/node/1537364
 //  $duplicate = biblio_hash($biblio);
 //  if (isset($duplicate) && $duplicate != $biblio->bid) { // if this is a potential duplcate, write the bids of the pre-existing and new biblios
 //    $dup_map = array('vid' => $duplicate, 'did' => $biblio->bid);
 //    drupal_write_record('biblio_duplicates', $dup_map);
 //  }
-  
   entity_save('biblio', $biblio);
 }
 
@@ -3221,28 +3241,31 @@ function biblio_page_view($biblio, $view_mode = 'full') {
       break;
   }
   
-  // Build field content for contribution/contributor entities
-  if (isset($biblio->contributions)) {
-    field_attach_prepare_view('biblio_contribution', $biblio->contributions, $view_mode);
-    entity_prepare_view('biblio_contribution', $biblio->contributions);
-    foreach ($biblio->contributions as $cnid => $contribution) {
-      $biblio->content['contributions'][$cnid] = field_attach_view(
-        'biblio_contribution',
-        $contribution, 
-        $view_mode
-      );
-      $biblio->content['contributions'][$cnid]+= field_attach_view(
-        'biblio_contributor', 
-        $contribution->contributor, 
-        $view_mode
-      );
-    }
-  }
+  // We're using biblio's table instead of field attach. Commenting out unless
+  // we need to use the default view.
+//  // Build field content for contribution/contributor entities
+//  if (isset($biblio->contributions)) {
+//    field_attach_prepare_view('biblio_contribution', $biblio->contributions, $view_mode);
+//    entity_prepare_view('biblio_contribution', $biblio->contributions);
+//    foreach ($biblio->contributions as $cnid => $contribution) {
+//      $biblio->content['contributions'][$cnid] = field_attach_view(
+//        'biblio_contribution',
+//        $contribution, 
+//        $view_mode
+//      );
+//      $biblio->content['contributions'][$cnid]+= field_attach_view(
+//        'biblio_contributor', 
+//        $contribution->contributor, 
+//        $view_mode
+//      );
+//    }
+//  }
+//  
+//  // Build field content for biblio entity
+//  field_attach_prepare_view('biblio', array($biblio->bid => $biblio), $view_mode);
+//  entity_prepare_view('biblio', array($biblio->bid => $biblio));
+//  $biblio->content += field_attach_view('biblio', $biblio, $view_mode);
   
-  // Build field content for biblio entity
-  field_attach_prepare_view('biblio', array($biblio->bid => $biblio), $view_mode);
-  entity_prepare_view('biblio', array($biblio->bid => $biblio));
-  $biblio->content += field_attach_view('biblio', $biblio, $view_mode);
   return $biblio->content;
 }
 
