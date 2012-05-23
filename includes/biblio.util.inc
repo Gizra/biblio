@@ -68,7 +68,6 @@ function biblio_contextObject($biblio) {
   // Original Author:    Richard Karnesky <mailto:karnesky@gmail.com>  //
   // Adapted for biblio: Ron Jerome
   global $base_url;
-  $lang = $biblio->language;
   $i = 0;
     // $openurl_base = variable_get('biblio_baseopenurl', '');
   $co = array();
@@ -84,47 +83,49 @@ function biblio_contextObject($biblio) {
 //  }
   // atitle, btitle, title (title, publication)
   if (($biblio->publication_type == 'journal_article') || ($biblio->publication_type == 'book_chapter')) {
-    if (!empty($biblio->biblio_title[$lang][0]['value'])) $co["rft.atitle"] = check_plain($biblio->biblio_title[$lang][0]['value']);
-    if (!empty($biblio->biblio_title_secondary[$lang][0]['value'])) {
-      $co["rft.title"] = check_plain($biblio->biblio_title_secondary[$lang][0]['value']);
+    if (!empty($biblio->biblio_title)) {
+      $co["rft.atitle"] = check_plain($biblio->biblio_title);
+    }
+    if (!empty($biblio->biblio_title_secondary)) {
+      $co["rft.title"] = check_plain($biblio->biblio_title_secondary);
       if ($biblio->biblio_type == 'book_chapter')
-        $co["rft.btitle"] = check_plain($biblio->biblio_title_secondary[$lang][0]['value']);
+        $co["rft.btitle"] = check_plain($biblio->biblio_title_secondary);
     }
   }
-  elseif (!empty($biblio->biblio_title[$lang][0]['value'])) {
-   $co["rft.title"] = check_plain($biblio->biblio_title[$lang][0]['value']);
+  elseif (!empty($biblio->biblio_title)) {
+   $co["rft.title"] = check_plain($biblio->biblio_title);
   }
-  if (($biblio->publication_type == 'book') && (!empty($biblio->biblio_title_secondary[$lang][0]['value']))) $co["rft.btitle"] = check_plain($biblio->biblio_title_secondary[$lang][0]['value']);
+  if (($biblio->publication_type == 'book') && (!empty($biblio->biblio_title_secondary))) $co["rft.btitle"] = check_plain($biblio->biblio_title_secondary);
   // stitle (abbrev_journal)
-  if (!empty($biblio->biblio_short_title[$lang][0]['value'])) $co["rft.stitle"] = check_plain($biblio->biblio_short_title[$lang][0]['value']);
+  if (!empty($biblio->biblio_short_title)) $co["rft.stitle"] = check_plain($biblio->biblio_short_title);
   // series (series_title)
-  if (!empty($biblio->biblio_title_tertiary[$lang][0]['value'])) $co["rft.series"] = check_plain($biblio->biblio_title_tertiary[$lang][0]['value']);
+  if (!empty($biblio->biblio_title_tertiary)) $co["rft.series"] = check_plain($biblio->biblio_title_tertiary);
   // issn
-  if (!empty($biblio->biblio_issn[$lang][0]['value'])) $co["rft.issn"] = check_plain($biblio->biblio_issn[$lang][0]['value']);
+  if (!empty($biblio->biblio_issn)) $co["rft.issn"] = check_plain($biblio->biblio_issn);
   // isbn
-  if (!empty($biblio->biblio_isbn[$lang][0]['value'])) $co["rft.isbn"] = check_plain($biblio->biblio_isbn[$lang][0]['value']);
+  if (!empty($biblio->biblio_isbn)) $co["rft.isbn"] = check_plain($biblio->biblio_isbn);
   // date (year)
-  if (!empty($biblio->biblio_year[$lang][0]['value'])) $co["rft.date"] = check_plain($biblio->biblio_year[$lang][0]['value']);
+  if (!empty($biblio->biblio_year)) $co["rft.date"] = check_plain($biblio->biblio_year);
   // volume
-  if (!empty($biblio->biblio_volume[$lang][0]['value'])) $co["rft.volume"] = check_plain($biblio->biblio_volume[$lang][0]['value']);
+  if (!empty($biblio->biblio_volume)) $co["rft.volume"] = check_plain($biblio->biblio_volume);
   // issue
-  if (!empty($biblio->biblio_issue[$lang][0]['value'])) $co["rft.issue"] = check_plain($biblio->biblio_issue[$lang][0]['value']);
+  if (!empty($biblio->biblio_issue)) $co["rft.issue"] = check_plain($biblio->biblio_issue);
   // spage, epage, tpages (pages)
   // NOTE: lifted from modsxml.inc.php--should throw some into a new include file
-  if (!empty($biblio->biblio_pages[$lang][0]['value'])) {
-    if (preg_match("/[0-9] *- *[0-9]/", $biblio->biblio_pages[$lang][0]['value'])) {
-      list ($pagestart, $pageend) = preg_split('/\s*[-]\s*/', $biblio->biblio_pages[$lang][0]['value']);
+  if (!empty($biblio->biblio_pages)) {
+    if (preg_match("/[0-9] *- *[0-9]/", $biblio->biblio_pages)) {
+      list ($pagestart, $pageend) = preg_split('/\s*[-]\s*/', $biblio->biblio_pages);
       if ($pagestart < $pageend) {
         $co["rft.spage"] = check_plain($pagestart);
         $co["rft.epage"] = check_plain($pageend);
       }
     }
     elseif ($biblio->publication_type == 'book') { //"Book Whole") {
-      $pagetotal = preg_replace('/^(\d+)\s*pp?\.?$/', "\\1", $biblio->biblio_pages[$lang][0]['value']);
+      $pagetotal = preg_replace('/^(\d+)\s*pp?\.?$/', "\\1", $biblio->biblio_pages);
       $co["rft.tpages"] = check_plain($pagetotal);
     }
     else {
-      $co["rft.spage"] = check_plain($biblio->biblio_pages[$lang][0]['value']);
+      $co["rft.spage"] = check_plain($biblio->biblio_pages);
     }
   }
   // @todo: get this working with new contributors implementation
@@ -157,12 +158,12 @@ function biblio_contextObject($biblio) {
     }
   }
   // pub (publisher)
-  if (!empty($biblio->biblio_publisher[$lang][0]['value'])) $co["rft.pub"] = check_plain($biblio->biblio_publisher[$lang][0]['value']);
+  if (!empty($biblio->biblio_publisher)) $co["rft.pub"] = check_plain($biblio->biblio_publisher);
   // place
-  if (!empty($biblio->biblio_place_published[$lang][0]['value'])) $co["rft.place"] = check_plain($biblio->biblio_place_published[$lang][0]['value']);
+  if (!empty($biblio->biblio_place_published)) $co["rft.place"] = check_plain($biblio->biblio_place_published);
   // id (doi, url)
-  if (!empty($biblio->biblio_doi[$lang][0]['value'])) {
-    $co["rft_id"] = "info:doi/" . check_plain($biblio->biblio_doi[$lang][0]['value']);
+  if (!empty($biblio->biblio_doi)) {
+    $co["rft_id"] = "info:doi/" . check_plain($biblio->biblio_doi);
   }
 //  elseif (!empty($node->biblio_url)) {
 //    $co["rft_id"] = $node->biblio_url;
@@ -172,16 +173,15 @@ function biblio_contextObject($biblio) {
 }
 
 function biblio_coins_generate(& $biblio) {
-  $lang = $biblio->language;
   if (!isset($biblio->vid)) {
-    $biblio->biblio_coins[$lang][0]['value'] = biblio_coins($biblio);
+    $biblio->biblio_coins = biblio_coins($biblio);
     return;
   }
   if ($biblio) {
-    $biblio->biblio_coins[$lang][0]['value'] = biblio_coins($biblio);
+    $biblio->biblio_coins = biblio_coins($biblio);
     // @todo: check if this is needed
     db_update('biblio')
-      ->fields(array('biblio_coins' => $biblio->biblio_coins[$lang][0]['value']))
+      ->fields(array('biblio_coins' => $biblio->biblio_coins))
       ->condition('vid', $biblio->vid)
       ->execute();
   }
