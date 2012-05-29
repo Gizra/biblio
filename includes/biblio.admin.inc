@@ -2475,7 +2475,7 @@ function biblio_admin_keyword_edit_form_submit($form, &$form_state) {
 
 
 /**
- * hook_menu callback function for admin/config/content/biblio/fields
+ * hook_menu callback function for admin/config/content/biblio/publication-types
  * 
  * Gives an unordered list of all the publication types we have available.
  * Each one is presented as a link to the manage page for that type.
@@ -2484,14 +2484,37 @@ function biblio_admin_keyword_edit_form_submit($form, &$form_state) {
  *
  * @return type 
  */
-function biblio_overview_types() {
-  foreach(biblio_entities() as $entity) {
-    foreach (biblio_types($entity) as $type => $info) {
-      $type_url_str = str_replace('_', '-', $type);
-      $label = t('Edit  @type fields', array('@type' => $info->name));
-      $items[] = l($label, 'admin/config/content/biblio/field-settings/' . $type_url_str . '/fields');
-    }
+function biblio_overview_types($entity_type = NULL) {
+  $path = current_path();
+  $types = biblio_types($entity_type);
+  $header = array(t('Name'), array('data' => t('Operations'), 'colspan' => '4'));
+  $rows = array();
+  
+  foreach($types as $type => $info) {
+    $type_url_str = str_replace('_', '-', $type);
+    $url = $path . '/' . $type_url_str;
+    $row = array();
+    
+    // Name column
+    $row[] = theme('biblio_admin_overview', array(
+      'name' => $info->name, 
+      'type' => $type, 
+      'description' => $info->description
+    ));
+    
+    // Edit column.
+    $row[] = array('data' => l(t('edit'), $url));
+    $row[] = array('data' => l(t('manage fields'), $url . '/fields'));
+    $row[] = array('data' => l(t('manage display'), $url . '/display'));
+    // @todo: add ability to add/delete a pubtype
+    $rows[] = $row;
   }
   
-  return theme('item_list', array('items' => $items));
+  $table = theme('table', array('header' => $header, 'rows' => $rows));
+  
+  return $table;
+}
+
+function biblio_field_settings($type) {
+  return 'hello world';
 }

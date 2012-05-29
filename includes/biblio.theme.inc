@@ -1110,3 +1110,24 @@ function _biblio_keyword_links($keywords, $base='biblio') {
   }
   return implode("$sep ", $linked_keywords);
 }
+
+/**
+ * Returns HTML for a node type description for the content type admin overview page.
+ *
+ * @param $variables
+ *   An associative array containing:
+ *   - name: The human-readable name of the publication type.
+ *   - type: An object containing the 'type' (machine name) and 'description' of
+ *     the content type.
+ *
+ */
+function theme_biblio_admin_overview($variables) {
+  $name = $variables['name'];
+  $type = $variables['type'];
+  $description = $variables['description'];
+
+  $output = check_plain($name);
+  $output .= ' <small>' . t('(Machine name: @type)', array('@type' => $type)) . '</small>';
+  $output .= '<div class="description">' . filter_xss_admin($description) . '</div>';
+  return $output;
+}

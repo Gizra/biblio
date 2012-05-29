@@ -18,7 +18,6 @@ function biblio_install() {
 //  $result[] = _add_custom_field_data();
   //_enable_biblio_keyword_vocabulary();
   $result[] = _set_system_weight();
-  
   biblio_add_fields();
   biblio_add_field_instances('biblio_contributor', 'contributor');
   biblio_add_field_instances('biblio_contribution', 'contribution');

@@ -305,7 +305,15 @@ function biblio_theme($existing, $type, $theme, $path) {
         'file' => '/includes/biblio.theme.inc',
         'render element' => 'form',
     ),
-    );
+    'biblio_admin_overview' => array(
+      'file' => '/includes/biblio.theme.inc',
+      'variables' => array(
+        'name' => NULL, 
+        'type' => NULL, 
+        'description' => NULL,
+      ),
+    )
+  );
 }
 
 /**
@@ -889,8 +897,17 @@ function biblio_menu() {
   );
   $items['admin/config/content/biblio/author/type'] = array(
     'title'             => 'Author Types',
-    'page callback'     => 'drupal_get_form',
-    'page arguments'    => array('biblio_admin_author_types_form', 7, 6),
+    'page callback'     => 'biblio_overview_types',
+    'page arguments'    => array('biblio_contributor'),
+  'access arguments'  => array('administer biblio'),
+    'file'              => '/includes/biblio.admin.inc',
+    'type'              => MENU_LOCAL_TASK,
+    'weight'            => -5
+  );
+  $items['admin/config/content/biblio/author/contribution-type'] = array(
+    'title'             => 'Contribution Types',
+    'page callback'     => 'biblio_overview_types',
+    'page arguments'    => array('biblio_contribution'),
   'access arguments'  => array('administer biblio'),
     'file'              => '/includes/biblio.admin.inc',
     'type'              => MENU_LOCAL_TASK,
@@ -1040,10 +1057,11 @@ function biblio_menu() {
     'access arguments' => array('access biblio content'),
     'type' => MENU_CALLBACK,
   );
-  $items["admin/config/content/biblio/field-settings"] = array(
-    'title' => 'Fields',
+  $items["admin/config/content/biblio/publication-types"] = array(
+    'title' => 'Publication Types',
     'description' => 'Manage Biblio publication types',
     'page callback'=> 'biblio_overview_types',
+    'page arguments' => 'biblio',
     'file' => '/includes/biblio.admin.inc',
     'access arguments' => array('administer biblio'),
     'type' => MENU_LOCAL_TASK,
@@ -1064,6 +1082,39 @@ function biblio_menu() {
       'page callback' => 'biblio_add',
       'file' => '/includes/biblio.admin.inc',
       'page arguments' => array(4),
+      'access arguments' => array('administer biblio'),
+      'type' => MENU_LOCAL_ACTION,
+//      'description' => $type->description,
+    );
+  }
+//  foreach (biblio_entities() as $entity) {
+//    $items['admin/config/content/biblio/publication-types/' . $entity] = array(
+//      'title' => 'Edit ' . $entity,
+//      // check_plain() will take whatever is specified in the title and escape
+//      // any and all HTML in it, making it safe to use as the page title.
+//      'title callback' => 'check_plain',
+//      'page callback' => 'biblio_field_settings',
+//      'file' => '/includes/biblio.admin.inc',
+//      'page arguments' => array(5),
+//      'access arguments' => array('administer biblio'),
+//      'type' => MENU_LOCAL_ACTION,
+////      'description' => $type->description,
+//    );
+//  }
+  foreach (biblio_types() as $type) {
+    $bundle = biblio_bundle_name($type->entity);
+    $type_url_str = str_replace('_', '-', $type->{$bundle});
+    $entity_url_str = str_replace('_', '-', $type->entity);
+//    $url = 'admin/config/content/biblio/publication-types/'. $entity_url_str . '/' . $type_url_str;
+    $url = 'admin/config/content/biblio/publication-types/' . $type_url_str;
+    $items[$url] = array(
+      'title' => 'Edit ' . $type->name,
+      // check_plain() will take whatever is specified in the title and escape
+      // any and all HTML in it, making it safe to use as the page title.
+      'title callback' => 'check_plain',
+      'page callback' => 'biblio_field_settings',
+      'file' => '/includes/biblio.admin.inc',
+      'page arguments' => array(5),
       'access arguments' => array('administer biblio'),
       'type' => MENU_LOCAL_ACTION,
 //      'description' => $type->description,
@@ -2708,10 +2759,10 @@ function biblio_entity_info() {
     'fieldable' => TRUE,
     'entity keys' => array(
       'id' => 'bid',
-      'bundle' => 'publication_type',
+      'bundle' => biblio_bundle_name('biblio'),
     ),
     'bundle keys' => array(
-      'bundle' => 'publication_type',
+      'bundle' => biblio_bundle_name('biblio'),
     ),
     'static cache' => TRUE,
     // Will be retrieved using biblio_types()
@@ -2754,11 +2805,11 @@ function biblio_entity_info() {
         'label' => $info->name,
         'admin' => array(
           // defines the path that should be used in hook_menu() for the Fields UI pages
-          'path' => 'admin/config/content/biblio/field-settings/%publication_type',
+          'path' => 'admin/config/content/biblio/publication-types/%biblio_bundle',
           // The exact path that should be used when generating links within the admin interface
-          'real path' => 'admin/config/content/biblio/field-settings/' . str_replace('_', '-', $type),
+          'real path' => 'admin/config/content/biblio/publication-types/' . str_replace('_', '-', $type),
           // menu args are 0 based, so  is the seventh part of the path, which
-          // here is %publication_type.
+          // here is %biblio_bundle.
           'bundle argument' => 5,
           'access arguments' => array('access biblio content'),
         ),
@@ -2774,23 +2825,14 @@ function biblio_entity_info() {
     'fieldable' => TRUE,
     'entity keys' => array(
       'id' => 'cid',
-      'bundle' => 'type',
+      'bundle' => biblio_bundle_name('biblio_contributor'),
     ),
     'bundle keys' => array(
-      'bundle' => 'type',
+      'bundle' => biblio_bundle_name('biblio_contributor'),
     ),
     // @todo: possibly figure out a better bundle name and/or figure out what
     // bundles we can have for contributors
-    'bundles' => array(
-      'contributor' => array(
-        'label' => t('Contributor'),
-        'admin' => array(
-          'path' => 'admin/config/content/biblio/field-settings/contributor',
-          'bundle argument' => 5,
-          'access arguments' => array('access biblio content'),
-        ),
-      ),
-    ),
+    'bundles' => array(),
     'load hook' => 'biblio_contributor_load',
     'view modes' => array(
       'full' => array(
@@ -2803,6 +2845,23 @@ function biblio_entity_info() {
     'module' => 'biblio',
   );
   
+  $contributor_categories = biblio_types('biblio_contributor');
+  if (!empty($contributor_categories)) {
+    foreach($contributor_categories as $type => $info) {
+      $return['biblio_contributor']['bundles'][$type] = array(
+        'label' => $info->name . 'derp',
+        'admin' => array(
+          'path' => 'admin/config/content/biblio/author/type/%contributor_bundle',
+          'real path' => 'admin/config/content/biblio/author/type/' . str_replace('_', '-', $type),
+          'bundle argument' => 6,
+          'access arguments' => array('access biblio content'),
+        ),
+        
+      );
+    }
+  }
+    
+  
   $return['biblio_contribution'] = array(
     'label' => t('Contribution'),
     'entity class' => 'BiblioContribution',
@@ -2811,10 +2870,10 @@ function biblio_entity_info() {
     'fieldable' => TRUE,
     'entity keys' => array(
       'id' => 'cnid',
-      'bundle' => 'type',
+      'bundle' => biblio_bundle_name('biblio_contribution'),
     ),
     'bundle keys' => array(
-      'bundle' => 'type',
+      'bundle' => biblio_bundle_name('biblio_contribution'),
     ),
     'bundles' => array(),
     'load hook' => 'biblio_contribution_load',
@@ -2835,11 +2894,9 @@ function biblio_entity_info() {
       $return['biblio_contribution']['bundles'][$type] = array(
         'label' => $info->name,
         'admin' => array(
-          // defines the path that should be used in hook_menu() for the Fields UI pages
-          'path' => 'admin/config/content/biblio/field-settings/%publication_type',
-          // The exact path that should be used when generating links within the admin interface
-          'real path' => 'admin/config/content/biblio/field-settings/' . str_replace('_', '-', $type),
-          'bundle argument' => 5,
+          'path' => 'admin/config/content/biblio/author/contribution-type/%contribution_bundle',
+          'real path' => 'admin/config/content/biblio/author/contribution-type/' . str_replace('_', '-', $type),
+          'bundle argument' => 6,
           'access arguments' => array('access biblio content'),
         ),
       );
@@ -2852,18 +2909,29 @@ function biblio_entity_info() {
  * Gets all publication types that are set up by default.
  * @return type
  */
-function biblio_types($entity_type) {
-    $result = db_select('biblio_types', 'bt')
-        ->fields('bt', array('name', 'description'))
-        ->condition('entity', $entity_type)
-        ->execute();
+function biblio_types($entity_type = FALSE) {
+    $query = db_select('biblio_types', 'bt')
+        ->fields('bt', array('name', 'description', 'entity'));
+    
+    if ($entity_type) {
+      $query->condition('entity', $entity_type);
+    }
+    
+    $result = $query->execute();
+    
+    $entity_type_passed_in = $entity_type;
     while ($row = $result->fetchAssoc()) {
+      if ($entity_type_passed_in === FALSE) {
+        $entity_type = $row['entity'];
+      }
+      $bundle_name = biblio_bundle_name($entity_type);
       // computer-friendly version of the human-readable content type stored in the database
       $machine_name = str_replace(' ', '_', strtolower($row['name']));
       
       $types[$machine_name] = (object)array(
         // type is the machine name of the bundle
-        'publication_type' => $machine_name,
+        $bundle_name => $machine_name,
+        'entity' => $row['entity'],
         // name is the human name of the bundle
         'name' => t($row['name']),
         'description' => t($row['description']),
@@ -2875,28 +2943,56 @@ function biblio_types($entity_type) {
 }
 
 /**
+ * Gets the title of a bundle for a given entity type
+ * 
+ * @param string $entity_type 
+ * @return string
+ */
+function biblio_bundle_name($entity_type) {
+  switch ($entity_type) {
+    case 'biblio':
+      return 'publication_type';
+      break;
+    default:
+      return 'type';
+      break;
+  }
+}
+
+/**
  * Access callback for the entity API.
  */
 function biblio_entity_access($op, $type = NULL, $account = NULL) {
   return user_access('administer biblio', $account);
 }
 
+function biblio_bundle_load($type) {
+  return biblio_combined_bundle_load($type);
+}
+
+function contribution_bundle_load($type) {
+  return biblio_combined_bundle_load($type);
+}
+  
+function contributor_bundle_load($type) {
+  return biblio_combined_bundle_load($type);
+}
+
 /**
  * Get an individual publication type definition object.
- * Necessary for the %publication_type menu placeholder to work in hook_menu().
+ * Necessary for the %biblio_bundle menu placeholder to work in hook_menu().
  *
  * @param type $type
  *  The key of the publication type we want
  * @return object
  *  The specified publication type.
  */
-function publication_type_load($type) {
+function biblio_combined_bundle_load($type) {
   foreach (biblio_entities() as $entity) {
-    foreach (biblio_types($entity) as $type => $info) {
-      $types[$type] = $info;
+    foreach (biblio_types($entity) as $type_name => $info) {
+      $types[$type_name] = $info;
     }
   }
-  
   // Replace dashes in a type name with underscores.
   // All Drupal paths use dashes in place of underscores in the URI, but
   // bundle names need to use underscores, not dashes.
