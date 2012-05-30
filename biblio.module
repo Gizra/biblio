@@ -1061,7 +1061,7 @@ function biblio_menu() {
     'title' => 'Publication Types',
     'description' => 'Manage Biblio publication types',
     'page callback'=> 'biblio_overview_types',
-    'page arguments' => 'biblio',
+    'page arguments' => array('biblio'),
     'file' => '/includes/biblio.admin.inc',
     'access arguments' => array('administer biblio'),
     'type' => MENU_LOCAL_TASK,
@@ -1087,37 +1087,18 @@ function biblio_menu() {
 //      'description' => $type->description,
     );
   }
-//  foreach (biblio_entities() as $entity) {
-//    $items['admin/config/content/biblio/publication-types/' . $entity] = array(
-//      'title' => 'Edit ' . $entity,
-//      // check_plain() will take whatever is specified in the title and escape
-//      // any and all HTML in it, making it safe to use as the page title.
-//      'title callback' => 'check_plain',
-//      'page callback' => 'biblio_field_settings',
-//      'file' => '/includes/biblio.admin.inc',
-//      'page arguments' => array(5),
-//      'access arguments' => array('administer biblio'),
-//      'type' => MENU_LOCAL_ACTION,
-////      'description' => $type->description,
-//    );
-//  }
   foreach (biblio_types() as $type) {
     $bundle = biblio_bundle_name($type->entity);
     $type_url_str = str_replace('_', '-', $type->{$bundle});
     $entity_url_str = str_replace('_', '-', $type->entity);
-//    $url = 'admin/config/content/biblio/publication-types/'. $entity_url_str . '/' . $type_url_str;
     $url = 'admin/config/content/biblio/publication-types/' . $type_url_str;
     $items[$url] = array(
       'title' => 'Edit ' . $type->name,
-      // check_plain() will take whatever is specified in the title and escape
-      // any and all HTML in it, making it safe to use as the page title.
       'title callback' => 'check_plain',
       'page callback' => 'biblio_field_settings',
       'file' => '/includes/biblio.admin.inc',
       'page arguments' => array(5),
       'access arguments' => array('administer biblio'),
-      'type' => MENU_LOCAL_ACTION,
-//      'description' => $type->description,
     );
   }
   $items['biblio/%biblio/view'] = array(

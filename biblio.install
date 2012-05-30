@@ -1159,7 +1159,7 @@ function _add_bundles() {
 //  _biblio_add_field('Publication Types');
   $types[] = array('Book', NULL, 1, 'biblio');
   $types[] = array('Book Chapter', NULL, 2, 'biblio');
-  $types[] = array('Journal Article', NULL, 3, 'biblio');
+  $types[] = array('Journal Article', 'Written work published in a print or Internet medium', 3, 'biblio');
   $types[] = array('Journal',NULL,3, 'biblio');
   $types[] = array('Conference Paper', NULL, 4, 'biblio');
   $types[] = array('Conference Proceedings', NULL, 5, 'biblio');
@@ -1193,8 +1193,8 @@ function _add_bundles() {
   $types[] = array('Miscellaneous',NULL, 30, 'biblio');
   $types[] = array('Miscellaneous Section', NULL, 31, 'biblio');
   $types[] = array('Presentation',NULL,8, 'biblio');
-  $types[] = array('Contributor', NULL, 1, 'biblio_contributor');
-  $types[] = array('Contribution', NULL, 1, 'biblio_contribution');
+  $types[] = array('Contributor', 'This is the default type (bundle) for all authors. ', 1, 'biblio_contributor');
+  $types[] = array('Contribution', 'This is the default type (bundle) for all contributions', 1, 'biblio_contribution');
 
   foreach ($types as $record) {
 //    $result[] = update_sql("INSERT INTO {biblio_types} (tid, name, description, weight) VALUES ('" . implode("', '", $record) . "')");
