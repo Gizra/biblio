@@ -723,7 +723,7 @@ function biblio_menu() {
     'page arguments'    => array('biblio_admin_settings'),
     'access arguments'  => array('administer biblio'),
     'file'              => '/includes/biblio.admin.inc',
-    'type'              => MENU_LOCAL_TASK,
+    'type'              => MENU_DEFAULT_LOCAL_TASK,
     'weight'            => -10
   );
   $items['admin/config/content/biblio/import'] = array(
