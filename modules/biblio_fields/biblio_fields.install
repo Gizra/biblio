@@ -4,7 +4,7 @@
  * Implements hook_field_schema().
  * Create a field type so that we can store additional data with our fields
  */
-function biblio_field_schema($field) {
+function biblio_fields_field_schema($field) {
   if ($field['type'] == 'biblio_text') {
     $schema['columns']['value'] = array(
       'type' => 'text',
