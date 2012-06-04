@@ -205,13 +205,14 @@ function theme_biblio_tabular($variables) {
   $tid = $biblio->publication_type;
   
 //  $fields = _biblio_get_field_information($biblio->publication_type, TRUE);
-  $rows[] = array(
-    array('data' => t('Title'), 'class' => array('biblio-row-title')),
-    array('data' => filter_xss($wrapper->biblio_title->value(), biblio_get_allowed_tags()))
-  );
-
+//  $rows[] = array(
+//    array('data' => t('Title'), 'class' => array('biblio-row-title')),
+//    array('data' => filter_xss($wrapper->biblio_title->value(), biblio_get_allowed_tags()))
+//  );
   if (!isset($biblio->biblio_type_name) && isset($biblio->publication_type)) { // needed for preview
-    $biblio->biblio_type_name = drupal_ucfirst(_biblio_localize_type($biblio->publication_type));
+    $types = biblio_types();
+    $type_name = $types[$biblio->publication_type]->name;
+    $biblio->biblio_type_name = drupal_ucfirst(_biblio_localize_type($type_name));
   }
 
   $rows[] = array(
@@ -236,9 +237,12 @@ function theme_biblio_tabular($variables) {
     'value' => biblio_format_authors($biblio->contributions),
     'label' => 'Authors',
   );
-  foreach ($biblio->contributions as $cnid => $contribution) {
-    
+  if (isset($biblio->contributions)) {
+    foreach ($biblio->contributions as $cnid => $contribution) {
+
+    }
   }
+  
   foreach($biblio as $field_name => $data) {
     if (isset($wrapper->$field_name)) {
       $field_value = $wrapper->$field_name->value();
