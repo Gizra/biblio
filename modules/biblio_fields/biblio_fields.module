@@ -62,7 +62,8 @@ function biblio_fields_field_instance_settings_form($field, $instance) {
         t('Alternate Titles'),
         t('Other'),
       ),
-      '#default_value' => t('None'),
+      '#default_value' => (isset($instance['settings']['vtab'])) ?
+        $instance['settings']['vtab'] : t('None'),
       '#required' => TRUE,
       '#description' => t('The vertical tab location of the field in the Biblio add/edit form. Select "None" to leave the field out of the vertical tabs.'),
     );
