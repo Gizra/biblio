@@ -549,6 +549,7 @@ function biblio_save_imported_nodes(& $node_array) {
 }
 function biblio_save_node($biblio, $terms = array(), $batch = FALSE, $session_id = NULL, $save_node = TRUE) {
   global $user;
+  module_load_include('inc', 'biblio', 'includes/biblio.fields');
 
   if ($batch && $session_id) { // we are batch processing some import data
     $cache['session_id'] = $session_id;
@@ -587,8 +588,33 @@ function biblio_save_node($biblio, $terms = array(), $batch = FALSE, $session_id
     $validation_errors = array();
     //@todo: uncomment validation below and make it work
 //    $validation_errors = biblio_save_node_validate($biblio);
-//    node_save($biblio);
     biblio_save($biblio);
+    foreach($biblio->biblio_contributors as $contributor) {
+      $contribution = entity_create('biblio_contribution', array());
+      $contribution->contributor = entity_create('biblio_contributor', array());
+      $contribution->contributor->biblio_contributor_name = $contributor['name'];
+      $contributor_wrap = biblio_wrapper($contribution->contributor, 'biblio_contributor');
+      foreach ($contribution->contributor as $field => $value) {
+        if (biblio_is_field_instance($field, 'biblio_contributor', 'contributor')) {
+          $contribution->contributor->$field = array($biblio->language=>array(0=>array('value'=>$value)));
+          $contributor_wrap->$field->set($value);
+        }
+      }
+      biblio_contributor_save($contribution->contributor);
+      
+      $contribution->biblio_contributor_category = $contributor['auth_category'];
+      $contribution->biblio_biblio_ref = $biblio->bid;
+      $contribution->biblio_contributor_ref = $contribution->contributor->cid;
+      $contribution_wrap = biblio_wrapper($contribution, 'biblio_contribution');
+      foreach($contribution as $field => $value) {
+        $derp = biblio_is_field_instance($field, 'biblio_contribution', 'contribution');
+        if ($derp === TRUE) {
+          $contribution->$field = array($biblio->language=>array(0=>array('value'=>$value)));
+          $contribution_wrap->$field->set($value);
+        }
+      }
+      entity_save('biblio_contribution', $contribution);
+    }
     
     // Get all possible field instances for the current publication type
     $instances = field_info_instances('biblio', $biblio->publication_type);

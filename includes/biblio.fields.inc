@@ -239,11 +239,7 @@ function biblio_delete_fields() {
  * @return boolean whether or not the given string exists as a field instance 
  */
 function biblio_is_field_instance($instance_name, $entity_type, $bundle) {
-  // We only need to fetch an instance list once, so make it static
-  $instances = &drupal_static(__FUNCTION__);
-  if (!isset($instances)) {
-    $instances = field_info_instances($entity_type, $bundle);
-  }
+  $instances = field_info_instances($entity_type, $bundle);
   if (isset($instances[$instance_name])) {
     return TRUE;
   }
