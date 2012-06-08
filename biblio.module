@@ -1069,6 +1069,7 @@ function biblio_menu() {
   $items['admin/structure/biblio/add'] = array(
     'title' => 'Add Biblio',
     'access arguments' => array('administer biblio'),
+    'page callback' => 'biblio_add',
     'type' => MENU_LOCAL_ACTION,
   );
   // Create a menu item for each biblio type, converting underscores to dashes.
@@ -1079,7 +1080,7 @@ function biblio_menu() {
       // check_plain() will take whatever is specified in the title and escape
       // any and all HTML in it, making it safe to use as the page title.
       'title callback' => 'check_plain',
-      'page callback' => 'biblio_add',
+      'page callback' => 'biblio_add_type',
       'file' => '/includes/biblio.admin.inc',
       'page arguments' => array(4),
       'access arguments' => array('administer biblio'),
@@ -1418,7 +1419,7 @@ function biblio_form($form, &$form_state, $biblio) {
     // We don't want extra theme elements from $fielded_form. 
     // Just field instances with a set vtab.
     if ($vtab !== FALSE) {
-      if ($vtab == '0') {
+      if ($vtab == '0' || $vtab == 'None') {
         // Fields specified to be outside of the vtabs
         $form[$field] = $data;
       }
@@ -1491,7 +1492,6 @@ function biblio_form($form, &$form_state, $biblio) {
       unset($tabs[$key]);
     }
   }
-  
   // Add the buttons.
   // Save button is always available
   $form['buttons'] = array();
@@ -1518,7 +1518,6 @@ function biblio_form($form, &$form_state, $biblio) {
   $form['#validate']= array('biblio_form_validate');
   $form['#cache'] = TRUE;
   $form['biblio_tabs'] += $tabs;
-  
   return $form;
 }
 
@@ -3557,6 +3556,12 @@ function biblio_contributor_page_view($contributor, $view_mode = 'full') {
   return $contributor->content;
 }
 
+function biblio_add() {
+  drupal_set_title(t('Create new Biblio'));
+  // @TODO add useful info on this page 
+  // (paste bibtex record, pubtype select list, etc.)
+  return;
+}
 /**
  * hook_menu callback function for admin/structure/biblio/add/[publication-type]
  * 
@@ -3564,7 +3569,7 @@ function biblio_contributor_page_view($contributor, $view_mode = 'full') {
  * @param type $type
  * @return string 
  */
-function biblio_add($type) {
+function biblio_add_type($type) {
   module_load_include('inc', 'biblio', 'includes/biblio.fields');
   global $user;
   
@@ -3721,4 +3726,16 @@ function biblio_contributor_form_submit($form, &$form_state) {
   drupal_set_message(t('Contributor saved.'));
   
   $form_state['redirect'] = 'biblio/contributor/' . $contributor->cid;
+}
+
+/**
+ * Implements hook_admin_paths().
+ */
+function biblio_admin_paths() {
+  $base = variable_get('biblio_base', 'biblio');
+  $paths = array(
+    "$base/*/edit" => TRUE,
+    "$base/*/delete" => TRUE,
+  );
+  return $paths;
 }
