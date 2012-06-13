@@ -1883,27 +1883,21 @@ function _biblio_get_formatted_fields() {
  * @param object $biblio
  */
 function _biblio_prepare_submit(&$biblio) {
-  $wrapper = biblio_wrapper($biblio);
-  $publication_type = $wrapper->publication_type->value();
-  $title = $wrapper->biblio_title->value();
-  $year = $wrapper->biblio_year->value();
-  $citekey = $wrapper->biblio_citekey->value();
-  
-  if (!isset($publication_type)) {
+  if (!isset($biblio->publication_type)) {
     $biblio->publication_type = ('miscellaneous');
   }
   
-  $biblio->biblio_sort_title = biblio_normalize_title($title);
+  $biblio->biblio_sort_title = biblio_normalize_title($biblio->biblio_title);
   
-  if (!isset($year)) {
+  if (!isset($biblio->biblio_year)) {
     $biblio->biblio_year = 9999;
   }
-  
-  $biblio->biblio_year = _biblio_numeric_year($year);
+  $biblio->biblio_year = _biblio_numeric_year($biblio->biblio_year);
 
-  if (variable_get('biblio_auto_citekey', 1) && empty($citekey)) {
+  if (variable_get('biblio_auto_citekey', 1) && empty($biblio->biblio_citekey)) {
     $biblio->biblio_citekey = biblio_citekey_generate($biblio);
   }
+  
   foreach (_biblio_get_formatted_fields() as $field) {
     if (isset($biblio->$field) && is_array($biblio->$field)) {
       $biblio->biblio_formats[$field] = $biblio->{$field}['format'];
@@ -3077,7 +3071,6 @@ function biblio_load_multiple($bids = array(), $conditions = array(), $reset = F
   foreach($biblios as $bid => $biblio) {
     $biblios[$bid]->contributions = $contributions[$bid];
   }
-  
   return $biblios;
 }
 
