@@ -1127,6 +1127,13 @@ function biblio_menu() {
     'context' => MENU_CONTEXT_INLINE,
     'file' => 'includes/biblio.admin.inc',
   );
+  $items['admin/structure/biblio'] = array(
+    'title' => 'Biblio',
+    'description' => 'List and edit Biblio entries. 
+      Use Biblio for scholarly content, such as journal papers and books.',
+    'page callback' => 'biblio_admin_list',
+    'access arguments' => array('administer biblio'),
+  );
   $items['admin/structure/biblio/contributor/add'] = array(
     'title' => 'Add Contributor',
     'page callback' => 'biblio_contributor_add', // callback
@@ -2559,6 +2566,13 @@ function biblio_views_api() {
 }
 
 /**
+ * Implements hook_views_handlers(). 
+ */
+function biblio_views_handlers() {
+  return array('handlers' => array('views_handler_field'));
+}
+
+/**
  * @todo add relevant documentation
  *
  * @param object $node 
@@ -2762,10 +2776,10 @@ function biblio_entity_info() {
     'uri callback' => 'entity_class_uri',
     'module' => 'biblio',
     'access callback' => 'biblio_entity_access',
-    'admin ui' => array(
-      'path' => 'admin/structure/biblio',
-      'file' => 'biblio.module',
-    ),
+//    'admin ui' => array(
+//      'path' => 'admin/structure/biblio',
+//      'file' => 'biblio.module',
+//    ),
   );
   // Since we have multiple bundles, we will need to tell the Field API what 
   // bundles we have and what paths to put the extra field management interfaces
@@ -3731,4 +3745,13 @@ function biblio_admin_paths() {
     "$base/*/delete" => TRUE,
   );
   return $paths;
+}
+
+/**
+ * hook_menu callback for admin/structure/biblio
+ * Displays the biblio_admin_list view in 
+ * @return type 
+ */
+function biblio_admin_list() {
+  return views_page('biblio_admin', 'page');
 }

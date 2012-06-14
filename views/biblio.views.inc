@@ -1,6 +1,29 @@
 <?php
 
 /**
+ * Implementation of hook_views_handlers()
+ */
+//function biblio_views_handlers() {
+//  return array(
+//    'info' => array(
+//      'path' => drupal_get_path('module', 'biblio'),
+//    ),
+//    'handlers' => array(
+//      'biblio_handler_date' => array(
+//        'parent' => 'views_handler_field',
+//      ),
+//    ),
+//  );
+//}
+
+/**
+ * Implements hook_views_data_alter().
+ */
+function biblio_views_data_alter(&$data) {
+  $data['biblio']['changed']['field']['handler'] = 'biblio_handler_date';
+}
+
+/**
  * Implements hook_views_pre_render(). 
  */
 function biblio_views_pre_render(&$view) {
