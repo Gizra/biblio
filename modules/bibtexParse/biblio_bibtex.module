@@ -49,7 +49,7 @@ function biblio_bibtex_form_biblio_form_alter(&$form, &$form_state) {
       $form['biblio_cut_paste']['paste_submit'] = array(
         '#type' => 'submit',
         '#value' => t('Populate using BibTex'),
-        '#submit' => array('biblio_bibtex_form_biblio_node_form_submit')
+        '#submit' => array('biblio_bibtex_form_biblio_form_submit')
       );
     }
   }
@@ -67,9 +67,17 @@ function biblio_bibtex_form_biblio_form_submit($form, &$form_state) {
   if (strlen($form_state['values']['paste_data_bibtex'])) {
     list($node_data, $dups) = biblio_bibtex_biblio_import($form_state['values']['paste_data_bibtex'], array(), FALSE, NULL, FALSE, TRUE);
   }
-  if (!empty($node_data) && is_object($node_data[0])) {
-    $form_state['values'] = array_merge($form_state['values'], (array)$node_data[0]);
-    $form_state['input']['biblio_type'] = $form_state['biblio_type'] =  $node_data[0]->biblio_type;
+  $biblio = $node_data[0];
+  if (!empty($node_data) && is_object($biblio)) {
+    foreach ($biblio as $field => $value) {
+      if (isset($form_state['input'][$field]['und'][0]['value'])) {
+        // @todo: find a better way of setting repopulated fields, instead of
+        // directly modifying the 'input' array
+        $form_state['input'][$field]['und'][0]['value'] = $value;
+      }
+    }
+    $form_state['input']['publication_type'] = $form_state['publication_type'] =  $biblio->publication_type;
+    $form_state['biblio_raw_contributors'] = $biblio->biblio_contributors;
 
 //    $form_state['storage']['biblio_type']  = $node_data[0]->biblio_type;
   }
@@ -78,7 +86,6 @@ function biblio_bibtex_form_biblio_form_submit($form, &$form_state) {
     form_set_error('paste_data_bibtex', $message);
   }
   $form_state['rebuild'] = TRUE;
-
   return;
 }
 
