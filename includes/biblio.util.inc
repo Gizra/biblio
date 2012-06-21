@@ -68,6 +68,23 @@ function biblio_contextObject($biblio) {
   // Original Author:    Richard Karnesky <mailto:karnesky@gmail.com>  //
   // Adapted for biblio: Ron Jerome
   global $base_url;
+  $wrapper = biblio_wrapper($biblio);
+  // The empty() function can't be given the direct return of a method, so 
+  // we have to set each of the methods we're going to use as a variable
+  $title            = $wrapper->biblio_title->value();
+  $secondary_title  = $wrapper->biblio_title_secondary->value();
+  $short_title      = $wrapper->biblio_short_title->value();
+  $tertiary_title   = $wrapper->biblio_title_tertiary->value();
+  $issn             = $wrapper->biblio_issn->value();
+  $isbn             = $wrapper->biblio_isbn->value();
+  $year             = $wrapper->biblio_year->value();
+  $volume           = $wrapper->biblio_volume->value();
+  $issue            = $wrapper->biblio_issue->value();
+  $pages            = $wrapper->biblio_pages->value();
+  $publisher        = $wrapper->biblio_publisher->value();
+  $place_published  = $wrapper->biblio_place_published->value();
+  $doi              = $wrapper->biblio_doi->value();
+  
   $i = 0;
     // $openurl_base = variable_get('biblio_baseopenurl', '');
   $co = array();
@@ -83,49 +100,49 @@ function biblio_contextObject($biblio) {
 //  }
   // atitle, btitle, title (title, publication)
   if (($biblio->publication_type == 'journal_article') || ($biblio->publication_type == 'book_chapter')) {
-    if (!empty($biblio->biblio_title)) {
-      $co["rft.atitle"] = check_plain($biblio->biblio_title);
+    if (!empty($title)) {
+      $co["rft.atitle"] = check_plain($title);
     }
-    if (!empty($biblio->biblio_title_secondary)) {
-      $co["rft.title"] = check_plain($biblio->biblio_title_secondary);
-      if ($biblio->biblio_type == 'book_chapter')
-        $co["rft.btitle"] = check_plain($biblio->biblio_title_secondary);
+    if (!empty($secondary_title)) {
+      $co["rft.title"] = check_plain($secondary_title);
+      if ($biblio->publication_type == 'book_chapter')
+        $co["rft.btitle"] = check_plain($secondary_title);
     }
   }
-  elseif (!empty($biblio->biblio_title)) {
-   $co["rft.title"] = check_plain($biblio->biblio_title);
+  elseif (!empty($title)) {
+   $co["rft.title"] = check_plain($title);
   }
-  if (($biblio->publication_type == 'book') && (!empty($biblio->biblio_title_secondary))) $co["rft.btitle"] = check_plain($biblio->biblio_title_secondary);
+  if (($biblio->publication_type == 'book') && (!empty($secondary_title))) $co["rft.btitle"] = check_plain($secondary_title);
   // stitle (abbrev_journal)
-  if (!empty($biblio->biblio_short_title)) $co["rft.stitle"] = check_plain($biblio->biblio_short_title);
+  if (!empty($short_title)) $co["rft.stitle"] = check_plain($short_title);
   // series (series_title)
-  if (!empty($biblio->biblio_title_tertiary)) $co["rft.series"] = check_plain($biblio->biblio_title_tertiary);
+  if (!empty($tertiary_title)) $co["rft.series"] = check_plain($tertiary_title);
   // issn
-  if (!empty($biblio->biblio_issn)) $co["rft.issn"] = check_plain($biblio->biblio_issn);
+  if (!empty($issn)) $co["rft.issn"] = check_plain($issn);
   // isbn
-  if (!empty($biblio->biblio_isbn)) $co["rft.isbn"] = check_plain($biblio->biblio_isbn);
+  if (!empty($isbn)) $co["rft.isbn"] = check_plain($isbn);
   // date (year)
-  if (!empty($biblio->biblio_year)) $co["rft.date"] = check_plain($biblio->biblio_year);
+  if (!empty($year)) $co["rft.date"] = check_plain($year);
   // volume
-  if (!empty($biblio->biblio_volume)) $co["rft.volume"] = check_plain($biblio->biblio_volume);
+  if (!empty($volume)) $co["rft.volume"] = check_plain($volume);
   // issue
-  if (!empty($biblio->biblio_issue)) $co["rft.issue"] = check_plain($biblio->biblio_issue);
+  if (!empty($issue)) $co["rft.issue"] = check_plain($issue);
   // spage, epage, tpages (pages)
   // NOTE: lifted from modsxml.inc.php--should throw some into a new include file
-  if (!empty($biblio->biblio_pages)) {
-    if (preg_match("/[0-9] *- *[0-9]/", $biblio->biblio_pages)) {
-      list ($pagestart, $pageend) = preg_split('/\s*[-]\s*/', $biblio->biblio_pages);
+  if (!empty($pages)) {
+    if (preg_match("/[0-9] *- *[0-9]/", $pages)) {
+      list ($pagestart, $pageend) = preg_split('/\s*[-]\s*/', $pages);
       if ($pagestart < $pageend) {
         $co["rft.spage"] = check_plain($pagestart);
         $co["rft.epage"] = check_plain($pageend);
       }
     }
     elseif ($biblio->publication_type == 'book') { //"Book Whole") {
-      $pagetotal = preg_replace('/^(\d+)\s*pp?\.?$/', "\\1", $biblio->biblio_pages);
+      $pagetotal = preg_replace('/^(\d+)\s*pp?\.?$/', "\\1", $pages);
       $co["rft.tpages"] = check_plain($pagetotal);
     }
     else {
-      $co["rft.spage"] = check_plain($biblio->biblio_pages);
+      $co["rft.spage"] = check_plain($pages);
     }
   }
   // @todo: get this working with new contributors implementation
@@ -158,12 +175,12 @@ function biblio_contextObject($biblio) {
     }
   }
   // pub (publisher)
-  if (!empty($biblio->biblio_publisher)) $co["rft.pub"] = check_plain($biblio->biblio_publisher);
+  if (!empty($publisher)) $co["rft.pub"] = check_plain($publisher);
   // place
-  if (!empty($biblio->biblio_place_published)) $co["rft.place"] = check_plain($biblio->biblio_place_published);
+  if (!empty($place_published)) $co["rft.place"] = check_plain($place_published);
   // id (doi, url)
-  if (!empty($biblio->biblio_doi)) {
-    $co["rft_id"] = "info:doi/" . check_plain($biblio->biblio_doi);
+  if (!empty($doi)) {
+    $co["rft_id"] = "info:doi/" . check_plain($doi);
   }
 //  elseif (!empty($node->biblio_url)) {
 //    $co["rft_id"] = $node->biblio_url;
