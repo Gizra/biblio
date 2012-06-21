@@ -589,31 +589,9 @@ function biblio_save_node($biblio, $terms = array(), $batch = FALSE, $session_id
     //@todo: uncomment validation below and make it work
 //    $validation_errors = biblio_save_node_validate($biblio);
     biblio_save($biblio);
-    foreach($biblio->biblio_contributors as $contributor) {
-      $contribution = entity_create('biblio_contribution', array());
-      $contribution->contributor = entity_create('biblio_contributor', array());
-      $contribution->contributor->biblio_contributor_name = $contributor['name'];
-      $contributor_wrap = biblio_wrapper($contribution->contributor, 'biblio_contributor');
-      foreach ($contribution->contributor as $field => $value) {
-        if (biblio_is_field_instance($field, 'biblio_contributor', 'contributor')) {
-          $contribution->contributor->$field = array($biblio->language=>array(0=>array('value'=>$value)));
-          $contributor_wrap->$field->set($value);
-        }
-      }
-      biblio_contributor_save($contribution->contributor);
-      
-      $contribution->biblio_contributor_category = $contributor['auth_category'];
-      $contribution->biblio_biblio_ref = $biblio->bid;
-      $contribution->biblio_contributor_ref = $contribution->contributor->cid;
-      $contribution_wrap = biblio_wrapper($contribution, 'biblio_contribution');
-      foreach($contribution as $field => $value) {
-        $derp = biblio_is_field_instance($field, 'biblio_contribution', 'contribution');
-        if ($derp === TRUE) {
-          $contribution->$field = array($biblio->language=>array(0=>array('value'=>$value)));
-          $contribution_wrap->$field->set($value);
-        }
-      }
-      entity_save('biblio_contribution', $contribution);
+    
+    if (!isset($biblio->contributions)) {
+      biblio_create_imported_contributions($biblio);
     }
     
     // Get all possible field instances for the current publication type
@@ -702,6 +680,35 @@ function biblio_save_node_validate($node) {
     }
   }
   return $error;
+}
+
+function biblio_create_imported_contributions(&$biblio) {
+  foreach($biblio->biblio_contributors as $contributor) {
+    $contribution = entity_create('biblio_contribution', array());
+    $contribution->contributor = entity_create('biblio_contributor', array());
+    $contribution->contributor->biblio_contributor_name = $contributor['name'];
+    $contributor_wrap = biblio_wrapper($contribution->contributor, 'biblio_contributor');
+    foreach ($contribution->contributor as $field => $value) {
+      if (biblio_is_field_instance($field, 'biblio_contributor', 'contributor')) {
+        $contribution->contributor->$field = array($biblio->language=>array(0=>array('value'=>$value)));
+        $contributor_wrap->$field->set($value);
+      }
+    }
+    biblio_contributor_save($contribution->contributor);
+
+    $contribution->biblio_contributor_category = $contributor['auth_category'];
+    $contribution->biblio_biblio_ref = $biblio->bid;
+    $contribution->biblio_contributor_ref = $contribution->contributor->cid;
+    $contribution_wrap = biblio_wrapper($contribution, 'biblio_contribution');
+    foreach($contribution as $field => $value) {
+      $derp = biblio_is_field_instance($field, 'biblio_contribution', 'contribution');
+      if ($derp === TRUE) {
+        $contribution->$field = array($biblio->language=>array(0=>array('value'=>$value)));
+        $contribution_wrap->$field->set($value);
+      }
+    }
+    entity_save('biblio_contribution', $contribution);
+  }
 }
 
 
