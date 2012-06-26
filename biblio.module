@@ -30,7 +30,8 @@ function _biblio_get_auth_types($auth_category, $biblio_type) {
     }
   }
   // fall back to defaults, if no author types are defined for this biblio_type
-  $result = isset($auth_types[$auth_category][$biblio_type])?$auth_types[$auth_category][$biblio_type]:$auth_types[$auth_category][0];
+  // todo: this is throwing errors in the log. fix it. supressing errors for now...
+  $result = isset($auth_types[$auth_category][$biblio_type])?$auth_types[$auth_category][$biblio_type]:@$auth_types[$auth_category][0];
   return $result;
 }
 function _biblio_get_auth_type($auth_category, $biblio_type) {
@@ -1072,22 +1073,22 @@ function biblio_menu() {
     'page callback' => 'biblio_add',
     'type' => MENU_LOCAL_ACTION,
   );
-  // Create a menu item for each biblio type, converting underscores to dashes.
-  foreach (biblio_types('biblio') as $type) {
-    $type_url_str = str_replace('_', '-', $type->publication_type);
-    $items['admin/structure/biblio/add/' . $type_url_str] = array(
-      'title' => $type->name,
-      // check_plain() will take whatever is specified in the title and escape
-      // any and all HTML in it, making it safe to use as the page title.
-      'title callback' => 'check_plain',
-      'page callback' => 'biblio_add_type',
-      'file' => '/includes/biblio.admin.inc',
-      'page arguments' => array(4),
-      'access arguments' => array('administer biblio'),
-      'type' => MENU_LOCAL_ACTION,
-//      'description' => $type->description,
-    );
-  }
+//  // Create a menu item for each biblio type, converting underscores to dashes.
+//  foreach (biblio_types('biblio') as $type) {
+//    $type_url_str = str_replace('_', '-', $type->publication_type);
+//    $items['admin/structure/biblio/add/' . $type_url_str] = array(
+//      'title' => $type->name,
+//      // check_plain() will take whatever is specified in the title and escape
+//      // any and all HTML in it, making it safe to use as the page title.
+//      'title callback' => 'check_plain',
+//      'page callback' => 'biblio_add_type',
+//      'file' => '/includes/biblio.admin.inc',
+//      'page arguments' => array(4),
+//      'access arguments' => array('administer biblio'),
+//      'type' => MENU_LOCAL_ACTION,
+////      'description' => $type->description,
+//    );
+//  }
   foreach (biblio_types() as $type) {
     $bundle = biblio_bundle_name($type->entity);
     $type_url_str = str_replace('_', '-', $type->{$bundle});
@@ -1139,7 +1140,7 @@ function biblio_menu() {
     'page callback' => 'biblio_contributor_add', // callback
     'access arguments' => array('administer biblio'),
     'file' => 'includes/biblio.admin.inc',
-    'type' => MENU_LOCAL_ACTION,
+//    'type' => MENU_LOCAL_ACTION,
 //    'tab_parent' => 'task',
 //    'tab_root' => 'task',
   );
@@ -1176,7 +1177,50 @@ function biblio_menu() {
     'type' => MENU_LOCAL_TASK,
     'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
   );
+  
+  biblio_menu_links();
+  
   return $items;
+}
+
+/**
+ * Modify and add links in various menus 
+ */
+function biblio_menu_links() {
+  // Get all biblio-generated links
+  $result = db_select('menu_links', 'm')
+  ->fields('m', array('menu_name', 'mlid', 'plid', 'link_path'))
+  ->condition('link_path', '%biblio%', 'like')
+  ->execute();
+  
+  $add_link_exists = FALSE;
+  
+  while ($row = $result->fetchObject()) {
+    switch($row->link_path) {
+      // example.com/biblio
+      case 'biblio':
+        if ($row->menu_name == 'navigation') {
+          $biblio_root_mlid = $row->mlid;
+        }
+        break;
+      case 'admin/structure/biblio/add':
+        if ($row->plid == $biblio_root_mlid && $row->menu_name == 'navigation') {
+          $add_link_exists = TRUE;
+        }
+        break;
+    }
+  }
+  
+  if (!$add_link_exists) {
+    // Create a link on the navigation menu to add a biblio
+    $add_link = array(
+      'link_path' => drupal_get_normal_path('admin/structure/biblio/add'),
+      'menu_name' => 'navigation',
+      'plid' => $biblio_root_mlid,
+      'link_title' => t('Add a new Biblio'),
+    );
+    menu_link_save($add_link);
+  }
 }
 
 /**
@@ -1348,176 +1392,168 @@ function biblio_user_presave(&$edit, $account, $catagory) {
  * @param object $biblio
  * @return array
  */
-function biblio_form($form, &$form_state, $biblio) {
+function biblio_form($form, &$form_state, $biblio = NULL) {
   global $user;
-  module_load_include('inc', 'biblio', 'includes/biblio.fields');
-  $wrapper = biblio_wrapper($biblio);
-  $instance_info = field_info_instances('biblio', $biblio->publication_type);
   $fields = array();
   
   $form['#id'] = 'biblio-form';
-  // Save the biblio in the form, so we can keep it after the form is submitted
-  $form['#biblio'] = $biblio;
-  $form_state['biblio'] = $biblio;
   
+  // Check to see if we've imported a biblio object using a sub-module
+  if (isset($form_state['biblio_imported'])) {
+    $biblio = $form_state['biblio_imported'];
+  }
   $form['biblio_tabs'] = $tabs = array();
 
-  $tid = !empty($form_state['biblio_type']) ? $form_state['biblio_type'] :
-          ( isset($biblio->publication_type) ? $biblio->publication_type : '');
+  $publication_type = !empty($form_state['biblio_type']) ?
+      $form_state['biblio_type'] :
+      ( isset($biblio->publication_type) ? $biblio->publication_type : '');
   if (isset($_COOKIE['has_js']) && !$_COOKIE['has_js']) {
     unset($form['biblio_next']['#attributes']);
   }
-
-  // $fielded_form becomes a placeholder for form values that are automatically
-  // returned to us from the Field Attach API
-  $fielded_form = $form;
-  field_attach_form('biblio', $biblio, $fielded_form, $form_state);
-  // Build the field array used to make the form
-  $result = db_query("SELECT * FROM {biblio_fields} b
-            INNER JOIN {biblio_field_type} bt ON b.fid = bt.fid
-            INNER JOIN {biblio_field_type_data} btd ON btd.ftdid=bt.ftdid
-            WHERE bt.tid=:tid ORDER BY bt.weight ASC", array(':tid' => $tid), array('fetch' => PDO::FETCH_ASSOC));
-
-  foreach ($result as $row) {
-    $fields[$row['name']] = $row;
-  }
-  _biblio_localize_fields($fields);
-
-  $tabs = array(
-    '#type' => 'vertical_tabs',
-    '#weight' => 3,
-  );
-  $tabs += biblio_node_form_vtabs();
   
-  
-//  // Get the vtabs of all biblio fields, 
-//  // specified in misc/biblio.field.link.data.csv
-//  $field_options = biblio_parse_field_link_data_csv();
-//  foreach($field_options as $row => $data) {
-//    $fielded_form[$data['field name']]['#vtab'] = $data['vtab'];
-//  }
-
-  $tabs[1] = array(
-    '#type' => 'fieldset',
-    '#group' => 'biblio_tabs',
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
-    '#title' => 'Authors',
-    '#description' => t('Enter a single name per line using a format such as "Smith, John K" or "John K Smith" or "J.K. Smith"'),
-  );
-
-  $tabs[1] += biblio_contributor_widget($biblio, $form_state);
-  // Insert the array of contributor objects into the biblio object
-  $biblio->contributions = $tabs[1]['contribution_objects'];
-  foreach ($biblio->contributions as $delta => $object) {
-    // @todo see if we need this
-    $form_state['contributor_' . $delta] = $object;
-  }
-  // Destroy the contributor and contribution entity objects from the form 
-  // strucure. Keeping them causes the FAPI to try to iterate through the 
-  // objects as an array, causing errors.
-  unset($tabs[1]['contribution_objects']);
-  
-  // Add the values we created above to the real form
-  foreach ($fielded_form as $field => $data) {
-    // Set a vtab value, if it exists (not all array keys are valid fields)
-    $vtab = (isset($instance_info[$field]['settings']['vtab']))? 
-      $instance_info[$field]['settings']['vtab'] : FALSE;
-    // We don't want extra theme elements from $fielded_form. 
-    // Just field instances with a set vtab.
-    if ($vtab !== FALSE) {
-      if ($vtab == '0' || $vtab == 'None') {
-        // Fields specified to be outside of the vtabs
-        $form[$field] = $data;
-      }
-      else {
-        // Add all other fields to the vtabs
-        $tabs[$vtab][$field] = $data;
-      }
-    }
-    // No vtab specified. Includes user-created fields
-    else {
-      if (biblio_is_field_instance($field, 'biblio', $biblio->publication_type)) {
-        $form[$field] = $data;
-      }
-    }
+  $step_two = FALSE;
+  if (!empty($publication_type) || isset($biblio)) {
+    $step_two = TRUE;
   }
   
-  $form_state['biblio_fields'] = $fields;
-//  foreach ($fields as $key => $fld) {
-//    $options = '';
-//    if ($key == 'biblio_keywords' ) {
-//      $sep = check_plain(variable_get('biblio_keyword_sep', ','));
-//      // is the kewords are in array form, then implode them into a string.
-//      if (isset($form_state['values']['biblio_keywords']) &&
-//        is_array($form_state['values']['biblio_keywords'])) {
-//        require_once(drupal_get_path('module', 'biblio') . '/includes/biblio.keywords.inc');
-//        $form_state['values']['biblio_keywords'] = biblio_implode_keywords($form_state['values']['biblio_keywords']);
-//      }
-//      if (!empty($node->$key) && is_array($node->$key)) {
-//        require_once(drupal_get_path('module', 'biblio') . '/includes/biblio.keywords.inc');
-//        $node->$key = biblio_implode_keywords($node->$key);
-//      }
-//      if (empty($fld['hint'])) {
-//        $fld['hint'] = t('Separate keywords using the " @sep " character', array('@sep' => $sep));
-//      }
-//    }
-//
-//    $element = array(
-//          '#default_value' => (isset($form_state['values'][$key]) ? $form_state['values'][$key] : (isset($node->$key)?$node->$key:'')),
-//          '#type' => $fld['type'],
-//          '#title' => check_plain($fld['title']),
-//          '#size' => $fld['size'],
-//          '#rows' => 10,
-////            '#required' => $fld['required'],
-//          '#maxlength' => $fld['maxsize'],
-//          '#weight' => $fld['weight'] / 10,
-//          '#autocomplete_path' => ($fld['autocomplete']) ? 'biblio/autocomplete/' . $fld['name'] : '',
-//          '#description' => check_plain($fld['hint']),
-//          '#format' => isset($node->biblio_formats[$key]) ? $node->biblio_formats[$key] :  filter_default_format(),
-//    );
-//
-//    if ($key == 'biblio_refereed' ) {
-//      $element['#options'] = array(
-//            '' => t('None'),
-//            'Refereed' => t('Refereed'),
-//            'Non-Refereed' => t('Non-Refereed'),
-//            'Does Not Apply' => t('Does Not Apply'),
-//            'Unknown' => t('Unknown'),
-//      );
-//      $element['#description'] = t('If you are not sure, set this to Unknown or Does Not Apply');
-//    }
-//
-//    if ( $fld['common']  || $fld['visible'] ) {
-//      $tabs[$fld['vtab']][$key] = $element;
-//    }
-//
-//  }
-  foreach (element_children($tabs) as $key) {
-    $tab_children = element_children($tabs[$key]);
-    if (empty($tab_children) && $key != 'biblio_full_text') {
-      unset($tabs[$key]);
-    }
+  /* publication type */
+  $param['options'] = array("enctype" => "multipart/form-data");
+  $options[0] = t('Select Type...');
+  foreach (biblio_types() as $machine_name => $info) {
+    $options[$machine_name] = $info->name;
   }
-  // Add the buttons.
-  // Save button is always available
-  $form['buttons'] = array();
-  $form['buttons']['#weight'] = 100;
-  $form['buttons']['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Save'),
-    '#weight' => 5,
-    '#submit' => array('biblio_form_submit'),
-  );
-  // Delete button is available if we're editing an existing biblio.
-  if (!empty($biblio->bid)) {
-    $form['buttons']['delete'] = array(
-      '#access' => user_access('delete biblios'),
-      '#type' => 'submit',
-      '#value' => t('Delete'),
-      '#weight' => 15,
-      '#submit' => array('biblio_form_delete_submit'),
+  asort($options);
+  
+  
+  if (!$step_two) {
+    $form['biblio_type'] = array(
+      '#type' => 'select',
+      '#title' => t('Publication Type'),
+      '#default_value' =>  $publication_type,
+      '#options' => $options,
+      '#description' => NULL,
+      '#weight' => -15,
+      '#attributes' =>  array('onchange' => 'document.getElementById(\'edit-biblio-next\').click();
+        document.getElementById(\'edit-biblio-next\').disabled="true"'),
+      '#multiple' => FALSE,
+      '#required' => TRUE
     );
+
+    $form['biblio_next'] = array(
+        '#type'   => 'submit',
+        '#value'  => $step_two ? t('Change Publication Type') : t('Next'),
+        '#limit_validation_errors' => array(),
+        '#weight' => -10,
+        '#submit' => array(),
+    );
+  }
+  else {
+    // Step two
+    module_load_include('inc', 'biblio', 'includes/biblio.fields');
+    
+    // Add field instances only if they dont already exist.
+    if (biblio_field_instances_missing($publication_type)) {
+      biblio_add_field_instances('biblio', $publication_type);
+    }
+
+    // Create a new, empty biblio object
+    if (!isset($biblio)) {
+      $biblio = biblio_create($publication_type);
+    }
+    $wrapper = biblio_wrapper($biblio);
+
+    // Set the title. PASS_TRHOUGH allows us to include HTML in the string.
+    drupal_set_title(t('Create @name', array('@name' => $options[$publication_type])), PASS_THROUGH);
+    
+    $instance_info = field_info_instances('biblio', $biblio->publication_type);
+
+    // $fielded_form becomes a placeholder for form values that are automatically
+    // returned to us from the Field Attach API
+    $fielded_form = $form;
+    field_attach_form('biblio', $biblio, $fielded_form, $form_state);
+
+    $tabs = array(
+      '#type' => 'vertical_tabs',
+      '#weight' => 3,
+    );
+    $tabs += biblio_node_form_vtabs();
+
+    $tabs[1] = array(
+      '#type' => 'fieldset',
+      '#group' => 'biblio_tabs',
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+      '#title' => 'Authors',
+      '#description' => t('Enter a single name per line using a format such as "Smith, John K" or "John K Smith" or "J.K. Smith"'),
+    );
+
+    $tabs[1] += biblio_contributor_widget($biblio, $form_state);
+    // Insert the array of contributor objects into the biblio object
+    $biblio->contributions = $tabs[1]['contribution_objects'];
+    foreach ($biblio->contributions as $delta => $object) {
+      // @todo see if we need this
+      $form_state['contributor_' . $delta] = $object;
+    }
+    // Destroy the contributor and contribution entity objects from the form 
+    // strucure. Keeping them causes the FAPI to try to iterate through the 
+    // objects as an array, causing errors.
+    unset($tabs[1]['contribution_objects']);
+
+    // Add the values we created above to the real form
+    foreach ($fielded_form as $field => $data) {
+      // Set a vtab value, if it exists (not all array keys are valid fields)
+      $vtab = (isset($instance_info[$field]['settings']['vtab']))? 
+        $instance_info[$field]['settings']['vtab'] : FALSE;
+      // We don't want extra theme elements from $fielded_form. 
+      // Just field instances with a set vtab.
+      if ($vtab !== FALSE) {
+        if ($vtab == '0' || $vtab == 'None') {
+          // Fields specified to be outside of the vtabs
+          $form[$field] = $data;
+        }
+        else {
+          // Add all other fields to the vtabs
+          $tabs[$vtab][$field] = $data;
+        }
+      }
+      // No vtab specified. Includes user-created fields
+      else {
+        if (biblio_is_field_instance($field, 'biblio', $biblio->publication_type)) {
+          $form[$field] = $data;
+        }
+      }
+    }
+
+    $form_state['biblio_fields'] = $fields;
+    
+    foreach (element_children($tabs) as $key) {
+      $tab_children = element_children($tabs[$key]);
+      if (empty($tab_children) && $key != 'biblio_full_text') {
+        unset($tabs[$key]);
+      }
+    }
+    // Add the buttons.
+    // Save button is always available
+    $form['buttons'] = array();
+    $form['buttons']['#weight'] = 100;
+    $form['buttons']['submit'] = array(
+      '#type' => 'submit',
+      '#value' => t('Save'),
+      '#weight' => 5,
+      '#submit' => array('biblio_form_submit'),
+    );
+    // Delete button is available if we're editing an existing biblio.
+    if (!empty($biblio->bid)) {
+      $form['buttons']['delete'] = array(
+        '#access' => user_access('delete biblios'),
+        '#type' => 'submit',
+        '#value' => t('Delete'),
+        '#weight' => 15,
+        '#submit' => array('biblio_form_delete_submit'),
+      );
+    }
+    
+    $form_state['biblio'] = $biblio;
   }
   
   // $form['format'] = filter_form($node->format, 20);
@@ -1580,8 +1616,21 @@ function biblio_node_form_vtab_info() {
 function biblio_contributor_widget($biblio, &$form_state) {
   $init_count = variable_get('biblio_init_auth_count', 4);
   $contribution_count = 0;
-  if (isset($form_state['values']['biblio_contributors'])) {
-    $contributions = $form_state['values']['biblio_contributors'];
+  if (isset($form_state['biblio_imported_contributors'])) {
+    // Reset the contributions array. If repopulating form, 4 blank
+    // contributions show up from the previous form build.
+    $contributions = array();
+    foreach ($form_state['biblio_imported_contributors'] as $author_data) {
+      $contribution = entity_create('biblio_contribution', array());
+      $wrapper = biblio_wrapper($contribution, 'biblio_contribution');
+      $wrapper->biblio_contributor_category->set($author_data['auth_category']);
+      $contribution->contributor = entity_create('biblio_contributor', array());
+      // We're done setting contribution values. Re-set the metadata wrapper for 
+      // contributor objects
+      $wrapper = biblio_wrapper($contribution->contributor, 'biblio_contributor');
+      $wrapper->biblio_contributor_name->set($author_data['name']);
+      $contributions[] = $contribution;
+    }
   }
   elseif (biblio_has_contributions($biblio)) {
     $contributions = $biblio->contributions;
@@ -1890,16 +1939,18 @@ function _biblio_get_formatted_fields() {
  * @param object $biblio
  */
 function _biblio_prepare_submit(&$biblio) {
+  $wrapper = biblio_wrapper($biblio);
   if (!isset($biblio->publication_type)) {
     $biblio->publication_type = ('miscellaneous');
   }
   
-  $biblio->biblio_sort_title = biblio_normalize_title($biblio->biblio_title);
+  $title = $wrapper->biblio_title->value();
+  $biblio->biblio_sort_title = biblio_normalize_title($title);
   
   if (!isset($biblio->biblio_year)) {
-    $biblio->biblio_year = 9999;
+    $wrapper->biblio_year->set(9999);
   }
-  $biblio->biblio_year = _biblio_numeric_year($biblio->biblio_year);
+  $wrapper->biblio_year->set(_biblio_numeric_year($wrapper->biblio_year->value()));
 
   if (variable_get('biblio_auto_citekey', 1) && empty($biblio->biblio_citekey)) {
     $biblio->biblio_citekey = biblio_citekey_generate($biblio);
@@ -3133,27 +3184,41 @@ function biblio_delete_multiple($bids) {
  * @param array $form_state 
  */
 function biblio_form_validate($form, &$form_state) {
-  $biblio = $form_state['biblio'];
-  // Field validation.
-  $i = 0;
-  foreach ($biblio->contributions as $contribution) {
-    // Validate the contribution entity object
-    field_attach_form_validate(
-        'biblio_contribution', 
-        $contribution,
-        $form['biblio_tabs'][1]['biblio_contributors'][$i],
-        $form_state
-    );
-    // Validate the contributor entity object
-    field_attach_form_validate(
-        'biblio_contributor',
-        $contribution->contributor,
-        $form['biblio_tabs'][1]['biblio_contributors'][$i],
-        $form_state
-    );
-    $i++;
+  if ($form_state['triggering_element']['#value'] == t('Next')
+   || $form_state['triggering_element']['#value'] == t('Change Publication Type')) {
+    $form_state['rebuild'] = TRUE;
+    $form_state['biblio_type'] = $form_state['values']['biblio_type'];
+    if ($form_state['values']['biblio_type'] == '') {
+      form_set_error('biblio_type', t('Please select a publication type.'));
+    }
+    return;
   }
-  field_attach_form_validate('biblio', $biblio, $form, $form_state);
+  
+  if (isset($form_state['biblio']) && !isset($biblio)) {
+    $biblio = $form_state['biblio'];
+  }
+  if (isset($biblio)) {
+    // Field validation.
+    $i = 0;
+    foreach ($biblio->contributions as $contribution) {
+      // Validate the contribution entity object
+      field_attach_form_validate(
+          'biblio_contribution', 
+          $contribution,
+          $form['biblio_tabs'][1]['biblio_contributors'][$i],
+          $form_state
+      );
+      // Validate the contributor entity object
+      field_attach_form_validate(
+          'biblio_contributor',
+          $contribution->contributor,
+          $form['biblio_tabs'][1]['biblio_contributors'][$i],
+          $form_state
+      );
+      $i++;
+    }
+    field_attach_form_validate('biblio', $biblio, $form, $form_state);
+  }
 }
 
 /**
@@ -3563,43 +3628,13 @@ function biblio_contributor_page_view($contributor, $view_mode = 'full') {
   return $contributor->content;
 }
 
-function biblio_add() {
-  drupal_set_title(t('Create new Biblio'));
-  // @TODO add useful info on this page 
-  // (paste bibtex record, pubtype select list, etc.)
-  return;
-}
 /**
- * hook_menu callback function for admin/structure/biblio/add/[publication-type]
+ * hook_menu callback function for admin/structure/biblio/add
  * 
- * @global type $user
- * @param type $type
  * @return string 
  */
-function biblio_add_type($type) {
-  module_load_include('inc', 'biblio', 'includes/biblio.fields');
-  global $user;
-  
-  $types = biblio_types('biblio');
-  $type = isset($type) ? str_replace('-', '_', $type) : NULL;
-  // If no such biblio type, return a 404 page
-  if (empty($types[$type])) {
-    return MENU_NOT_FOUND;
-  }
-  
-  // Add field instances only if they dont already exist.
-  if (biblio_field_instances_missing($type)) {
-    biblio_add_field_instances('biblio', $type);
-  }
-  
-  // Create a new, empty biblio object
-  $biblio = biblio_create($type);
-  
-  // Set the title. PASS_TRHOUGH allows us to include HTML in the string.
-  drupal_set_title(t('Create @name', array('@name' => $types[$type]->name)), PASS_THROUGH);
-  
-  // Display the form
-  return drupal_get_form('biblio_form', $biblio);
+function biblio_add() {
+  return drupal_get_form('biblio_form');
 }
 
 /**
