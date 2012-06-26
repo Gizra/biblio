@@ -67,7 +67,9 @@ function biblio_add_fields() {
           break;
       }
       
-      field_create_field($field);
+      if (!field_info_field($field)) {
+        field_create_field($field);
+      }
     }
   }
 }
