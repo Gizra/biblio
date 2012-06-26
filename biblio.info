@@ -35,6 +35,7 @@ files[] = views/biblio_plugin_row_citation.inc
 files[] = views/biblio_plugin_style_citation.inc
 files[] = views/biblio_plugin_display_page.inc
 files[] = views/biblio_handler_date.inc
+files[] = views/biblio_handler_uid.inc
 
 files[] = includes/biblio.controller.inc
 files[] = includes/biblio.contributor.controller.inc
