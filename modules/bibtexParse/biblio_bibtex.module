@@ -75,13 +75,6 @@ function biblio_bibtex_form_biblio_form_submit($form, &$form_state) {
   }
   $biblio = $node_data[0];
   if (!empty($node_data) && is_object($biblio)) {
-    foreach ($biblio as $field => $value) {
-      if (biblio_is_field_instance($field, 'biblio', $biblio->publication_type)) {
-        $biblio->$field = array();
-        // @todo implement a better way of setting these values (metadata wrapper, etc)
-        $biblio->{$field}['und'][0]['value'] = $value;
-      }
-    }
     $form_state['input']['publication_type'] = $form_state['publication_type'] =  $biblio->publication_type;
     $form_state['biblio_imported_contributors'] = $biblio->biblio_contributors;
     $form_state['biblio_imported'] = $biblio;
