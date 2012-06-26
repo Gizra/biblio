@@ -78,6 +78,7 @@ function biblio_bibtex_form_biblio_form_submit($form, &$form_state) {
     foreach ($biblio as $field => $value) {
       if (biblio_is_field_instance($field, 'biblio', $biblio->publication_type)) {
         $biblio->$field = array();
+        // @todo implement a better way of setting these values (metadata wrapper, etc)
         $biblio->{$field}['und'][0]['value'] = $value;
       }
     }
@@ -268,14 +269,14 @@ function _biblio_bibtex_import($entries, $terms = array(), $batch = FALSE, $sess
           break;
       }
     }
-    $biblio->biblio_secondary_title = (!empty($entry['journal'])) ? $entry['journal'] : NULL;
-    if (!empty($entry['booktitle'])) $biblio->biblio_secondary_title =  $entry['booktitle'];
+    $biblio->biblio_title_secondary = (!empty($entry['journal'])) ? $entry['journal'] : NULL;
+    if (!empty($entry['booktitle'])) $biblio->biblio_title_secondary =  $entry['booktitle'];
     if (!empty($entry['series'])) {
       if (!empty($entry['booktitle'])) {
-        $biblio->biblio_tertiary_title =  $entry['series'];
+        $biblio->biblio_title_tertirary =  $entry['series'];
       }
       else {
-        $biblio->biblio_secondary_title =  $entry['series'];
+        $biblio->biblio_title_secondary =  $entry['series'];
       }
     }
     $biblio->biblio_volume          = (!empty($entry['volume'])) ? $entry['volume'] : NULL;
