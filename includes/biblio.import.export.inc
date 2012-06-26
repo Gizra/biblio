@@ -617,14 +617,8 @@ function biblio_save_node($biblio, $terms = array(), $batch = FALSE, $session_id
         $field_value = array(array('value' => $field_value));
       }
       
-      if (isset($instances[$field_name])) {
-        // Set up structure required to use field_attach_insert
-        $biblio->$field_name = array(
-          $biblio->language => $field_value
-        );
-      }
     }
-    field_attach_insert('biblio', $biblio);
+    
     if (!empty($validation_errors)) {
       foreach($validation_errors as $field => $value) {
         $message = $field . t(' was truncated to fit into the database column');

@@ -39,6 +39,17 @@ function biblio_style_cse_author_options() {
 }
 
 function biblio_style_cse($biblio) {
+  $wrapper = biblio_wrapper($biblio);
+  // The empty() function can't be given the direct return of a method, so 
+  // we have to set each of the methods we're going to use as a variable
+  $title            = $wrapper->biblio_title->value();
+  $secondary_title  = $wrapper->biblio_title_secondary->value();
+  $year             = $wrapper->biblio_year->value();
+  $volume           = $wrapper->biblio_volume->value();
+  $issue            = $wrapper->biblio_issue->value();
+  $pages            = $wrapper->biblio_pages->value();
+  $citekey          = $wrapper->biblio_citekey->value();
+  
   module_load_include('inc', 'biblio', '/includes/biblio.contributors');
   $output = $authors = '';
   
@@ -64,25 +75,25 @@ function biblio_style_cse($biblio) {
     }
   }
   if (empty($authors)) $authors = '[' . t('Anonymous') . ']';  // use anonymous if we still have nothing.
-  if (!empty ($biblio->biblio_citekey[$biblio->language][0]['value'])&&(variable_get('biblio_display_citation_key',0))) {
-    $output .= '[' . check_plain($biblio->biblio_citekey[$biblio->language][0]['value']) . '] ';
+  if (!empty ($citekey) && (variable_get('biblio_display_citation_key',0))) {
+    $output .= '[' . check_plain($citekey) . '] ';
   }
   $output .= '<span class="biblio-authors">' . $authors . "</span>.&nbsp; \n";
 
   switch ($biblio->publication_type) {
-
     default :
-      if (isset ($biblio->biblio_year[$biblio->language][0]['value'])) {
-        $output .= check_plain($biblio->biblio_year[$biblio->language][0]['value']) . ".&nbsp;&nbsp;";
+      if (isset ($year)) {
+        $output .= check_plain($year) . ".&nbsp;&nbsp;";
       }
       $output .= '<span class="biblio-title">';
       $url = biblio_get_title_url_info($biblio);
-      $output .= l($biblio->biblio_title[$biblio->language][0]['value'], $url['link'], $url['options']);
-      $output .= (strpos($biblio->biblio_title[$biblio->language][0]['value'], '?'))? " </span>" : ". </span>";  // if the title ends in a question mark, don't put a period after it.
-      $output .= (!empty ($biblio->biblio_title_secondary[$biblio->language][0]['value'])) ? check_plain($biblio->biblio_title_secondary[$biblio->language][0]['value']) . '. ' : '';
-      $output .= (!empty ($biblio->biblio_volume[$biblio->language][0]['value']))          ? check_plain($biblio->biblio_volume[$biblio->language][0]['value']) : '';
-      $output .= (!empty ($biblio->biblio_issue[$biblio->language][0]['value']))           ? '(' . check_plain($biblio->biblio_issue[$biblio->language][0]['value']) . ')' : '';
-      $output .= (!empty ($biblio->biblio_pages[$biblio->language][0]['value']))           ? ':' . str_replace(" ", "", check_plain($biblio->biblio_pages[$biblio->language][0]['value'])) . '.' : '';
+      $output .= l($title, $url['link'], $url['options']);
+      // if the title ends in a question mark, don't put a period after it.
+      $output .= (strpos($title, '?')) ? " </span>" : ". </span>";  
+      $output .= (!empty ($secondary_title)) ? check_plain($secondary_title) . '. ' : '';
+      $output .= (!empty ($volume)) ? check_plain($volume) : '';
+      $output .= (!empty ($issue)) ? '(' . check_plain($issue) . ')' : '';
+      $output .= (!empty ($pages)) ? ':' . str_replace(" ", "", check_plain($pages)) . '.' : '';
       break; // generic
   }
   /*  if ($node->biblio_date) $output .= ', '. check_plain($node->biblio_date);

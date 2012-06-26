@@ -232,6 +232,8 @@ function _biblio_bibtex_import($entries, $terms = array(), $batch = FALSE, $sess
   
     // Create a new, empty biblio object
     $biblio = biblio_create($type);
+    $wrapper = biblio_wrapper($biblio, 'biblio');
+    
     $biblio->uid = $user->uid;
     $biblio->biblio_contributors = array();
     switch ($entry['bibtexEntryType']) {
@@ -250,7 +252,7 @@ function _biblio_bibtex_import($entries, $terms = array(), $batch = FALSE, $sess
       }
     }
 
-    $biblio->biblio_citekey = (!empty($entry['bibtexCitation'])) ? $entry['bibtexCitation'] : NULL;
+    $wrapper->biblio_citekey = (!empty($entry['bibtexCitation'])) ? $entry['bibtexCitation'] : NULL;
     if (!empty($entry['editor'])) {
       $authorArray = preg_split("/\s(and|&)\s/i", trim($entry['editor']));
       foreach ($authorArray as $key => $author) {
@@ -269,42 +271,42 @@ function _biblio_bibtex_import($entries, $terms = array(), $batch = FALSE, $sess
           break;
       }
     }
-    $biblio->biblio_title_secondary = (!empty($entry['journal'])) ? $entry['journal'] : NULL;
-    if (!empty($entry['booktitle'])) $biblio->biblio_title_secondary =  $entry['booktitle'];
+    $wrapper->biblio_title_secondary = (!empty($entry['journal'])) ? $entry['journal'] : NULL;
+    if (!empty($entry['booktitle'])) $wrapper->biblio_title_secondary =  $entry['booktitle'];
     if (!empty($entry['series'])) {
       if (!empty($entry['booktitle'])) {
-        $biblio->biblio_title_tertirary =  $entry['series'];
+        $wrapper->biblio_title_tertirary =  $entry['series'];
       }
       else {
-        $biblio->biblio_title_secondary =  $entry['series'];
+        $wrapper->biblio_title_secondary =  $entry['series'];
       }
     }
-    $biblio->biblio_volume          = (!empty($entry['volume'])) ? $entry['volume'] : NULL;
-    $biblio->biblio_number          = (!empty($entry['number'])) ? $entry['number'] : NULL;
-    $biblio->biblio_year            = (!empty($entry['year'])) ? $entry['year'] : NULL;
-    $biblio->biblio_notes           = (!empty($entry['note'])) ? $entry['note'] : NULL;
-    $biblio->biblio_date            = (!empty($entry['month'])) ? $entry['month'] : NULL;
-    $biblio->biblio_pages           = (!empty($entry['pages'])) ? $entry['pages'] : NULL;
-    $biblio->biblio_publisher       = (!empty($entry['publisher'])) ? $entry['publisher'] : NULL;
-    if (!empty($entry['organization'])) $biblio->biblio_publisher = $entry['organization'];
-    if (!empty($entry['school']))       $biblio->biblio_publisher       = $entry['school'];
-    if (!empty($entry['institution']))  $biblio->biblio_publisher       = $entry['institution'];
-    $biblio->biblio_title           = (!empty($entry['title'])) ? $entry['title'] : NULL;
-    $biblio->biblio_type_of_work    .= (!empty($entry['type'])) ? $entry['type'] : NULL;
-    $biblio->biblio_edition         = (!empty($entry['edition'])) ? $entry['edition'] : NULL;
-    $biblio->biblio_section         = (!empty($entry['chapter'])) ? $entry['chapter'] : NULL;
-    $biblio->biblio_place_published = (!empty($entry['address'])) ? $entry['address'] : NULL;
-    $biblio->biblio_abst_e          = (!empty($entry['abstract'])) ? $entry['abstract'] : NULL;
+    $wrapper->biblio_volume          = (!empty($entry['volume'])) ? $entry['volume'] : NULL;
+    $wrapper->biblio_number          = (!empty($entry['number'])) ? $entry['number'] : NULL;
+    $wrapper->biblio_year            = (!empty($entry['year'])) ? $entry['year'] : NULL;
+    $wrapper->biblio_notes           = (!empty($entry['note'])) ? $entry['note'] : NULL;
+    $wrapper->biblio_date            = (!empty($entry['month'])) ? $entry['month'] : NULL;
+    $wrapper->biblio_pages           = (!empty($entry['pages'])) ? $entry['pages'] : NULL;
+    $wrapper->biblio_publisher       = (!empty($entry['publisher'])) ? $entry['publisher'] : NULL;
+    if (!empty($entry['organization'])) $wrapper->biblio_publisher = $entry['organization'];
+    if (!empty($entry['school']))       $wrapper->biblio_publisher       = $entry['school'];
+    if (!empty($entry['institution']))  $wrapper->biblio_publisher       = $entry['institution'];
+    $wrapper->biblio_title           = (!empty($entry['title'])) ? $entry['title'] : NULL;
+    $wrapper->biblio_type_of_work    .= (!empty($entry['type'])) ? $entry['type'] : NULL;
+    $wrapper->biblio_edition         = (!empty($entry['edition'])) ? $entry['edition'] : NULL;
+    $wrapper->biblio_section         = (!empty($entry['chapter'])) ? $entry['chapter'] : NULL;
+    $wrapper->biblio_place_published = (!empty($entry['address'])) ? $entry['address'] : NULL;
+    $wrapper->biblio_abst_e          = (!empty($entry['abstract'])) ? $entry['abstract'] : NULL;
     if (!empty($entry['keywords'])) {
       if (strpos($entry['keywords'], ';')) {
         $entry['keywords'] = str_replace(';', ',', $entry['keywords']);
       }
       $biblio->biblio_keywords = explode(',', $entry['keywords']);
     }
-    $biblio->biblio_isbn            = (!empty($entry['isbn'])) ? $entry['isbn'] : NULL;
-    $biblio->biblio_issn            = (!empty($entry['issn'])) ? $entry['issn'] : NULL;
-    $biblio->biblio_url             = (!empty($entry['url'])) ? $entry['url'] : NULL;
-    $biblio->biblio_doi             = (!empty($entry['doi'])) ? $entry['doi'] : NULL;
+    $wrapper->biblio_isbn            = (!empty($entry['isbn'])) ? $entry['isbn'] : NULL;
+    $wrapper->biblio_issn            = (!empty($entry['issn'])) ? $entry['issn'] : NULL;
+    $wrapper->biblio_url             = (!empty($entry['url'])) ? $entry['url'] : NULL;
+    $wrapper->biblio_doi             = (!empty($entry['doi'])) ? $entry['doi'] : NULL;
     $biblio->biblio_bibtex_md5      = md5(serialize($biblio));
     $biblio->biblio_import_type     = 'bibtex';
 

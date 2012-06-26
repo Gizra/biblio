@@ -790,6 +790,7 @@ function _biblio_category_separator_bar($node, $reset = FALSE) {
   return $content;
 }
 function biblio_category_section($biblio, $reset = FALSE) {
+  $wrapper = biblio_wrapper($biblio);
   $_text = &drupal_static(__FUNCTION__, '');
   if ($reset) {
     $_text = &drupal_static(__FUNCTION__, '', TRUE);
@@ -807,7 +808,7 @@ function biblio_category_section($biblio, $reset = FALSE) {
   
   switch ($sort) {
     case 'title':
-      $title = $biblio->biblio_sort_title;
+      $title = $wrapper->biblio_sort_title->value();
       $first = drupal_substr(drupal_ucfirst(ltrim($title)), 0, 1);
       if ( $first  != $_text) {
         $_text =  $first ;
@@ -844,8 +845,8 @@ function biblio_category_section($biblio, $reset = FALSE) {
       break;
     case 'year':
     default:
-      if ($biblio->biblio_year[$biblio->language][0]['value'] != $_text) {
-        $_text = $biblio->biblio_year[$biblio->language][0]['value'];
+      if ($wrapper->biblio_year->value() != $_text) {
+        $_text = $wrapper->biblio_year->value();
         $section['bar'] = biblio_section_bar($_text);
       }
   } //end switch
