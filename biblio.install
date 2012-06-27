@@ -16,7 +16,7 @@ function biblio_install() {
   $result[] = _add_bundles();
   // @todo: add contributor field data contained in this function
 //  $result[] = _add_custom_field_data();
-  //_enable_biblio_keyword_vocabulary();
+  _enable_biblio_keyword_vocabulary();
   $result[] = _set_system_weight();
   biblio_add_fields();
   biblio_add_field_instances('biblio_contributor', 'contributor');
@@ -72,7 +72,7 @@ function biblio_uninstall() {
   if (module_exists('taxonomy')) {
     $voc = taxonomy_get_vocabularies();
     foreach ($voc as $vid => $vocabulary) {
-      if ($vocabulary->module == 'biblio')  taxonomy_del_vocabulary($vid);
+      if ($vocabulary->module == 'biblio') taxonomy_vocabulary_delete($vid);
     }
   }
 
@@ -185,25 +185,25 @@ function _enable_biblio_keyword_vocabulary() {
     $vocabulary['nodes']['biblio'] = 1;
     taxonomy_save_vocabulary($vocabulary);
   }
-//  else {
-//    // Create the biblio vocabulary if it does not exist.
-//    $vocabulary = array(
-//      'name' => 'Biblio Keywords',
-//      'description' => t('This is a free tag vocabulary which contains the keywords from all nodes created by the biblio module'),
-//      'help' => t('Enter a comma separated list of words. Phrases containing commas should be enclosed in double quotes'),
-//      'nodes' => array('biblio' => 1),
-//      'hierarchy' => 0,
-//      'relations' => 1,
-//      'tags' => 1,
-//      'multiple' => 0,
-//      'required' => 0,
-//      'weight' => 0,
-//      'module' => 'biblio',
-//    );
-//    taxonomy_save_vocabulary($vocabulary);
-//    variable_set('biblio_keyword_vocabulary', $vocabulary['vid']);
-//  }
-  return $vocabulary['vid'];
+  else {
+    // Create the biblio vocabulary if it does not exist.
+    $vocabulary = new stdClass();
+    $vocabulary->name = 'Biblio Keywords';
+    $vocabulary->machine_name = 'biblio_keywords';
+    $vocabulary->description = t('This is a free tag vocabulary which contains the keywords from all nodes created by the biblio module');
+    $vocabulary->help = t('Enter a comma separated list of words. Phrases containing commas should be enclosed in double quotes');
+    $vocabulary->nodes = array('biblio' => 1);
+    $vocabulary->hierarchy = 0;
+    $vocabulary->relations = 1;
+    $vocabulary->tags = 1;
+    $vocabulary->multiple = 0;
+    $vocabulary->required = 0;
+    $vocabulary->weight = 0;
+    $vocabulary->module = 'biblio';
+    taxonomy_vocabulary_save($vocabulary);
+    variable_set('biblio_keyword_vocabulary', $vocabulary->vid);
+  }
+  return $vocabulary->vid;
 }
 function _enable_biblio_collection_vocabulary() {
   if ($vocabulary = taxonomy_vocabulary_load(variable_get('biblio_collection_vocabulary', 0))) {
