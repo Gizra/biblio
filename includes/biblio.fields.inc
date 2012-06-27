@@ -67,7 +67,7 @@ function biblio_add_fields() {
           break;
       }
       
-      if (!field_info_field($field)) {
+      if (!field_info_field($field['field_name'])) {
         field_create_field($field);
       }
     }
