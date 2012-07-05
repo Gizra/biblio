@@ -2620,8 +2620,19 @@ function biblio_views_api() {
  * Implements hook_views_handlers(). 
  */
 function biblio_views_handlers() {
-  return array('handlers' => array('views_handler_field'));
+  return array(
+    'handlers' => array(
+      'views_handler_field',
+      'views_handler_field_field',
+      'entity_views_handler_field_field',
+    ),
+  );
 }
+//
+//function biblio_views_pre_render(&$view) {
+//  dpm($view);
+//  @dpm($view->field['field_reference_contributor']);
+//}
 
 /**
  * @todo add relevant documentation
@@ -2882,6 +2893,7 @@ function biblio_entity_info() {
     'label callback' => 'entity_class_label',
     'uri callback' => 'entity_class_uri',
     'module' => 'biblio',
+    'access callback' => 'biblio_entity_access',
   );
   
   $contributor_categories = biblio_types('biblio_contributor');
@@ -2925,6 +2937,7 @@ function biblio_entity_info() {
     'label callback' => 'entity_class_label',
     'uri callback' => 'entity_class_uri',
     'module' => 'biblio',
+    'access callback' => 'biblio_entity_access',
   );
   
   $contribution_categories = biblio_types('biblio_contribution');
@@ -3373,7 +3386,7 @@ function biblio_page_view($biblio, $view_mode = 'full') {
         drupal_set_title(filter_xss($biblio->title, biblio_get_allowed_tags()));
       }  // fall through...
     case 'search_index':
-      switch (variable_get('biblio_node_layout', 'tabular')) {
+      switch (variable_get('biblio_node_layout', 'view')) {
         case 'orig' :
         case 'ft' :
           $biblio->content['body']['#markup'] = theme('biblio_long', array('biblio' => $biblio, 'base' => $base, 'style' => $style));

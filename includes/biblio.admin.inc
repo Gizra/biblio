@@ -626,9 +626,10 @@ function biblio_admin_settings() {
   }
   $form['style']['biblio_node_layout'] = array(
     '#type' => 'radios',
-    '#title' => t('Node Layout'),
-    '#default_value' => variable_get('biblio_node_layout', 'tabular'),
+    '#title' => t('Biblio Layout'),
+    '#default_value' => variable_get('biblio_node_layout', 'view'),
     '#options' => array(
+      'view'    => t('Biblio View'),
       'orig'    => t('Original'),
       'ft'      => t('Only Fulltext if available'),
       'tabular' => t('Tabular')

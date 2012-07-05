@@ -281,7 +281,7 @@ function theme_biblio_tabular($variables) {
             $data = check_markup($value, $wrapper->biblio_formats[$field]);
           }
           else {
-            $data = check_plain($value);
+            $data = (is_string($value)) ? check_plain($value) : '';
           }
       }
     }
