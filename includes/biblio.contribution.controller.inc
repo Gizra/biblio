@@ -4,6 +4,10 @@
  * Contribution class.
  */
 class BiblioContribution extends Entity {
+  protected function defaultLabel() {
+    $cn_wrap = biblio_wrapper($this, 'biblio_contribution');
+    return $cn_wrap->cnid->value();
+  }
   protected function defaultUri() {
     return array('path' => 'biblio/contribution/' . $this->identifier());
   }
