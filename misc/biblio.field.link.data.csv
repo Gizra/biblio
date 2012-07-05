@@ -19,7 +19,7 @@ fid,title,hint,common,autocomplete,required,weight,visible,"field name",type,wid
 20,"Publication Language",,0,0,0,21,0,biblio_lang,biblio_text,24,24,3,biblio
 21,Abstract,,1,0,0,22,1,biblio_abst_e,text_long,60,65535,2,biblio
 22,"French Abstract",,0,0,0,23,0,biblio_abst_f,text_long,60,65535,10,biblio
-23,Keywords,,1,1,0,24,0,biblio_keywords,biblio_text,60,1000,7,biblio
+23,Keywords,,1,1,0,24,0,biblio_keywords,taxonomy_term_reference,60,1000,7,biblio
 24,"Type of Work","Masters Thesis",0,0,0,25,0,biblio_type_of_work,biblio_text,60,255,3,biblio
 25,URL,,1,0,0,26,1,biblio_url,biblio_text,60,255,6,biblio
 26,Notes,,0,0,0,27,0,biblio_notes,text_long,60,65535,8,biblio

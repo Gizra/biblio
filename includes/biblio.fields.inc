@@ -104,8 +104,16 @@ function biblio_add_field_instances($entity, $bundle) {
       'settings' => array('vtab' => $row['vtab']),
     );
     
-    if (isset($row['field name']) && $row['field name'] == 'biblio_contributor_category') {
-      $instance['default_value'] = array(0 => array('value' => 1));
+    if (!empty($row['field name'])) {
+      // Perform any post-parsing modifications to instances
+      switch ($row['field name']) {
+        case 'biblio_contributor_category':
+          $instance['default_value'] = array(0 => array('value' => 1));
+          break;
+        case 'biblio_keywords':
+          $instance['widget']['type'] = 'taxonomy_autocomplete';
+          break;
+      }
     }
     
     // If row has a field name specified (this excludes blank lines in the CSV)
