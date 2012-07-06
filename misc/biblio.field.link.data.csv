@@ -1,47 +1,47 @@
 fid,title,hint,common,autocomplete,required,weight,visible,"field name",type,width,maxlength,vtab,entity
-1,Title,,1,0,1,1.1,1,biblio_title,biblio_text,60,255,0,biblio
-2,"Author Name",,1,1,0,1.2,1,biblio_contributor_name,biblio_text,60,255,1,biblio_contributor
-5,"Secondary Title",,0,0,0,6,0,biblio_title_secondary,biblio_text,60,255,3,biblio
-6,"Tertiary Title",,0,0,0,7,0,biblio_title_tertiary,biblio_text,60,255,9,biblio
-7,"Accession Number",,1,0,0,8,1,biblio_accession_number,biblio_text,24,128,5,biblio
-8,"ISBN Number",,1,0,0,9,1,biblio_isbn,biblio_text,24,128,5,biblio
-9,"Call Number",,1,0,0,10,1,biblio_call_number,biblio_text,24,128,5,biblio
-10,"Other Numbers",,1,0,0,11,1,biblio_other_number,biblio_text,10,128,5,biblio
-11,"Other Author Affiliations",,0,0,0,12,0,biblio_other_author_affiliations,biblio_text,60,255,10,biblio
-12,Publisher,,0,0,0,13,0,biblio_publisher,biblio_text,60,255,4,biblio
-13,"Place Published",,0,0,0,14,0,biblio_place_published,biblio_text,60,255,4,biblio
-14,"Year of Publication","Enter YYYY, Submitted or In Press",1,0,1,2,1,biblio_year,biblio_text,4,20,0,biblio
-15,Edition,,0,0,0,16,0,biblio_edition,biblio_text,60,255,3,biblio
-16,Volume,,0,0,0,17,0,biblio_volume,biblio_text,10,128,3,biblio
-17,Number,,0,0,0,18,0,biblio_number,biblio_text,10,128,3,biblio
-18,Pagination,,0,0,0,19,0,biblio_pages,biblio_text,24,128,3,biblio
-19,"Date Published",(mm/yyyy),0,0,0,20,0,biblio_date,biblio_text,16,16,3,biblio
-20,"Publication Language",,0,0,0,21,0,biblio_lang,biblio_text,24,24,3,biblio
+1,Title,,1,0,1,1.1,1,biblio_title,text,60,255,0,biblio
+2,"Author Name",,1,1,0,1.2,1,biblio_contributor_name,text,60,255,1,biblio_contributor
+5,"Secondary Title",,0,0,0,6,0,biblio_title_secondary,text,60,255,3,biblio
+6,"Tertiary Title",,0,0,0,7,0,biblio_title_tertiary,text,60,255,9,biblio
+7,"Accession Number",,1,0,0,8,1,biblio_accession_number,text,24,128,5,biblio
+8,"ISBN Number",,1,0,0,9,1,biblio_isbn,text,24,128,5,biblio
+9,"Call Number",,1,0,0,10,1,biblio_call_number,text,24,128,5,biblio
+10,"Other Numbers",,1,0,0,11,1,biblio_other_number,text,10,128,5,biblio
+11,"Other Author Affiliations",,0,0,0,12,0,biblio_other_author_affiliations,text,60,255,10,biblio
+12,Publisher,,0,0,0,13,0,biblio_publisher,text,60,255,4,biblio
+13,"Place Published",,0,0,0,14,0,biblio_place_published,text,60,255,4,biblio
+14,"Year of Publication","Enter YYYY, Submitted or In Press",1,0,1,2,1,biblio_year,text,4,20,0,biblio
+15,Edition,,0,0,0,16,0,biblio_edition,text,60,255,3,biblio
+16,Volume,,0,0,0,17,0,biblio_volume,text,10,128,3,biblio
+17,Number,,0,0,0,18,0,biblio_number,text,10,128,3,biblio
+18,Pagination,,0,0,0,19,0,biblio_pages,text,24,128,3,biblio
+19,"Date Published",(mm/yyyy),0,0,0,20,0,biblio_date,text,16,16,3,biblio
+20,"Publication Language",,0,0,0,21,0,biblio_lang,text,24,24,3,biblio
 21,Abstract,,1,0,0,22,1,biblio_abst_e,text_long,60,65535,2,biblio
 22,"French Abstract",,0,0,0,23,0,biblio_abst_f,text_long,60,65535,10,biblio
 23,Keywords,,1,1,0,24,0,biblio_keywords,taxonomy_term_reference,60,1000,7,biblio
-24,"Type of Work","Masters Thesis",0,0,0,25,0,biblio_type_of_work,biblio_text,60,255,3,biblio
-25,URL,,1,0,0,26,1,biblio_url,biblio_text,60,255,6,biblio
+24,"Type of Work","Masters Thesis",0,0,0,25,0,biblio_type_of_work,text,60,255,3,biblio
+25,URL,,1,0,0,26,1,biblio_url,text,60,255,6,biblio
 26,Notes,,0,0,0,27,0,biblio_notes,text_long,60,65535,8,biblio
-27,Issue,,0,0,0,28,0,biblio_issue,biblio_text,10,128,3,biblio
+27,Issue,,0,0,0,28,0,biblio_issue,text,10,128,3,biblio
 28,"Research Notes",,0,0,0,29,0,biblio_research_notes,text_long,60,65535,8,biblio
-29,"Number of Volumes",,0,0,0,30,0,biblio_number_of_volumes,biblio_text,10,128,3,biblio
-30,"Short Title",,0,0,0,31,0,biblio_short_title,biblio_text,60,255,9,biblio
-31,"Alternate Title",,0,0,0,32,0,biblio_alternate_title,biblio_text,60,255,9,biblio
-32,"Translated Title",,0,0,0,33,0,biblio_translated_title,biblio_text,60,255,9,biblio
-33,"Original Publication",,0,0,0,34,0,biblio_original_publication,biblio_text,60,255,9,biblio
-34,"Reprint Edition",,0,0,0,35,0,biblio_reprint_edition,biblio_text,120,255,3,biblio
-35,Section,,0,0,0,36,0,biblio_section,biblio_text,10,128,3,biblio
-36,"Citation Key",,0,0,0,37,0,biblio_citekey,biblio_text,16,255,5,biblio
+29,"Number of Volumes",,0,0,0,30,0,biblio_number_of_volumes,text,10,128,3,biblio
+30,"Short Title",,0,0,0,31,0,biblio_short_title,text,60,255,9,biblio
+31,"Alternate Title",,0,0,0,32,0,biblio_alternate_title,text,60,255,9,biblio
+32,"Translated Title",,0,0,0,33,0,biblio_translated_title,text,60,255,9,biblio
+33,"Original Publication",,0,0,0,34,0,biblio_original_publication,text,60,255,9,biblio
+34,"Reprint Edition",,0,0,0,35,0,biblio_reprint_edition,text,120,255,3,biblio
+35,Section,,0,0,0,36,0,biblio_section,text,10,128,3,biblio
+36,"Citation Key",,0,0,0,37,0,biblio_citekey,text,16,255,5,biblio
 37,"COinS Data","This will be automatically generated",0,0,0,38,0,biblio_coins,text_long,60,65535,10,biblio
-38,"ISSN Number",,0,0,0,39,0,biblio_issn,biblio_text,24,128,5,biblio
-39,DOI,,1,0,0,40,1,biblio_doi,biblio_text,60,255,6,biblio
+38,"ISSN Number",,0,0,0,39,0,biblio_issn,text,24,128,5,biblio
+39,DOI,,1,0,0,40,1,biblio_doi,text,60,255,6,biblio
 40,"Author Address",,0,0,0,41,0,biblio_auth_address,text_long,60,65535,10,biblio
-41,"Remote Database Name",,0,0,0,42,0,biblio_remote_db_name,biblio_text,60,255,10,biblio
-42,"Remote Database Provider",,0,0,0,43,0,biblio_remote_db_provider,biblio_text,60,255,10,biblio
-43,Label,,0,0,0,44,0,biblio_label,biblio_text,60,255,10,biblio
-44,"Access Date",,0,0,0,45,0,biblio_access_date,biblio_text,60,255,10,biblio
-45,"Refereed Designation",,0,0,0,46,0,biblio_refereed,biblio_text,0,128,10,biblio
+41,"Remote Database Name",,0,0,0,42,0,biblio_remote_db_name,text,60,255,10,biblio
+42,"Remote Database Provider",,0,0,0,43,0,biblio_remote_db_provider,text,60,255,10,biblio
+43,Label,,0,0,0,44,0,biblio_label,text,60,255,10,biblio
+44,"Access Date",,0,0,0,45,0,biblio_access_date,text,60,255,10,biblio
+45,"Refereed Designation",,0,0,0,46,0,biblio_refereed,text,0,128,10,biblio
 46,Biblio Reference,,0,0,0,1,0,biblio_biblio_ref,entityreference,0,128,0,biblio_contribution
 47,Contributor Reference,,0,0,0,1,0,biblio_contributor_ref,entityreference,0,128,0,biblio_contribution
 48,Contributor Category,,,,0,2,,biblio_contributor_category,list_text,60,255,0,biblio_contribution

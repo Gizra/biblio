@@ -211,11 +211,12 @@ function biblio_field_instances_missing($publication_type, $entity_type = 'bibli
  */
 function biblio_field_list() {
   // Get an array of all fields
-  $list_of_fields = array_keys(field_info_fields());
+  $fields = field_info_fields();
   $biblio_fields = array();
-  foreach ($list_of_fields as $field) {
+  foreach ($fields as $field => $info) {
     // Check if name of field has the 'biblio_' prefix
-    if (strstr($field, 'biblio_') != FALSE) {
+    if (strstr($field, 'biblio_') != FALSE
+      || ($info['type'] == 'biblio_text')) {
       $biblio_fields[] = $field;
     }
   }

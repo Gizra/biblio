@@ -3372,21 +3372,27 @@ function biblio_form_get_contributors($form) {
  */
 function biblio_page_view($biblio, $view_mode = 'full') {
   global $user;
+  $wrapper = biblio_wrapper($biblio);
+  $title = $wrapper->biblio_title->value();
   $links = array();
   $style = biblio_get_style();
   $base  = variable_get('biblio_base', 'biblio');
   $base_title = check_plain(variable_get('biblio_base_title', 'Biblio'));
+
   // Remove previously built content, if exists.
   $biblio->content = array();
-  
   switch ($view_mode) {
     case 'full':
       if (variable_get('biblio_hide_bibtex_braces', 0) && !isset($biblio->view )) {
-        $biblio->title = biblio_remove_brace($biblio->title);
-        drupal_set_title(filter_xss($biblio->title, biblio_get_allowed_tags()));
-      }  // fall through...
+        $title = biblio_remove_brace($title);
+      }
+      $title = filter_xss($title, biblio_get_allowed_tags());
+      // fall through...
     case 'search_index':
-      switch (variable_get('biblio_node_layout', 'view')) {
+      switch (variable_get('biblio_layout', 'view')) {
+        case 'view' :
+          $biblio->content = views_page('biblio_page_view', 'page', $biblio->bid);
+          break;
         case 'orig' :
         case 'ft' :
           $biblio->content['body']['#markup'] = theme('biblio_long', array('biblio' => $biblio, 'base' => $base, 'style' => $style));
@@ -3401,32 +3407,8 @@ function biblio_page_view($biblio, $view_mode = 'full') {
       $biblio->content['teaser']['#markup'] = theme('biblio_style', array('biblio' => $biblio, 'base' => $base, 'style_name' => $style));
       break;
   }
-  
-  // We're using biblio's table instead of field attach. Commenting out unless
-  // we need to use the default view.
-//  // Build field content for contribution/contributor entities
-//  if (isset($biblio->contributions)) {
-//    field_attach_prepare_view('biblio_contribution', $biblio->contributions, $view_mode);
-//    entity_prepare_view('biblio_contribution', $biblio->contributions);
-//    foreach ($biblio->contributions as $cnid => $contribution) {
-//      $biblio->content['contributions'][$cnid] = field_attach_view(
-//        'biblio_contribution',
-//        $contribution, 
-//        $view_mode
-//      );
-//      $biblio->content['contributions'][$cnid]+= field_attach_view(
-//        'biblio_contributor', 
-//        $contribution->contributor, 
-//        $view_mode
-//      );
-//    }
-//  }
-//  
-//  // Build field content for biblio entity
-//  field_attach_prepare_view('biblio', array($biblio->bid => $biblio), $view_mode);
-//  entity_prepare_view('biblio', array($biblio->bid => $biblio));
-//  $biblio->content += field_attach_view('biblio', $biblio, $view_mode);
-  
+
+  drupal_set_title($title);
   return $biblio->content;
 }
 
@@ -3776,7 +3758,7 @@ function biblio_contributor_form_submit($form, &$form_state) {
   field_attach_submit('biblio_contributor', $contributor, $form, $form_state);
   // Save the contributor.
   biblio_contributor_save($contributor);
-  
+
   // Notify the user.
   drupal_set_message(t('Contributor saved.'));
   
@@ -3802,4 +3784,49 @@ function biblio_admin_paths() {
  */
 function biblio_admin_list() {
   return views_page('biblio_admin', 'page');
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function biblio_form_alter(&$form, &$form_state, $form_id) {
+  if (isset($form['#field']['bundles']['biblio'])) {
+    switch ($form_id) {
+      // Modify the Field settings form so we can add an option to select vtab
+      // for a field in the biblio add/edit form
+      case 'field_ui_field_settings_form':
+      case 'field_ui_field_edit_form':
+        $field_name = $form['#instance']['field_name'];
+        $entity_type = $form['#instance']['entity_type'];
+        $bundle = $form['#instance']['bundle'];
+        $field_info = field_info_instance($entity_type, $field_name, $bundle);
+        if (isset($field_info['settings']['vtab'])) {
+          $vtab_default_value = $field_info['settings']['vtab'];
+        }
+        else {
+          $vtab_default_value = 0;
+        }
+        $form['instance']['settings']['vtab'] = array(
+          '#type' => 'select',
+          '#title' => t('Biblio Form Vertical Tab'),
+          '#options' => array(
+            t('None'),
+            t('Authors'),
+            t('Abstract'),
+            t('Full Text'),
+            t('Publication'),
+            t('Publisher'),
+            t('Identifiers'),
+            t('Locators'),
+            t('Keywords'),
+            t('Notes'),
+            t('Alternate Titles'),
+            t('Other'),
+          ),
+          '#default_value' => $vtab_default_value,
+          '#required' => TRUE,
+        );
+        break;
+    }
+  }
 }
