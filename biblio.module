@@ -1476,20 +1476,11 @@ function biblio_form($form, &$form_state, $biblio = NULL) {
       '#type' => 'vertical_tabs',
       '#weight' => 3,
     );
-    $tabs += biblio_node_form_vtabs();
+    $tabs += biblio_form_vtabs();
 
-    $tabs[1] = array(
-      '#type' => 'fieldset',
-      '#group' => 'biblio_tabs',
-      '#collapsible' => TRUE,
-      '#collapsed' => TRUE,
-      '#title' => 'Authors',
-      '#description' => t('Enter a single name per line using a format such as "Smith, John K" or "John K Smith" or "J.K. Smith"'),
-    );
-
-    $tabs[1] += biblio_contributor_widget($biblio, $form_state);
+    $tabs['contributors'] += biblio_contributor_widget($biblio, $form_state);
     // Insert the array of contributor objects into the biblio object
-    $biblio->contributions = $tabs[1]['contribution_objects'];
+    $biblio->contributions = $tabs['contributors']['contribution_objects'];
     foreach ($biblio->contributions as $delta => $object) {
       // @todo see if we need this
       $form_state['contributor_' . $delta] = $object;
@@ -1497,7 +1488,7 @@ function biblio_form($form, &$form_state, $biblio = NULL) {
     // Destroy the contributor and contribution entity objects from the form 
     // strucure. Keeping them causes the FAPI to try to iterate through the 
     // objects as an array, causing errors.
-    unset($tabs[1]['contribution_objects']);
+    unset($tabs['contributors']['contribution_objects']);
 
     // Add the values we created above to the real form
     foreach ($fielded_form as $field => $data) {
@@ -1507,7 +1498,7 @@ function biblio_form($form, &$form_state, $biblio = NULL) {
       // We don't want extra theme elements from $fielded_form. 
       // Just field instances with a set vtab.
       if ($vtab !== FALSE) {
-        if ($vtab == '0' || $vtab == 'None') {
+        if ($vtab == 'none' || $vtab == 'None') {
           // Fields specified to be outside of the vtabs
           $form[$field] = $data;
         }
@@ -1569,8 +1560,8 @@ function biblio_form($form, &$form_state, $biblio = NULL) {
  *
  * @return array 
  */
-function biblio_node_form_vtabs() {
-  $vtabs = biblio_node_form_vtab_info();
+function biblio_form_vtabs() {
+  $vtabs = biblio_form_vtab_info();
 
   foreach ($vtabs as $tab) {
     $form[$tab['tab_id']] = array(
@@ -1591,18 +1582,19 @@ function biblio_node_form_vtabs() {
  *
  * @return array 
  */
-function biblio_node_form_vtab_info() {
+function biblio_form_vtab_info() {
   return array(
-    array('tab_id' => 2, 'weight' => 10, 'title' => 'Abstract', 'description' => ''),
-    array('tab_id' => 'biblio_full_text', 'weight' => 11, 'title' => 'Full text', 'description' => ''),
-    array('tab_id' => 3, 'weight' => 12, 'title' => 'Publication', 'description' => ''),
-    array('tab_id' => 4, 'weight' => 13, 'title' => 'Publisher', 'description' => ''),
-    array('tab_id' => 5, 'weight' => 14, 'title' => 'Identifiers', 'description' => ''),
-    array('tab_id' => 6, 'weight' => 15, 'title' => 'Locators', 'description' => 'URL\'s etc'),
-    array('tab_id' => 7, 'weight' => 16, 'title' => 'Keywords', 'description' => ''),
-    array('tab_id' => 8, 'weight' => 17, 'title' => 'Notes', 'description' => ''),
-    array('tab_id' => 9, 'weight' => 18, 'title' => 'Alternate Titles', 'description' => ''),
-    array('tab_id' => 10, 'weight' => 19, 'title' => 'Other', 'description' => ''),
+    array('tab_id' => 'contributors', 'weight' => 9, 'title' => 'Contributors', 'description' => 'Enter a single name per line using a format such as "Smith, John K" or "John K Smith" or "J.K. Smith"'),
+    array('tab_id' => 'abstract', 'weight' => 10, 'title' => 'Abstract', 'description' => ''),
+    array('tab_id' => 'full_text', 'weight' => 11, 'title' => 'Full text', 'description' => ''),
+    array('tab_id' => 'publication', 'weight' => 12, 'title' => 'Publication', 'description' => ''),
+    array('tab_id' => 'publisher', 'weight' => 13, 'title' => 'Publisher', 'description' => ''),
+    array('tab_id' => 'identifiers', 'weight' => 14, 'title' => 'Identifiers', 'description' => ''),
+    array('tab_id' => 'locators', 'weight' => 15, 'title' => 'Locators', 'description' => 'URL\'s etc'),
+    array('tab_id' => 'keywords', 'weight' => 16, 'title' => 'Keywords', 'description' => ''),
+    array('tab_id' => 'notes', 'weight' => 17, 'title' => 'Notes', 'description' => ''),
+    array('tab_id' => 'alternate_titles', 'weight' => 18, 'title' => 'Alternate Titles', 'description' => ''),
+    array('tab_id' => 'other', 'weight' => 19, 'title' => 'Other', 'description' => ''),
     );
 }
 
@@ -3804,25 +3796,19 @@ function biblio_form_alter(&$form, &$form_state, $form_id) {
           $vtab_default_value = $field_info['settings']['vtab'];
         }
         else {
-          $vtab_default_value = 0;
+          $vtab_default_value = 'none';
         }
+        $vtabs = biblio_form_vtab_info();
+
+        foreach($vtabs as $vtab_info) {
+          $options[$vtab_info['tab_id']] = t($vtab_info['title']);
+        }
+        $options['none'] = t('None');
+
         $form['instance']['settings']['vtab'] = array(
           '#type' => 'select',
           '#title' => t('Biblio Form Vertical Tab'),
-          '#options' => array(
-            t('None'),
-            t('Authors'),
-            t('Abstract'),
-            t('Full Text'),
-            t('Publication'),
-            t('Publisher'),
-            t('Identifiers'),
-            t('Locators'),
-            t('Keywords'),
-            t('Notes'),
-            t('Alternate Titles'),
-            t('Other'),
-          ),
+          '#options' => $options,
           '#default_value' => $vtab_default_value,
           '#required' => TRUE,
         );
