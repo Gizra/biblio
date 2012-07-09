@@ -1194,16 +1194,20 @@ function biblio_menu_links() {
   ->execute();
   
   $add_link_exists = FALSE;
+  // Menu link ID as specified in menu_links
+  $biblio_root_mlid = 0;
   
   while ($row = $result->fetchObject()) {
     switch($row->link_path) {
-      // example.com/biblio
+      // if the menu path is for example.com/biblio, and it's in the navigation
+      // menu, set the root (parent) link id
       case 'biblio':
         if ($row->menu_name == 'navigation') {
           $biblio_root_mlid = $row->mlid;
         }
         break;
       case 'admin/structure/biblio/add':
+        // Check if the "Add a new Biblio" link exists, to avoid duplicates
         if ($row->plid == $biblio_root_mlid && $row->menu_name == 'navigation') {
           $add_link_exists = TRUE;
         }
