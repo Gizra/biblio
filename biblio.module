@@ -1772,7 +1772,7 @@ function biblio_contributor_form($contribution, &$form_state, $delta) {
  * @return array 
  */
 function biblio_contributors_add_more_callback($form, &$form_state) {
-  return $form['biblio_tabs'][1]['biblio_contributors'];
+  return $form['biblio_tabs']['contributors']['biblio_contributors'];
 }
 
 /**
@@ -3210,14 +3210,14 @@ function biblio_form_validate($form, &$form_state) {
       field_attach_form_validate(
           'biblio_contribution', 
           $contribution,
-          $form['biblio_tabs'][1]['biblio_contributors'][$i],
+          $form['biblio_tabs']['contributors']['biblio_contributors'][$i],
           $form_state
       );
       // Validate the contributor entity object
       field_attach_form_validate(
           'biblio_contributor',
           $contribution->contributor,
-          $form['biblio_tabs'][1]['biblio_contributors'][$i],
+          $form['biblio_tabs']['contributors']['biblio_contributors'][$i],
           $form_state
       );
       $i++;
@@ -3331,7 +3331,7 @@ function biblio_extract_contributors($biblio) {
  */
 function biblio_form_get_contributors($form) {
   $i = 0;
-  foreach ($form['biblio_tabs'][1]['biblio_contributors'] as $key => $value) {
+  foreach ($form['biblio_tabs']['contributors']['biblio_contributors'] as $key => $value) {
     // Contributors are keyed by a standard numeric iteration, but are mixed
     // in with other form array values.
     if (is_numeric($key)) {
