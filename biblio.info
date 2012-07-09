@@ -4,6 +4,9 @@ core = 7.x
 dependencies[] = taxonomy
 dependencies[] = entity
 dependencies[] = entityreference
+dependencies[] = views
+dependencies[] = text
+dependencies[] = list
 package = Biblio
 
 configure = admin/config/content/biblio
