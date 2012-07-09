@@ -56,6 +56,9 @@ function biblio_add_fields() {
     if (isset($row['field name'])) {
       // Add any field-specific settings or other values here...
       switch ($row['field name']) {
+        case 'biblio_refereed':
+          $field['settings']['allowed_values'] = biblio_get_refereed_options();
+          break;
         case 'biblio_contributor_category':
           $field['settings']['allowed_values'] = biblio_get_contributor_options();
           break;
@@ -72,6 +75,20 @@ function biblio_add_fields() {
       }
     }
   }
+}
+
+/**
+ * Gets the options for the biblio_refereed fields's select list
+ * @return array
+ */
+function biblio_get_refereed_options() {
+  return array(
+    '' => t('None'),
+    'refereed' => t('Refereed'),
+    'non_refereed' => t('Non-Refereed'),
+    'does_not_apply' => t('Does Not Apply'),
+    'unknown' => t('Unknown'),
+  );
 }
 
 /**
