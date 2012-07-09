@@ -56,6 +56,10 @@ function biblio_add_fields() {
     if (isset($row['field name'])) {
       // Add any field-specific settings or other values here...
       switch ($row['field name']) {
+        case 'biblio_keywords':
+          $field['settings']['allowed_values'][0]['vocabulary'] = 'biblio_keywords';
+          $field['cardinality'] = '-1';
+          break;
         case 'biblio_refereed':
           $field['settings']['allowed_values'] = biblio_get_refereed_options();
           break;
