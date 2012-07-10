@@ -549,6 +549,7 @@ function biblio_save_imported_nodes(& $node_array) {
 }
 function biblio_save_node($biblio, $terms = array(), $batch = FALSE, $session_id = NULL, $save_node = TRUE) {
   global $user;
+  $wrapper = biblio_wrapper($biblio);
   module_load_include('inc', 'biblio', 'includes/biblio.fields');
 
   if ($batch && $session_id) { // we are batch processing some import data
@@ -588,8 +589,18 @@ function biblio_save_node($biblio, $terms = array(), $batch = FALSE, $session_id
     $validation_errors = array();
     //@todo: uncomment validation below and make it work
 //    $validation_errors = biblio_save_node_validate($biblio);
+
+    if ($vocab = taxonomy_vocabulary_machine_name_load('biblio_keywords')) {
+      foreach($biblio->biblio_keywords as $delta => $keyword) {
+        $term = new stdClass;
+        $term->vid = $vocab->vid;
+        $term->name = $keyword;
+        taxonomy_term_save($term);
+        $wrapper->biblio_keywords[$delta]->set($term->tid);
+      }
+    }
     biblio_save($biblio);
-    
+
     if (!isset($biblio->contributions)) {
       biblio_create_imported_contributions($biblio);
     }
