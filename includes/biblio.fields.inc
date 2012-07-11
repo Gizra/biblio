@@ -45,38 +45,41 @@ function _biblio_field_extra_fields() {
  * @todo Add biblio.field.type.data.csv data (field instance labels, etc)
  */
 function biblio_add_fields() { 
-  $file_data = biblio_parse_field_link_data_csv();
-  foreach ($file_data as $key => $row) {
-    $field = array(
-      'field_name' => $row['field name'], 
-      'type' => $row['type'],
-    );
-    
-    // Only act on CSV rows that have a name (not blank rows)
-    if (isset($row['field name'])) {
-      // Add any field-specific settings or other values here...
-      switch ($row['field name']) {
-        case 'biblio_keywords':
-          $field['settings']['allowed_values'][0]['vocabulary'] = 'biblio_keywords';
-          $field['cardinality'] = '-1';
-          break;
-        case 'biblio_refereed':
-          $field['settings']['allowed_values'] = biblio_get_refereed_options();
-          break;
-        case 'biblio_contributor_category':
-          $field['settings']['allowed_values'] = biblio_get_contributor_options();
-          break;
-        case 'biblio_biblio_ref':
-          $field['settings']['target_type'] = 'biblio';
-          break;
-        case 'biblio_contributor_ref':
-          $field['settings']['target_type'] = 'biblio_contributor';
-          break;
-      }
+  $file = drupal_get_path('module', 'biblio') . '/misc/default_fields.json';
+  $json = json_decode(file_get_contents($file), TRUE);
+
+  foreach ($json as $field) {
+
+    // $field = array(
+    //   'field_name' => $row['field name'], 
+    //   'type' => $row['type'],
+    // );
+    // 
+    // // Only act on CSV rows that have a name (not blank rows)
+    // if (isset($row['field name'])) {
+    //   // Add any field-specific settings or other values here...
+    //   switch ($row['field name']) {
+    //     case 'biblio_keywords':
+    //       $field['settings']['allowed_values'][0]['vocabulary'] = 'biblio_keywords';
+    //       $field['cardinality'] = '-1';
+    //       break;
+    //     case 'biblio_refereed':
+    //       $field['settings']['allowed_values'] = biblio_get_refereed_options();
+    //       break;
+    //     case 'biblio_contributor_category':
+    //       $field['settings']['allowed_values'] = biblio_get_contributor_options();
+    //       break;
+    //     case 'biblio_biblio_ref':
+    //       $field['settings']['target_type'] = 'biblio';
+    //       break;
+    //     case 'biblio_contributor_ref':
+    //       $field['settings']['target_type'] = 'biblio_contributor';
+    //       break;
+    //   }
+    $field_exists = (field_info_field($field['field_name']))? TRUE : FALSE;
       
-      if (!field_info_field($field['field_name'])) {
-        field_create_field($field);
-      }
+    if (!$field_exists) {
+      field_create_field($field);
     }
   }
 }
@@ -100,56 +103,42 @@ function biblio_get_refereed_options() {
  * Adding field instances takes a long amount of time for the number of fields
  * and bundles we have. Fields for a biblio publication type are added the first
  * time a user visits the Biblio Add page for that publication type.
- * Contributor and Contribution fields are added upon install, becasue there are
- * so few fields.
+ * Contributor and Contribution instances are added upon install, becasue there
+ * are so few fields for those entity types.
  * 
- * @param type $entity biblio, biblio_contributor, or biblio_contribution
- * @param type $bundle The bundle for which field instances should be created.
+ * @param string $entity biblio, biblio_contributor, or biblio_contribution
+ * @param string $bundle The bundle for which field instances should be created.
  * for example, a biblio publication type
  */
 function biblio_add_field_instances($entity, $bundle) {
-  $file_data = biblio_parse_field_link_data_csv();
-  
+  $file = drupal_get_path(
+    'module', 'biblio') . '/misc/default_field_instances.json';
+  $json = json_decode(file_get_contents($file), TRUE);
+
   // @todo: remove all timers after development
   timer_start('field_instances_creation');
-  foreach ($file_data as $key => $row) {
-    // convert 1 to true and 0 to false
-    $row['required'] = ($row['required'] == '1' ? TRUE : FALSE);
-    $instance = array(
-      'field_name' => $row['field name'],
-      'entity_type' => $row['entity'],
-      'bundle' => $bundle, 
-      'label' => $row['title'],
-      'required' => $row['required'],
-      'widget' => array('weight' =>$row['weight']),
-      'settings' => array('vtab' => $row['vtab']),
-    );
-    
-    if (!empty($row['field name'])) {
-      // Perform any post-parsing modifications to instances
-      switch ($row['field name']) {
-        case 'biblio_contributor_category':
-          $instance['default_value'] = array(0 => array('value' => 1));
-          break;
-        case 'biblio_keywords':
-          $instance['widget']['type'] = 'taxonomy_autocomplete';
-          break;
-      }
+  foreach ($json as $instance) {
+    // We only want to add field instances for the entity type specified
+    if ($instance['entity_type'] != $entity) {
+      continue;
     }
-    
-    // If row has a field name specified (this excludes blank lines in the CSV)
-    // && If the field instance doesn't already exist
-    // && Only add field instances for the specified entity type
-    if (isset($row['field name']) && 
-        !field_info_instance($row['entity'], $row['field name'], $bundle) &&
-        $row['entity'] == $entity) {
+
+    // Set the required bundle key for the instance array
+    $instance['bundle'] = $bundle;
+
+    $field_exists = (field_info_field($instance['field_name']))? TRUE : FALSE;
+    $instance_exists = (field_info_instance(
+      $instance['entity_type'], $instance['field_name'], $bundle))? 
+      TRUE : FALSE;
+
+    if ($field_exists && !$instance_exists) {
       field_create_instance($instance);
     }
   }
   timer_stop('field_instances_creation');
   drupal_set_message('Biblio field instances have been added for the ' 
-      . $bundle . ' bundle. Time elapsed: ' 
-      . timer_read('field_instances_creation') . 'ms');
+      . $bundle . ' bundle.' . 
+      ' Time elapsed: ' . timer_read('field_instances_creation') . 'ms');
 }
 
 /**
