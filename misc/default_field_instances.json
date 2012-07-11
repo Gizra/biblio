@@ -1,0 +1,644 @@
+[
+    {
+        "field_name": "biblio_title",
+        "entity_type": "biblio",
+        "label": "Title",
+        "required": true,
+        "widget": {
+            "weight": "1.1"
+        },
+        "settings": {
+            "vtab": "none"
+        }
+    },
+    {
+        "field_name": "biblio_title_secondary",
+        "entity_type": "biblio",
+        "label": "Secondary Title",
+        "required": false,
+        "widget": {
+            "weight": "6"
+        },
+        "settings": {
+            "vtab": "publication"
+        }
+    },
+    {
+        "field_name": "biblio_title_tertiary",
+        "entity_type": "biblio",
+        "label": "Tertiary Title",
+        "required": false,
+        "widget": {
+            "weight": "7"
+        },
+        "settings": {
+            "vtab": "alternate_titles"
+        }
+    },
+    {
+        "field_name": "biblio_accession_number",
+        "entity_type": "biblio",
+        "label": "Accession Number",
+        "required": false,
+        "widget": {
+            "weight": "8"
+        },
+        "settings": {
+            "vtab": "identifiers"
+        }
+    },
+    {
+        "field_name": "biblio_isbn",
+        "entity_type": "biblio",
+        "label": "ISBN Number",
+        "required": false,
+        "widget": {
+            "weight": "9"
+        },
+        "settings": {
+            "vtab": "identifiers"
+        }
+    },
+    {
+        "field_name": "biblio_call_number",
+        "entity_type": "biblio",
+        "label": "Call Number",
+        "required": false,
+        "widget": {
+            "weight": "10"
+        },
+        "settings": {
+            "vtab": "identifiers"
+        }
+    },
+    {
+        "field_name": "biblio_other_number",
+        "entity_type": "biblio",
+        "label": "Other Numbers",
+        "required": false,
+        "widget": {
+            "weight": "11"
+        },
+        "settings": {
+            "vtab": "identifiers"
+        }
+    },
+    {
+        "field_name": "biblio_other_author_affiliations",
+        "entity_type": "biblio",
+        "label": "Other Author Affiliations",
+        "required": false,
+        "widget": {
+            "weight": "12"
+        },
+        "settings": {
+            "vtab": "other"
+        }
+    },
+    {
+        "field_name": "biblio_publisher",
+        "entity_type": "biblio",
+        "label": "Publisher",
+        "required": false,
+        "widget": {
+            "weight": "13"
+        },
+        "settings": {
+            "vtab": "publisher"
+        }
+    },
+    {
+        "field_name": "biblio_place_published",
+        "entity_type": "biblio",
+        "label": "Place Published",
+        "required": false,
+        "widget": {
+            "weight": "14"
+        },
+        "settings": {
+            "vtab": "publisher"
+        }
+    },
+    {
+        "field_name": "biblio_year",
+        "entity_type": "biblio",
+        "label": "Year of Publication",
+        "required": true,
+        "widget": {
+            "weight": "2"
+        },
+        "settings": {
+            "vtab": "none"
+        }
+    },
+    {
+        "field_name": "biblio_edition",
+        "entity_type": "biblio",
+        "label": "Edition",
+        "required": false,
+        "widget": {
+            "weight": "16"
+        },
+        "settings": {
+            "vtab": "publication"
+        }
+    },
+    {
+        "field_name": "biblio_volume",
+        "entity_type": "biblio",
+        "label": "Volume",
+        "required": false,
+        "widget": {
+            "weight": "17"
+        },
+        "settings": {
+            "vtab": "publication"
+        }
+    },
+    {
+        "field_name": "biblio_number",
+        "entity_type": "biblio",
+        "label": "Number",
+        "required": false,
+        "widget": {
+            "weight": "18"
+        },
+        "settings": {
+            "vtab": "publication"
+        }
+    },
+    {
+        "field_name": "biblio_pages",
+        "entity_type": "biblio",
+        "label": "Pagination",
+        "required": false,
+        "widget": {
+            "weight": "19"
+        },
+        "settings": {
+            "vtab": "publication"
+        }
+    },
+    {
+        "field_name": "biblio_date",
+        "entity_type": "biblio",
+        "label": "Date Published",
+        "required": false,
+        "widget": {
+            "weight": "20"
+        },
+        "settings": {
+            "vtab": "publication"
+        }
+    },
+    {
+        "field_name": "biblio_lang",
+        "entity_type": "biblio",
+        "label": "Publication Language",
+        "required": false,
+        "widget": {
+            "weight": "21"
+        },
+        "settings": {
+            "vtab": "publication"
+        }
+    },
+    {
+        "field_name": "biblio_abst_e",
+        "entity_type": "biblio",
+        "label": "Abstract",
+        "required": false,
+        "widget": {
+            "weight": "22"
+        },
+        "settings": {
+            "vtab": "abstract"
+        }
+    },
+    {
+        "field_name": "biblio_abst_f",
+        "entity_type": "biblio",
+        "label": "French Abstract",
+        "required": false,
+        "widget": {
+            "weight": "23"
+        },
+        "settings": {
+            "vtab": "other"
+        }
+    },
+    {
+        "field_name": "biblio_keywords",
+        "entity_type": "biblio",
+        "label": "Keywords",
+        "required": false,
+        "widget": {
+            "weight": "24",
+            "type": "taxonomy_autocomplete"
+        },
+        "settings": {
+            "vtab": "keywords"
+        }
+    },
+    {
+        "field_name": "biblio_type_of_work",
+        "entity_type": "biblio",
+        "label": "Type of Work",
+        "required": false,
+        "widget": {
+            "weight": "25"
+        },
+        "settings": {
+            "vtab": "publication"
+        }
+    },
+    {
+        "field_name": "biblio_url",
+        "entity_type": "biblio",
+        "label": "URL",
+        "required": false,
+        "widget": {
+            "weight": "26"
+        },
+        "settings": {
+            "vtab": "locators"
+        }
+    },
+    {
+        "field_name": "biblio_notes",
+        "entity_type": "biblio",
+        "label": "Notes",
+        "required": false,
+        "widget": {
+            "weight": "27"
+        },
+        "settings": {
+            "vtab": "notes"
+        }
+    },
+    {
+        "field_name": "biblio_issue",
+        "entity_type": "biblio",
+        "label": "Issue",
+        "required": false,
+        "widget": {
+            "weight": "28"
+        },
+        "settings": {
+            "vtab": "publication"
+        }
+    },
+    {
+        "field_name": "biblio_research_notes",
+        "entity_type": "biblio",
+        "label": "Research Notes",
+        "required": false,
+        "widget": {
+            "weight": "29"
+        },
+        "settings": {
+            "vtab": "notes"
+        }
+    },
+    {
+        "field_name": "biblio_number_of_volumes",
+        "entity_type": "biblio",
+        "label": "Number of Volumes",
+        "required": false,
+        "widget": {
+            "weight": "30"
+        },
+        "settings": {
+            "vtab": "publication"
+        }
+    },
+    {
+        "field_name": "biblio_short_title",
+        "entity_type": "biblio",
+        "label": "Short Title",
+        "required": false,
+        "widget": {
+            "weight": "31"
+        },
+        "settings": {
+            "vtab": "alternate_titles"
+        }
+    },
+    {
+        "field_name": "biblio_alternate_title",
+        "entity_type": "biblio",
+        "label": "Alternate Title",
+        "required": false,
+        "widget": {
+            "weight": "32"
+        },
+        "settings": {
+            "vtab": "alternate_titles"
+        }
+    },
+    {
+        "field_name": "biblio_translated_title",
+        "entity_type": "biblio",
+        "label": "Translated Title",
+        "required": false,
+        "widget": {
+            "weight": "33"
+        },
+        "settings": {
+            "vtab": "alternate_titles"
+        }
+    },
+    {
+        "field_name": "biblio_original_publication",
+        "entity_type": "biblio",
+        "label": "Original Publication",
+        "required": false,
+        "widget": {
+            "weight": "34"
+        },
+        "settings": {
+            "vtab": "alternate_titles"
+        }
+    },
+    {
+        "field_name": "biblio_reprint_edition",
+        "entity_type": "biblio",
+        "label": "Reprint Edition",
+        "required": false,
+        "widget": {
+            "weight": "35"
+        },
+        "settings": {
+            "vtab": "publication"
+        }
+    },
+    {
+        "field_name": "biblio_section",
+        "entity_type": "biblio",
+        "label": "Section",
+        "required": false,
+        "widget": {
+            "weight": "36"
+        },
+        "settings": {
+            "vtab": "publication"
+        }
+    },
+    {
+        "field_name": "biblio_citekey",
+        "entity_type": "biblio",
+        "label": "Citation Key",
+        "required": false,
+        "widget": {
+            "weight": "37"
+        },
+        "settings": {
+            "vtab": "identifiers"
+        }
+    },
+    {
+        "field_name": "biblio_coins",
+        "entity_type": "biblio",
+        "label": "COinS Data",
+        "required": false,
+        "widget": {
+            "weight": "38"
+        },
+        "settings": {
+            "vtab": "other"
+        }
+    },
+    {
+        "field_name": "biblio_issn",
+        "entity_type": "biblio",
+        "label": "ISSN Number",
+        "required": false,
+        "widget": {
+            "weight": "39"
+        },
+        "settings": {
+            "vtab": "identifiers"
+        }
+    },
+    {
+        "field_name": "biblio_doi",
+        "entity_type": "biblio",
+        "label": "DOI",
+        "required": false,
+        "widget": {
+            "weight": "40"
+        },
+        "settings": {
+            "vtab": "locators"
+        }
+    },
+    {
+        "field_name": "biblio_auth_address",
+        "entity_type": "biblio",
+        "label": "Author Address",
+        "required": false,
+        "widget": {
+            "weight": "41"
+        },
+        "settings": {
+            "vtab": "other"
+        }
+    },
+    {
+        "field_name": "biblio_remote_db_name",
+        "entity_type": "biblio",
+        "label": "Remote Database Name",
+        "required": false,
+        "widget": {
+            "weight": "42"
+        },
+        "settings": {
+            "vtab": "other"
+        }
+    },
+    {
+        "field_name": "biblio_remote_db_provider",
+        "entity_type": "biblio",
+        "label": "Remote Database Provider",
+        "required": false,
+        "widget": {
+            "weight": "43"
+        },
+        "settings": {
+            "vtab": "other"
+        }
+    },
+    {
+        "field_name": "biblio_label",
+        "entity_type": "biblio",
+        "label": "Label",
+        "required": false,
+        "widget": {
+            "weight": "44"
+        },
+        "settings": {
+            "vtab": "other"
+        }
+    },
+    {
+        "field_name": "biblio_access_date",
+        "entity_type": "biblio",
+        "label": "Access Date",
+        "required": false,
+        "widget": {
+            "weight": "45"
+        },
+        "settings": {
+            "vtab": "other"
+        }
+    },
+    {
+        "field_name": "biblio_refereed",
+        "entity_type": "biblio",
+        "label": "Refereed Designation",
+        "required": false,
+        "widget": {
+            "weight": "46"
+        },
+        "settings": {
+            "vtab": "other"
+        }
+    },
+    {
+        "field_name": "biblio_full_text",
+        "entity_type": "biblio",
+        "label": "Full Text",
+        "required": false,
+        "widget": {
+            "weight": "2"
+        },
+        "settings": {
+            "vtab": "full_text"
+        }
+    },
+    {
+        "field_name": "biblio_biblio_ref",
+        "entity_type": "biblio_contribution",
+        "label": "Biblio Reference",
+        "required": false,
+        "widget": {
+            "weight": "1"
+        },
+        "settings": {
+            "vtab": "none"
+        }
+    },
+    {
+        "field_name": "biblio_contributor_ref",
+        "entity_type": "biblio_contribution",
+        "label": "Contributor Reference",
+        "required": false,
+        "widget": {
+            "weight": "1"
+        },
+        "settings": {
+            "vtab": "none"
+        }
+    },
+    {
+        "field_name": "biblio_contributor_category",
+        "entity_type": "biblio_contribution",
+        "label": "Contributor Category",
+        "required": false,
+        "widget": {
+            "weight": "2"
+        },
+        "settings": {
+            "vtab": "none"
+        },
+        "default_value": [
+            {
+                "value": 1
+            }
+        ]
+    },
+    {
+        "field_name": "biblio_contributor_name",
+        "entity_type": "biblio_contributor",
+        "label": "Author Name",
+        "required": false,
+        "widget": {
+            "weight": "1.2"
+        },
+        "settings": {
+            "vtab": "contributors"
+        }
+    },
+    {
+        "field_name": "biblio_contributor_first_name",
+        "entity_type": "biblio_contributor",
+        "label": "First Name",
+        "required": false,
+        "widget": {
+            "weight": "2"
+        },
+        "settings": {
+            "vtab": "none"
+        }
+    },
+    {
+        "field_name": "biblio_contributor_last_name",
+        "entity_type": "biblio_contributor",
+        "label": "Last Name",
+        "required": false,
+        "widget": {
+            "weight": "2"
+        },
+        "settings": {
+            "vtab": "none"
+        }
+    },
+    {
+        "field_name": "biblio_contributor_prefix",
+        "entity_type": "biblio_contributor",
+        "label": "Prefix",
+        "required": false,
+        "widget": {
+            "weight": "2"
+        },
+        "settings": {
+            "vtab": "none"
+        }
+    },
+    {
+        "field_name": "biblio_contributor_suffix",
+        "entity_type": "biblio_contributor",
+        "label": "Suffix",
+        "required": false,
+        "widget": {
+            "weight": "2"
+        },
+        "settings": {
+            "vtab": "none"
+        }
+    },
+    {
+        "field_name": "biblio_contributor_initials",
+        "entity_type": "biblio_contributor",
+        "label": "Initials",
+        "required": false,
+        "widget": {
+            "weight": "2"
+        },
+        "settings": {
+            "vtab": "none"
+        }
+    },
+    {
+        "field_name": "biblio_contributor_drupal_uid",
+        "entity_type": "biblio_contributor",
+        "label": "Drupal UID",
+        "required": false,
+        "widget": {
+            "weight": "2"
+        },
+        "settings": {
+            "vtab": "none"
+        }
+    }
+]
