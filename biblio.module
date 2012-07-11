@@ -1890,6 +1890,7 @@ function _biblio_numeric_year($year) {
   if (!is_numeric($year)) {
     if (drupal_strtoupper($year) == drupal_strtoupper(t("In Press")))  return 9998;
     if (drupal_strtoupper($year) == drupal_strtoupper(t("Submitted"))) return 9999;
+    return 0;
   }
   else {
     return $year;
@@ -3156,8 +3157,6 @@ function biblio_save($biblio) {
   module_load_include('inc', 'biblio', 'includes/biblio.keywords');
   
   _biblio_prepare_submit($biblio);
-  // @todo: add keyword functionality. See http://drupal.org/node/1537350
-//  biblio_insert_keywords($biblio);
   // @todo: get COinS working. See http://drupal.org/node/1537360
   $biblio->biblio_coins = biblio_coins($biblio);
   // @todo: get md5 working. See http://drupal.org/node/1537364

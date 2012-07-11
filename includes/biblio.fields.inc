@@ -40,8 +40,10 @@ function _biblio_field_extra_fields() {
 
   return $extras;
 }
+
 /**
- * Adds fields to Drupal's Field API 
+ * Adds Biblio's fields (not field instances) to Drupal's Field API
+ * This function runs upon enabling Biblio
  * @todo Add biblio.field.type.data.csv data (field instance labels, etc)
  */
 function biblio_add_fields() { 
@@ -49,53 +51,12 @@ function biblio_add_fields() {
   $json = json_decode(file_get_contents($file), TRUE);
 
   foreach ($json as $field) {
-
-    // $field = array(
-    //   'field_name' => $row['field name'], 
-    //   'type' => $row['type'],
-    // );
-    // 
-    // // Only act on CSV rows that have a name (not blank rows)
-    // if (isset($row['field name'])) {
-    //   // Add any field-specific settings or other values here...
-    //   switch ($row['field name']) {
-    //     case 'biblio_keywords':
-    //       $field['settings']['allowed_values'][0]['vocabulary'] = 'biblio_keywords';
-    //       $field['cardinality'] = '-1';
-    //       break;
-    //     case 'biblio_refereed':
-    //       $field['settings']['allowed_values'] = biblio_get_refereed_options();
-    //       break;
-    //     case 'biblio_contributor_category':
-    //       $field['settings']['allowed_values'] = biblio_get_contributor_options();
-    //       break;
-    //     case 'biblio_biblio_ref':
-    //       $field['settings']['target_type'] = 'biblio';
-    //       break;
-    //     case 'biblio_contributor_ref':
-    //       $field['settings']['target_type'] = 'biblio_contributor';
-    //       break;
-    //   }
     $field_exists = (field_info_field($field['field_name']))? TRUE : FALSE;
       
     if (!$field_exists) {
       field_create_field($field);
     }
   }
-}
-
-/**
- * Gets the options for the biblio_refereed fields's select list
- * @return array
- */
-function biblio_get_refereed_options() {
-  return array(
-    '' => t('None'),
-    'refereed' => t('Refereed'),
-    'non_refereed' => t('Non-Refereed'),
-    'does_not_apply' => t('Does Not Apply'),
-    'unknown' => t('Unknown'),
-  );
 }
 
 /**
@@ -155,6 +116,9 @@ function biblio_add_field_instances($entity, $bundle) {
  *  1 => array(
  *    'title' => 'Another Title',
  *    and so on...
+ *    
+ *  @todo remove this after development. I'm only keeping it for the time being,
+ *  so that I can retrieve data easily during development.
  */
 function biblio_parse_field_link_data_csv() {
   $csv_file = drupal_get_path('module', 'biblio') . '/misc/biblio.field.link.data.csv';
@@ -214,7 +178,7 @@ function biblio_field_instances_missing($publication_type, $entity_type = 'bibli
 }
 
 /**
- * Get a list of all biblio fields that have been created, and prepended
+ * Get a list of all biblio fields that have been created, and are prefixed
  * with "biblio_"
  *
  * @return array 
