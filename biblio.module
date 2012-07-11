@@ -3520,7 +3520,7 @@ function biblio_contributor_load_multiple($cids = array(), $conditions = array()
  */
 function biblio_contributor_save($contributor) {
   module_load_include('inc', 'biblio', 'includes/biblio.contributors');
-  _save_contributors($contributor);
+  biblio_contributor_pre_save($contributor);
   entity_save('biblio_contributor', $contributor);
 }
 

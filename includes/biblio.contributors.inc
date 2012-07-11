@@ -28,8 +28,13 @@ function biblio_get_contributor_by_name($name) {
   $contributors = &drupal_static(__FUNCTION__);
 
   if (!isset($contributors[$name])) {
-  $query = db_select('biblio_contributor_data', 'bcd');
-    $contributors[$name] = $query->fields('bcd')->condition('bcd.name', $name)->execute()->fetchObject();
+    $query = new EntityFieldQuery();
+    $entities = $query->entityCondition('entity_type', 'biblio_contributor')
+      ->fieldCondition('biblio_contributor_name', 'value', $name)
+      ->execute();
+    if (!empty($entities)) {
+      $contributors[$name] = $entities->fetchObject();
+    }
   }
 
   return $contributors[$name];
@@ -246,50 +251,29 @@ function _biblio_contributor_usort($a, $b) {
   return ($a['rank'] < $b['rank']) ? -1 : 1;
 }
 /**
- * Save contributors to the database
- * @param $authors
- * @param $nid
- * @param $vid
- * @param $update
- * @return success of database operations
+ * Perform actions to a contributor object before saving
+ * @param object $contributor
+ * @return success of operations
  */
-function _save_contributors($contributor) {
+function biblio_contributor_pre_save($contributor) {
   $rank = 0;
+  $wrapper = biblio_wrapper($contributor, 'biblio_contributor');
+  $name = $wrapper->biblio_contributor_name->value();
+  $cid = $wrapper->cid->value();
 
-  if (!empty($author['name'])) {
-    if (isset($author['cid']) && !empty($author['cid'])) {
-      $auth = biblio_get_contributor($author['cid']);
-      if (!empty($auth) && isset($auth->name) && $auth->name != $author['name']) {
-        $author['cid'] = '';
-      }
-    }
+  if (!empty($name)) {
     // if we don't have a cid, lets see if we can find and exact match to the name and use that cid
-    if (!isset($author['cid']) || empty($author['cid'])) {
-      $auth = biblio_get_contributor_by_name($author['name']);
+    if (!isset($cid) || empty($cid)) {
+      $auth = biblio_get_contributor_by_name($name);
       if (!empty($auth) && isset($auth->cid)) {
-        $author['cid'] = $auth->cid;
+        dpm('duplicate author found');
+        // $author['cid'] = $auth->cid;
       }
     }
 
-    if (empty($author['cid'])) {
-      $contributors[$key] = $author = biblio_parse_author($author);
+    if (empty($cid)) {
+      biblio_parse_author($contributor);
     }
-
-    if (empty ($author['cid'])) {
-      biblio_save_contributor($author);
-      if (empty ($author['cid'])) return FALSE;
-    }
-
-    $link_array = array(
-      'nid' => $nid,
-      'vid' => $vid,
-      'cid' => $author['cid'],
-      'rank' => $rank++, //((isset($author['rank']) && is_numeric($author['rank'])) ? $author['rank'] : $key),
-      'auth_type' => !empty($author['auth_type']) ? $author['auth_type'] :  $author['auth_category'],
-      'auth_category' =>  $author['auth_category'],
-    );
-
-    if (!drupal_write_record('biblio_contributor', $link_array)) return FALSE;
   }
   //TODO  check if it is necessary to reset aka here...
   //  db_query("UPDATE {biblio_contributor_data} SET aka = cid WHERE aka = 0 OR aka IS NULL");
@@ -331,9 +315,9 @@ function _save_contributors($contributor) {
  * @param $contribution Contributor entity object
  * @return unknown_type
  */
-function biblio_parse_author($author_object, $category = 0) {
-  $author_wrapper = biblio_wrapper($author_object, 'biblio_contributor');
-  $author_name = $author_wrapper->biblio_contributor_name->value();
+function biblio_parse_author($contributor) {
+  $wrapper = biblio_wrapper($contributor, 'biblio_contributor');
+  $name = $wrapper->biblio_contributor_name->value();
   
   if (isset($category) && $category == 5) {
     $author_object->firstname = '';
@@ -343,7 +327,7 @@ function biblio_parse_author($author_object, $category = 0) {
     $author_object->literal = 1;
   }
   else {
-    $value = trim($author_name);
+    $value = trim($name);
     $appellation = $prefix = $surname = $firstname = $initials = '';
     $prefix = "";
     $value = preg_replace("/\s{2,}/", ' ', $value); // replace multiple white space by single space
@@ -385,14 +369,16 @@ function biblio_parse_author($author_object, $category = 0) {
     $prefix .= $prefix2;
     //var_dump($prefix);
     //$surname = $surname . ' ' . $appellation;
-    $author_object->firstname = trim($firstname);
-    $author_object->initials = (strlen(trim($initials)) > 10) ? drupal_substr(trim($initials), 0, 10) : trim($initials);
-    $author_object->lastname = trim($surname);
-    $author_object->prefix = trim($prefix);
-    $author_object->suffix = trim($appellation);
+    $initials = (strlen(trim($initials)) > 10) ? drupal_substr(trim($initials), 0, 10) : trim($initials);
+    $wrapper->biblio_contributor_first_name = (empty($firstname))? NULL : trim($firstname);
+    $wrapper->biblio_contributor_initials = (empty($initials))? NULL : $initials;
+    $wrapper->biblio_contributor_last_name = (empty($surname))? NULL : trim($surname);
+    $wrapper->biblio_contributor_prefix = (empty($prefix))? NULL : trim($prefix);
+    $wrapper->biblio_contributor_suffix = (empty($appellation))? NULL : trim($appellation);
   }
-  $author_object->md5 =  _md5sum($author_object);
-  return $author_object;
+  // @todo: get hashing working for contributors
+  // $author_object->md5 =  _md5sum($author_object);
+  return $contributor;
 }
 /**
  * @param $creator
