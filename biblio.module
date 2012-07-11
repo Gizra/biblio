@@ -3262,12 +3262,17 @@ function biblio_form_submit($form, &$form_state) {
     // Only for Contributor name fields that had values submitted...
     if (biblio_contribution_has_contributor($contribution)) {
       // Save contributor first, so we can get a cid for contribution entity ref
+      field_attach_submit(
+        'biblio_contributor', $contribution->contributor, $form, $form_state);
       biblio_contributor_save($contribution->contributor);
       $contribution_wrapper = biblio_wrapper($contribution, 'biblio_contribution');
       // Associate the contribution with the biblio
       $contribution_wrapper->biblio_biblio_ref->set($biblio->bid);
       // Associate the contribution with a contributor
-      $contribution_wrapper->biblio_contributor_ref->set($contribution->contributor->cid);
+      $contribution_wrapper->biblio_contributor_ref->set(
+        $contribution->contributor->cid);
+      field_attach_submit(
+        'biblio_contribution', $contribution, $form, $form_state);
       entity_save('biblio_contribution', $contribution);
     }
   }
