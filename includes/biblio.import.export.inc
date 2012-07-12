@@ -706,8 +706,8 @@ function biblio_create_imported_contributions(&$biblio) {
     $contribution->biblio_contributor_ref = $contribution->contributor->cid;
     $contribution_wrap = biblio_wrapper($contribution, 'biblio_contribution');
     foreach($contribution as $field => $value) {
-      $derp = biblio_is_field_instance($field, 'biblio_contribution', 'contribution');
-      if ($derp === TRUE) {
+      $is_instance = biblio_is_field_instance($field, 'biblio_contribution', 'contribution');
+      if ($is_instance === TRUE) {
         $contribution->$field = array($biblio->language=>array(0=>array('value'=>$value)));
         $contribution_wrap->$field->set($value);
       }

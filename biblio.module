@@ -2897,7 +2897,7 @@ function biblio_entity_info() {
   if (!empty($contributor_categories)) {
     foreach($contributor_categories as $type => $info) {
       $return['biblio_contributor']['bundles'][$type] = array(
-        'label' => $info->name . 'derp',
+        'label' => $info->name,
         'admin' => array(
           'path' => 'admin/config/content/biblio/author/type/%contributor_bundle',
           'real path' => 'admin/config/content/biblio/author/type/' . str_replace('_', '-', $type),

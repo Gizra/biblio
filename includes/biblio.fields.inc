@@ -72,16 +72,27 @@ function biblio_add_fields() {
  * for example, a biblio publication type
  */
 function biblio_add_field_instances($entity, $bundle) {
+  // Get default field instance data
   $file = drupal_get_path(
     'module', 'biblio') . '/misc/default_field_instances.json';
-  $json = json_decode(file_get_contents($file), TRUE);
+  $default_instances = json_decode(file_get_contents($file), TRUE);
+
+  // Get default field instance name data
+  $file = drupal_get_path(
+    'module', 'biblio') . '/misc/default_field_names.json';
+  $default_names = json_decode(file_get_contents($file), TRUE);
+
 
   // @todo: remove all timers after development
   timer_start('field_instances_creation');
-  foreach ($json as $instance) {
+  foreach ($default_instances as $instance) {
     // We only want to add field instances for the entity type specified
     if ($instance['entity_type'] != $entity) {
       continue;
+    }
+    $field_name = $instance['field_name'];
+    if (isset($default_names[$bundle][$field_name])) {
+      $instance['label'] = $default_names[$bundle][$field_name];
     }
 
     // Set the required bundle key for the instance array
@@ -103,43 +114,39 @@ function biblio_add_field_instances($entity, $bundle) {
 }
 
 /**
- * Gets data from the biblio.field.link.data.csv file and creates a structured
- * array for use with field creation
- *
- * @return array
- * Array of rows from the biblio.field.link.data.csv file, each row containing
- * an array of values from the csv. Array is structured like so:
- *  0 => array(
- *    'title' => 'Human-Readable Field Title',
- *    'hint' => 'This is a hint to give to the user next to the field',
- *    ... other attrubutes
- *  1 => array(
- *    'title' => 'Another Title',
- *    and so on...
+ * Gets data from biblio.field.type.data.csv and returns it as an array
  *    
  *  @todo remove this after development. I'm only keeping it for the time being,
  *  so that I can retrieve data easily during development.
  */
-function biblio_parse_field_link_data_csv() {
-  $csv_file = drupal_get_path('module', 'biblio') . '/misc/biblio.field.link.data.csv';
+function biblio_parse_field_type_data_csv() {
+  $csv_file = drupal_get_path('module', 'biblio') . '/misc/biblio.field.type.data.csv';
   $file_handle = fopen($csv_file, 'r');
   // array containing an array for each row in the csv
   $file_data = array();
   // the first line containing column names
   $header_line = fgetcsv($file_handle, 10000, ","); 
-  // count for array keys in the while loop. Starts at 1 to match the fid in the csv
-  $count = 1;
+  $info = entity_get_info('biblio');
+  $fields = field_info_fields();
+
   while (!feof($file_handle)) {
     // the rest of the lines in the csv containing actual field data
-    $data_line = fgetcsv($file_handle, 10000, ',');
-    $file_data[$count] = array();
-    foreach ($header_line as $key => $header_value) {
-      $file_data[$count][$header_value] = $data_line[$key];
+    $row = fgetcsv($file_handle, 10000, ',');
+    // Convert the human-readable name of the pubtype to machine name
+    $bundle = str_replace(' ', '_', trim(strtolower($row[0])));
+    // only for bundles that exist...
+    if (isset($info['bundles'][$bundle])) {
+      foreach ($header_line as $key => $field_name) {
+        // only for fields that exist...
+        if (isset($fields[$field_name])) {
+          $file_data[$bundle][$field_name] = $row[$key];
+        }
+      }
     }
-    $count++;
   }
   fclose($file_handle);
-  
+  ksort($file_data);
+
   return $file_data;
 }
 
@@ -153,27 +160,30 @@ function biblio_parse_field_link_data_csv() {
  * @return boolean Whether or not biblio's required field instances are indeed missing.
  */
 function biblio_field_instances_missing($publication_type, $entity_type = 'biblio') {
-  // Array of fields defined in /misc/biblio.field.link.data.csv
-  $biblio_instances = biblio_parse_field_link_data_csv();
-  // Get array of field instances that exist (if any) for the current pub type
-  $params = array('entity_type' => 'biblio', 'bundle' => $publication_type);
-  $existing_instances = field_read_instances($params);
-  $existing_instance_names = array();
-  foreach ($existing_instances as $key => $instance_data) {
-    // change the array values to the field name, so we can search for the 
-    // field instance in the array using in_array()
-    $existing_instance_names[] = $instance_data['field_name'];
+  $file = drupal_get_path(
+    'module', 'biblio') . '/misc/default_field_instances.json';
+  $default_instances = json_decode(file_get_contents($file), TRUE);
+
+  // Field instances that already exist. There could be user-created field
+  // instances here, so we can't assume that existing fields means we shouldn't
+  // add our default field instances.
+  $existing_instances = field_info_instances('biblio', $publication_type);
+  if (empty($existing_instances)) {
+    // If no instances exist, we definitely need to add the defaults
+    return TRUE;
   }
-  foreach ($biblio_instances as $key => $field_data) {
-    // If CSV line isn't blank &&
-    // The field name isn't already in the list of existing field instances &&
+  foreach ($default_instances as $key => $field_data) {
+    $instance_name = $field_data['field_name'];
+    // If field name isn't already in the list of existing field instances &&
     // Only for instances of the entity type given
-    if (isset($biblio_instances[$key]['field name']) && 
-        !in_array($field_data['field name'], $existing_instance_names) &&
-        $biblio_instances[$key]['entity'] == $entity_type) {
+    if (!isset($existing_instances[$instance_name]) &&
+        $default_instances[$key]['entity_type'] == $entity_type) {
+      // As soon as we find one default instance that doesn't already exist, we
+      // know that all defaults need to be added
       return TRUE;
     }
   }
+  // Every default field instance already exists for the given publication type
   return FALSE;
 }
 
