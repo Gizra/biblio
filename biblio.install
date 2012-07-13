@@ -638,6 +638,13 @@ function biblio_schema() {
 //        'default' => 0,
 //        'description' => '{biblio}.vid of the biblio',
 //      ),
+      'title' => array(
+        'description' => 'The title (label) of the entity',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
       'type' => array(
         'description' => 'The bundle name of the contributor entity',
         'type' => 'varchar',

@@ -2873,6 +2873,7 @@ function biblio_entity_info() {
     'entity keys' => array(
       'id' => 'cid',
       'bundle' => biblio_bundle_name('biblio_contributor'),
+      'label' => 'title',
     ),
     'bundle keys' => array(
       'bundle' => biblio_bundle_name('biblio_contributor'),

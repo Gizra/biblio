@@ -264,7 +264,8 @@ function biblio_contributor_pre_save($contributor) {
   if (!empty($name)) {
     // if we don't have a cid, lets see if we can find and exact match to the name and use that cid
     if (!isset($cid) || empty($cid)) {
-      $auth = biblio_get_contributor_by_name($name);
+      // @todo implement author duplicate resolution
+      // $auth = biblio_get_contributor_by_name($name);
       if (!empty($auth) && isset($auth->cid)) {
         dpm('duplicate author found');
         // $author['cid'] = $auth->cid;
@@ -275,6 +276,7 @@ function biblio_contributor_pre_save($contributor) {
       biblio_parse_author($contributor);
     }
   }
+  $contributor->title = $name;
   //TODO  check if it is necessary to reset aka here...
   //  db_query("UPDATE {biblio_contributor_data} SET aka = cid WHERE aka = 0 OR aka IS NULL");
   //  db_update('biblio_contributor_data')
