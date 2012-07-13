@@ -605,23 +605,23 @@ function biblio_menu() {
     'access arguments'  => array('access biblio content'),
     'file'              => '/includes/biblio.pages.inc',
   );
-  $items["$base/authors"] = array(
-    'title'             => 'Authors',
-    'page callback'     => 'biblio_author_page',
-    'access callback'   => 'user_access',
-    'access arguments'  => array('access biblio content'),
-    'file'              => '/includes/biblio.pages.inc',
-    'weight'            => 1,
-  );
-  $items["$base/keywords"] = array(
-    'title' => 'Keywords',
-    'page callback' => 'biblio_keyword_page',
-    'access callback' => 'user_access',
-    'access arguments' => array('access biblio content'),
-    'file' => '/includes/biblio.pages.inc',
-//    'type' => MENU_LOCAL_TASK,
-    'weight' => 2,
-  );
+//   $items["$base/contributors"] = array(
+//     'title'             => 'Contributors',
+//     'page callback'     => 'biblio_author_page',
+//     'access callback'   => 'user_access',
+//     'access arguments'  => array('access biblio content'),
+//     'file'              => '/includes/biblio.pages.inc',
+//     'weight'            => 1,
+//   );
+//   $items["$base/keywords"] = array(
+//     'title' => 'Keywords',
+//     // 'page callback' => 'biblio_keyword_page',
+//     'access callback' => 'user_access',
+//     'access arguments' => array('access biblio content'),
+//     'file' => '/includes/biblio.pages.inc',
+// //    'type' => MENU_LOCAL_TASK,
+//     'weight' => 2,
+//   );
   $items["$base/import"] = array(
     'title'             => 'Import',
     'page callback'     => 'drupal_get_form',
@@ -1646,7 +1646,7 @@ function biblio_contributor_widget($biblio, &$form_state) {
     $wrapper['biblio_contributors'][] = array();
     end($wrapper['biblio_contributors']);
     $delta = key($wrapper['biblio_contributors']);
-    $wrapper['biblio_contributors'][$delta] = biblio_contributor_form(
+    $wrapper['biblio_contributors'][$delta] = biblio_contributor_biblio_form(
       $contribution, 
       $form_state,
       $delta
@@ -1674,7 +1674,7 @@ function biblio_contributor_widget($biblio, &$form_state) {
       $contribution = entity_create('biblio_contribution', array());
       $contribution->contributor = entity_create('biblio_contributor', array());
       // Put the current contributor form in our main form
-      $wrapper['biblio_contributors'][] = biblio_contributor_form(
+      $wrapper['biblio_contributors'][] = biblio_contributor_biblio_form(
         $contribution, 
         $form_state,
         $contribution_delta
@@ -1725,9 +1725,9 @@ function biblio_get_contributor_options() {
  * @param integer $delta The iterative value of the current contribution. 0,1,2...etc.
  * @return string 
  */
-function biblio_contributor_form($contribution, &$form_state, $delta) {
+function biblio_contributor_biblio_form($contribution, &$form_state, $delta) {
   $form = array('#tree' => TRUE);
-  
+
   // Attach the field forms (contains Drupal fields) for the current contributor
   field_attach_form('biblio_contributor', $contribution->contributor, $form, $form_state);
   field_attach_form('biblio_contribution', $contribution, $form, $form_state);
@@ -3763,6 +3763,18 @@ function biblio_contributor_form_submit($form, &$form_state) {
   drupal_set_message(t('Contributor saved.'));
   
   $form_state['redirect'] = 'biblio/contributor/' . $contributor->cid;
+}
+
+function biblio_contributor_form($form, $form_state, $contributor = NULL) {
+  field_attach_form('biblio_contributor', $contributor, $form, $form_state);
+  $form_state['contributor'] = $contributor;
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save'),
+    '#weight' => 50,
+    '#submit' => array('biblio_contributor_form_submit'),
+  );
+  return $form;
 }
 
 /**
