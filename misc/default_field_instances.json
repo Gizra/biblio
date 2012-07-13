@@ -123,6 +123,7 @@
         "field_name": "biblio_year",
         "entity_type": "biblio",
         "label": "Year of Publication",
+        "description": "Enter YYYY, Submitted or In Press",
         "required": true,
         "widget": {
             "weight": "2"
@@ -183,6 +184,7 @@
         "field_name": "biblio_date",
         "entity_type": "biblio",
         "label": "Date Published",
+        "description": "(mm/yyyy)",
         "required": false,
         "widget": {
             "weight": "20"
@@ -231,6 +233,7 @@
         "field_name": "biblio_keywords",
         "entity_type": "biblio",
         "label": "Keywords",
+        "description": "Separate keywords using the \" , \" character",
         "required": false,
         "widget": {
             "weight": "24",
@@ -496,6 +499,7 @@
         "field_name": "biblio_refereed",
         "entity_type": "biblio",
         "label": "Refereed Designation",
+        "description": "If you are not sure, set this to Unknown or Does Not Apply",
         "required": false,
         "widget": {
             "weight": "46"
@@ -630,9 +634,23 @@
         }
     },
     {
+        "field_name": "biblio_contributor_affiliation",
+        "entity_type": "biblio_contributor",
+        "label": "Contributor Affiliation",
+        "description": "University, Company or Organization that the author is affiliated with.",
+        "required": false,
+        "widget": {
+            "weight": "2"
+        },
+        "settings": {
+            "vtab": "none"
+        }
+    },
+    {
         "field_name": "biblio_contributor_drupal_uid",
         "entity_type": "biblio_contributor",
         "label": "Drupal UID",
+        "description": "If this author has a an account (Drupal User ID) on this web site, you may select it here. This will help to link the authors publications with other content.",
         "required": false,
         "widget": {
             "weight": "2"

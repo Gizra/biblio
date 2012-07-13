@@ -240,6 +240,10 @@
         "type": "text"
     },
     {
+        "field_name": "biblio_contributor_affiliation",
+        "type": "text"
+    },
+    {
         "field_name": "biblio_contributor_drupal_uid",
         "type": "entityreference"
     }
