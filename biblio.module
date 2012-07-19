@@ -3249,11 +3249,16 @@ function biblio_form_submit($form, &$form_state) {
   if (empty($biblio->uid)) {
     $biblio->uid = $user->uid;
   }
+
+  biblio_create_contributor_refs($form_state);
+  
   // Notify field widgets. 
   field_attach_submit('biblio', $biblio, $form, $form_state);
   // Save the biblio.
+
   biblio_save($biblio);
-  
+
+
   // re-sort the authors by rank because the rank may have changed due to tabledrag on the input form
   // @todo get this working. Will need to add propery to 
 //  _biblio_contributor_sort($biblio->contributors);
@@ -3281,6 +3286,64 @@ function biblio_form_submit($form, &$form_state) {
   drupal_set_message(t('Biblio saved.'));
   
   $form_state['redirect'] = 'biblio/' . $biblio->bid; 
+}
+
+function biblio_create_contributor_refs(&$form_state) {
+  // Contributor data submitted from the form
+  $submitted_contributors = $form_state['values']['biblio_tabs'][1]['biblio_contributors'];
+  $contributors = array();
+
+  // Get contributor data that was submitted in the form
+  foreach ($submitted_contributors as $rank => $contrib) {
+    $name = $contrib['biblio_contributor_name']['biblio_contributor_name']
+      ['und'][0]['value'];
+    $category = $contrib['biblio_contributor_name']
+      ['biblio_contributor_category']['und'][0]['value'];
+
+    if (!empty($name) && !empty($category)) {
+      // Add data that will be useful for creating entity references
+      $contrib_data['name'] = $name;
+      $contrib_data['category'] = $category;
+      $contrib_data['rank'] = $contrib['biblio_contributor_name']['rank'];
+      $contributors[] = $contrib_data;
+    }
+  }
+
+  // Reset the existing values, so we can unlink a ref by deleting a name in
+  // the form.
+  $form_state['values']['field_primary_authors']['und'] = array();
+
+  foreach($contributors as $contrib) {
+    // Query field data to find out if contributor name already exists
+    $query = new EntityFieldQuery;
+    $result = $query
+      ->entityCondition('entity_type', 'biblio_contributor')
+      ->fieldCondition('biblio_contributor_name', 'value', $contrib['name'])
+      ->execute();
+    if (!empty($result)) {
+      // Contributor already exists. We just need the CID.
+      foreach($result['biblio_contributor'] as $cid => $data) {
+        $contrib['cid'] = $cid;
+        // only need first result
+        break;
+      }
+    }
+    else {
+      // Name not found in db. Contributor entity needs to be created
+      $contributor = entity_create('biblio_contributor', array());
+      $wrapper = biblio_wrapper($contributor, 'biblio_contributor');
+      $wrapper->biblio_contributor_name->set($contrib['name']);
+      // Save the contributor entity so we can get a CID
+      biblio_contributor_save($contributor);
+      $contrib['cid'] = $contributor->cid;
+    }
+    // Add the target CID and rank to the form values array, as if a user
+    // had submitted these values
+    $form_state['values']['field_primary_authors']['und'][] = array(
+      'target_id' => (string)$contrib['cid'],
+      '_weight' => $contrib['rank'],
+    );
+  }
 }
 
 /**
