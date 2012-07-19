@@ -624,12 +624,12 @@ function biblio_admin_settings() {
       '#description' => t('Set the bibliographic style of the "list" view.')
     );
   }
-  $form['style']['biblio_node_layout'] = array(
+  $form['style']['biblio_layout'] = array(
     '#type' => 'radios',
     '#title' => t('Biblio Layout'),
-    '#default_value' => variable_get('biblio_node_layout', 'view'),
+    '#default_value' => variable_get('biblio_node_layout', 'standard'),
     '#options' => array(
-      'view'    => t('Biblio View'),
+      'standard'    => t('Standard entity view'),
       'orig'    => t('Original'),
       'ft'      => t('Only Fulltext if available'),
       'tabular' => t('Tabular')
