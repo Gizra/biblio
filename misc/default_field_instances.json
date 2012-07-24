@@ -521,6 +521,106 @@
         }
     },
     {
+        "field_name": "biblio_primary_contributors",
+        "entity_type": "biblio",
+        "label": "Primary Contributors",
+        "required": false,
+        "widget": {
+            "type": "entityreference_autocomplete",
+            "weight": "1"
+        },
+        "settings": {
+            "vtab": "contributors"
+        },
+        "display": {
+            "default": {
+                "settings": {
+                    "link": 1
+                }
+            }
+        }
+    },
+    {
+        "field_name": "biblio_secondary_contributors",
+        "entity_type": "biblio",
+        "label": "Secondary Contributors",
+        "required": false,
+        "widget": {
+            "type": "entityreference_autocomplete",
+            "weight": "2"
+        },
+        "settings": {
+            "vtab": "contributors"
+        },
+        "display": {
+            "default": {
+                "settings": {
+                    "link": 1
+                }
+            }
+        }
+    },
+    {
+        "field_name": "biblio_tertiary_contributors",
+        "entity_type": "biblio",
+        "label": "Tertiary Contributors",
+        "required": false,
+        "widget": {
+            "type": "entityreference_autocomplete",
+            "weight": "3"
+        },
+        "settings": {
+            "vtab": "contributors"
+        },
+        "display": {
+            "default": {
+                "settings": {
+                    "link": 1
+                }
+            }
+        }
+    },
+    {
+        "field_name": "biblio_subsidiary_contributors",
+        "entity_type": "biblio",
+        "label": "Subsidiary Contributors",
+        "required": false,
+        "widget": {
+            "type": "entityreference_autocomplete",
+            "weight": "4"
+        },
+        "settings": {
+            "vtab": "contributors"
+        },
+        "display": {
+            "default": {
+                "settings": {
+                    "link": 1
+                }
+            }
+        }
+    },
+    {
+        "field_name": "biblio_corporate_contributors",
+        "entity_type": "biblio",
+        "label": "Corporate/Institutional Contributors",
+        "required": false,
+        "widget": {
+            "type": "entityreference_autocomplete",
+            "weight": "5"
+        },
+        "settings": {
+            "vtab": "contributors"
+        },
+        "display": {
+            "default": {
+                "settings": {
+                    "link": 1
+                }
+            }
+        }
+    },
+    {
         "field_name": "biblio_biblio_ref",
         "entity_type": "biblio_contribution",
         "label": "Biblio Reference",
@@ -657,6 +757,13 @@
         },
         "settings": {
             "vtab": "none"
+        },
+        "display": {
+            "default": {
+                "settings": {
+                    "link": 1
+                }
+            }
         }
     }
 ]
