@@ -1621,19 +1621,16 @@ function biblio_contributor_widget($biblio, &$form_state) {
   $contributors = biblio_get_contributors($biblio);
 
   if (isset($form_state['biblio_imported_contributors'])) {
-    // Reset the contributions array. If repopulating form, 4 blank
-    // contributions show up from the previous form build.
-    $contributions = array();
+    // Reset the contributors array. If repopulating form, 4 blank
+    // contributors show up from the previous form build.
     foreach ($form_state['biblio_imported_contributors'] as $author_data) {
-      $contribution = entity_create('biblio_contribution', array());
-      $wrapper = biblio_wrapper($contribution, 'biblio_contribution');
-      $wrapper->biblio_contributor_category->set($author_data['auth_category']);
-      $contribution->contributor = entity_create('biblio_contributor', array());
-      // We're done setting contribution values. Re-set the metadata wrapper for 
-      // contributor objects
-      $wrapper = biblio_wrapper($contribution->contributor, 'biblio_contributor');
-      $wrapper->biblio_contributor_name->set($author_data['name']);
-      $contributions[] = $contribution;
+      $contributors[] = $author_data;
+      // $contributor = entity_create('biblio_contributor', array());
+      // // We're done setting contribution values. Re-set the metadata wrapper for 
+      // // contributor objects
+      // $wrapper = biblio_wrapper($contributor, 'biblio_contributor');
+      // $wrapper->biblio_contributor_name->set($author_data['name']);
+      // $contributors[] = $contributor;
     }
   }
   // elseif (biblio_has_contributions($biblio)) {

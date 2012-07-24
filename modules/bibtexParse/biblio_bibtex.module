@@ -260,17 +260,17 @@ function _biblio_bibtex_import($entries, $terms = array(), $batch = FALSE, $sess
       }
     }
     
-    // Split contributor data into their own 'auth_category'-specific fields (primary, secondary, tertiary, etc)
-    foreach($biblio->biblio_contributors as $key => $contributor_data) {
-      switch ($contributor_data['auth_category']) {
-        case 1:
-          $biblio->biblio_authors[] = $contributor_data['name'];
-          break;
-        case 2:
-          $biblio->biblio_secondary_authors[] = $contributor_data['name'];
-          break;
-      }
-    }
+    // // Split contributor data into their own 'auth_category'-specific fields (primary, secondary, tertiary, etc)
+    // foreach($biblio->biblio_contributors as $key => $contributor_data) {
+    //   switch ($contributor_data['category']) {
+    //     case :
+    //       $biblio->biblio_authors[] = $contributor_data['name'];
+    //       break;
+    //     case 2:
+    //       $biblio->biblio_secondary_authors[] = $contributor_data['name'];
+    //       break;
+    //   }
+    // }
     $wrapper->biblio_title_secondary = (!empty($entry['journal'])) ? $entry['journal'] : NULL;
     if (!empty($entry['booktitle'])) $wrapper->biblio_title_secondary =  $entry['booktitle'];
     if (!empty($entry['series'])) {
@@ -292,7 +292,8 @@ function _biblio_bibtex_import($entries, $terms = array(), $batch = FALSE, $sess
     if (!empty($entry['school']))       $wrapper->biblio_publisher       = $entry['school'];
     if (!empty($entry['institution']))  $wrapper->biblio_publisher       = $entry['institution'];
     $wrapper->biblio_title           = (!empty($entry['title'])) ? $entry['title'] : NULL;
-    $wrapper->biblio_type_of_work    .= (!empty($entry['type'])) ? $entry['type'] : NULL;
+    $type_of_work                    = (!empty($entry['type'])) ? $entry['type'] . $type_of_work: NULL;
+    $wrapper->biblio_type_of_work    = (!empty($type_of_work)) ? $type_of_work : NULL;
     $wrapper->biblio_edition         = (!empty($entry['edition'])) ? $entry['edition'] : NULL;
     $wrapper->biblio_section         = (!empty($entry['chapter'])) ? $entry['chapter'] : NULL;
     $wrapper->biblio_place_published = (!empty($entry['address'])) ? $entry['address'] : NULL;
