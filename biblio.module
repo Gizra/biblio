@@ -1399,7 +1399,7 @@ function biblio_user_presave(&$edit, $account, $catagory) {
 function biblio_form($form, &$form_state, $biblio = NULL) {
   global $user;
   $fields = array();
-  
+
   $form['#id'] = 'biblio-form';
   
   // Check to see if we've imported a biblio object using a sub-module
@@ -1484,11 +1484,11 @@ function biblio_form($form, &$form_state, $biblio = NULL) {
 
     $tabs['contributors'] += biblio_contributor_widget($biblio, $form_state);
     // Insert the array of contributor objects into the biblio object
-    $biblio->contributions = $tabs['contributors']['contribution_objects'];
-    foreach ($biblio->contributions as $delta => $object) {
-      // @todo see if we need this
-      $form_state['contributor_' . $delta] = $object;
-    }
+    // $biblio->contributions = $tabs['contributors']['contribution_objects'];
+    // foreach ($biblio->contributions as $delta => $object) {
+    //   // @todo see if we need this
+    //   $form_state['contributor_' . $delta] = $object;
+    // }
     // Destroy the contributor and contribution entity objects from the form 
     // strucure. Keeping them causes the FAPI to try to iterate through the 
     // objects as an array, causing errors.
@@ -1556,6 +1556,9 @@ function biblio_form($form, &$form_state, $biblio = NULL) {
   $form['#validate']= array('biblio_form_validate');
   $form['#cache'] = TRUE;
   $form['biblio_tabs'] += $tabs;
+
+  biblio_hide_form_fields($form, $form_state);
+
   return $form;
 }
 
@@ -1610,8 +1613,13 @@ function biblio_form_vtab_info() {
  * @return array 
  */
 function biblio_contributor_widget($biblio, &$form_state) {
+  module_load_include('inc', 'biblio', 'includes/biblio.contributors');
+  $categories = biblio_contributor_categories();
   $init_count = variable_get('biblio_init_auth_count', 4);
-  $contribution_count = 0;
+  $contributor_count = 0;
+  // $biblio_wrapper = biblio_wrapper($biblio, 'biblio');
+  $contributors = biblio_get_contributors($biblio);
+
   if (isset($form_state['biblio_imported_contributors'])) {
     // Reset the contributions array. If repopulating form, 4 blank
     // contributions show up from the previous form build.
@@ -1628,54 +1636,51 @@ function biblio_contributor_widget($biblio, &$form_state) {
       $contributions[] = $contribution;
     }
   }
-  elseif (biblio_has_contributions($biblio)) {
-    $contributions = $biblio->contributions;
-  }
-  else {
-    $contributions = array();
-  }
+  // elseif (biblio_has_contributions($biblio)) {
+  //   $contributions = $biblio->contributions;
+  // }
+  // else {
+  //   $contributions = array();
+  // }
   // Container for just the contributors.
   $wrapper = array();
   $wrapper['biblio_contributors'] = array(
     '#tree'   => TRUE,
+    '#weight' => 0,
     '#theme'  => 'biblio_contributors',
     '#prefix' => '<div id="biblio-contributors-wrapper">',
     '#suffix' => '</div>',
   );
-  foreach ($contributions as $delta => $contribution) {
+  foreach ($contributors as $cid => $info) {
     $wrapper['biblio_contributors'][] = array();
     end($wrapper['biblio_contributors']);
     $delta = key($wrapper['biblio_contributors']);
-    $wrapper['biblio_contributors'][$delta] = biblio_contributor_biblio_form(
-      $contribution, 
-      $form_state,
-      $delta
-    );
-    $wrapper['contribution_objects'][] = $contribution;
-    $contribution_count++;
+    $wrapper['biblio_contributors'][$delta] = 
+      biblio_contributor_biblio_form($info, $form_state, $delta);
+    $contributor_count++;
   }
 
   if (isset($form_state['biblio_contrib_count'])) {
-    $form_count = max(max($init_count, $contribution_count), $form_state['biblio_contrib_count']);
+    $form_count = max(max($init_count, $contributor_count), $form_state['biblio_contrib_count']);
   }
   else {
-     $form_count = max($init_count, $contribution_count);
+     $form_count = max($init_count, $contributor_count);
     $form_state['biblio_contrib_count'] = $form_count;
   }
-  if ($form_count > $contribution_count) {
+  if ($form_count > $contributor_count) {
     $author = array();
     // array to hold the entity objects that will be generated for each contributor name field
     // (only those submitted with values will actually be saved)
     $wrapper['contributor_objects'] = array();
     // Need a counter for each contribution
-    $contribution_delta = $contribution_count;
-    for ($i = 0; $i < ($form_count - $contribution_count); $i++) {
+    $contribution_delta = $contributor_count;
+    for ($i = 0; $i < ($form_count - $contributor_count); $i++) {
       // Create blank entity objects
       $contribution = entity_create('biblio_contribution', array());
       $contribution->contributor = entity_create('biblio_contributor', array());
       // Put the current contributor form in our main form
       $wrapper['biblio_contributors'][] = biblio_contributor_biblio_form(
-        $contribution, 
+        array(), 
         $form_state,
         $contribution_delta
       );
@@ -1688,7 +1693,7 @@ function biblio_contributor_widget($biblio, &$form_state) {
     '#type'        => 'submit',
     '#value'       => t('More contributors'),
     '#description' => t("If there aren't enough boxes above, click here to add more."),
-    '#weight'      => 1,
+    '#weight'      => 0.1,
     '#submit'      => array('biblio_contributors_add_more'), // If no javascript action.
     '#limit_validation_errors' => array(),
     '#ajax'        => array(
@@ -1696,7 +1701,7 @@ function biblio_contributor_widget($biblio, &$form_state) {
            'wrapper'  => 'biblio-contributors-wrapper',
       ),
     );
-  
+
   return $wrapper;
 }
 
@@ -1725,46 +1730,58 @@ function biblio_get_contributor_options() {
  * @param integer $delta The iterative value of the current contribution. 0,1,2...etc.
  * @return string 
  */
-function biblio_contributor_biblio_form($contribution, &$form_state, $delta) {
+function biblio_contributor_biblio_form($contributor, &$form_state, $delta) {
+  module_load_include('inc', 'biblio', 'includes/biblio.contributors');
+  foreach (biblio_contributor_categories() as $category => $info) {
+    $category_options[$category] = $info['label'];
+  }
   $form = array('#tree' => TRUE);
 
   // Attach the field forms (contains Drupal fields) for the current contributor
-  field_attach_form('biblio_contributor', $contribution->contributor, $form, $form_state);
-  field_attach_form('biblio_contribution', $contribution, $form, $form_state);
+  // field_attach_form('biblio_contributor', $contribution->contributor, $form, $form_state);
+  // field_attach_form('biblio_contribution', $contribution, $form, $form_state);
   
+  $form['name'] = array(
+    '#type' => 'textfield',
+    '#autocomplete_path' =>  'biblio/autocomplete/contributor',
+    '#default_value' => isset($contributor['name']) ? $contributor['name'] : '',
+  );
+  $form['category'] = array(
+    '#type' => 'select',
+    '#default_value' => isset($contributor['category']) ? $contributor['category'] : '',
+    '#options' => $category_options,
+    '#multiple' => FALSE,
+  );
   $form['cid'] = array(
     '#type' => 'hidden',
-    '#default_value' => isset($contribution->contributor->cid) ? 
-      $contribution->contributor->cid : '',
+    '#default_value' => isset($contributor['cid']) ? $contributor['cid'] : '',
   );
   $form['rank'] = array(
     '#type' => 'textfield',
     '#size' => 6,
-    '#default_value' => isset($contribution->contributor->rank) ? 
-      $contribution->contributor->rank : '',
+    '#default_value' => isset($contributor['rank']) ? $contributor['rank'] : '',
    );
   // Get the language of the name field
-  $lang = $form['biblio_contributor_name']['#language'];
+  // $lang = $form['biblio_contributor_name']['#language'];
   // Set up autocomplete for the Name field
-  $form['biblio_contributor_name'][$lang][0]['value']['#autocomplete_path'] 
-    = 'biblio/autocomplete/contributor';
+  // $form['biblio_contributor_name'][$lang][0]['value']['#autocomplete_path'] 
+    // = 'biblio/autocomplete/contributor';
   // Set the form's parents so FAPI can distinguish between the multiple Name fields
-  $form['#parents'] = array(
-    'biblio_tabs', 
-    1, 
-    'biblio_contributors', 
-    $delta, 
-    'biblio_contributor_name'
-  );
-  // Remove the title above each field
-  $form['biblio_contributor_name'][$lang][0]['value']['#title'] = '';
-  // Reset the language to the language set for biblio_contributor_category field
-  $lang = $form['biblio_contributor_category']['#language'];
-  // Remove the "- None -" option from the select list
-  unset($form['biblio_contributor_category'][$lang]['#options']['_none']);
-  // Remove the title above each field
-  $form['biblio_contributor_category'][$lang]['#title'] = '';
-  
+  // $form['#parents'] = array(
+  //   'biblio_tabs', 
+  //   1, 
+  //   'biblio_contributors', 
+  //   $delta, 
+  //   'biblio_contributor_name'
+  // );
+  // // Remove the title above each field
+  // $form['biblio_contributor_name'][$lang][0]['value']['#title'] = '';
+  // // Reset the language to the language set for biblio_contributor_category field
+  // $lang = $form['biblio_contributor_category']['#language'];
+  // // Remove the "- None -" option from the select list
+  // unset($form['biblio_contributor_category'][$lang]['#options']['_none']);
+  // // Remove the title above each field
+  // $form['biblio_contributor_category'][$lang]['#title'] = '';
   return $form;
 }
 
@@ -1788,6 +1805,34 @@ function biblio_contributors_add_more_callback($form, &$form_state) {
 function biblio_contributors_add_more($form, &$form_state) {
   $form_state['biblio_contrib_count'] += variable_get('biblio_contrib_fields_delta', 2);
   $form_state['rebuild'] = TRUE;
+}
+
+function biblio_hide_form_fields(&$form, &$form_state) {
+  module_load_include('inc', 'biblio', 'includes/biblio.contributors');
+  $biblio = $form_state['biblio'];
+  $elements_to_hide = array();
+  $instances = field_info_instances('biblio', $biblio->publication_type);
+
+  // Hide all entity reference widgets, so we can make use of the default biblio
+  // contributor widget
+  foreach (biblio_contributor_categories() as $category => $info) {
+    $vtab = $instances[$info['field']]['settings']['vtab'];
+    $elements_to_hide[$vtab][] = $info['field'];
+  }
+
+  // Set all containers of form fields we want to hide, to hidden
+  foreach($elements_to_hide as $vtab => $fields) {
+    foreach($fields as $field) {
+      // Fields with a biblio vtab set
+      if (isset($form['biblio_tabs'][$vtab][$field])) {
+        $form['biblio_tabs'][$vtab][$field]['#type'] = 'hidden';
+      }
+      // Fields that aren't in a biblio vtab
+      else if (isset($form[$field])) {
+        $form[$field]['#type'] = 'hidden';
+      }
+    }
+  }
 }
 
 /**
@@ -3115,9 +3160,9 @@ function biblio_create($publication_type, $values = array()) {
  *   A fully-populated node object.
  */
 function biblio_load($bid, $reset = FALSE) {
-  $biblio = biblio_load_multiple(array($bid), array(), $reset);
-  
-  return reset($biblio);
+  $biblio = reset(biblio_load_multiple(array($bid), array(), $reset));
+
+  return $biblio;
 }
 
 /**
@@ -3209,23 +3254,23 @@ function biblio_form_validate($form, &$form_state) {
   if (isset($biblio)) {
     // Field validation.
     $i = 0;
-    foreach ($biblio->contributions as $contribution) {
-      // Validate the contribution entity object
-      field_attach_form_validate(
-          'biblio_contribution', 
-          $contribution,
-          $form['biblio_tabs']['contributors']['biblio_contributors'][$i],
-          $form_state
-      );
-      // Validate the contributor entity object
-      field_attach_form_validate(
-          'biblio_contributor',
-          $contribution->contributor,
-          $form['biblio_tabs']['contributors']['biblio_contributors'][$i],
-          $form_state
-      );
-      $i++;
-    }
+    // foreach ($biblio->contributions as $contribution) {
+    //   // Validate the contribution entity object
+    //   field_attach_form_validate(
+    //       'biblio_contribution', 
+    //       $contribution,
+    //       $form['biblio_tabs']['contributors']['biblio_contributors'][$i],
+    //       $form_state
+    //   );
+    //   // Validate the contributor entity object
+    //   field_attach_form_validate(
+    //       'biblio_contributor',
+    //       $contribution->contributor,
+    //       $form['biblio_tabs']['contributors']['biblio_contributors'][$i],
+    //       $form_state
+    //   );
+    //   $i++;
+    // }
     field_attach_form_validate('biblio', $biblio, $form, $form_state);
   }
 }
@@ -3244,7 +3289,7 @@ function biblio_form_submit($form, &$form_state) {
   
   // Pull the old biblio object out of the $form_state variable.
   $biblio = &$form_state['biblio'];
-  
+
   // Set the biblio's uid if it's being created at this time.
   if (empty($biblio->uid)) {
     $biblio->uid = $user->uid;
@@ -3258,62 +3303,36 @@ function biblio_form_submit($form, &$form_state) {
 
   biblio_save($biblio);
 
-
-  // re-sort the authors by rank because the rank may have changed due to tabledrag on the input form
-  // @todo get this working. Will need to add propery to 
-//  _biblio_contributor_sort($biblio->contributors);
-
-  foreach ($biblio->contributions as $contribution) {
-    // Only for Contributor name fields that had values submitted...
-    if (biblio_contribution_has_contributor($contribution)) {
-      // Save contributor first, so we can get a cid for contribution entity ref
-      field_attach_submit(
-        'biblio_contributor', $contribution->contributor, $form, $form_state);
-      biblio_contributor_save($contribution->contributor);
-      $contribution_wrapper = biblio_wrapper($contribution, 'biblio_contribution');
-      // Associate the contribution with the biblio
-      $contribution_wrapper->biblio_biblio_ref->set($biblio->bid);
-      // Associate the contribution with a contributor
-      $contribution_wrapper->biblio_contributor_ref->set(
-        $contribution->contributor->cid);
-      field_attach_submit(
-        'biblio_contribution', $contribution, $form, $form_state);
-      entity_save('biblio_contribution', $contribution);
-    }
-  }
-  
   // Notify the user.
   drupal_set_message(t('Biblio saved.'));
   
   $form_state['redirect'] = 'biblio/' . $biblio->bid; 
 }
 
+/**
+ * Creates contributor reference fields based on user-entered contributor names
+ * and categories. Also creates Contributor entities for those contributors
+ * that don't already exist.
+ *
+ * @param  array &$form_state
+ */
 function biblio_create_contributor_refs(&$form_state) {
-  // Contributor data submitted from the form
-  $submitted_contributors = $form_state['values']['biblio_tabs'][1]['biblio_contributors'];
-  $contributors = array();
-
-  // Get contributor data that was submitted in the form
-  foreach ($submitted_contributors as $rank => $contrib) {
-    $name = $contrib['biblio_contributor_name']['biblio_contributor_name']
-      ['und'][0]['value'];
-    $category = $contrib['biblio_contributor_name']
-      ['biblio_contributor_category']['und'][0]['value'];
-
-    if (!empty($name) && !empty($category)) {
-      // Add data that will be useful for creating entity references
-      $contrib_data['name'] = $name;
-      $contrib_data['category'] = $category;
-      $contrib_data['rank'] = $contrib['biblio_contributor_name']['rank'];
-      $contributors[] = $contrib_data;
-    }
-  }
+  module_load_include('inc', 'biblio', 'includes/biblio.contributors');
+  $categories = biblio_contributor_categories();
 
   // Reset the existing values, so we can unlink a ref by deleting a name in
   // the form.
-  $form_state['values']['field_primary_authors']['und'] = array();
+  // @todo use the field language, not 'und'
+  foreach($categories as $info) {
+    $form_state['values'][$info['field']]['und'] = array();
+  }
 
-  foreach($contributors as $contrib) {
+  foreach ($form_state['values']['biblio_contributors'] as $contrib) {
+    // Don't process fields left blank
+    if (empty($contrib['name']) || empty($contrib['category'])) {
+      continue;
+    }
+
     // Query field data to find out if contributor name already exists
     $query = new EntityFieldQuery;
     $result = $query
@@ -3337,9 +3356,13 @@ function biblio_create_contributor_refs(&$form_state) {
       biblio_contributor_save($contributor);
       $contrib['cid'] = $contributor->cid;
     }
+
+    // Get the field associated with the contributor's category
+    $field = $categories[$contrib['category']]['field'];
+
     // Add the target CID and rank to the form values array, as if a user
     // had submitted these values
-    $form_state['values']['field_primary_authors']['und'][] = array(
+    $form_state['values'][$field]['und'][] = array(
       'target_id' => (string)$contrib['cid'],
       '_weight' => $contrib['rank'],
     );

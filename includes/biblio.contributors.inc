@@ -471,3 +471,58 @@ function _loadMD5() {
   }
   return (count($md5)) ? $md5 : NULL;
 }
+
+function biblio_contributor_categories() {
+  return array(
+    'primary' => array(
+      'label' => t('Primary'),
+      'field' => 'biblio_primary_contributors',
+    ),
+    'secondary' => array(
+      'label' => t('Secondary'),
+      'field' => 'biblio_secondary_contributors',
+    ),
+    'tertiary' => array(
+      'label' => t('Tertiary'),
+      'field' => 'biblio_tertiary_contributors',
+    ),
+    'subsidiary' => array(
+      'label' => t('Subsidiary'),
+      'field' => 'biblio_subsidiary_contributors',
+    ),
+    'corporate' => array(
+      'label' => t('Corporate/Institutional'),
+      'field' => 'biblio_corporate_contributors',
+    ),
+  );
+}
+
+/**
+ * Extracts Contributor data from a Biblio entity and lists contributors
+ * together in an array.
+ *
+ * @param  [type] $biblio [description]
+ * @return [type]         [description]
+ */
+function biblio_get_contributors($biblio) {
+  $wrapper = biblio_wrapper($biblio, 'biblio');
+  $categories = biblio_contributor_categories();
+  $contributors = array();
+
+  foreach ($categories as $category => $info) {
+    // dpm('Catgegory: ' . $category);
+    // biblio_primary_contributors, biblio_secondary_contributors, etc...
+    $field = $info['field'];
+    foreach ($wrapper->{$field}->value() as $delta => $contributor) {
+      $cid = $wrapper->{$field}[$delta]->cid->value();
+      if (isset($cid) && !empty($cid)) {
+        $contributors[$cid]['name'] = 
+          $wrapper->{$field}[$delta]->biblio_contributor_name->value();
+        $contributors[$cid]['category'] = $category;
+      }
+    }
+  }
+
+  return $contributors;
+}
+
