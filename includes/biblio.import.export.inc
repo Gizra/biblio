@@ -599,12 +599,10 @@ function biblio_save_node($biblio, $terms = array(), $batch = FALSE, $session_id
         $wrapper->biblio_keywords[$delta]->set($term->tid);
       }
     }
+
+    biblio_create_imported_contributors($biblio);
     biblio_save($biblio);
 
-    if (!isset($biblio->contributions)) {
-      biblio_create_imported_contributions($biblio);
-    }
-    
     // Get all possible field instances for the current publication type
     $instances = field_info_instances('biblio', $biblio->publication_type);
     
@@ -687,32 +685,27 @@ function biblio_save_node_validate($node) {
   return $error;
 }
 
-function biblio_create_imported_contributions(&$biblio) {
-  foreach($biblio->biblio_contributors as $contributor) {
-    $contribution = entity_create('biblio_contribution', array());
-    $contribution->contributor = entity_create('biblio_contributor', array());
-    $contribution->contributor->biblio_contributor_name = $contributor['name'];
-    $contributor_wrap = biblio_wrapper($contribution->contributor, 'biblio_contributor');
-    foreach ($contribution->contributor as $field => $value) {
-      if (biblio_is_field_instance($field, 'biblio_contributor', 'contributor')) {
-        $contribution->contributor->$field = array($biblio->language=>array(0=>array('value'=>$value)));
-        $contributor_wrap->$field->set($value);
-      }
-    }
-    biblio_contributor_save($contribution->contributor);
+function biblio_create_imported_contributors(&$biblio) {
+  module_load_include('inc', 'biblio', 'includes/biblio.contributors');
+  module_load_include('inc', 'biblio', 'includes/biblio.fields');
+  $categories = biblio_contributor_categories();
+  $biblio_wrap = biblio_wrapper($biblio, 'biblio');
 
-    $contribution->biblio_contributor_category = $contributor['auth_category'];
-    $contribution->biblio_biblio_ref = $biblio->bid;
-    $contribution->biblio_contributor_ref = $contribution->contributor->cid;
-    $contribution_wrap = biblio_wrapper($contribution, 'biblio_contribution');
-    foreach($contribution as $field => $value) {
-      $is_instance = biblio_is_field_instance($field, 'biblio_contribution', 'contribution');
-      if ($is_instance === TRUE) {
-        $contribution->$field = array($biblio->language=>array(0=>array('value'=>$value)));
-        $contribution_wrap->$field->set($value);
+  foreach($biblio->biblio_contributors as $delta => $contributor_data) {
+    $contributor = entity_create('biblio_contributor', array());
+    $wrapper = biblio_wrapper($contributor, 'biblio_contributor');
+    $wrapper->biblio_contributor_name->set($contributor_data['name']);
+    biblio_contributor_save($contributor);
+    // Add the CID to the list of contributors, in case we need it later
+    $biblio->biblio_contributors[$delta]['cid'] = $contributor->cid;
+    foreach ($categories as $category => $info) {
+      // If imported contributor category matches one of our defined categories
+      if ($contributor_data['category'] === $category) {
+        // Create an entity reference pointing to a contributor entity for
+        // the specified category
+        $biblio_wrap->{$info['field']}[] = $contributor->cid;
       }
     }
-    entity_save('biblio_contribution', $contribution);
   }
 }
 

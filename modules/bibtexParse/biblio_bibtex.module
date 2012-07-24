@@ -241,15 +241,22 @@ function _biblio_bibtex_import($entries, $terms = array(), $batch = FALSE, $sess
       // split on ' and '
       $authorArray = preg_split("/\s(and|&)\s/i", trim($entry['author']));
       foreach ($authorArray as $key => $author) {
-        $biblio->biblio_contributors[]= array('name' => $author, 'auth_category' => 1, 'auth_type' => _biblio_get_auth_type(1, $type));
+        $biblio->biblio_contributors[]= array(
+          'name' => $author, 
+          'category' => 'primary', 
+        );
       }
     }
 
     $wrapper->biblio_citekey = (!empty($entry['bibtexCitation'])) ? $entry['bibtexCitation'] : NULL;
+
     if (!empty($entry['editor'])) {
       $authorArray = preg_split("/\s(and|&)\s/i", trim($entry['editor']));
       foreach ($authorArray as $key => $author) {
-        $biblio->biblio_contributors[]= array('name' => $author, 'auth_category' => 2, 'auth_type' => _biblio_get_auth_type(2, $type));
+        $biblio->biblio_contributors[]= array(
+          'name' => $author, 
+          'category' => 'secondary', 
+        );
       }
     }
     
