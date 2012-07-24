@@ -189,6 +189,46 @@
         }
     },
     {
+        "field_name": "biblio_primary_contributors",
+        "type": "entityreference",
+        "settings": {
+            "target_type": "biblio_contributor"
+        },
+        "cardinality": "-1"
+    },
+    {
+        "field_name": "biblio_secondary_contributors",
+        "type": "entityreference",
+        "settings": {
+            "target_type": "biblio_contributor"
+        },
+        "cardinality": "-1"
+    },
+    {
+        "field_name": "biblio_tertiary_contributors",
+        "type": "entityreference",
+        "settings": {
+            "target_type": "biblio_contributor"
+        },
+        "cardinality": "-1"
+    },
+    {
+        "field_name": "biblio_subsidiary_contributors",
+        "type": "entityreference",
+        "settings": {
+            "target_type": "biblio_contributor"
+        },
+        "cardinality": "-1"
+    },
+    {
+        "field_name": "biblio_corporate_contributors",
+        "type": "entityreference",
+        "settings": {
+            "target_type": "biblio_contributor"
+        },
+        "cardinality": "-1"
+    },
+    {
         "field_name": "biblio_biblio_ref",
         "type": "entityreference",
         "settings": {
@@ -207,11 +247,11 @@
         "type": "list_text",
         "settings": {
             "allowed_values": {
-                "1": "Primary",
-                "2": "Secondary",
-                "3": "Tertiary",
-                "4": "Subsidiary",
-                "5": "Corporate/Institutional"
+                "primary": "Primary",
+                "secondary": "Secondary",
+                "tertiary": "Tertiary",
+                "subsidiary": "Subsidiary",
+                "corporate": "Corporate/Institutional"
             }
         }
     },
@@ -245,6 +285,9 @@
     },
     {
         "field_name": "biblio_contributor_drupal_uid",
-        "type": "entityreference"
+        "type": "entityreference",
+        "settings": {
+            "target_type": "user"
+        }
     }
 ]
