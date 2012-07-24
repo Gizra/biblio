@@ -1809,15 +1809,18 @@ function biblio_contributors_add_more($form, &$form_state) {
 
 function biblio_hide_form_fields(&$form, &$form_state) {
   module_load_include('inc', 'biblio', 'includes/biblio.contributors');
-  $biblio = $form_state['biblio'];
   $elements_to_hide = array();
-  $instances = field_info_instances('biblio', $biblio->publication_type);
+  $biblio = (isset($form_state['biblio'])) ? $form_state['biblio'] : FALSE;
 
-  // Hide all entity reference widgets, so we can make use of the default biblio
-  // contributor widget
-  foreach (biblio_contributor_categories() as $category => $info) {
-    $vtab = $instances[$info['field']]['settings']['vtab'];
-    $elements_to_hide[$vtab][] = $info['field'];
+  if ($biblio) {
+    $instances = field_info_instances('biblio', $biblio->publication_type);
+
+    // Hide all entity reference widgets, so we can make use of the default biblio
+    // contributor widget
+    foreach (biblio_contributor_categories() as $category => $info) {
+      $vtab = $instances[$info['field']]['settings']['vtab'];
+      $elements_to_hide[$vtab][] = $info['field'];
+    }
   }
 
   // Set all containers of form fields we want to hide, to hidden
