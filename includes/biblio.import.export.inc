@@ -502,26 +502,26 @@ function biblio_import($import_file, $type, $userid = 1, $terms = NULL, $batch =
  * @return
  *   none
  */
-function biblio_export($format = "tagged", $nid = NULL, $popup = FALSE) {
+function biblio_export($format = "tagged", $bid = NULL, $popup = FALSE) {
   $params = array();
-  $nids = array();
+  $bids = array();
   $arg_list = array();
   module_load_include('inc', 'biblio', 'includes/biblio.contributors');
-  if ($nid === NULL ) {
+  if ($bid === NULL ) {
     module_load_include('inc', 'biblio', 'includes/biblio.pages');
     $uri = drupal_parse_url(request_uri());
     $arg_list += $uri['query'];
     $arg_list['page_limit'] = 0;
-    list($nids,,) = biblio_build_query($arg_list);
+    list($bids,,) = biblio_build_query($arg_list);
   }
-  elseif (!empty ($nid)) {
-    $nids[] = $nid;
+  elseif (!empty ($bid)) {
+    $bids[] = $bid;
   }
-  elseif (!count($nids)) {
+  elseif (!count($bids)) {
     return;
   }
 
-  module_invoke('biblio_' . $format, 'biblio_export', $nids);
+  module_invoke('biblio_' . $format, 'biblio_export', $bids);
 
 }
 
