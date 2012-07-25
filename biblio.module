@@ -1654,7 +1654,7 @@ function biblio_contributor_widget($biblio, &$form_state) {
     end($wrapper['biblio_contributors']);
     $delta = key($wrapper['biblio_contributors']);
     $wrapper['biblio_contributors'][$delta] = 
-      biblio_contributor_biblio_form($info, $form_state, $delta);
+      biblio_contributor_biblio_form($info, $biblio, $form_state);
     $contributor_count++;
   }
 
@@ -1678,9 +1678,9 @@ function biblio_contributor_widget($biblio, &$form_state) {
       $contribution->contributor = entity_create('biblio_contributor', array());
       // Put the current contributor form in our main form
       $wrapper['biblio_contributors'][] = biblio_contributor_biblio_form(
-        array(), 
-        $form_state,
-        $contribution_delta
+        array(),
+        $biblio,
+        $form_state
       );
       // Add the entity object to the array for later use
       $wrapper['contribution_objects'][] = $contribution;
@@ -1728,9 +1728,10 @@ function biblio_get_contributor_options() {
  * @param integer $delta The iterative value of the current contribution. 0,1,2...etc.
  * @return string 
  */
-function biblio_contributor_biblio_form($contributor, &$form_state, $delta) {
+function biblio_contributor_biblio_form($contributor, $biblio, &$form_state) {
   module_load_include('inc', 'biblio', 'includes/biblio.contributors');
-  foreach (biblio_contributor_categories() as $category => $info) {
+  foreach (biblio_contributor_categories($biblio->publication_type) 
+    as $category => $info) {
     $category_options[$category] = $info['label'];
   }
   $form = array('#tree' => TRUE);

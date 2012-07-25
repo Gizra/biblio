@@ -472,29 +472,40 @@ function _loadMD5() {
   return (count($md5)) ? $md5 : NULL;
 }
 
-function biblio_contributor_categories() {
-  return array(
+function biblio_contributor_categories($publication_type = NULL) {
+  $categories =  array(
     'primary' => array(
-      'label' => t('Primary'),
+      'label' => t('Primary Contributors'),
       'field' => 'biblio_primary_contributors',
     ),
     'secondary' => array(
-      'label' => t('Secondary'),
+      'label' => t('Secondary Contributors'),
       'field' => 'biblio_secondary_contributors',
     ),
     'tertiary' => array(
-      'label' => t('Tertiary'),
+      'label' => t('Tertiary Contributors'),
       'field' => 'biblio_tertiary_contributors',
     ),
     'subsidiary' => array(
-      'label' => t('Subsidiary'),
+      'label' => t('Subsidiary Contributors'),
       'field' => 'biblio_subsidiary_contributors',
     ),
     'corporate' => array(
-      'label' => t('Corporate/Institutional'),
+      'label' => t('Corporate/Institutional Contributors'),
       'field' => 'biblio_corporate_contributors',
     ),
   );
+
+  if ($publication_type) {
+    $instances = field_info_instances('biblio', $publication_type);
+    foreach($categories as $category => $info) {
+      if (isset($instances[$info['field']])) {
+        $categories[$category]['label'] = $instances[$info['field']]['label'];
+      }
+    }
+  }
+
+  return $categories;
 }
 
 /**
@@ -525,4 +536,3 @@ function biblio_get_contributors($biblio) {
 
   return $contributors;
 }
-

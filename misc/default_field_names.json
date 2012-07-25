@@ -5,6 +5,8 @@
     },
     "audiovisual": {
         "biblio_title_secondary": "Series Title ",
+        "biblio_secondary_contributors": "Series Editor ",
+        "biblio_subsidiary_contributors": "Performers ",
         "biblio_place_published": "City ",
         "biblio_number_of_volumes": "Extent of Work ",
         "biblio_number": "Number ",
@@ -15,6 +17,7 @@
     "bill": {
         "biblio_title_secondary": "Code ",
         "biblio_title_tertiary": "Legislative Body ",
+        "biblio_subsidiary_contributors": "Sponsor ",
         "biblio_volume": "Code Volume ",
         "biblio_number": "Bill Number ",
         "biblio_pages": "Code Pages ",
@@ -24,6 +27,8 @@
     },
     "book": {
         "biblio_title_secondary": "Series Title ",
+        "biblio_secondary_contributors": "Series Editor ",
+        "biblio_subsidiary_contributors": "Translator ",
         "biblio_alternate_title": "Abbreviation ",
         "biblio_place_published": "City ",
         "biblio_number": "Series Volume ",
@@ -33,6 +38,9 @@
     "book_chapter": {
         "biblio_title_secondary": "Book Title ",
         "biblio_title_tertiary": "Series Title ",
+        "biblio_secondary_contributors": "Editor ",
+        "biblio_tertiary_contributors": "Series Editor ",
+        "biblio_subsidiary_contributors": "Translator ",
         "biblio_alternate_title": "Abbreviation ",
         "biblio_place_published": "City ",
         "biblio_number": "Series Volume ",
@@ -43,6 +51,7 @@
         "biblio_title": "Case Name ",
         "biblio_title_secondary": "Reporter ",
         "biblio_short_title": "Abbreviated Case Name ",
+        "biblio_subsidiary_contributors": "Counsel ",
         "biblio_publisher": "Court ",
         "biblio_volume": "Reporter Volume ",
         "biblio_number_of_volumes": "Reporter Abbreviation ",
@@ -62,6 +71,8 @@
     },
     "classical": {
         "biblio_title_secondary": "Series Title ",
+        "biblio_secondary_contributors": "Series Editor ",
+        "biblio_subsidiary_contributors": "Translator ",
         "biblio_place_published": "City ",
         "biblio_number": "Series Volume ",
         "biblio_pages": "Number of Pages ",
@@ -70,12 +81,16 @@
     },
     "conference_paper": {
         "biblio_title_secondary": "Conference Name ",
+        "biblio_secondary_contributors": "Editor ",
         "biblio_place_published": "Conference Location "
     },
     "conference_proceedings": {
         "biblio_year": "Year of Conference ",
         "biblio_title_secondary": "Conference Name ",
         "biblio_title_tertiary": "Series Title ",
+        "biblio_secondary_contributors": "Editor ",
+        "biblio_tertiary_contributors": "Series Editor ",
+        "biblio_subsidiary_contributors": "Sponsor ",
         "biblio_place_published": "Conference Location ",
         "biblio_issn": "ISBN "
     },
@@ -86,6 +101,9 @@
     "film": {
         "biblio_year": "Year Released ",
         "biblio_title_secondary": "Series Title ",
+        "biblio_secondary_contributors": "Series Director ",
+        "biblio_tertiary_contributors": "Producer ",
+        "biblio_subsidiary_contributors": "Performers ",
         "biblio_place_published": "Country ",
         "biblio_pages": "Running Time ",
         "biblio_date": "Date Released ",
@@ -94,6 +112,7 @@
     },
     "government_report": {
         "biblio_title_tertiary": "Series Title ",
+        "biblio_secondary_contributors": "Department ",
         "biblio_section": "Section ",
         "biblio_issn": "Report Number "
     },
@@ -106,6 +125,8 @@
         "biblio_original_publication": "History "
     },
     "journal_article": {
+        "biblio_primary_contributors": "Authors",
+        "biblio_secondary_contributors": "Editors",
         "biblio_title_secondary": "Journal ",
         "biblio_alternate_title": "Alternate Journal ",
         "biblio_section": "Start Page ",
@@ -114,6 +135,7 @@
         "biblio_reprint_edition": "Reprint Edition "
     },
     "legal_ruling": {
+        "biblio_corporate_contributors": "Issuing Organization ",
         "biblio_alternate_title": "Abbreviation ",
         "biblio_volume": "Rule Number ",
         "biblio_number_of_volumes": "Session Number ",
@@ -142,6 +164,7 @@
     },
     "map": {
         "biblio_title_secondary": "Series Title ",
+        "biblio_secondary_contributors": "Series Editor ",
         "biblio_place_published": "City ",
         "biblio_pages": "Description ",
         "biblio_type_of_work": "Type ",
@@ -161,6 +184,8 @@
     "patent": {
         "biblio_title_secondary": "Published Source ",
         "biblio_title_tertiary": "International Title ",
+        "biblio_tertiary_contributors": "International Author ",
+        "biblio_corporate_contributors": "Issuing Organization ",
         "biblio_place_published": "Country ",
         "biblio_publisher": "Assignee ",
         "biblio_volume": "Patent Version Number ",
@@ -172,6 +197,7 @@
         "biblio_original_publication": "Priority Numbers "
     },
     "personal": {
+        "biblio_secondary_contributors": "Recipient ",
         "biblio_alternate_title": "Abbreviation ",
         "biblio_place_published": "City ",
         "biblio_number_of_volumes": "Communication Number ",
@@ -181,6 +207,7 @@
     },
     "report": {
         "biblio_title_secondary": "Series Title ",
+        "biblio_secondary_contributors": "Series Editor ",
         "biblio_place_published": "City ",
         "biblio_publisher": "Institution ",
         "biblio_number": "Document Number ",
@@ -190,6 +217,7 @@
     },
     "software": {
         "biblio_title_secondary": "Series Title ",
+        "biblio_secondary_contributors": "Series Editor ",
         "biblio_place_published": "City ",
         "biblio_pages": "Description ",
         "biblio_edition": "Version ",
@@ -212,6 +240,7 @@
     },
     "thesis": {
         "biblio_title_secondary": "Academic Department ",
+        "biblio_tertiary_contributors": "Advisor ",
         "biblio_place_published": "City ",
         "biblio_publisher": "University ",
         "biblio_volume": "Degree ",
@@ -234,6 +263,7 @@
     },
     "website": {
         "biblio_title_secondary": "Series Title ",
+        "biblio_secondary_contributors": "Series Editor ",
         "biblio_place_published": "City ",
         "biblio_publisher": "Publisher ",
         "biblio_volume": "Access Year ",

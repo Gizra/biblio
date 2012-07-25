@@ -113,6 +113,11 @@ function biblio_add_field_instances($entity, $bundle) {
       ' Time elapsed: ' . timer_read('field_instances_creation') . 'ms');
 }
 
+/*
+  Helper code:
+  module_load_include('inc', 'biblio', 'includes/biblio.fields');
+  dpm(json_encode(biblio_parse_field_type_data_csv()));
+ */
 /**
  * Gets data from biblio.field.type.data.csv and returns it as an array
  *    
@@ -138,7 +143,9 @@ function biblio_parse_field_type_data_csv() {
     if (isset($info['bundles'][$bundle])) {
       foreach ($header_line as $key => $field_name) {
         // only for fields that exist...
-        if (isset($fields[$field_name])) {
+        if (isset($fields[$field_name]) 
+          && $row[$key] != ''
+          && $row[$key] != '~') {
           $file_data[$bundle][$field_name] = $row[$key];
         }
       }
