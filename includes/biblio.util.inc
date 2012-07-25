@@ -159,7 +159,7 @@ function biblio_contextObject($biblio) {
     }
     for($i = 1; $i < count($biblio->biblio_contributors); $i++) {
       $author = $biblio->biblio_contributors[$i];
-      if ($author['auth_category'] == 1) {
+      if ($author['category'] == 'primary') {
         if (!empty($author['lastname'])) {
           $au = $author['lastname'];
           if (!empty($author['firstname']) || !empty($author['initials'])) $au .= ", ";

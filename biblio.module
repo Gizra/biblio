@@ -859,11 +859,11 @@ function biblio_menu() {
 //  );
   // @todo get this working with new contributor entity
   $items['admin/config/content/biblio/author'] = array(
-    'title'             => 'Authors',
-    'page callback'     => 'biblio_author_page',
+    'title'             => 'Contributors',
+    'page callback'     => 'biblio_admin_view',
+    'page arguments'    => array('biblio_admin_contributors', 'page'),
     'access callback'   => 'user_access',
     'access arguments'  => array('access biblio content'),
-    'file'              => '/includes/biblio.pages.inc',
     'type'              => MENU_LOCAL_TASK,
     'weight'            => -7
   );
@@ -1132,7 +1132,8 @@ function biblio_menu() {
     'title' => 'Biblio',
     'description' => 'List and edit Biblio entries. 
       Use Biblio for scholarly content, such as journal papers and books.',
-    'page callback' => 'biblio_admin_list',
+    'page callback' => 'biblio_admin_view',
+    'page arguments' => array('biblio_admin', 'page'),
     'access arguments' => array('administer biblio'),
   );
   $items['admin/structure/biblio/contributor/add'] = array(
@@ -3879,12 +3880,30 @@ function biblio_admin_paths() {
 }
 
 /**
- * hook_menu callback for admin/structure/biblio
- * Displays the biblio_admin_list view in 
+ * hook_menu callback for biblio administration pages that display a View.
+ *
+ * @param string $view_name The machine name of the view to show
+ * @param string $view_display The display ID of the view to show
+ *   
  * @return type 
  */
-function biblio_admin_list() {
-  return views_page('biblio_admin', 'page');
+function biblio_admin_view($view_name, $view_display) {
+  if (!module_exists('views')) {
+    drupal_set_message('This page requires the Views module be enabled.', 'error');
+    return;
+  }
+
+  $view_obj = views_get_view($view_name);
+  // If the view exists
+  if ($view_obj) {
+    return views_page($view_name, $view_display);
+  }
+  else {
+    $message = "Could not locate the <i>" . $view_name . "</i> View using the display <i>" . $view_display . "</i>. Please ensure that the Views module is enabled, and that the <i>" . $view_name . "</i> View is enabled.";
+    drupal_set_message($message, 'error');
+  }
+
+  return '';
 }
 
 /**
