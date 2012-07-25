@@ -461,7 +461,7 @@ function biblio_export_form_submit($form, & $form_state) {
 function biblio_import($import_file, $type, $userid = 1, $terms = NULL, $batch = FALSE, $session_id = NULL, &$context ) {
   global $user;
   $parsed = 0;
-  $nids = array();
+  $bids = array();
   $dups = array();
 
   if (isset($context['message']))  $context['message'] = t('Parsing file');
@@ -475,17 +475,17 @@ function biblio_import($import_file, $type, $userid = 1, $terms = NULL, $batch =
       $parsed = biblio_restore($file_content, $node_template, $node_array);
       break;
     default:
-      list($nids, $dups) = module_invoke($type, 'biblio_import', $import_file, $terms, $batch, $session_id);
+      list($bids, $dups) = module_invoke($type, 'biblio_import', $import_file, $terms, $batch, $session_id);
       break;
   }
-  $context['results']['nids']   = $nids;
+  $context['results']['bids']   = $bids;
   $context['results']['dups']   = $dups;
   $context['results']['format'] = $type;
   $context['results']['userid'] = $userid;
   $context['results']['user']   = $user;
   $context['results']['file']   = $import_file;
 
-  return $batch ? NULL : $nids;
+  return $batch ? NULL : $bids;
 }
 /**
  * Export nodes in a given file format.
