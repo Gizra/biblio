@@ -3213,7 +3213,6 @@ function biblio_save($biblio) {
 //    $dup_map = array('vid' => $duplicate, 'did' => $biblio->bid);
 //    drupal_write_record('biblio_duplicates', $dup_map);
 //  }
-  module_invoke_all('entity_presave', $biblio, 'biblio');
   entity_save('biblio', $biblio);
 }
 
