@@ -494,14 +494,14 @@ function biblio_permission() {
       'title' => t('Access Biblio content'),
       'description' => t('Allows the user to view Biblio nodes'),
       ),
-//    'create biblio' => array(
-//      'title' => t('Create Biblio'),
-//      'description' => t('Allows the user to create new Biblio nodes'),
-//      ),
-//    'edit all biblio entries' => array(
-//      'title' => t('Edit all Biblio entries'),
-//      'description' => t('Allows the user to edit ALL biblio entries regardless of who "owns" them, otherwise they are restricted to on'),
-//      ),
+   'create biblio' => array(
+     'title' => t('Create Biblio'),
+     'description' => t('Allows the user to create new Biblios'),
+     ),
+   'edit all biblio entries' => array(
+     'title' => t('Edit all Biblio entries'),
+     'description' => t('Allows the user to edit ALL biblio entries regardless of who "owns" them, otherwise they are restricted to on'),
+     ),
     'edit by all biblio authors' => array(
       'title' => t('Edit by all Biblio authors'),
       'description' => t('Allows any/all of the authors associated with a biblio entry to edit the biblio entry. This requires the Drupal UserID be mapped to a Biblio author ID'),
@@ -862,16 +862,16 @@ function biblio_menu() {
     'title'             => 'Contributors',
     'page callback'     => 'biblio_admin_view',
     'page arguments'    => array('biblio_admin_contributors', 'page'),
-    'access callback'   => 'user_access',
-    'access arguments'  => array('access biblio content'),
+    // 'access callback'   => 'user_access',
+    'access arguments'  => array('administer biblio'),
     'type'              => MENU_LOCAL_TASK,
     'weight'            => -7
   );
   $items['admin/config/content/biblio/author/list'] = array(
     'title'             => 'List',
     'page callback'     => 'biblio_author_page',
-    'access callback'   => 'user_access',
-    'access arguments'  => array('access biblio content'),
+    // 'access callback'   => 'user_access',
+    'access arguments'  => array('administer biblio'),
     'file'              => '/includes/biblio.pages.inc',
     'type'              => MENU_DEFAULT_LOCAL_TASK,
     'weight'            => -7
@@ -880,8 +880,8 @@ function biblio_menu() {
     'title'             => 'Edit author information',
     'page callback'     => 'drupal_get_form',
     'page arguments'    => array('biblio_admin_author_edit_form', 5),
-    'access callback'   => 'biblio_access',
-    'access arguments'  => array('edit_author'),
+    // 'access callback'   => 'biblio_access',
+    'access arguments'  => array('administer biblio'),
     'file'              => '/includes/biblio.admin.inc',
      'type'              => MENU_CALLBACK,
     'weight'            => -6
@@ -947,7 +947,7 @@ function biblio_menu() {
     'title'             => 'Keywords',
     'page callback'     => 'biblio_keyword_page',
     'access callback'   => 'user_access',
-    'access arguments'  => array('access biblio content'),
+    'access arguments'  => array('administer biblio'),
     'file'              => '/includes/biblio.pages.inc',
     'type'              => MENU_LOCAL_TASK,
     'weight'            => -7
@@ -956,7 +956,7 @@ function biblio_menu() {
     'title'             => 'List',
     'page callback'     => 'biblio_keyword_page',
     'access callback'   => 'user_access',
-    'access arguments'  => array('access biblio content'),
+    'access arguments'  => array('administer biblio'),
     'file'              => '/includes/biblio.pages.inc',
     'type'              => MENU_DEFAULT_LOCAL_TASK,
     'weight'            => -7
@@ -1035,6 +1035,7 @@ function biblio_menu() {
     'file'              => '/includes/biblio.import.export.inc',
     'type'              => MENU_CALLBACK
   );
+  // @todo implement in 7.x-2.x
   $items["$base/citekey"] = array(
     'title'             => '',
     'page callback'     => 'biblio_citekey_view',
@@ -1042,6 +1043,7 @@ function biblio_menu() {
     'file'              => '/includes/biblio.pages.inc',
     'type'              => MENU_CALLBACK
   );
+  // @todo implement in 7.x-2.x
   $items["$base/recent/rss.xml"] = array(
     'title'             => 'RSS feed',
     'page callback'     => 'biblio_recent_feed',
@@ -1069,7 +1071,7 @@ function biblio_menu() {
   );
   $items['admin/structure/biblio/add'] = array(
     'title' => 'Add Biblio',
-    'access arguments' => array('administer biblio'),
+    'access arguments' => array('create biblio'),
     'page callback' => 'biblio_add',
     'type' => MENU_LOCAL_ACTION,
   );
@@ -1107,12 +1109,13 @@ function biblio_menu() {
     'title' => 'View',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => -10,
+    'access arguments' => array('access biblio content')
   );
   $items['biblio/%biblio/edit'] = array(
     'title' => 'Edit',
     'page callback' => 'biblio_page_edit',
     'page arguments' => array(1),
-    'access arguments' => array('administer biblio'),
+    'access arguments' => array('edit all biblio entries'),
     'weight' => 0,
     'type' => MENU_LOCAL_TASK,
     'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
@@ -1122,7 +1125,7 @@ function biblio_menu() {
     'title' => 'Delete',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('biblio_delete_confirm', 1),
-    'access arguments' => array('administer biblio'),
+    'access arguments' => array('edit all biblio entries'),
     'weight' => 1,
     'type' => MENU_LOCAL_TASK, 
     'context' => MENU_CONTEXT_INLINE,
@@ -1134,12 +1137,12 @@ function biblio_menu() {
       Use Biblio for scholarly content, such as journal papers and books.',
     'page callback' => 'biblio_admin_view',
     'page arguments' => array('biblio_admin', 'page'),
-    'access arguments' => array('administer biblio'),
+    'access arguments' => array('create biblio'),
   );
   $items['admin/structure/biblio/contributor/add'] = array(
     'title' => 'Add Contributor',
     'page callback' => 'biblio_contributor_add', // callback
-    'access arguments' => array('administer biblio'),
+    'access arguments' => array('create biblio'),
     'file' => 'includes/biblio.admin.inc',
 //    'type' => MENU_LOCAL_ACTION,
 //    'tab_parent' => 'task',
@@ -1157,6 +1160,7 @@ function biblio_menu() {
     'title' => 'View',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => -10,
+    'access arguments' => array('access biblio content'),
   );
 
   $items['biblio/contributor/%biblio_contributor/delete'] = array(
@@ -1165,7 +1169,7 @@ function biblio_menu() {
     'title arguments' => array(2),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('biblio_contributor_delete_form', 2), //callback
-    'access arguments' => array('administer biblio'),
+    'access arguments' => array('edit all biblio entries'),
     'file' => 'includes/biblio.admin.inc',
   );
 
@@ -1173,7 +1177,7 @@ function biblio_menu() {
     'title' => 'Edit',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('biblio_contributor_form', 2),
-    'access arguments' => array('administer biblio'),
+    'access arguments' => array('edit all biblio entries'),
     'file' => 'includes/biblio.admin.inc',
     'type' => MENU_LOCAL_TASK,
     'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
@@ -2905,7 +2909,7 @@ function biblio_entity_info() {
           // menu args are 0 based, so  is the seventh part of the path, which
           // here is %biblio_bundle.
           'bundle argument' => 5,
-          'access arguments' => array('access biblio content'),
+          'access arguments' => array('administer biblio'),
         ),
       );
     }
@@ -2950,7 +2954,7 @@ function biblio_entity_info() {
           'path' => 'admin/config/content/biblio/author/type/%contributor_bundle',
           'real path' => 'admin/config/content/biblio/author/type/' . str_replace('_', '-', $type),
           'bundle argument' => 6,
-          'access arguments' => array('access biblio content'),
+          'access arguments' => array('administer biblio'),
         ),
         
       );
@@ -3060,7 +3064,21 @@ function biblio_bundle_name($entity_type) {
  * Access callback for the entity API.
  */
 function biblio_entity_access($op, $type = NULL, $account = NULL) {
-  return user_access('administer biblio', $account);
+  global $user;
+  if (!isset($account)) {
+    $account = $user;
+  }
+  switch ($op) {
+    case 'create':
+      return user_access('administer biblio', $account)
+          || user_access('create biblio', $account);
+    case 'view':
+      return user_access('administer biblio', $account)
+          || user_access('access biblio content', $account);
+    case 'edit':
+      return user_access('administer biblio')
+          || user_access('edit all biblio entries');
+  }
 }
 
 function biblio_bundle_load($type) {
