@@ -300,7 +300,7 @@ function biblio_import_batch_operations($session_id, $user, $userid, $terms, &$c
     $context['results']['terms']      = $terms;
     $context['sandbox']['progress']   = 0;
     $context['sandbox']['current_id'] = 0;
-    $context['results']['nids'] = array();
+    $context['results']['bids'] = array();
     $context['sandbox']['max'] = db_query("SELECT COUNT(DISTINCT(id)) FROM {biblio_import_cache} WHERE session_id = :sessid", array(':sessid' => $session_id))->fetchField();
     $context['sandbox']['itters'] = $context['sandbox']['max'] / $limit;
     $context['sandbox']['eta'] = 0;
@@ -632,7 +632,7 @@ function biblio_save_node($biblio, $terms = array(), $batch = FALSE, $session_id
       }
       
     }
-    
+
     if (!empty($validation_errors)) {
       foreach($validation_errors as $field => $value) {
         $message = $field . t(' was truncated to fit into the database column');
@@ -936,5 +936,23 @@ function biblio_dump_db_data_for_pot() {
   drupal_add_http_header('Content-Type', 'text/plain; charset=utf-8');
   drupal_add_http_header('Content-Disposition', 'attachment; filename=biblio_db_values.pot');
   print $output;
+}
+
+function biblio_remove_variable_properties(&$biblio) {
+  // All properties of the biblio object that may change between creation or 
+  // imports of the "same" biblio objects
+  $properties = array('created', 'changed', 'uid');
+  foreach($properties as $property) {
+    $temp[$property] = $biblio->{$property};
+    unset($biblio->{$property});
+  }
+
+  return $temp;
+}
+
+function biblio_retrieve_variable_properties(&$biblio, $temp) {
+  foreach($temp as $property => $value) {
+    $biblio->{$property} = $value;
+  }
 }
 

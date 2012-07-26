@@ -152,11 +152,11 @@ function biblio_bibtex_entity_delete($entity, $type) {
     return;
   }
   db_delete('biblio_bibtex')
-    ->condition('bid', $biblio->bid)
+    ->condition('bid', $entity->bid)
     ->execute();
 }
 
-function biblio_bibtex_entity_presave($entity, $type) {
+function biblio_bibtex_entity_insert($entity, $type) {
   if ($type != 'biblio') {
     return;
   }
@@ -167,7 +167,7 @@ function biblio_bibtex_entity_presave($entity, $type) {
 }
 
 function biblio_bibtex_biblio_import($file, $terms = array(), $batch = FALSE, $session_id = NULL, $save = TRUE, $string = FALSE) {
-  $nids = array();
+  $bids = array();
   $dups = array();
 
   module_load_include('php', 'biblio_bibtex', 'PARSEENTRIES');
@@ -184,9 +184,9 @@ function biblio_bibtex_biblio_import($file, $terms = array(), $batch = FALSE, $s
 
   if ($bibtex->count) {
     $entries =& $bibtex->getEntries();
-    list($nids, $dups) = _biblio_bibtex_import($entries, $terms, $batch, $session_id, $save);
+    list($bids, $dups) = _biblio_bibtex_import($entries, $terms, $batch, $session_id, $save);
   }
-  return array($nids, $dups);
+  return array($bids, $dups);
 }
 function biblio_bibtex_biblio_export($bids) {
   if (module_exists('popups') && $bid) {
@@ -312,7 +312,11 @@ function _biblio_bibtex_import($entries, $terms = array(), $batch = FALSE, $sess
     $wrapper->biblio_issn            = (!empty($entry['issn'])) ? $entry['issn'] : NULL;
     $wrapper->biblio_url             = (!empty($entry['url'])) ? $entry['url'] : NULL;
     $wrapper->biblio_doi             = (!empty($entry['doi'])) ? $entry['doi'] : NULL;
-    $biblio->biblio_bibtex_md5      = md5(serialize($biblio));
+    $temp_properties = biblio_remove_variable_properties($biblio);
+    $biblio->biblio_bibtex_md5      = md5(serialize((array)$biblio));
+    biblio_retrieve_variable_properties($biblio, $temp_properties);
+    $biblio->created = $temp_created;
+    $biblio->changed = $temp_changed;
     $biblio->biblio_import_type     = 'bibtex';
 
     if (!($dup = biblio_bibtex_check_md5($biblio->biblio_bibtex_md5))) {
@@ -470,7 +474,7 @@ function biblio_bibtex_check_md5($md5) {
   if (empty($bibtex_md5s)) {
     $result = db_query("SELECT * FROM {biblio_bibtex} ");
     foreach ($result as $row ) {
-      $bibtex_md5s[$row->biblio_bibtex_md5] = $row->nid;
+      $bibtex_md5s[$row->biblio_bibtex_md5] = $row->bid;
     }
   }
   if (isset($bibtex_md5s[$md5])) {

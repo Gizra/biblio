@@ -82,9 +82,9 @@ function _get_bibtex_field_map() {
 
   $map['field_map'] =  serialize(
         array(
-                'journal'      => 'biblio_secondary_title',
-                'booktitle'    => 'biblio_secondary_title',
-                'series'       => 'biblio_secondary_title',
+                'journal'      => 'biblio_title_secondary',
+                'booktitle'    => 'biblio_title_secondary',
+                'series'       => 'biblio_title_secondary',
                 'volume'       => 'biblio_volume',
                 'number'       => 'biblio_number',
                 'year'         => 'biblio_year',
@@ -145,11 +145,11 @@ function biblio_bibtex_schema() {
   $schema = array();
   $schema['biblio_bibtex'] = array(
     'fields' => array(
-      'nid'       => array('type' => 'int', 'not null' => TRUE),
+      'bid'       => array('type' => 'int', 'not null' => TRUE),
       'biblio_bibtex_md5' => array('type' => 'char', 'length' => 32, 'not null' => TRUE),
       'biblio_bibtex_id' => array('type' => 'varchar', 'length' => 255, 'not null' => FALSE),
   ),
-  'primary key' => array('nid'),
+  'primary key' => array('bid'),
   );
   return $schema;
 }
