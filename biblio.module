@@ -3213,6 +3213,7 @@ function biblio_save($biblio) {
 //    $dup_map = array('vid' => $duplicate, 'did' => $biblio->bid);
 //    drupal_write_record('biblio_duplicates', $dup_map);
 //  }
+  module_invoke_all('entity_presave', $biblio, 'biblio');
   entity_save('biblio', $biblio);
 }
 
@@ -3220,7 +3221,7 @@ function biblio_save($biblio) {
  * Delete single biblio entry.
  */
 function biblio_delete($biblio) {
-  entity_delete('biblio', entity_id('biblio' ,$biblio));
+  entity_delete_multiple('biblio', array($biblio));
 }
 
 /**
@@ -3229,7 +3230,16 @@ function biblio_delete($biblio) {
  * @param array $contributor_ids An array of biblio ids of the entities to delete
  */
 function biblio_delete_multiple($bids) {
-  // @todo delete keywords and contributors associated with a biblio. See http://drupal.org/node/1537326
+  if (!empty($bids)) {
+    $biblios = biblio_load_multiple($bids);
+  }
+
+  foreach ($biblios as $bid => $biblio) {
+    module_invoke_all('entity_delete', $biblio, 'biblio');
+    // @todo delete keywords, contributors, and field data associated with a 
+    // biblio. See http://drupal.org/node/1537326
+  }
+
   entity_delete_multiple('biblio', $bids);
 }
 
@@ -3459,7 +3469,11 @@ function biblio_form_get_contributors($form) {
  * @param type $view_mode View mode defined in biblio_entity_info().
  * @return type 
  */
-function biblio_page_view($biblio, $view_mode = 'full') {
+function biblio_page_view($biblio, $view_mode = 'full', $langcode = NULL) {
+  if (!isset($langcode)) {
+    $langcode = $GLOBALS['language_content']->language;
+  }
+
   global $user;
   $wrapper = biblio_wrapper($biblio);
   $title = $wrapper->biblio_title->value();
@@ -3500,6 +3514,8 @@ function biblio_page_view($biblio, $view_mode = 'full') {
   }
 
   drupal_set_title($title);
+
+  module_invoke_all('entity_view', $biblio, 'biblio', $view_mode, $langcode);
   return $biblio->content;
 }
 
