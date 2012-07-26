@@ -67,14 +67,14 @@ function biblio_bibtex_form_biblio_form_alter(&$form, &$form_state) {
 
 function biblio_bibtex_form_biblio_form_submit($form, &$form_state) {
   global $user;
-  $node_data = array();
+  $biblio_data = array();
   $dups = array();
 
   if (strlen($form_state['values']['paste_data_bibtex'])) {
-    list($node_data, $dups) = biblio_bibtex_biblio_import($form_state['values']['paste_data_bibtex'], array(), FALSE, NULL, FALSE, TRUE);
+    list($biblio_data, $dups) = biblio_bibtex_biblio_import($form_state['values']['paste_data_bibtex'], array(), FALSE, NULL, FALSE, TRUE);
   }
-  $biblio = $node_data[0];
-  if (!empty($node_data) && is_object($biblio)) {
+  $biblio = $biblio_data[0];
+  if (!empty($biblio_data) && is_object($biblio)) {
     $form_state['input']['publication_type'] = $form_state['publication_type'] =  $biblio->publication_type;
     $form_state['biblio_imported_contributors'] = $biblio->biblio_contributors;
     $form_state['biblio_imported'] = $biblio;
@@ -82,7 +82,7 @@ function biblio_bibtex_form_biblio_form_submit($form, &$form_state) {
 //    $form_state['storage']['biblio_type']  = $node_data[0]->biblio_type;
   }
   elseif (!empty($dups)) {
-    $message = t('The bibtex node that you are trying to paste into the form already exists in the database, see !url', array('!url' => l('node/' . $dups[0], 'node/' . $dups[0])));
+    $message = t('The bibtex node that you are trying to paste into the form already exists in the database, see !url', array('!url' => l('biblio/' . $dups[0], 'biblio/' . $dups[0])));
     form_set_error('paste_data_bibtex', $message);
   }
   $form_state['rebuild'] = TRUE;
@@ -118,12 +118,12 @@ function biblio_bibtex_entity_view($entity, $type, $view_mode, $langcode) {
  * @param $nid  the node id, if NULL then the current view is exported
  * @return  a link (<a href=...>BibTEX</a>)
  */
-function biblio_bibtex_biblio_export_link($nid = NULL, $filter = array()) {
+function biblio_bibtex_biblio_export_link($bid = NULL, $filter = array()) {
   $show_link = variable_get('biblio_export_links', array('bibtex' => TRUE));
   if (!$show_link['bibtex'] || !biblio_access('export')) return array();
   $base = variable_get('biblio_base', 'biblio');
 
-  if (module_exists('popups') && !empty($nid)) {
+  if (module_exists('popups') && !empty($bid)) {
     $link = array(
         'attributes' => array(
           'class' => 'popups',
@@ -135,35 +135,35 @@ function biblio_bibtex_biblio_export_link($nid = NULL, $filter = array()) {
           'title' => t("Click to download the BibTEX formatted file")));
   }
   $link['href']  = "$base/export/bibtex" ;
-  if (!empty($nid)) {
-    $link['href'] .= '/' . $nid;
+  if (!empty($bid)) {
+    $link['href'] .= '/' . $bid;
   }
   $link['title'] = t('BibTex');
 
-  if (empty($nid) && !empty($filter)) { // add any filters which may be on the current page
+  if (empty($bid) && !empty($filter)) { // add any filters which may be on the current page
     $link['query'] = $filter;
   }
 
   return array('biblio_bibtex' => $link);
 }
 
-function biblio_bibtex_node_delete($node) {
-  if ($node->type != 'biblio') {
+function biblio_bibtex_entity_delete($entity, $type) {
+  if ($type != 'biblio') {
     return;
   }
   db_delete('biblio_bibtex')
-    ->condition('nid', $node->nid)
+    ->condition('bid', $biblio->bid)
     ->execute();
 }
 
-function biblio_bibtex_node_insert($node) {
-  if ($node->type != 'biblio') {
+function biblio_bibtex_entity_presave($entity, $type) {
+  if ($type != 'biblio') {
     return;
   }
-  if (!isset($node->biblio_bibtex_md5)) {
+  if (!isset($entity->biblio_bibtex_md5)) {
     return;
   }
-  drupal_write_record('biblio_bibtex', $node);
+  drupal_write_record('biblio_bibtex', $entity);
 }
 
 function biblio_bibtex_biblio_import($file, $terms = array(), $batch = FALSE, $session_id = NULL, $save = TRUE, $string = FALSE) {
