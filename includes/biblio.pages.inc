@@ -527,7 +527,7 @@ function biblio_build_query($arg_list) {
 
   // show unpublished nodes to users with uid = 1 or  with 'Administer Biblio' permissions
   if ($user->uid != 1 && !biblio_access('admin')) {
-    $query->condition('n.status', 1);
+    // $query->condition('n.status', 1);
   }
   $result = $query->execute();
   $bids = array();
@@ -1208,7 +1208,7 @@ function _biblio_get_authors($filter = NULL) {
   }
 
   if (!biblio_access('edit_author')) {
-    $where['access'] = 'n.status = 1 ';
+    // $where['access'] = 'n.status = 1 ';
   }//show only published entries to everyone except admin
 
   if (count($where)) {
