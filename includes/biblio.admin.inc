@@ -1196,9 +1196,10 @@ function biblio_admin_type_mapper_form($format) {
   );
 
   $result = db_query('SELECT t.* FROM {biblio_types} as t WHERE t.tid > 0');
+  $types = biblio_types('biblio');
 
-  foreach ($result as $type) {
-    $biblio_type_options[$type->tid] =  $type->name;
+  foreach ($types as $type => $info) {
+    $biblio_type_options[$type] =  $info->name;
   }
 
   $biblio_type_options[0] = t('-none-');
@@ -1281,8 +1282,13 @@ function biblio_admin_field_mapper_form($format, $exportable = TRUE) {
     '#submit' => array('biblio_admin_field_mapper_form_reset_submit'),
   );
 
-  $schema = drupal_get_schema('biblio');
-  $fieldnames = array_keys($schema['fields']);
+  // Get default field names
+  // @todo: get field names for each publication types instead of just defaults
+  $json = drupal_get_path('module', 'biblio') . '/misc/default_fields.json';
+  $default_fields = json_decode(file_get_contents($json), TRUE);
+  foreach($default_fields as $field_info) {
+    $fieldnames[] = $field_info['field_name'];
+  }
   asort($fieldnames);
   $biblio_field_options[''] =  t('-none-');
   $biblio_field_options['title'] =  'title';
