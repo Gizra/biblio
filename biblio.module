@@ -3239,7 +3239,7 @@ function biblio_save($biblio) {
  * Delete single biblio entry.
  */
 function biblio_delete($biblio) {
-  entity_delete_multiple('biblio', array($biblio));
+  entity_delete_multiple('biblio', array($biblio->bid));
 }
 
 /**
@@ -3363,21 +3363,8 @@ function biblio_create_contributor_refs(&$form_state) {
       continue;
     }
 
-    // Query field data to find out if contributor name already exists
-    $query = new EntityFieldQuery;
-    $result = $query
-      ->entityCondition('entity_type', 'biblio_contributor')
-      ->fieldCondition('biblio_contributor_name', 'value', $contrib['name'])
-      ->execute();
-    if (!empty($result)) {
-      // Contributor already exists. We just need the CID.
-      foreach($result['biblio_contributor'] as $cid => $data) {
-        $contrib['cid'] = $cid;
-        // only need first result
-        break;
-      }
-    }
-    else {
+    $contrib['cid'] = biblio_contributor_exists($contrib['name']);
+    if (!$contrib['cid']) {
       // Name not found in db. Contributor entity needs to be created
       $contributor = entity_create('biblio_contributor', array());
       $wrapper = biblio_wrapper($contributor, 'biblio_contributor');
@@ -3397,6 +3384,25 @@ function biblio_create_contributor_refs(&$form_state) {
       '_weight' => $contrib['rank'],
     );
   }
+}
+
+function biblio_contributor_exists($name) {
+  // Query field data to find out if contributor name already exists
+    $query = new EntityFieldQuery;
+    $result = $query
+      ->entityCondition('entity_type', 'biblio_contributor')
+      ->fieldCondition('biblio_contributor_name', 'value', $name)
+      ->execute();
+    if (!empty($result)) {
+      // Contributor already exists. We just need the CID.
+      foreach($result['biblio_contributor'] as $cid => $data) {
+        // only need first result
+        return $cid;
+      }
+    }
+    else {
+      return FALSE;
+    }
 }
 
 /**
@@ -3620,9 +3626,18 @@ function biblio_form_delete_submit($form, &$form_state) {
     $destination = drupal_get_destination();
     unset($_GET['destination']);
   }
-  $biblio = $form['#biblio'];
+  $biblio = $form_state['biblio'];
   $form_state['redirect'] = array('biblio/' . $biblio->bid . '/delete',
       array('query' => $destination));
+}
+
+/**
+ * Create a contributor entity object
+ * @param  array $values an array of properties to set upon creation
+ * @return object  The Contributor object
+ */
+function biblio_contributor_create($values) {
+  return entity_create('biblio_contributor', $values);
 }
 
 /**

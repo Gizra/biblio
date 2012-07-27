@@ -697,18 +697,22 @@ function biblio_create_imported_contributors(&$biblio) {
   $biblio_wrap = biblio_wrapper($biblio, 'biblio');
 
   foreach($biblio->biblio_contributors as $delta => $contributor_data) {
-    $contributor = entity_create('biblio_contributor', array());
-    $wrapper = biblio_wrapper($contributor, 'biblio_contributor');
-    $wrapper->biblio_contributor_name->set($contributor_data['name']);
-    biblio_contributor_save($contributor);
+    $cid = biblio_contributor_exists($contributor_data['name']);
+    if (!$cid) {
+      $contributor = entity_create('biblio_contributor', array());
+      $wrapper = biblio_wrapper($contributor, 'biblio_contributor');
+      $wrapper->biblio_contributor_name->set($contributor_data['name']);
+      biblio_contributor_save($contributor);
+      $cid = $contributor->cid;
+    }
     // Add the CID to the list of contributors, in case we need it later
-    $biblio->biblio_contributors[$delta]['cid'] = $contributor->cid;
+    $biblio->biblio_contributors[$delta]['cid'] = $cid;
     foreach ($categories as $category => $info) {
       // If imported contributor category matches one of our defined categories
       if ($contributor_data['category'] === $category) {
         // Create an entity reference pointing to a contributor entity for
         // the specified category
-        $biblio_wrap->{$info['field']}[] = $contributor->cid;
+        $biblio_wrap->{$info['field']}[] = $cid;
       }
     }
   }
