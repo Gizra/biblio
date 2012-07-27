@@ -2676,11 +2676,6 @@ function biblio_views_handlers() {
     ),
   );
 }
-//
-//function biblio_views_pre_render(&$view) {
-//  dpm($view);
-//  @dpm($view->field['field_reference_contributor']);
-//}
 
 /**
  * @todo add relevant documentation

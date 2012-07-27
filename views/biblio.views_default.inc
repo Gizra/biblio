@@ -9,11 +9,451 @@
  */
 function biblio_views_default_views() {
   $view = new view;
+  $view->name = 'biblio_keywords';
+  $view->description = 'Shows all Biblio records that are associated with a given taxonomy term ID';
+  $view->tag = 'biblio';
+  $view->base_table = 'taxonomy_term_data';
+  $view->human_name = 'Biblio Keywords - Associated Biblio Records';
+  $view->core = 7;
+  $view->api_version = '3.0';
+  $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+
+  /* Display: Master */
+  $handler = $view->new_display('default', 'Master', 'default');
+  $handler->display->display_options['title'] = 'Biblio Keywords';
+  $handler->display->display_options['access']['type'] = 'perm';
+  $handler->display->display_options['access']['perm'] = 'access biblio content';
+  $handler->display->display_options['cache']['type'] = 'none';
+  $handler->display->display_options['query']['type'] = 'views_query';
+  $handler->display->display_options['query']['options']['distinct'] = TRUE;
+  $handler->display->display_options['query']['options']['query_comment'] = FALSE;
+  $handler->display->display_options['exposed_form']['type'] = 'basic';
+  $handler->display->display_options['exposed_form']['options']['autosubmit'] = 0;
+  $handler->display->display_options['exposed_form']['options']['autosubmit_hide'] = 1;
+  $handler->display->display_options['pager']['type'] = 'full';
+  $handler->display->display_options['pager']['options']['items_per_page'] = '20';
+  $handler->display->display_options['pager']['options']['offset'] = '0';
+  $handler->display->display_options['pager']['options']['id'] = '0';
+  $handler->display->display_options['pager']['options']['expose']['items_per_page'] = TRUE;
+  $handler->display->display_options['pager']['options']['expose']['items_per_page_options_all'] = 1;
+  $handler->display->display_options['style_plugin'] = 'table';
+  $handler->display->display_options['style_options']['grouping'] = array(
+    0 => array(
+      'field' => 'name_2',
+      'rendered' => 1,
+      'rendered_strip' => 0,
+    ),
+  );
+  $handler->display->display_options['style_options']['columns'] = array(
+    'name_2' => 'name_2',
+    'biblio_title' => 'biblio_title',
+  );
+  $handler->display->display_options['style_options']['default'] = '-1';
+  $handler->display->display_options['style_options']['info'] = array(
+    'name_2' => array(
+      'sortable' => 0,
+      'default_sort_order' => 'asc',
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'biblio_title' => array(
+      'sortable' => 1,
+      'default_sort_order' => 'asc',
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+  );
+  $handler->display->display_options['style_options']['override'] = 1;
+  $handler->display->display_options['style_options']['sticky'] = 0;
+  $handler->display->display_options['style_options']['empty_table'] = 0;
+  /* Relationship: Taxonomy term: Biblio using Keywords */
+  $handler->display->display_options['relationships']['reverse_biblio_keywords_biblio']['id'] = 'reverse_biblio_keywords_biblio';
+  $handler->display->display_options['relationships']['reverse_biblio_keywords_biblio']['table'] = 'taxonomy_term_data';
+  $handler->display->display_options['relationships']['reverse_biblio_keywords_biblio']['field'] = 'reverse_biblio_keywords_biblio';
+  $handler->display->display_options['relationships']['reverse_biblio_keywords_biblio']['required'] = 0;
+  /* Field: Taxonomy term: Name */
+  $handler->display->display_options['fields']['name_2']['id'] = 'name_2';
+  $handler->display->display_options['fields']['name_2']['table'] = 'taxonomy_term_data';
+  $handler->display->display_options['fields']['name_2']['field'] = 'name';
+  $handler->display->display_options['fields']['name_2']['label'] = 'Biblios with keyword';
+  $handler->display->display_options['fields']['name_2']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['name_2']['alter']['alter_text'] = 0;
+  $handler->display->display_options['fields']['name_2']['alter']['make_link'] = 0;
+  $handler->display->display_options['fields']['name_2']['alter']['absolute'] = 0;
+  $handler->display->display_options['fields']['name_2']['alter']['external'] = 0;
+  $handler->display->display_options['fields']['name_2']['alter']['replace_spaces'] = 0;
+  $handler->display->display_options['fields']['name_2']['alter']['trim_whitespace'] = 0;
+  $handler->display->display_options['fields']['name_2']['alter']['nl2br'] = 0;
+  $handler->display->display_options['fields']['name_2']['alter']['word_boundary'] = 1;
+  $handler->display->display_options['fields']['name_2']['alter']['ellipsis'] = 1;
+  $handler->display->display_options['fields']['name_2']['alter']['more_link'] = 0;
+  $handler->display->display_options['fields']['name_2']['alter']['strip_tags'] = 0;
+  $handler->display->display_options['fields']['name_2']['alter']['trim'] = 0;
+  $handler->display->display_options['fields']['name_2']['alter']['html'] = 0;
+  $handler->display->display_options['fields']['name_2']['element_label_colon'] = 1;
+  $handler->display->display_options['fields']['name_2']['element_default_classes'] = 1;
+  $handler->display->display_options['fields']['name_2']['hide_empty'] = 0;
+  $handler->display->display_options['fields']['name_2']['empty_zero'] = 0;
+  $handler->display->display_options['fields']['name_2']['hide_alter_empty'] = 1;
+  $handler->display->display_options['fields']['name_2']['link_to_taxonomy'] = 0;
+  $handler->display->display_options['fields']['name_2']['convert_spaces'] = 0;
+  /* Field: Biblio: Title */
+  $handler->display->display_options['fields']['biblio_title']['id'] = 'biblio_title';
+  $handler->display->display_options['fields']['biblio_title']['table'] = 'field_data_biblio_title';
+  $handler->display->display_options['fields']['biblio_title']['field'] = 'biblio_title';
+  $handler->display->display_options['fields']['biblio_title']['relationship'] = 'reverse_biblio_keywords_biblio';
+  $handler->display->display_options['fields']['biblio_title']['label'] = 'Biblio';
+  $handler->display->display_options['fields']['biblio_title']['alter']['alter_text'] = 0;
+  $handler->display->display_options['fields']['biblio_title']['alter']['make_link'] = 0;
+  $handler->display->display_options['fields']['biblio_title']['alter']['absolute'] = 0;
+  $handler->display->display_options['fields']['biblio_title']['alter']['external'] = 0;
+  $handler->display->display_options['fields']['biblio_title']['alter']['replace_spaces'] = 0;
+  $handler->display->display_options['fields']['biblio_title']['alter']['trim_whitespace'] = 0;
+  $handler->display->display_options['fields']['biblio_title']['alter']['nl2br'] = 0;
+  $handler->display->display_options['fields']['biblio_title']['alter']['word_boundary'] = 1;
+  $handler->display->display_options['fields']['biblio_title']['alter']['ellipsis'] = 1;
+  $handler->display->display_options['fields']['biblio_title']['alter']['more_link'] = 0;
+  $handler->display->display_options['fields']['biblio_title']['alter']['strip_tags'] = 0;
+  $handler->display->display_options['fields']['biblio_title']['alter']['trim'] = 0;
+  $handler->display->display_options['fields']['biblio_title']['alter']['html'] = 0;
+  $handler->display->display_options['fields']['biblio_title']['element_label_colon'] = 1;
+  $handler->display->display_options['fields']['biblio_title']['element_default_classes'] = 1;
+  $handler->display->display_options['fields']['biblio_title']['hide_empty'] = 0;
+  $handler->display->display_options['fields']['biblio_title']['empty_zero'] = 0;
+  $handler->display->display_options['fields']['biblio_title']['hide_alter_empty'] = 1;
+  $handler->display->display_options['fields']['biblio_title']['field_api_classes'] = 0;
+  /* Field: Biblio: Keywords */
+  $handler->display->display_options['fields']['biblio_keywords']['id'] = 'biblio_keywords';
+  $handler->display->display_options['fields']['biblio_keywords']['table'] = 'field_data_biblio_keywords';
+  $handler->display->display_options['fields']['biblio_keywords']['field'] = 'biblio_keywords';
+  $handler->display->display_options['fields']['biblio_keywords']['relationship'] = 'reverse_biblio_keywords_biblio';
+  $handler->display->display_options['fields']['biblio_keywords']['label'] = 'All Keywords';
+  $handler->display->display_options['fields']['biblio_keywords']['alter']['alter_text'] = 0;
+  $handler->display->display_options['fields']['biblio_keywords']['alter']['make_link'] = 1;
+  $handler->display->display_options['fields']['biblio_keywords']['alter']['path'] = 'biblio/keywords/[biblio_keywords-tid]';
+  $handler->display->display_options['fields']['biblio_keywords']['alter']['absolute'] = 0;
+  $handler->display->display_options['fields']['biblio_keywords']['alter']['external'] = 0;
+  $handler->display->display_options['fields']['biblio_keywords']['alter']['replace_spaces'] = 0;
+  $handler->display->display_options['fields']['biblio_keywords']['alter']['trim_whitespace'] = 0;
+  $handler->display->display_options['fields']['biblio_keywords']['alter']['nl2br'] = 0;
+  $handler->display->display_options['fields']['biblio_keywords']['alter']['word_boundary'] = 1;
+  $handler->display->display_options['fields']['biblio_keywords']['alter']['ellipsis'] = 1;
+  $handler->display->display_options['fields']['biblio_keywords']['alter']['more_link'] = 0;
+  $handler->display->display_options['fields']['biblio_keywords']['alter']['strip_tags'] = 0;
+  $handler->display->display_options['fields']['biblio_keywords']['alter']['trim'] = 0;
+  $handler->display->display_options['fields']['biblio_keywords']['alter']['html'] = 0;
+  $handler->display->display_options['fields']['biblio_keywords']['element_label_colon'] = 1;
+  $handler->display->display_options['fields']['biblio_keywords']['element_default_classes'] = 1;
+  $handler->display->display_options['fields']['biblio_keywords']['hide_empty'] = 0;
+  $handler->display->display_options['fields']['biblio_keywords']['empty_zero'] = 0;
+  $handler->display->display_options['fields']['biblio_keywords']['hide_alter_empty'] = 1;
+  $handler->display->display_options['fields']['biblio_keywords']['type'] = 'taxonomy_term_reference_plain';
+  $handler->display->display_options['fields']['biblio_keywords']['group_rows'] = 1;
+  $handler->display->display_options['fields']['biblio_keywords']['delta_offset'] = '0';
+  $handler->display->display_options['fields']['biblio_keywords']['delta_reversed'] = 0;
+  $handler->display->display_options['fields']['biblio_keywords']['delta_first_last'] = 0;
+  $handler->display->display_options['fields']['biblio_keywords']['field_api_classes'] = 0;
+  /* Contextual filter: Taxonomy term: Term ID */
+  $handler->display->display_options['arguments']['tid']['id'] = 'tid';
+  $handler->display->display_options['arguments']['tid']['table'] = 'taxonomy_term_data';
+  $handler->display->display_options['arguments']['tid']['field'] = 'tid';
+  $handler->display->display_options['arguments']['tid']['default_action'] = 'empty';
+  $handler->display->display_options['arguments']['tid']['default_argument_type'] = 'fixed';
+  $handler->display->display_options['arguments']['tid']['default_argument_skip_url'] = 0;
+  $handler->display->display_options['arguments']['tid']['summary']['number_of_records'] = '0';
+  $handler->display->display_options['arguments']['tid']['summary']['format'] = 'default_summary';
+  $handler->display->display_options['arguments']['tid']['summary_options']['items_per_page'] = '25';
+  $handler->display->display_options['arguments']['tid']['break_phrase'] = 0;
+  $handler->display->display_options['arguments']['tid']['not'] = 0;
+  /* Filter criterion: Taxonomy vocabulary: Machine name */
+  $handler->display->display_options['filters']['machine_name']['id'] = 'machine_name';
+  $handler->display->display_options['filters']['machine_name']['table'] = 'taxonomy_vocabulary';
+  $handler->display->display_options['filters']['machine_name']['field'] = 'machine_name';
+  $handler->display->display_options['filters']['machine_name']['value'] = array(
+    'biblio_keywords' => 'biblio_keywords',
+  );
+
+  /* Display: Page */
+  $handler = $view->new_display('page', 'Page', 'page_1');
+  $handler->display->display_options['path'] = 'biblio/keywords/%';
+
+
+  $views[$view->name] = $view;
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+  $view = new view;
+  $view->name = 'biblio_contributors_list';
+  $view->description = 'List of all Biblio Contributors';
+  $view->tag = 'biblio';
+  $view->base_table = 'biblio_contributor';
+  $view->human_name = 'Biblio Contributors List';
+  $view->core = 7;
+  $view->api_version = '3.0';
+  $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+
+  /* Display: Master */
+  $handler = $view->new_display('default', 'Master', 'default');
+  $handler->display->display_options['title'] = 'Biblio Contributors';
+  $handler->display->display_options['access']['type'] = 'perm';
+  $handler->display->display_options['access']['perm'] = 'access biblio content';
+  $handler->display->display_options['cache']['type'] = 'none';
+  $handler->display->display_options['query']['type'] = 'views_query';
+  $handler->display->display_options['query']['options']['query_comment'] = FALSE;
+  $handler->display->display_options['exposed_form']['type'] = 'basic';
+  $handler->display->display_options['pager']['type'] = 'full';
+  $handler->display->display_options['pager']['options']['items_per_page'] = '100';
+  $handler->display->display_options['style_plugin'] = 'grid';
+  $handler->display->display_options['row_plugin'] = 'fields';
+  /* Field: Contributor: Contributor ID */
+  $handler->display->display_options['fields']['cid']['id'] = 'cid';
+  $handler->display->display_options['fields']['cid']['table'] = 'biblio_contributor';
+  $handler->display->display_options['fields']['cid']['field'] = 'cid';
+  $handler->display->display_options['fields']['cid']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['cid']['alter']['alter_text'] = 0;
+  $handler->display->display_options['fields']['cid']['alter']['make_link'] = 0;
+  $handler->display->display_options['fields']['cid']['alter']['absolute'] = 0;
+  $handler->display->display_options['fields']['cid']['alter']['external'] = 0;
+  $handler->display->display_options['fields']['cid']['alter']['replace_spaces'] = 0;
+  $handler->display->display_options['fields']['cid']['alter']['trim_whitespace'] = 0;
+  $handler->display->display_options['fields']['cid']['alter']['nl2br'] = 0;
+  $handler->display->display_options['fields']['cid']['alter']['word_boundary'] = 1;
+  $handler->display->display_options['fields']['cid']['alter']['ellipsis'] = 1;
+  $handler->display->display_options['fields']['cid']['alter']['more_link'] = 0;
+  $handler->display->display_options['fields']['cid']['alter']['strip_tags'] = 0;
+  $handler->display->display_options['fields']['cid']['alter']['trim'] = 0;
+  $handler->display->display_options['fields']['cid']['alter']['html'] = 0;
+  $handler->display->display_options['fields']['cid']['element_label_colon'] = 1;
+  $handler->display->display_options['fields']['cid']['element_default_classes'] = 1;
+  $handler->display->display_options['fields']['cid']['hide_empty'] = 0;
+  $handler->display->display_options['fields']['cid']['empty_zero'] = 0;
+  $handler->display->display_options['fields']['cid']['hide_alter_empty'] = 1;
+  $handler->display->display_options['fields']['cid']['separator'] = '';
+  $handler->display->display_options['fields']['cid']['format_plural'] = 0;
+  /* Field: Contributor: Author Name */
+  $handler->display->display_options['fields']['biblio_contributor_name']['id'] = 'biblio_contributor_name';
+  $handler->display->display_options['fields']['biblio_contributor_name']['table'] = 'field_data_biblio_contributor_name';
+  $handler->display->display_options['fields']['biblio_contributor_name']['field'] = 'biblio_contributor_name';
+  $handler->display->display_options['fields']['biblio_contributor_name']['label'] = '';
+  $handler->display->display_options['fields']['biblio_contributor_name']['alter']['alter_text'] = 0;
+  $handler->display->display_options['fields']['biblio_contributor_name']['alter']['make_link'] = 1;
+  $handler->display->display_options['fields']['biblio_contributor_name']['alter']['path'] = 'biblio/contributor/[cid]/publications';
+  $handler->display->display_options['fields']['biblio_contributor_name']['alter']['absolute'] = 0;
+  $handler->display->display_options['fields']['biblio_contributor_name']['alter']['external'] = 0;
+  $handler->display->display_options['fields']['biblio_contributor_name']['alter']['replace_spaces'] = 0;
+  $handler->display->display_options['fields']['biblio_contributor_name']['alter']['trim_whitespace'] = 0;
+  $handler->display->display_options['fields']['biblio_contributor_name']['alter']['nl2br'] = 0;
+  $handler->display->display_options['fields']['biblio_contributor_name']['alter']['word_boundary'] = 1;
+  $handler->display->display_options['fields']['biblio_contributor_name']['alter']['ellipsis'] = 1;
+  $handler->display->display_options['fields']['biblio_contributor_name']['alter']['more_link'] = 0;
+  $handler->display->display_options['fields']['biblio_contributor_name']['alter']['strip_tags'] = 0;
+  $handler->display->display_options['fields']['biblio_contributor_name']['alter']['trim'] = 0;
+  $handler->display->display_options['fields']['biblio_contributor_name']['alter']['html'] = 0;
+  $handler->display->display_options['fields']['biblio_contributor_name']['element_label_colon'] = FALSE;
+  $handler->display->display_options['fields']['biblio_contributor_name']['element_default_classes'] = 1;
+  $handler->display->display_options['fields']['biblio_contributor_name']['hide_empty'] = 0;
+  $handler->display->display_options['fields']['biblio_contributor_name']['empty_zero'] = 0;
+  $handler->display->display_options['fields']['biblio_contributor_name']['hide_alter_empty'] = 1;
+  $handler->display->display_options['fields']['biblio_contributor_name']['field_api_classes'] = 0;
+  /* Sort criterion: Contributor: Last Name (biblio_contributor_last_name) */
+  $handler->display->display_options['sorts']['biblio_contributor_last_name_value']['id'] = 'biblio_contributor_last_name_value';
+  $handler->display->display_options['sorts']['biblio_contributor_last_name_value']['table'] = 'field_data_biblio_contributor_last_name';
+  $handler->display->display_options['sorts']['biblio_contributor_last_name_value']['field'] = 'biblio_contributor_last_name_value';
+  $handler->display->display_options['sorts']['biblio_contributor_last_name_value']['exposed'] = TRUE;
+  $handler->display->display_options['sorts']['biblio_contributor_last_name_value']['expose']['label'] = 'Last Name';
+  /* Sort criterion: Contributor: First Name (biblio_contributor_first_name) */
+  $handler->display->display_options['sorts']['biblio_contributor_first_name_value']['id'] = 'biblio_contributor_first_name_value';
+  $handler->display->display_options['sorts']['biblio_contributor_first_name_value']['table'] = 'field_data_biblio_contributor_first_name';
+  $handler->display->display_options['sorts']['biblio_contributor_first_name_value']['field'] = 'biblio_contributor_first_name_value';
+  $handler->display->display_options['sorts']['biblio_contributor_first_name_value']['exposed'] = TRUE;
+  $handler->display->display_options['sorts']['biblio_contributor_first_name_value']['expose']['label'] = 'First Name';
+  /* Sort criterion: Contributor: Contributor ID */
+  $handler->display->display_options['sorts']['cid']['id'] = 'cid';
+  $handler->display->display_options['sorts']['cid']['table'] = 'biblio_contributor';
+  $handler->display->display_options['sorts']['cid']['field'] = 'cid';
+  $handler->display->display_options['sorts']['cid']['exposed'] = TRUE;
+  $handler->display->display_options['sorts']['cid']['expose']['label'] = 'Contributor ID';
+
+  /* Display: Page */
+  $handler = $view->new_display('page', 'Page', 'page');
+  $handler->display->display_options['path'] = 'biblio/contributors';
+  $handler->display->display_options['menu']['type'] = 'normal';
+  $handler->display->display_options['menu']['title'] = 'Contributors';
+  $handler->display->display_options['menu']['weight'] = '0';
+  $handler->display->display_options['menu']['context'] = 0;
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+  
+  $view = new view;
+  $view->name = 'biblio_keywords_all';
+  $view->description = 'List of all Biblio Keywords';
+  $view->tag = 'biblio';
+  $view->base_table = 'taxonomy_term_data';
+  $view->human_name = 'Biblio Keywords';
+  $view->core = 7;
+  $view->api_version = '3.0';
+  $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+
+  /* Display: Master */
+  $handler = $view->new_display('default', 'Master', 'default');
+  $handler->display->display_options['title'] = 'Biblio Keywords';
+  $handler->display->display_options['group_by'] = TRUE;
+  $handler->display->display_options['access']['type'] = 'perm';
+  $handler->display->display_options['access']['perm'] = 'access biblio content';
+  $handler->display->display_options['cache']['type'] = 'none';
+  $handler->display->display_options['query']['type'] = 'views_query';
+  $handler->display->display_options['query']['options']['query_comment'] = FALSE;
+  $handler->display->display_options['exposed_form']['type'] = 'basic';
+  $handler->display->display_options['pager']['type'] = 'full';
+  $handler->display->display_options['pager']['options']['items_per_page'] = '100';
+  $handler->display->display_options['style_plugin'] = 'grid';
+  $handler->display->display_options['row_plugin'] = 'fields';
+  /* Relationship: Taxonomy term: Biblio using Keywords */
+  $handler->display->display_options['relationships']['reverse_biblio_keywords_biblio']['id'] = 'reverse_biblio_keywords_biblio';
+  $handler->display->display_options['relationships']['reverse_biblio_keywords_biblio']['table'] = 'taxonomy_term_data';
+  $handler->display->display_options['relationships']['reverse_biblio_keywords_biblio']['field'] = 'reverse_biblio_keywords_biblio';
+  $handler->display->display_options['relationships']['reverse_biblio_keywords_biblio']['required'] = 0;
+  /* Field: Taxonomy term: Term ID */
+  $handler->display->display_options['fields']['tid']['id'] = 'tid';
+  $handler->display->display_options['fields']['tid']['table'] = 'taxonomy_term_data';
+  $handler->display->display_options['fields']['tid']['field'] = 'tid';
+  $handler->display->display_options['fields']['tid']['label'] = '';
+  $handler->display->display_options['fields']['tid']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['tid']['alter']['alter_text'] = 0;
+  $handler->display->display_options['fields']['tid']['alter']['make_link'] = 0;
+  $handler->display->display_options['fields']['tid']['alter']['absolute'] = 0;
+  $handler->display->display_options['fields']['tid']['alter']['external'] = 0;
+  $handler->display->display_options['fields']['tid']['alter']['replace_spaces'] = 0;
+  $handler->display->display_options['fields']['tid']['alter']['trim_whitespace'] = 0;
+  $handler->display->display_options['fields']['tid']['alter']['nl2br'] = 0;
+  $handler->display->display_options['fields']['tid']['alter']['word_boundary'] = 1;
+  $handler->display->display_options['fields']['tid']['alter']['ellipsis'] = 1;
+  $handler->display->display_options['fields']['tid']['alter']['more_link'] = 0;
+  $handler->display->display_options['fields']['tid']['alter']['strip_tags'] = 0;
+  $handler->display->display_options['fields']['tid']['alter']['trim'] = 0;
+  $handler->display->display_options['fields']['tid']['alter']['html'] = 0;
+  $handler->display->display_options['fields']['tid']['element_label_colon'] = FALSE;
+  $handler->display->display_options['fields']['tid']['element_default_classes'] = 1;
+  $handler->display->display_options['fields']['tid']['hide_empty'] = 0;
+  $handler->display->display_options['fields']['tid']['empty_zero'] = 0;
+  $handler->display->display_options['fields']['tid']['hide_alter_empty'] = 1;
+  $handler->display->display_options['fields']['tid']['separator'] = '';
+  $handler->display->display_options['fields']['tid']['format_plural'] = 0;
+  /* Field: Taxonomy term: Name */
+  $handler->display->display_options['fields']['name']['id'] = 'name';
+  $handler->display->display_options['fields']['name']['table'] = 'taxonomy_term_data';
+  $handler->display->display_options['fields']['name']['field'] = 'name';
+  $handler->display->display_options['fields']['name']['label'] = '';
+  $handler->display->display_options['fields']['name']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['name']['alter']['alter_text'] = 0;
+  $handler->display->display_options['fields']['name']['alter']['make_link'] = 1;
+  $handler->display->display_options['fields']['name']['alter']['path'] = 'biblio/keywords/[tid]';
+  $handler->display->display_options['fields']['name']['alter']['absolute'] = 0;
+  $handler->display->display_options['fields']['name']['alter']['external'] = 0;
+  $handler->display->display_options['fields']['name']['alter']['replace_spaces'] = 0;
+  $handler->display->display_options['fields']['name']['alter']['trim_whitespace'] = 0;
+  $handler->display->display_options['fields']['name']['alter']['nl2br'] = 0;
+  $handler->display->display_options['fields']['name']['alter']['word_boundary'] = 0;
+  $handler->display->display_options['fields']['name']['alter']['ellipsis'] = 0;
+  $handler->display->display_options['fields']['name']['alter']['more_link'] = 0;
+  $handler->display->display_options['fields']['name']['alter']['strip_tags'] = 0;
+  $handler->display->display_options['fields']['name']['alter']['trim'] = 0;
+  $handler->display->display_options['fields']['name']['alter']['html'] = 0;
+  $handler->display->display_options['fields']['name']['element_label_colon'] = FALSE;
+  $handler->display->display_options['fields']['name']['element_default_classes'] = 1;
+  $handler->display->display_options['fields']['name']['hide_empty'] = 0;
+  $handler->display->display_options['fields']['name']['empty_zero'] = 0;
+  $handler->display->display_options['fields']['name']['hide_alter_empty'] = 1;
+  $handler->display->display_options['fields']['name']['link_to_taxonomy'] = 0;
+  $handler->display->display_options['fields']['name']['convert_spaces'] = 0;
+  /* Field: COUNT(Biblio: Biblio ID) */
+  $handler->display->display_options['fields']['bid']['id'] = 'bid';
+  $handler->display->display_options['fields']['bid']['table'] = 'biblio';
+  $handler->display->display_options['fields']['bid']['field'] = 'bid';
+  $handler->display->display_options['fields']['bid']['relationship'] = 'reverse_biblio_keywords_biblio';
+  $handler->display->display_options['fields']['bid']['group_type'] = 'count';
+  $handler->display->display_options['fields']['bid']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['bid']['alter']['alter_text'] = 0;
+  $handler->display->display_options['fields']['bid']['alter']['make_link'] = 0;
+  $handler->display->display_options['fields']['bid']['alter']['absolute'] = 0;
+  $handler->display->display_options['fields']['bid']['alter']['external'] = 0;
+  $handler->display->display_options['fields']['bid']['alter']['replace_spaces'] = 0;
+  $handler->display->display_options['fields']['bid']['alter']['trim_whitespace'] = 0;
+  $handler->display->display_options['fields']['bid']['alter']['nl2br'] = 0;
+  $handler->display->display_options['fields']['bid']['alter']['word_boundary'] = 1;
+  $handler->display->display_options['fields']['bid']['alter']['ellipsis'] = 1;
+  $handler->display->display_options['fields']['bid']['alter']['more_link'] = 0;
+  $handler->display->display_options['fields']['bid']['alter']['strip_tags'] = 0;
+  $handler->display->display_options['fields']['bid']['alter']['trim'] = 0;
+  $handler->display->display_options['fields']['bid']['alter']['html'] = 0;
+  $handler->display->display_options['fields']['bid']['element_label_colon'] = 1;
+  $handler->display->display_options['fields']['bid']['element_default_classes'] = 1;
+  $handler->display->display_options['fields']['bid']['hide_empty'] = 0;
+  $handler->display->display_options['fields']['bid']['empty_zero'] = 0;
+  $handler->display->display_options['fields']['bid']['hide_alter_empty'] = 1;
+  $handler->display->display_options['fields']['bid']['separator'] = '';
+  $handler->display->display_options['fields']['bid']['format_plural'] = 0;
+  /* Field: Global: Custom text */
+  $handler->display->display_options['fields']['nothing']['id'] = 'nothing';
+  $handler->display->display_options['fields']['nothing']['table'] = 'views';
+  $handler->display->display_options['fields']['nothing']['field'] = 'nothing';
+  $handler->display->display_options['fields']['nothing']['label'] = '';
+  $handler->display->display_options['fields']['nothing']['alter']['text'] = '[name] ([bid])';
+  $handler->display->display_options['fields']['nothing']['alter']['make_link'] = 0;
+  $handler->display->display_options['fields']['nothing']['alter']['absolute'] = 0;
+  $handler->display->display_options['fields']['nothing']['alter']['external'] = 0;
+  $handler->display->display_options['fields']['nothing']['alter']['replace_spaces'] = 0;
+  $handler->display->display_options['fields']['nothing']['alter']['trim_whitespace'] = 0;
+  $handler->display->display_options['fields']['nothing']['alter']['nl2br'] = 0;
+  $handler->display->display_options['fields']['nothing']['alter']['word_boundary'] = 1;
+  $handler->display->display_options['fields']['nothing']['alter']['ellipsis'] = 1;
+  $handler->display->display_options['fields']['nothing']['alter']['more_link'] = 0;
+  $handler->display->display_options['fields']['nothing']['alter']['strip_tags'] = 0;
+  $handler->display->display_options['fields']['nothing']['alter']['trim'] = 0;
+  $handler->display->display_options['fields']['nothing']['alter']['html'] = 0;
+  $handler->display->display_options['fields']['nothing']['element_label_colon'] = FALSE;
+  $handler->display->display_options['fields']['nothing']['element_default_classes'] = 1;
+  $handler->display->display_options['fields']['nothing']['hide_empty'] = 0;
+  $handler->display->display_options['fields']['nothing']['empty_zero'] = 0;
+  $handler->display->display_options['fields']['nothing']['hide_alter_empty'] = 0;
+  /* Sort criterion: Taxonomy term: Name */
+  $handler->display->display_options['sorts']['name']['id'] = 'name';
+  $handler->display->display_options['sorts']['name']['table'] = 'taxonomy_term_data';
+  $handler->display->display_options['sorts']['name']['field'] = 'name';
+  $handler->display->display_options['sorts']['name']['exposed'] = TRUE;
+  $handler->display->display_options['sorts']['name']['expose']['label'] = 'Name';
+  /* Filter criterion: Taxonomy vocabulary: Machine name */
+  $handler->display->display_options['filters']['machine_name']['id'] = 'machine_name';
+  $handler->display->display_options['filters']['machine_name']['table'] = 'taxonomy_vocabulary';
+  $handler->display->display_options['filters']['machine_name']['field'] = 'machine_name';
+  $handler->display->display_options['filters']['machine_name']['value'] = array(
+    'biblio_keywords' => 'biblio_keywords',
+  );
+
+  /* Display: Page */
+  $handler = $view->new_display('page', 'Page', 'page');
+  $handler->display->display_options['path'] = 'biblio/keywords';
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+  $view = new view;
   $view->name = 'biblio_admin';
-  $view->description = '';
-  $view->tag = 'default';
+  $view->description = 'List of all Biblio records - emulates the admin/content page';
+  $view->tag = 'biblio, administration';
   $view->base_table = 'biblio';
-  $view->human_name = 'Biblio Administration Views';
+  $view->human_name = 'Biblio Admin - Biblio List';
   $view->core = 7;
   $view->api_version = '3.0';
   $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
@@ -319,58 +759,6 @@ function biblio_views_default_views() {
   $handler->display->display_options['fields']['nothing_1']['hide_empty'] = 0;
   $handler->display->display_options['fields']['nothing_1']['empty_zero'] = 0;
   $handler->display->display_options['fields']['nothing_1']['hide_alter_empty'] = 0;
-  /* Filter criterion: Biblio: Publication_type */
-  $handler->display->display_options['filters']['publication_type']['id'] = 'publication_type';
-  $handler->display->display_options['filters']['publication_type']['table'] = 'biblio';
-  $handler->display->display_options['filters']['publication_type']['field'] = 'publication_type';
-  $handler->display->display_options['filters']['publication_type']['value'] = array(
-    'all' => 'all',
-    'book' => 'book',
-    'book_chapter' => 'book_chapter',
-    'journal_article' => 'journal_article',
-    'journal' => 'journal',
-    'conference_paper' => 'conference_paper',
-    'conference_proceedings' => 'conference_proceedings',
-    'newspaper_article' => 'newspaper_article',
-    'magazine_article' => 'magazine_article',
-    'web_article' => 'web_article',
-    'website' => 'website',
-    'web_service' => 'web_service',
-    'web_project_page' => 'web_project_page',
-    'thesis' => 'thesis',
-    'report' => 'report',
-    'film' => 'film',
-    'broadcast' => 'broadcast',
-    'artwork' => 'artwork',
-    'software' => 'software',
-    'audiovisual' => 'audiovisual',
-    'hearing' => 'hearing',
-    'case' => 'case',
-    'bill' => 'bill',
-    'statute' => 'statute',
-    'patent' => 'patent',
-    'personal' => 'personal',
-    'manuscript' => 'manuscript',
-    'map' => 'map',
-    'chart' => 'chart',
-    'unpublished' => 'unpublished',
-    'database' => 'database',
-    'government_report' => 'government_report',
-    'classical' => 'classical',
-    'legal_ruling' => 'legal_ruling',
-    'miscellaneous' => 'miscellaneous',
-    'miscellaneous_section' => 'miscellaneous_section',
-    'presentation' => 'presentation',
-  );
-  $handler->display->display_options['filters']['publication_type']['exposed'] = TRUE;
-  $handler->display->display_options['filters']['publication_type']['expose']['operator_id'] = 'publication_type_op';
-  $handler->display->display_options['filters']['publication_type']['expose']['label'] = 'Publication Type';
-  $handler->display->display_options['filters']['publication_type']['expose']['use_operator'] = 1;
-  $handler->display->display_options['filters']['publication_type']['expose']['operator'] = 'publication_type_op';
-  $handler->display->display_options['filters']['publication_type']['expose']['identifier'] = 'publication_type';
-  $handler->display->display_options['filters']['publication_type']['expose']['remember'] = 1;
-  $handler->display->display_options['filters']['publication_type']['expose']['multiple'] = 1;
-  $handler->display->display_options['filters']['publication_type']['expose']['reduce'] = 0;
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page');
@@ -383,6 +771,400 @@ function biblio_views_default_views() {
   $handler->display->display_options['tab_options']['title'] = 'a title?';
   $handler->display->display_options['tab_options']['weight'] = '0';
 
-  $views[$view->name] = $view;
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+  $view = new view;
+  $view->name = 'biblio_contributors_list_2';
+  $view->description = 'Displays all Biblios with a given contributor';
+  $view->tag = 'default';
+  $view->base_table = 'biblio';
+  $view->human_name = 'Biblio Contributors List 2';
+  $view->core = 7;
+  $view->api_version = '3.0';
+  $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+
+  /* Display: Master */
+  $handler = $view->new_display('default', 'Master', 'default');
+  $handler->display->display_options['title'] = 'Biblios by Contributor';
+  $handler->display->display_options['access']['type'] = 'none';
+  $handler->display->display_options['cache']['type'] = 'none';
+  $handler->display->display_options['query']['type'] = 'views_query';
+  $handler->display->display_options['query']['options']['query_comment'] = FALSE;
+  $handler->display->display_options['exposed_form']['type'] = 'basic';
+  $handler->display->display_options['pager']['type'] = 'full';
+  $handler->display->display_options['pager']['options']['items_per_page'] = '100';
+  $handler->display->display_options['style_plugin'] = 'table';
+  $handler->display->display_options['style_options']['grouping'] = array(
+    0 => array(
+      'field' => 'biblio_contributor_name',
+      'rendered' => 1,
+      'rendered_strip' => 0,
+    ),
+  );
+  $handler->display->display_options['style_options']['columns'] = array(
+    'bid' => 'bid',
+    'biblio_title' => 'biblio_title',
+    'cid' => 'cid',
+    'biblio_contributor_name' => 'biblio_contributor_name',
+  );
+  $handler->display->display_options['style_options']['default'] = '-1';
+  $handler->display->display_options['style_options']['info'] = array(
+    'bid' => array(
+      'sortable' => 0,
+      'default_sort_order' => 'asc',
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'biblio_title' => array(
+      'sortable' => 0,
+      'default_sort_order' => 'asc',
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'cid' => array(
+      'sortable' => 0,
+      'default_sort_order' => 'asc',
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'biblio_contributor_name' => array(
+      'sortable' => 0,
+      'default_sort_order' => 'asc',
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+  );
+  $handler->display->display_options['style_options']['override'] = 1;
+  $handler->display->display_options['style_options']['sticky'] = 0;
+  $handler->display->display_options['style_options']['empty_table'] = 0;
+  /* Relationship: Entity Reference: Referenced Entity */
+  $handler->display->display_options['relationships']['biblio_primary_contributors_target_id']['id'] = 'biblio_primary_contributors_target_id';
+  $handler->display->display_options['relationships']['biblio_primary_contributors_target_id']['table'] = 'field_data_biblio_primary_contributors';
+  $handler->display->display_options['relationships']['biblio_primary_contributors_target_id']['field'] = 'biblio_primary_contributors_target_id';
+  $handler->display->display_options['relationships']['biblio_primary_contributors_target_id']['required'] = 0;
+  /* Relationship: Entity Reference: Referenced Entity */
+  $handler->display->display_options['relationships']['biblio_secondary_contributors_target_id']['id'] = 'biblio_secondary_contributors_target_id';
+  $handler->display->display_options['relationships']['biblio_secondary_contributors_target_id']['table'] = 'field_data_biblio_secondary_contributors';
+  $handler->display->display_options['relationships']['biblio_secondary_contributors_target_id']['field'] = 'biblio_secondary_contributors_target_id';
+  $handler->display->display_options['relationships']['biblio_secondary_contributors_target_id']['required'] = 0;
+  /* Field: Biblio: Biblio ID */
+  $handler->display->display_options['fields']['bid']['id'] = 'bid';
+  $handler->display->display_options['fields']['bid']['table'] = 'biblio';
+  $handler->display->display_options['fields']['bid']['field'] = 'bid';
+  $handler->display->display_options['fields']['bid']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['bid']['alter']['alter_text'] = 0;
+  $handler->display->display_options['fields']['bid']['alter']['make_link'] = 0;
+  $handler->display->display_options['fields']['bid']['alter']['absolute'] = 0;
+  $handler->display->display_options['fields']['bid']['alter']['external'] = 0;
+  $handler->display->display_options['fields']['bid']['alter']['replace_spaces'] = 0;
+  $handler->display->display_options['fields']['bid']['alter']['trim_whitespace'] = 0;
+  $handler->display->display_options['fields']['bid']['alter']['nl2br'] = 0;
+  $handler->display->display_options['fields']['bid']['alter']['word_boundary'] = 1;
+  $handler->display->display_options['fields']['bid']['alter']['ellipsis'] = 1;
+  $handler->display->display_options['fields']['bid']['alter']['more_link'] = 0;
+  $handler->display->display_options['fields']['bid']['alter']['strip_tags'] = 0;
+  $handler->display->display_options['fields']['bid']['alter']['trim'] = 0;
+  $handler->display->display_options['fields']['bid']['alter']['html'] = 0;
+  $handler->display->display_options['fields']['bid']['element_label_colon'] = 1;
+  $handler->display->display_options['fields']['bid']['element_default_classes'] = 1;
+  $handler->display->display_options['fields']['bid']['hide_empty'] = 0;
+  $handler->display->display_options['fields']['bid']['empty_zero'] = 0;
+  $handler->display->display_options['fields']['bid']['hide_alter_empty'] = 1;
+  $handler->display->display_options['fields']['bid']['format_plural'] = 0;
+  /* Field: Biblio: Title */
+  $handler->display->display_options['fields']['biblio_title']['id'] = 'biblio_title';
+  $handler->display->display_options['fields']['biblio_title']['table'] = 'field_data_biblio_title';
+  $handler->display->display_options['fields']['biblio_title']['field'] = 'biblio_title';
+  $handler->display->display_options['fields']['biblio_title']['label'] = 'Biblio';
+  $handler->display->display_options['fields']['biblio_title']['alter']['alter_text'] = 0;
+  $handler->display->display_options['fields']['biblio_title']['alter']['make_link'] = 1;
+  $handler->display->display_options['fields']['biblio_title']['alter']['path'] = 'biblio/[bid]';
+  $handler->display->display_options['fields']['biblio_title']['alter']['absolute'] = 0;
+  $handler->display->display_options['fields']['biblio_title']['alter']['external'] = 0;
+  $handler->display->display_options['fields']['biblio_title']['alter']['replace_spaces'] = 0;
+  $handler->display->display_options['fields']['biblio_title']['alter']['trim_whitespace'] = 0;
+  $handler->display->display_options['fields']['biblio_title']['alter']['nl2br'] = 0;
+  $handler->display->display_options['fields']['biblio_title']['alter']['word_boundary'] = 1;
+  $handler->display->display_options['fields']['biblio_title']['alter']['ellipsis'] = 1;
+  $handler->display->display_options['fields']['biblio_title']['alter']['more_link'] = 0;
+  $handler->display->display_options['fields']['biblio_title']['alter']['strip_tags'] = 0;
+  $handler->display->display_options['fields']['biblio_title']['alter']['trim'] = 0;
+  $handler->display->display_options['fields']['biblio_title']['alter']['html'] = 0;
+  $handler->display->display_options['fields']['biblio_title']['element_label_colon'] = 1;
+  $handler->display->display_options['fields']['biblio_title']['element_default_classes'] = 1;
+  $handler->display->display_options['fields']['biblio_title']['hide_empty'] = 0;
+  $handler->display->display_options['fields']['biblio_title']['empty_zero'] = 0;
+  $handler->display->display_options['fields']['biblio_title']['hide_alter_empty'] = 1;
+  $handler->display->display_options['fields']['biblio_title']['field_api_classes'] = 0;
+  /* Field: Contributor: Contributor ID */
+  $handler->display->display_options['fields']['cid']['id'] = 'cid';
+  $handler->display->display_options['fields']['cid']['table'] = 'biblio_contributor';
+  $handler->display->display_options['fields']['cid']['field'] = 'cid';
+  $handler->display->display_options['fields']['cid']['relationship'] = 'biblio_primary_contributors_target_id';
+  $handler->display->display_options['fields']['cid']['label'] = '';
+  $handler->display->display_options['fields']['cid']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['cid']['alter']['alter_text'] = 0;
+  $handler->display->display_options['fields']['cid']['alter']['make_link'] = 0;
+  $handler->display->display_options['fields']['cid']['alter']['absolute'] = 0;
+  $handler->display->display_options['fields']['cid']['alter']['external'] = 0;
+  $handler->display->display_options['fields']['cid']['alter']['replace_spaces'] = 0;
+  $handler->display->display_options['fields']['cid']['alter']['trim_whitespace'] = 0;
+  $handler->display->display_options['fields']['cid']['alter']['nl2br'] = 0;
+  $handler->display->display_options['fields']['cid']['alter']['word_boundary'] = 1;
+  $handler->display->display_options['fields']['cid']['alter']['ellipsis'] = 1;
+  $handler->display->display_options['fields']['cid']['alter']['more_link'] = 0;
+  $handler->display->display_options['fields']['cid']['alter']['strip_tags'] = 0;
+  $handler->display->display_options['fields']['cid']['alter']['trim'] = 0;
+  $handler->display->display_options['fields']['cid']['alter']['html'] = 0;
+  $handler->display->display_options['fields']['cid']['element_label_colon'] = FALSE;
+  $handler->display->display_options['fields']['cid']['element_default_classes'] = 1;
+  $handler->display->display_options['fields']['cid']['hide_empty'] = 0;
+  $handler->display->display_options['fields']['cid']['empty_zero'] = 0;
+  $handler->display->display_options['fields']['cid']['hide_alter_empty'] = 1;
+  $handler->display->display_options['fields']['cid']['separator'] = '';
+  $handler->display->display_options['fields']['cid']['format_plural'] = 0;
+  /* Field: Contributor: Author Name */
+  $handler->display->display_options['fields']['biblio_contributor_name']['id'] = 'biblio_contributor_name';
+  $handler->display->display_options['fields']['biblio_contributor_name']['table'] = 'field_data_biblio_contributor_name';
+  $handler->display->display_options['fields']['biblio_contributor_name']['field'] = 'biblio_contributor_name';
+  $handler->display->display_options['fields']['biblio_contributor_name']['relationship'] = 'biblio_primary_contributors_target_id';
+  $handler->display->display_options['fields']['biblio_contributor_name']['label'] = 'Biblios by Contributor';
+  $handler->display->display_options['fields']['biblio_contributor_name']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['biblio_contributor_name']['alter']['alter_text'] = 0;
+  $handler->display->display_options['fields']['biblio_contributor_name']['alter']['make_link'] = 0;
+  $handler->display->display_options['fields']['biblio_contributor_name']['alter']['absolute'] = 0;
+  $handler->display->display_options['fields']['biblio_contributor_name']['alter']['external'] = 0;
+  $handler->display->display_options['fields']['biblio_contributor_name']['alter']['replace_spaces'] = 0;
+  $handler->display->display_options['fields']['biblio_contributor_name']['alter']['trim_whitespace'] = 0;
+  $handler->display->display_options['fields']['biblio_contributor_name']['alter']['nl2br'] = 0;
+  $handler->display->display_options['fields']['biblio_contributor_name']['alter']['word_boundary'] = 1;
+  $handler->display->display_options['fields']['biblio_contributor_name']['alter']['ellipsis'] = 1;
+  $handler->display->display_options['fields']['biblio_contributor_name']['alter']['more_link'] = 0;
+  $handler->display->display_options['fields']['biblio_contributor_name']['alter']['strip_tags'] = 0;
+  $handler->display->display_options['fields']['biblio_contributor_name']['alter']['trim'] = 0;
+  $handler->display->display_options['fields']['biblio_contributor_name']['alter']['html'] = 0;
+  $handler->display->display_options['fields']['biblio_contributor_name']['element_label_colon'] = 1;
+  $handler->display->display_options['fields']['biblio_contributor_name']['element_default_classes'] = 1;
+  $handler->display->display_options['fields']['biblio_contributor_name']['hide_empty'] = 0;
+  $handler->display->display_options['fields']['biblio_contributor_name']['empty_zero'] = 0;
+  $handler->display->display_options['fields']['biblio_contributor_name']['hide_alter_empty'] = 1;
+  $handler->display->display_options['fields']['biblio_contributor_name']['field_api_classes'] = 0;
+  /* Field: Biblio: Authors */
+  $handler->display->display_options['fields']['biblio_primary_contributors']['id'] = 'biblio_primary_contributors';
+  $handler->display->display_options['fields']['biblio_primary_contributors']['table'] = 'field_data_biblio_primary_contributors';
+  $handler->display->display_options['fields']['biblio_primary_contributors']['field'] = 'biblio_primary_contributors';
+  $handler->display->display_options['fields']['biblio_primary_contributors']['label'] = 'All Primary Contributors';
+  $handler->display->display_options['fields']['biblio_primary_contributors']['alter']['alter_text'] = 0;
+  $handler->display->display_options['fields']['biblio_primary_contributors']['alter']['make_link'] = 0;
+  $handler->display->display_options['fields']['biblio_primary_contributors']['alter']['absolute'] = 0;
+  $handler->display->display_options['fields']['biblio_primary_contributors']['alter']['external'] = 0;
+  $handler->display->display_options['fields']['biblio_primary_contributors']['alter']['replace_spaces'] = 0;
+  $handler->display->display_options['fields']['biblio_primary_contributors']['alter']['trim_whitespace'] = 0;
+  $handler->display->display_options['fields']['biblio_primary_contributors']['alter']['nl2br'] = 0;
+  $handler->display->display_options['fields']['biblio_primary_contributors']['alter']['word_boundary'] = 1;
+  $handler->display->display_options['fields']['biblio_primary_contributors']['alter']['ellipsis'] = 1;
+  $handler->display->display_options['fields']['biblio_primary_contributors']['alter']['more_link'] = 0;
+  $handler->display->display_options['fields']['biblio_primary_contributors']['alter']['strip_tags'] = 0;
+  $handler->display->display_options['fields']['biblio_primary_contributors']['alter']['trim'] = 0;
+  $handler->display->display_options['fields']['biblio_primary_contributors']['alter']['html'] = 0;
+  $handler->display->display_options['fields']['biblio_primary_contributors']['element_label_colon'] = 1;
+  $handler->display->display_options['fields']['biblio_primary_contributors']['element_default_classes'] = 1;
+  $handler->display->display_options['fields']['biblio_primary_contributors']['hide_empty'] = 0;
+  $handler->display->display_options['fields']['biblio_primary_contributors']['empty_zero'] = 0;
+  $handler->display->display_options['fields']['biblio_primary_contributors']['hide_alter_empty'] = 1;
+  $handler->display->display_options['fields']['biblio_primary_contributors']['settings'] = array(
+    'link' => 0,
+  );
+  $handler->display->display_options['fields']['biblio_primary_contributors']['group_rows'] = 1;
+  $handler->display->display_options['fields']['biblio_primary_contributors']['delta_offset'] = '0';
+  $handler->display->display_options['fields']['biblio_primary_contributors']['delta_reversed'] = 0;
+  $handler->display->display_options['fields']['biblio_primary_contributors']['delta_first_last'] = 0;
+  $handler->display->display_options['fields']['biblio_primary_contributors']['field_api_classes'] = 0;
+  /* Contextual filter: Contributor: Contributor ID */
+  $handler->display->display_options['arguments']['cid']['id'] = 'cid';
+  $handler->display->display_options['arguments']['cid']['table'] = 'biblio_contributor';
+  $handler->display->display_options['arguments']['cid']['field'] = 'cid';
+  $handler->display->display_options['arguments']['cid']['relationship'] = 'biblio_primary_contributors_target_id';
+  $handler->display->display_options['arguments']['cid']['default_argument_type'] = 'fixed';
+  $handler->display->display_options['arguments']['cid']['default_argument_skip_url'] = 0;
+  $handler->display->display_options['arguments']['cid']['summary']['number_of_records'] = '0';
+  $handler->display->display_options['arguments']['cid']['summary']['format'] = 'default_summary';
+  $handler->display->display_options['arguments']['cid']['summary_options']['items_per_page'] = '25';
+  $handler->display->display_options['arguments']['cid']['break_phrase'] = 0;
+  $handler->display->display_options['arguments']['cid']['not'] = 0;
+
+  /* Display: Page */
+  $handler = $view->new_display('page', 'Page', 'page');
+  $handler->display->display_options['path'] = 'biblio/contributor/%/publications';
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+  $view = new view;
+  $view->name = 'biblio_admin_contributors';
+  $view->description = '';
+  $view->tag = 'default';
+  $view->base_table = 'biblio_contributor';
+  $view->human_name = 'Biblio Admin - Contributors';
+  $view->core = 7;
+  $view->api_version = '3.0';
+  $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+
+  /* Display: Master */
+  $handler = $view->new_display('default', 'Master', 'default');
+  $handler->display->display_options['title'] = 'Biblio Admin - Contributors';
+  $handler->display->display_options['access']['type'] = 'none';
+  $handler->display->display_options['cache']['type'] = 'none';
+  $handler->display->display_options['query']['type'] = 'views_query';
+  $handler->display->display_options['query']['options']['query_comment'] = FALSE;
+  $handler->display->display_options['exposed_form']['type'] = 'basic';
+  $handler->display->display_options['exposed_form']['options']['autosubmit'] = 0;
+  $handler->display->display_options['exposed_form']['options']['autosubmit_hide'] = 1;
+  $handler->display->display_options['pager']['type'] = 'full';
+  $handler->display->display_options['pager']['options']['items_per_page'] = '100';
+  $handler->display->display_options['style_plugin'] = 'grid';
+  $handler->display->display_options['row_plugin'] = 'fields';
+  /* Field: Contributor: Contributor ID */
+  $handler->display->display_options['fields']['cid']['id'] = 'cid';
+  $handler->display->display_options['fields']['cid']['table'] = 'biblio_contributor';
+  $handler->display->display_options['fields']['cid']['field'] = 'cid';
+  $handler->display->display_options['fields']['cid']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['cid']['alter']['alter_text'] = 0;
+  $handler->display->display_options['fields']['cid']['alter']['make_link'] = 0;
+  $handler->display->display_options['fields']['cid']['alter']['absolute'] = 0;
+  $handler->display->display_options['fields']['cid']['alter']['external'] = 0;
+  $handler->display->display_options['fields']['cid']['alter']['replace_spaces'] = 0;
+  $handler->display->display_options['fields']['cid']['alter']['trim_whitespace'] = 0;
+  $handler->display->display_options['fields']['cid']['alter']['nl2br'] = 0;
+  $handler->display->display_options['fields']['cid']['alter']['word_boundary'] = 1;
+  $handler->display->display_options['fields']['cid']['alter']['ellipsis'] = 1;
+  $handler->display->display_options['fields']['cid']['alter']['more_link'] = 0;
+  $handler->display->display_options['fields']['cid']['alter']['strip_tags'] = 0;
+  $handler->display->display_options['fields']['cid']['alter']['trim'] = 0;
+  $handler->display->display_options['fields']['cid']['alter']['html'] = 0;
+  $handler->display->display_options['fields']['cid']['element_label_colon'] = 1;
+  $handler->display->display_options['fields']['cid']['element_default_classes'] = 1;
+  $handler->display->display_options['fields']['cid']['hide_empty'] = 0;
+  $handler->display->display_options['fields']['cid']['empty_zero'] = 0;
+  $handler->display->display_options['fields']['cid']['hide_alter_empty'] = 1;
+  $handler->display->display_options['fields']['cid']['separator'] = '';
+  $handler->display->display_options['fields']['cid']['format_plural'] = 0;
+  /* Field: Contributor: Author Name */
+  $handler->display->display_options['fields']['biblio_contributor_name']['id'] = 'biblio_contributor_name';
+  $handler->display->display_options['fields']['biblio_contributor_name']['table'] = 'field_data_biblio_contributor_name';
+  $handler->display->display_options['fields']['biblio_contributor_name']['field'] = 'biblio_contributor_name';
+  $handler->display->display_options['fields']['biblio_contributor_name']['label'] = '';
+  $handler->display->display_options['fields']['biblio_contributor_name']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['biblio_contributor_name']['alter']['alter_text'] = 0;
+  $handler->display->display_options['fields']['biblio_contributor_name']['alter']['make_link'] = 0;
+  $handler->display->display_options['fields']['biblio_contributor_name']['alter']['absolute'] = 0;
+  $handler->display->display_options['fields']['biblio_contributor_name']['alter']['external'] = 0;
+  $handler->display->display_options['fields']['biblio_contributor_name']['alter']['replace_spaces'] = 0;
+  $handler->display->display_options['fields']['biblio_contributor_name']['alter']['trim_whitespace'] = 0;
+  $handler->display->display_options['fields']['biblio_contributor_name']['alter']['nl2br'] = 0;
+  $handler->display->display_options['fields']['biblio_contributor_name']['alter']['word_boundary'] = 1;
+  $handler->display->display_options['fields']['biblio_contributor_name']['alter']['ellipsis'] = 1;
+  $handler->display->display_options['fields']['biblio_contributor_name']['alter']['more_link'] = 0;
+  $handler->display->display_options['fields']['biblio_contributor_name']['alter']['strip_tags'] = 0;
+  $handler->display->display_options['fields']['biblio_contributor_name']['alter']['trim'] = 0;
+  $handler->display->display_options['fields']['biblio_contributor_name']['alter']['html'] = 0;
+  $handler->display->display_options['fields']['biblio_contributor_name']['element_label_colon'] = FALSE;
+  $handler->display->display_options['fields']['biblio_contributor_name']['element_default_classes'] = 1;
+  $handler->display->display_options['fields']['biblio_contributor_name']['hide_empty'] = 0;
+  $handler->display->display_options['fields']['biblio_contributor_name']['empty_zero'] = 0;
+  $handler->display->display_options['fields']['biblio_contributor_name']['hide_alter_empty'] = 1;
+  $handler->display->display_options['fields']['biblio_contributor_name']['field_api_classes'] = 0;
+  /* Field: Global: Custom text */
+  $handler->display->display_options['fields']['nothing']['id'] = 'nothing';
+  $handler->display->display_options['fields']['nothing']['table'] = 'views';
+  $handler->display->display_options['fields']['nothing']['field'] = 'nothing';
+  $handler->display->display_options['fields']['nothing']['label'] = '';
+  $handler->display->display_options['fields']['nothing']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['nothing']['alter']['text'] = 'edit';
+  $handler->display->display_options['fields']['nothing']['alter']['make_link'] = 1;
+  $handler->display->display_options['fields']['nothing']['alter']['path'] = 'biblio/contributor/[cid]/edit';
+  $handler->display->display_options['fields']['nothing']['alter']['absolute'] = 0;
+  $handler->display->display_options['fields']['nothing']['alter']['external'] = 0;
+  $handler->display->display_options['fields']['nothing']['alter']['replace_spaces'] = 0;
+  $handler->display->display_options['fields']['nothing']['alter']['trim_whitespace'] = 0;
+  $handler->display->display_options['fields']['nothing']['alter']['nl2br'] = 0;
+  $handler->display->display_options['fields']['nothing']['alter']['word_boundary'] = 1;
+  $handler->display->display_options['fields']['nothing']['alter']['ellipsis'] = 1;
+  $handler->display->display_options['fields']['nothing']['alter']['more_link'] = 0;
+  $handler->display->display_options['fields']['nothing']['alter']['strip_tags'] = 0;
+  $handler->display->display_options['fields']['nothing']['alter']['trim'] = 0;
+  $handler->display->display_options['fields']['nothing']['alter']['html'] = 0;
+  $handler->display->display_options['fields']['nothing']['element_label_colon'] = FALSE;
+  $handler->display->display_options['fields']['nothing']['element_default_classes'] = 1;
+  $handler->display->display_options['fields']['nothing']['hide_empty'] = 0;
+  $handler->display->display_options['fields']['nothing']['empty_zero'] = 0;
+  $handler->display->display_options['fields']['nothing']['hide_alter_empty'] = 0;
+  /* Field: Global: Custom text */
+  $handler->display->display_options['fields']['nothing_1']['id'] = 'nothing_1';
+  $handler->display->display_options['fields']['nothing_1']['table'] = 'views';
+  $handler->display->display_options['fields']['nothing_1']['field'] = 'nothing';
+  $handler->display->display_options['fields']['nothing_1']['label'] = '';
+  $handler->display->display_options['fields']['nothing_1']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['nothing_1']['alter']['text'] = 'delete';
+  $handler->display->display_options['fields']['nothing_1']['alter']['make_link'] = 1;
+  $handler->display->display_options['fields']['nothing_1']['alter']['path'] = 'biblio/contributor/[cid]/delete';
+  $handler->display->display_options['fields']['nothing_1']['alter']['absolute'] = 0;
+  $handler->display->display_options['fields']['nothing_1']['alter']['external'] = 0;
+  $handler->display->display_options['fields']['nothing_1']['alter']['replace_spaces'] = 0;
+  $handler->display->display_options['fields']['nothing_1']['alter']['trim_whitespace'] = 0;
+  $handler->display->display_options['fields']['nothing_1']['alter']['nl2br'] = 0;
+  $handler->display->display_options['fields']['nothing_1']['alter']['word_boundary'] = 1;
+  $handler->display->display_options['fields']['nothing_1']['alter']['ellipsis'] = 1;
+  $handler->display->display_options['fields']['nothing_1']['alter']['more_link'] = 0;
+  $handler->display->display_options['fields']['nothing_1']['alter']['strip_tags'] = 0;
+  $handler->display->display_options['fields']['nothing_1']['alter']['trim'] = 0;
+  $handler->display->display_options['fields']['nothing_1']['alter']['html'] = 0;
+  $handler->display->display_options['fields']['nothing_1']['element_label_colon'] = FALSE;
+  $handler->display->display_options['fields']['nothing_1']['element_default_classes'] = 1;
+  $handler->display->display_options['fields']['nothing_1']['hide_empty'] = 0;
+  $handler->display->display_options['fields']['nothing_1']['empty_zero'] = 0;
+  $handler->display->display_options['fields']['nothing_1']['hide_alter_empty'] = 0;
+  /* Field: Global: Custom text */
+  $handler->display->display_options['fields']['nothing_2']['id'] = 'nothing_2';
+  $handler->display->display_options['fields']['nothing_2']['table'] = 'views';
+  $handler->display->display_options['fields']['nothing_2']['field'] = 'nothing';
+  $handler->display->display_options['fields']['nothing_2']['label'] = '';
+  $handler->display->display_options['fields']['nothing_2']['alter']['text'] = '[biblio_contributor_name] [[nothing]][[nothing_1]]';
+  $handler->display->display_options['fields']['nothing_2']['alter']['make_link'] = 0;
+  $handler->display->display_options['fields']['nothing_2']['alter']['absolute'] = 0;
+  $handler->display->display_options['fields']['nothing_2']['alter']['external'] = 0;
+  $handler->display->display_options['fields']['nothing_2']['alter']['replace_spaces'] = 0;
+  $handler->display->display_options['fields']['nothing_2']['alter']['trim_whitespace'] = 0;
+  $handler->display->display_options['fields']['nothing_2']['alter']['nl2br'] = 0;
+  $handler->display->display_options['fields']['nothing_2']['alter']['word_boundary'] = 1;
+  $handler->display->display_options['fields']['nothing_2']['alter']['ellipsis'] = 1;
+  $handler->display->display_options['fields']['nothing_2']['alter']['more_link'] = 0;
+  $handler->display->display_options['fields']['nothing_2']['alter']['strip_tags'] = 0;
+  $handler->display->display_options['fields']['nothing_2']['alter']['trim'] = 0;
+  $handler->display->display_options['fields']['nothing_2']['alter']['html'] = 0;
+  $handler->display->display_options['fields']['nothing_2']['element_label_colon'] = FALSE;
+  $handler->display->display_options['fields']['nothing_2']['element_default_classes'] = 1;
+  $handler->display->display_options['fields']['nothing_2']['hide_empty'] = 0;
+  $handler->display->display_options['fields']['nothing_2']['empty_zero'] = 0;
+  $handler->display->display_options['fields']['nothing_2']['hide_alter_empty'] = 0;
+
+  /* Display: Page */
+  $handler = $view->new_display('page', 'Page', 'page');
+  $handler->display->display_options['exposed_block'] = TRUE;
+  $handler->display->display_options['path'] = 'admin/config/content/biblio/views/admin-contributors';
+
+
+////////////////////////////////////////////////////////////////////////////////
   return $views;
 }
