@@ -3075,6 +3075,7 @@ function biblio_entity_access($op, $type = NULL, $account = NULL) {
     case 'view':
       return user_access('administer biblio', $account)
           || user_access('access biblio content', $account);
+    case 'delete':
     case 'edit':
       return user_access('administer biblio')
           || user_access('edit all biblio entries');
