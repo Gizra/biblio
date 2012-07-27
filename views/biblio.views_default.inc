@@ -286,6 +286,8 @@ function biblio_views_default_views() {
   $handler->display->display_options['menu']['title'] = 'Contributors';
   $handler->display->display_options['menu']['weight'] = '0';
   $handler->display->display_options['menu']['context'] = 0;
+  
+  $views[$view->name] = $view;
 
 
 
@@ -442,6 +444,8 @@ function biblio_views_default_views() {
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page');
   $handler->display->display_options['path'] = 'biblio/keywords';
+  
+  $views[$view->name] = $view;
 
 
 
@@ -770,6 +774,8 @@ function biblio_views_default_views() {
   $handler->display->display_options['menu']['context'] = 0;
   $handler->display->display_options['tab_options']['title'] = 'a title?';
   $handler->display->display_options['tab_options']['weight'] = '0';
+  
+  $views[$view->name] = $view;
 
 
 
@@ -1004,6 +1010,8 @@ function biblio_views_default_views() {
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page');
   $handler->display->display_options['path'] = 'biblio/contributor/%/publications';
+  
+  $views[$view->name] = $view;
 
 
 
@@ -1163,6 +1171,8 @@ function biblio_views_default_views() {
   $handler = $view->new_display('page', 'Page', 'page');
   $handler->display->display_options['exposed_block'] = TRUE;
   $handler->display->display_options['path'] = 'admin/config/content/biblio/views/admin-contributors';
+  
+  $views[$view->name] = $view;
 
 
 ////////////////////////////////////////////////////////////////////////////////
