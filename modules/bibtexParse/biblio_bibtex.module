@@ -212,6 +212,7 @@ function biblio_bibtex_biblio_export($bids) {
 
 function _biblio_bibtex_import($entries, $terms = array(), $batch = FALSE, $session_id = NULL, $save = TRUE) {
   module_load_include('inc', 'biblio', 'includes/biblio.fields');
+  module_load_include('inc', 'biblio', 'includes/biblio.import.export');
   global $user;
   $bids = array();
   $dups = array();
@@ -315,8 +316,8 @@ function _biblio_bibtex_import($entries, $terms = array(), $batch = FALSE, $sess
     $temp_properties = biblio_remove_variable_properties($biblio);
     $biblio->biblio_bibtex_md5      = md5(serialize((array)$biblio));
     biblio_retrieve_variable_properties($biblio, $temp_properties);
-    $biblio->created = $temp_created;
-    $biblio->changed = $temp_changed;
+    $biblio->created = $temp_properties['created'];
+    $biblio->changed = $temp_properties['changed'];
     $biblio->biblio_import_type     = 'bibtex';
 
     if (!($dup = biblio_bibtex_check_md5($biblio->biblio_bibtex_md5))) {
