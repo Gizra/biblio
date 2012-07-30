@@ -3150,7 +3150,7 @@ function biblio_wrapper($entity, $entity_type = 'biblio') {
 }
 
 /**
- * Create an empty biblio object
+ * Create a biblio entity object
  * @param string $publication_type
  *  The publication type of the biblio to be created (bundle)
  * @param array $values
@@ -3160,8 +3160,29 @@ function biblio_wrapper($entity, $entity_type = 'biblio') {
  * @return object The biblio object, with default values. 
  */
 function biblio_create($publication_type, $values = array()) {
+  module_load_include('inc', 'biblio', 'includes/biblio.fields');
+
   $values['publication_type'] = $publication_type;
-  return entity_create('biblio', $values);
+
+  foreach($values as $property => $value) {
+    if (biblio_is_field_instance($property, 'biblio', $publication_type)) {
+      // We'll let the metadata wrapper handle field data
+      $field_values[$property] = $value;
+    }
+    else {
+      // Set all aother properties during entity creation
+      $initial_values[$property] = $value;
+    }
+  }
+
+  $biblio = entity_create('biblio', $initial_values);
+  $wrapper = biblio_wrapper($biblio);
+
+  foreach ($field_values as $property => $value) {
+    $wrapper->$property->set($value);
+  }
+
+  return $biblio;
 }
 
 /**

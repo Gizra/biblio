@@ -17,15 +17,16 @@ class Biblio extends Entity {
  * Biblio controller class 
  */
 class BiblioController extends EntityAPIController {
-  public function create(array $values = array()) {
+  public function create(array $sent_values = array()) {
     global $user;
-    $values += array(
+    $values = array(
       'bid' => '',
-      'publication_type' => $values['publication_type'],
+      'publication_type' => $sent_values['publication_type'],
       'created' => REQUEST_TIME,
       'changed' => REQUEST_TIME,
       'uid' => $user->uid,
     );
+    $values += $sent_values;
     return parent::create($values);
   }
   
