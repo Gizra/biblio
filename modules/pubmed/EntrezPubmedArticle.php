@@ -91,13 +91,13 @@ class BiblioEntrezPubmedArticle
         }
 
         $this->biblio = array(
-        'title'           => (string)$this->article->Article->ArticleTitle,
+        'biblio_title'           => (string)$this->article->Article->ArticleTitle,
         'biblio_citekey'  => $citekey,
         'biblio_pubmed_id' => $this->id,
         'biblio_pubmed_md5' => $this->md5,
         'biblio_contributors' => $this->contributors(),
         // MedlineCitations are always articles from journals or books
-        'biblio_type'     => 102,
+        'biblio_type'     => 'journal_article',
         'biblio_date'     => $this->date(),
         'biblio_year'     => substr($this->date(), 0, 4),
         'biblio_secondary_title' => $journal,
@@ -107,7 +107,7 @@ class BiblioEntrezPubmedArticle
         'biblio_issn'     => (string)$this->article->Article->Journal->ISSN,
         'biblio_pages'    => (string)$this->article->Article->Pagination->MedlinePgn,
         'biblio_abst_e'   => $this->abst(),
-        'biblio_custom1'  => "http://www.ncbi.nlm.nih.gov/pubmed/{$this->id}?dopt=Abstract",
+        'biblio_url'  => "http://www.ncbi.nlm.nih.gov/pubmed/{$this->id}?dopt=Abstract",
         'biblio_keywords' => $this->keywords(),
         'biblio_lang'     => $this->lang(),
       );
