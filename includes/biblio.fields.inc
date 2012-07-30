@@ -14,7 +14,7 @@ function _biblio_field_extra_fields() {
   // }
 
 
-  return $extras;
+  // return $extras;
 }
 
 /**
