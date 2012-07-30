@@ -66,8 +66,8 @@ function biblio_pm_form_biblio_admin_settings_alter(&$form, &$form_state) {
   module_load_include('inc', 'biblio_pm', 'biblio_pm.admin');
   $form += biblio_pm_settings_form();
 }
-function biblio_pm_form_biblio_node_form_alter(&$form, &$form_state, $form_id) {
-  if ((!isset($form_state['biblio_type']) || empty($form_state['biblio_type'])) && !isset($form_state['node']->nid)) {
+function biblio_pm_form_biblio_form_alter(&$form, &$form_state, $form_id) {
+  if ((!isset($form_state['biblio_type']) || empty($form_state['biblio_type'])) && !isset($form_state['biblio']->bid)) {
     $form['biblio_pubmed_lookup'] = array(
         '#type' => 'fieldset',
         '#title' => t('PubMed Lookup'),
@@ -89,7 +89,7 @@ function biblio_pm_form_biblio_node_form_alter(&$form, &$form_state, $form_id) {
     $form['biblio_pubmed_lookup']['pubmed_submit'] = array(
         '#type' => 'submit',
         '#value' => t('Populate using PubMed'),
-        '#submit' => array('biblio_pm_form_biblio_node_form_submit')
+        '#submit' => array('biblio_pm_form_biblio_form_submit')
     );
    // $form['#submit'] = array_merge(array('biblio_pm_form_biblio_node_form_submit'), isset($form['#submit'])?$form['#submit']:array()); // put my validator first
   }
@@ -101,12 +101,13 @@ function biblio_pm_form_biblio_node_form_alter(&$form, &$form_state, $form_id) {
   }
 }
 
-function biblio_pm_form_biblio_node_form_submit($form, &$form_state) {
+function biblio_pm_form_biblio_form_submit($form, &$form_state) {
   $node_data = array();
   if (strlen($pmid = $form_state['values']['PMID'])) {
     if (!($dup = biblio_pm_check_pmid($pmid))) {
       module_load_include('php', 'biblio_pm', 'EntrezClient');
       module_load_include('php', 'biblio_pm', 'EntrezPubmedArticle');
+      module_load_include('inc', 'biblio', 'includes/biblio.import.export');
       $Eclient = new BiblioEntrezClient;
       try {
         $result = $Eclient->fetch($pmid);
@@ -121,6 +122,7 @@ function biblio_pm_form_biblio_node_form_submit($form, &$form_state) {
       }
       $data = new BiblioEntrezPubmedArticle($result->PubmedArticle);
       $node_data = $data->getBiblio();
+      $biblio = biblio_array_to_entity($node_data);
     }
     else {
       $message = t('The PubMed ID that you are trying to import already exists in the database, see !url', array('!url' => l('node/' . $dup, 'node/' . $dup)));
@@ -133,6 +135,8 @@ function biblio_pm_form_biblio_node_form_submit($form, &$form_state) {
   if (!empty($node_data)) {
     $form_state['values'] = array_merge($form_state['values'], $node_data);
     $form_state['input']['biblio_type'] = $form_state['biblio_type'] = $node_data['biblio_type'];
+    $form_state['biblio_imported'] = $biblio;
+    $form_state['biblio_imported_contributors'] = $node_data['biblio_contributors'];
     $form_state['rebuild'] = TRUE;
   }
 
