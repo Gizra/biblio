@@ -959,29 +959,3 @@ function biblio_retrieve_variable_properties(&$biblio, $temp) {
     $biblio->{$property} = $value;
   }
 }
-
-/**
- * Converts an array of biblio properties to a Drupal entity
- * @param  array $biblio_array array keyed by property of the to-be biblio
- * entity object
- * @return object   The biblio entity object
- */
-function biblio_array_to_entity($biblio_array) {
-  module_load_include('inc', 'biblio', 'includes/biblio.fields');
-  $biblio = biblio_create('journal_article');
-  $wrapper = biblio_wrapper($biblio);
-  foreach($biblio_array as $property => $value) {
-    if (!biblio_is_field_instance($property, 'biblio', $biblio->publication_type)) {
-      continue;
-    }
-    if (!is_array($value)) {
-      $wrapper->{$property}->set($value);
-    }
-    else{
-      foreach ($value as $k => $v) {
-        $wrapper->$property->set($value);
-      }
-    }
-  }
-  return $biblio;
-}

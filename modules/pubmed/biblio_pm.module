@@ -122,7 +122,7 @@ function biblio_pm_form_biblio_form_submit($form, &$form_state) {
       }
       $data = new BiblioEntrezPubmedArticle($result->PubmedArticle);
       $node_data = $data->getBiblio();
-      $biblio = biblio_array_to_entity($node_data);
+      $biblio = biblio_create($node_data['biblio_type'], $node_data);
     }
     else {
       $message = t('The PubMed ID that you are trying to import already exists in the database, see !url', array('!url' => l('node/' . $dup, 'node/' . $dup)));
@@ -151,7 +151,7 @@ function biblio_pm_biblio_import_options() {
 }
 
 function biblio_pm_biblio_import($file, $terms = array(), $batch = FALSE, $session_id = NULL, $save = TRUE, $string = FALSE) {
-  $nids = array();
+  $bids = array();
   $dups = array();
   $pmids = file($file->uri, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
   if (empty($pmids)) {
@@ -179,12 +179,12 @@ function biblio_pm_import_ids($pmids, $terms = array(), $batch = FALSE, $session
   $Eclient = new BiblioEntrezClient;
   $Eclient->post($pmids);
   $Eclient->setReturnMax($retmax);
-  $nids = array();
+  $bids = array();
   $dups = array();
   while ($start < $resmax && ($result = $Eclient->fetchRecords($start))) {
     $start += count($result->xpath('//PubmedArticle'));
-    list($nid, $dup) =  _biblio_pm_create_node_from_xml($result, $terms, $batch, $session_id);
-    $nids = array_merge($nids, $nid);
+    list($bid, $dup) =  _biblio_pm_create_node_from_xml($result, $terms, $batch, $session_id);
+    $bids = array_merge($bids, $bid);
     $dups = array_merge($dups, $dup);
   }
 
@@ -193,47 +193,51 @@ function biblio_pm_import_ids($pmids, $terms = array(), $batch = FALSE, $session
 
 function _biblio_pm_create_node_from_xml($xml, $terms, $batch, $session_id) {
   module_load_include('php', 'biblio_pm', 'EntrezPubmedArticle');
-  $nids = array();
+  $bids = array();
   $dups = array();
-  $node = new stdClass();
   $data = new BiblioEntrezPubmedArticle();
 
   foreach ($xml->xpath('//PubmedArticle') as $article) {
-    $node = $data->setArticle($article)->getBiblioAsObject();
-    if (isset($node)) {
-      $dup = biblio_pm_check_md5($node->biblio_pubmed_id, $node->biblio_pubmed_md5);
-      $action = variable_get('biblio_pm_dup_action', 'newrev');
+    $raw_biblio = $data->setArticle($article)->getBiblioAsObject();
+    $biblio = biblio_create($raw_biblio->biblio_type, (array)$raw_biblio);
+    $biblio->biblio_keywords = $raw_biblio->biblio_keywords;
+    $wrapper = biblio_wrapper($biblio);
+    if (isset($biblio)) {
+      $dup = biblio_pm_check_md5($biblio->biblio_pubmed_id,
+        $biblio->biblio_pubmed_md5);
+      $action = variable_get('biblio_pm_dup_action', 'replace');
       if ($dup < 0 && $action == 'newrev') { //entry has be imported before, but may have changed
         // Load the node in order to preserve all its data and merge the new
         // data from pubmed.
-        $node = (object) array_merge((array)node_load(-$dup), (array)$node);
-        $node->nid = -$dup;
-        $node->revision = 1;
-        $curr_date = format_date(time());
-        $node->log = t("Automatically updated on !date due to changes at source", array('!date' => $curr_date));
-        $dup = NULL;
+        // Entity API doesn't support revisions at time of current Biblio 7.x-2.x development
+        // $node = (object) array_merge((array)node_load(-$dup), (array)$node);
+        // $node->nid = -$dup;
+        // $node->revision = 1;
+        // $curr_date = format_date(time());
+        // $node->log = t("Automatically updated on !date due to changes at source", array('!date' => $curr_date));
+        // $dup = NULL;
       }
       if ($dup < 0 && $action == 'replace') { //entry has be imported before, but may have changed
-        $node->nid = -$dup;
+        $biblio->bid = -$dup;
         $dup = NULL;
       }
       if (!$dup) {
-        // Allows other modules to alter the node before it is being saved. (Note: $article is a SimpleXML object)
-        drupal_alter('biblio_pm_node', $node, $article);
-        biblio_save_node($node, $terms, $batch, $session_id);
-        if (!empty($node->nid)) $nids[] = $node->nid;
+        // Allows other modules to alter the biblio before it is being saved. (Note: $article is a SimpleXML object)
+        drupal_alter('biblio_pm_biblio', $biblio, $article);
+        biblio_save_node($biblio, $terms, $batch, $session_id);
+        if (!empty($biblio->bid)) $bids[] = $biblio->bid;
       }
       else {
         $dups[] = $dup;
       }
-      $node = NULL;
+      $biblio = NULL;
     }
   }
-  return array($nids, $dups);
+  return array($bids, $dups);
 }
 
 function biblio_pm_check_pmid($pmid) {
-    return db_query("SELECT nid FROM {biblio_pubmed} WHERE biblio_pubmed_id = :pmid", array(':pmid' => $pmid))->fetchField();
+    return db_query("SELECT bid FROM {biblio_pubmed} WHERE biblio_pubmed_id = :pmid", array(':pmid' => $pmid))->fetchField();
 }
 function biblio_pm_biblio_lookup_link_settings() {
   return array('pubmed'  => t('PubMed'));
@@ -261,74 +265,80 @@ function biblio_pm_biblio_lookup_link($node) {
   ));
 }
 
-function biblio_pm_node_view($node, $view_mode, $langcode) {
-  if ($node->type == 'biblio' && isset($node->biblio_pubmed_id)) {
+function biblio_pm_entity_view($entity, $type, $view_mode, $langcode) {
+  if ($type == 'biblio' && isset($biblio->biblio_pubmed_id)) {
     switch ($view_mode) {
       case 'full':
       case 'teaser':
-        $node->content['links']['biblio_pubmed'] = array(
-          '#links' => biblio_pm_biblio_lookup_link($node),
+        $biblio->content['links']['biblio_pubmed'] = array(
+          '#links' => biblio_pm_biblio_lookup_link($biblio),
           '#attributes' => array('class' => array('links', 'inline')),
         );
     }
   }
 }
 
-function biblio_pm_node_delete($node) {
-  if ($node->type != 'biblio') {
+function biblio_pm_entity_delete($entity, $type) {
+  if ($type != 'biblio') {
     return;
   }
   db_delete('biblio_pubmed')
-    ->condition('nid', $node->nid)
+    ->condition('bid', $entity->bid)
     ->execute();
 }
 
 
-function biblio_pm_node_insert($node) {
-  if (isset($node->biblio_pubmed_id) && !empty($node->biblio_pubmed_id)) {
-    $node->biblio_pm_changed = time();
-    drupal_write_record('biblio_pubmed', $node);
+function biblio_pm_entity_insert($entity, $type) {
+  if ($type != 'biblio') {
+    return;
+  }
+  if (isset($entity->biblio_pubmed_id) && !empty($entity->biblio_pubmed_id)) {
+    $entity->biblio_pm_changed = time();
+    drupal_write_record('biblio_pubmed', $entity);
   }
 }
 
-function biblio_pm_node_update($node) {
-  if (isset($node->biblio_pubmed_id) && !empty($node->biblio_pubmed_id)) {
-    $node->biblio_pm_changed = time();
-    drupal_write_record('biblio_pubmed', $node, 'nid');
+function biblio_pm_entity_update($entity, $type) {
+  if (isset($entity->biblio_pubmed_id) && !empty($entity->biblio_pubmed_id)) {
+    $entity->biblio_pm_changed = time();
+    drupal_write_record('biblio_pubmed', $entity, 'bid');
   }
 }
 
-function biblio_pm_node_load($nodes, $types) {
-    $result = db_select('biblio_pubmed', 'bpm')
-          ->fields('bpm', array('nid', 'biblio_pubmed_id'))
-          ->condition('nid', array_keys($nodes))
-          ->execute();
+function biblio_pm_entity_load($entities, $type) {
+  if ($type != 'biblio') {
+    return;
+  }
+  $result = db_select('biblio_pubmed', 'bpm')
+        ->fields('bpm', array('bid', 'biblio_pubmed_id'))
+        ->condition('bid', array_keys($entities))
+        ->execute();
 
  // $result = db_query('SELECT  biblio_pubmed_id  FROM {biblio_pubmed} WHERE nid IN(:nids)', array(':nids' => array_keys($nodes)));
   foreach ($result as $record) {
-    $nodes[$record->nid]->biblio_pubmed_id = $record->biblio_pubmed_id;
+    $entities[$record->bid]->biblio_pubmed_id = $record->biblio_pubmed_id;
   }
 }
 
 function biblio_pm_check_md5($pmid, $md5) {
   static $pm_md5s = array();
-  static $pm_nids = array();
+  static $pm_bids = array();
   if (empty($pm_md5s)) {
     $result = db_query("SELECT * FROM {biblio_pubmed} ");
     foreach ($result as $row ) {
-      $pm_md5s[$row->biblio_pubmed_md5] = $row->nid;
-      $pm_nids[$row->biblio_pubmed_id] = $row->nid;
+      $pm_md5s[$row->biblio_pubmed_md5] = $row->bid;
+      $pm_bids[$row->biblio_pubmed_id] = $row->bid;
     }
   }
-  if (isset($pm_nids[$pmid]) && isset($pm_md5s[$md5])) { // must be an exact duplicate of an existing node (return the nid)
+  if (isset($pm_bids[$pmid]) && isset($pm_md5s[$md5])) { // must be an exact duplicate of an existing node (return the bid)
       return $pm_md5s[$md5];
   }
-  elseif (isset($pm_nids[$pmid]) && !isset($pm_md5s[$md5])) { //pmid has been save previously but content must have changed (return negative nid)
-    return -$pm_nids[$pmid];
+  elseif (isset($pm_bids[$pmid]) && !isset($pm_md5s[$md5])) { //pmid has been save previously but content must have changed (return negative bid)
+    return -$pm_bids[$pmid];
   }
   else {
     $pm_md5s[$md5]  = TRUE; // gaurd against duplicates in the same import
-    $pm_nids[$pmid] = TRUE;
+    $pm_bids[$pmid] = TRUE;
     return;
   }
 }
