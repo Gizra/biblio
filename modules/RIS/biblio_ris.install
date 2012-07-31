@@ -149,29 +149,29 @@ function _get_ris_field_map() {
   $map['field_map'] =  serialize(
         array(
                 'ID'  =>  '',                     //- Reference ID (not imported to reference software)
-                'T1'  =>  'title',                     //- Primary title
-                'TI'  =>  'title',                     //- Book title
-                'BT'  =>  'title',                     //- Book title
-                'CT'  =>  'title',                     //- Title of unpublished reference
+                'T1'  =>  'biblio_title',         //- Primary title
+                'TI'  =>  'biblio_title',         //- Book title
+                'BT'  =>  'biblio_title',         //- Book title
+                'CT'  =>  'biblio_title',         //- Title of unpublished reference
                 'A1'  =>  '',                     //- Primary author
                 'A2'  =>  '',                     //- Secondary author (each name on separate line)
                 'AU'  =>  '',                     //- Author (syntax. Last name, First name, Suffix)
-                'Y1'  =>  'biblio_year',                     //- Primary date
+                'Y1'  =>  'biblio_year',          //- Primary date
                 'PY'  =>  '',                     //- Publication year (YYYY/MM/DD)
                 'N1'  => 'biblio_notes',          //- Notes
                 'KW'  =>  '',                     //- Keywords (each keyword must be on separate line preceded KW -)
                 'RP'  =>  '',                     //- Reprint status (IN FILE, NOT IN FILE, ON REQUEST (MM/DD/YY))
                 'SP'  =>  '',                     //- Start page number
                 'EP'  =>  '',                     //- Ending page number
-                'JF'  => 'biblio_secondary_title',//- Periodical full name
+                'JF'  => 'biblio_title_secondary',//- Periodical full name
                 'JO'  => 'biblio_short_title',    //- Periodical standard abbreviation
-                'JA'  => 'biblio_secondary_title',//- Periodical in which article was published
+                'JA'  => 'biblio_title_secondary',//- Periodical in which article was published
                 'J1'  => 'biblio_short_title',    //- Periodical name //- User abbreviation 1
                 'J2'  => 'biblio_short_title',    //- Periodical name - User abbreviation 2
                 'VL'  => 'biblio_volume',         //- Volume number
                 'IS'  => 'biblio_issue',          //- Issue number
                 'CP'  => 'biblio_issue',          //- Issue number
-                'T2'  => 'biblio_secondary_title',//- Title secondary
+                'T2'  => 'biblio_title_secondary',//- Title secondary
                 'CY'  => 'biblio_place_published',//- City of Publication
                 'PB'  => 'biblio_publisher',      //- Publisher
                 'U1'  => 'biblio_custom1',        //- User definable 1
@@ -179,7 +179,7 @@ function _get_ris_field_map() {
                 'U3'  => 'biblio_custom3',        //- User definable 3
                 'U4'  => 'biblio_custom4',        //- User definable 4
                 'U5'  => 'biblio_custom5',        //- User definable 5
-                'T3'  => 'biblio_tertiary_title', //- Title series
+                'T3'  => 'biblio_title_tertiary', //- Title series
                 'AB'  => 'biblio_abst_e',         //- Abstract
                 'N2'  => 'biblio_abst_e',         //- Abstract
                 'SN'  => 'biblio_isbn',           //- ISSN/ISBN (e.g. ISSN XXXX-XXXX)
@@ -209,10 +209,10 @@ function biblio_ris_schema() {
   $schema = array();
   $schema['biblio_ris'] = array(
     'fields' => array(
-      'nid'       => array('type' => 'int', 'not null' => TRUE),
+      'bid'       => array('type' => 'int', 'not null' => TRUE),
       'biblio_ris_md5' => array('type' => 'char', 'length' => 32, 'not null' => TRUE),
       ),
-  'primary key' => array('nid'),
+  'primary key' => array('bid'),
   );
   return $schema;
 }
