@@ -6,7 +6,7 @@
 
 function biblio_pm_settings_form() {
   $form = array();
-  
+
   $form['pm_options'] = array(
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
@@ -21,7 +21,7 @@ function biblio_pm_settings_form() {
     '#title' => t('Actions'),
     '#default_value' => variable_get('biblio_pm_dup_action', 'newrev'),
     '#options'  => array(
-      'newrev'  => t('Accept and create a new revision of the existing node.'),
+      // 'newrev'  => t('Accept and create a new revision of the existing node.'),
       'replace' => t('Accept and replace the existing node.'),
       'reject'  => t('Reject and keep the existing node.'),
     )
@@ -93,6 +93,5 @@ function biblio_pm_settings_form() {
       ),
   );
 
-  
-   return ($form);
+  return ($form);
 }

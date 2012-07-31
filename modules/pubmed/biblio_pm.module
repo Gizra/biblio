@@ -4,33 +4,35 @@
  *
  */
 function biblio_pm_cron() {
+
   if (variable_get('biblio_pm_auto_update', 0)) {
     $interval    = variable_get('biblio_pm_update_interval', 3600);    // defaults to once per hour
     $count_limit = variable_get('biblio_pm_update_limit', 100);         // only update 100 at a time
     $age         = variable_get('biblio_pm_age_limit', 2419200); // defaults to one month since last update
     $age_limit   = time() - $age;
 
+
     if (time() >= variable_get('biblio_pm_update_next_execution', 0)) {
       $ids = array();
       $result = db_select('biblio_pubmed', 'bpm')
-          ->fields('bpm', array('nid', 'biblio_pubmed_id'))
+          ->fields('bpm', array('bid', 'biblio_pubmed_id'))
           ->condition('biblio_pm_changed', $age_limit, '<')
-          ->orderBy('nid', 'ASC')
+          ->orderBy('bid', 'ASC')
           ->range(0, $count_limit)
           ->execute();
       foreach ($result as $pm) {
-        $ids[$pm->nid] = $pm->biblio_pubmed_id;
+        $ids[$pm->bid] = $pm->biblio_pubmed_id;
       }
       if (count($ids)) {
 
-        list($nids, $dups) = biblio_pm_import_ids($ids);
+        list($bids, $dups) = biblio_pm_import_ids($ids);
 
-        if (count($nids)) {
-          foreach ($nids as $nid) {
+        if (count($bids)) {
+          foreach ($bids as $bid) {
             $message = '';
-            $message = t('!nid was updated due to changes originating at !url', array(
-                '!nid' => l($nid, 'node/'. $nid),
-                '!url' => l('PubMed', 'http://www.ncbi.nlm.nih.gov/pubmed/'. $ids[$nid]),
+            $message = t('!bid was updated due to changes originating at !url', array(
+                '!bid' => l($bid, 'biblio/'. $bid),
+                '!url' => l('PubMed', 'http://www.ncbi.nlm.nih.gov/pubmed/'. $ids[$bid]),
               )
             );
             watchdog('biblio_pm', $message, array(), WATCHDOG_WARNING);
@@ -47,7 +49,7 @@ function biblio_pm_cron() {
 
           db_update('biblio_pubmed')
             ->fields(array('biblio_pm_changed' => $now))
-            ->condition('nid', $dups, 'IN')
+            ->condition('bid', $dups, 'IN')
             ->execute();
         }
       }
