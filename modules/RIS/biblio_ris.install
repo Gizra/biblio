@@ -174,18 +174,18 @@ function _get_ris_field_map() {
                 'T2'  => 'biblio_title_secondary',//- Title secondary
                 'CY'  => 'biblio_place_published',//- City of Publication
                 'PB'  => 'biblio_publisher',      //- Publisher
-                'U1'  => 'biblio_custom1',        //- User definable 1
-                'U2'  => 'biblio_custom2',        //- User definable 2
-                'U3'  => 'biblio_custom3',        //- User definable 3
-                'U4'  => 'biblio_custom4',        //- User definable 4
-                'U5'  => 'biblio_custom5',        //- User definable 5
+                'U1'  => '',                      //- User definable 1
+                'U2'  => '',                      //- User definable 2
+                'U3'  => '',                      //- User definable 3
+                'U4'  => '',                      //- User definable 4
+                'U5'  => '',                      //- User definable 5
                 'T3'  => 'biblio_title_tertiary', //- Title series
                 'AB'  => 'biblio_abst_e',         //- Abstract
                 'N2'  => 'biblio_abst_e',         //- Abstract
                 'SN'  => 'biblio_isbn',           //- ISSN/ISBN (e.g. ISSN XXXX-XXXX)
                 'AV'  =>  '',                     //- Availability
                 'M1'  =>  '',                     //- Misc. 1
-                'M3'  =>  '',                     //- Misc. 3
+                'M3'  =>  'biblio_type_of_work',  //- Misc. 3
                 'AD'  =>  '',                     //- Address
                 'UR'  => 'biblio_url',            //- Web/URL
                 'L1'  =>  '',                     //- Link to PDF
@@ -193,6 +193,9 @@ function _get_ris_field_map() {
                 'L3'  =>  '',                     //- Related records
                 'L4'  =>  '',                     //- Images
                 'ER'  =>  '',                     //- End of Reference (must be the last tag)
+                'DP'  =>  'biblio_remote_db_provider',
+                'DB'  =>  'biblio_remote_db_name',
+                'DO'  =>  'biblio_doi'
                 )
   );
 

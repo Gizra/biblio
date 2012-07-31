@@ -22,13 +22,13 @@ function _biblio_field_extra_fields() {
  * This function runs upon enabling Biblio
  * @todo Add biblio.field.type.data.csv data (field instance labels, etc)
  */
-function biblio_add_fields() { 
+function biblio_add_fields() {
   $file = drupal_get_path('module', 'biblio') . '/misc/default_fields.json';
   $json = json_decode(file_get_contents($file), TRUE);
 
   foreach ($json as $field) {
     $field_exists = (field_info_field($field['field_name']))? TRUE : FALSE;
-      
+
     if (!$field_exists) {
       field_create_field($field);
     }
@@ -42,7 +42,7 @@ function biblio_add_fields() {
  * time a user visits the Biblio Add page for that publication type.
  * Contributor and Contribution instances are added upon install, becasue there
  * are so few fields for those entity types.
- * 
+ *
  * @param string $entity biblio, biblio_contributor, or biblio_contribution
  * @param string $bundle The bundle for which field instances should be created.
  * for example, a biblio publication type
@@ -76,7 +76,7 @@ function biblio_add_field_instances($entity, $bundle) {
 
     $field_exists = (field_info_field($instance['field_name']))? TRUE : FALSE;
     $instance_exists = (field_info_instance(
-      $instance['entity_type'], $instance['field_name'], $bundle))? 
+      $instance['entity_type'], $instance['field_name'], $bundle))?
       TRUE : FALSE;
 
     if ($field_exists && !$instance_exists) {
@@ -84,8 +84,8 @@ function biblio_add_field_instances($entity, $bundle) {
     }
   }
   timer_stop('field_instances_creation');
-  drupal_set_message('Biblio field instances have been added for the ' 
-      . $bundle . ' bundle.' . 
+  drupal_set_message('Biblio field instances have been added for the '
+      . $bundle . ' bundle.' .
       ' Time elapsed: ' . timer_read('field_instances_creation') . 'ms');
 }
 
@@ -96,7 +96,7 @@ function biblio_add_field_instances($entity, $bundle) {
  */
 /**
  * Gets data from biblio.field.type.data.csv and returns it as an array
- *    
+ *
  *  @todo remove this after development. I'm only keeping it for the time being,
  *  so that I can retrieve data easily during development.
  */
@@ -106,7 +106,7 @@ function biblio_parse_field_type_data_csv() {
   // array containing an array for each row in the csv
   $file_data = array();
   // the first line containing column names
-  $header_line = fgetcsv($file_handle, 10000, ","); 
+  $header_line = fgetcsv($file_handle, 10000, ",");
   $info = entity_get_info('biblio');
   $fields = field_info_fields();
 
@@ -119,7 +119,7 @@ function biblio_parse_field_type_data_csv() {
     if (isset($info['bundles'][$bundle])) {
       foreach ($header_line as $key => $field_name) {
         // only for fields that exist...
-        if (isset($fields[$field_name]) 
+        if (isset($fields[$field_name])
           && $row[$key] != ''
           && $row[$key] != '~') {
           $file_data[$bundle][$field_name] = $row[$key];
@@ -131,6 +131,13 @@ function biblio_parse_field_type_data_csv() {
   ksort($file_data);
 
   return $file_data;
+}
+
+function biblio_check_instances($publication_type) {
+  // Add field instances only if they dont already exist.
+  if (biblio_field_instances_missing($publication_type)) {
+    biblio_add_field_instances('biblio', $publication_type);
+  }
 }
 
 /**
@@ -174,7 +181,7 @@ function biblio_field_instances_missing($publication_type, $entity_type = 'bibli
  * Get a list of all biblio fields that have been created, and are prefixed
  * with "biblio_"
  *
- * @return array 
+ * @return array
  */
 function biblio_field_list() {
   // Get an array of all fields
@@ -187,13 +194,13 @@ function biblio_field_list() {
       $biblio_fields[] = $field;
     }
   }
-  
+
   return $biblio_fields;
 }
 
 /**
  * Deletes all Biblio fields
- * 
+ *
  * @return array Array of all fields that were deleted.
  */
 function biblio_delete_fields() {
@@ -202,7 +209,7 @@ function biblio_delete_fields() {
     // Each iteration takes ~90ms to run
     field_delete_field($field);
   }
-  
+
   return $fields;
 }
 
@@ -214,7 +221,7 @@ function biblio_delete_fields() {
  *  a valid field instance
  * @param string $entity_type biblio, contributor, etc.
  * @param string $bundle book, journal_article, etc.
- * @return boolean whether or not the given string exists as a field instance 
+ * @return boolean whether or not the given string exists as a field instance
  */
 function biblio_is_field_instance($instance_name, $entity_type, $bundle) {
   $instances = field_info_instances($entity_type, $bundle);
@@ -239,7 +246,7 @@ function modify_biblio_field_link_data_csv() {
   foreach($data as $value) {
     $data_to_write[] = $value;
   }
-  
+
   foreach($data_to_write as $key => $row) {
     if (isset($row[0])) {
       // Modify headers here...
@@ -263,7 +270,7 @@ function modify_biblio_field_link_data_csv() {
       }
       // change all field ids to the order in which they are placed in the file.
       $data_to_write[$key]['fid'] = $key;
-      
+
     }
   }
   // Add a new row

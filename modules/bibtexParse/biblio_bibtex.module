@@ -30,7 +30,7 @@ function biblio_bibtex_biblio_mapper_options() {
  * Implements hook_form_FORM_ID_alter
  * @global type $user
  * @param type $form
- * @param type $form_state 
+ * @param type $form_state
  */
 function biblio_bibtex_form_biblio_form_alter(&$form, &$form_state) {
   global $user;
@@ -219,19 +219,11 @@ function _biblio_bibtex_import($entries, $terms = array(), $batch = FALSE, $sess
 
   foreach ($entries as $entry) {
     $type = _biblio_bibtex_type_map($entry['bibtexEntryType'], 'import');
-    
-    // Create field instances for publication type if they don't exist
-    $params = array('entity_type' => 'biblio', 'bundle' => $type);
-    $instances = field_read_instances($params);
-    // Add field instances only if they dont already exist.
-    if (biblio_field_instances_missing($type)) {
-      biblio_add_field_instances('biblio', $type);
-    }
-  
+
     // Create a new, empty biblio object
     $biblio = biblio_create($type);
     $wrapper = biblio_wrapper($biblio, 'biblio');
-    
+
     $biblio->uid = $user->uid;
     $biblio->biblio_contributors = array();
     switch ($entry['bibtexEntryType']) {
@@ -247,8 +239,8 @@ function _biblio_bibtex_import($entries, $terms = array(), $batch = FALSE, $sess
       $authorArray = preg_split("/\s(and|&)\s/i", trim($entry['author']));
       foreach ($authorArray as $key => $author) {
         $biblio->biblio_contributors[]= array(
-          'name' => $author, 
-          'category' => 'primary', 
+          'name' => $author,
+          'category' => 'primary',
         );
       }
     }
@@ -259,12 +251,12 @@ function _biblio_bibtex_import($entries, $terms = array(), $batch = FALSE, $sess
       $authorArray = preg_split("/\s(and|&)\s/i", trim($entry['editor']));
       foreach ($authorArray as $key => $author) {
         $biblio->biblio_contributors[]= array(
-          'name' => $author, 
-          'category' => 'secondary', 
+          'name' => $author,
+          'category' => 'secondary',
         );
       }
     }
-    
+
     // // Split contributor data into their own 'auth_category'-specific fields (primary, secondary, tertiary, etc)
     // foreach($biblio->biblio_contributors as $key => $contributor_data) {
     //   switch ($contributor_data['category']) {

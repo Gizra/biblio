@@ -141,7 +141,7 @@ function biblio_locale_refresh_types($tid = NULL) {
  * Implements hook_init().
  *
  * @global object $user
- * @global array $conf 
+ * @global array $conf
  */
 function biblio_init() {
   global $user, $conf;
@@ -155,7 +155,7 @@ function biblio_init() {
 }
 
 /**
- * Implements hook_cron(). 
+ * Implements hook_cron().
  */
 function biblio_cron() {
   require_once(drupal_get_path('module', 'biblio') .'/includes/biblio.contributors.inc');
@@ -309,8 +309,8 @@ function biblio_theme($existing, $type, $theme, $path) {
     'biblio_admin_overview' => array(
       'file' => '/includes/biblio.theme.inc',
       'variables' => array(
-        'name' => NULL, 
-        'type' => NULL, 
+        'name' => NULL,
+        'type' => NULL,
         'description' => NULL,
       ),
     )
@@ -321,7 +321,7 @@ function biblio_theme($existing, $type, $theme, $path) {
  * Page callback for biblio/autocomplete in hook_menu().
  *
  * @param string $field
- * @param string $string 
+ * @param string $string
  */
 function biblio_autocomplete($field, $string = '') {
   $matches = array();
@@ -370,7 +370,7 @@ function biblio_autocomplete($field, $string = '') {
 /**
  * Page callback for base/help in hook_menu().
  *
- * @return string The markup to display on the help page 
+ * @return string The markup to display on the help page
  */
 function biblio_help_page() {
   $base = variable_get('biblio_base', 'biblio');
@@ -572,7 +572,7 @@ function biblio_form_user_profile_form_alter(&$form, &$form_state, $form_id) {
 
     }
   }
-  
+
 /**
  * Implements hook_forms().
  */
@@ -583,7 +583,7 @@ function biblio_forms() {
   $forms['biblio_admin_author_types_form_edit'] = array(
     'callback' => 'biblio_admin_author_types_form',
   );
-  
+
   return $forms;
 
 }
@@ -1127,13 +1127,13 @@ function biblio_menu() {
     'page arguments' => array('biblio_delete_confirm', 1),
     'access arguments' => array('edit all biblio entries'),
     'weight' => 1,
-    'type' => MENU_LOCAL_TASK, 
+    'type' => MENU_LOCAL_TASK,
     'context' => MENU_CONTEXT_INLINE,
     'file' => 'includes/biblio.admin.inc',
   );
   $items['admin/structure/biblio'] = array(
     'title' => 'Biblio',
-    'description' => 'List and edit Biblio entries. 
+    'description' => 'List and edit Biblio entries.
       Use Biblio for scholarly content, such as journal papers and books.',
     'page callback' => 'biblio_admin_view',
     'page arguments' => array('biblio_admin', 'page'),
@@ -1182,14 +1182,14 @@ function biblio_menu() {
     'type' => MENU_LOCAL_TASK,
     'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
   );
-  
+
   biblio_menu_links();
-  
+
   return $items;
 }
 
 /**
- * Modify and add links in various menus 
+ * Modify and add links in various menus
  */
 function biblio_menu_links() {
   // Get all biblio-generated links
@@ -1197,11 +1197,11 @@ function biblio_menu_links() {
   ->fields('m', array('menu_name', 'mlid', 'plid', 'link_path'))
   ->condition('link_path', '%biblio%', 'like')
   ->execute();
-  
+
   $add_link_exists = FALSE;
   // Menu link ID as specified in menu_links
   $biblio_root_mlid = 0;
-  
+
   while ($row = $result->fetchObject()) {
     switch($row->link_path) {
       // if the menu path is for example.com/biblio, and it's in the navigation
@@ -1219,7 +1219,7 @@ function biblio_menu_links() {
         break;
     }
   }
-  
+
   if (!$add_link_exists) {
     // Create a link on the navigation menu to add a biblio
     $add_link = array(
@@ -1233,7 +1233,7 @@ function biblio_menu_links() {
 }
 
 /**
- * Page callback for base/filter/clear in hook_menu(). 
+ * Page callback for base/filter/clear in hook_menu().
  */
 function biblio_filter_clear() {
   $options = array();
@@ -1252,7 +1252,7 @@ function biblio_filter_clear() {
  * Removes brace from a string
  *
  * @param string $title_string
- * @return string 
+ * @return string
  */
 function biblio_remove_brace($title_string) {
     //$title_string = utf8_encode($title_string);
@@ -1265,7 +1265,7 @@ function biblio_remove_brace($title_string) {
  * Callback from preg_replace_callback
  *
  * @param array $match
- * @return array 
+ * @return array
  */
 function biblio_remove_brace_callback($match) {
         if (isset($match[1])) {
@@ -1349,10 +1349,10 @@ function biblio_node_view($node, $view_mode) {
 /**
  * Doesn't seem to do anything
  * @todo remove if possible
- * 
+ *
  * @global object $user
  * @param QueryAlterableInterface $query
- * @return type 
+ * @return type
  */
 function biblio_query_node_access_alter(QueryAlterableInterface $query) {
   global $user;
@@ -1406,7 +1406,7 @@ function biblio_form($form, &$form_state, $biblio = NULL) {
   $fields = array();
 
   $form['#id'] = 'biblio-form';
-  
+
   // Check to see if we've imported a biblio object using a sub-module
   if (isset($form_state['biblio_imported'])) {
     $biblio = $form_state['biblio_imported'];
@@ -1419,12 +1419,12 @@ function biblio_form($form, &$form_state, $biblio = NULL) {
   if (isset($_COOKIE['has_js']) && !$_COOKIE['has_js']) {
     unset($form['biblio_next']['#attributes']);
   }
-  
+
   $step_two = FALSE;
   if (!empty($publication_type) || isset($biblio)) {
     $step_two = TRUE;
   }
-  
+
   /* publication type */
   $param['options'] = array("enctype" => "multipart/form-data");
   $options[0] = t('Select Type...');
@@ -1432,8 +1432,8 @@ function biblio_form($form, &$form_state, $biblio = NULL) {
     $options[$machine_name] = $info->name;
   }
   asort($options);
-  
-  
+
+
   if (!$step_two) {
     $form['biblio_type'] = array(
       '#type' => 'select',
@@ -1459,7 +1459,7 @@ function biblio_form($form, &$form_state, $biblio = NULL) {
   else {
     // Step two
     module_load_include('inc', 'biblio', 'includes/biblio.fields');
-    
+
     // Add field instances only if they dont already exist.
     if (biblio_field_instances_missing($publication_type)) {
       biblio_add_field_instances('biblio', $publication_type);
@@ -1473,7 +1473,7 @@ function biblio_form($form, &$form_state, $biblio = NULL) {
 
     // Set the title. PASS_TRHOUGH allows us to include HTML in the string.
     drupal_set_title(t('Create @name', array('@name' => $options[$publication_type])), PASS_THROUGH);
-    
+
     $instance_info = field_info_instances('biblio', $biblio->publication_type);
 
     // $fielded_form becomes a placeholder for form values that are automatically
@@ -1494,17 +1494,17 @@ function biblio_form($form, &$form_state, $biblio = NULL) {
     //   // @todo see if we need this
     //   $form_state['contributor_' . $delta] = $object;
     // }
-    // Destroy the contributor and contribution entity objects from the form 
-    // strucure. Keeping them causes the FAPI to try to iterate through the 
+    // Destroy the contributor and contribution entity objects from the form
+    // strucure. Keeping them causes the FAPI to try to iterate through the
     // objects as an array, causing errors.
     unset($tabs['contributors']['contribution_objects']);
 
     // Add the values we created above to the real form
     foreach ($fielded_form as $field => $data) {
       // Set a vtab value, if it exists (not all array keys are valid fields)
-      $vtab = (isset($instance_info[$field]['settings']['vtab']))? 
+      $vtab = (isset($instance_info[$field]['settings']['vtab']))?
         $instance_info[$field]['settings']['vtab'] : FALSE;
-      // We don't want extra theme elements from $fielded_form. 
+      // We don't want extra theme elements from $fielded_form.
       // Just field instances with a set vtab.
       if ($vtab !== FALSE) {
         if ($vtab == 'none' || $vtab == 'None') {
@@ -1525,7 +1525,7 @@ function biblio_form($form, &$form_state, $biblio = NULL) {
     }
 
     $form_state['biblio_fields'] = $fields;
-    
+
     foreach (element_children($tabs) as $key) {
       $tab_children = element_children($tabs[$key]);
       if (empty($tab_children) && $key != 'biblio_full_text') {
@@ -1552,10 +1552,10 @@ function biblio_form($form, &$form_state, $biblio = NULL) {
         '#submit' => array('biblio_form_delete_submit'),
       );
     }
-    
+
     $form_state['biblio'] = $biblio;
   }
-  
+
   // $form['format'] = filter_form($node->format, 20);
  //$biblio_form['#tree']  = TRUE;
   $form['#validate']= array('biblio_form_validate');
@@ -1570,7 +1570,7 @@ function biblio_form($form, &$form_state, $biblio = NULL) {
 /**
  * Creates the vertical tab form structure as used in the add/edit form
  *
- * @return array 
+ * @return array
  */
 function biblio_form_vtabs() {
   $vtabs = biblio_form_vtab_info();
@@ -1592,7 +1592,7 @@ function biblio_form_vtabs() {
 /**
  * Get info specific to each vertical tab
  *
- * @return array 
+ * @return array
  */
 function biblio_form_vtab_info() {
   return array(
@@ -1615,7 +1615,7 @@ function biblio_form_vtab_info() {
  *
  * @param object $biblio
  * @param array $form_state
- * @return array 
+ * @return array
  */
 function biblio_contributor_widget($biblio, &$form_state) {
   module_load_include('inc', 'biblio', 'includes/biblio.contributors');
@@ -1631,7 +1631,7 @@ function biblio_contributor_widget($biblio, &$form_state) {
     foreach ($form_state['biblio_imported_contributors'] as $author_data) {
       $contributors[] = $author_data;
       // $contributor = entity_create('biblio_contributor', array());
-      // // We're done setting contribution values. Re-set the metadata wrapper for 
+      // // We're done setting contribution values. Re-set the metadata wrapper for
       // // contributor objects
       // $wrapper = biblio_wrapper($contributor, 'biblio_contributor');
       // $wrapper->biblio_contributor_name->set($author_data['name']);
@@ -1657,7 +1657,7 @@ function biblio_contributor_widget($biblio, &$form_state) {
     $wrapper['biblio_contributors'][] = array();
     end($wrapper['biblio_contributors']);
     $delta = key($wrapper['biblio_contributors']);
-    $wrapper['biblio_contributors'][$delta] = 
+    $wrapper['biblio_contributors'][$delta] =
       biblio_contributor_biblio_form($info, $biblio, $form_state);
     $contributor_count++;
   }
@@ -1709,7 +1709,7 @@ function biblio_contributor_widget($biblio, &$form_state) {
 
 /**
  * Get the options for category dropdown field in contributor add/edit form
- * 
+ *
  * @return array
  */
 function biblio_get_contributor_options() {
@@ -1720,7 +1720,7 @@ function biblio_get_contributor_options() {
     4 => t('Subsidiary'),
     5 => t('Corporate/Institutional')
   );
-  
+
   return $options;
 }
 
@@ -1730,11 +1730,11 @@ function biblio_get_contributor_options() {
  * @param object $contribution
  * @param array $form_state
  * @param integer $delta The iterative value of the current contribution. 0,1,2...etc.
- * @return string 
+ * @return string
  */
 function biblio_contributor_biblio_form($contributor, $biblio, &$form_state) {
   module_load_include('inc', 'biblio', 'includes/biblio.contributors');
-  foreach (biblio_contributor_categories($biblio->publication_type) 
+  foreach (biblio_contributor_categories($biblio->publication_type)
     as $category => $info) {
     $category_options[$category] = $info['label'];
   }
@@ -1743,7 +1743,7 @@ function biblio_contributor_biblio_form($contributor, $biblio, &$form_state) {
   // Attach the field forms (contains Drupal fields) for the current contributor
   // field_attach_form('biblio_contributor', $contribution->contributor, $form, $form_state);
   // field_attach_form('biblio_contribution', $contribution, $form, $form_state);
-  
+
   $form['name'] = array(
     '#type' => 'textfield',
     '#autocomplete_path' =>  'biblio/autocomplete/contributor',
@@ -1767,14 +1767,14 @@ function biblio_contributor_biblio_form($contributor, $biblio, &$form_state) {
   // Get the language of the name field
   // $lang = $form['biblio_contributor_name']['#language'];
   // Set up autocomplete for the Name field
-  // $form['biblio_contributor_name'][$lang][0]['value']['#autocomplete_path'] 
+  // $form['biblio_contributor_name'][$lang][0]['value']['#autocomplete_path']
     // = 'biblio/autocomplete/contributor';
   // Set the form's parents so FAPI can distinguish between the multiple Name fields
   // $form['#parents'] = array(
-  //   'biblio_tabs', 
-  //   1, 
-  //   'biblio_contributors', 
-  //   $delta, 
+  //   'biblio_tabs',
+  //   1,
+  //   'biblio_contributors',
+  //   $delta,
   //   'biblio_contributor_name'
   // );
   // // Remove the title above each field
@@ -1793,7 +1793,7 @@ function biblio_contributor_biblio_form($contributor, $biblio, &$form_state) {
  *
  * @param array $form
  * @param array $form_state
- * @return array 
+ * @return array
  */
 function biblio_contributors_add_more_callback($form, &$form_state) {
   return $form['biblio_tabs']['contributors']['biblio_contributors'];
@@ -1801,9 +1801,9 @@ function biblio_contributors_add_more_callback($form, &$form_state) {
 
 /**
  * Submit action for the "add more" button
- * 
+ *
  * @param array $form
- * @param array $form_state 
+ * @param array $form_state
  */
 function biblio_contributors_add_more($form, &$form_state) {
   $form_state['biblio_contrib_count'] += variable_get('biblio_contrib_fields_delta', 2);
@@ -1866,9 +1866,9 @@ function biblio_form_node_form_alter(&$form, &$form_state, $form_id) {
 
 /**
  * Callback function for pre-render in the node form
- * 
+ *
  * @param array $form
- * @return array 
+ * @return array
  */
 function biblio_node_form_pre_render($form) {
     if (isset($form['biblio_tabs']['biblio_full_text']) && isset($form['body'])) {
@@ -1933,9 +1933,9 @@ function biblio_node_form_validate($form, &$form_state) {
 
 /**
  * Gets the numeric year values associated with "In Press"/"Submitted
- * 
+ *
  * @param mixed $year
- * @return int 
+ * @return int
  */
 function _biblio_numeric_year($year) {
   if (!is_numeric($year)) {
@@ -1950,9 +1950,9 @@ function _biblio_numeric_year($year) {
 
 /**
  * Gets the string values (in press/submitted) of the years 9999 and 9998
- * 
+ *
  * @param int $year
- * @return string The associated year string 
+ * @return string The associated year string
  */
 function _biblio_text_year($year) {
   if ($year == 9998) return check_plain(variable_get('biblio_inpress_year_text', t('In Press')));
@@ -1963,7 +1963,7 @@ function _biblio_text_year($year) {
 /**
  * Gets a list of machine-readable field names from the biblio_fields db table
  *
- * @todo check if needed in 7.x-2.x 
+ * @todo check if needed in 7.x-2.x
  * @return array
  */
 function _biblio_get_formatted_fields() {
@@ -1983,7 +1983,7 @@ function _biblio_get_formatted_fields() {
 /**
  * Prepare a biblio for submit to database.
  * Contains code common to insert and update.
- * 
+ *
  * @param object $biblio
  */
 function _biblio_prepare_submit(&$biblio) {
@@ -1991,10 +1991,10 @@ function _biblio_prepare_submit(&$biblio) {
   if (!isset($biblio->publication_type)) {
     $biblio->publication_type = ('miscellaneous');
   }
-  
+
   $title = $wrapper->biblio_title->value();
   $biblio->biblio_sort_title = biblio_normalize_title($title);
-  
+
   if (!isset($biblio->biblio_year)) {
     $wrapper->biblio_year->set(9999);
   }
@@ -2003,7 +2003,7 @@ function _biblio_prepare_submit(&$biblio) {
   if (variable_get('biblio_auto_citekey', 1) && empty($biblio->biblio_citekey)) {
     $biblio->biblio_citekey = biblio_citekey_generate($biblio);
   }
-  
+
   foreach (_biblio_get_formatted_fields() as $field) {
     if (isset($biblio->$field) && is_array($biblio->$field)) {
       $biblio->biblio_formats[$field] = $biblio->{$field}['format'];
@@ -2017,7 +2017,7 @@ function _biblio_prepare_submit(&$biblio) {
  *
  * As an existing node is being updated in the database, we need to do our own
  * database updates.
- * 
+ *
  * @param object $node
  */
 function biblio_update($node) {
@@ -2045,7 +2045,7 @@ function biblio_update($node) {
  *
  * This hook is called
  * every time a node is loaded, and allows us to do some loading of our own.
- * 
+ *
  * @todo move necessary code from this function to the new biblio_load() function. See http://drupal.org/node/1537326
  *
  */
@@ -2091,7 +2091,7 @@ function biblio_load_old($nodes) {
  * Generates automated citation keys
  *
  * @param object $biblio
- * @return string The citation key data 
+ * @return string The citation key data
  */
 function biblio_citekey_generate($biblio) {
   $php = check_plain(variable_get('biblio_citekey_phpcode', ''));
@@ -2240,7 +2240,7 @@ function biblio_recent_feed() {
  * @todo create relevant documentation for this function
  *
  * @param array $rss_info
- * @param array $nids 
+ * @param array $nids
  */
 function biblio_filter_feed($rss_info, $nids) {
   $base = variable_get('biblio_base', 'biblio');
@@ -2252,7 +2252,7 @@ function biblio_filter_feed($rss_info, $nids) {
 
 /**
  * Gets a list of machine-readable field names
- * 
+ *
  * @return array Iterative array of field names
  *
  * @todo: possibly get rid of this
@@ -2277,9 +2277,9 @@ function biblio_get_db_fields() {
 
 /**
  * @todo create relevant documentation for this function
- * 
+ *
  * @param type $citekey
- * @return array 
+ * @return array
  */
 function _biblio_citekey_print($citekey) {
 
@@ -2344,7 +2344,7 @@ function _biblio_filter_reference_prepare($text, $filter, $format, $langcode, $c
 }
 
 /**
- * Prepare callback function for hook_filter_info() 
+ * Prepare callback function for hook_filter_info()
  */
 function _biblio_filter_inline_reference_prepare($text, $filter, $format, $langcode, $cache, $cache_id) {
   return $text;
@@ -2474,7 +2474,7 @@ function hook_taxonomy_vocabulary_delete($vocabulary) {
 
 /**
  * Implements hook_term_path().
- * 
+ *
  * Not supported in Drupal 7
  */
 function biblio_term_path($term) {
@@ -2611,7 +2611,7 @@ function _biblio_profile_access($user, $type = 'profile') {
 
 /**
  * Helper function to get either the user or system style
- * 
+ *
  * @global object $user
  * @return type
  */
@@ -2665,7 +2665,7 @@ function biblio_views_api() {
 }
 
 /**
- * Implements hook_views_handlers(). 
+ * Implements hook_views_handlers().
  */
 function biblio_views_handlers() {
   return array(
@@ -2680,7 +2680,7 @@ function biblio_views_handlers() {
 /**
  * @todo add relevant documentation
  *
- * @param object $node 
+ * @param object $node
  */
 function biblio_fix_isi_links(&$node) {
   $isi = check_plain(variable_get('biblio_isi_url', 'http://apps.isiknowledge.com/InboundService.do?Func=Frame&product=WOS&action=retrieve&SrcApp=EndNote&Init=Yes&SrcAuth=ResearchSoft&mode=FullRecord&UT='));
@@ -2694,7 +2694,7 @@ function biblio_fix_isi_links(&$node) {
 
 /**
  * Gets a list of allowed HTML tags
- * 
+ *
  * @return array iterative array of allowed tags
  */
 function biblio_get_allowed_tags() {
@@ -2703,9 +2703,9 @@ function biblio_get_allowed_tags() {
 
 /**
  * @todo add relevant documentation
- * 
+ *
  * @param object $biblio
- * @return array 
+ * @return array
  */
 function biblio_get_title_url_info($biblio) {
   return array('link' =>  ((variable_get('biblio_link_title_url', 0) && !empty($biblio->biblio_url)) ? $biblio->biblio_url : "biblio/$biblio->bid"  ),
@@ -2717,7 +2717,7 @@ function biblio_get_title_url_info($biblio) {
 
 /**
  * Get publication type mapping for a biblio import type
- * 
+ *
  * @param string $type (can be one of "type_names", "type_map" or "field_map")
  * @param string $format (tagged, ris, endnote_xml8 etc...)
  * @return array $map
@@ -2765,7 +2765,7 @@ function biblio_set_map($type, $format, $map) {
 /**
  * Resets the publication type mapping of an import type
  * @param type $type
- * @param type $format 
+ * @param type $format
  */
 function biblio_reset_map($type, $format) {
   module_invoke_all($format . '_map_reset', $type);
@@ -2782,9 +2782,9 @@ function biblio_field_extra_fields() {
 /**
  * Removes the cid field from the contributors of a biblio node
  * Fixes node export importing issue #826506
- * 
+ *
  * @param object $node
- * @param type $original_node 
+ * @param type $original_node
  */
 function biblio_node_export_node_alter($node, $original_node) {
   if ($node->type == 'biblio' && isset($node->biblio_contributors) && is_array($node->biblio_contributors)) {
@@ -2797,7 +2797,7 @@ function biblio_node_export_node_alter($node, $original_node) {
 /**
  * Implements hook_feeds_processor_targets_alter
  *
- * Alters mapping targets for nodes. 
+ * Alters mapping targets for nodes.
  * Use this hook to add additional target options to the mapping form of Node processors.
  */
 function biblio_feeds_processor_targets_alter(&$targets, $entity_type, $bundle_name) {
@@ -2807,8 +2807,8 @@ function biblio_feeds_processor_targets_alter(&$targets, $entity_type, $bundle_n
 
 /**
  * @todo create relevant documentation for this function
- * 
- * @return type 
+ *
+ * @return type
  */
 function biblio_feeds_importer_default() {
   module_load_include('inc', 'biblio', 'includes/biblio.feeds');
@@ -2822,7 +2822,7 @@ function biblio_feeds_importer_default() {
 
 /**
  * @todo create relevant documentation for this function
- * 
+ *
  * @return array
  */
 function biblio_ctools_plugin_api() {
@@ -2837,8 +2837,8 @@ function biblio_ctools_plugin_api() {
  *********************************/
 
 /**
- * Implements hook_entity_info(). 
- * 
+ * Implements hook_entity_info().
+ *
  * Inform the Drupal and the Field API about entity types.
  * Uses the contrib Entity API module to create entities
  */
@@ -2886,7 +2886,7 @@ function biblio_entity_info() {
 //      'file' => 'biblio.module',
 //    ),
   );
-  // Since we have multiple bundles, we will need to tell the Field API what 
+  // Since we have multiple bundles, we will need to tell the Field API what
   // bundles we have and what paths to put the extra field management interfaces
   // for our entity. To do that, we define, for each of our bundles, a label
   // that is shown to the user and the menu information that the Field API will
@@ -2909,7 +2909,7 @@ function biblio_entity_info() {
       );
     }
   }
-  
+
   $return['biblio_contributor'] = array(
     'label' => t('Contributor'),
     'entity class' => 'BiblioContributor',
@@ -2939,7 +2939,7 @@ function biblio_entity_info() {
     'module' => 'biblio',
     'access callback' => 'biblio_entity_access',
   );
-  
+
   $contributor_categories = biblio_types('biblio_contributor');
   if (!empty($contributor_categories)) {
     foreach($contributor_categories as $type => $info) {
@@ -2951,12 +2951,12 @@ function biblio_entity_info() {
           'bundle argument' => 6,
           'access arguments' => array('administer biblio'),
         ),
-        
+
       );
     }
   }
-    
-  
+
+
   $return['biblio_contribution'] = array(
     'label' => t('Contribution'),
     'entity class' => 'BiblioContribution',
@@ -2983,7 +2983,7 @@ function biblio_entity_info() {
     'module' => 'biblio',
     'access callback' => 'biblio_entity_access',
   );
-  
+
   $contribution_categories = biblio_types('biblio_contribution');
   if (!empty($contribution_categories)){
     foreach ($contribution_categories as $type => $info) {
@@ -3008,13 +3008,13 @@ function biblio_entity_info() {
 function biblio_types($entity_type = FALSE) {
     $query = db_select('biblio_types', 'bt')
         ->fields('bt', array('name', 'description', 'entity'));
-    
+
     if ($entity_type) {
       $query->condition('entity', $entity_type);
     }
-    
+
     $result = $query->execute();
-    
+
     $entity_type_passed_in = $entity_type;
     while ($row = $result->fetchAssoc()) {
       if ($entity_type_passed_in === FALSE) {
@@ -3023,7 +3023,7 @@ function biblio_types($entity_type = FALSE) {
       $bundle_name = biblio_bundle_name($entity_type);
       // computer-friendly version of the human-readable content type stored in the database
       $machine_name = str_replace(' ', '_', strtolower($row['name']));
-      
+
       $types[$machine_name] = (object)array(
         // type is the machine name of the bundle
         $bundle_name => $machine_name,
@@ -3032,16 +3032,16 @@ function biblio_types($entity_type = FALSE) {
         'name' => t($row['name']),
         'description' => t($row['description']),
       );
-      
+
     }
-    
+
   return $types;
 }
 
 /**
  * Gets the title of a bundle for a given entity type
- * 
- * @param string $entity_type 
+ *
+ * @param string $entity_type
  * @return string
  */
 function biblio_bundle_name($entity_type) {
@@ -3084,7 +3084,7 @@ function biblio_bundle_load($type) {
 function contribution_bundle_load($type) {
   return biblio_combined_bundle_load($type);
 }
-  
+
 function contributor_bundle_load($type) {
   return biblio_combined_bundle_load($type);
 }
@@ -3130,7 +3130,7 @@ function biblio_entities() {
  * $wrapper->biblio_title->set('My Special Publication');
  * // get biblio field data
  * $title = $wrapper->biblio_title->value();
- * 
+ *
  * @param object $entity standard entity object - $biblio, $contributor, etc.
  * @param string $entity_type biblio, biblio_contributor, biblio_contribution.
  *  Defaults to 'biblio'
@@ -3154,15 +3154,18 @@ function biblio_wrapper($entity, $entity_type = 'biblio') {
  * @param string $publication_type
  *  The publication type of the biblio to be created (bundle)
  * @param array $values
- *  An associative array of any additional values to be set when creating this 
+ *  An associative array of any additional values to be set when creating this
  *  entity. These values will be carried throughout the biblio object's life.
  *  Example: $values['language'] => 'en';
- * @return object The biblio object, with default values. 
+ * @return object The biblio object, with default values.
  */
 function biblio_create($publication_type, $values = array()) {
   module_load_include('inc', 'biblio', 'includes/biblio.fields');
 
+  biblio_check_instances($publication_type);
+
   $values['publication_type'] = $publication_type;
+  $field_values = array();
 
   foreach($values as $property => $value) {
     if (biblio_is_field_instance($property, 'biblio', $publication_type)) {
@@ -3223,7 +3226,7 @@ function biblio_load($bid, $reset = FALSE) {
  */
 function biblio_load_multiple($bids = array(), $conditions = array(), $reset = FALSE) {
   // entity_load() will create a new instance of biblioController as needed
-  // and call the load() method on it. 
+  // and call the load() method on it.
   $biblios = entity_load('biblio', $bids, $conditions, $reset);
   $contributions = biblio_get_associated_contributions($bids);
   foreach($biblios as $bid => $biblio) {
@@ -3238,7 +3241,7 @@ function biblio_load_multiple($bids = array(), $conditions = array(), $reset = F
 function biblio_save($biblio) {
   module_load_include('inc', 'biblio', 'includes/biblio.util');
   module_load_include('inc', 'biblio', 'includes/biblio.keywords');
-  
+
   _biblio_prepare_submit($biblio);
   // @todo: get COinS working. See http://drupal.org/node/1537360
   $biblio->biblio_coins = biblio_coins($biblio);
@@ -3270,7 +3273,7 @@ function biblio_delete_multiple($bids) {
 
   foreach ($biblios as $bid => $biblio) {
     module_invoke_all('entity_delete', $biblio, 'biblio');
-    // @todo delete keywords, contributors, and field data associated with a 
+    // @todo delete keywords, contributors, and field data associated with a
     // biblio. See http://drupal.org/node/1537326
   }
 
@@ -3279,9 +3282,9 @@ function biblio_delete_multiple($bids) {
 
 /**
  * Let the Form API validate our form for us.
- * 
+ *
  * @param array $form
- * @param array $form_state 
+ * @param array $form_state
  */
 function biblio_form_validate($form, &$form_state) {
   if ($form_state['triggering_element']['#value'] == t('Next')
@@ -3293,7 +3296,7 @@ function biblio_form_validate($form, &$form_state) {
     }
     return;
   }
-  
+
   if (isset($form_state['biblio']) && !isset($biblio)) {
     $biblio = $form_state['biblio'];
   }
@@ -3303,7 +3306,7 @@ function biblio_form_validate($form, &$form_state) {
     // foreach ($biblio->contributions as $contribution) {
     //   // Validate the contribution entity object
     //   field_attach_form_validate(
-    //       'biblio_contribution', 
+    //       'biblio_contribution',
     //       $contribution,
     //       $form['biblio_tabs']['contributors']['biblio_contributors'][$i],
     //       $form_state
@@ -3327,12 +3330,12 @@ function biblio_form_validate($form, &$form_state) {
  *
  * @global type $user
  * @param type $form
- * @param array $form_state 
+ * @param array $form_state
  */
 function biblio_form_submit($form, &$form_state) {
   global $user;
   module_load_include('inc', 'biblio', 'includes/biblio.contributors');
-  
+
   // Pull the old biblio object out of the $form_state variable.
   $biblio = &$form_state['biblio'];
 
@@ -3342,8 +3345,8 @@ function biblio_form_submit($form, &$form_state) {
   }
 
   biblio_create_contributor_refs($form_state);
-  
-  // Notify field widgets. 
+
+  // Notify field widgets.
   field_attach_submit('biblio', $biblio, $form, $form_state);
   // Save the biblio.
 
@@ -3351,8 +3354,8 @@ function biblio_form_submit($form, &$form_state) {
 
   // Notify the user.
   drupal_set_message(t('Biblio saved.'));
-  
-  $form_state['redirect'] = 'biblio/' . $biblio->bid; 
+
+  $form_state['redirect'] = 'biblio/' . $biblio->bid;
 }
 
 /**
@@ -3424,7 +3427,7 @@ function biblio_contributor_exists($name) {
 /**
  * Given a biblio object, returns whether or not the biblio contains at least
  * one contribution object
- * 
+ *
  * @param object $biblio A biblio entity object
  * @return boolen TRUE if biblio has at least one contribution, FALSE otherwise
  */
@@ -3442,7 +3445,7 @@ function biblio_has_contributions($biblio) {
 /**
  * Given a Contribution entity object, returns whether or not the Contribution
  * object contains a Contributor object with the name field populated
- * 
+ *
  * @param object $contribution A contribution entity object
  * @return boolean TRUE if contribution has an associated contributor,
  *  FALSE otherwise
@@ -3451,11 +3454,11 @@ function biblio_contribution_has_contributor($contribution) {
   $contributor = $contribution->contributor;
   $contributor_wrapper = biblio_wrapper($contributor, 'biblio_contributor');
   $contributor_name = $contributor_wrapper->biblio_contributor_name->value();
-  
+
   if (isset($contributor_name) && !empty($contributor_name)) {
     return TRUE;
   }
-  
+
   return FALSE;
 }
 
@@ -3466,7 +3469,7 @@ function biblio_extract_contributors($biblio) {
       $contributors[] = $contribution->contributor;
     }
   }
-  
+
   return $contributors;
 }
 
@@ -3492,13 +3495,13 @@ function biblio_form_get_contributors($form) {
       if (isset($name_value) && $name_value != '') {
         $contributors[$rank_value] = $name_value;
         $i++;
-        
+
       }
     }
   }
   // Sort contributors in order of rank
   ksort($contributors);
-  
+
   return $contributors;
 }
 
@@ -3507,7 +3510,7 @@ function biblio_form_get_contributors($form) {
  *
  * @param type $biblio
  * @param type $view_mode View mode defined in biblio_entity_info().
- * @return type 
+ * @return type
  */
 function biblio_page_view($biblio, $view_mode = 'full', $langcode = NULL) {
   if (!isset($langcode)) {
@@ -3571,7 +3574,7 @@ function biblio_page_title($biblio) {
  * Get the language code for a field instance
  * @param string $field_name The machine name of the field/instance
  * @param object $biblio
- * @return string The language code ('en', 'und', etc...) 
+ * @return string The language code ('en', 'und', etc...)
  */
 function biblio_field_language($field_name, $biblio) {
   $field_languages = field_language('biblio', $biblio);
@@ -3585,7 +3588,7 @@ function biblio_field_language($field_name, $biblio) {
  * @param type $form
  * @param type $form_state
  * @param type $biblio
- * @return type 
+ * @return type
  */
 function biblio_delete_confirm($form, &$form_state, $biblio) {
   $wrapper = biblio_wrapper($biblio);
@@ -3605,7 +3608,7 @@ function biblio_delete_confirm($form, &$form_state, $biblio) {
  * Delete form confirmation page
  *
  * @param array $form
- * @param array $form_state 
+ * @param array $form_state
  */
 function biblio_delete_confirm_submit($form, &$form_state) {
   if ($form_state['values']['confirm']) {
@@ -3613,20 +3616,20 @@ function biblio_delete_confirm_submit($form, &$form_state) {
     biblio_delete($form['#biblio']);
     watchdog('biblio', '@type: deleted %title.',
       array(
-        '@type' => $wrapper->publication_type, 
+        '@type' => $wrapper->publication_type,
         '%title' => $wrapper->biblio_title->value(),
       )
     );
-    
+
     $types = biblio_types('biblio');
     drupal_set_message(t('@type %title has been deleted.',
         array(
-          '@type' => $types[$wrapper->publication_type->value()]-> name, 
+          '@type' => $types[$wrapper->publication_type->value()]-> name,
           '%title' => $wrapper->biblio_title->value(),
         )
     ));
   }
-  
+
   $form_state['redirect'] = '<front>';
 }
 
@@ -3634,7 +3637,7 @@ function biblio_delete_confirm_submit($form, &$form_state) {
  * Redirects the user to biblio/$bid/delete
  *
  * @param type $form
- * @param type $form_state 
+ * @param type $form_state
  */
 function biblio_form_delete_submit($form, &$form_state) {
   $destination = array();
@@ -3700,9 +3703,9 @@ function biblio_contributor_delete_multiple($contributor_ids) {
  *
  * @param array $bids an iterative array of biblio IDs with which to associate
  *  contributions and contributors
- * @return array an array, keyed by bid, of arrays containing contribution 
- *  entity objects, keyed by cnid. This return array has the following 
- *  structure: 
+ * @return array an array, keyed by bid, of arrays containing contribution
+ *  entity objects, keyed by cnid. This return array has the following
+ *  structure:
  *  $returnarray[$bid][$cnid] would give the Contribution object,
  *  which contains contributor properties/fields, plus the Contributor object.
  */
@@ -3714,25 +3717,25 @@ function biblio_get_associated_contributions($bids) {
     $query->entityCondition('entity_type', 'biblio_contribution');
     $query->fieldCondition('biblio_biblio_ref', 'target_id', $bid, '=');
     $result = $query->execute();
-    
+
     if (empty($result)) {
       // No contibutions associated with this biblio record
       return;
     }
-    
+
     // Extract the cnids from the objects returned by the query (not full
     // contribution objects) and put them in an array.
     foreach ($result['biblio_contribution'] as $id => $return_object) {
       $cnids[] = $return_object->cnid;
     }
   }
-  
+
   // Load the contribution entity objects from the database
   $contributions = entity_load('biblio_contribution', $cnids);
-  
+
   foreach ($contributions as $cnid => $contribution) {
     $wrapper = biblio_wrapper($contribution, 'biblio_contribution');
-    // Attach the Contributor object to the Contribution object. 
+    // Attach the Contributor object to the Contribution object.
     // The Contributor object is automatically loaded by EntityReference
     $contributions[$cnid]->contributor = $wrapper->biblio_contributor_ref->value();
     // Extract the Biblio ID from the Biblio object that EntityReference
@@ -3748,7 +3751,7 @@ function biblio_get_associated_contributions($bids) {
       return;
     }
   }
-  
+
     return $return;
 }
 
@@ -3757,12 +3760,12 @@ function biblio_get_associated_contributions($bids) {
  *
  * @param type $contributor
  * @param type $view_mode View mode defined in biblio_entity_info().
- * @return type 
+ * @return type
  */
 function biblio_contributor_page_view($contributor, $view_mode = 'full') {
   // Remove previously built content, if exists.
   $contributor->content = array();
-  
+
   // If we're in teaser mode, we want to inject the title of the contributor into
   // the viewable result.
   if ($view_mode == 'teaser') {
@@ -3775,14 +3778,14 @@ function biblio_contributor_page_view($contributor, $view_mode = 'full') {
   field_attach_prepare_view('biblio_contributor', array($contributor->cid => $contributor), $view_mode);
   entity_prepare_view('biblio_contributor', array($contributor->cid => $contributor));
   $contributor->content += field_attach_view('biblio_contributor', $contributor, $view_mode);
-  
+
   return $contributor->content;
 }
 
 /**
  * hook_menu callback function for admin/structure/biblio/add
- * 
- * @return string 
+ *
+ * @return string
  */
 function biblio_add() {
   return drupal_get_form('biblio_form');
@@ -3792,16 +3795,16 @@ function biblio_add() {
  * Presents the biblio editing form, or redirects to delete confirmation.
  *
  * @param type $biblio
- * @return type 
+ * @return type
  */
 function biblio_page_edit($biblio) {
   $wrapper = biblio_wrapper($biblio);
   $lang = biblio_field_language('biblio_title', $biblio);
   $types = biblio_types('biblio');
-  
+
   drupal_set_title(t('<em>Edit @type</em> @title', array('@type' =>
     $types[$biblio->publication_type]->name, '@title' =>$wrapper->biblio_title->value())), PASS_THROUGH);
-  
+
   return drupal_get_form('biblio_form', $biblio);
 }
 
@@ -3809,7 +3812,7 @@ function biblio_page_edit($biblio) {
  * Get the child elements of a menu item.
  *
  * @param string $menu_item
- * @return array 
+ * @return array
  */
 function menu_get_children($menu_item) {
   $leading_path = db_like($menu_item['path']);
@@ -3817,21 +3820,21 @@ function menu_get_children($menu_item) {
     'SELECT * FROM menu_router WHERE path LIKE :leading_path',
     array(':leading_path' => db_like($leading_path) . '/%')
   );
-  
+
   $children = array();
   foreach($result as $row) {
     $children[$row->title] = $row->path;
   }
-  
+
   return $children;
 }
 
 /**
  * hook_menu callback function for biblio/add/[publication-type]
- * 
+ *
  * @global type $user
  * @param type $type
- * @return array 
+ * @return array
  */
 function biblio_contributor_add() {
   // Create a new, empty biblio contributor object
@@ -3840,7 +3843,7 @@ function biblio_contributor_add() {
   // PASS_TRHOUGH as the second param tells the function to allow HTML in the
   // string we're giving because we've already checked to make sure it's safe.
   drupal_set_title(t('Create Contributor'), PASS_THROUGH);
-  
+
   // Display the form
   return drupal_get_form('biblio_contributor_add_form', $contributor);
 }
@@ -3848,28 +3851,28 @@ function biblio_contributor_add() {
 /**
  * Build the contributor add form
  * Called by the Form API
- * 
+ *
  * @param array $form
  * @param array $form_state
  * @param object $contributor
- * @return type 
+ * @return type
  */
 function biblio_contributor_add_form($form, &$form_state, $contributor) {
-  
+
   // Save the biblio for later, in case we need it.
   $form['#contributor'] = $contributor;
   $form_state['contributor'] = $contributor;
-  
+
   // Get all fields from the Field API
   field_attach_form('biblio_contributor', $contributor, $form, $form_state);
-  
+
   // Add autocomplete to name field
   foreach ($form['field_author_name']['und'] as $key => $field_data) {
     if (is_numeric($key)) {
       $form['field_author_name']['und'][$key]['value']['#autocomplete_path'] = 'biblio/autocomplete/contributor';
     }
   }
-  
+
   // Add the buttons.
   // Save button is always available
   $form['buttons'] = array();
@@ -3898,14 +3901,14 @@ function biblio_contributor_add_form($form, &$form_state, $contributor) {
  *
  * @global type $user
  * @param type $form
- * @param array $form_state 
+ * @param array $form_state
  */
 function biblio_contributor_form_submit($form, &$form_state) {
   global $user;
-  
+
   // Pull the old biblio object out of the $form_state variable.
   $contributor = &$form_state['contributor'];
-  
+
   // Set the biblio's uid if it's being created at this time.
   if (empty($contributor->uid)) {
     $contributor->uid = $user->uid;
@@ -3917,7 +3920,7 @@ function biblio_contributor_form_submit($form, &$form_state) {
 
   // Notify the user.
   drupal_set_message(t('Contributor saved.'));
-  
+
   $form_state['redirect'] = 'biblio/contributor/' . $contributor->cid;
 }
 
@@ -3950,8 +3953,8 @@ function biblio_admin_paths() {
  *
  * @param string $view_name The machine name of the view to show
  * @param string $view_display The display ID of the view to show
- *   
- * @return type 
+ *
+ * @return type
  */
 function biblio_admin_view($view_name, $view_display) {
   if (!module_exists('views')) {

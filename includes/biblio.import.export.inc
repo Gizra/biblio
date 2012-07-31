@@ -356,6 +356,7 @@ function biblio_import_batch_finished($success, $results, $operations) {
 function biblio_import_finalize($success, $results) {
   global $user;
   $format = $results['format'];
+  $base = variable_get('biblio_base', 'biblio');
   $bids = $results['bids'];
   $dups = $results['dups'];
   $total = count($bids) + count($dups);
@@ -365,7 +366,13 @@ function biblio_import_finalize($success, $results) {
     drupal_set_message($message, 'status');
     watchdog($format, $message);
     $count = count($bids);
-    $message = format_plural($count, 'One of @total biblios imported.', '@count of @total biblios imported.', array('@total' => $total));
+    $message = format_plural($count, 'One of @total biblios imported. ', '@count of @total biblios imported. ', array('@total' => $total));
+    if ($count > 0) {
+      $message .= 'Biblio IDs: ';
+    }
+    foreach ($bids as $bid) {
+      $message .= l($bid, $base . '/' . $bid) . " ";
+    }
     drupal_set_message($message, 'status');
     watchdog($format, $message, array('@count' => $count, '@total' => $total), WATCHDOG_INFO);
     if (count($dups)) {
@@ -610,7 +617,7 @@ function biblio_save_node($biblio, $terms = array(), $batch = FALSE, $session_id
 
     // Get all possible field instances for the current publication type
     $instances = field_info_instances('biblio', $biblio->publication_type);
-    
+
     // Add field instance data if it exists in both Drupal's stored instances,
     // and those field instances are also properties of the biblio entity
     foreach($biblio as $field_name=>$field_value) {
@@ -630,7 +637,7 @@ function biblio_save_node($biblio, $terms = array(), $batch = FALSE, $session_id
       else {
         $field_value = array(array('value' => $field_value));
       }
-      
+
     }
 
     if (!empty($validation_errors)) {
@@ -943,7 +950,7 @@ function biblio_dump_db_data_for_pot() {
 }
 
 function biblio_remove_variable_properties(&$biblio) {
-  // All properties of the biblio object that may change between creation or 
+  // All properties of the biblio object that may change between creation or
   // imports of the "same" biblio objects
   $properties = array('created', 'changed', 'uid');
   foreach($properties as $property) {

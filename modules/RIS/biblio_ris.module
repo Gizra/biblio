@@ -29,7 +29,7 @@ function biblio_ris_biblio_mapper_options() {
 function biblio_ris_biblio_export_options() {
   return array('ris' => t('RIS'));
 }
-function biblio_ris_form_biblio_node_form_alter(&$form, &$form_state) {
+function biblio_ris_form_biblio_form_alter(&$form, &$form_state) {
   global $user;
   if (!$form_state['submitted'] && !isset($form_state['values']) && !isset($form['#node']->nid)) {
       if (!$form_state['submitted']) {
@@ -52,7 +52,7 @@ function biblio_ris_form_biblio_node_form_alter(&$form, &$form_state) {
       $form['biblio_ris_paste']['paste_submit'] = array(
         '#type' => 'submit',
         '#value' => t('Populate using RIS'),
-        '#submit' => array('biblio_ris_form_biblio_node_form_submit')
+        '#submit' => array('biblio_ris_form_biblio_form_submit')
       );
     }
   }
@@ -62,7 +62,7 @@ function biblio_ris_form_biblio_node_form_alter(&$form, &$form_state) {
   $form['biblio_ris_md5'] = array('#type' => 'value', '#value' => $biblio_ris_md5);
 }
 
-function biblio_ris_form_biblio_node_form_submit($form, &$form_state) {
+function biblio_ris_form_biblio_form_submit($form, &$form_state) {
   global $user;
   $node_data = array();
   $dups = array();
@@ -71,8 +71,11 @@ function biblio_ris_form_biblio_node_form_submit($form, &$form_state) {
     $node_data = _biblio_ris_import_string($form_state['values']['paste_data_ris']);
   }
   if (!empty($node_data) && is_object($node_data)) {
+    $biblio = biblio_create($node_data->biblio_type, (array)$node_data);
     $form_state['values'] = array_merge($form_state['values'], (array)$node_data);
     $form_state['input']['biblio_type'] = $form_state['biblio_type'] = $node_data->biblio_type;
+    $form_state['biblio_imported'] = $biblio;
+    $form_state['biblio_imported_contributors'] = $node_data->biblio_contributors;
   }
   $form_state['rebuild'] = TRUE;
   return;
@@ -113,28 +116,28 @@ function biblio_ris_biblio_export_link($nid = NULL, $filter = array()) {
   return array('biblio_ris' => $link);
 }
 
-function biblio_ris_node_delete($node) {
-  if ($node->type != 'biblio') {
+function biblio_ris_entity_delete($entity, $type) {
+  if ($type != 'biblio') {
     return;
   }
   db_delete('biblio_ris')
-    ->condition('nid', $node->nid)
+    ->condition('bid', $entity->bid)
     ->execute();
 }
 
-function biblio_ris_node_insert($node) {
-  if (isset($node->biblio_ris_md5)) {
-    drupal_write_record('biblio_ris', $node);
+function biblio_ris_entity_insert($entity, $type) {
+  if (isset($entity->biblio_ris_md5)) {
+    drupal_write_record('biblio_ris', $entity);
   }
 }
 
-function biblio_ris_node_view($node, $view_mode) {
-  if ( $node->type == 'biblio') {
+function biblio_ris_entity_view($entity, $type, $view_mode, $langcode) {
+  if ( $type == 'biblio') {
     switch ($view_mode) {
       case 'full':
       case 'teaser':
-        $links = biblio_ris_biblio_export_link($node->nid);
-        $node->content['links']['biblio_ris'] = array(
+        $links = biblio_ris_biblio_export_link($entity->bid);
+        $entity->content['links']['biblio_ris'] = array(
           '#links' => $links,
           '#attributes' => array('class' => array('links', 'inline')),
         );
@@ -143,11 +146,11 @@ function biblio_ris_node_view($node, $view_mode) {
 }
 
 function biblio_ris_biblio_import($file, $terms = array(), $batch = FALSE, $session_id = NULL, $save = TRUE, $string = FALSE) {
-  $nids = array();
+  $bids = array();
   $dups = array();
-  list($nids, $dups) = _biblio_ris_import($file, $terms, $batch, $session_id);
+  list($bids, $dups) = _biblio_ris_import($file, $terms, $batch, $session_id);
 
-  return array($nids, $dups);
+  return array($bids, $dups);
 }
 
 function biblio_ris_biblio_export($nids) {
@@ -181,6 +184,7 @@ function biblio_ris_biblio_export($nids) {
 function _biblio_ris_import_string($string) {
   $tag = '';
   $node = new stdClass();
+  $unmapped = array();
   $lines = preg_split('/[\r\n]/', $string, -1, PREG_SPLIT_NO_EMPTY);
   foreach ($lines as $line) {
     $line_len = strlen($line);
@@ -210,13 +214,14 @@ function _biblio_ris_import_string($string) {
         }
       }
       else {
-        _biblio_ris_parse_line($tag, $data, $node);
+        _biblio_ris_parse_line($tag, $data, $node, $unmapped);
       }
     }
   } // end while
 }
 
 function _biblio_ris_import($file, $terms = array(), $batch = FALSE, $session_id = NULL) {
+  module_load_include('inc', 'biblio', 'includes/biblio.fields');
   ini_set('auto_detect_line_endings', true);
   if (!($fp = fopen($file->uri, "r"))) {
     drupal_set_message(t("Could not open RIS input file for reading."), 'error');
@@ -224,10 +229,10 @@ function _biblio_ris_import($file, $terms = array(), $batch = FALSE, $session_id
   }
 
   $tag = '';
-  $nids = array();
+  $bids = array();
   $dups = array();
   $unmapped = array();
-  $node = new stdClass();
+  $biblio = new stdClass();
 
   while (!feof($fp)) {
     $line = fgets($fp);
@@ -244,23 +249,26 @@ function _biblio_ris_import($file, $terms = array(), $batch = FALSE, $session_id
     }
     if ($line_len > 3 && !empty($tag)) { // if this is not a blank line
       if ($tag == 'ER') {
-        if (!empty($node)) {
-          $node->biblio_ris_md5 = md5(serialize($node));
-          if (empty ($node->title )) $node->title = t("Untitled");
-          if (! ($dup = biblio_ris_check_md5($node->biblio_ris_md5))) {
-            biblio_save_node($node, $terms, $batch, $session_id);
-            if (!empty($node->nid)) $nids[] = $node->nid;
+        if (!empty($biblio)) {
+          $biblio->biblio_ris_md5 = md5(serialize($biblio));
+          if (empty ($biblio->biblio_title )) $biblio->biblio_title = t("Untitled");
+          if (! ($dup = biblio_ris_check_md5($biblio->biblio_ris_md5))) {
+            $biblio_old = $biblio;
+            $biblio = biblio_create($biblio_old->biblio_type, (array)$biblio_old);
+            $biblio->biblio_keywords = $biblio_old->biblio_keywords;
+            biblio_save_node($biblio, $terms, $batch, $session_id);
+            if (!empty($biblio->bid)) $bids[] = $biblio->bid;
           }
           else {
             $dups[] = $dup;
           }
         }
 
-        $node = new stdClass();
-        $node->biblio_contributors = array();
+        $biblio = new stdClass();
+        $biblio->biblio_contributors = array();
       }
       else {
-        _biblio_ris_parse_line($tag, $data, $node, $unmapped);
+        _biblio_ris_parse_line($tag, $data, $biblio, $unmapped);
       }
 
     }
@@ -290,8 +298,8 @@ function _biblio_ris_parse_line($tag, $data, $node, &$unmapped) {
     case 'AU' :
       $node->biblio_contributors[] = array(
                 'name' => $data,
-                'auth_category' => 1,
-                'auth_type' => _biblio_get_auth_type(1, $node->biblio_type));
+                'category' => 'primary',
+      );
       break;
     case 'Y1' :
     case 'PY' :
@@ -302,8 +310,8 @@ function _biblio_ris_parse_line($tag, $data, $node, &$unmapped) {
     case 'ED' :
       $node->biblio_contributors[] = array(
                 'name' => $data,
-                'auth_category' => 2,
-                'auth_type' => _biblio_get_auth_type(2, $node->biblio_type));
+                'category' => 'secondary',
+      );
       break;
     case 'KW' :
       $node->biblio_keywords[] = $data;
@@ -315,8 +323,8 @@ function _biblio_ris_parse_line($tag, $data, $node, &$unmapped) {
     case 'A3' :
       $node->biblio_contributors[] = array(
                 'name' => $data,
-                'auth_category' => 5,
-                'auth_type' => _biblio_get_auth_type(5, $node->biblio_type));
+                'auth_category' => 'corporate',
+      );
       break;
     case 'BT' :
       if ($node->biblio_type == 100) {
