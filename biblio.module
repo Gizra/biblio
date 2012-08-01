@@ -590,124 +590,200 @@ function biblio_forms() {
 
 /**
  * Implements hook_menu().
- *
- * Here we define some built in links for the biblio module, links exposed are:
  */
 function biblio_menu() {
   global $user;
   $items = array();
   $base = variable_get('biblio_base', 'biblio');
   $base_title = check_plain(variable_get('biblio_base_title', 'Biblio'));
-  $items["$base"] = array(
+
+  // Main Biblio Content
+  //----------------------------------------------------------------------------
+  $items[$base] = array(
     'title'             => $base_title,
     'page callback'     => 'biblio_page',
     'access callback'   => 'user_access',
     'access arguments'  => array('access biblio content'),
     'file'              => '/includes/biblio.pages.inc',
   );
-//   $items["$base/contributors"] = array(
-//     'title'             => 'Contributors',
-//     'page callback'     => 'biblio_author_page',
-//     'access callback'   => 'user_access',
-//     'access arguments'  => array('access biblio content'),
-//     'file'              => '/includes/biblio.pages.inc',
-//     'weight'            => 1,
-//   );
-//   $items["$base/keywords"] = array(
-//     'title' => 'Keywords',
-//     // 'page callback' => 'biblio_keyword_page',
-//     'access callback' => 'user_access',
-//     'access arguments' => array('access biblio content'),
-//     'file' => '/includes/biblio.pages.inc',
-// //    'type' => MENU_LOCAL_TASK,
-//     'weight' => 2,
-//   );
-  $items["$base/import"] = array(
+  $items[$base . "/%biblio"] = array(
+    'title callback' => 'biblio_page_title',
+    'title arguments' => array(1),
+    'page callback' => 'biblio_page_view',
+    'page arguments' => array(1),
+    'access arguments' => array('access biblio content'),
+    'type' => MENU_CALLBACK,
+  );
+  $items[$base . "/%biblio/view"] = array(
+    'title' => 'View',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+    'access arguments' => array('access biblio content')
+  );
+  $items[$base . "/%biblio/edit"] = array(
+    'title' => 'Edit',
+    'page callback' => 'biblio_page_edit',
+    'page arguments' => array(1),
+    'access arguments' => array('edit all biblio entries'),
+    'weight' => 0,
+    'type' => MENU_LOCAL_TASK,
+    'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
+    'file' => 'includes/biblio.admin.inc',
+  );
+  $items[$base . "/%biblio/delete"] = array(
+    'title' => 'Delete',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('biblio_delete_confirm', 1),
+    'access arguments' => array('edit all biblio entries'),
+    'weight' => 1,
+    'type' => MENU_LOCAL_TASK,
+    'context' => MENU_CONTEXT_INLINE,
+    'file' => 'includes/biblio.admin.inc',
+  );
+  $items[$base . "/contributor/%biblio_contributor"] = array(
+    'title callback' => 'entity_label',
+    'title arguments' => array('biblio_contributor', 2), //callback
+    'page callback' => 'biblio_contributor_page_view', //callback
+    'page arguments' => array(2),
+    'access arguments' => array('access biblio content'),
+  );
+  $items[$base . "/contributor/%biblio_contributor/view"] = array(
+    'title' => 'View',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+    'access arguments' => array('access biblio content'),
+  );
+  $items[$base . "/contributor/%biblio_contributor/edit"] = array(
+    'title' => 'Edit',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('biblio_contributor_form', 2),
+    'access arguments' => array('edit all biblio entries'),
+    'file' => 'includes/biblio.admin.inc',
+    'type' => MENU_LOCAL_TASK,
+    'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
+  );
+  $items[$base . "/contributor/%biblio_contributor/delete"] = array(
+    'title' => 'Delete Contributor',
+    'title callback' => 'biblio_contributor_label',
+    'title arguments' => array(2),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('biblio_contributor_delete_form', 2),
+    'access arguments' => array('edit all biblio entries'),
+    'file' => 'includes/biblio.admin.inc',
+  );
+
+  // Importing & Exporting
+  //----------------------------------------------------------------------------
+  $items[$base . "/import"] = array(
     'title'             => 'Import',
     'page callback'     => 'drupal_get_form',
     'page arguments'    => array('biblio_import_form'),
     'file'              => '/includes/biblio.import.export.inc',
     'access callback'   => 'user_access',
     'access arguments'  => array('import from file'),
- //   'type'              => MENU_LOCAL_TASK,
     'weight'            => 10,
   );
-  $items["$base/user/%"] = array(
-    'title'             => 'My publications',
-    'page callback'     => 'biblio_profile_page',
-    'page arguments'    => array(2),
-    'access callback'   => '_biblio_profile_access',
-    'access arguments'  => array(2, 'menu'),
-    'parent'            => '',
-    'file'              => '/includes/biblio.pages.inc',
+  $items[$base . "/export"] = array(
+    'title'             => '',
+    'page callback'     => 'biblio_export',
+    'access callback'   => 'user_access',
+    'access arguments'  => array('show export links'),
+    'file'              => '/includes/biblio.import.export.inc',
+    'type'              => MENU_CALLBACK
   );
-  /*
-   $items["$base/backup"] = array(
-   'title' => '',
-   'page callback' => 'biblio_backup',
-   'access callback' => 'user_access',
-   'access arguments' => array('access content'),
-   'file' => 'biblio.import.export.inc',
-   'type' => MENU_CALLBACK
-   );
-   */
-  $items["$base/pot"] = array(
+  $items[$base . "/pot"] = array(
     'title'             => '',
     'page callback'     => 'biblio_dump_db_data_for_pot',
     'access callback'   => 'user_access',
-    'access arguments'  => array('access biblio content'),
+    'access arguments'  => array('export pot data'),
     'type'              => MENU_CALLBACK
   );
 
-  $wildcard = 2 + (count(explode("/", $base)) - 1);
-
-  $items["$base/authors/%/edit"] = array(
-    'title'             => 'Edit author information',
-    'page callback'     => 'drupal_get_form',
-    'page arguments'    => array('biblio_admin_author_edit_form', $wildcard),
-    'access callback'   => 'biblio_access',
-    'access arguments'  => array('edit_author'),
-    'file'              => '/includes/biblio.admin.inc',
-    'type'              => MENU_CALLBACK
+  // Biblio Content Management
+  //----------------------------------------------------------------------------
+  $items['admin/content/biblio'] = array(
+    'title' => 'Biblio',
+    'description' => 'List and edit Biblio entries.
+      Use Biblio for scholarly content, such as journal papers and books.',
+    'page callback' => 'biblio_admin_view',
+    'page arguments' => array('biblio_admin', 'page'),
+    'access arguments' => array('manage biblio content'),
+    'weight' => 5,
+    'type' => MENU_LOCAL_TASK,
   );
-  $items["$base/keywords/%/edit"] = array(
-    'title'             => '',
-    'page callback'     => 'drupal_get_form',
-    'page arguments'    => array('biblio_admin_keyword_edit_form', $wildcard),
-    'access callback'   => 'user_access',
-    'access arguments'  => array('administer biblio'),
-    'file'              => '/includes/biblio.admin.inc',
-    'type'              => MENU_CALLBACK
+  $items["admin/content/biblio/biblio-list"] = array(
+    'title' => 'Biblios',
+    'description' => 'View, Edit, and Delete Biblios',
+    'access arguments' => array('manage biblio content'),
+    'weight' => 0,
+    'type' => MENU_DEFAULT_LOCAL_TASK,
   );
-  $items["$base/keyword/%/delete"] = array(
-    'title'             => 'Delete',
-    'page callback'     => 'drupal_get_form',
-    'page arguments'    => array('biblio_admin_keyword_delete_confirm', $wildcard),
-    'access callback'   => 'user_access',
-    'access arguments'  => array('administer biblio'),
-    'file'              => '/includes/biblio.admin.inc',
+  $items['admin/content/biblio/add'] = array(
+    'title' => 'Add Biblio',
+    'access arguments' => array('create biblio'),
+    'page callback' => 'create biblio',
+    'type' => MENU_LOCAL_ACTION,
+  );
+  $items['admin/content/biblio/contributor'] = array(
+    'title'             => 'Contributors',
+    'page callback'     => 'biblio_admin_view',
+    'page arguments'    => array('biblio_admin_contributors', 'page'),
+    'access arguments'  => array('manage biblio content'),
+    'type'              => MENU_LOCAL_TASK,
     'weight'            => 1,
-    'type'              => MENU_CALLBACK
   );
-  $items["$base/view/%"] = array(
-    'page callback'     => 'biblio_view_node',
-    'page arguments'    => array($wildcard),
-    'access callback'   => 'user_access',
-    'access arguments'  => array('access biblio content'),
-    'file'              => '/includes/biblio.pages.inc',
-    'type'              => MENU_CALLBACK
-   );
+  $items['admin/content/biblio/contributor/add'] = array(
+    'title' => 'Add Contributor',
+    'page callback' => 'biblio_contributor_add',
+    'access arguments' => array('create biblio'),
+    'file' => 'includes/biblio.admin.inc',
+  );
 
-  $items["user/%user/$base"] = array(
-    'title'             => 'Publications',
-    'page callback'     => 'biblio_profile_page',
-    'page arguments'    => array(1, 'profile', 'no_filters'),
-    'access callback'   => '_biblio_profile_access',
-    'access arguments'  => array(1, 'profile'),
-    'file'              => '/includes/biblio.pages.inc',
-    'type'              => MENU_LOCAL_TASK
+  // Biblio Structure Management
+  // ---------------------------------------------------------------------------
+  $items["admin/structure/biblio"] = array(
+    'title' => 'Biblio',
+    'description' => 'Manage Fields and Dislplay for Biblios and Contributors',
+    'access arguments' => array('administer biblio'),
+    'page callback' => 'biblio_overview_types',
+    'page arguments' => array('biblio'),
+    'file' => 'includes/biblio.admin.inc',
+    'access arguments' => array('manage biblio structure'),
   );
-  // The next two "LOCAL TASKS" are for the admin/config/content/biblio page
+  $items["admin/structure/biblio/publication-types"] = array(
+    'title' => 'Publication Types',
+    'description' => 'Manage Biblio Publication Types',
+    'access arguments' => array('manage biblio structure'),
+    'weight' => 0,
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+  );
+  foreach (biblio_types() as $type) {
+    $bundle = biblio_bundle_name($type->entity);
+    $type_url_str = str_replace('_', '-', $type->{$bundle});
+    $entity_url_str = str_replace('_', '-', $type->entity);
+    $url = 'admin/structure/biblio/publication-types/' . $type_url_str;
+    $items[$url] = array(
+      'title' => 'Edit ' . $type->name,
+      'title callback' => 'check_plain',
+      'page callback' => 'biblio_field_settings',
+      'file' => '/includes/biblio.admin.inc',
+      'page arguments' => array(5),
+      'access arguments' => array('manage biblio structure'),
+    );
+  }
+  $items["admin/structure/biblio/contributors"] = array(
+    'title' => 'Contributors',
+    'description' => 'Manage Biblio Contributor Fields/Display',
+    'page callback'     => 'biblio_overview_types',
+    'page arguments'    => array('biblio_contributor'),
+    'file'              => '/includes/biblio.admin.inc',
+    'access arguments' => array('manage biblio structure'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 1,
+  );
+
+  // Biblio Settings
+  //----------------------------------------------------------------------------
   $items['admin/config/content/biblio'] = array(
     'title'             => 'Biblio settings',
     'description'       => 'Configure default behavior of the Biblio module.',
@@ -716,53 +792,13 @@ function biblio_menu() {
     'access arguments'  => array('administer biblio'),
     'file'              => '/includes/biblio.admin.inc',
   );
-
-  $items['admin/config/content/biblio/basic'] = array(
+  $items['admin/config/content/biblio/preferences'] = array(
     'title'             => 'Preferences',
     'description'       => 'Configure default behavior of the Biblio module.',
-    'page callback'     => 'drupal_get_form',
-    'page arguments'    => array('biblio_admin_settings'),
     'access arguments'  => array('administer biblio'),
-    'file'              => '/includes/biblio.admin.inc',
     'type'              => MENU_DEFAULT_LOCAL_TASK,
     'weight'            => -10
   );
-  $items['admin/config/content/biblio/import'] = array(
-    'title'             => 'Data import',
-    'page callback'     => 'drupal_get_form',
-    'page arguments'    => array('biblio_import_form'),
-    'access arguments'  => array('administer biblio'),
-    'file'              => '/includes/biblio.import.export.inc',
-    'type'              => MENU_LOCAL_TASK,
-    'weight'            => 1
-  );
-  $items['admin/config/content/biblio/export'] = array(
-    'title'             => 'Export',
-    'page callback'     => 'drupal_get_form',
-    'page arguments'    => array('biblio_export_form'),
-    'access arguments'  => array('administer biblio'),
-    'file'              => '/includes/biblio.import.export.inc',
-    'type'              => MENU_LOCAL_TASK,
-    'weight'            => 2
-  );
-//  $items['admin/config/content/biblio/fields'] = array(
-//    'title'             => 'Fields',
-//    'page callback'     => 'drupal_get_form',
-//    'page arguments'    => array('biblio_admin_types_edit_form'),
-//    'access arguments'  => array('administer biblio'),
-//    'file'              => '/includes/biblio.admin.inc',
-//    'type'              => MENU_LOCAL_TASK,
-//    'weight'            => -9
-//  );
-//  $items['admin/config/content/biblio/fields/common'] = array(
-//    'title'             => 'Common',
-//    'page callback'     => 'drupal_get_form',
-//    'page arguments'    => array('biblio_admin_types_edit_form'),
-//    'access arguments'  => array('administer biblio'),
-//    'file'              => '/includes/biblio.admin.inc',
-//    'type'              => MENU_DEFAULT_LOCAL_TASK,
-//    'weight'            => -10
-//  );
   $items['admin/config/content/biblio/iomap'] = array(
     'title'             => 'Import/Export Mapping',
     'page callback'     => 'biblio_admin_io_mapper_page',
@@ -781,16 +817,16 @@ function biblio_menu() {
   );
   $formats = module_invoke_all('biblio_mapper_options');
   foreach ($formats as $key => $format) {
-  $items['admin/config/content/biblio/iomap/edit/' . $key] = array(
-    'title'             => $format['title'],
-    'page callback'     => 'drupal_get_form',
-    'page arguments'    => array('biblio_admin_io_mapper_form', 6),
-    'access arguments'  => array('administer biblio'),
-    'file'              => '/includes/biblio.admin.inc',
-    'tab_parent'						=> 'admin/config/content/biblio/iomap',
-    'type'              => MENU_LOCAL_TASK,
-    'weight'            => -1
-  );
+    $items['admin/config/content/biblio/iomap/edit/' . $key] = array(
+      'title'             => $format['title'],
+      'page callback'     => 'drupal_get_form',
+      'page arguments'    => array('biblio_admin_io_mapper_form', 6),
+      'access arguments'  => array('administer biblio'),
+      'file'              => '/includes/biblio.admin.inc',
+      'tab_parent'						=> 'admin/config/content/biblio/iomap',
+      'type'              => MENU_LOCAL_TASK,
+      'weight'            => -1
+    );
   }
   $items['admin/config/content/biblio/iomap/%/%/add'] = array(
     'title'             => '',
@@ -798,198 +834,13 @@ function biblio_menu() {
     'page arguments'    => array('biblio_admin_io_mapper_add_form', 5, 6),
     'access arguments'  => array('administer biblio'),
     'tab_parent'						=> 'admin/config/content/biblio/iomap',
-  'file'              => '/includes/biblio.admin.inc',
+    'file'              => '/includes/biblio.admin.inc',
     'type'              => MENU_CALLBACK,
     'weight'            => -1
   );
-//  $items['admin/config/content/biblio/pubtype'] = array(
-//    'title'             => 'Publication types',
-//    'page callback'     => 'biblio_admin_types_form',
-//    'access arguments'  => array('administer biblio'),
-//    'file'              => '/includes/biblio.admin.inc',
-//    'type'              => MENU_LOCAL_TASK,
-//    'weight'            => -9
-//  );
-//  $items['admin/config/content/biblio/pubtype/list'] = array(
-//    'title'             => 'List',
-//    'page callback'     => 'biblio_admin_types_form',
-//    'access arguments'  => array('administer biblio'),
-//    'file'              => '/includes/biblio.admin.inc',
-//    'type'              => MENU_DEFAULT_LOCAL_TASK,
-//    'weight'            => -10
-//  );
-//  $items['admin/config/content/biblio/pubtype/delete/%'] = array(
-//    'title'             => '',
-//    'page callback'     => 'drupal_get_form',
-//    'page arguments'    => array('biblio_admin_types_delete_form', 6),
-//    'access arguments'  => array('administer biblio'),
-//    'file'              => '/includes/biblio.admin.inc',
-//    'type'              => MENU_CALLBACK
-//  );
-//  $items['admin/config/content/biblio/pubtype/new'] = array(
-//    'title'             => 'Add New Type',
-//    'page callback'     => 'drupal_get_form',
-//    'page arguments'    => array('biblio_admin_types_add_form'),
-//    'access arguments'  => array('administer biblio'),
-//    'file'              => '/includes/biblio.admin.inc',
-//    'type'              => MENU_LOCAL_TASK,
-//    'weight'            => -9
-//  );
-//  $items['admin/config/content/biblio/fields/reset'] = array(
-//    'title'             => 'Reset all types to defaults',
-//    'page callback'     => 'drupal_get_form',
-//    'page arguments'    => array('biblio_admin_types_reset_form'),
-//    'access arguments'  => array('administer biblio'),
-//    'file'              => '/includes/biblio.admin.inc',
-//    'type'              => MENU_LOCAL_TASK
-//  );
-//  $items['admin/config/content/biblio/pubtype/hide'] = array(
-//    'title'             => '',
-//    'page callback'     => 'biblio_admin_types_hide',
-//    'access arguments'  => array('administer biblio'),
-//    'file'              => '/includes/biblio.admin.inc',
-//    'type'              => MENU_CALLBACK
-//  );
-//  $items['admin/config/content/biblio/pubtype/show'] = array(
-//    'title'             => '',
-//    'page callback'     => 'biblio_admin_types_show',
-//    'access arguments'  => array('administer biblio'),
-//    'file'              => '/includes/biblio.admin.inc',
-//    'type'              => MENU_CALLBACK
-//  );
-  // @todo get this working with new contributor entity
-  $items['admin/config/content/biblio/author'] = array(
-    'title'             => 'Contributors',
-    'page callback'     => 'biblio_admin_view',
-    'page arguments'    => array('biblio_admin_contributors', 'page'),
-    // 'access callback'   => 'user_access',
-    'access arguments'  => array('administer biblio'),
-    'type'              => MENU_LOCAL_TASK,
-    'weight'            => -7
-  );
-  $items['admin/config/content/biblio/author/list'] = array(
-    'title'             => 'List',
-    'page callback'     => 'biblio_author_page',
-    // 'access callback'   => 'user_access',
-    'access arguments'  => array('administer biblio'),
-    'file'              => '/includes/biblio.pages.inc',
-    'type'              => MENU_DEFAULT_LOCAL_TASK,
-    'weight'            => -7
-  );
-  $items['admin/config/content/biblio/author/%/edit'] = array(
-    'title'             => 'Edit author information',
-    'page callback'     => 'drupal_get_form',
-    'page arguments'    => array('biblio_admin_author_edit_form', 5),
-    // 'access callback'   => 'biblio_access',
-    'access arguments'  => array('administer biblio'),
-    'file'              => '/includes/biblio.admin.inc',
-     'type'              => MENU_CALLBACK,
-    'weight'            => -6
-  );
-  $items['admin/config/content/biblio/author/orphans'] = array(
-    'title'             => 'Orphaned Authors',
-    'page callback'     => 'drupal_get_form',
-    'page arguments'    => array('biblio_admin_orphans_form'),
-    'access arguments'  => array('administer biblio'),
-    'description'       => 'Delete orphaned biblio authors.',
-    'file'              => '/includes/biblio.admin.inc',
-    'type'              => MENU_LOCAL_TASK,
-    'weight'            => -6
-  );
-  $items['admin/config/content/biblio/author/type'] = array(
-    'title'             => 'Author Types',
-    'page callback'     => 'biblio_overview_types',
-    'page arguments'    => array('biblio_contributor'),
-  'access arguments'  => array('administer biblio'),
-    'file'              => '/includes/biblio.admin.inc',
-    'type'              => MENU_LOCAL_TASK,
-    'weight'            => -5
-  );
-  $items['admin/config/content/biblio/author/contribution-type'] = array(
-    'title'             => 'Contribution Types',
-    'page callback'     => 'biblio_overview_types',
-    'page arguments'    => array('biblio_contribution'),
-  'access arguments'  => array('administer biblio'),
-    'file'              => '/includes/biblio.admin.inc',
-    'type'              => MENU_LOCAL_TASK,
-    'weight'            => -5
-  );
 
-  $items['admin/config/content/biblio/author/type/new'] = array(
-    'title'             => 'Add New Author Type',
-    'page callback'     => 'drupal_get_form',
-    'page arguments'    => array('biblio_admin_author_types_form_new', 'new'),
-    'access arguments'  => array('administer biblio'),
-    'file'              => '/includes/biblio.admin.inc',
-    'type'              => MENU_LOCAL_TASK,
-    'weight'            => -9
-  );
-  $items['admin/config/content/biblio/author/type/%/edit'] = array(
-    'title'             => 'Edit Author Type',
-    'page callback'     => 'drupal_get_form',
-    'page arguments'    => array('biblio_admin_author_types_form_edit', 'edit', 6),
-    'access arguments'  => array('administer biblio'),
-    'file'              => '/includes/biblio.admin.inc',
-    'type'              => MENU_CALLBACK,
-    'weight'            => -9
-  );
-  $items['admin/config/content/biblio/author/type/%/delete'] = array(
-    'title'             => 'Delete',
-    'page callback'     => 'drupal_get_form',
-    'page arguments'    => array('biblio_admin_author_type_delete_confirm', 6),
-    'access callback'   => 'user_access',
-    'access arguments'  => array('administer biblio'),
-    'file'              => '/includes/biblio.admin.inc',
-    'weight'            => 1,
-    'type'              => MENU_CALLBACK
-  );
-  $items['admin/config/content/biblio/keywords'] = array(
-    'title'             => 'Keywords',
-    'page callback'     => 'biblio_keyword_page',
-    'access callback'   => 'user_access',
-    'access arguments'  => array('administer biblio'),
-    'file'              => '/includes/biblio.pages.inc',
-    'type'              => MENU_LOCAL_TASK,
-    'weight'            => -7
-  );
-  $items['admin/config/content/biblio/keywords/list'] = array(
-    'title'             => 'List',
-    'page callback'     => 'biblio_keyword_page',
-    'access callback'   => 'user_access',
-    'access arguments'  => array('administer biblio'),
-    'file'              => '/includes/biblio.pages.inc',
-    'type'              => MENU_DEFAULT_LOCAL_TASK,
-    'weight'            => -7
-  );
-  $items['admin/config/content/biblio/keywords/%/edit'] = array(
-    'title'             => 'Edit keyword information',
-    'page callback'     => 'drupal_get_form',
-    'page arguments'    => array('biblio_admin_keyword_edit_form', 5),
-    'access callback'   => 'user_access',
-    'access arguments'  => array('administer biblio'),
-    'file'              => '/includes/biblio.admin.inc',
-    'type'              => MENU_CALLBACK,
-    'weight'            => -6
-  );
-  $items['admin/config/content/biblio/keywords/orphans'] = array(
-    'title'             => 'Orphaned Keywords',
-    'page callback'     => 'drupal_get_form',
-    'page arguments'    => array('biblio_admin_keyword_orphans_form'),
-    'access arguments'  => array('administer biblio'),
-    'description'       => 'Delete orphaned biblio keywords.',
-    'file'              => '/includes/biblio.admin.inc',
-    'type'              => MENU_LOCAL_TASK,
-    'weight'            => -6
-  );
-  /*    $items['admin/config/content/biblio/authors/reset'] = array(
-   'title' => t('Reset all Author types to defaults'),
-   'page callback' => 'drupal_get_form',
-   'page arguments' => array('biblio_admin_author_type_reset_form'),
-   'access arguments' => array('administer biblio'),
-   'file' => '/includes/biblio.admin.inc',
-   'type' => MENU_LOCAL_TASK
-   );
-   */
+  // Other Biblio Features
+  //----------------------------------------------------------------------------
   $items['biblio/autocomplete'] = array(
     'title'             => 'Autocomplete ',
     'page callback'     => 'biblio_autocomplete',
@@ -997,190 +848,44 @@ function biblio_menu() {
     'access arguments'  => array('access biblio content'),
     'type'              => MENU_CALLBACK
   );
-/*  $items["$base/list"] = array(
-    'title'             => 'List',
-    'type'              => MENU_DEFAULT_LOCAL_TASK,
-    'weight'            => -10
-  );
-  $items["$base/filter"] = array(
-    'title'             => 'Filter',
-    'page callback'     => 'drupal_get_form',
-    'page arguments'    => array('biblio_form_filter'),
-    'access callback'   => 'user_access',
-    'access arguments'  => array('show filter tab'),
-    'type'              => MENU_LOCAL_TASK,
+  $items["user/%user/" . $base] = array(
+    'title'             => 'Publications',
+    'page callback'     => 'biblio_profile_page',
+    'page arguments'    => array(1, 'profile', 'no_filters'),
+    'access callback'   => '_biblio_profile_access',
+    'access arguments'  => array(1, 'profile'),
     'file'              => '/includes/biblio.pages.inc',
-    'weight'            => -9
+    'type'              => MENU_LOCAL_TASK
   );
-*/
-  $items["$base/filter/clear"] = array(
-    'title'             => '',
-    'page callback'     => 'biblio_filter_clear',
-    'access callback'   => 'user_access',
-    'access arguments'  => array('access biblio content'),
-    'type'              => MENU_CALLBACK
+  $items[$base . "/user/%"] = array(
+    'title'             => 'My publications',
+    'page callback'     => 'biblio_profile_page',
+    'page arguments'    => array(2),
+    'access callback'   => '_biblio_profile_access',
+    'access arguments'  => array(2, 'menu'),
+    'parent'            => '',
+    'file'              => '/includes/biblio.pages.inc',
   );
-  $items["$base/help"] = array(
+  $items[$base . "/help"] = array(
     'title'             => 'Help',
     'page callback'     => 'biblio_help_page',
     'access callback'   => 'user_access',
     'access arguments'  => array('access biblio content'),
     'type'              => MENU_CALLBACK
   );
-  $items["$base/export"] = array(
-    'title'             => '',
-    'page callback'     => 'biblio_export',
-    'access callback'   => 'user_access',
-    'access arguments'  => array('show export links'),
-    'file'              => '/includes/biblio.import.export.inc',
-    'type'              => MENU_CALLBACK
-  );
-  // @todo implement in 7.x-2.x
-  $items["$base/citekey"] = array(
+  $items[$base . "/citekey"] = array(
     'title'             => '',
     'page callback'     => 'biblio_citekey_view',
     'access arguments'  => array('access biblio content'),
     'file'              => '/includes/biblio.pages.inc',
     'type'              => MENU_CALLBACK
   );
-  // @todo implement in 7.x-2.x
-  $items["$base/recent/rss.xml"] = array(
+  $items[$base . "/recent/rss.xml"] = array(
     'title'             => 'RSS feed',
     'page callback'     => 'biblio_recent_feed',
     'access callback'   => 'biblio_access',
     'access arguments'  => array('rss'),
     'type'              => MENU_CALLBACK
-  );
-  // calls biblio_load() to send the biblio object to biblio_page_view()
-  $items["$base/%biblio"] = array(
-    'title callback' => 'biblio_page_title',
-    'title arguments' => array(1),
-    'page callback' => 'biblio_page_view',
-    'page arguments' => array(1),
-    'access arguments' => array('access biblio content'),
-    'type' => MENU_CALLBACK,
-  );
-  $items["admin/config/content/biblio/publication-types"] = array(
-    'title' => 'Publication Types',
-    'description' => 'Manage Biblio publication types',
-    'page callback'=> 'biblio_overview_types',
-    'page arguments' => array('biblio'),
-    'file' => '/includes/biblio.admin.inc',
-    'access arguments' => array('administer biblio'),
-    'type' => MENU_LOCAL_TASK,
-  );
-  $items['admin/structure/biblio/add'] = array(
-    'title' => 'Add Biblio',
-    'access arguments' => array('create biblio'),
-    'page callback' => 'biblio_add',
-    'type' => MENU_LOCAL_ACTION,
-  );
-//  // Create a menu item for each biblio type, converting underscores to dashes.
-//  foreach (biblio_types('biblio') as $type) {
-//    $type_url_str = str_replace('_', '-', $type->publication_type);
-//    $items['admin/structure/biblio/add/' . $type_url_str] = array(
-//      'title' => $type->name,
-//      // check_plain() will take whatever is specified in the title and escape
-//      // any and all HTML in it, making it safe to use as the page title.
-//      'title callback' => 'check_plain',
-//      'page callback' => 'biblio_add_type',
-//      'file' => '/includes/biblio.admin.inc',
-//      'page arguments' => array(4),
-//      'access arguments' => array('administer biblio'),
-//      'type' => MENU_LOCAL_ACTION,
-////      'description' => $type->description,
-//    );
-//  }
-  foreach (biblio_types() as $type) {
-    $bundle = biblio_bundle_name($type->entity);
-    $type_url_str = str_replace('_', '-', $type->{$bundle});
-    $entity_url_str = str_replace('_', '-', $type->entity);
-    $url = 'admin/config/content/biblio/publication-types/' . $type_url_str;
-    $items[$url] = array(
-      'title' => 'Edit ' . $type->name,
-      'title callback' => 'check_plain',
-      'page callback' => 'biblio_field_settings',
-      'file' => '/includes/biblio.admin.inc',
-      'page arguments' => array(5),
-      'access arguments' => array('administer biblio'),
-    );
-  }
-  $items['biblio/%biblio/view'] = array(
-    'title' => 'View',
-    'type' => MENU_DEFAULT_LOCAL_TASK,
-    'weight' => -10,
-    'access arguments' => array('access biblio content')
-  );
-  $items['biblio/%biblio/edit'] = array(
-    'title' => 'Edit',
-    'page callback' => 'biblio_page_edit',
-    'page arguments' => array(1),
-    'access arguments' => array('edit all biblio entries'),
-    'weight' => 0,
-    'type' => MENU_LOCAL_TASK,
-    'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
-    'file' => 'includes/biblio.admin.inc',
-  );
-  $items['biblio/%biblio/delete'] = array(
-    'title' => 'Delete',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('biblio_delete_confirm', 1),
-    'access arguments' => array('edit all biblio entries'),
-    'weight' => 1,
-    'type' => MENU_LOCAL_TASK,
-    'context' => MENU_CONTEXT_INLINE,
-    'file' => 'includes/biblio.admin.inc',
-  );
-  $items['admin/structure/biblio'] = array(
-    'title' => 'Biblio',
-    'description' => 'List and edit Biblio entries.
-      Use Biblio for scholarly content, such as journal papers and books.',
-    'page callback' => 'biblio_admin_view',
-    'page arguments' => array('biblio_admin', 'page'),
-    'access arguments' => array('create biblio'),
-  );
-  $items['admin/structure/biblio/contributor/add'] = array(
-    'title' => 'Add Contributor',
-    'page callback' => 'biblio_contributor_add', // callback
-    'access arguments' => array('create biblio'),
-    'file' => 'includes/biblio.admin.inc',
-//    'type' => MENU_LOCAL_ACTION,
-//    'tab_parent' => 'task',
-//    'tab_root' => 'task',
-  );
-  $items['biblio/contributor/%biblio_contributor'] = array(
-    'title callback' => 'entity_label',
-    'title arguments' => array('biblio_contributor', 2), //callback
-    'page callback' => 'biblio_contributor_page_view', //callback
-    'page arguments' => array(2),
-    'access arguments' => array('access biblio content'),
-  );
-
-  $items['biblio/contributor/%biblio_contributor/view'] = array(
-    'title' => 'View',
-    'type' => MENU_DEFAULT_LOCAL_TASK,
-    'weight' => -10,
-    'access arguments' => array('access biblio content'),
-  );
-
-  $items['biblio/contributor/%biblio_contributor/delete'] = array(
-    'title' => 'Delete Contributor',
-    'title callback' => 'biblio_contributor_label', //callback
-    'title arguments' => array(2),
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('biblio_contributor_delete_form', 2), //callback
-    'access arguments' => array('edit all biblio entries'),
-    'file' => 'includes/biblio.admin.inc',
-  );
-
-  $items['biblio/contributor/%biblio_contributor/edit'] = array(
-    'title' => 'Edit',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('biblio_contributor_form', 2),
-    'access arguments' => array('edit all biblio entries'),
-    'file' => 'includes/biblio.admin.inc',
-    'type' => MENU_LOCAL_TASK,
-    'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
   );
 
   biblio_menu_links();
@@ -1211,7 +916,7 @@ function biblio_menu_links() {
           $biblio_root_mlid = $row->mlid;
         }
         break;
-      case 'admin/structure/biblio/add':
+      case 'admin/content/biblio/add':
         // Check if the "Add a new Biblio" link exists, to avoid duplicates
         if ($row->plid == $biblio_root_mlid && $row->menu_name == 'navigation') {
           $add_link_exists = TRUE;
@@ -1223,7 +928,7 @@ function biblio_menu_links() {
   if (!$add_link_exists) {
     // Create a link on the navigation menu to add a biblio
     $add_link = array(
-      'link_path' => drupal_get_normal_path('admin/structure/biblio/add'),
+      'link_path' => drupal_get_normal_path('admin/content/biblio/add'),
       'menu_name' => 'navigation',
       'plid' => $biblio_root_mlid,
       'link_title' => t('Add a new Biblio'),
