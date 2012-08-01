@@ -2483,32 +2483,36 @@ function biblio_admin_keyword_edit_form_submit($form, &$form_state) {
 
 /**
  * hook_menu callback function for admin/config/content/biblio/publication-types
- * 
+ *
  * Gives an unordered list of all the publication types we have available.
  * Each one is presented as a link to the manage page for that type.
- * 
+ *
  * @todo make this a table similar to the original publication type list. See http://drupal.org/node/1537390
  *
- * @return type 
+ * @return type
  */
 function biblio_overview_types($entity_type = NULL) {
   $path = current_path();
   $types = biblio_types($entity_type);
   $header = array(t('Name'), array('data' => t('Operations'), 'colspan' => '4'));
   $rows = array();
-  
+  $entity_info = entity_get_info($entity_type);
+
   foreach($types as $type => $info) {
+    $bundle_path = $entity_info['bundles'][$type]['admin']['real path'];
     $type_url_str = str_replace('_', '-', $type);
-    $url = $path . '/' . $type_url_str;
+    // $bundle_path = $entity_info
+    $url = $path . '/publication-types/' . $type_url_str;
+    $url = $bundle_path;
     $row = array();
-    
+
     // Name column
     $row[] = theme('biblio_admin_overview', array(
-      'name' => $info->name, 
-      'type' => $type, 
+      'name' => $info->name,
+      'type' => $type,
       'description' => $info->description
     ));
-    
+
     // Edit column.
     $row[] = array('data' => l(t('edit'), $url));
     $row[] = array('data' => l(t('manage fields'), $url . '/fields'));
@@ -2516,12 +2520,12 @@ function biblio_overview_types($entity_type = NULL) {
     // @todo: add ability to add/delete a pubtype
     $rows[] = $row;
   }
-  
+
   $table = theme('table', array('header' => $header, 'rows' => $rows));
-  
+
   return $table;
 }
 
 function biblio_field_settings($type) {
-  return 'hello world';
+  return 'You are editing the ' . $type . ' bundle';
 }

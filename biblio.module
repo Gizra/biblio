@@ -538,6 +538,14 @@ function biblio_permission() {
       'title' => t('Show full text'),
       'description' => t('This determines if the user will be able to access the "Full Text" of the article if it is available'),
       ),
+    'manage biblio structure' => array(
+      'title' => t('Manage Biblio structure'),
+      'description' => t('This determines if the user will be able to modify field and display settings for biblio and contributor entities (admin/structure/biblio)'),
+      ),
+    'manage biblio content' => array(
+      'title' => t('Manage Biblio content'),
+      'description' => t('This determines if the user will be able to access the managment interface for biblios and contributors (admin/content/biblio)'),
+      ),
     );
 }
 
@@ -757,7 +765,7 @@ function biblio_menu() {
     'weight' => 0,
     'type' => MENU_DEFAULT_LOCAL_TASK,
   );
-  foreach (biblio_types() as $type) {
+  foreach (biblio_types('biblio') as $type) {
     $bundle = biblio_bundle_name($type->entity);
     $type_url_str = str_replace('_', '-', $type->{$bundle});
     $entity_url_str = str_replace('_', '-', $type->entity);
@@ -767,7 +775,7 @@ function biblio_menu() {
       'title callback' => 'check_plain',
       'page callback' => 'biblio_field_settings',
       'file' => '/includes/biblio.admin.inc',
-      'page arguments' => array(5),
+      'page arguments' => array(4),
       'access arguments' => array('manage biblio structure'),
     );
   }
@@ -781,6 +789,20 @@ function biblio_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 1,
   );
+  foreach (biblio_types('biblio_contributor') as $type) {
+    $bundle = biblio_bundle_name($type->entity);
+    $type_url_str = str_replace('_', '-', $type->{$bundle});
+    $entity_url_str = str_replace('_', '-', $type->entity);
+    $url = 'admin/structure/biblio/contributors/' . $type_url_str;
+    $items[$url] = array(
+      'title' => 'Edit ' . $type->name,
+      'title callback' => 'check_plain',
+      'page callback' => 'biblio_field_settings',
+      'file' => '/includes/biblio.admin.inc',
+      'page arguments' => array(4),
+      'access arguments' => array('manage biblio structure'),
+    );
+  }
 
   // Biblio Settings
   //----------------------------------------------------------------------------
@@ -2603,13 +2625,13 @@ function biblio_entity_info() {
         'label' => $info->name,
         'admin' => array(
           // defines the path that should be used in hook_menu() for the Fields UI pages
-          'path' => 'admin/config/content/biblio/publication-types/%biblio_bundle',
+          'path' => 'admin/structure/biblio/publication-types/%biblio_bundle',
           // The exact path that should be used when generating links within the admin interface
-          'real path' => 'admin/config/content/biblio/publication-types/' . str_replace('_', '-', $type),
+          'real path' => 'admin/structure/biblio/publication-types/' . str_replace('_', '-', $type),
           // menu args are 0 based, so  is the seventh part of the path, which
           // here is %biblio_bundle.
-          'bundle argument' => 5,
-          'access arguments' => array('administer biblio'),
+          'bundle argument' => 4,
+          'access arguments' => array('manage biblio structure'),
         ),
       );
     }
@@ -2651,58 +2673,16 @@ function biblio_entity_info() {
       $return['biblio_contributor']['bundles'][$type] = array(
         'label' => $info->name,
         'admin' => array(
-          'path' => 'admin/config/content/biblio/author/type/%contributor_bundle',
-          'real path' => 'admin/config/content/biblio/author/type/' . str_replace('_', '-', $type),
-          'bundle argument' => 6,
-          'access arguments' => array('administer biblio'),
+          'path' => 'admin/structure/biblio/contributors/%contributor_bundle',
+          'real path' => 'admin/structure/biblio/contributors/' . str_replace('_', '-', $type),
+          'bundle argument' => 4,
+          'access arguments' => array('manage biblio structure'),
         ),
 
       );
     }
   }
 
-
-  $return['biblio_contribution'] = array(
-    'label' => t('Contribution'),
-    'entity class' => 'BiblioContribution',
-    'controller class' => 'BiblioContributionController',
-    'base table' => 'biblio_contribution',
-    'fieldable' => TRUE,
-    'entity keys' => array(
-      'id' => 'cnid',
-      'bundle' => biblio_bundle_name('biblio_contribution'),
-    ),
-    'bundle keys' => array(
-      'bundle' => biblio_bundle_name('biblio_contribution'),
-    ),
-    'bundles' => array(),
-    'load hook' => 'biblio_contribution_load',
-    'view modes' => array(
-      'full' => array(
-        'label' => t('Full'),
-        'custom settings' => FALSE,
-      ),
-    ),
-    'label callback' => 'entity_class_label',
-    'uri callback' => 'entity_class_uri',
-    'module' => 'biblio',
-    'access callback' => 'biblio_entity_access',
-  );
-
-  $contribution_categories = biblio_types('biblio_contribution');
-  if (!empty($contribution_categories)){
-    foreach ($contribution_categories as $type => $info) {
-      $return['biblio_contribution']['bundles'][$type] = array(
-        'label' => $info->name,
-        'admin' => array(
-          'path' => 'admin/config/content/biblio/author/contribution-type/%contribution_bundle',
-          'real path' => 'admin/config/content/biblio/author/contribution-type/' . str_replace('_', '-', $type),
-          'bundle argument' => 6,
-          'access arguments' => array('access biblio content'),
-        ),
-      );
-    }
-  }
   return $return;
 }
 
