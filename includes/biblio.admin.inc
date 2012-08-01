@@ -2494,27 +2494,27 @@ function biblio_admin_keyword_edit_form_submit($form, &$form_state) {
 function biblio_overview_types($entity_type = NULL) {
   $path = current_path();
   $types = biblio_types($entity_type);
+  $entity_info = entity_get_info($entity_type);
+  module_load_include('inc', 'biblio', 'includes/biblio.fields');
+
   $header = array(t('Name'), array('data' => t('Operations'), 'colspan' => '4'));
   $rows = array();
-  $entity_info = entity_get_info($entity_type);
-
   foreach($types as $type => $info) {
-    $bundle_path = $entity_info['bundles'][$type]['admin']['real path'];
+    $url = $entity_info['bundles'][$type]['admin']['real path'];
     $type_url_str = str_replace('_', '-', $type);
-    // $bundle_path = $entity_info
-    $url = $path . '/publication-types/' . $type_url_str;
-    $url = $bundle_path;
     $row = array();
 
     // Name column
     $row[] = theme('biblio_admin_overview', array(
       'name' => $info->name,
       'type' => $type,
-      'description' => $info->description
+      'description' => $info->description,
+      'instances missing' => biblio_field_instances_missing($type, $entity_type),
     ));
 
     // Edit column.
-    $row[] = array('data' => l(t('edit'), $url));
+    // @todo: add edit functionality
+    // $row[] = array('data' => l(t('edit'), $url));
     $row[] = array('data' => l(t('manage fields'), $url . '/fields'));
     $row[] = array('data' => l(t('manage display'), $url . '/display'));
     // @todo: add ability to add/delete a pubtype
@@ -2527,5 +2527,6 @@ function biblio_overview_types($entity_type = NULL) {
 }
 
 function biblio_field_settings($type) {
+  // placeholder until publication type edit form is created here
   return 'You are editing the ' . $type . ' bundle';
 }

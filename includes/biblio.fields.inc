@@ -145,11 +145,11 @@ function biblio_check_instances($publication_type) {
  * Used to decide whether or not to run biblio_add_field_instances when
  * admin/content/biblio/add is accessed for the first time for a specific publication type.
  *
- * @param string $publication_type
+ * @param string $bundle
  * @param string $entity_type biblio, biblio_contributor, etc...
  * @return boolean Whether or not biblio's required field instances are indeed missing.
  */
-function biblio_field_instances_missing($publication_type, $entity_type = 'biblio') {
+function biblio_field_instances_missing($bundle, $entity_type = 'biblio') {
   $file = drupal_get_path(
     'module', 'biblio') . '/misc/default_field_instances.json';
   $default_instances = json_decode(file_get_contents($file), TRUE);
@@ -157,7 +157,7 @@ function biblio_field_instances_missing($publication_type, $entity_type = 'bibli
   // Field instances that already exist. There could be user-created field
   // instances here, so we can't assume that existing fields means we shouldn't
   // add our default field instances.
-  $existing_instances = field_info_instances('biblio', $publication_type);
+  $existing_instances = field_info_instances($entity_type, $bundle);
   if (empty($existing_instances)) {
     // If no instances exist, we definitely need to add the defaults
     return TRUE;

@@ -203,7 +203,7 @@ function theme_biblio_tabular($variables) {
      popups_add_popups();
   }
   $tid = $biblio->publication_type;
-  
+
 //  $fields = _biblio_get_field_information($biblio->publication_type, TRUE);
 //  $rows[] = array(
 //    array('data' => t('Title'), 'class' => array('biblio-row-title')),
@@ -232,7 +232,7 @@ function theme_biblio_tabular($variables) {
     }
 
   }
-  
+
   $biblio_fields['contributors'] = array(
     'value' => biblio_format_authors($biblio->contributions),
     'label' => 'Authors',
@@ -242,7 +242,7 @@ function theme_biblio_tabular($variables) {
 
     }
   }
-  
+
   foreach($biblio as $field_name => $data) {
     if (isset($wrapper->$field_name)) {
       $field_value = $wrapper->$field_name->value();
@@ -257,7 +257,7 @@ function theme_biblio_tabular($variables) {
     if (isset($wrapper->$field)) {
       $value = $wrapper->$field->value();
     }
-    
+
     // handling the contributor categories like any other field orders them correctly by weight
     if ($field == 'contributors') {
       $data = $row['value'];
@@ -459,7 +459,7 @@ function theme_biblio_format_authors($variables) {
   if (empty($options['numberOfAuthorsTriggeringEtAl']))  $options['numberOfAuthorsTriggeringEtAl'] = $authorCount;
 
   if (empty($options['includeNumberOfAuthors']))  $options['includeNumberOfAuthors'] = $authorCount;
-  
+
   // Temporary until contribution ranks are implemented. @todo: add rank field
   static $rank = 0;
   foreach ($contributions as $cnid => $contribution) {
@@ -467,9 +467,9 @@ function theme_biblio_format_authors($variables) {
     $cn_wrap = biblio_wrapper($contribution, 'biblio_contribution');
     // Contributor entity wrapper
     $cr_wrap = biblio_wrapper($contribution->contributor, 'biblio_contributor');
-    
+
     $rank++;
-    
+
     if (!isset($contribution->lastname) && empty($contribution->literal)) {
       module_load_include('inc', 'biblio', '/includes/biblio.contributors');
       $category = $cn_wrap->biblio_contributor_category->value();
@@ -1130,9 +1130,14 @@ function theme_biblio_admin_overview($variables) {
   $name = $variables['name'];
   $type = $variables['type'];
   $description = $variables['description'];
+  $instances_missing = $variables['instances missing'];
 
   $output = check_plain($name);
-  $output .= ' <small>' . t('(Machine name: @type)', array('@type' => $type)) . '</small>';
+  $output .= ' <small>' . t('(Machine name: @type)', array('@type' => $type));
+  if ($instances_missing) {
+    $output .= ' (<span class="admin-disabled">Missing Field Instances</span>)';
+  }
+  $output .= '</small>';
   $output .= '<div class="description">' . filter_xss_admin($description) . '</div>';
   return $output;
 }

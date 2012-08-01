@@ -408,6 +408,8 @@ function biblio_help($path, $arg) {
   switch ($path) {
     case 'admin/help#biblio' :
       return biblio_help_page();
+    case 'admin/structure/biblio' :
+      return t("Here, you can manage the field and display settings for each of Biblio's publication types, similar to admin/structure/types. If a <small>(<span class=\"admin-disabled\">Missing Field Instances</span>)</small> label appears next to a publication type, don't panic. It simply means that the default Biblio field instances have not been created yet for that publication type. You can create the default field instances by navigating to the " . l('Biblio Add page', 'admin/content/biblio/add') . " and selecting the publication type for which to create field instances. (note that it may take a while for field instance creation to execute.)");
     case 'admin/modules#description' :
       // This description is shown in the listing at admin/modules.
       return t('Manages a list of scholarly papers on your site');
@@ -729,7 +731,7 @@ function biblio_menu() {
   $items['admin/content/biblio/add'] = array(
     'title' => 'Add Biblio',
     'access arguments' => array('create biblio'),
-    'page callback' => 'create biblio',
+    'page callback' => 'biblio_add',
     'type' => MENU_LOCAL_ACTION,
   );
   $items['admin/content/biblio/contributor'] = array(
@@ -2678,7 +2680,6 @@ function biblio_entity_info() {
           'bundle argument' => 4,
           'access arguments' => array('manage biblio structure'),
         ),
-
       );
     }
   }
