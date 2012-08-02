@@ -1150,17 +1150,19 @@ function biblio_form($form, &$form_state, $biblio = NULL) {
   }
 
   $step_two = FALSE;
-  if (!empty($publication_type) || isset($biblio)) {
+  if ((!empty($publication_type) && $publication_type != 'select_type')
+   || isset($biblio)) {
     $step_two = TRUE;
   }
 
   /* publication type */
   $param['options'] = array("enctype" => "multipart/form-data");
-  $options[0] = t('Select Type...');
   foreach (biblio_types() as $machine_name => $info) {
-    $options[$machine_name] = $info->name;
+    $type_options[$machine_name] = $info->name;
   }
-  asort($options);
+  asort($type_options);
+  $options['select_type'] = t('Select Type...');
+  $options += $type_options;
 
 
   if (!$step_two) {
