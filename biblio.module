@@ -1685,7 +1685,9 @@ function _biblio_get_formatted_fields() {
  * @param object $biblio
  */
 function _biblio_prepare_submit(&$biblio) {
+  module_load_include('inc', 'biblio', 'includes/biblio.util');
   $wrapper = biblio_wrapper($biblio);
+
   if (!isset($biblio->publication_type)) {
     $biblio->publication_type = ('miscellaneous');
   }
@@ -1708,6 +1710,7 @@ function _biblio_prepare_submit(&$biblio) {
       $biblio->$field = $biblio->{$field}['value'];
     }
   }
+  $wrapper->biblio_coins->set(biblio_coins($biblio));
 }
 
 /**
@@ -2886,12 +2889,9 @@ function biblio_load_multiple($bids = array(), $conditions = array(), $reset = F
  * Save a biblio object to the database
  */
 function biblio_save($biblio) {
-  module_load_include('inc', 'biblio', 'includes/biblio.util');
   module_load_include('inc', 'biblio', 'includes/biblio.keywords');
 
   _biblio_prepare_submit($biblio);
-  // @todo: get COinS working. See http://drupal.org/node/1537360
-  $biblio->biblio_coins = biblio_coins($biblio);
   $biblio->changed = REQUEST_TIME;
   // @todo: get md5 working. See http://drupal.org/node/1537364
 //  $duplicate = biblio_hash($biblio);
@@ -3130,6 +3130,8 @@ function biblio_page_view($biblio, $view_mode = 'full', $langcode = NULL) {
                 ['#options']['entity']->tid;
             }
           }
+          $coins = filter_xss($wrapper->biblio_coins->value(), array('span'));
+          $biblio->content['biblio_coins'] = array('#markup' => $coins);
           break;
         case 'orig' :
         case 'ft' :
