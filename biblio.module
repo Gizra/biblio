@@ -3117,6 +3117,14 @@ function biblio_page_view($biblio, $view_mode = 'full', $langcode = NULL) {
           field_attach_prepare_view('biblio', array($biblio->bid => $biblio), $view_mode);
           entity_prepare_view('biblio', array($biblio->bid => $biblio));
           $biblio->content = field_attach_view('biblio', $biblio, $view_mode);
+          if (isset($biblio->content['biblio_keywords'])) {
+            $keys = element_children($biblio->content['biblio_keywords']);
+            foreach($keys as $key) {
+              $biblio->content['biblio_keywords'][$key]['#href'] =
+                'biblio/keywords/' . $biblio->content['biblio_keywords'][$key]
+                ['#options']['entity']->tid;
+            }
+          }
           break;
         case 'orig' :
         case 'ft' :
