@@ -1,14 +1,14 @@
 <?php
 /**
- * Implements hook_install(). 
+ * Implements hook_install().
  */
 function biblio_install() {
   // @todo remove after development
   $timer_name = 'biblio_install()';
   timer_start($timer_name);
-  
+
   module_load_include('inc', 'biblio', 'includes/biblio.fields');
-  
+
   $t = get_t();
   set_time_limit(300);
   // we don't need custom fields
@@ -20,8 +20,7 @@ function biblio_install() {
   $result[] = _set_system_weight();
   biblio_add_fields();
   biblio_add_field_instances('biblio_contributor', 'contributor');
-  biblio_add_field_instances('biblio_contribution', 'contribution');
-  
+
   // @todo remove after development
   timer_stop($timer_name);
   drupal_set_message($timer_name . ' run time: ' . timer_read($timer_name) . 'ms.');
@@ -68,7 +67,7 @@ function biblio_uninstall() {
   // @todo remove after development
   $timer_name = 'biblio_uninstall()';
   timer_start($timer_name);
-  
+
   if (module_exists('taxonomy')) {
     $voc = taxonomy_get_vocabularies();
     foreach ($voc as $vid => $vocabulary) {
@@ -92,14 +91,14 @@ function biblio_uninstall() {
   foreach ($vars as $var) {
     variable_del($var->name);
   }
-  
+
   module_load_include('inc', 'biblio', 'includes/biblio.fields');
   biblio_delete_fields();
   // @todo: delete after development
   field_purge_batch(999);
 
   cache_clear_all();
-  
+
   // @todo remove after development
   timer_stop($timer_name);
   drupal_set_message($timer_name . ' run time: ' . timer_read($timer_name) . 'ms.');
@@ -373,7 +372,7 @@ function biblio_schema() {
       'title_sort' => array('biblio_sort_title'),
     ),
   );
-  // Entity API doesn't support revisions yet... 
+  // Entity API doesn't support revisions yet...
 //  $schema['biblio_revision'] = array(
 //    'description' => 'Stores information about each saved version of a {biblio}.',
 //    'fields' => array(
@@ -615,7 +614,7 @@ function biblio_schema() {
         'not null' => TRUE,
         'default' => ''
 //        'default' => 'biblio',
-//        'description' => 'The entity -biblio, contributor, contribution - that this type/entity bundle belongs to.'
+//        'description' => 'The entity -biblio or biblio_contributor- that this type/entity bundle belongs to.'
       ),
     ),
     'primary key' => array('tid'),
@@ -859,45 +858,6 @@ function biblio_schema() {
     ),
     'primary key' => array('auth_type'),
    );
-  
-  $schema['biblio_contribution'] = array(
-    'description' => 'Entity table linking contributors to biblio entries',
-    'fields' => array(
-      'cnid' => array(
-        'type' => 'serial',
-        'not null' => TRUE,
-        'unsigned' => TRUE,
-        'description' => 'Biblio Contribution ID. Unique ID for the contribution entity type.',
-      ),
-      'type' => array(
-        'description' => 'The contributor type for this contribution.',
-        'type' => 'varchar',
-        'length' => 32,
-        'not null' => TRUE,
-        'default' => '',
-      ),
-      'rank' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-        'unsigned' => TRUE,
-        'default' => 0,
-        'description' => 'Position of the author name on the publication (first,second,third...)',
-      ),
-      'created' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-        'description' => '',
-      ),
-      'changed' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-        'description' => '',
-      ),
-    ),
-    'primary key' => array(
-      'cnid',
-    ),
-  );
 
     $schema['biblio_keyword'] = array(
       'description' => t('Relational table linking keywords to biblio nodes'),
@@ -1201,7 +1161,6 @@ function _add_bundles() {
   $types[] = array('Miscellaneous Section', NULL, 31, 'biblio');
   $types[] = array('Presentation',NULL,8, 'biblio');
   $types[] = array('Contributor', 'This is the default type (bundle) for all authors. ', 1, 'biblio_contributor');
-  $types[] = array('Contribution', 'This is the default type (bundle) for all contributions', 1, 'biblio_contribution');
 
   foreach ($types as $record) {
 //    $result[] = update_sql("INSERT INTO {biblio_types} (tid, name, description, weight) VALUES ('" . implode("', '", $record) . "')");
@@ -1389,7 +1348,7 @@ function _add_custom_field_data() {
   $query = "SELECT fid, name FROM {biblio_fields} ";
   $res = db_query($query);
   foreach ($res as $row) {
-    $fieldmap[$row->name] =  $row->fid; 
+    $fieldmap[$row->name] =  $row->fid;
   }
 
   $csv_file = drupal_get_path('module', 'biblio') . '/misc/biblio.field.type.data.csv';

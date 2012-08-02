@@ -234,11 +234,11 @@ function theme_biblio_tabular($variables) {
   }
 
   $biblio_fields['contributors'] = array(
-    'value' => biblio_format_authors($biblio->contributions),
+    'value' => biblio_format_authors($biblio->biblio_contributors),
     'label' => 'Authors',
   );
-  if (isset($biblio->contributions)) {
-    foreach ($biblio->contributions as $cnid => $contribution) {
+  if (isset($biblio->biblio_contributors)) {
+    foreach ($biblio->biblio_contributors as $cid => $contributor) {
 
     }
   }

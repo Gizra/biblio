@@ -40,10 +40,10 @@ function biblio_add_fields() {
  * Adding field instances takes a long amount of time for the number of fields
  * and bundles we have. Fields for a biblio publication type are added the first
  * time a user visits the Biblio Add page for that publication type.
- * Contributor and Contribution instances are added upon install, becasue there
+ * Contributor instances are added upon install, becasue there
  * are so few fields for those entity types.
  *
- * @param string $entity biblio, biblio_contributor, or biblio_contribution
+ * @param string $entity biblio or biblio_contributor
  * @param string $bundle The bundle for which field instances should be created.
  * for example, a biblio publication type
  */
@@ -273,23 +273,6 @@ function modify_biblio_field_link_data_csv() {
 
     }
   }
-  // Add a new row
-//  $data_to_write[] = array(
-//    'fid' => $key+1,
-//    'title' => 'Author Role',
-//    'hint' => '',
-//    'common' => '',
-//    'autocomplete' => '',
-//    'required' => '1',
-//    'weight' => '2',
-//    'visible' => '',
-//    'field name' => 'contributor_role',
-//    'type' => 'biblio_text',
-//    'width' => '60',
-//    'maxlength' => '255',
-//    'vtab' => '0',
-//    'entity' => 'biblio_contribution',
-//  );
   foreach ($data_to_write as $key => $value) {
     if (isset($value['fid']) || isset($value[0])) {
       fputcsv($handle, $value);

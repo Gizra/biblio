@@ -314,13 +314,13 @@ function biblio_contributor_pre_save($contributor) {
  3. <von-tokens> <last-tokens>, <jr-tokens>, <first-tokens>
  */
 /**
- * @param $contribution Contributor entity object
+ * @param $contributor Contributor entity object
  * @return unknown_type
  */
 function biblio_parse_author($contributor) {
   $wrapper = biblio_wrapper($contributor, 'biblio_contributor');
   $name = $wrapper->biblio_contributor_name->value();
-  
+
   if (isset($category) && $category == 5) {
     $author_object->firstname = '';
     $author_object->initials = '';
@@ -527,7 +527,7 @@ function biblio_get_contributors($biblio) {
     foreach ($wrapper->{$field}->value() as $delta => $contributor) {
       $cid = $wrapper->{$field}[$delta]->cid->value();
       if (isset($cid) && !empty($cid)) {
-        $contributors[$cid]['name'] = 
+        $contributors[$cid]['name'] =
           $wrapper->{$field}[$delta]->biblio_contributor_name->value();
         $contributors[$cid]['category'] = $category;
       }

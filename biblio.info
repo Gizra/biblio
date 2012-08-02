@@ -41,4 +41,3 @@ files[] = views/biblio_handler_uid.inc
 
 files[] = includes/biblio.controller.inc
 files[] = includes/biblio.contributor.controller.inc
-files[] = includes/biblio.contribution.controller.inc

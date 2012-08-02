@@ -1217,16 +1217,6 @@ function biblio_form($form, &$form_state, $biblio = NULL) {
     $tabs += biblio_form_vtabs();
 
     $tabs['contributors'] += biblio_contributor_widget($biblio, $form_state);
-    // Insert the array of contributor objects into the biblio object
-    // $biblio->contributions = $tabs['contributors']['contribution_objects'];
-    // foreach ($biblio->contributions as $delta => $object) {
-    //   // @todo see if we need this
-    //   $form_state['contributor_' . $delta] = $object;
-    // }
-    // Destroy the contributor and contribution entity objects from the form
-    // strucure. Keeping them causes the FAPI to try to iterate through the
-    // objects as an array, causing errors.
-    unset($tabs['contributors']['contribution_objects']);
 
     // Add the values we created above to the real form
     foreach ($fielded_form as $field => $data) {
@@ -1359,20 +1349,8 @@ function biblio_contributor_widget($biblio, &$form_state) {
     // contributors show up from the previous form build.
     foreach ($form_state['biblio_imported_contributors'] as $author_data) {
       $contributors[] = $author_data;
-      // $contributor = entity_create('biblio_contributor', array());
-      // // We're done setting contribution values. Re-set the metadata wrapper for
-      // // contributor objects
-      // $wrapper = biblio_wrapper($contributor, 'biblio_contributor');
-      // $wrapper->biblio_contributor_name->set($author_data['name']);
-      // $contributors[] = $contributor;
     }
   }
-  // elseif (biblio_has_contributions($biblio)) {
-  //   $contributions = $biblio->contributions;
-  // }
-  // else {
-  //   $contributions = array();
-  // }
   // Container for just the contributors.
   $wrapper = array();
   $wrapper['biblio_contributors'] = array(
@@ -1402,22 +1380,13 @@ function biblio_contributor_widget($biblio, &$form_state) {
     $author = array();
     // array to hold the entity objects that will be generated for each contributor name field
     // (only those submitted with values will actually be saved)
-    $wrapper['contributor_objects'] = array();
-    // Need a counter for each contribution
-    $contribution_delta = $contributor_count;
     for ($i = 0; $i < ($form_count - $contributor_count); $i++) {
-      // Create blank entity objects
-      $contribution = entity_create('biblio_contribution', array());
-      $contribution->contributor = entity_create('biblio_contributor', array());
       // Put the current contributor form in our main form
       $wrapper['biblio_contributors'][] = biblio_contributor_biblio_form(
         array(),
         $biblio,
         $form_state
       );
-      // Add the entity object to the array for later use
-      $wrapper['contribution_objects'][] = $contribution;
-      $contribution_delta++;
     }
   }
   $wrapper['add_more'] = array(
@@ -1428,10 +1397,10 @@ function biblio_contributor_widget($biblio, &$form_state) {
     '#submit'      => array('biblio_contributors_add_more'), // If no javascript action.
     '#limit_validation_errors' => array(),
     '#ajax'        => array(
-           'callback' => 'biblio_contributors_add_more_callback',
-           'wrapper'  => 'biblio-contributors-wrapper',
-      ),
-    );
+      'callback' => 'biblio_contributors_add_more_callback',
+      'wrapper'  => 'biblio-contributors-wrapper',
+    ),
+  );
 
   return $wrapper;
 }
@@ -1454,11 +1423,11 @@ function biblio_get_contributor_options() {
 }
 
 /**
- * Set up the form for ONE contribution/author in the biblio add/edit form.
+ * Set up the form for ONE contributor in the biblio add/edit form.
  *
- * @param object $contribution
+ * @param object $contributor
  * @param array $form_state
- * @param integer $delta The iterative value of the current contribution. 0,1,2...etc.
+ * @param integer $delta The iterative value of the current contributor. 0,1,2...etc.
  * @return string
  */
 function biblio_contributor_biblio_form($contributor, $biblio, &$form_state) {
@@ -1468,10 +1437,6 @@ function biblio_contributor_biblio_form($contributor, $biblio, &$form_state) {
     $category_options[$category] = $info['label'];
   }
   $form = array('#tree' => TRUE);
-
-  // Attach the field forms (contains Drupal fields) for the current contributor
-  // field_attach_form('biblio_contributor', $contribution->contributor, $form, $form_state);
-  // field_attach_form('biblio_contribution', $contribution, $form, $form_state);
 
   $form['name'] = array(
     '#type' => 'textfield',
@@ -2767,10 +2732,6 @@ function biblio_bundle_load($type) {
   return biblio_combined_bundle_load($type);
 }
 
-function contribution_bundle_load($type) {
-  return biblio_combined_bundle_load($type);
-}
-
 function contributor_bundle_load($type) {
   return biblio_combined_bundle_load($type);
 }
@@ -2803,7 +2764,7 @@ function biblio_combined_bundle_load($type) {
  * @return array Iterative array containing the biblio entity types
  */
 function biblio_entities() {
-  return array('biblio', 'biblio_contribution', 'biblio_contributor');
+  return array('biblio', 'biblio_contributor');
 }
 
 /**
@@ -2818,12 +2779,12 @@ function biblio_entities() {
  * $title = $wrapper->biblio_title->value();
  *
  * @param object $entity standard entity object - $biblio, $contributor, etc.
- * @param string $entity_type biblio, biblio_contributor, biblio_contribution.
+ * @param string $entity_type biblio, biblio_contributor
  *  Defaults to 'biblio'
  * @return object A fully structured entity wrapper built by the Entity API
  */
 function biblio_wrapper($entity, $entity_type = 'biblio') {
-  $entity_types = array('biblio', 'biblio_contributor', 'biblio_contribution');
+  $entity_types = biblio_entities();
   if (!in_array($entity_type, $entity_types)) {
     // We're not dealing with one of biblio's entity types
     $info = entity_get_info($entity_type);
@@ -2914,10 +2875,6 @@ function biblio_load_multiple($bids = array(), $conditions = array(), $reset = F
   // entity_load() will create a new instance of biblioController as needed
   // and call the load() method on it.
   $biblios = entity_load('biblio', $bids, $conditions, $reset);
-  $contributions = biblio_get_associated_contributions($bids);
-  foreach($biblios as $bid => $biblio) {
-    $biblios[$bid]->contributions = $contributions[$bid];
-  }
   return $biblios;
 }
 
@@ -2989,30 +2946,13 @@ function biblio_form_validate($form, &$form_state) {
   if (isset($biblio)) {
     // Field validation.
     $i = 0;
-    // foreach ($biblio->contributions as $contribution) {
-    //   // Validate the contribution entity object
-    //   field_attach_form_validate(
-    //       'biblio_contribution',
-    //       $contribution,
-    //       $form['biblio_tabs']['contributors']['biblio_contributors'][$i],
-    //       $form_state
-    //   );
-    //   // Validate the contributor entity object
-    //   field_attach_form_validate(
-    //       'biblio_contributor',
-    //       $contribution->contributor,
-    //       $form['biblio_tabs']['contributors']['biblio_contributors'][$i],
-    //       $form_state
-    //   );
-    //   $i++;
-    // }
     field_attach_form_validate('biblio', $biblio, $form, $form_state);
   }
 }
 
 /**
  * Process data that was submitted from the biblio add form. This handles the
- * additions of Biblio, Contributor, and Contribution entities.
+ * additions of Biblio and Contributor entities.
  *
  * @global type $user
  * @param type $form
@@ -3111,55 +3051,6 @@ function biblio_contributor_exists($name) {
 }
 
 /**
- * Given a biblio object, returns whether or not the biblio contains at least
- * one contribution object
- *
- * @param object $biblio A biblio entity object
- * @return boolen TRUE if biblio has at least one contribution, FALSE otherwise
- */
-function biblio_has_contributions($biblio) {
-  if (isset($biblio->contributions)) {
-    foreach ($biblio->contributions as $contribution) {
-      if (is_object($contribution) && !empty($contribution)) {
-        return TRUE;
-      }
-    }
-  }
-  return FALSE;
-}
-
-/**
- * Given a Contribution entity object, returns whether or not the Contribution
- * object contains a Contributor object with the name field populated
- *
- * @param object $contribution A contribution entity object
- * @return boolean TRUE if contribution has an associated contributor,
- *  FALSE otherwise
- */
-function biblio_contribution_has_contributor($contribution) {
-  $contributor = $contribution->contributor;
-  $contributor_wrapper = biblio_wrapper($contributor, 'biblio_contributor');
-  $contributor_name = $contributor_wrapper->biblio_contributor_name->value();
-
-  if (isset($contributor_name) && !empty($contributor_name)) {
-    return TRUE;
-  }
-
-  return FALSE;
-}
-
-function biblio_extract_contributors($biblio) {
-  $contributors = array();
-  if (biblio_has_contributions($biblio)) {
-    foreach ($biblio->contributions as $delta => $contribution) {
-      $contributors[] = $contribution->contributor;
-    }
-  }
-
-  return $contributors;
-}
-
-/**
  * Get an array of contributors that were submitted from the biblio add form
  *
  * @param array $form The full form array
@@ -3245,6 +3136,7 @@ function biblio_page_view($biblio, $view_mode = 'full', $langcode = NULL) {
   drupal_set_title($title);
 
   module_invoke_all('entity_view', $biblio, 'biblio', $view_mode, $langcode);
+  dpm($biblio->content);
   return $biblio->content;
 }
 
@@ -3381,64 +3273,6 @@ function biblio_contributor_delete($contributor) {
  */
 function biblio_contributor_delete_multiple($contributor_ids) {
   entity_delete_multiple('biblio_contributor', $contributor_ids);
-}
-
-/**
- * Given an array of biblio object IDs, retrieves contribution entity objects
- * associated with each biblio.
- *
- * @param array $bids an iterative array of biblio IDs with which to associate
- *  contributions and contributors
- * @return array an array, keyed by bid, of arrays containing contribution
- *  entity objects, keyed by cnid. This return array has the following
- *  structure:
- *  $returnarray[$bid][$cnid] would give the Contribution object,
- *  which contains contributor properties/fields, plus the Contributor object.
- */
-function biblio_get_associated_contributions($bids) {
-  foreach ($bids as $bid) {
-    // Query to fetch the ids of all Contribution entities that reference the
-    // specified Biblio ID(s)
-    $query = new EntityFieldQuery;
-    $query->entityCondition('entity_type', 'biblio_contribution');
-    $query->fieldCondition('biblio_biblio_ref', 'target_id', $bid, '=');
-    $result = $query->execute();
-
-    if (empty($result)) {
-      // No contibutions associated with this biblio record
-      return;
-    }
-
-    // Extract the cnids from the objects returned by the query (not full
-    // contribution objects) and put them in an array.
-    foreach ($result['biblio_contribution'] as $id => $return_object) {
-      $cnids[] = $return_object->cnid;
-    }
-  }
-
-  // Load the contribution entity objects from the database
-  $contributions = entity_load('biblio_contribution', $cnids);
-
-  foreach ($contributions as $cnid => $contribution) {
-    $wrapper = biblio_wrapper($contribution, 'biblio_contribution');
-    // Attach the Contributor object to the Contribution object.
-    // The Contributor object is automatically loaded by EntityReference
-    $contributions[$cnid]->contributor = $wrapper->biblio_contributor_ref->value();
-    // Extract the Biblio ID from the Biblio object that EntityReference
-    // automatically loads for us.
-    // @todo: figure out why biblio_biblio_ref isn't set for all but the first
-    // entity object
-    if (is_object($wrapper->biblio_biblio_ref->value())) {
-      $bid = $wrapper->biblio_biblio_ref->value()->bid;
-      // Build the array to return
-      $return[$bid][$cnid] = $contributions[$cnid];
-    }
-    else {
-      return;
-    }
-  }
-
-    return $return;
 }
 
 /**
