@@ -103,13 +103,12 @@ function biblio_import_form($form, &$form_state) {
         '#description' => t('You should use batch processing if your import file contains more than about 20 records, or if you are experiencing script timeouts during import'),
     );
     $form ['userid'] = _biblio_admin_build_user_select($user->uid);
-    // Get the vocabularies  attached to the biblio node type ...
-    foreach (field_info_instances('node', 'biblio') as $instance) {
-      $field = field_info_field_by_id($instance['field_id']);
-      if ($field['type'] == 'taxonomy_term_reference') {
-        foreach ($field['settings']['allowed_values'] as $delta => $tree) {
-          $biblio_vocabs[$tree['vocabulary']] = array('instance' => $instance, 'field' => $field);
-        }
+    // Get default fields
+    $file = drupal_get_path('module', 'biblio') . '/misc/default_fields.json';
+    $default_fields = json_decode(file_get_contents($file), TRUE);
+    foreach ($default_fields as $field) {
+      if (isset($field['type']) && $field['type'] == 'taxonomy_term_reference') {
+        $default_vocabs[] = $field['settings']['allowed_values'][0]['vocabulary'];
       }
     }
 
@@ -123,7 +122,7 @@ function biblio_import_form($form, &$form_state) {
     if (count($biblio_vocabs)) {
       $vocabularies = module_invoke('taxonomy', 'get_vocabularies', 'biblio');
       if (variable_get('biblio_keyword_freetagging', 0)) {
-        $freetag_vocab = $vocabularies[variable_get('biblio_keyword_vocabulary', 0)];
+        $freetag_vocab = $vocabularies[variable_get('biblio_keywords', 0)];
         unset($vocabularies[variable_get('biblio_keyword_vocabulary', 0)]);
         $msg = t('<b>NOTE:</b> Keyword "free tagging" is turned on, consequently all incomming keywords will be added to the <b>@name</b> vocabulary as specified in the "Keyword" section of the !url page.', array('@name' => $freetag_vocab->name, '!url' => l(t('admin/config/content/biblio'), 'admin/config/content/biblio')));
       }
@@ -176,6 +175,10 @@ function biblio_import_form($form, &$form_state) {
         '#markup' => '<p><div>' . $msg . '</div></p>'
     );
     $form['button'] = array('#type' => 'submit', '#value' => t('Import'));
+
+    // @todo: Add the freetagging feature to 7.x-2.x and remove this line
+    unset($form['import_taxonomy']);
+
     return $form;
   }
   else {
