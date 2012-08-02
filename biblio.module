@@ -416,6 +416,8 @@ function biblio_help($path, $arg) {
     case 'node/add#biblio' :
       // This description shows up when users click "create content."
       return t('This allows you to add a bibliographic entry to the database');
+    case 'admin/content/biblio/add' :
+      return t('Create a new Biblio from scratch, or input a record from a file if you have a Biblio sub-module enabled. <i>Please note</i> that the first time you select a particular publication type, it will take a few seconds to build the field instances. (It won\'t happen more than once per publication type)');
   }
 }
 
