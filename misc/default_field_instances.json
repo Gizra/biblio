@@ -534,6 +534,7 @@
         },
         "display": {
             "default": {
+                "weight": "0",
                 "settings": {
                     "link": 1
                 }
@@ -554,6 +555,7 @@
         },
         "display": {
             "default": {
+                "weight": "0",
                 "settings": {
                     "link": 1
                 }
@@ -574,6 +576,7 @@
         },
         "display": {
             "default": {
+                "weight": "0",
                 "settings": {
                     "link": 1
                 }
@@ -594,6 +597,7 @@
         },
         "display": {
             "default": {
+                "weight": "0",
                 "settings": {
                     "link": 1
                 }
@@ -614,52 +618,12 @@
         },
         "display": {
             "default": {
+                "weight": "0",
                 "settings": {
                     "link": 1
                 }
             }
         }
-    },
-    {
-        "field_name": "biblio_biblio_ref",
-        "entity_type": "biblio_contribution",
-        "label": "Biblio Reference",
-        "required": false,
-        "widget": {
-            "weight": "1"
-        },
-        "settings": {
-            "vtab": "none"
-        }
-    },
-    {
-        "field_name": "biblio_contributor_ref",
-        "entity_type": "biblio_contribution",
-        "label": "Contributor Reference",
-        "required": false,
-        "widget": {
-            "weight": "1"
-        },
-        "settings": {
-            "vtab": "none"
-        }
-    },
-    {
-        "field_name": "biblio_contributor_category",
-        "entity_type": "biblio_contribution",
-        "label": "Contributor Category",
-        "required": false,
-        "widget": {
-            "weight": "2"
-        },
-        "settings": {
-            "vtab": "none"
-        },
-        "default_value": [
-            {
-                "value": 1
-            }
-        ]
     },
     {
         "field_name": "biblio_contributor_name",
