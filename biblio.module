@@ -3136,7 +3136,6 @@ function biblio_page_view($biblio, $view_mode = 'full', $langcode = NULL) {
   drupal_set_title($title);
 
   module_invoke_all('entity_view', $biblio, 'biblio', $view_mode, $langcode);
-  dpm($biblio->content);
   return $biblio->content;
 }
 
