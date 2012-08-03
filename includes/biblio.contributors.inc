@@ -521,7 +521,6 @@ function biblio_get_contributors($biblio) {
   $contributors = array();
 
   foreach ($categories as $category => $info) {
-    // dpm('Catgegory: ' . $category);
     // biblio_primary_contributors, biblio_secondary_contributors, etc...
     $field = $info['field'];
     foreach ($wrapper->{$field}->value() as $delta => $contributor) {

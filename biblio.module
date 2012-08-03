@@ -679,9 +679,8 @@ function biblio_menu() {
     'title callback' => 'biblio_contributor_label',
     'title arguments' => array(2),
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('biblio_contributor_delete_form', 2),
+    'page arguments' => array('biblio_contributor_delete_confirm', 2),
     'access arguments' => array('edit all biblio entries'),
-    'file' => 'includes/biblio.admin.inc',
   );
 
   // Importing & Exporting
@@ -3279,14 +3278,14 @@ function biblio_contributor_save($contributor) {
  * Delete single contributor.
  */
 function biblio_contributor_delete($contributor) {
-  entity_delete('biblio_contributor', entity_id('biblio_contributor' ,$contributor));
+  biblio_contributor_delete_multiple(array($contributor->cid));
 }
 
 /**
  * Delete multiple contributors.
  */
 function biblio_contributor_delete_multiple($contributor_ids) {
-  entity_delete_multiple('biblio_contributor', $contributor_ids);
+  $deleted = entity_delete_multiple('biblio_contributor', $contributor_ids);
 }
 
 /**
@@ -3467,7 +3466,76 @@ function biblio_contributor_form($form, $form_state, $contributor = NULL) {
     '#weight' => 50,
     '#submit' => array('biblio_contributor_form_submit'),
   );
+  // Delete button is available if we're editing an existing biblio.
+  if (!empty($contributor->cid)) {
+    $form['delete'] = array(
+      '#access' => user_access('delete biblios'),
+      '#type' => 'submit',
+      '#value' => t('Delete'),
+      '#weight' => 51,
+      '#submit' => array('biblio_contributor_form_delete_submit'),
+    );
+  }
   return $form;
+}
+
+function biblio_contributor_form_delete_submit($form, &$form_state) {
+  $destination = array();
+  if (isset($_GET['destination'])) {
+    $destination = drupal_get_destination();
+    unset($_GET['destination']);
+  }
+  $contributor = $form_state['contributor'];
+  $form_state['redirect'] = array('biblio/contributor/' . $contributor->cid . '/delete',
+      array('query' => $destination));
+}
+
+/**
+ * Rather than build a complete form, we will simply pass data on to a utility
+ * function of the Form API called confirm_form().
+ *
+ * @param type $form
+ * @param type $form_state
+ * @param type $biblio
+ * @return type
+ */
+function biblio_contributor_delete_confirm($form, &$form_state, $contributor) {
+  $form['#contributor'] = $contributor;
+  // Always provide entity id in the same form key as in the entity edit form
+  $form['cid'] = array('#type' => 'value', '#value' => $contributor->cid);
+  return confirm_form($form,
+    t('Are you sure you want to delete %title?', array('%title' => $contributor->title)),
+    'biblio/contributor/' . $contributor->cid,
+    t('This action cannot be undone.'),
+    t('Delete'),
+    t('Cancel')
+  );
+}
+
+/**
+ * Delete form confirmation page
+ *
+ * @param array $form
+ * @param array $form_state
+ */
+function biblio_contributor_delete_confirm_submit($form, &$form_state) {
+  if ($form_state['values']['confirm']) {
+    $contributor = $form['#contributor'];
+    biblio_contributor_delete($contributor);
+    watchdog('biblio', 'Deleted biblio contributor %title.',
+      array(
+        '%title' => $contributor->title,
+      )
+    );
+
+    drupal_set_message(t('Contributor %title has been deleted.',
+        array(
+          '%title' => $contributor->title,
+        )
+    ));
+  }
+
+  $form_state['redirect'] = '<front>';
 }
 
 /**
