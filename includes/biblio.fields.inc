@@ -1,20 +1,19 @@
 <?php
 function _biblio_field_extra_fields() {
 
-  // foreach (biblio_types('biblio') as $type => $info) {
-  //   $extras['biblio'][$type] = array(
-  //     'display' => array(
-  //       'pubtype' => array(
-  //         'label'       => t('Publication Type'),
-  //         'description' => t('Biblio module form.'),
-  //         'weight'      => -4
-  //       ),
-  //     ),
-  //   );
-  // }
+  foreach (biblio_types('biblio_contributor') as $type => $info) {
+    $extras['biblio_contributor'][$type] = array(
+      'display' => array(
+        'view_all_by_contributor' => array(
+          'label'       => t('"View all biblios by contributor" link'),
+          'description' => t('Link on contributor entity view that takes the user to a page of all biblios from which a contributor is referenced.'),
+          'weight'      => 10
+        ),
+      ),
+    );
+  }
 
-
-  // return $extras;
+  return $extras;
 }
 
 /**
