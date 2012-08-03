@@ -1221,6 +1221,13 @@ function biblio_form($form, &$form_state, $biblio = NULL) {
 
     $tabs['contributors'] += biblio_contributor_widget($biblio, $form_state);
 
+    // Add imported keywords as the default value for the biblio_keywords field
+    if (isset($form_state['biblio_imported']) && isset($fielded_form['biblio_keywords'])) {
+      $langcode = $fielded_form['biblio_keywords']['#language'];
+      $fielded_form['biblio_keywords'][$langcode]['#default_value'] =
+        implode(', ', $biblio->biblio_keywords);
+    }
+
     // Add the values we created above to the real form
     foreach ($fielded_form as $field => $data) {
       // Set a vtab value, if it exists (not all array keys are valid fields)
