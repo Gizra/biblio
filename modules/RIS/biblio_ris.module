@@ -29,9 +29,10 @@ function biblio_ris_biblio_mapper_options() {
 function biblio_ris_biblio_export_options() {
   return array('ris' => t('RIS'));
 }
+
 function biblio_ris_form_biblio_form_alter(&$form, &$form_state) {
   global $user;
-  if (!$form_state['submitted'] && !isset($form_state['values']) && !isset($form['#node']->nid)) {
+  if (!$form_state['submitted'] && !isset($form_state['values']) && !isset($form_state['biblio']->bid)) {
       if (!$form_state['submitted']) {
       $form['biblio_ris_paste'] = array(
         '#type' => 'fieldset',
