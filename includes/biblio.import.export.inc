@@ -388,7 +388,7 @@ function biblio_import_finalize($success, $results) {
         $message = t('The item you are trying to import already exists in the database, see ');
         $message .= l('biblio/'. $bid, 'biblio/'. $bid);
 
-        drupal_set_message($message, 'status');
+        drupal_set_message($message, 'warning');
         watchdog($format, $message, array(), WATCHDOG_ERROR);
       }
     }

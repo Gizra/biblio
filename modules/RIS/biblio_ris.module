@@ -460,7 +460,7 @@ function biblio_ris_check_md5($md5) {
   if (empty($ris_md5s)) {
     $result = db_query("SELECT * FROM {biblio_ris} ");
     foreach ($result as $row) {
-      $ris_md5s[$row->biblio_ris_md5] = $row->nid;
+      $ris_md5s[$row->biblio_ris_md5] = $row->bid;
     }
   }
   if (isset($ris_md5s[$md5])) {
