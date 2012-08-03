@@ -73,6 +73,7 @@ function biblio_ris_form_biblio_form_submit($form, &$form_state) {
   }
   if (!empty($node_data) && is_object($node_data)) {
     $biblio = biblio_create($node_data->biblio_type, (array)$node_data);
+    $biblio->biblio_keywords = $node_data->biblio_keywords;
     $form_state['values'] = array_merge($form_state['values'], (array)$node_data);
     $form_state['input']['biblio_type'] = $form_state['biblio_type'] = $node_data->biblio_type;
     $form_state['biblio_imported'] = $biblio;

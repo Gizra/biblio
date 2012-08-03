@@ -125,6 +125,7 @@ function biblio_pm_form_biblio_form_submit($form, &$form_state) {
       $data = new BiblioEntrezPubmedArticle($result->PubmedArticle);
       $node_data = $data->getBiblio();
       $biblio = biblio_create($node_data['biblio_type'], $node_data);
+      $biblio->biblio_keywords = $node_data['biblio_keywords'];
     }
     else {
       $message = t('The PubMed ID that you are trying to import already exists in the database, see !url', array('!url' => l('node/' . $dup, 'node/' . $dup)));
