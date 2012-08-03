@@ -73,7 +73,7 @@ function biblio_bibtex_form_biblio_form_submit($form, &$form_state) {
   if (strlen($form_state['values']['paste_data_bibtex'])) {
     list($biblio_data, $dups) = biblio_bibtex_biblio_import($form_state['values']['paste_data_bibtex'], array(), FALSE, NULL, FALSE, TRUE);
   }
-  $biblio = $biblio_data[0];
+  $biblio = reset($biblio_data);
   if (!empty($biblio_data) && is_object($biblio)) {
     $form_state['input']['publication_type'] = $form_state['publication_type'] =  $biblio->publication_type;
     $form_state['biblio_imported_contributors'] = $biblio->biblio_contributors;
@@ -82,7 +82,7 @@ function biblio_bibtex_form_biblio_form_submit($form, &$form_state) {
 //    $form_state['storage']['biblio_type']  = $node_data[0]->biblio_type;
   }
   elseif (!empty($dups)) {
-    $message = t('The bibtex node that you are trying to paste into the form already exists in the database, see !url', array('!url' => l('biblio/' . $dups[0], 'biblio/' . $dups[0])));
+    $message = t('The bibtex entity that you are trying to paste into the form already exists in the database, see !url', array('!url' => l('biblio/' . $dups[0], 'biblio/' . $dups[0])));
     form_set_error('paste_data_bibtex', $message);
   }
   $form_state['rebuild'] = TRUE;
