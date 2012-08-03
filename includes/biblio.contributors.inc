@@ -524,11 +524,14 @@ function biblio_get_contributors($biblio) {
     // biblio_primary_contributors, biblio_secondary_contributors, etc...
     $field = $info['field'];
     foreach ($wrapper->{$field}->value() as $delta => $contributor) {
-      $cid = $wrapper->{$field}[$delta]->cid->value();
-      if (isset($cid) && !empty($cid)) {
-        $contributors[$cid]['name'] =
-          $wrapper->{$field}[$delta]->biblio_contributor_name->value();
-        $contributors[$cid]['category'] = $category;
+      // If the contributor entity has not been deleted
+      if ($contributor) {
+        $cid = $wrapper->{$field}[$delta]->cid->value();
+        if (isset($cid) && !empty($cid)) {
+          $contributors[$cid]['name'] =
+            $wrapper->{$field}[$delta]->biblio_contributor_name->value();
+          $contributors[$cid]['category'] = $category;
+        }
       }
     }
   }
