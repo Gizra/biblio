@@ -2898,7 +2898,11 @@ function biblio_save($biblio) {
   module_load_include('inc', 'biblio', 'includes/biblio.keywords');
 
   _biblio_prepare_submit($biblio);
-  $biblio->changed = REQUEST_TIME;
+
+  if (empty($biblio->changed)) {
+    $biblio->changed = REQUEST_TIME;
+  }
+
   // @todo: get md5 working. See http://drupal.org/node/1537364
 //  $duplicate = biblio_hash($biblio);
 //  if (isset($duplicate) && $duplicate != $biblio->bid) { // if this is a potential duplcate, write the bids of the pre-existing and new biblios
