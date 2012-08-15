@@ -506,6 +506,10 @@ function biblio_permission() {
      'title' => t('Edit all Biblio entries'),
      'description' => t('Allows the user to edit ALL biblio entries regardless of who "owns" them, otherwise they are restricted to on'),
      ),
+    'delete biblios' => array(
+      'title' => t('Delete Biblios'),
+      'description' => t('Allows the user to delete any biblio entities'),
+    ),
     'edit by all biblio authors' => array(
       'title' => t('Edit by all Biblio authors'),
       'description' => t('Allows any/all of the authors associated with a biblio entry to edit the biblio entry. This requires the Drupal UserID be mapped to a Biblio author ID'),
@@ -3642,4 +3646,41 @@ function biblio_form_alter(&$form, &$form_state, $form_id) {
         break;
     }
   }
+}
+/**
+ * Implements hook_entity_property_info_alter().
+ */
+function biblio_entity_property_info_alter(&$info) {
+  $properties = &$info['biblio']['properties'];
+  $properties['created'] = array(
+    'label' => t("Date created"),
+    'type' => 'date',
+    'description' => t("The date the biblio was added."),
+    'setter callback' => 'entity_property_verbatim_set',
+    'setter permission' => 'edit all biblio entries',
+    'schema field' => 'created',
+  );
+  $properties['changed'] = array(
+    'label' => t("Date changed"),
+    'type' => 'date',
+    'description' => t("The date the biblio was most recently changed/edited."),
+    'setter callback' => 'entity_property_verbatim_set',
+    'setter permission' => 'edit all biblio entries',
+    'schema field' => 'changed',
+  );
+  $properties['uid'] = array(
+    'label' => t("Author"),
+    'type' => 'user',
+    'description' => t("The creator of the biblio entity."),
+    'setter callback' => 'entity_property_verbatim_set',
+    'setter permission' => 'edit all biblio entries',
+    'required' => TRUE,
+    'schema field' => 'uid',
+  );
+  $properties['biblio_sort_title'] = array(
+    'label' => t("Sort Title"),
+    'setter callback' => 'entity_property_verbatim_set',
+    'setter permission' => 'edit all biblio entries',
+    'schema field' => 'biblio_sort_title',
+  );
 }
