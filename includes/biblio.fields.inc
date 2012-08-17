@@ -189,6 +189,7 @@ function biblio_field_list() {
   foreach ($fields as $field => $info) {
     // Check if name of field has the 'biblio_' prefix
     if (strstr($field, 'biblio_') != FALSE
+      || isset($info['bundles']['biblio'])
       || ($info['type'] == 'biblio_text')) {
       $biblio_fields[] = $field;
     }
@@ -203,6 +204,19 @@ function biblio_field_list() {
  * @return array Array of all fields that were deleted.
  */
 function biblio_delete_fields() {
+  $db_fields = array('field_name', 'entity_type', 'bundle');
+  $result = db_select('field_config_instance', 'fci')
+    ->fields('fci', $db_fields)
+    ->condition(db_or()
+      ->condition('entity_type', 'biblio')
+      ->condition('entity_type', 'biblio_contributor'))
+    ->condition('deleted', '0')
+    ->execute();
+
+  while ($row = $result->fetchAssoc()) {
+    field_delete_instance($row, TRUE);
+  }
+
   $fields = biblio_field_list();
   foreach ($fields as $field) {
     // Each iteration takes ~90ms to run
