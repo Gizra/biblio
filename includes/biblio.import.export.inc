@@ -958,19 +958,20 @@ function biblio_retrieve_variable_properties(&$biblio, $temp) {
 }
 
 function biblio_create_imported_keywords(&$biblio) {
-  if ($vocab = taxonomy_vocabulary_machine_name_load('biblio_keywords')) {
-      $wrapper = biblio_wrapper($biblio);
-      foreach($biblio->biblio_keywords as $delta => $keyword) {
-        $existing_terms = taxonomy_get_term_by_name($keyword, 'biblio_keywords');
-        $first_existing_term = reset($existing_terms);
-        $term = new stdClass;
-        $term->vid = $vocab->vid;
-        $term->name = $keyword;
-        if ($first_existing_term) {
-          $term->tid = $first_existing_term->tid;
-        }
-        taxonomy_term_save($term);
-        $wrapper->biblio_keywords[$delta]->set($term->tid);
+  if ($vocab = taxonomy_vocabulary_machine_name_load('biblio_keywords')
+  && isset($biblio->biblio_keywords)) {
+    $wrapper = biblio_wrapper($biblio);
+    foreach($biblio->biblio_keywords as $delta => $keyword) {
+      $existing_terms = taxonomy_get_term_by_name($keyword, 'biblio_keywords');
+      $first_existing_term = reset($existing_terms);
+      $term = new stdClass;
+      $term->vid = $vocab->vid;
+      $term->name = $keyword;
+      if ($first_existing_term) {
+        $term->tid = $first_existing_term->tid;
       }
+      taxonomy_term_save($term);
+      $wrapper->biblio_keywords[$delta]->set($term->tid);
     }
+  }
 }
