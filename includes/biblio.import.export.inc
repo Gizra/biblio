@@ -958,8 +958,8 @@ function biblio_retrieve_variable_properties(&$biblio, $temp) {
 }
 
 function biblio_create_imported_keywords(&$biblio) {
-  if ($vocab = taxonomy_vocabulary_machine_name_load('biblio_keywords')
-  && isset($biblio->biblio_keywords)) {
+  $vocab = taxonomy_vocabulary_machine_name_load('biblio_keywords');
+  if (isset($biblio->biblio_keywords) && $vocab) {
     $wrapper = biblio_wrapper($biblio);
     foreach($biblio->biblio_keywords as $delta => $keyword) {
       $existing_terms = taxonomy_get_term_by_name($keyword, 'biblio_keywords');
