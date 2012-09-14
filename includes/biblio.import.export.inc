@@ -968,9 +968,13 @@ function biblio_create_imported_keywords(&$biblio) {
       $term->vid = $vocab->vid;
       $term->name = $keyword;
       if ($first_existing_term) {
+        // Term already exists.
         $term->tid = $first_existing_term->tid;
       }
-      taxonomy_term_save($term);
+      else {
+        taxonomy_term_save($term);
+      }
+
       $wrapper->biblio_keywords[$delta]->set($term->tid);
     }
   }
