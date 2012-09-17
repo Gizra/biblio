@@ -95,7 +95,7 @@ function biblio_uninstall() {
   module_load_include('inc', 'biblio', 'includes/biblio.fields');
   biblio_delete_fields();
   // @todo: delete after development
-  field_purge_batch(999);
+  field_purge_batch(10);
 
   cache_clear_all();
 
