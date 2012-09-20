@@ -19,7 +19,8 @@ function biblio_install() {
   _enable_biblio_keyword_vocabulary();
   $result[] = _set_system_weight();
   biblio_add_fields();
-  biblio_add_field_instances('biblio_contributor', 'contributor');
+  biblio_add_field_instances('biblio_contributor', 'person');
+  biblio_add_field_instances('biblio_contributor', 'organization');
 
   // @todo remove after development
   timer_stop($timer_name);
@@ -1160,7 +1161,8 @@ function _add_bundles() {
   $types[] = array('Miscellaneous',NULL, 30, 'biblio');
   $types[] = array('Miscellaneous Section', NULL, 31, 'biblio');
   $types[] = array('Presentation',NULL,8, 'biblio');
-  $types[] = array('Contributor', 'This is the default type (bundle) for all authors. ', 1, 'biblio_contributor');
+  $types[] = array('Person', 'Human author or editor', 1, 'biblio_contributor');
+  $types[] = array('Organization', 'Contributor represented as an institution, corportation, or other organization', 1, 'biblio_contributor');
 
   foreach ($types as $record) {
 //    $result[] = update_sql("INSERT INTO {biblio_types} (tid, name, description, weight) VALUES ('" . implode("', '", $record) . "')");

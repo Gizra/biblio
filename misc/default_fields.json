@@ -260,11 +260,31 @@
         "type": "text_with_summary"
     },
     {
+        "field_name": "biblio_contributor_name",
+        "type": "text"
+    },
+    {
         "field_name": "biblio_contributor_first_name",
         "type": "text"
     },
     {
         "field_name": "biblio_contributor_last_name",
+        "type": "text"
+    },
+    {
+        "field_name": "biblio_contributor_middle_name",
+        "type": "text"
+    },
+    {
+        "field_name": "biblio_contributor_first_init",
+        "type": "text"
+    },
+    {
+        "field_name": "biblio_contributor_mid_init",
+        "type": "text"
+    },
+    {
+        "field_name": "biblio_contributor_mid_init2",
         "type": "text"
     },
     {

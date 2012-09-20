@@ -696,7 +696,7 @@ function biblio_create_imported_contributors(&$biblio) {
   foreach($biblio->biblio_contributors as $delta => $contributor_data) {
     $cid = biblio_contributor_exists($contributor_data['name']);
     if (!$cid) {
-      $contributor = entity_create('biblio_contributor', array());
+      $contributor = entity_create('biblio_contributor', array('type'=>'person'));
       $wrapper = biblio_wrapper($contributor, 'biblio_contributor');
       $wrapper->biblio_contributor_name->set($contributor_data['name']);
       biblio_contributor_save($contributor);

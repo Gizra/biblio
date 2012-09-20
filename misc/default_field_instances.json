@@ -628,7 +628,7 @@
     {
         "field_name": "biblio_contributor_name",
         "entity_type": "biblio_contributor",
-        "label": "Author Name",
+        "label": "Contributor Name",
         "required": false,
         "widget": {
             "weight": "1.2"
@@ -653,6 +653,54 @@
         "field_name": "biblio_contributor_last_name",
         "entity_type": "biblio_contributor",
         "label": "Last Name",
+        "required": false,
+        "widget": {
+            "weight": "2"
+        },
+        "settings": {
+            "vtab": "none"
+        }
+    },
+    {
+        "field_name": "biblio_contributor_middle_name",
+        "entity_type": "biblio_contributor",
+        "label": "Middle Name",
+        "required": false,
+        "widget": {
+            "weight": "2"
+        },
+        "settings": {
+            "vtab": "none"
+        }
+    },
+    {
+        "field_name": "biblio_contributor_first_init",
+        "entity_type": "biblio_contributor",
+        "label": "First Initial",
+        "required": false,
+        "widget": {
+            "weight": "2"
+        },
+        "settings": {
+            "vtab": "none"
+        }
+    },
+    {
+        "field_name": "biblio_contributor_mid_init",
+        "entity_type": "biblio_contributor",
+        "label": "Middle Initial",
+        "required": false,
+        "widget": {
+            "weight": "2"
+        },
+        "settings": {
+            "vtab": "none"
+        }
+    },
+    {
+        "field_name": "biblio_contributor_mid_init2",
+        "entity_type": "biblio_contributor",
+        "label": "Second Middle Initial",
         "required": false,
         "widget": {
             "weight": "2"

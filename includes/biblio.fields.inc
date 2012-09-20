@@ -204,7 +204,7 @@ function biblio_field_list() {
  * @return array Array of all fields that were deleted.
  */
 function biblio_delete_fields() {
-  $db_fields = array('field_name', 'entity_type', 'bundle');
+  $db_fields = array('id', 'field_name', 'entity_type', 'bundle');
   $result = db_select('field_config_instance', 'fci')
     ->fields('fci', $db_fields)
     ->condition(db_or()
@@ -212,6 +212,21 @@ function biblio_delete_fields() {
       ->condition('entity_type', 'biblio_contributor'))
     ->condition('deleted', '0')
     ->execute();
+
+
+    // while ($row = $result->fetchAssoc()) {
+    //   $instances_to_delete[] = $row;
+    // }
+
+    // $batch = array(
+    //   'title' => t('Deleting Field Instances'),
+    //   'operations' => array(
+    //     array('biblio_batch_delete_field', array($instances_to_delete)),
+    //   ),
+    //   'finished' => 'biblio_batch_delete_field_finished',
+    // );
+    // batch_set($batch);
+    // batch_process('admin/modules');
 
   while ($row = $result->fetchAssoc()) {
     field_delete_instance($row, TRUE);
@@ -224,6 +239,33 @@ function biblio_delete_fields() {
   }
 
   return $fields;
+}
+
+function biblio_batch_delete_field($instances, &$context) {
+  $iteration_limit = 10;
+  $i = 0;
+  $context['sandbox']['max'] = count($instances);
+  error_log($i);
+
+  foreach ($instances as $instance) {
+    error_log($i);
+    if ($i >= $iteration_limit)
+      break;
+    if (in_array($instance['id'], $context['sandbox']['completed_fields']))
+      continue;
+    field_delete_field($instance);
+    $context['sandbox']['completed_fields'][] = $instance['id'];
+    $i++;
+    $context['sandbox']['progress']++;
+  }
+
+  if ($context['sandbox']['progress'] != $context['sandbox']['max']) {
+    $context['finished'] = $context['sandbox']['progress'] / $context['sandbox']['max'];
+  }
+}
+
+function biblio_batch_delete_field_finished($success, $results, $operations, $timer) {
+  drupal_set_message('Total completion time: ' . $timer);
 }
 
 /**
