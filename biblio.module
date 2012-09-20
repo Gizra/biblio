@@ -3030,7 +3030,7 @@ function biblio_create_contributor_refs(&$form_state) {
     $contrib['cid'] = biblio_contributor_exists($contrib['name']);
     if (!$contrib['cid']) {
       // Name not found in db. Contributor entity needs to be created
-      $contributor = entity_create('biblio_contributor', array());
+      $contributor = entity_create('biblio_contributor', array('type'=>'person'));
       $wrapper = biblio_wrapper($contributor, 'biblio_contributor');
       $wrapper->biblio_contributor_name->set($contrib['name']);
       // Save the contributor entity so we can get a CID
