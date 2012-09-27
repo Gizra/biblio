@@ -8,6 +8,8 @@
  * Implementation of hook_install().
  */
 function biblio_pm_install() {
+  biblio_pm_add_fields();
+  biblio_pm_add_field_instances();
 }
 
 function biblio_pm_uninstall() {
@@ -18,6 +20,7 @@ function biblio_pm_uninstall() {
   variable_del('biblio_pm_age_limit');
   variable_del('biblio_pm_update_next_execution');
 
+  biblio_pm_delete_default_fields();
 }
 
 function biblio_pm_enable() {

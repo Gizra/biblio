@@ -3684,3 +3684,14 @@ function biblio_entity_property_info_alter(&$info) {
     'schema field' => 'biblio_sort_title',
   );
 }
+
+function biblio_get_fielded_pubtypes() {
+  $pubtypes = array();
+  foreach (field_info_instances('biblio') as $bundle => $instances) {
+    if (!empty($instances)) {
+      $pubtypes[] = $bundle;
+    }
+  }
+
+  return $pubtypes;
+}

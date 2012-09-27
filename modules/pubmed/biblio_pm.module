@@ -345,3 +345,72 @@ function biblio_pm_check_md5($pmid, $md5) {
     return;
   }
 }
+
+function biblio_pm_add_fields() {
+  $field = array(
+    'field_name' => 'biblio_pmid',
+    'type' => 'number_integer'
+  );
+
+  if (!field_info_field($field['field_name'])) {
+    field_create_field($field);
+  }
+}
+
+function biblio_pm_add_field_instances() {
+  // pubtypes with existing fields
+  foreach(biblio_get_fielded_pubtypes() as $pubtype) {
+    $instance = biblio_pm_default_instance_info($pubtype);
+    field_create_instance($instance);
+  }
+}
+
+function biblio_pm_default_instance_info($pubtype) {
+  $instance = array(
+    'field_name' => 'biblio_pmid',
+    'entity_type' => 'biblio',
+    'bundle' => $pubtype,
+    'label' => 'PubMed ID',
+    'settings' => array('vtab' => 'identifiers'),
+    'widget' => array(
+      'settings' => array(
+        'size' => 10,
+      ),
+    ),
+    'display' => array(
+      'default' => array(
+        'settings' => array(
+          'thousand_separator' => '',
+        ),
+      ),
+    ),
+  );
+
+  return $instance;
+}
+
+function biblio_pm_delete_default_fields() {
+  $field_name = 'biblio_pmid';
+
+  if (field_info_field($field_name)) {
+    field_delete_field($field_name);
+    field_purge_batch(10);
+  }
+}
+
+/**
+ * Implements hook_field_create_instance().
+ */
+function biblio_pm_field_create_instance($instance) {
+  if ($instance['entity_type'] != 'biblio') return;
+
+  $pubtype = $instance['bundle'];
+  $field_name = 'biblio_pmid';
+  $instance_info = field_info_instance('biblio', $field_name, $pubtype);
+
+  // If biblio_pmid field exists, but no instances exist for current pubtype
+  if (field_info_field($field_name) && !$instance_info) {
+    $instance = biblio_pm_default_instance_info($pubtype);
+    field_create_instance($instance);
+  }
+}
