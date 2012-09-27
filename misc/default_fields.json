@@ -1,7 +1,10 @@
 [
     {
         "field_name": "biblio_title",
-        "type": "text"
+        "type": "text",
+        "settings": {
+            "max_length": "500"
+        }
     },
     {
         "field_name": "biblio_contributor_name",
@@ -73,11 +76,11 @@
     },
     {
         "field_name": "biblio_abst_e",
-        "type": "text_long"
+        "type": "text_with_summary"
     },
     {
         "field_name": "biblio_abst_f",
-        "type": "text_long"
+        "type": "text_with_summary"
     },
     {
         "field_name": "biblio_keywords",
