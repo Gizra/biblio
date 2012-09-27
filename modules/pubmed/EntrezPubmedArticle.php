@@ -100,7 +100,7 @@ class BiblioEntrezPubmedArticle
         'biblio_type'     => 'journal_article',
         'biblio_date'     => $this->date(),
         'biblio_year'     => substr($this->date(), 0, 4),
-        'biblio_secondary_title' => $journal,
+        'biblio_title_secondary' => $journal,
         'biblio_alternate_title' => (string)$this->article->Article->Journal->ISOAbbreviation,
         'biblio_volume'   => (string)$this->article->Article->Journal->JournalIssue->Volume,
         'biblio_issue'    => (string)$this->article->Article->Journal->JournalIssue->Issue,
