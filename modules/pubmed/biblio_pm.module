@@ -91,6 +91,7 @@ function biblio_pm_form_biblio_form_alter(&$form, &$form_state, $form_id) {
     $form['biblio_pubmed_lookup']['pubmed_submit'] = array(
         '#type' => 'submit',
         '#value' => t('Populate using PubMed'),
+        '#validate' => array('biblio_pm_form_biblio_form_validate'),
         '#submit' => array('biblio_pm_form_biblio_form_submit')
     );
    // $form['#submit'] = array_merge(array('biblio_pm_form_biblio_node_form_submit'), isset($form['#submit'])?$form['#submit']:array()); // put my validator first
@@ -100,6 +101,15 @@ function biblio_pm_form_biblio_form_alter(&$form, &$form_state, $form_id) {
   }
   if (isset($form_state['values']['biblio_pubmed_md5'])) {
     $form['biblio_pubmed_md5'] = array('#type' => 'value', '#value' => $form_state['values']['biblio_pubmed_md5']);
+  }
+}
+
+function biblio_pm_form_biblio_form_validate($form, &$form_state) {
+  $pmid = $form_state['values']['PMID'];
+
+  // PubMed sometimes gives us spaces in the PMID. Take 'em out.
+  if (isset($pmid) && !empty($pmid)) {
+    $form_state['values']['PMID'] = str_replace(' ', '', $pmid);
   }
 }
 
