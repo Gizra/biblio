@@ -389,15 +389,6 @@ function biblio_pm_default_instance_info($pubtype) {
   return $instance;
 }
 
-function biblio_pm_delete_default_fields() {
-  $field_name = 'biblio_pmid';
-
-  if (field_info_field($field_name)) {
-    field_delete_field($field_name);
-    field_purge_batch(10);
-  }
-}
-
 /**
  * Implements hook_field_create_instance().
  */
