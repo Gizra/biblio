@@ -94,6 +94,7 @@ class BiblioEntrezPubmedArticle
         'biblio_title'           => (string)$this->article->Article->ArticleTitle,
         'biblio_citekey'  => $citekey,
         'biblio_pubmed_id' => $this->id,
+        'biblio_pmid' => $this->id,
         'biblio_pubmed_md5' => $this->md5,
         'biblio_contributors' => $this->contributors(),
         // MedlineCitations are always articles from journals or books
