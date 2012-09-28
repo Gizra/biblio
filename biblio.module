@@ -2844,9 +2844,19 @@ function biblio_create($publication_type, $values = array()) {
 
   $biblio = entity_create('biblio', $initial_values);
   $wrapper = biblio_wrapper($biblio);
+  $property_info = $wrapper->getPropertyInfo();
 
   foreach ($field_values as $property => $value) {
-    $wrapper->$property->set($value);
+    // 'text_formatted' field types have an extra layer of properties
+    // see http://drupal.org/node/1396046
+    $value_prop = isset($property_info[$property]['property info']['value']);
+    if ($value_prop) {
+      $wrapper->$property = array('value' => $value);
+    }
+    else {
+      // Most normal fields
+      $wrapper->$property->set($value);
+    }
   }
 
   return $biblio;
