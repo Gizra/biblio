@@ -50,42 +50,47 @@ function biblio_add_field_instances($entity, $bundle) {
   // Get default field instance data
   $file = drupal_get_path(
     'module', 'biblio') . '/misc/default_field_instances.json';
-  $default_instances = json_decode(file_get_contents($file), TRUE);
+  $default_instance_info = json_decode(file_get_contents($file), TRUE);
 
   // Get default field instance name data
   $file = drupal_get_path(
-    'module', 'biblio') . '/misc/default_field_names.json';
-  $default_names = json_decode(file_get_contents($file), TRUE);
+    'module', 'biblio') . '/misc/default_field_pubtype_map.json';
+  $default_map = json_decode(file_get_contents($file), TRUE);
 
 
   // @todo: remove all timers after development
   timer_start('field_instances_creation');
-  foreach ($default_instances as $instance) {
-    // We only want to add field instances for the entity type specified
-    if ($instance['entity_type'] != $entity) {
-      continue;
-    }
-    $field_name = $instance['field_name'];
-    if (isset($default_names[$bundle][$field_name])) {
-      $instance['label'] = $default_names[$bundle][$field_name];
-    }
 
-    // Set the required bundle key for the instance array
+  $default_instances = array();
+  foreach ($default_instance_info as $instance_info) {
+    // key another array of instance data by field name
+    $default_instances[$instance_info['field_name']] = $instance_info;
+  }
+
+  foreach ($default_map[$entity][$bundle] as $field => $label) {
+    $instance = $default_instances[$field];
     $instance['bundle'] = $bundle;
+    // If field label was specified in the default pubtype mapping, override
+    // the default label
+    if (!empty($label)){
+      $instance['label'] = $label;
+    }
 
-    $field_exists = (field_info_field($instance['field_name']))? TRUE : FALSE;
-    $instance_exists = (field_info_instance(
-      $instance['entity_type'], $instance['field_name'], $bundle))?
+    // Whether or not a field already exists for this instance. (it should)
+    $field_exists = (field_info_field($field))? TRUE : FALSE;
+    // Whether or not the field exists already (it shouldn't)
+    $instance_exists = (field_info_instance($entity, $field, $bundle)) ?
       TRUE : FALSE;
 
     if ($field_exists && !$instance_exists) {
       field_create_instance($instance);
     }
   }
+
   timer_stop('field_instances_creation');
   drupal_set_message('Biblio field instances have been added for the '
-      . $bundle . ' bundle.' .
-      ' Time elapsed: ' . timer_read('field_instances_creation') . 'ms');
+    . $bundle . ' bundle.' . ' Time elapsed: ' .
+    timer_read('field_instances_creation') . 'ms');
 }
 
 /*
