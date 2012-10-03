@@ -155,8 +155,9 @@ function biblio_check_instances($publication_type) {
  */
 function biblio_field_instances_missing($bundle, $entity_type = 'biblio') {
   $file = drupal_get_path(
-    'module', 'biblio') . '/misc/default_field_instances.json';
-  $default_instances = json_decode(file_get_contents($file), TRUE);
+    'module', 'biblio') . '/misc/default_field_pubtype_map.json';
+  $default_field_pubtype_map = json_decode(file_get_contents($file), TRUE);
+  $default_instances = $default_field_pubtype_map[$entity_type][$bundle];
 
   // Field instances that already exist. There could be user-created field
   // instances here, so we can't assume that existing fields means we shouldn't
@@ -166,12 +167,9 @@ function biblio_field_instances_missing($bundle, $entity_type = 'biblio') {
     // If no instances exist, we definitely need to add the defaults
     return TRUE;
   }
-  foreach ($default_instances as $key => $field_data) {
-    $instance_name = $field_data['field_name'];
-    // If field name isn't already in the list of existing field instances &&
-    // Only for instances of the entity type given
-    if (!isset($existing_instances[$instance_name]) &&
-        $default_instances[$key]['entity_type'] == $entity_type) {
+  foreach ($default_instances as $field => $label) {
+    // If field name isn't already in the list of existing field instances
+    if (!isset($existing_instances[$field])) {
       // As soon as we find one default instance that doesn't already exist, we
       // know that all defaults need to be added
       return TRUE;
