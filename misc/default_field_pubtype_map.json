@@ -1817,7 +1817,7 @@
             "biblio_contributor_drupal_uid": ""
         },
         "organization": {
-            "biblio_contributor_name": "",
+            "biblio_contributor_name": "Organization Name",
             "biblio_contributor_affiliation": "",
             "biblio_contributor_drupal_uid": ""
         }
