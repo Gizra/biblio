@@ -3068,19 +3068,19 @@ function biblio_get_contributor_by_name($name) {
     return $contributors[$name];
   }
 
-  // Query field data to find out if contributor name already exists
-  $query = new EntityFieldQuery;
-  $result = $query
-    ->entityCondition('entity_type', 'biblio_contributor')
-    ->fieldCondition('biblio_contributor_name', 'value', $name)
-    ->execute();
-  if (!empty($result)) {
-    // Contributor already exists. We just need the CID.
-    foreach($result['biblio_contributor'] as $cid => $data) {
-      // only need first result
-      $contributors[$name] = biblio_contributor_load($cid);
-      return $contributors[$name];
-    }
+  // This is a temporary contributor entity only used to get the field values
+  // and MD5
+  $contributor = biblio_contributor_create($name);
+
+  $result = db_select('biblio_contributor', 'c')
+            ->fields('c', array('cid', 'md5'))
+            ->condition('md5', $contributor->md5)
+            ->execute()
+            ->fetchObject();
+  if (isset($result->cid)) {
+    // only need first result
+    $contributors[$name] = biblio_contributor_load($result->cid);
+    return $contributors[$name];
   }
   else {
     return FALSE;
@@ -3280,8 +3280,9 @@ function biblio_form_delete_submit($form, &$form_state) {
  * @return object  The Contributor object
  */
 function biblio_contributor_create($name = NULL, $type = NULL, $values = array()) {
+  module_load_include('inc', 'biblio', 'includes/biblio.contributors');
+
   if (variable_get('biblio_contributor_parser', 1) && isset($name)) {
-    module_load_include('inc', 'biblio', 'includes/biblio.contributors');
     $parsed_contributor = biblio_contributor_initial_parse($name);
     if (isset($parsed_contributor->organization)) {
       $values['type'] = 'organization';
@@ -3297,6 +3298,8 @@ function biblio_contributor_create($name = NULL, $type = NULL, $values = array()
     $values['type'] = $type;
     $contributor = entity_create('biblio_contributor', $values);
   }
+
+  $contributor->md5 = _md5sum($contributor);
 
   return $contributor;
 }
