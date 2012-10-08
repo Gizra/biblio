@@ -19,29 +19,33 @@ class BiblioContributor extends Entity {
 
 
 /**
- * Contributor controller class 
+ * Contributor controller class
  */
 class BiblioContributorController extends EntityAPIController {
   /**
    * Creates default property values for our entity object
-   * 
+   *
    * @global type $user
    * @param array $values
-   * @return array 
+   * @return array
    */
   public function create(array $values = array()) {
     global $user;
-    $values += array(
+    if (!isset($values['type'])) {
+      throw new Exception('Attempted to create a Biblio contributor without a type');
+    }
+    $default_values = array(
       'cid' => '',
       'title' => '',
-      // Default value, because we only have one bundle for this entity
-      'type' => 'contributor',
       'description' => '',
       'created' => REQUEST_TIME,
       'changed' => REQUEST_TIME,
       'uid' => $user->uid,
+      'md5' => '',
     );
-    return parent::create($values);
+    $values = array_merge($default_values, $values);
+    $contributor = parent::create($values);
+    return $contributor;
   }
 
   public function buildContent($entity, $view_mode = 'full', $langcode = NULL, $content = array()) {

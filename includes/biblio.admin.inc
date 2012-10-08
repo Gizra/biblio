@@ -125,6 +125,24 @@ function biblio_admin_settings() {
     '#default_value' => variable_get('biblio_contrib_fields_delta', 2),
     '#description' => t('This number of blank fields will be added to the contributors section of the input form each time the "Add more" button is pressed.')
   );
+  $form['authors']['biblio_contributor_parser'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Use Upgraded Author Name Parser'),
+    '#return_value' => 1,
+    '#default_value' => variable_get('biblio_contributor_parser', 1),
+    '#description' => t('Whether or not Biblio should use the upgraded auhor name parsing tool. Checking this box should lead to more consistent author field data. If unchecked, Biblio will use its default author parser.')
+  );
+  $form['authors']['biblio_organization_words'] = array(
+   '#type' => 'textarea',
+   '#title' => t('Organization Author Words'),
+   '#default_value' => variable_get('biblio_organization_words', 'Midatlantic|of|VA|study|trial|the|for|Disorde|Millennium|Millenium|Cohort|Organization|Org|Division|Center|Centers|Health|Group|Team|Agency|TrustPrevention|Survey|Grp|Force|Inst|Institute|Office|Consortium|STATA'),
+   '#description' => t('The author parsing tool will flag any contributor names containing these words as an organization. Be sure to add only words that an organization/institution/corporation would use, but <i>not</i> a human contributor. Separate words by a "|" (pipe) character.'),
+   '#states' => array(
+      'invisible' => array(
+        'input[name="biblio_contributor_parser"]' => array('checked' => FALSE),
+      )
+    )
+  );
   $form['bibtex'] = array(
     '#type' => 'fieldset',
     '#collapsible' => TRUE,

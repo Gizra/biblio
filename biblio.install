@@ -662,6 +662,12 @@ function biblio_schema() {
         'not null' => TRUE,
         'description' => '',
       ),
+    'md5' => array(
+      'type' => 'varchar',
+      'length' => '32',
+      'not null' => FALSE,
+      'description' => '',
+      ),
     ),
     'foreign keys' => array(
       'biblio_revision' => array(

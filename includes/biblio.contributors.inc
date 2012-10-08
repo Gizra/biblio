@@ -24,22 +24,6 @@ function biblio_get_contributor_category($contributors, $category) {
   return $authors;
 }
 
-function biblio_get_contributor_by_name($name) {
-  $contributors = &drupal_static(__FUNCTION__);
-
-  if (!isset($contributors[$name])) {
-    $query = new EntityFieldQuery();
-    $entities = $query->entityCondition('entity_type', 'biblio_contributor')
-      ->fieldCondition('biblio_contributor_name', 'value', $name)
-      ->execute();
-    if (!empty($entities)) {
-      $contributors[$name] = $entities->fetchObject();
-    }
-  }
-
-  return $contributors[$name];
-}
-
 function biblio_get_first_contributor($vid) {
   static $contributor = array();
   if (!isset($contributor[$vid])) {
@@ -260,19 +244,14 @@ function biblio_contributor_pre_save($contributor) {
   $wrapper = biblio_wrapper($contributor, 'biblio_contributor');
   $name = $wrapper->biblio_contributor_name->value();
   $cid = $wrapper->cid->value();
+  $md5 = $wrapper->md5->value();
+
+  if (!isset($md5) || empty($md5)) {
+    $wrapper->md5 = _md5sum($contributor);
+  }
 
   if (!empty($name)) {
-    // if we don't have a cid, lets see if we can find and exact match to the name and use that cid
-    if (!isset($cid) || empty($cid)) {
-      // @todo implement author duplicate resolution
-      // $auth = biblio_get_contributor_by_name($name);
-      if (!empty($auth) && isset($auth->cid)) {
-        dpm('duplicate author found');
-        // $author['cid'] = $auth->cid;
-      }
-    }
-
-    if (empty($cid)) {
+    if (empty($cid) && !variable_get('biblio_contributor_parser', 1)) {
       biblio_parse_author($contributor);
     }
   }
@@ -386,8 +365,24 @@ function biblio_parse_author($contributor) {
  * @param $creator
  * @return unknown_type
  */
-function _md5sum($creator) {
-  $string = $creator->firstname . $creator->initials . $creator->prefix . $creator->lastname;
+function _md5sum($contributor) {
+  $wrapper = biblio_wrapper($contributor, 'biblio_contributor');
+  switch ($contributor->type) {
+    case 'organization':
+      $string = $wrapper->biblio_contributor_name->value();
+      break;
+    default:
+      $string = $wrapper->biblio_contributor_first_name->value()
+        . $wrapper->biblio_contributor_mid_init->value()
+        . $wrapper->biblio_contributor_prefix->value()
+        . $wrapper->biblio_contributor_last_name->value()
+        . $wrapper->biblio_contributor_affiliation->value();
+      if (empty($string)) {
+        // fallback if no other fields have data
+        $string = $wrapper->biblio_contributor_name->value();
+      }
+      break;
+  }
   $string = str_replace(' ', '', drupal_strtolower($string));
   return md5($string);
 }
@@ -537,4 +532,88 @@ function biblio_get_contributors($biblio) {
   }
 
   return $contributors;
+}
+
+function biblio_contributor_initial_parse($name) {
+  module_load_include('php', 'biblio', 'lib/msrc-authortool/autoload');
+  spl_autoload_register('adAutoload', true, true);
+
+  $analyzer = new \Analyzer\ContributorNames();
+  $analyzer->setOrgWords(biblio_contributor_org_words());
+  $author_object = $analyzer->analyze($name);
+
+  return $author_object;
+}
+
+function biblio_contributor_org_words() {
+  if ($set_words = variable_get('biblio_organization_words')) {
+    $org_words = explode('|', $set_words);
+    // Remove whitespace from all the words
+    foreach($org_words as $k => $word) {
+      $org_words[$k] = trim($word);
+    }
+  }
+  else {
+    $org_words = array(
+      'Midatlantic',
+      'of',
+      'VA',
+      'study',
+      'trial',
+      'the',
+      'for',
+      'Disorder',
+      'Millennium',
+      'Millenium',
+      'Cohort',
+      'Organization',
+      'Org',
+      'Division',
+      'Center',
+      'Centers',
+      'Health',
+      'Group',
+      'Team',
+      'Agency',
+      'Trust',
+      'Prevention',
+      'Survey',
+      'Grp',
+      'Force',
+      'Inst',
+      'Institute',
+      'Office',
+      'Consortium',
+      'STATA',
+    );
+  }
+
+  return $org_words;
+}
+
+function biblio_contributor_set_parsed_values(&$contributor, $parsed_contributor) {
+  $mapping = array(
+     'firstName'           => 'biblio_contributor_first_name',
+     'lastName'            => 'biblio_contributor_last_name',
+     'middleName'          => 'biblio_contributor_middle_name',
+     'firstInitial'        => 'biblio_contributor_first_init',
+     'middleInitial'       => 'biblio_contributor_mid_init',
+     'secondMiddleInitial' => 'biblio_contributor_mid_init2',
+     'organization'        => 'biblio_contributor_name',
+     'lastNamePrefix'      => 'biblio_contributor_prefix',
+     'suffix'              => 'biblio_contributor_suffix',
+  );
+
+  $wrapper = biblio_wrapper($contributor, 'biblio_contributor');
+
+  if (isset($contributor->orig_name)) {
+    $wrapper->biblio_contributor_name = $contributor->orig_name;
+    unset($contributor->orig_name);
+  }
+
+  foreach ($mapping as $property => $field) {
+    if (isset($parsed_contributor->{$property})) {
+      $wrapper->{$field} = $parsed_contributor->{$property};
+    }
+  }
 }

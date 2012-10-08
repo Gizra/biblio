@@ -3037,16 +3037,17 @@ function biblio_create_contributor_refs(&$form_state) {
       continue;
     }
 
-    $contrib['cid'] = biblio_contributor_exists($contrib['name']);
-    if (!$contrib['cid']) {
+    $contributor = biblio_get_contributor_by_name($contrib['name']);
+    if (!$contributor) {
       // Name not found in db. Contributor entity needs to be created
-      $contributor = entity_create('biblio_contributor', array('type'=>'person'));
+      $contributor = biblio_contributor_create($contrib['name']);
       $wrapper = biblio_wrapper($contributor, 'biblio_contributor');
       $wrapper->biblio_contributor_name->set($contrib['name']);
       // Save the contributor entity so we can get a CID
       biblio_contributor_save($contributor);
-      $contrib['cid'] = $contributor->cid;
     }
+
+    $contrib['cid'] = $contributor->cid;
 
     // Get the field associated with the contributor's category
     $field = $categories[$contrib['category']]['field'];
@@ -3060,23 +3061,30 @@ function biblio_create_contributor_refs(&$form_state) {
   }
 }
 
-function biblio_contributor_exists($name) {
+// function biblio_contributor_exists($name) {
+function biblio_get_contributor_by_name($name) {
+  $contributors = &drupal_static(__FUNCTION__);
+  if (isset($contributors[$name])) {
+    return $contributors[$name];
+  }
+
   // Query field data to find out if contributor name already exists
-    $query = new EntityFieldQuery;
-    $result = $query
-      ->entityCondition('entity_type', 'biblio_contributor')
-      ->fieldCondition('biblio_contributor_name', 'value', $name)
-      ->execute();
-    if (!empty($result)) {
-      // Contributor already exists. We just need the CID.
-      foreach($result['biblio_contributor'] as $cid => $data) {
-        // only need first result
-        return $cid;
-      }
+  $query = new EntityFieldQuery;
+  $result = $query
+    ->entityCondition('entity_type', 'biblio_contributor')
+    ->fieldCondition('biblio_contributor_name', 'value', $name)
+    ->execute();
+  if (!empty($result)) {
+    // Contributor already exists. We just need the CID.
+    foreach($result['biblio_contributor'] as $cid => $data) {
+      // only need first result
+      $contributors[$name] = biblio_contributor_load($cid);
+      return $contributors[$name];
     }
-    else {
-      return FALSE;
-    }
+  }
+  else {
+    return FALSE;
+  }
 }
 
 /**
@@ -3271,8 +3279,26 @@ function biblio_form_delete_submit($form, &$form_state) {
  * @param  array $values an array of properties to set upon creation
  * @return object  The Contributor object
  */
-function biblio_contributor_create($values) {
-  return entity_create('biblio_contributor', $values);
+function biblio_contributor_create($name = NULL, $type = NULL, $values = array()) {
+  if (variable_get('biblio_contributor_parser', 1) && isset($name)) {
+    module_load_include('inc', 'biblio', 'includes/biblio.contributors');
+    $parsed_contributor = biblio_contributor_initial_parse($name);
+    if (isset($parsed_contributor->organization)) {
+      $values['type'] = 'organization';
+    }
+    else {
+      $values['type'] = 'person';
+    }
+    $contributor = entity_create('biblio_contributor', $values);
+    $contributor->orig_name = $name;
+    biblio_contributor_set_parsed_values($contributor, $parsed_contributor);
+  }
+  else {
+    $values['type'] = $type;
+    $contributor = entity_create('biblio_contributor', $values);
+  }
+
+  return $contributor;
 }
 
 /**
@@ -3692,6 +3718,31 @@ function biblio_entity_property_info_alter(&$info) {
     'setter callback' => 'entity_property_verbatim_set',
     'setter permission' => 'edit all biblio entries',
     'schema field' => 'biblio_sort_title',
+  );
+
+  $properties = &$info['biblio_contributor']['properties'];
+  $properties['created'] = array(
+    'label' => t("Date created"),
+    'type' => 'date',
+    'description' => t("The date the contribtuor was added."),
+    'setter callback' => 'entity_property_verbatim_set',
+    'setter permission' => 'edit all biblio entries',
+    'schema field' => 'created',
+  );
+  $properties['changed'] = array(
+    'label' => t("Date changed"),
+    'type' => 'date',
+    'description' => t("The date the contributor was most recently changed/edited."),
+    'setter callback' => 'entity_property_verbatim_set',
+    'setter permission' => 'edit all biblio entries',
+    'schema field' => 'changed',
+  );
+  $properties['md5'] = array(
+    'label' => t("MD5"),
+    'description' => t("MD5 of the contributor. Used for resolving duplicates"),
+    'setter callback' => 'entity_property_verbatim_set',
+    'setter permission' => 'edit all biblio entries',
+    'schema field' => 'md5',
   );
 }
 
