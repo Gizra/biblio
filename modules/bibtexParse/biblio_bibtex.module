@@ -294,7 +294,7 @@ function _biblio_bibtex_import($entries, $terms = array(), $batch = FALSE, $sess
     $wrapper->biblio_edition         = (!empty($entry['edition'])) ? $entry['edition'] : NULL;
     $wrapper->biblio_section         = (!empty($entry['chapter'])) ? $entry['chapter'] : NULL;
     $wrapper->biblio_place_published = (!empty($entry['address'])) ? $entry['address'] : NULL;
-    $wrapper->biblio_abst_e          = (!empty($entry['abstract'])) ? $entry['abstract'] : NULL;
+    $wrapper->biblio_abst_e          = (!empty($entry['abstract'])) ? array('value' => $entry['abstract']) : NULL;
     if (!empty($entry['keywords'])) {
       if (strpos($entry['keywords'], ';')) {
         $entry['keywords'] = str_replace(';', ',', $entry['keywords']);

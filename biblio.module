@@ -3052,12 +3052,23 @@ function biblio_create_contributor_refs(&$form_state) {
     // Get the field associated with the contributor's category
     $field = $categories[$contrib['category']]['field'];
 
+    // Whether or not the CID already exists for this biblio in the same
+    // contributor category (handles duplicate contributors in the same biblio)
+    $id_exists = FALSE;
+    foreach ($form_state['values'][$field]['und'] as $delta => $info) {
+      if ($info['target_id'] == $contributor->cid) {
+        $id_exists = TRUE;
+      }
+    }
+
     // Add the target CID and rank to the form values array, as if a user
     // had submitted these values
-    $form_state['values'][$field]['und'][] = array(
-      'target_id' => (string)$contrib['cid'],
-      '_weight' => $contrib['rank'],
-    );
+    if (!$id_exists) {
+      $form_state['values'][$field]['und'][] = array(
+        'target_id' => (string)$contrib['cid'],
+        '_weight' => $contrib['rank'],
+      );
+    }
   }
 }
 
@@ -3276,8 +3287,16 @@ function biblio_form_delete_submit($form, &$form_state) {
 
 /**
  * Create a contributor entity object
- * @param  array $values an array of properties to set upon creation
- * @return object  The Contributor object
+ * @param  string $name   (optional) The name of the contributor. If given, this
+ *                        function will parse out the author name and
+ *                        automatically fill in any associated fields (first
+ *                        name, last name, initials, etc.) and the type
+ * @param  string $type   (optional) The contributor type (bundle) of the
+ *                        contributor entity to create. ex: 'person' or
+ *                        'organization'. Leave null to let this function parse
+ *                        the name (if passed in) and auto-generate the type.
+ * @param  array  $values (optional)
+ * @return object         The contributor entity object
  */
 function biblio_contributor_create($name = NULL, $type = NULL, $values = array()) {
   module_load_include('inc', 'biblio', 'includes/biblio.contributors');
