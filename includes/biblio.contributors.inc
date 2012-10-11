@@ -542,6 +542,14 @@ function biblio_contributor_initial_parse($name) {
   $analyzer->setOrgWords(biblio_contributor_org_words());
   $author_object = $analyzer->analyze($name);
 
+  // Author tool sometimes returns unknown characters. If that's the case,
+  // convert it to UTF-8
+  foreach ($author_object as $property => $value) {
+    if (!mb_check_encoding($value)) {
+      $author_object->$property = utf8_encode($value);
+    }
+  }
+
   return $author_object;
 }
 
