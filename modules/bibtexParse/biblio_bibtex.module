@@ -280,7 +280,7 @@ function _biblio_bibtex_import($entries, $terms = array(), $batch = FALSE, $sess
     }
     $wrapper->biblio_volume          = (!empty($entry['volume'])) ? $entry['volume'] : NULL;
     $wrapper->biblio_number          = (!empty($entry['number'])) ? $entry['number'] : NULL;
-    $wrapper->biblio_year            = (!empty($entry['year'])) ? $entry['year'] : NULL;
+    $wrapper->biblio_year            = (!empty($entry['year'])) ? $entry['year'] : 0;
     $wrapper->biblio_notes           = (!empty($entry['note'])) ? $entry['note'] : NULL;
     $wrapper->biblio_date            = (!empty($entry['month'])) ? $entry['month'] : NULL;
     $wrapper->biblio_pages           = (!empty($entry['pages'])) ? $entry['pages'] : NULL;
