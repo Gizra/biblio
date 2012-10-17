@@ -700,8 +700,8 @@ function biblio_create_imported_contributors(&$biblio) {
       $wrapper = biblio_wrapper($contributor, 'biblio_contributor');
       $wrapper->biblio_contributor_name->set($contributor_data['name']);
       biblio_contributor_save($contributor);
-      $cid = $contributor->cid;
     }
+    $cid = $contributor->cid;
     // Add the CID to the list of contributors, in case we need it later
     $biblio->biblio_contributors[$delta]['cid'] = $cid;
     foreach ($categories as $category => $info) {
