@@ -2914,9 +2914,7 @@ function biblio_save($biblio) {
 
   _biblio_prepare_submit($biblio);
 
-  if (empty($biblio->changed)) {
-    $biblio->changed = REQUEST_TIME;
-  }
+  $biblio->changed = REQUEST_TIME;
 
   // @todo: get md5 working. See http://drupal.org/node/1537364
 //  $duplicate = biblio_hash($biblio);
@@ -3004,8 +3002,8 @@ function biblio_form_submit($form, &$form_state) {
 
   // Notify field widgets.
   field_attach_submit('biblio', $biblio, $form, $form_state);
-  // Save the biblio.
 
+  // Save the biblio.
   biblio_save($biblio);
 
   // Notify the user.
