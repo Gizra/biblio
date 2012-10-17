@@ -2874,7 +2874,8 @@ function biblio_create($publication_type, $values = array()) {
  *   A fully-populated node object.
  */
 function biblio_load($bid, $reset = FALSE) {
-  $biblio = reset(biblio_load_multiple(array($bid), array(), $reset));
+  $biblios = biblio_load_multiple(array($bid), array(), $reset);
+  $biblio = reset($biblios);
 
   return $biblio;
 }
