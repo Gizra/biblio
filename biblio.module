@@ -3030,7 +3030,11 @@ function biblio_create_contributor_refs(&$form_state) {
     $form_state['values'][$info['field']]['und'] = array();
   }
 
+  $delta = 0;
   foreach ($form_state['values']['biblio_contributors'] as $contrib) {
+    if ($contrib['rank'] == '') $contrib['rank'] = $delta;
+    $delta++;
+
     // Don't process fields left blank
     if (empty($contrib['name']) || empty($contrib['category'])) {
       continue;
@@ -3054,7 +3058,7 @@ function biblio_create_contributor_refs(&$form_state) {
     // Whether or not the CID already exists for this biblio in the same
     // contributor category (handles duplicate contributors in the same biblio)
     $id_exists = FALSE;
-    foreach ($form_state['values'][$field]['und'] as $delta => $info) {
+    foreach ($form_state['values'][$field]['und'] as $info) {
       if ($info['target_id'] == $contributor->cid) {
         $id_exists = TRUE;
       }
@@ -3063,7 +3067,7 @@ function biblio_create_contributor_refs(&$form_state) {
     // Add the target CID and rank to the form values array, as if a user
     // had submitted these values
     if (!$id_exists) {
-      $form_state['values'][$field]['und'][] = array(
+      $form_state['values'][$field]['und'][$contrib['rank']] = array(
         'target_id' => (string)$contrib['cid'],
         '_weight' => $contrib['rank'],
       );
