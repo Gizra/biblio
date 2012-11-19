@@ -3781,3 +3781,62 @@ function biblio_get_fielded_pubtypes() {
 
   return $pubtypes;
 }
+
+/**
+ * Implements hook_entity_presave().
+ */
+function biblio_entity_presave($entity, $type) {
+  _biblio_truncate_long_fields($entity, $type);
+}
+
+/**
+ * Truncates field values that are longer than the specified field value length.
+ * This is particularly useful when importing biblio entities.
+ *
+ * @param  object $entity
+ * @param  string $type
+ */
+function _biblio_truncate_long_fields($entity, $type) {
+  $valid_entity_types = array('biblio', 'biblio_contributor');
+  if (!in_array($type, $valid_entity_types)) return;
+
+  $wrapper = biblio_wrapper($entity, $type);
+  $entity_info = entity_get_info($type);
+  $fields_info = field_info_fields();
+
+  foreach ($entity as $field => $field_structure) {
+    if (isset($fields_info[$field]) && $value = $wrapper->$field->value()) {
+      $field_settings = $fields_info[$field]['settings'];
+      if (is_string($value) && isset($field_settings['max_length'])) {
+        $max_length = $field_settings['max_length'];
+        $length = strlen($value);
+        if ($length > $max_length) {
+          $wrapper->$field = substr($value, 0, $max_length);
+        }
+      }
+    }
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
