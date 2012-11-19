@@ -478,3 +478,16 @@ function biblio_bibtex_check_md5($md5) {
     return;
   }
 }
+
+/**
+ * Implements hook_entity_load().
+ */
+function biblio_bibtex_entity_load($entities, $type) {
+  if ($type != 'biblio') return;
+
+  foreach ($entities as $entity) {
+    $wrapper = biblio_wrapper($entity, $type);
+    $title = $wrapper->biblio_title->value();
+    $wrapper->biblio_title = biblio_remove_brace($title);
+  }
+}
