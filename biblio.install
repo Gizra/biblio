@@ -39,49 +39,7 @@ function biblio_schema() {
     'primary key' => array('bid'),
     'indexes' => array(
       'bid' => array('bid'),
-  $schema['biblio_types'] = array(
-    'fields' => array(
-      'tid' => array(
-        'type' => 'serial',
-        'not null' => TRUE,
-        'description' => '{biblio_types}.tid of the type',
-      ),
-      'name' => array(
-        'type' => 'varchar',
-        'length' => '64',
-        'not null' => TRUE,
-        'default' => '',
-        'description' => 'The name of the type'
-      ),
-      'description' => array(
-        'type' => 'varchar',
-        'not null' => FALSE,
-        'length' => '255',
-        'description' => 'Description of the type'
-      ),
-      'weight' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-        'default' => 0,
-        'description' => 'Controls the order the types are listed in'
-      ),
-      'visible' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-        'unsigned' => TRUE,
-        'default' => 1,
-        'description' => 'Determines if the type is visible in the list'
-      ),
-      'entity' => array(
-        'type' => 'varchar',
-        'length' => '64',
-        'not null' => TRUE,
-        'default' => ''
-//        'default' => 'biblio',
-//        'description' => 'The entity -biblio or biblio_contributor- that this type/entity bundle belongs to.'
-      ),
     ),
-    'primary key' => array('tid'),
   );
 
   $schema['biblio_contributor'] = array(
@@ -133,47 +91,6 @@ function biblio_schema() {
     ),
   );
 
-  $schema['biblio_contributor_type'] = array(
-    'description' => 'Contains definitions of the contributor types',
-    'fields' => array(
-      'auth_category' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-        'unsigned' => TRUE,
-        'default' => 0,
-        'description' => 'There are 5 catagoies of author: Primary, Secondary, Tertiery, Subsidary and Corporate  ',
-      ),
-      'biblio_type' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-        'unsigned' => TRUE,
-        'default' => 0,
-        'description' => '',
-      ),
-      'auth_type' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-        'unsigned' => TRUE,
-        'default' => 0,
-        'description' => 'This is the pulication type specific verion of a particular catagory',
-      ),
-  ),
-  'foreign keys' => array(
-      'biblio' => array(
-        'table' => 'biblio',
-        'columns' => array('biblio_type' => 'biblio_type'),
-      ),
-      'biblio_contributor_type' => array(
-        'table' => 'biblio_contributor',
-        'columns' => array('auth_type' => 'auth_type'),
-      ),
-    'biblio_contributor_category' => array(
-        'table' => 'biblio_contributor',
-        'columns' => array('auth_category' => 'auth_category'),
-      ),
-    ),
-    'primary key' => array('auth_category', 'biblio_type', 'auth_type'),
-  );
   $schema['biblio_collection'] = array(
     'description' => t('Relational table grouping biblio nodes into collections'),
     'fields' => array(
