@@ -23,7 +23,7 @@ interface BiblioStyleInterface {
    * @return
    *   A an HTML string.
    */
-  public function render($options = array());
+  public function render($options = array(), $langcode = NULL);
 }
 
 /**
@@ -47,7 +47,7 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
   }
 
 
-  public function render($options = array()) {
+  public function render($options = array(), $langcode = NULL) {
     return '';
   }
 }

@@ -8,6 +8,8 @@ if (module_exists('libraries') && file_exists(libraries_get_path('citeproc') . '
     'options' => array(
       // Default values.
       'style' => 'chicago-author-date',
+      // Allow settings the path fow custom CSL styles.
+      'style_path' => FALSE,
     ),
   );
 }
