@@ -195,21 +195,6 @@ function biblio_menu() {
     'type' => MENU_DEFAULT_LOCAL_TASK,
   );
 
-  foreach (biblio_types('biblio') as $type) {
-    $bundle = biblio_bundle_name($type->entity);
-    $type_url_str = str_replace('_', '-', $type->{$bundle});
-    $entity_url_str = str_replace('_', '-', $type->entity);
-    $url = 'admin/structure/biblio/publication-types/' . $type_url_str;
-    $items[$url] = array(
-      'title' => 'Edit ' . $type->name,
-      'title callback' => 'check_plain',
-      'page callback' => 'biblio_field_settings',
-      'file' => '/includes/biblio.admin.inc',
-      'page arguments' => array(4),
-      'access arguments' => array('manage biblio structure'),
-    );
-  }
-
   $items["admin/structure/biblio/contributors"] = array(
     'title' => 'Contributors',
     'description' => 'Manage Biblio Contributor Fields/Display',
@@ -220,21 +205,6 @@ function biblio_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 1,
   );
-
-  foreach (biblio_types('biblio_contributor') as $type) {
-    $bundle = biblio_bundle_name($type->entity);
-    $type_url_str = str_replace('_', '-', $type->{$bundle});
-    $entity_url_str = str_replace('_', '-', $type->entity);
-    $url = 'admin/structure/biblio/contributors/' . $type_url_str;
-    $items[$url] = array(
-      'title' => 'Edit ' . $type->name,
-      'title callback' => 'check_plain',
-      'page callback' => 'biblio_field_settings',
-      'file' => '/includes/biblio.admin.inc',
-      'page arguments' => array(4),
-      'access arguments' => array('manage biblio structure'),
-    );
-  }
 
   // Biblio Settings
   //----------------------------------------------------------------------------
@@ -628,14 +598,16 @@ function biblio_entity_info() {
     'access callback' => 'biblio_entity_access',
   );
 
-  // Since we have multiple bundles, we will need to tell the Field API what
-  // bundles we have and what paths to put the extra field management interfaces
-  // for our entity. To do that, we define, for each of our bundles, a label
-  // that is shown to the user and the menu information that the Field API will
-  // need to add itself to the menu.
-  $publication_types = biblio_types('biblio');
-  if (!empty($publication_types)){
-    foreach ($publication_types as $type => $info) {
+  // Add bundle info but bypass entity_load() as we cannot use it here.
+  if (db_table_exists('biblio')) {
+    $biblio_types = db_select('biblio', 'b')
+      ->fields('b')
+      ->execute()
+      ->fetchAllAssoc('type');
+  }
+
+  if (!empty($biblio_types)) {
+    foreach ($biblio_types as $type => $info) {
       $return['biblio']['bundles'][$type] = array(
         'label' => $info->name,
         'admin' => array(
@@ -682,20 +654,6 @@ function biblio_entity_info() {
     'access callback' => 'biblio_entity_access',
   );
 
-  $contributor_categories = biblio_types('biblio_contributor');
-  if (!empty($contributor_categories)) {
-    foreach($contributor_categories as $type => $info) {
-      $return['biblio_contributor']['bundles'][$type] = array(
-        'label' => $info->name,
-        'admin' => array(
-          'path' => 'admin/structure/biblio/contributors/%contributor_bundle',
-          'real path' => 'admin/structure/biblio/contributors/' . str_replace('_', '-', $type),
-          'bundle argument' => 4,
-          'access arguments' => array('manage biblio structure'),
-        ),
-      );
-    }
-  }
 
   return $return;
 }
@@ -703,9 +661,12 @@ function biblio_entity_info() {
 /**
  * Gets all publication types that are set up by default.
  * @return type
+ *
+ * @todo: Fix.
  */
 function biblio_types($entity_type = FALSE) {
-    $query = db_select('biblio_types', 'bt')
+  return;
+    $query = db_select('biblio', 'bt')
         ->fields('bt', array('name', 'description', 'entity'));
 
     if ($entity_type) {
