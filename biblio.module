@@ -540,3 +540,204 @@ function biblio_entity_property_info_alter(&$info) {
     'schema field' => 'md5',
   );
 }
+
+/**
+ * Create an biblio field in a bundle.
+ *
+ * @param $field_name
+ *   The field name
+ * @param $entity_type
+ *   The entity type
+ * @param $bundle
+ *   The bundle name.
+ * @param $og_field
+ *   Optional; Array with field definitions, to allow easier overriding by the
+ *   caller. If empty, function will get the field info by calling
+ *   og_fields_info() with the field name.
+ */
+function biblio_create_field($field_name, $entity_type, $bundle, $biblio_field = array()) {
+  if (empty($biblio_field)) {
+    $biblio_field = biblio_fields_info($field_name);
+  }
+
+  $field = field_info_field($field_name);
+  // Allow overriding the field name.
+  $biblio_field['field']['field_name'] = $field_name;
+  if (empty($field)) {
+    field_create_field($biblio_field['field']);
+  }
+
+  $instance = field_info_instance($entity_type, $field_name, $bundle);
+  if (empty($instance)) {
+    $instance = $biblio_field['instance'];
+    $instance += array(
+      'field_name' => $field_name,
+      'bundle' => $bundle,
+      'entity_type' => $entity_type,
+    );
+
+    field_create_instance($instance);
+    entity_property_info_cache_clear();
+  }
+}
+
+
+/**
+ * Get the field info.
+ *
+ * @param $field_name
+ *  The field name.
+ *
+ * @return
+ */
+function biblio_fields_info($field_name = NULL) {
+  $fields = _biblio_fields_info();
+
+  if (!empty($fields)) {
+    return !empty($fields[$field_name]) ?  $fields[$field_name] : FALSE;
+  }
+
+  return $fields;
+}
+
+/**
+ * Biblio fields information.
+ */
+function _biblio_fields_info() {
+  $items['biblio_publication_year'] = array(
+    'type' => array('biblio'),
+    'description' => 'Publication year.',
+    'field' => array(
+      'cardinality' => '1',
+      'entity_types' => array(),
+      'field_name' => 'biblio_publication_year',
+      'module' => 'number',
+      'type' => 'number_integer',
+    ),
+    'instance' => array(
+      'label' => 'Publication year',
+      'description' => 'The year of the publication.',
+      'display_label' => 1,
+      'widget' => array(
+        'active' => 0,
+        'module' => 'number',
+        'settings' => array(),
+        'type' => 'number',
+        'weight' => '2',
+      ),
+      'view modes' => array(
+        'full' => array(
+          'label' => t('Full'),
+          'type' => 'og_group_subscribe',
+          'custom settings' => FALSE,
+        ),
+        'teaser' => array(
+          'label' => t('Teaser'),
+          'type' => 'og_group_subscribe',
+          'custom settings' => FALSE,
+        ),
+      ),
+    ),
+  );
+
+  $items['biblio_publication_abstract'] = array(
+    'type' => array('biblio'),
+    'description' => 'Publication abstract data.',
+    'field' => array(
+      'cardinality' => '1',
+      'entity_types' => array(),
+      'field_name' => 'biblio_publication_abstract',
+      'module' => 'text',
+      'type' => 'text_long',
+    ),
+    'instance' => array(
+      'label' => 'Publication abstract',
+      'description' => 'Holds generic info the biblio.',
+      'widget' => array(
+        'active' => 1,
+        'module' => 'text',
+        'settings' => array(
+          'rows' => '5',
+        ),
+        'type' => 'text_textarea',
+        'weight' => '-1',
+      ),
+    ),
+  );
+
+  $items['biblio_publication_image'] = array(
+    'type' => array('biblio'),
+    'description' => 'Image for the biblio entry.',
+    'field' => array(
+      'cardinality' => '1',
+      'field_name' => 'biblio_publication_image',
+      'locked' => '0',
+      'module' => 'image',
+      'settings' => array(
+        'default_image' => 0,
+        'uri_scheme' => 'public',
+      ),
+      'translatable' => '0',
+      'type' => 'image',
+    ),
+    'instance' => array(
+      'label' => 'The publication image',
+      'description' => 'Image for the biblio',
+      'settings' => array(
+        'alt_field' => 0,
+        'default_image' => 0,
+        'file_directory' => '',
+        'file_extensions' => 'png gif jpg jpeg',
+        'max_filesize' => '',
+        'max_resolution' => '',
+        'min_resolution' => '',
+        'title_field' => 0,
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'image',
+        'settings' => array(
+          'preview_image_style' => 'thumbnail',
+          'progress_indicator' => 'throbber',
+        ),
+        'type' => 'image_image',
+        'weight' => '-2',
+      ),
+    ),
+  );
+
+  $items['biblio_publication_pages'] = array(
+    'type' => array('biblio'),
+    'description' => 'First & last page numbers of the piece. e.g. 23-25.',
+    'field' => array(
+      'cardinality' => '1',
+      'field_name' => 'biblio_publication_pages',
+      'module' => 'text',
+      'settings' => array(
+        'max_length' => '255',
+      ),
+      'translatable' => '0',
+      'type' => 'text',
+    ),
+    'instance' => array(
+      'label' => 'Publication pages',
+      'description' => 'First & last page numbers of the piece. e.g. 23-25',
+      'settings' => array(
+        'text_processing' => '0',
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'text',
+        'settings' => array(
+          'size' => '60',
+        ),
+        'type' => 'text_textfield',
+        'weight' => '-3',
+      ),
+    ),
+  );
+
+  return $items;
+}
