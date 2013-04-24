@@ -23,8 +23,8 @@ class BiblioStyleCiteProc extends BiblioStyleBase {
 
     $csl_file_contents = file_get_contents($file_path);
 
-    return 'Citeproc';
-
+    // @todo: Define CiteProc as library.
+    include_once libraries_get_path('citeproc-php') . '/CiteProc.php';
     $citeproc = new citeproc($csl_file_contents, $langcode);
 
     return 'CiteProc';
