@@ -380,6 +380,19 @@ function contributor_bundle_load($type) {
  * @return object The biblio object, with default values.
  */
 function biblio_create($type, $values = array()) {
+  global $language;
+  if (empty($account)) {
+    global $user;
+    $account = clone $user;
+  }
+  $values['type'] = $type;
+  $values['uid'] = $account->uid;
+  $values += array(
+    'language' => $language->language,
+    'created' => REQUEST_TIME,
+    'changed' => REQUEST_TIME,
+  );
+
   $values['type'] = $type;
   return entity_create('biblio', $values);
 }
