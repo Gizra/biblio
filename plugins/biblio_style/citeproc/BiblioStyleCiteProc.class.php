@@ -11,8 +11,6 @@ class BiblioStyleCiteProc extends BiblioStyleBase {
     global $language;
     $langcode = $langcode ? $langcode : $language->language;
 
-    dpm($this->plugin);
-
     // Make sure the CSL file exists.
     $style_name = $this->plugin['options']['style_name'] . '.csl';
     // @todo: Allow adding more styles in the Library.
