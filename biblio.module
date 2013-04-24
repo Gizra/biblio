@@ -267,7 +267,7 @@ function biblio_entity_info() {
   $return['biblio_contributor'] = array(
     'label' => t('Contributor'),
     'entity class' => 'BiblioContributor',
-    'controller class' => 'BiblioContributorController',
+    'controller class' => 'EntityAPIController',
     'base table' => 'biblio_contributor',
     'fieldable' => TRUE,
     'entity keys' => array(
@@ -408,11 +408,8 @@ function biblio_create($type, $values = array()) {
  * @return
  *   A fully-populated node object.
  */
-function biblio_load($bid, $reset = FALSE) {
-  $biblios = biblio_load_multiple(array($bid), array(), $reset);
-  $biblio = reset($biblios);
-
-  return $biblio;
+function biblio_load($bid) {
+  return entity_load_single('biblio', $bid);
 }
 
 /**
@@ -434,11 +431,8 @@ function biblio_load($bid, $reset = FALSE) {
  * @return
  *   An array of biblio objects indexed by bid.
  */
-function biblio_load_multiple($bids = array(), $conditions = array(), $reset = FALSE) {
-  // entity_load() will create a new instance of biblioController as needed
-  // and call the load() method on it.
-  $biblios = entity_load('biblio', $bids, $conditions, $reset);
-  return $biblios;
+function biblio_load_multiple($bids = array()) {
+  return entity_load('biblio', $bids);
 }
 
 
@@ -456,7 +450,16 @@ function biblio_load_multiple($bids = array(), $conditions = array(), $reset = F
  * @return object         The contributor entity object
  */
 function biblio_contributor_create($name , $type, $values = array()) {
+  global $language;
+
   $values['name'] = $name;
+  $values['type'] = $type;
+  $values += array(
+    'language' => $language->language,
+    'created' => REQUEST_TIME,
+    'changed' => REQUEST_TIME,
+  );
+
   $values['type'] = $type;
   return entity_create('biblio_contributor', $values);
 }
@@ -464,16 +467,15 @@ function biblio_contributor_create($name , $type, $values = array()) {
 /**
  * Load a contributor.
  */
-function biblio_contributor_load($cid, $reset = FALSE) {
-  $contributors = biblio_contributor_load_multiple(array($cid), array(), $reset);
-  return reset($contributors);
+function biblio_contributor_load($cid) {
+  return entity_load_single('biblio_contributor', $cid);
 }
 
 /**
  * Load multiple contributors based on certain conditions.
  */
-function biblio_contributor_load_multiple($cids = array(), $conditions = array(), $reset = FALSE) {
-  return entity_load('biblio_contributor', $cids, $conditions, $reset);
+function biblio_contributor_load_multiple($cids = array()) {
+  return entity_load('biblio_contributor', $cids);
 }
 
 /**
