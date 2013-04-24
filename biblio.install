@@ -81,10 +81,6 @@ function biblio_schema() {
         'table' => 'biblio',
         'columns' => array('bid' => 'bid'),
       ),
-      'biblio_contributor_type' => array(
-        'table' => 'biblio_contributor_type',
-        'columns' => array('auth_type' => 'auth_type'),
-      ),
     ),
     'primary key' => array(
       'cid',

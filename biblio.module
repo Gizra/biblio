@@ -273,7 +273,7 @@ function biblio_entity_info() {
     'entity keys' => array(
       'id' => 'cid',
       'bundle' => 'type',
-      'label' => 'title',
+      'label' => 'name',
     ),
     'bundle keys' => array(
       'bundle' => 'type',
