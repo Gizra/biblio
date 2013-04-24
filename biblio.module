@@ -605,7 +605,7 @@ function biblio_entity_info() {
   $return['biblio'] = array(
     'label' => t('Biblio'),
     'entity class' => 'Biblio',
-    'controller class' => 'BiblioController',
+    'controller class' => 'EntityAPIController',
     'views controller class' => 'EntityDefaultViewsController',
     'base table' => 'biblio',
     'fieldable' => TRUE,
@@ -616,23 +616,9 @@ function biblio_entity_info() {
     'bundle keys' => array(
       'bundle' => biblio_bundle_name('biblio'),
     ),
-    'static cache' => TRUE,
-    // Will be retrieved using biblio_types()
     'bundles' => array(),
     'load hook' => 'biblio_load',
-    // @todo: implement biblio node view modes. See http://drupal.org/node/1537320
-    'view modes' => array(
-      'full' => array(
-        'label' => t('Full Content'),
-        // Indicates whether or not the Field UI should allow field formatters to
-        // be configured separately for that view mode by default.
-        'custom settings' => FALSE,
-      ),
-      'teaser' => array(
-        'label' => t('Teaser'),
-        'custom settings' => FALSE,
-      ),
-    ),
+    'view modes' => array(),
     // Entity API label callback that takes a look at our entity class method defaultLabel()
     'label callback' => 'entity_class_label',
     // This is also a standard Entity API callback for uri.
@@ -640,11 +626,8 @@ function biblio_entity_info() {
     'uri callback' => 'entity_class_uri',
     'module' => 'biblio',
     'access callback' => 'biblio_entity_access',
-//    'admin ui' => array(
-//      'path' => 'admin/structure/biblio',
-//      'file' => 'biblio.module',
-//    ),
   );
+
   // Since we have multiple bundles, we will need to tell the Field API what
   // bundles we have and what paths to put the extra field management interfaces
   // for our entity. To do that, we define, for each of our bundles, a label

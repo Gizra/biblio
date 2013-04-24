@@ -41,25 +41,6 @@ function biblio_admin_settings() {
     '#weight' => 0,
     '#description' => ''
   );
-    $form['general']['biblio_rev'] = array(
-    '#markup' => $version,
-
-  );
-  $form['general']['biblio_base'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Base URL'),
-    '#size' => 20,
-    '#default_value' => variable_get('biblio_base', 'biblio'),
-    '#description' => t('This sets the base URL used to access the biblio module (e.g. /biblio ).')
-  );
-  $form['#biblio_base'] = $form['general']['biblio_base']['#default_value'];
-  $form['general']['biblio_base_title'] = array(
-   '#type' => 'textfield',
-    '#title' => t('Biblio page title'),
-    '#size' => 20,
-    '#default_value' => variable_get('biblio_base_title', 'Biblio'),
-    '#description' => t('The page title shown on the base URL.')
-  );
 
   $form['general']['biblio_rowsperpage'] = array(
     '#type' => 'textfield',
