@@ -18,12 +18,12 @@ interface BiblioStyleInterface {
   public function __construct($plugin, Biblio $biblio);
 
   /**
-   * Render the Biblio according to the style.
+   * Render the Biblio according to the style plugin.
    *
    * @return
    *   A an HTML string.
    */
-  public function render();
+  public function render($options = array());
 }
 
 /**
@@ -47,7 +47,7 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
   }
 
 
-  public function render() {
+  public function render($options = array()) {
     return '';
   }
 }
