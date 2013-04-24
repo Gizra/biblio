@@ -556,6 +556,80 @@ function biblio_hide_form_fields(&$form, &$form_state) {
   }
 }
 
+
+/**
+ * Implements hook_ctools_plugin_api().
+ */
+function biblio_ctools_plugin_api($module, $api) {
+  if ($module == 'biblio' && $api == 'biblio_style') {
+    return array('version' => 1);
+  }
+}
+
+/**
+ * Implements hook_ctools_plugin_type().
+ */
+function biblio_ctools_plugin_type() {
+  $plugins['biblio_style'] = array(
+    'classes' => array('class'),
+    'process' => 'biblio_plugin_process',
+  );
+  return $plugins;
+}
+
+
+/**
+ * Add defaults values to the notifier plugins.
+ *
+ * - 'description': The description of the plugin.
+ */
+function biblio_plugin_process(&$plugin, $info) {
+  $plugin += array(
+    'description' => '',
+    'options' => array(),
+  );
+}
+
+/**
+ * Implements hook_ctools_plugin_directory().
+ */
+function biblio_ctools_plugin_directory($module, $plugin) {
+  if ($module == 'biblio') {
+    return 'plugins/' . $plugin;
+  }
+}
+
+/**
+ * Helper function to include CTools plugins and get a notifier plguin.
+ *
+ * @param $plugin_name
+ *   The plugin that should be laoded.
+ */
+function biblio_get_biblio_style($style_name) {
+  ctools_include('plugins');
+  return ctools_get_plugins('biblio', 'biblio_style', $style_name);
+}
+
+/**
+ * Helper function to include CTools plugins and get all notifier plugins.
+ */
+function biblio_get_biblio_styles() {
+  ctools_include('plugins');
+  return ctools_get_plugins('biblio', 'biblio_style');
+}
+
+/**
+ * Helper function to return all notifiers as options for a select list.
+ */
+function biblio_get_notifiers_as_options() {
+  $options = array();
+  foreach (biblio_get_biblio_styles() as $style_name => $style) {
+    $options[$style_name] = check_plain($style['title']);
+  }
+
+  return $options;
+}
+
 /**
  * Implements hook_views_api().
  */
@@ -778,7 +852,8 @@ function biblio_entities() {
 
 /**
  * Create a biblio entity object
- * @param string $publication_type
+ *
+ * @param $type
  *  The publication type of the biblio to be created (bundle)
  * @param array $values
  *  An associative array of any additional values to be set when creating this
@@ -786,7 +861,9 @@ function biblio_entities() {
  *  Example: $values['language'] => 'en';
  * @return object The biblio object, with default values.
  */
-function biblio_create($publication_type, $values = array()) {
+function biblio_create($type, $values = array()) {
+  $values['type'] = $type;
+  return entity_create('biblio', $values);
 }
 
 /**

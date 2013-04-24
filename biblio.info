@@ -9,6 +9,9 @@ dependencies[] = list
 package = Biblio
 
 configure = admin/config/content/biblio
+
+files[] = plugins/biblio_style/abstract.inc
+
 files[] = tests/biblio.test
 files[] = tests/keyword.test
 files[] = tests/contributor.test
