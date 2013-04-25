@@ -361,6 +361,7 @@ function biblio_entity_access($op, $type = NULL, $account = NULL) {
 }
 
 function biblio_bundle_load($type) {
+  return;
   return biblio_combined_bundle_load($type);
 }
 
@@ -581,7 +582,6 @@ function biblio_create_field($field_name, $entity_type, $bundle, $biblio_field =
   }
 }
 
-
 /**
  * Get the field info.
  *
@@ -589,21 +589,43 @@ function biblio_create_field($field_name, $entity_type, $bundle, $biblio_field =
  *  The field name.
  *
  * @return
+ *   An array with the field and instance definitions, or FALSE if not found.
  */
 function biblio_fields_info($field_name = NULL) {
-  $fields = _biblio_fields_info();
+  $return = &drupal_static(__FUNCTION__, array());
 
-  if (!empty($fields)) {
-    return !empty($fields[$field_name]) ?  $fields[$field_name] : FALSE;
+  if (empty($return)) {
+    foreach (module_implements('biblio_fields_info') as $module) {
+      if ($fields = module_invoke($module, 'biblio_fields_info')) {
+        foreach ($fields as $key => $field) {
+          // Add default values.
+          $field += array(
+            'entity type' => array(),
+            'multiple' => FALSE,
+            'description' => '',
+          );
+
+          // Add the module information.
+          $return[$key] = array_merge($field, array('module' => $module));
+        }
+      }
+    }
+
+    // Allow other modules to alter the field info.
+    drupal_alter('biblio_fields_info', $return);
   }
 
-  return $fields;
+  if (!empty($field_name)) {
+    return !empty($return[$field_name]) ?  $return[$field_name] : FALSE;
+  }
+
+  return $return;
 }
 
 /**
- * Biblio fields information.
+ * Implements hook_biblio_fields_info().
  */
-function _biblio_fields_info() {
+function biblio_biblio_fields_info() {
   $items['biblio_publication_year'] = array(
     'type' => array('biblio'),
     'description' => 'Publication year.',
@@ -815,27 +837,33 @@ function _biblio_fields_info() {
     'field' => array(
       'cardinality' => '1',
       'field_name' => 'biblio_contributor_roles',
-      'foreign keys' => array(),
-      'module' => 'list',
+      'module' => 'entityreference',
       'settings' => array(
-        'allowed_values' => array(
-          'author' => 'Author',
-          'editor' => 'Editor',
+        'handler' => 'base',
+        'handler_settings' => array(
+          'sort' => array(
+            'type' => 'none',
+          ),
+          'target_bundles' => array(
+            'biblio_roles' => 'biblio_roles',
+          ),
         ),
-        'allowed_values_function' => '',
+        'target_type' => 'taxonomy_term',
       ),
-      'type' => 'list_text',
+      'translatable' => '0',
+      'type' => 'entityreference',
     ),
     'instance' => array(
-      'label' => 'Contributor roles',
+      'label' => 'biblio',
       'required' => 0,
-      'settings' => array(
-        'user_register_form' => FALSE,
-      ),
       'widget' => array(
         'active' => 1,
-        'module' => 'options',
-        'settings' => array(),
+        'module' => 'entityreference',
+        'settings' => array(
+          'match_operator' => 'CONTAINS',
+          'path' => '',
+          'size' => '60',
+        ),
         'type' => 'options_select',
         'weight' => '2',
       ),
