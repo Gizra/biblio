@@ -38,6 +38,13 @@ function biblio_schema() {
         'description' => '',
         'unsigned' => TRUE,
       ),
+      'title' => array(
+        'description' => 'The title of this Biblio, always treated as non-markup plain text.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
       'type' => array(
         'description' => 'The publication type of the biblio',
         'type' => 'varchar',

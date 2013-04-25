@@ -222,6 +222,7 @@ function biblio_entity_info() {
     'entity keys' => array(
       'id' => 'bid',
       'bundle' => 'type',
+      'label' => 'title',
     ),
     'bundle keys' => array(
       'bundle' => 'type',
