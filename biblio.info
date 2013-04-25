@@ -1,11 +1,13 @@
 name = Biblio
 description = Maintains bibliographic lists.
 core = 7.x
-dependencies[] = taxonomy
+
 dependencies[] = entity
 dependencies[] = entityreference
-dependencies[] = text
+dependencies[] = field_collection
 dependencies[] = list
+dependencies[] = taxonomy
+dependencies[] = text
 package = Biblio
 
 configure = admin/config/content/biblio

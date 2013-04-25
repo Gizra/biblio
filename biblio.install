@@ -1,4 +1,30 @@
 <?php
+/**
+ * @file
+ * Install file for the biblio module.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function biblio_install() {
+  if (!$vocabulary = taxonomy_vocabulary_machine_name_load('biblio_roles')) {
+    $vocabulary = new stdClass();
+    $vocabulary->name = 'Biblio roles';
+    $vocabulary->machine_name = 'biblio_roles';
+    taxonomy_vocabulary_save($vocabulary);
+  }
+
+  $term = new stdClass();
+  $term->name = "Author";
+  $term->vid = $vocabulary->vid;
+  taxonomy_term_save($term);
+
+  $term = new stdClass();
+  $term->name = "Editor";
+  $term->vid = $vocabulary->vid;
+  taxonomy_term_save($term);
+}
 
 /**
  * Implements hook_schema().
