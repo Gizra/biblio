@@ -627,13 +627,13 @@ function biblio_fields_info($field_name = NULL) {
  * Implements hook_biblio_fields_info().
  */
 function biblio_biblio_fields_info() {
-  $items['biblio_publication_year'] = array(
+  $items['biblio_year'] = array(
     'type' => array('biblio'),
     'description' => 'Publication year.',
     'field' => array(
       'cardinality' => '1',
       'entity_types' => array(),
-      'field_name' => 'biblio_publication_year',
+      'field_name' => 'biblio_year',
       'module' => 'number',
       'type' => 'number_integer',
     ),
@@ -663,13 +663,13 @@ function biblio_biblio_fields_info() {
     ),
   );
 
-  $items['biblio_publication_abstract'] = array(
+  $items['biblio_abstract'] = array(
     'type' => array('biblio'),
     'description' => 'Publication abstract data.',
     'field' => array(
       'cardinality' => '1',
       'entity_types' => array(),
-      'field_name' => 'biblio_publication_abstract',
+      'field_name' => 'biblio_abstract',
       'module' => 'text',
       'type' => 'text_long',
     ),
@@ -688,12 +688,12 @@ function biblio_biblio_fields_info() {
     ),
   );
 
-  $items['biblio_publication_image'] = array(
+  $items['biblio_image'] = array(
     'type' => array('biblio'),
     'description' => 'Image for the biblio entry.',
     'field' => array(
       'cardinality' => '1',
-      'field_name' => 'biblio_publication_image',
+      'field_name' => 'biblio_image',
       'locked' => '0',
       'module' => 'image',
       'settings' => array(
@@ -730,12 +730,12 @@ function biblio_biblio_fields_info() {
     ),
   );
 
-  $items['biblio_publication_pages'] = array(
+  $items['biblio_pages'] = array(
     'type' => array('biblio'),
     'description' => 'First & last page numbers of the piece. e.g. 23-25.',
     'field' => array(
       'cardinality' => '1',
-      'field_name' => 'biblio_publication_pages',
+      'field_name' => 'biblio_pages',
       'module' => 'text',
       'settings' => array(
         'max_length' => '255',
@@ -793,13 +793,13 @@ function biblio_biblio_fields_info() {
     ),
   );
 
-  $items['biblio_contributor_reference'] = array(
+  $items['biblio_contributor'] = array(
     'field' => array(
       'active' => '1',
       'cardinality' => '1',
       'deleted' => '0',
       'entity_types' => array(),
-      'field_name' => 'biblio_contributor_reference',
+      'field_name' => 'biblio_contributor',
       'module' => 'entityreference',
       'settings' => array(
         'handler' => 'base',

@@ -61,7 +61,7 @@ class BiblioStyleCiteProc extends BiblioStyleBase {
         'archive_location' => 'authority',
         'event' => 'event',
         'event-place' => 'event-place',
-        'page' => 'page',
+        'page' => 'biblio_pages',
         'page-first' => 'page',
         'locator' => 'locator',
         'version' => 'version',
