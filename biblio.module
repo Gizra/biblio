@@ -762,10 +762,10 @@ function biblio_biblio_fields_info() {
     ),
   );
 
-  $items['contributor_field_collection'] = array(
+  $items['contributor_collection'] = array(
     'field' => array(
-      'cardinality' => '1',
-      'field_name' => 'contributor_field_collection',
+      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+      'field_name' => 'contributor_collection',
       'foreign keys' => array(),
       'indexes' => array(),
       'locked' => '0',
