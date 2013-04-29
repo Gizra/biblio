@@ -68,7 +68,7 @@ class BiblioStyleCiteProc extends BiblioStyleBase {
           // If the contributor doesn't have given or family name, use the
           // "name"
           if (empty($mapped_contributor->given) && empty($mapped_contributor->family)) {
-            $mapped_contributor->given = $contributor->name;
+            $mapped_contributor->family = $contributor->name;
           }
           $this->mappedBiblio->{$type}[] = $mapped_contributor;
         }
