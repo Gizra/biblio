@@ -227,7 +227,12 @@ function biblio_entity_info() {
     'bundle keys' => array(
       'bundle' => 'type',
     ),
-    'bundles' => array(),
+    // @todo: Remove hardcoding.
+    'bundles' => array(
+      'book' => array(
+        'label' => t('Book'),
+      ),
+    ),
     'load hook' => 'biblio_load',
     'view modes' => array(),
     // Entity API label callback that takes a look at our entity class method defaultLabel()
@@ -280,8 +285,15 @@ function biblio_entity_info() {
       'bundle' => 'type',
     ),
     // @todo: possibly figure out a better bundle name and/or figure out what
-    // bundles we can have for contributors
-    'bundles' => array(),
+    // @todo: Remove hardcoding.
+    'bundles' => array(
+      'author' => array(
+        'label' => t('Author'),
+      ),
+      'editor' => array(
+        'label' => t('Editor'),
+      ),
+    ),
     'load hook' => 'biblio_contributor_load',
     'view modes' => array(
       'full' => array(
@@ -766,29 +778,22 @@ function biblio_biblio_fields_info() {
     'field' => array(
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
       'field_name' => 'contributor_collection',
-      'foreign keys' => array(),
-      'indexes' => array(),
-      'locked' => '0',
-      'module' => 'field_collection',
+      'type' => 'entityreference',
       'settings' => array(
-        'hide_blank_items' => 1,
-        'path' => '',
+        'handler' => 'base',
+        'handler_submit' => 'Change handler',
+        'handler_settings' => array(),
+        'target_type' => 'biblio_contributor',
       ),
-      'translatable' => '0',
-      'type' => 'field_collection',
     ),
     'instance' => array(
-      'label' => 'Field collection',
+      'label' => 'Contributors',
       'required' => 0,
-      'settings' => array(
-        'user_register_form' => FALSE,
-      ),
+      'settings' => array(),
       'widget' => array(
-        'active' => 0,
-        'module' => 'field_collection',
+        'type' => 'entityreference',
+        'module' => 'entityreference',
         'settings' => array(),
-        'type' => 'field_collection_embed',
-        'weight' => 0,
       ),
     ),
   );
