@@ -64,6 +64,12 @@ class BiblioStyleCiteProc extends BiblioStyleBase {
         }
 
         if ($mapped_contributor) {
+          // @todo: Is that correct?
+          // If the contributor doesn't have given or family name, use the
+          // "name"
+          if (empty($mapped_contributor->given) && empty($mapped_contributor->family)) {
+            $mapped_contributor->given = $contributor->name;
+          }
           $this->mappedBiblio->{$type}[] = $mapped_contributor;
         }
       }
