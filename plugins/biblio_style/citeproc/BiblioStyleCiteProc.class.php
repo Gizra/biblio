@@ -49,7 +49,6 @@ class BiblioStyleCiteProc extends BiblioStyleBase {
     // Add contribuots.
     if (isset($wrapper->contributor_collection) && $contributors = $wrapper->contributor_collection->value()) {
       foreach ($contributors as $contributor) {
-        continue;
         $type = $contributor->type;
 
         $mapped_contributor = new stdClass();
