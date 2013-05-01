@@ -38,7 +38,7 @@ class BiblioStyleCiteProc extends BiblioStyleBase {
     $this->mappedBiblio = new stdClass();
     $mapping = $this->getMapping();
     $wrapper = entity_metadata_wrapper('biblio', $this->biblio);
-    foreach ($mapping['biblio']['field'] as $key => $value) {
+    foreach ($mapping['biblio']['text'] as $key => $value) {
       if (!isset($wrapper->{$value})) {
         continue;
       }
@@ -55,7 +55,7 @@ class BiblioStyleCiteProc extends BiblioStyleBase {
         $contributor_wrapper = entity_metadata_wrapper('biblio_contributor', $contributor);
 
         // Map the contributor data.
-        foreach ($mapping['contributor']['field'] as $contributor_key => $contributor_value) {
+        foreach ($mapping['contributor']['text'] as $contributor_key => $contributor_value) {
           if (!isset($wrapper->{$value})) {
             continue;
           }
