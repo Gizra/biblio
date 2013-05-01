@@ -166,8 +166,7 @@ class BiblioStyleCiteProc extends BiblioStyleBase {
       ),
     ),
     'contributor' => array(
-      'field' => array(
-
+      'text' => array(
         'initials' => 'contributor_initials',
         'given' => 'contributor_given',
         'family' => 'contributor_family',
