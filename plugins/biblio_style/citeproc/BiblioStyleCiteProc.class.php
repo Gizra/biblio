@@ -75,13 +75,26 @@ class BiblioStyleCiteProc extends BiblioStyleBase {
       }
     }
 
+    $name = 'publisher-place';
+
+    $this->mappedBiblio->{$name} = 'Haifa';
+
+    $name = 'issued';
+    $sub_name = 'date-parts';
+    $this->mappedBiblio->{$name}->{$sub_name} = array(array('2013', '6'));
+    $this->mappedBiblio->author[] = (object)array('literal' => 'foooo');
+
+
+    dpm($this->mappedBiblio);
+
     return $this->mappedBiblio;
   }
 
   public function getMapping() {
     return array(
       'biblio' => array(
-        'field' => array(
+        'text' => array(
+          // Text variables.
           'title' => 'title',
           'container-title' => 'container-title',
           'collection-title' => 'collection-title',
@@ -125,15 +138,19 @@ class BiblioStyleCiteProc extends BiblioStyleBase {
           'first-reference-note-number' => 'first-reference-note-number',
           'year-suffix' => 'year-suffix',
           'jurisdiction' => 'jurisdiction',
+        ),
 
-          //Date Variables'
+        'date' => array(
+          // Date Variables.
           'issued' => 'issued',
           'event' => 'event',
           'accessed' => 'accessed',
           'container' => 'container',
           'original-date' => 'original-date',
+        ),
 
-          //Name Variables'
+        'name' => array(
+          //Name Variables.
           'author' => 'author',
           'editor' => 'editor',
           'translator' => 'translator',
@@ -147,48 +164,13 @@ class BiblioStyleCiteProc extends BiblioStyleBase {
           'collection-editor' => 'collection-editor',
         ),
       ),
-      'contributor' => array(
-        'field' => array(
-          'initials' => 'contributor_initials',
-          'given' => 'contributor_given',
-          'family' => 'contributor_family',
-        ),
-      ),
-      'type' => array(
-        'article' => 'article',
-        'article-magazine'  => 'article-magazine',
-        'article-newspaper' => 'article-newspaper',
-        'article-journal' => 'article-journal',
-        'bill' => 'bill',
-        'book'  => 'book',
-        'broadcast' => 'broadcast',
-        'chapter' => 'chapter',
-        'entry' => 'entry',
-        'entry-dictionary'  => 'entry-dictionary',
-        'entry-encyclopedia'  => 'entry-encyclopedia',
-        'figure'  => 'figure',
-        'graphic'  => 'graphic',
-        'interview'  => 'interview',
-        'legislation' => 'legislation',
-        'legal_case' => 'legal_case',
-        'manuscript' => 'manuscript',
-        'map' => 'map',
-        'motion_picture' => 'motion_picture',
-        'musical_score'  => 'musical_score',
-        'pamphlet'  => 'pamphlet',
-        'paper-conference' => 'paper-conference',
-        'patent' => 'patent',
-        'post'  => 'post',
-        'post-weblog'  => 'post-weblog',
-        'personal_communication' => 'personal_communication',
-        'report' => 'report',
-        'review'  => 'review',
-        'review-book'  => 'review-book',
-        'song'  => 'song',
-        'speech'  => 'speech',
-        'thesis' => 'thesis',
-        'treaty'  => 'treaty',
-        'webpage' => 'webpage',
+    ),
+    'contributor' => array(
+      'field' => array(
+
+        'initials' => 'contributor_initials',
+        'given' => 'contributor_given',
+        'family' => 'contributor_family',
       ),
     );
   }
