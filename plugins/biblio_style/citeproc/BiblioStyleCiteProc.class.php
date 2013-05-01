@@ -164,12 +164,12 @@ class BiblioStyleCiteProc extends BiblioStyleBase {
           'collection-editor' => 'collection-editor',
         ),
       ),
-    ),
-    'contributor' => array(
-      'text' => array(
-        'initials' => 'contributor_initials',
-        'given' => 'contributor_given',
-        'family' => 'contributor_family',
+      'contributor' => array(
+        'text' => array(
+          'initials' => 'contributor_initials',
+          'given' => 'contributor_given',
+          'family' => 'contributor_family',
+        ),
       ),
     );
   }
