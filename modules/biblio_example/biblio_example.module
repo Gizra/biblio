@@ -35,7 +35,12 @@ function biblio_example_init() {
   $wrapper->biblio_contributor[] = $biblio_contributor2;
 
   $biblio->title= 'TEST CITEPROC';
-  $wrapper->save();
 
-  $wrapper->biblio_cache->set($biblio->getText('os_citeproc', array('style_name' => 'os-chicago-author-date')));
+  $value = array(
+    'value' => $biblio->getText('os_citeproc', array('style_name' => 'os-chicago-author-date')),
+    'format' => 'full_html',
+  );
+
+  $wrapper->biblio_cache->set($value);
+  $wrapper->save();
 }
