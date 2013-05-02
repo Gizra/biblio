@@ -1,0 +1,41 @@
+<?php
+
+
+/**
+ * Implements hook_init().
+ */
+function biblio_example_init() {
+  biblio_create_field('biblio_issued', 'biblio', 'book');
+  biblio_create_field('biblio_abstract', 'biblio', 'book');
+  biblio_create_field('biblio_image', 'biblio', 'book');
+  biblio_create_field('biblio_pages', 'biblio', 'book');
+
+  // Contributors reference.
+  biblio_create_field('biblio_contributor', 'biblio', 'book');
+
+  // Add cache field.
+  biblio_create_field('biblio_cache', 'biblio', 'book');
+
+  $biblio = biblio_create('book');
+  $wrapper = entity_metadata_wrapper('biblio', $biblio);
+
+  $wrapper->biblio_issued->set(time());
+  $wrapper->biblio_abstract->set('This is the abstract!');
+  $wrapper->biblio_pages->set('22-25');
+  $wrapper->biblio_abstract->set('This is the Abstrcat');
+
+  // Add contributor to collection.
+  $biblio_contributor1 = biblio_contributor_create('Amitai', 'author');
+  $biblio_contributor1->save();
+
+  $biblio_contributor2 = biblio_contributor_create('Ferdi', 'editor');
+  $biblio_contributor2->save();
+
+  $wrapper->biblio_contributor[] = $biblio_contributor1;
+  $wrapper->biblio_contributor[] = $biblio_contributor2;
+
+  $biblio->title= 'TEST CITEPROC';
+  $wrapper->save();
+
+  $wrapper->biblio_cache->set($biblio->getText('os_citeproc', array('style_name' => 'os-chicago-author-date')));
+}

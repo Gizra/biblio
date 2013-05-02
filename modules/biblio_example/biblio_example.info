@@ -1,0 +1,9 @@
+name = Biblio Example
+description = Maintains bibliographic lists.
+core = 7.x
+
+dependencies[] = biblio
+dependencies[] = libraries
+package = Biblio
+
+

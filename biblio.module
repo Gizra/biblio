@@ -570,6 +570,32 @@ function biblio_fields_info($field_name = NULL) {
  * Implements hook_biblio_fields_info().
  */
 function biblio_biblio_fields_info() {
+
+  $items['biblio_cache'] = array(
+    'type' => array('biblio'),
+    'description' => 'Publication Cache.',
+    'field' => array(
+      'cardinality' => '1',
+      'entity_types' => array(),
+      'field_name' => 'biblio_cache',
+      'module' => 'text',
+      'type' => 'text_long',
+    ),
+    'instance' => array(
+      'label' => 'Publication Cache',
+      'description' => 'Publication Cache.',
+      'widget' => array(
+        'active' => 1,
+        'module' => 'text',
+        'settings' => array(
+          'rows' => '5',
+        ),
+        'type' => 'text_textarea',
+        'weight' => '-1',
+      ),
+    ),
+  );
+
   $items['biblio_issued'] = array(
     'type' => array('biblio'),
     'description' => 'Publication date.',
