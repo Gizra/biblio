@@ -487,69 +487,6 @@ function biblio_contributor_load_multiple($cids = array()) {
 }
 
 /**
- * Implements hook_entity_property_info_alter().
- */
-function biblio_entity_property_info_alter(&$info) {
-  $properties = &$info['biblio']['properties'];
-  $properties['created'] = array(
-    'label' => t("Date created"),
-    'type' => 'date',
-    'description' => t("The date the biblio was added."),
-    'setter callback' => 'entity_property_verbatim_set',
-    'setter permission' => 'edit all biblio entries',
-    'schema field' => 'created',
-  );
-  $properties['changed'] = array(
-    'label' => t("Date changed"),
-    'type' => 'date',
-    'description' => t("The date the biblio was most recently changed/edited."),
-    'setter callback' => 'entity_property_verbatim_set',
-    'setter permission' => 'edit all biblio entries',
-    'schema field' => 'changed',
-  );
-  $properties['uid'] = array(
-    'label' => t("Author"),
-    'type' => 'user',
-    'description' => t("The creator of the biblio entity."),
-    'setter callback' => 'entity_property_verbatim_set',
-    'setter permission' => 'edit all biblio entries',
-    'required' => TRUE,
-    'schema field' => 'uid',
-  );
-  $properties['biblio_sort_title'] = array(
-    'label' => t("Sort Title"),
-    'setter callback' => 'entity_property_verbatim_set',
-    'setter permission' => 'edit all biblio entries',
-    'schema field' => 'biblio_sort_title',
-  );
-
-  $properties = &$info['biblio_contributor']['properties'];
-  $properties['created'] = array(
-    'label' => t("Date created"),
-    'type' => 'date',
-    'description' => t("The date the contribtuor was added."),
-    'setter callback' => 'entity_property_verbatim_set',
-    'setter permission' => 'edit all biblio entries',
-    'schema field' => 'created',
-  );
-  $properties['changed'] = array(
-    'label' => t("Date changed"),
-    'type' => 'date',
-    'description' => t("The date the contributor was most recently changed/edited."),
-    'setter callback' => 'entity_property_verbatim_set',
-    'setter permission' => 'edit all biblio entries',
-    'schema field' => 'changed',
-  );
-  $properties['md5'] = array(
-    'label' => t("MD5"),
-    'description' => t("MD5 of the contributor. Used for resolving duplicates"),
-    'setter callback' => 'entity_property_verbatim_set',
-    'setter permission' => 'edit all biblio entries',
-    'schema field' => 'md5',
-  );
-}
-
-/**
  * Create an biblio field in a bundle.
  *
  * @param $field_name
@@ -766,7 +703,7 @@ function biblio_biblio_fields_info() {
     ),
   );
 
-  $items['contributor_collection'] = array(
+  $items['biblio_contributor'] = array(
     'field' => array(
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
       'field_name' => 'contributor_collection',
@@ -786,47 +723,6 @@ function biblio_biblio_fields_info() {
         'type' => 'entityreference',
         'module' => 'entityreference',
         'settings' => array(),
-      ),
-    ),
-  );
-
-  $items['biblio_contributor'] = array(
-    'field' => array(
-      'active' => '1',
-      'cardinality' => '1',
-      'deleted' => '0',
-      'entity_types' => array(),
-      'field_name' => 'biblio_contributor',
-      'module' => 'entityreference',
-      'settings' => array(
-        'handler' => 'base',
-        'handler_settings' => array(
-          'sort' => array(
-            'type' => 'none',
-          ),
-          'target_bundles' => array(),
-        ),
-        'target_type' => 'biblio_contributor',
-      ),
-      'translatable' => '0',
-      'type' => 'entityreference',
-    ),
-    'instance' => array(
-      'label' => 'Contributor reference',
-      'required' => 0,
-      'settings' => array(
-        'user_register_form' => FALSE,
-      ),
-      'widget' => array(
-        'active' => 1,
-        'module' => 'entityreference',
-        'settings' => array(
-          'match_operator' => 'CONTAINS',
-          'path' => '',
-          'size' => '60',
-        ),
-        'type' => 'entityreference_autocomplete',
-        'weight' => '1',
       ),
     ),
   );

@@ -85,10 +85,8 @@ class BiblioStyleCiteProc extends BiblioStyleBase {
       $this->mappedBiblio->{$key}->{'date-parts'}[] = $date;
     }
 
-
-
     // Add contributors.
-    if (isset($wrapper->contributor_collection) && $contributors = $wrapper->contributor_collection->value()) {
+    if (isset($wrapper->biblio_contributor) && $contributors = $wrapper->biblio_contributor->value()) {
       foreach ($contributors as $contributor) {
         $type = $contributor->type;
 
@@ -105,9 +103,8 @@ class BiblioStyleCiteProc extends BiblioStyleBase {
         }
 
         if ($mapped_contributor) {
-          // @todo: Is that correct?
           // If the contributor doesn't have given or family name, use the
-          // "name"
+          // "name" property.
           if (empty($mapped_contributor->given) && empty($mapped_contributor->family)) {
             $mapped_contributor->family = $contributor->name;
           }
@@ -115,8 +112,6 @@ class BiblioStyleCiteProc extends BiblioStyleBase {
         }
       }
     }
-
-    dpm($this->mappedBiblio);
 
     return $this->mappedBiblio;
   }
