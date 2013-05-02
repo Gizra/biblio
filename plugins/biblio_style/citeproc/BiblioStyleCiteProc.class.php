@@ -38,15 +38,56 @@ class BiblioStyleCiteProc extends BiblioStyleBase {
     $this->mappedBiblio = new stdClass();
     $mapping = $this->getMapping();
     $wrapper = entity_metadata_wrapper('biblio', $this->biblio);
-    foreach ($mapping['biblio']['text'] as $key => $value) {
-      if (!isset($wrapper->{$value})) {
+
+    // Text variables.
+    foreach ($mapping['biblio']['text'] as $key => $field_name) {
+      if (!isset($wrapper->{$field_name})) {
         continue;
       }
 
-      $this->mappedBiblio->{$key} = $wrapper->{$value}->value();
+      $this->mappedBiblio->{$key} = $wrapper->{$field_name}->value();
     }
 
-    // Add contribuots.
+
+    // Date variables.
+    foreach ($mapping['biblio']['date'] as $key => $field_name) {
+      if (!isset($wrapper->{$field_name})) {
+        continue;
+      }
+
+      $date = array();
+
+      // Check if the field is date field, or text.
+      $field = field_info_field($field_name);
+      if ($field['type'] == 'datestamp') {
+        // Get the date granularity from the field settings.
+        $timestamp = $wrapper->{$field_name}->value();
+
+        $date_info = array(
+          'year' => 'Y',
+          'month' => 'm',
+          'day' => 'd',
+        );
+
+        foreach ($date_info as $granularity => $format) {
+          if (empty($field['settings']['granularity'][$granularity])) {
+            continue;
+          }
+
+          $date[] = date($format, $timestamp);
+        }
+      }
+      else {
+        // Textfield, so grab the value as literal.
+        $date = array($wrapper->{$field_name}->value());
+      }
+
+      $this->mappedBiblio->{$key}->{'date-parts'}[] = $date;
+    }
+
+
+
+    // Add contributors.
     if (isset($wrapper->contributor_collection) && $contributors = $wrapper->contributor_collection->value()) {
       foreach ($contributors as $contributor) {
         $type = $contributor->type;
@@ -55,12 +96,12 @@ class BiblioStyleCiteProc extends BiblioStyleBase {
         $contributor_wrapper = entity_metadata_wrapper('biblio_contributor', $contributor);
 
         // Map the contributor data.
-        foreach ($mapping['contributor']['text'] as $contributor_key => $contributor_value) {
-          if (!isset($wrapper->{$value})) {
+        foreach ($mapping['contributor']['text'] as $key => $field_name) {
+          if (!isset($wrapper->{$field_name})) {
             continue;
           }
 
-          $mapped_contributor = $contributor_wrapper->{$value}->value();
+          $mapped_contributor = $contributor_wrapper->{$field_name}->value();
         }
 
         if ($mapped_contributor) {
@@ -74,16 +115,6 @@ class BiblioStyleCiteProc extends BiblioStyleBase {
         }
       }
     }
-
-    $name = 'publisher-place';
-
-    $this->mappedBiblio->{$name} = 'Haifa';
-
-    $name = 'issued';
-    $sub_name = 'date-parts';
-    $this->mappedBiblio->{$name}->{$sub_name} = array(array('2013', '6'));
-    $this->mappedBiblio->author[] = (object)array('literal' => 'foooo');
-
 
     dpm($this->mappedBiblio);
 
@@ -142,15 +173,15 @@ class BiblioStyleCiteProc extends BiblioStyleBase {
 
         'date' => array(
           // Date Variables.
-          'issued' => 'issued',
+          'issued' => 'biblio_issued',
           'event' => 'event',
           'accessed' => 'accessed',
           'container' => 'container',
           'original-date' => 'original-date',
         ),
 
-        'name' => array(
-          //Name Variables.
+        'contributor' => array(
+          // Contributor Variables.
           'author' => 'author',
           'editor' => 'editor',
           'translator' => 'translator',

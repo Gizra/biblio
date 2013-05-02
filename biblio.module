@@ -244,13 +244,7 @@ function biblio_entity_info() {
     'access callback' => 'biblio_entity_access',
   );
 
-  // Add bundle info but bypass entity_load() as we cannot use it here.
-  if (db_table_exists('biblio')) {
-    $biblio_types = db_select('biblio', 'b')
-      ->fields('b')
-      ->execute()
-      ->fetchAllAssoc('type');
-  }
+  $biblio_types = array();
 
   if (!empty($biblio_types)) {
     foreach ($biblio_types as $type => $info) {
@@ -639,37 +633,35 @@ function biblio_fields_info($field_name = NULL) {
  * Implements hook_biblio_fields_info().
  */
 function biblio_biblio_fields_info() {
-  $items['biblio_year'] = array(
+  $items['biblio_issued'] = array(
     'type' => array('biblio'),
-    'description' => 'Publication year.',
+    'description' => 'Publication date.',
     'field' => array(
       'cardinality' => '1',
       'entity_types' => array(),
-      'field_name' => 'biblio_year',
-      'module' => 'number',
-      'type' => 'number_integer',
+      'field_name' => 'biblio_issued',
+      'module' => 'date',
+      'type' => 'datestamp',
     ),
     'instance' => array(
-      'label' => 'Publication year',
-      'description' => 'The year of the publication.',
+      'label' => 'Issued',
+      'description' => 'Publication date.',
       'display_label' => 1,
       'widget' => array(
         'active' => 0,
-        'module' => 'number',
+        'module' => 'date',
         'settings' => array(),
-        'type' => 'number',
+        'type' => 'date_text',
         'weight' => '2',
       ),
       'view modes' => array(
         'full' => array(
           'label' => t('Full'),
-          'type' => 'og_group_subscribe',
-          'custom settings' => FALSE,
+          'type' => 'date_default',
         ),
         'teaser' => array(
           'label' => t('Teaser'),
-          'type' => 'og_group_subscribe',
-          'custom settings' => FALSE,
+          'type' => 'hidden',
         ),
       ),
     ),
