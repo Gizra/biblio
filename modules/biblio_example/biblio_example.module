@@ -20,9 +20,8 @@ function biblio_example_init() {
   $wrapper = entity_metadata_wrapper('biblio', $biblio);
 
   $wrapper->biblio_issued->set(time());
-  $wrapper->biblio_abstract->set('This is the abstract!');
   $wrapper->biblio_pages->set('22-25');
-  $wrapper->biblio_abstract->set('This is the Abstrcat');
+  $wrapper->biblio_abstract->set('This is the abstract!');
 
   // Add contributor to collection.
   $biblio_contributor1 = biblio_contributor_create('Amitai', 'author');
@@ -40,6 +39,8 @@ function biblio_example_init() {
     'value' => $biblio->getText('os_citeproc', array('style_name' => 'os-chicago-author-date')),
     'format' => 'full_html',
   );
+
+  drupal_set_message($biblio->getText('os_citeproc', array('style_name' => 'os-chicago-author-date')));
 
   $wrapper->biblio_cache->set($value);
   $wrapper->save();

@@ -1,7 +1,0 @@
-name = Biblio - EndNote XML
-description = Provides EndNote XML file import and export to the Biblio module.
-core = 7.x
-package = Biblio
-dependencies[] = biblio
-files[] = endnote_xml_parser.inc
-files[] = views/biblio_handler_field_export_link_xml.inc

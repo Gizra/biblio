@@ -1,4 +1,0 @@
-name = Biblio Fields
-description = Defines various Biblio field types, used for storing additional data in fields, such as vertical tab location.
-package = Biblio
-core = 7.x

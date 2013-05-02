@@ -1,7 +1,0 @@
-name = Biblio - RTF
-description = Provides Rich Text Format file export to the Biblio module.
-core = 7.x
-package = Biblio
-dependencies[] = biblio
-files[] = rtf_export.inc
-files[] = views/biblio_handler_field_export_link_rtf.inc

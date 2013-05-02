@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * This is an example of a Plugin extending CiteProc.
+ */
 if (module_exists('libraries') && file_exists(libraries_get_path('citeproc-php') . '/CiteProc.php')) {
   $plugin = array(
     'title' => t('OS CiteProc'),
