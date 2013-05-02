@@ -1,0 +1,16 @@
+<?php
+
+if (module_exists('libraries') && file_exists(libraries_get_path('citeproc-php') . '/CiteProc.php')) {
+  $plugin = array(
+    'title' => t('OS CiteProc'),
+    'description' => t('OpenScholar CiteProc styles.'),
+    'class' => 'BiblioStyleOsCiteProc',
+    'options' => array(
+      // Default values.
+      'style_name' => 'chicago-author-date',
+      // Allow settings the path to custom CSL styles (should include the .csl
+      // extension).
+      'style_path' => libraries_get_path('citeproc-php') . '/style',
+    ),
+  );
+}
