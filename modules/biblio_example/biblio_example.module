@@ -1,5 +1,13 @@
 <?php
 
+/**
+ * Implements hook_ctools_plugin_directory().
+ */
+function biblio_example_ctools_plugin_directory($module, $plugin) {
+  if ($module == 'biblio') {
+    return 'plugins/' . $plugin;
+  }
+}
 
 /**
  * Implements hook_init().
@@ -33,14 +41,19 @@ function biblio_example_init() {
   $wrapper->biblio_contributor[] = $biblio_contributor1;
   $wrapper->biblio_contributor[] = $biblio_contributor2;
 
-  $biblio->title= 'TEST CITEPROC';
+  $biblio->title= 'Extended CiteProc';
+
+  $get_text = $biblio->getText('example_citeproc', array('style_name' => 'os-chicago-author-date'));
 
   $value = array(
-    'value' => $biblio->getText('os_citeproc', array('style_name' => 'os-chicago-author-date')),
+    'value' => $get_text,
     'format' => 'full_html',
   );
 
-  drupal_set_message($biblio->getText('os_citeproc', array('style_name' => 'os-chicago-author-date')));
+  // Show the CiteProc on the screen.
+  drupal_set_message($get_text);
+
+  // Cache the output, to be used for example with Views.
 
   $wrapper->biblio_cache->set($value);
   $wrapper->save();

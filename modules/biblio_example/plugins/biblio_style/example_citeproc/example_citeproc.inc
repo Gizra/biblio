@@ -5,9 +5,9 @@
  */
 if (module_exists('libraries') && file_exists(libraries_get_path('citeproc-php') . '/CiteProc.php')) {
   $plugin = array(
-    'title' => t('OS CiteProc'),
-    'description' => t('OpenScholar CiteProc styles.'),
-    'class' => 'BiblioStyleOsCiteProc',
+    'title' => t('Example CiteProc'),
+    'description' => t('Example of extending CiteProc styles.'),
+    'class' => 'BiblioStyleExampleCiteProc',
     'options' => array(
       // Default values.
       'style_name' => 'chicago-author-date',
