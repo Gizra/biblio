@@ -2,7 +2,7 @@
 
 /**
  * @file
- * OpenScholar Citeproc biblio style.
+ * Extending Citeproc biblio style example.
  */
 
 class BiblioStyleExampleCiteProc extends BiblioStyleCiteProc {

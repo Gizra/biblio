@@ -13,6 +13,10 @@ function biblio_example_ctools_plugin_directory($module, $plugin) {
  * Implements hook_init().
  */
 function biblio_example_init() {
+  if (!class_exists('BiblioStyleExampleCiteProc')) {
+    drupal_set_message('Clear caches for the Biblio Plugins to be registered.');
+    return;
+  }
   biblio_create_field('biblio_issued', 'biblio', 'book');
   biblio_create_field('biblio_abstract', 'biblio', 'book');
   biblio_create_field('biblio_image', 'biblio', 'book');
