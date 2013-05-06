@@ -24,6 +24,14 @@ class Biblio extends Entity {
     $plugin['options'] = drupal_array_merge_deep($plugin['options'], $options);
 
     $class = ctools_plugin_load_class('biblio', 'biblio_style', $style_name, 'class');
+
+    if (empty($biblio->title_no_url)) {
+      // Convert the title to a URL referencing the bilbio.
+      // @todo: Is this nice or ugly?
+      $url = entity_uri('biblio', $this);
+      $this->title = l($this->title, $url['path'], $url['options']);
+    }
+
     $biblio_style = new $class($plugin, $this);
     return $biblio_style->render();
   }

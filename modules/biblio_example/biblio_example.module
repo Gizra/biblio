@@ -43,16 +43,16 @@ function biblio_example_init() {
   $wrapper->biblio_abstract->set('This is the abstract!');
 
   // Add contributor to collection.
-  $biblio_contributor1 = biblio_contributor_create('Amitai', 'author');
+  $biblio_contributor1 = biblio_contributor_create('King, Gary', 'author');
   $biblio_contributor1->save();
 
-  $biblio_contributor2 = biblio_contributor_create('Ferdi', 'editor');
+  $biblio_contributor2 = biblio_contributor_create('Maya Sen', 'author');
   $biblio_contributor2->save();
 
   $wrapper->biblio_contributor[] = $biblio_contributor1;
   $wrapper->biblio_contributor[] = $biblio_contributor2;
 
-  $biblio->title= 'Extended CiteProc';
+  $biblio->title = 'How Social Science Research Can Improve Teaching.';
 
   $get_text = $biblio->getText('example_citeproc', array('style_name' => 'os-chicago-author-date'));
 
