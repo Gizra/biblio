@@ -57,6 +57,17 @@ class BiblioStyleCiteProc extends BiblioStyleBase {
 
       $date = array();
 
+      // @todo: Add "In press".
+      if (isset($wrapper->biblio_in_press) && $wrapper->biblio_in_press->value()) {
+        // CiteProc currently doesn't support the literal key. So this is
+        // actually ignored, however, this is the "right" way.
+        $this->mappedBiblio->{$key}->literal = 'In press';
+        // This hack is just to make sure the In Press is added.
+        // @todo: Check localization.
+        $this->mappedBiblio->{$key}->{'date-parts'}[] = array('In press');
+        continue;
+      }
+
       // Check if the field is date field, or text.
       $field = field_info_field($field_name);
       if ($field['type'] == 'datestamp') {

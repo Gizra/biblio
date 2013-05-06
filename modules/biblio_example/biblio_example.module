@@ -37,7 +37,8 @@ function biblio_example_init() {
   $biblio = biblio_create('book');
   $wrapper = entity_metadata_wrapper('biblio', $biblio);
 
-  $wrapper->biblio_issued->set(time());
+  // $wrapper->biblio_issued->set(time());
+  $wrapper->biblio_in_press->set(TRUE);
   $wrapper->biblio_pages->set('22-25');
   $wrapper->biblio_abstract->set('This is the abstract!');
 
