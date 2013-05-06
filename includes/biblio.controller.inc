@@ -25,7 +25,7 @@ class Biblio extends Entity {
 
     $class = ctools_plugin_load_class('biblio', 'biblio_style', $style_name, 'class');
 
-    if (empty($biblio->title_no_url)) {
+    if (empty($this->title_no_url)) {
       // Convert the title to a URL referencing the bilbio.
       // @todo: Is this nice or ugly?
       $url = entity_uri('biblio', $this);
