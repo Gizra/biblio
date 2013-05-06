@@ -17,16 +17,22 @@ function biblio_example_init() {
     drupal_set_message('Clear caches for the Biblio Plugins to be registered.');
     return;
   }
-  biblio_create_field('biblio_issued', 'biblio', 'book');
-  biblio_create_field('biblio_abstract', 'biblio', 'book');
-  biblio_create_field('biblio_image', 'biblio', 'book');
-  biblio_create_field('biblio_pages', 'biblio', 'book');
 
-  // Contributors reference.
-  biblio_create_field('biblio_contributor', 'biblio', 'book');
+  $field_names = array(
+    'biblio_abstract',
+    // Contributors reference.
+    'biblio_contributor',
+    // cache field.
+    'biblio_cache',
+    'biblio_image',
+    'biblio_in_press',
+    'biblio_issued',
+    'biblio_pages',
+  );
 
-  // Add cache field.
-  biblio_create_field('biblio_cache', 'biblio', 'book');
+  foreach ($field_names as $field_name) {
+    biblio_create_field($field_name, 'biblio', 'book');
+  }
 
   $biblio = biblio_create('book');
   $wrapper = entity_metadata_wrapper('biblio', $biblio);
