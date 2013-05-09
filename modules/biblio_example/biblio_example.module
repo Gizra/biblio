@@ -54,7 +54,7 @@ function biblio_example_init() {
 
   $biblio->title = 'How Social Science Research Can Improve Teaching.';
 
-  $get_text = $biblio->getText('example_citeproc', array('style_name' => 'os-chicago-author-date'));
+  $get_text = $biblio->getText('example_citeproc', array('style_name' => 'chicago-author-date'));
 
   $value = array(
     'value' => $get_text,
