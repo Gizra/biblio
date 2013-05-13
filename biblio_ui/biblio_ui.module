@@ -48,6 +48,14 @@ function biblio_ui_menu() {
     );
   }
 
+  $items['admin/structure/biblio'] = array(
+    'title' => 'Biblio types',
+    'description' => 'Manage biblio types',
+    'access arguments' => array('administer biblio'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('biblio_ui_manage_bundles'),
+  );
+
   return $items;
 }
 
@@ -69,11 +77,111 @@ function biblio_ui_add_biblio_types() {
  * Form for creating a biblio entry.
  */
 function biblio_ui_manage_biblio($form, &$form_state, $type) {
+  global $user;
+
+  $account = user_load($user->uid);
 
   if (!is_object($type)) {
     $biblio = biblio_create($type);
     $form_state['#entity'] = $biblio;
   }
 
+  $form['title'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Title'),
+    '#required' => TRUE,
+    '#weight' => -10
+  );
+
+  field_attach_form('biblio', $biblio, $form, $form_state);
+
+  $form['additional_settings'] = array(
+    '#type' => 'vertical_tabs',
+    '#weight' => 99,
+  );
+
+  $form['owner'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Authoring information'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#group' => 'additional_settings',
+    '#attributes' => array(
+      'class' => array('biblio-form-owner'),
+    ),
+    '#attached' => array(
+      'js' => array(
+        drupal_get_path('module', 'biblio_ui') . '/js/biblio_ui.js',
+        array(
+          'type' => 'setting',
+          'data' => array('anonymous' => variable_get('anonymous', t('Anonymous'))),
+        ),
+      ),
+    ),
+    '#weight' => 90,
+  );
+
+  $form['owner']['name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Created by'),
+    '#maxlength' => 60,
+    '#autocomplete_path' => 'user/autocomplete',
+    '#default_value' => !empty($biblio->uid) ? user_load($biblio->uid)->name : $account->name,
+    '#weight' => -1,
+    '#description' => t('Leave blank for %anonymous.', array('%anonymous' => variable_get('anonymous', t('Anonymous')))),
+  );
+
+  $form['published'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Published'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#group' => 'additional_settings',
+    '#weight' => 100,
+  );
+
+  $form['published']['created'] = array(
+    '#type' => 'date_popup',
+    '#date_format' => 'Y-m-d G:i',
+    '#title' => t('Start date'),
+    '#default_value' => date('Y-m-d G:i', $biblio->created),
+  );
+
+  $form['actions'] = array(
+    '#type' => 'actions',
+    'submit' => array(
+      '#type' => 'submit',
+      '#value' => t('Send'),
+    ),
+    'cancel' => array(
+      '#markup' => l(t('Cancel'), 'admin/biblio/add'),
+    ),
+  );
+
   return $form;
+}
+
+/**
+ * Validate the submitted biblio.
+ */
+function biblio_ui_manage_biblio_validate($form, &$form_state) {
+  field_attach_form_validate('biblio', $form_state['#entity'], $form, $form_state);
+}
+
+/**
+ * Save the form biblio.
+ */
+function biblio_ui_manage_biblio_submit($form, &$form_state) {
+  $biblio = $form_state['#entity'];
+
+  field_attach_submit('biblio', $biblio, $form, $form_state);
+
+  $biblio->title = $form_state['values']['title'];
+  $biblio->created = strtotime($form_state['values']['created']);
+  $biblio->uid = user_load_by_name($form_state['values']['name'])->uid;
+
+  $biblio->save();
+
+
+  $form_state['redirect'] = 'admin/content/biblio';
 }

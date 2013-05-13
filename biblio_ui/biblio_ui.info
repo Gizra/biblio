@@ -3,5 +3,6 @@ description = Providing UI for the biblio module.
 core = 7.x
 
 dependencies[] = biblio
+dependencies[] = date_popup
 
 package = Biblio

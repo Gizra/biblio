@@ -395,6 +395,7 @@ function biblio_create($type, $values = array()) {
   }
   $values['type'] = $type;
   $values['uid'] = $account->uid;
+  $values['title'] = '';
   $values += array(
     'language' => $language->language,
     'created' => REQUEST_TIME,
