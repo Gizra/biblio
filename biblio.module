@@ -457,7 +457,7 @@ function biblio_load_multiple($bids = array()) {
  * @param  array  $values (optional)
  * @return object         The contributor entity object
  */
-function biblio_contributor_create($name , $type, $values = array()) {
+function biblio_contributor_create($name = array() , $type, $values = array()) {
   global $language;
 
   $values['name'] = $name;
@@ -778,6 +778,71 @@ function biblio_biblio_fields_info() {
         'type' => 'entityreference',
         'module' => 'entityreference',
         'settings' => array(),
+      ),
+    ),
+  );
+
+
+  // Given name.
+  $items['contributor_given'] = array(
+    'type' => array('biblio_contributor'),
+    'description' => 'Contributor given name.',
+    'field' => array(
+      'cardinality' => '1',
+      'field_name' => 'contributor_given',
+      'module' => 'text',
+      'settings' => array(
+        'max_length' => '255',
+      ),
+      'type' => 'text',
+    ),
+    'instance' => array(
+      'label' => 'Given name',
+      'description' => 'Contributor given name.',
+      'settings' => array(
+        'text_processing' => '0',
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'text',
+        'settings' => array(
+          'size' => '60',
+        ),
+        'type' => 'text_textfield',
+        'weight' => '-3',
+      ),
+    ),
+  );
+
+  // Family name.
+  $items['contributor_family'] = array(
+    'type' => array('biblio_contributor'),
+    'description' => 'Contributor family name.',
+    'field' => array(
+      'cardinality' => '1',
+      'field_name' => 'contributor_family',
+      'module' => 'text',
+      'settings' => array(
+        'max_length' => '255',
+      ),
+      'type' => 'text',
+    ),
+    'instance' => array(
+      'label' => 'Given name',
+      'description' => 'Contributor family name.',
+      'settings' => array(
+        'text_processing' => '0',
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'text',
+        'settings' => array(
+          'size' => '60',
+        ),
+        'type' => 'text_textfield',
+        'weight' => '-3',
       ),
     ),
   );

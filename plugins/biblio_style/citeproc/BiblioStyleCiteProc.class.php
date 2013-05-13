@@ -106,19 +106,14 @@ class BiblioStyleCiteProc extends BiblioStyleBase {
 
         // Map the contributor data.
         foreach ($mapping['contributor']['text'] as $key => $field_name) {
-          if (!isset($wrapper->{$field_name})) {
+          if (!isset($contributor_wrapper->{$field_name})) {
             continue;
           }
 
-          $mapped_contributor = $contributor_wrapper->{$field_name}->value();
+          $mapped_contributor->{$key} = $contributor_wrapper->{$field_name}->value();
         }
 
         if ($mapped_contributor) {
-          // If the contributor doesn't have given or family name, use the
-          // "name" property.
-          if (empty($mapped_contributor->given) && empty($mapped_contributor->family)) {
-            $mapped_contributor->family = $contributor->name;
-          }
           $this->mappedBiblio->{$type}[] = $mapped_contributor;
         }
       }

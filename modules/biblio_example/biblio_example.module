@@ -34,6 +34,16 @@ function biblio_example_init() {
     biblio_create_field($field_name, 'biblio', 'book');
   }
 
+  $field_names = array(
+    'contributor_given',
+    'contributor_family',
+  );
+
+  foreach ($field_names as $field_name) {
+    biblio_create_field($field_name, 'biblio_contributor', 'author');
+    biblio_create_field($field_name, 'biblio_contributor', 'editor');
+  }
+
   $biblio = biblio_create('book');
   $wrapper = entity_metadata_wrapper('biblio', $biblio);
 
@@ -43,10 +53,18 @@ function biblio_example_init() {
   $wrapper->biblio_abstract->set('This is the abstract!');
 
   // Add contributor to collection.
-  $biblio_contributor1 = biblio_contributor_create('King, Gary', 'author');
+  $name = array(
+    'given' => 'Gary',
+    'family' => 'King',
+  );
+  $biblio_contributor1 = biblio_contributor_create($name, 'author');
   $biblio_contributor1->save();
 
-  $biblio_contributor2 = biblio_contributor_create('Maya Sen', 'author');
+  $name = array(
+    'given' => 'Maya',
+    'family' => 'Sen',
+  );
+  $biblio_contributor2 = biblio_contributor_create($name, 'author');
   $biblio_contributor2->save();
 
   $wrapper->biblio_contributor[] = $biblio_contributor1;
