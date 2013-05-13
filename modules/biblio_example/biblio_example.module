@@ -28,6 +28,7 @@ function biblio_example_init() {
     'biblio_in_press',
     'biblio_issued',
     'biblio_pages',
+    'biblio_summary_char',
   );
 
   foreach ($field_names as $field_name) {
@@ -85,5 +86,10 @@ function biblio_example_init() {
   // Cache the output, to be used for example with Views.
 
   $wrapper->biblio_cache->set($value);
+
+  $trimmed = trim(strip_tags($get_text));
+
+  // Save the charcter we will later group the pulications by.
+  $wrapper->biblio_summary_char->set($trimmed[0]);
   $wrapper->save();
 }

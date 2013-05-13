@@ -598,8 +598,6 @@ function biblio_biblio_fields_info() {
 
   // Cache.
   $items['biblio_cache'] = array(
-    'type' => array('biblio'),
-    'description' => 'Publication Cache.',
     'field' => array(
       'cardinality' => '1',
       'entity_types' => array(),
@@ -627,8 +625,6 @@ function biblio_biblio_fields_info() {
 
   // Image.
   $items['biblio_image'] = array(
-    'type' => array('biblio'),
-    'description' => 'Image for the biblio entry.',
     'field' => array(
       'cardinality' => '1',
       'field_name' => 'biblio_image',
@@ -670,7 +666,6 @@ function biblio_biblio_fields_info() {
 
   // In press.
   $items['biblio_in_press'] = array(
-    'description' => t('Determine if a publication is in press.'),
     'field' => array(
       'field_name' => 'biblio_in_press',
       'type' => 'list_boolean',
@@ -693,8 +688,6 @@ function biblio_biblio_fields_info() {
 
   // Issued date.
   $items['biblio_issued'] = array(
-    'type' => array('biblio'),
-    'description' => 'Publication date.',
     'field' => array(
       'cardinality' => '1',
       'entity_types' => array(),
@@ -728,8 +721,6 @@ function biblio_biblio_fields_info() {
 
   // Pages.
   $items['biblio_pages'] = array(
-    'type' => array('biblio'),
-    'description' => 'First & last page numbers of the piece. e.g. 23-25.',
     'field' => array(
       'cardinality' => '1',
       'field_name' => 'biblio_pages',
@@ -742,6 +733,37 @@ function biblio_biblio_fields_info() {
     'instance' => array(
       'label' => 'Publication pages',
       'description' => 'First & last page numbers of the piece. e.g. 23-25',
+      'settings' => array(
+        'text_processing' => '0',
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'text',
+        'settings' => array(
+          'size' => '60',
+        ),
+        'type' => 'text_textfield',
+        'weight' => '-3',
+      ),
+    ),
+  );
+
+  // Summary char; can be used to store the character we would like to later
+  // group the publications.
+  $items['biblio_summary_char'] = array(
+    'field' => array(
+      'cardinality' => '1',
+      'field_name' => 'biblio_summary_char',
+      'module' => 'text',
+      'settings' => array(
+        'max_length' => '255',
+      ),
+      'type' => 'text',
+    ),
+    'instance' => array(
+      'label' => 'Publication summary character',
+      'description' => 'Hold the character to later the publications can be grouped by.',
       'settings' => array(
         'text_processing' => '0',
         'user_register_form' => FALSE,
