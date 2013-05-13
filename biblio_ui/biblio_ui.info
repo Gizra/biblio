@@ -1,0 +1,7 @@
+name = Biblio UI
+description = Providing UI for the biblio module.
+core = 7.x
+
+dependencies[] = biblio
+
+package = Biblio

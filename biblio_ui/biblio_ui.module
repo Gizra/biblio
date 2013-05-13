@@ -1,0 +1,27 @@
+<?php
+/**
+ * @file
+ * Main functionality file for the biblio UI module.
+ */
+
+
+/**
+ * Implements hook_menu().
+ */
+function biblio_ui_menu() {
+  $items = array();
+
+  return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function biblio_ui_permission() {
+  return array(
+    'access ui' => array(
+      'title' => t('Foo'),
+      'description' => t('Bar'),
+    ),
+  );
+}
