@@ -40,6 +40,7 @@ function biblio_ui_menu() {
     'title' => 'View',
     'access arguments' => array('view biblio'),
     'page callback' => 'biblio_ui_view_biblio',
+    'page arguments' => array(1),
   );
 
   $items['biblio/%biblio/view'] = array(
@@ -258,8 +259,11 @@ function theme_biblio_ui_add_biblio_list($variables) {
  * Viewing a biblio entity entry.
  */
 function biblio_ui_view_biblio($biblio) {
-  dpm($biblio);
-  return 'a';
+  $wrapper = entity_metadata_wrapper('biblio', $biblio);
+  $info = $wrapper->view();
+  $content = $info['biblio'][$wrapper->getIdentifier()];
+
+  return render($content);
 }
 
 /**
