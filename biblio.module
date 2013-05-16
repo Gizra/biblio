@@ -301,6 +301,18 @@ function biblio_entity_info() {
     'access callback' => 'biblio_entity_access',
   );
 
+  $return = array(
+    'biblio_type' => array(
+      'label' => t('Biblio type'),
+      'controller class' => 'EntityAPIController',
+      'base table' => 'biblio_type',
+      'entity keys' => array(
+        'id' => 'type',
+        'bundle' => 'type',
+        'language' => 'language',
+      ),
+    ),
+  );
 
   return $return;
 }
@@ -348,6 +360,42 @@ function biblio_types($entity_type = FALSE) {
     }
 
   return $types;
+}
+
+/**
+ * Save biblio type.
+ */
+function biblio_type_save($biblio_type) {
+  entity_save('biblio_type', $biblio_type);
+}
+
+/**
+ * Load a single biblio type.
+ */
+function biblio_type_load($biblio_type) {
+  $biblio_types = biblio_type_load_multiple(array($biblio_type));
+  return reset($biblio_types);
+}
+
+/**
+ * Load multiple biblio types.
+ */
+function biblio_type_load_multiple($biblio_types) {
+  return entity_load('biblio_type', $biblio_types);
+}
+
+/**
+ * Delete biblio type.
+ */
+function biblio_type_delete($biblio_type) {
+  biblio_type_delete_multiple(array($biblio_type));
+}
+
+/**
+ * Delete biblio type multiple.
+ */
+function biblio_type_delete_multiple($biblio_types) {
+  entity_delete_multiple('biblio_type', $biblio_types);
 }
 
 /**

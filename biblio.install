@@ -182,5 +182,33 @@ function biblio_schema() {
     ),
   );
 
+  $schema['biblio_type'] = array(
+    'description' => 'Stores information about the biblio types.',
+    'fields' => array(
+      'type' => array(
+        'description' => 'The machine-readable name of this type.',
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+      ),
+      'name' => array(
+        'description' => 'The human-readable name of this type.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'translatable' => TRUE,
+      ),
+      'description' => array(
+        'description' => 'A brief description of this type.',
+        'type' => 'text',
+        'not null' => TRUE,
+        'size' => 'medium',
+        'translatable' => TRUE,
+      ),
+    ),
+    'primary key' => array('type'),
+  );
+
   return $schema;
 }
