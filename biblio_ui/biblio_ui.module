@@ -4,7 +4,6 @@
  * Main functionality file for the biblio UI module.
  */
 
-
 /**
  * Implements hook_menu().
  */
@@ -87,13 +86,20 @@ function biblio_ui_menu() {
     );
   }
 
-
   $items['admin/structure/biblio'] = array(
     'title' => 'Biblio types',
     'description' => 'Manage biblio types',
     'access arguments' => array('administer biblio'),
+    'page callback' => 'biblio_ui_manage_bundles',
+  );
+
+  $items['admin/structure/biblio/add'] = array(
+    'title' => 'Biblio types',
+    'description' => 'Manage biblio types',
+    'access arguments' => array('administer biblio'),
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('biblio_ui_manage_bundles'),
+    'page arguments' => array('biblio_ui_manage_bundles_add'),
+    'type' => MENU_LOCAL_ACTION,
   );
 
   return $items;
@@ -410,3 +416,75 @@ function biblio_ui_delete_biblio_submit($form, &$form_state) {
 
   $form_state['redirect'] = 'admin/content/biblio';
 }
+
+/**
+ * Display list of bundles the user can manage.
+ */
+function biblio_ui_manage_bundles() {
+  return 'a';
+}
+
+/**
+ * Managing bundles - creating bundles(i.e biblio types).
+ */
+function biblio_ui_manage_bundles_add($form, $form_state, $data = '') {
+  if ($data) {
+    $info = biblio_types($data);
+    $name = $info->name;
+    $machine = $info->type;
+    $description = $info->description;
+    $form_state['op'] = 'edit';
+  }
+  else {
+    $name = '';
+    $machine = '';
+    $description = '';
+    $form_state['op'] = 'create';
+  }
+  $form['name'] = array(
+    '#title' => t('Name'),
+    '#type' => 'textfield',
+    '#default_value' => $name,
+    '#description' => t('The human readable name of the biblio type.'),
+    '#required' => TRUE,
+    '#size' => 30,
+  );
+
+  $form['type'] = array(
+    '#type' => 'machine_name',
+    '#default_value' => $machine,
+    '#maxlength' => 32,
+    '#machine_name' => array(
+      'exists' => 'biblio_types',
+    ),
+    '#description' => t('A machine readable name of the biblio type.'),
+  );
+
+  $form['description'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Description'),
+    '#description' => t('A short description about the new biblio type.'),
+    '#required' => TRUE,
+    '#default_value' => $description,
+  );
+
+  $form['actions'] = array(
+    '#type' => 'actions',
+    'submit' => array(
+      '#type' => 'submit',
+      '#value' => t('Save'),
+    ),
+    'cancel' => array(
+      '#markup' => l(t('Cancel'), 'admin/structure/biblio'),
+    ),
+  );
+
+  return $form;
+}
+
+/**
+ * Creating/saving the new biblio type.
+ */
+function biblio_ui_manage_bundles_add_submit($form, $form_state) {
+}
+
