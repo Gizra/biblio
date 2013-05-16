@@ -28,4 +28,11 @@ class Biblio extends Entity {
     $biblio_style = new $class($plugin, $this);
     return $biblio_style->render();
   }
+
+  /**
+   * Build the uri of the biblio.
+   */
+  function uri() {
+    return array('path' => 'biblio/' . $this->identifier());
+  }
 }

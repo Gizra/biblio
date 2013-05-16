@@ -79,6 +79,20 @@ function biblio_ui_menu() {
     'weight' => '70',
   );
 
+  if (module_exists('devel')) {
+    $items['biblio/%biblio/devel'] = array(
+      'title' => 'Devel',
+      'page callback' => 'devel_load_object',
+      'page arguments' => array('biblio', 1),
+      'access arguments' => array('access devel information'),
+      'type' => MENU_LOCAL_TASK,
+      'file' => 'devel.pages.inc',
+      'file path' => drupal_get_path('module', 'devel'),
+      'weight' => 80,
+    );
+  }
+
+
   $items['admin/structure/biblio'] = array(
     'title' => 'Biblio types',
     'description' => 'Manage biblio types',
@@ -97,6 +111,7 @@ function biblio_ui_admin_paths() {
   return array(
     'biblio/*/edit' => TRUE,
     'biblio/*/delete' => TRUE,
+    'biblio/*/devel' => TRUE,
   );
 }
 
@@ -122,7 +137,86 @@ function biblio_ui_description_callback($biblio, $action) {
  * Manage the biblio entries in you site.
  */
 function biblio_ui_manage() {
-  return 'a';
+  // Pager settings.
+  $per_page = 25;
+  $page = !isset($_GET['page']) ? 0 : $_GET['page'];
+
+  // Query.
+  $query = new entityFieldQuery();
+
+  $query
+    ->entityCondition('entity_type', 'biblio')
+    ->propertyOrderBy('changed', 'ASC');
+
+  $total_query = clone $query;
+
+  // Adding the type of the message.
+  if (isset($_GET['type'])) {
+    $query->propertyCondition('type', $_GET['type']);
+  }
+
+  $result = $query
+    ->range($page * $per_page, $per_page)
+    ->execute();
+
+  $rows = array();
+
+  if (empty($result['biblio'])) {
+    $rows = array(
+      'data' => t('No biblio entries were found'),
+      'colspan' => 5,
+    );
+  }
+  else {
+    $biblios = biblio_load_multiple(array_keys($result['biblio']));
+
+    $total_biblio = $total_query
+      ->count()
+      ->execute();
+
+    pager_default_initialize($total_biblio, $per_page);
+
+    foreach ($biblios as $biblio) {
+      $user_uri = entity_uri('user', user_load($biblio->uid));
+      $biblio_uri = entity_uri('biblio', $biblio);
+
+      $links = array();
+      if (user_access('delete biblio')) {
+        $links[] = array( 'title' => t('Delete'), 'href' => 'biblio/' . $biblio->bid . '/delete');
+      }
+      if (user_access('edit biblio')) {
+        $links[] = array( 'title' => t('Edit'), 'href' => 'biblio/' . $biblio->bid . '/edit');
+      }
+      if (module_exists('devel') && user_access('access devel information')) {
+        $links[] = array( 'title' => t('Devel'), 'href' => 'biblio/' . $biblio->bid . '/devel');
+      }
+
+      $rows[] = array(
+        l($biblio->title, $biblio_uri['path']),
+        $biblio->type,
+        l($user_uri['options']['entity']->name, $user_uri['path']),
+        date('Y-m-d H:i', $biblio->created),
+        theme('links', array(
+          'links' => $links,
+          'attributes' => array('class' => array('links', 'inline'))
+        )),
+      );
+    }
+  }
+
+  $header = array(
+    array('data' => t('Title'), 'width' => '20%'),
+    array('data' => t('Type'), 'width' => '20%'),
+    array('data' => t('Author'), 'width' => '20%'),
+    array('data' => t('Published'), 'width' => '20%'),
+    array('data' => t('Options'), 'width' => '20%'),
+  );
+
+  $output = theme('table', array('header' => $header, 'rows' => $rows));
+
+  $output .= theme('pager');
+
+  return $output;
 }
 
 /**
@@ -210,7 +304,7 @@ function biblio_ui_manage_biblio($form, &$form_state, $type) {
 
   $form['published']['created'] = array(
     '#type' => 'textfield',
-    '#date_format' => 'Y-m-d G:i ',
+    '#date_format' => 'Y-m-d G:i',
     '#title' => t('Published time'),
     '#default_value' => date('Y-m-d H:i', $biblio->{$timestamp_property}),
   );
