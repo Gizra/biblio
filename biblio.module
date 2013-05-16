@@ -312,7 +312,11 @@ function biblio_entity_info() {
  * @todo: Fix.
  */
 function biblio_types($entity_type = FALSE) {
-  return;
+  return $types = array(
+    'book' => array(
+      'title' => t('Book'),
+    ),
+  );
     $query = db_select('biblio', 'bt')
         ->fields('bt', array('name', 'description', 'entity'));
 
