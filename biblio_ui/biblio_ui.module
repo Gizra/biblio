@@ -48,6 +48,43 @@ function biblio_ui_menu() {
     );
   }
 
+  $items['biblio/%biblio'] = array(
+    'title' => 'View',
+    'access arguments' => array('view biblio'),
+    'page callback' => 'biblio_ui_view_biblio',
+  );
+
+  $items['biblio/%biblio/view'] = array(
+    'title' => 'View',
+    'access arguments' => array('view biblio'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('biblio_ui_manage_biblio', 1),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => '50',
+  );
+
+  $items['biblio/%biblio/edit'] = array(
+    'title' => 'Edit',
+    'description callback' => 'biblio_ui_description_callback',
+    'description arguments' => array(1, 'edit'),
+    'access arguments' => array('edit biblio'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('biblio_ui_manage_biblio', 1),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => '60',
+  );
+
+  $items['biblio/%biblio/delete'] = array(
+    'title' => 'Delete',
+    'description callback' => 'biblio_ui_description_callback',
+    'description arguments' => array(1, 'delete'),
+    'access arguments' => array('delete biblio'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('biblio_ui_delete_biblio', 1),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => '70',
+  );
+
   $items['admin/structure/biblio'] = array(
     'title' => 'Biblio types',
     'description' => 'Manage biblio types',
@@ -57,6 +94,34 @@ function biblio_ui_menu() {
   );
 
   return $items;
+}
+
+/**
+ * Implements hook_admin_paths().
+ */
+function biblio_ui_admin_paths() {
+  return array(
+    'biblio/*/edit' => TRUE,
+    'biblio/*/delete' => TRUE,
+  );
+}
+
+/**
+ * Generating a description for page when editing or deleting a biblio.
+ *
+ * @param $biblio
+ *  The biblio object.
+ * @param $action
+ *  The action: delete or edit.
+ *
+ * @return
+ *  The title which the page should present.
+ */
+function biblio_ui_description_callback($biblio, $action) {
+  return t('@action @title', array(
+    '@action' => $action == 'edit' ? 'Editing' : 'Deleting',
+    '@title' => $biblio->title,
+  ));
 }
 
 /**
@@ -74,6 +139,13 @@ function biblio_ui_add_biblio_types() {
 }
 
 /**
+ * Viewing a biblio entity entry.
+ */
+function biblio_ui_view_biblio() {
+  return 'a';
+}
+
+/**
  * Form for creating a biblio entry.
  */
 function biblio_ui_manage_biblio($form, &$form_state, $type) {
@@ -81,16 +153,16 @@ function biblio_ui_manage_biblio($form, &$form_state, $type) {
 
   $account = user_load($user->uid);
 
-  if (!is_object($type)) {
-    $biblio = biblio_create($type);
-    $form_state['#entity'] = $biblio;
-  }
+  $biblio = !is_object($type) ? biblio_create($type) :  $type;
+
+  $form_state['#entity'] = $biblio;
 
   $form['title'] = array(
     '#type' => 'textfield',
     '#title' => t('Title'),
     '#required' => TRUE,
-    '#weight' => -10
+    '#weight' => -10,
+    '#default_value' => !empty($biblio->title) ? $biblio->title : '',
   );
 
   field_attach_form('biblio', $biblio, $form, $form_state);
@@ -140,11 +212,13 @@ function biblio_ui_manage_biblio($form, &$form_state, $type) {
     '#weight' => 100,
   );
 
+  $timestamp_property = empty($biblio->is_new) ? 'changed' : 'created';
+
   $form['published']['created'] = array(
-    '#type' => 'date_popup',
-    '#date_format' => 'Y-m-d G:i',
-    '#title' => t('Start date'),
-    '#default_value' => date('Y-m-d G:i', $biblio->created),
+    '#type' => 'textfield',
+    '#date_format' => 'Y-m-d G:i ',
+    '#title' => t('Published time'),
+    '#default_value' => date('Y-m-d H:i', $biblio->{$timestamp_property}),
   );
 
   $form['actions'] = array(
@@ -177,7 +251,10 @@ function biblio_ui_manage_biblio_submit($form, &$form_state) {
   field_attach_submit('biblio', $biblio, $form, $form_state);
 
   $biblio->title = $form_state['values']['title'];
-  $biblio->created = strtotime($form_state['values']['created']);
+
+  $timestamp_property = empty($biblio->is_new) ? 'changed' : 'created';
+
+  $biblio->{$timestamp_property} = strtotime($form_state['values']['created']);
   $biblio->uid = user_load_by_name($form_state['values']['name'])->uid;
 
   $biblio->save();
