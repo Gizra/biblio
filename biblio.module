@@ -315,6 +315,7 @@ function biblio_types($entity_type = FALSE) {
   return $types = array(
     'book' => array(
       'title' => t('Book'),
+      'description' => t('Create a book biblio entry.'),
     ),
   );
     $query = db_select('biblio', 'bt')

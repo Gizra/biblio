@@ -110,6 +110,15 @@ function biblio_ui_admin_paths() {
 }
 
 /**
+ * Implements hook_theme().
+ */
+function biblio_ui_theme() {
+  return array(
+    'biblio_ui_add_biblio_list' => array(),
+  );
+}
+
+/**
  * Generating a description for page when editing or deleting a biblio.
  *
  * @param $biblio
@@ -184,13 +193,13 @@ function biblio_ui_manage() {
 
       $links = array();
       if (user_access('delete biblio')) {
-        $links[] = array( 'title' => t('Delete'), 'href' => 'biblio/' . $biblio->bid . '/delete');
+        $links[] = array('title' => t('Delete'), 'href' => 'biblio/' . $biblio->bid . '/delete');
       }
       if (user_access('edit biblio')) {
-        $links[] = array( 'title' => t('Edit'), 'href' => 'biblio/' . $biblio->bid . '/edit');
+        $links[] = array('title' => t('Edit'), 'href' => 'biblio/' . $biblio->bid . '/edit');
       }
       if (module_exists('devel') && user_access('access devel information')) {
-        $links[] = array( 'title' => t('Devel'), 'href' => 'biblio/' . $biblio->bid . '/devel');
+        $links[] = array('title' => t('Devel'), 'href' => 'biblio/' . $biblio->bid . '/devel');
       }
 
       $rows[] = array(
@@ -216,7 +225,33 @@ function biblio_ui_manage() {
  * Display a list of biblio types for creating an entry.
  */
 function biblio_ui_add_biblio_list() {
-  return l(t('Book'), 'admin/biblio/add/book');
+  $types = biblio_types();
+
+  return theme('biblio_ui_add_biblio_list', array(
+    'types' => $types,
+  ));
+}
+
+/**
+ * Theme callback - display a list of the biblio entry a user can create.
+ */
+function theme_biblio_ui_add_biblio_list($variables) {
+  $types = $variables['types'];
+
+  if ($types) {
+    $output = '<ul class="admin-list">';
+    foreach ($types as $type => $info) {
+      $output .= '<li class="clearfix">';
+      $output .= '<span class="label">' . l($info['title'], 'admin/biblio/add/' . $type) . '</span>';
+      $output .= '<div class="description">' . filter_xss_admin($info['description']) . '</div>';
+      $output .= '</li>';
+    }
+    $output .= '</ul>';
+  }
+  else {
+    $output = '<p>' . t('There is no bilbio types. Go to the <a href="@url">biblio types create page</a> to add a new biblio type.', array('@url' => url('admin/structure/biblio'))) . '</p>';
+  }
+  return $output;
 }
 
 /**
