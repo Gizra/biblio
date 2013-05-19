@@ -94,7 +94,6 @@ function biblio_permission() {
   );
 }
 
-
 /**
  * Removes brace from a string
  *
@@ -227,12 +226,6 @@ function biblio_entity_info() {
     'bundle keys' => array(
       'bundle' => 'type',
     ),
-    // @todo: Remove hardcoding.
-    'bundles' => array(
-      'book' => array(
-        'label' => t('Book'),
-      ),
-    ),
     'load hook' => 'biblio_load',
     'view modes' => array(),
     // Entity API label callback that takes a look at our entity class method defaultLabel()
@@ -244,23 +237,9 @@ function biblio_entity_info() {
     'access callback' => 'biblio_entity_access',
   );
 
-  $biblio_types = array();
-
-  if (!empty($biblio_types)) {
-    foreach ($biblio_types as $type => $info) {
-      $return['biblio']['bundles'][$type] = array(
-        'label' => $info->name,
-        'admin' => array(
-          // defines the path that should be used in hook_menu() for the Fields UI pages
-          'path' => 'admin/structure/biblio/publication-types/%biblio_bundle',
-          // The exact path that should be used when generating links within the admin interface
-          'real path' => 'admin/structure/biblio/publication-types/' . str_replace('_', '-', $type),
-          // menu args are 0 based, so  is the seventh part of the path, which
-          // here is %biblio_bundle.
-          'bundle argument' => 4,
-          'access arguments' => array('manage biblio structure'),
-        ),
-      );
+  if ($bundles = biblio_types()) {
+    foreach ($bundles as $bundle) {
+      $return['biblio']['bundles'][$bundle->type] = $bundle->name;
     }
   }
 
@@ -301,48 +280,76 @@ function biblio_entity_info() {
     'access callback' => 'biblio_entity_access',
   );
 
-
   return $return;
 }
 
 /**
- * Gets all publication types that are set up by default.
- * @return type
+ * Get the bundles of the biblio.
  *
- * @todo: Fix.
+ * @param $type
+ *  Optional; A specific type name.
+ * @return array
+ *  List of biblio types.
  */
-function biblio_types($entity_type = FALSE) {
-  return;
-    $query = db_select('biblio', 'bt')
-        ->fields('bt', array('name', 'description', 'entity'));
+function biblio_types($type = NULL) {
+  $results = db_select('biblio_type')
+    ->fields('biblio_type')
+    ->execute()
+    ->fetchAllAssoc('type');
 
-    if ($entity_type) {
-      $query->condition('entity', $entity_type);
-    }
+  if (!empty($type)) {
+    return isset($results[$type]) ? $results[$type] : array();
+  }
 
-    $result = $query->execute();
+  return $results;
+}
 
-    $entity_type_passed_in = $entity_type;
-    while ($row = $result->fetchAssoc()) {
-      if ($entity_type_passed_in === FALSE) {
-        $entity_type = $row['entity'];
-      }
-      $bundle_name = biblio_bundle_name($entity_type);
-      // computer-friendly version of the human-readable content type stored in the database
-      $machine_name = str_replace(' ', '_', strtolower($row['name']));
+/**
+ * Save biblio type.
+ *
+ * @param $biblio_type
+ *  The values of a biblio type.
+ */
+function biblio_type_save($biblio_type) {
+  // @TODO: When changing the machine name create a batch api that will update
+  // the biblio entries to the new bundle machine name.
+  if (biblio_types($biblio_type->type)) {
+    db_update('biblio_type')
+      ->fields(array(
+        'name' => $biblio_type->name,
+        'description' => $biblio_type->description,
+      )
+    )
+    ->condition('type', $biblio_type->type)
+    ->execute();
+  }
+  else {
+    db_insert('biblio_type')
+      ->fields((array)$biblio_type)
+      ->execute();
+  }
+  drupal_flush_all_caches();
+}
 
-      $types[$machine_name] = (object)array(
-        // type is the machine name of the bundle
-        $bundle_name => $machine_name,
-        'entity' => $row['entity'],
-        // name is the human name of the bundle
-        'name' => t($row['name']),
-        'description' => t($row['description']),
-      );
+/**
+ * Delete a biblio bundle.
+ */
+function biblio_type_delete($type) {
+  $query = new entityFieldQuery();
+  $number = $query
+    ->entityCondition('entity_type', 'biblio')
+    ->propertyCondition('type', $type)
+    ->count()
+    ->execute();
 
-    }
+  if ($number) {
+    throw new Exception(t("You cannot delete the bundle @type because there are biblio entries of this bundle."));
+  }
 
-  return $types;
+  db_delete('biblio_type')
+    ->condition('type', $type)
+    ->execute();
+  drupal_flush_all_caches();
 }
 
 /**
@@ -367,15 +374,6 @@ function biblio_entity_access($op, $type = NULL, $account = NULL) {
   }
 }
 
-function biblio_bundle_load($type) {
-  return;
-  return biblio_combined_bundle_load($type);
-}
-
-function contributor_bundle_load($type) {
-  return biblio_combined_bundle_load($type);
-}
-
 /**
  * Create a biblio entity object
  *
@@ -395,6 +393,7 @@ function biblio_create($type, $values = array()) {
   }
   $values['type'] = $type;
   $values['uid'] = $account->uid;
+  $values['title'] = '';
   $values += array(
     'language' => $language->language,
     'created' => REQUEST_TIME,
