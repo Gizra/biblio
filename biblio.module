@@ -280,17 +280,6 @@ function biblio_entity_info() {
     'access callback' => 'biblio_entity_access',
   );
 
-  $return['biblio_type']= array(
-    'label' => t('Biblio type'),
-    'controller class' => 'EntityAPIController',
-    'base table' => 'biblio_type',
-    'entity keys' => array(
-      'id' => 'type',
-      'bundle' => 'type',
-      'language' => 'language',
-    ),
-  );
-
   return $return;
 }
 

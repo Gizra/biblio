@@ -10,13 +10,6 @@
 function biblio_ui_menu() {
   $items = array();
 
-  $items['admin/biblio'] = array(
-    'title' => 'Biblio',
-    'description' => 'Manage biblio',
-    'access arguments' => array('administer biblio'),
-    'page callback' => 'biblio_ui_manage',
-  );
-
   $items['admin/biblio/add'] = array(
     'title' => 'Add biblio entries',
     'description' => 'Select a biblio type to create an entry for.',
@@ -147,12 +140,7 @@ function biblio_ui_can_delete_bundle($bundle, $account = NULL) {
     ->count()
     ->execute();
 
-  if ($number > 0 || !user_access('manage biblio structure')) {
-    return FALSE;
-  }
-  else {
-    return TRUE;
-  }
+  return !$number && user_access('manage biblio structure');
 }
 
 /**
@@ -198,9 +186,7 @@ function biblio_ui_description_callback($biblio, $action) {
  * Implements hook_entity_info_alter().
  */
 function biblio_ui_entity_info_alter(&$info) {
-  $biblio_types = biblio_types();
-
-  if (empty($biblio_types)) {
+  if (!$biblio_types = biblio_types()) {
     return;
   }
 
@@ -217,88 +203,13 @@ function biblio_ui_entity_info_alter(&$info) {
 }
 
 /**
- * Manage the biblio entries in you site.
+ * Implements hook_views_api().
  */
-function biblio_ui_manage() {
-  // Pager settings.
-  $per_page = 25;
-  $page = !isset($_GET['page']) ? 0 : $_GET['page'];
-
-  // Query.
-  $query = new entityFieldQuery();
-
-  $query
-    ->entityCondition('entity_type', 'biblio')
-    ->propertyOrderBy('changed', 'ASC');
-
-  $total_query = clone $query;
-
-  // Adding the type of the message.
-  if (isset($_GET['type'])) {
-    $query->propertyCondition('type', $_GET['type']);
-  }
-
-  $result = $query
-    ->range($page * $per_page, $per_page)
-    ->execute();
-
-  $header = array(
-    array('data' => t('Title'), 'width' => '20%'),
-    array('data' => t('Type'), 'width' => '20%'),
-    array('data' => t('Author'), 'width' => '20%'),
-    array('data' => t('Published'), 'width' => '20%'),
-    array('data' => t('Options'), 'width' => '20%'),
+function biblio_ui_views_api() {
+  return array(
+    'api' => 3,
+    'path' => drupal_get_path('module', 'biblio_ui') . '/includes',
   );
-
-  if (empty($result['biblio'])) {
-    $rows[] = array(array(
-      'data' => t("It seems you don't have any biblio entries. You can <a href='!link'>add more biblio entries</a>", array(
-        '!link' => url('admin/biblio/add'),
-      )),
-      'colspan' => count($header),
-    ));
-  }
-  else {
-    $biblios = biblio_load_multiple(array_keys($result['biblio']));
-
-    $total_biblio = $total_query
-      ->count()
-      ->execute();
-
-    pager_default_initialize($total_biblio, $per_page);
-
-    foreach ($biblios as $biblio) {
-      $user_uri = entity_uri('user', user_load($biblio->uid));
-      $biblio_uri = entity_uri('biblio', $biblio);
-
-      $links = array();
-      if (user_access('delete biblio')) {
-        $links[] = array('title' => t('Delete'), 'href' => 'biblio/' . $biblio->bid . '/delete');
-      }
-      if (user_access('edit biblio')) {
-        $links[] = array('title' => t('Edit'), 'href' => 'biblio/' . $biblio->bid . '/edit');
-      }
-      if (module_exists('devel') && user_access('access devel information')) {
-        $links[] = array('title' => t('Devel'), 'href' => 'biblio/' . $biblio->bid . '/devel');
-      }
-
-      $rows[] = array(
-        l($biblio->title, $biblio_uri['path']),
-        $biblio->type,
-        l($user_uri['options']['entity']->name, $user_uri['path']),
-        date('Y-m-d H:i', $biblio->created),
-        theme('links', array(
-          'links' => $links,
-          'attributes' => array('class' => array('links', 'inline'))
-        )),
-      );
-    }
-  }
-
-  $output = theme('table', array('header' => $header, 'rows' => $rows));
-  $output .= theme('pager');
-
-  return $output;
 }
 
 /**
