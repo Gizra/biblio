@@ -172,6 +172,7 @@ function biblio_ui_admin_paths() {
 function biblio_ui_theme() {
   return array(
     'biblio_ui_add_biblio_list' => array(),
+    'biblio_ui_bundle_overview' => array(),
   );
 }
 
@@ -493,7 +494,43 @@ function biblio_ui_delete_biblio_submit($form, &$form_state) {
  * Display list of bundles the user can manage.
  */
 function biblio_ui_manage_bundles() {
-  return 'a';
+  $bundles = biblio_types();
+
+  $data = array();
+  foreach ($bundles as $i => $bundle) {
+    $links = array();
+
+    $data[$i] = array(
+      theme('biblio_ui_bundle_overview', array('bundle' => $bundle)),
+      l(t('Edit'), 'admin/structure/biblio/' . $bundle->type),
+      l(t('Manage fields'), 'admin/structure/biblio/' . $bundle->type . '/fields'),
+      l(t('Manage display'), 'admin/structure/biblio/' . $bundle->type . '/display'),
+    );
+
+      $data[$i][] = biblio_ui_can_delete_bundle($bundle->type) ? l(t('Delete'), 'admin/structure/biblio/' . $bundle->type . '/delete') : '';
+  }
+
+  $headers = array(
+    t('Name'),
+    array('data' => t('Operations'), 'colspan' => 5, 'width' => '50%')
+  );
+
+  $output = theme('table', array('header' => $headers, 'rows' => $data));
+
+  return $output;
+}
+
+/**
+ * Theme callback - display a small description of the biblio bundle.
+ */
+function theme_biblio_ui_bundle_overview($variables) {
+  $bundle = $variables['bundle'];
+
+  $output = check_plain($bundle->name);
+  $output .= ' <small>' . t('(Machine name: @type)', array('@type' => $bundle->type)) . '</small>';
+  $output .= '<div class="description">' . filter_xss_admin($bundle->description) . '</div>';
+
+  return $output;
 }
 
 /**
