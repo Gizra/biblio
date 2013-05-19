@@ -17,7 +17,33 @@ function biblio_example_init() {
     drupal_set_message('Clear caches for the Biblio Plugins to be registered.');
     return;
   }
+}
 
+/**
+ * Implements hook_menu().
+ */
+function biblio_example_menu() {
+  $items = array();
+
+  $items['biblio-example/attach-fields'] = array(
+    'title' => 'Attach biblio fields',
+    'access callback' => TRUE,
+    'page callback' => 'biblio_example_attach_fields',
+  );
+
+  $items['biblio-example/create-content'] = array(
+    'title' => 'Create biblio content',
+    'access callback' => TRUE,
+    'page callback' => 'biblio_example_create_content',
+  );
+
+  return $items;
+}
+
+/**
+ * Attach fields for the biblio book bundle.
+ */
+function biblio_example_attach_fields() {
   $field_names = array(
     'biblio_abstract',
     // Contributors reference.
@@ -44,6 +70,16 @@ function biblio_example_init() {
     biblio_create_field($field_name, 'biblio_contributor', 'author');
     biblio_create_field($field_name, 'biblio_contributor', 'editor');
   }
+
+  drupal_set_message(t('Fields were attached successfully.'));
+
+  return '';
+}
+
+/**
+ * Creating a dummy content.
+ */
+function biblio_example_create_content() {
 
   $biblio = biblio_create('book');
   $wrapper = entity_metadata_wrapper('biblio', $biblio);
@@ -92,4 +128,7 @@ function biblio_example_init() {
   // Save the charcter we will later group the pulications by.
   $wrapper->biblio_summary_char->set($trimmed[0]);
   $wrapper->save();
+
+  return '';
 }
+
