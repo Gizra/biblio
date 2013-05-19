@@ -226,12 +226,6 @@ function biblio_entity_info() {
     'bundle keys' => array(
       'bundle' => 'type',
     ),
-    // @todo: Remove hardcoding.
-    'bundles' => array(
-      'book' => array(
-        'label' => t('Book'),
-      ),
-    ),
     'load hook' => 'biblio_load',
     'view modes' => array(),
     // Entity API label callback that takes a look at our entity class method defaultLabel()
@@ -242,6 +236,12 @@ function biblio_entity_info() {
     'module' => 'biblio',
     'access callback' => 'biblio_entity_access',
   );
+
+  if ($bundles = biblio_types()) {
+    foreach ($bundles as $bundle) {
+      $return['biblio']['bundles'][$bundle->type] = $bundle->name;
+    }
+  }
 
   $return['biblio_contributor'] = array(
     'label' => t('Contributor'),
@@ -346,7 +346,6 @@ function biblio_type_save($biblio_type) {
  * Delete a biblio bundle.
  */
 function biblio_type_delete($type) {
-
   $query = new entityFieldQuery();
   $number = $query
     ->entityCondition('entity_type', 'biblio')
@@ -384,15 +383,6 @@ function biblio_entity_access($op, $type = NULL, $account = NULL) {
       return user_access('administer biblio')
           || user_access('edit all biblio entries');
   }
-}
-
-function biblio_bundle_load($type) {
-  return;
-  return biblio_combined_bundle_load($type);
-}
-
-function contributor_bundle_load($type) {
-  return biblio_combined_bundle_load($type);
 }
 
 /**
