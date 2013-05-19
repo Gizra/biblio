@@ -1,0 +1,11 @@
+name = Biblio UI
+description = Providing UI for the biblio module.
+core = 7.x
+
+dependencies[] = biblio
+dependencies[] = views
+
+package = Biblio
+
+files[] = includes/handlers/biblio_ui_delete.inc
+files[] = includes/handlers/biblio_ui_edit.inc
