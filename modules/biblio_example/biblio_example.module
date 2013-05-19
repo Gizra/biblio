@@ -170,7 +170,6 @@ function biblio_example_create_dummy_contributor($form, $form_state) {
     '#type' => 'textfield',
     '#title' => 'The contributor name',
     '#required' => TRUE,
-    '#autocomplete_path' => 'entityreference/autocomplete/single/biblio_contributor_reference/field_collection_item/contributor_field_collection/NULL',
   );
 
   $form['actions'] = array(

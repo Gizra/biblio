@@ -504,6 +504,7 @@ function biblio_create_field($field_name, $entity_type, $bundle, $biblio_field =
     $biblio_field = biblio_fields_info($field_name);
   }
 
+
   $field = field_info_field($field_name);
   // Allow overriding the field name.
   $biblio_field['field']['field_name'] = $field_name;
@@ -843,10 +844,34 @@ function biblio_biblio_fields_info() {
     ),
   );
 
+  $items['biblio_contributor'] = array(
+    'field' => array(
+      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+      'field_name' => 'contributor_collection',
+      'type' => 'entityreference',
+      'settings' => array(
+        'handler' => 'base',
+        'handler_submit' => 'Change handler',
+        'handler_settings' => array(),
+        'target_type' => 'biblio_contributor',
+      ),
+    ),
+    'instance' => array(
+      'label' => 'Contributors',
+      'required' => 0,
+      'settings' => array(),
+      'widget' => array(
+        'type' => 'entityreference',
+        'module' => 'entityreference',
+        'settings' => array(),
+      ),
+    ),
+  );
+
   // Contributor fields.
   $items['contributor_field_collection'] = array(
     'field' => array(
-      'cardinality' => '1',
+      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
       'field_name' => 'contributor_field_collection',
       'foreign keys' => array(),
       'indexes' => array(),
