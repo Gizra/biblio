@@ -140,7 +140,7 @@ function biblio_ui_can_delete_bundle($bundle, $account = NULL) {
     ->count()
     ->execute();
 
-  return !$number && user_access('manage biblio structure');
+  return !($number && user_access('manage biblio structure'));
 }
 
 /**
@@ -398,7 +398,7 @@ function biblio_ui_delete_biblio_submit($form, &$form_state) {
   $biblio = $form_state['#entity'];
   $biblio->delete();
 
-  $form_state['redirect'] = 'admin/content/biblio';
+  $form_state['redirect'] = 'admin/biblio';
 }
 
 /**
@@ -418,7 +418,7 @@ function biblio_ui_manage_bundles() {
       l(t('Manage display'), 'admin/structure/biblio/' . $bundle->type . '/display'),
     );
 
-      $data[$i][] = biblio_ui_can_delete_bundle($bundle->type) ? l(t('Delete'), 'admin/structure/biblio/' . $bundle->type . '/delete') : '';
+    $data[$i][] = biblio_ui_can_delete_bundle($bundle->type) ? l(t('Delete'), 'admin/structure/biblio/' . $bundle->type . '/delete') : '';
   }
 
   $headers = array(
