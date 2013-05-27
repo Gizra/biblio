@@ -127,6 +127,8 @@ function biblio_ui_menu() {
 
 /**
  * Implements hook_menu_local_tasks_alter().
+ *
+ * Define the biblio/add as an action under the admin/biblio.
  */
 function biblio_ui_menu_local_tasks_alter(&$data, $router_item, $root_path) {
   if ($root_path == 'admin/biblio') {
