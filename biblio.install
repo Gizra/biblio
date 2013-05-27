@@ -84,6 +84,13 @@ function biblio_schema() {
         'unsigned' => TRUE,
         'description' => 'Biblio Contributor ID. Unique ID for the contributor entity type.',
       ),
+      'name' => array(
+        'description' => 'The name of the contributor.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
       'type' => array(
         'description' => 'The bundle name of the contributor entity',
         'type' => 'varchar',
