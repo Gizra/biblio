@@ -126,23 +126,6 @@ function biblio_ui_menu() {
 }
 
 /**
- * Implements hook_menu_local_tasks_alter().
- *
- * Define the biblio/add as an action under the admin/biblio.
- */
-function biblio_ui_menu_local_tasks_alter(&$data, $router_item, $root_path) {
-  if ($root_path == 'admin/biblio') {
-    $item = menu_get_item('biblio/add');
-    if ($item['access']) {
-      $data['actions']['output'][] = array(
-        '#theme' => 'menu_local_action',
-        '#link' => $item,
-      );
-    }
-  }
-}
-
-/**
  * Access callback which determine if the bundle can be deleted.
  */
 function biblio_ui_can_delete_bundle($bundle, $account = NULL) {
@@ -164,6 +147,7 @@ function biblio_ui_can_delete_bundle($bundle, $account = NULL) {
  */
 function biblio_ui_admin_paths() {
   return array(
+    'biblio' => TRUE,
     'biblio/add' => TRUE,
     'biblio/add/*' => TRUE,
     'biblio/*/edit' => TRUE,
