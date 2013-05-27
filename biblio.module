@@ -185,6 +185,9 @@ function biblio_get_biblio_styles() {
 
 /**
  * Helper function to return all notifiers as options for a select list.
+ *
+ * @return array
+ *  An array of biblio types for use in a field option list
  */
 function biblio_get_notifiers_as_options() {
   $options = array();
@@ -286,7 +289,7 @@ function biblio_entity_info() {
 /**
  * Get the bundles of the biblio.
  *
- * @param $type
+ * @param string $type
  *  Optional; A specific type name.
  * @return array
  *  List of biblio types.
@@ -307,7 +310,7 @@ function biblio_types($type = NULL) {
 /**
  * Save biblio type.
  *
- * @param $biblio_type
+ * @param object $biblio_type
  *  The values of a biblio type.
  */
 function biblio_type_save($biblio_type) {
@@ -333,6 +336,9 @@ function biblio_type_save($biblio_type) {
 
 /**
  * Delete a biblio bundle.
+ *
+ * @param string $type
+ *  The value of a biblio type.
  */
 function biblio_type_delete($type) {
   $query = new entityFieldQuery();
@@ -383,7 +389,8 @@ function biblio_entity_access($op, $type = NULL, $account = NULL) {
  *  An associative array of any additional values to be set when creating this
  *  entity. These values will be carried throughout the biblio object's life.
  *  Example: $values['language'] => 'en';
- * @return object The biblio object, with default values.
+ * @return object
+ *  The biblio object, with default values.
  */
 function biblio_create($type, $values = array()) {
   global $language;
@@ -407,12 +414,10 @@ function biblio_create($type, $values = array()) {
 /**
  * Load a biblio object from the database.
  *
- * @param $bid
+ * @param string $bid
  *   The biblio ID.
- * @param $reset
- *   Whether to reset the biblio_load_multiple cache.
  *
- * @return
+ * @return object
  *   A fully-populated node object.
  */
 function biblio_load($bid) {
@@ -428,33 +433,32 @@ function biblio_load($bid) {
  *
  * @see entity_load()
  *
- * @param $bids
+ * @param array $bids
  *   An array of biblio IDs.
- * @param $conditions
- *   An array of conditions on the {biblio} table in the form 'field' => $value.
- * @param $reset
+ * @param bool $reset
  *   Whether to reset the internal entity_load cache.
  *
  * @return
  *   An array of biblio objects indexed by bid.
  */
-function biblio_load_multiple($bids = array()) {
-  return entity_load('biblio', $bids);
+function biblio_load_multiple($bids = array(), $reset = FALSE) {
+  return entity_load('biblio', $bids, array(), $reset);
 }
-
 
 /**
  * Create a contributor entity object
- * @param  string $name   (optional) The name of the contributor. If given, this
- *                        function will parse out the author name and
- *                        automatically fill in any associated fields (first
- *                        name, last name, initials, etc.) and the type
- * @param  string $type   (optional) The contributor type (bundle) of the
- *                        contributor entity to create. ex: 'person' or
- *                        'organization'. Leave null to let this function parse
- *                        the name (if passed in) and auto-generate the type.
- * @param  array  $values (optional)
- * @return object         The contributor entity object
+ *
+ * @param string $name
+ *   The name of the contributor. If given, this function will parse out the
+ *   author name and automatically fill in any associated fields (first name,
+ *   last name, initials, etc.) and the type
+ * @param string $type
+ *   The contributor type (bundle) of the contributor entity to create. ex:
+ *   'person' or 'organization'. Leave null to let this function parse the name
+ *   (if passed in) and auto-generate the type.
+ * @param array  $values
+ * @return object
+ *  The contributor entity object
  */
 function biblio_contributor_create($name = array() , $type, $values = array()) {
   global $language;
@@ -488,16 +492,16 @@ function biblio_contributor_load_multiple($cids = array()) {
 /**
  * Create an biblio field in a bundle.
  *
- * @param $field_name
+ * @param string $field_name
  *   The field name
- * @param $entity_type
+ * @param string $entity_type
  *   The entity type
- * @param $bundle
+ * @param string $bundle
  *   The bundle name.
- * @param $og_field
+ * @param array $biblio_field
  *   Optional; Array with field definitions, to allow easier overriding by the
  *   caller. If empty, function will get the field info by calling
- *   og_fields_info() with the field name.
+ *   biblio_fields_info() with the field name.
  */
 function biblio_create_field($field_name, $entity_type, $bundle, $biblio_field = array()) {
   if (empty($biblio_field)) {
@@ -528,10 +532,10 @@ function biblio_create_field($field_name, $entity_type, $bundle, $biblio_field =
 /**
  * Get the field info.
  *
- * @param $field_name
+ * @param string $field_name
  *  The field name.
  *
- * @return
+ * @return array
  *   An array with the field and instance definitions, or FALSE if not found.
  */
 function biblio_fields_info($field_name = NULL) {
@@ -676,9 +680,6 @@ function biblio_biblio_fields_info() {
       'display_label' => 1,
       'widget' => array(
         'module' => 'options',
-        'settings' => array(
-          'og_hide' => TRUE,
-        ),
         'type' => 'options_onoff',
         'weight' => 0,
       ),
