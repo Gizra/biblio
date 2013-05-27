@@ -3,6 +3,7 @@ description = Maintains bibliographic lists.
 core = 7.x
 
 dependencies[] = biblio
+dependencies[] = field_collection
 dependencies[] = libraries
 package = Biblio
 

@@ -149,14 +149,9 @@ function biblio_example_create_content() {
  * Create a field collection field for the biblio contributor.
  */
 function biblio_example_create_field_collection_fields() {
-  if (!module_exists('field_collection')) {
-    drupal_set_message(t('The field collection module was not found in your drupal installation.'), 'error');
-    return '';
-  }
-
   biblio_create_field('contributor_field_collection', 'biblio', 'book');
   biblio_create_field('biblio_contributor_roles', 'field_collection_item', 'contributor_field_collection');
-  biblio_create_field('biblio_contributor_reference', 'field_collection_item', 'contributor_field_collection');
+  biblio_create_field('biblio_contributor', 'field_collection_item', 'contributor_field_collection');
 
   drupal_set_message(t('The contributor fields were attached successfully'));
   return '';

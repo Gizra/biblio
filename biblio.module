@@ -937,13 +937,13 @@ function biblio_biblio_fields_info() {
     ),
   );
 
-  $items['biblio_contributor_reference'] = array(
+  $items['biblio_contributor'] = array(
     'field' => array(
       'active' => '1',
-      'cardinality' => '1',
+      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
       'deleted' => '0',
       'entity_types' => array(),
-      'field_name' => 'biblio_contributor_reference',
+      'field_name' => 'biblio_contributor',
       'module' => 'entityreference',
       'settings' => array(
         'handler' => 'base',
