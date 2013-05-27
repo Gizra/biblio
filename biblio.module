@@ -207,6 +207,24 @@ function biblio_views_api() {
     'path' => drupal_get_path('module', 'biblio') . '/views',
   );
 }
+
+/**
+ * Implements hook_migrate_api().
+ */
+function biblio_migrate_api() {
+  $migrations = array();
+  if (db_table_exists('_biblio_1x')) {
+    $migrations['BiblioMigrateTypes'] = array('class_name' => 'BiblioMigrateTypes');
+    $migrations['BiblioMigrateContent'] = array('class_name' => 'BiblioMigrateContent');
+  }
+
+  $api = array(
+    'api' => 2,
+    'migrations' => $migrations,
+  );
+  return $api;
+}
+
 /**
  * Implements hook_entity_info().
  *
@@ -240,9 +258,11 @@ function biblio_entity_info() {
     'access callback' => 'biblio_entity_access',
   );
 
-  if ($bundles = biblio_types()) {
-    foreach ($bundles as $bundle) {
-      $return['biblio']['bundles'][$bundle->type] = $bundle->name;
+  if (db_table_exists('biblio_type')) {
+    if ($bundles = biblio_types()) {
+      foreach ($bundles as $bundle) {
+        $return['biblio']['bundles'][$bundle->type] = $bundle->name;
+      }
     }
   }
 

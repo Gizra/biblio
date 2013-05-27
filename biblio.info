@@ -45,3 +45,11 @@ files[] = views/biblio_handler_uid.inc
 
 files[] = includes/biblio.controller.inc
 files[] = includes/biblio.contributor.controller.inc
+
+files[] = includes/migrate/plugins/destinations/biblio_type.inc
+files[] = includes/migrate/plugins/destinations/biblio_entry.inc
+
+; Migrate to 7.x-3.x
+files[] = includes/migrate/7300/biblio_types.migrate.inc
+files[] = includes/migrate/7300/biblio_content.migrate.inc
+
