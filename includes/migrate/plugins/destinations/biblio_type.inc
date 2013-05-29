@@ -25,28 +25,17 @@ class MigrateDestinationBiblioType extends MigrateDestination {
   }
 
   /**
-   * Delete a membership.
+   * Delete a biblio type.
    *
-   * @param $id
-   *  IDs to be deleted.
+   * @param $type
+   *  The type to be deleted.
    */
-  public function rollback(array $id) {
-    $membership = og_membership_load($id);
-    og_ungroup($membership->group_type, $membership->gid, $membership->entity_type, $membership->etid);
+  public function rollback($type) {
+    biblio_type_delete($type);
   }
 
   /**
-   * Delete a batch of memberships at once.
-   *
-   * @param $ids
-   *   Array of membership ids to be deleted.
-   */
-  public function bulkRollback(array $ids) {
-    og_membership_delete_multiple($ids);
-  }
-
-  /**
-   * Import a single membership.
+   * Import a biblio type.
    *
    * @param $entity
    *  Object object to build. Prefilled with any fields mapped in the Migration.
@@ -57,60 +46,24 @@ class MigrateDestinationBiblioType extends MigrateDestination {
    *  successful. FALSE on failure.
    */
   public function import(stdClass $entity, stdClass $row) {
-    if (empty($entity->group_type)) {
-      throw new MigrateException('Missing group type.');
-    }
-    if (empty($entity->gid)) {
-      throw new MigrateException('Missing group ID.');
-    }
-    if (empty($entity->entity_type)) {
-      throw new MigrateException('Missing entity type.');
-    }
-    if (empty($entity->etid)) {
-      throw new MigrateException('Missing entity ID.');
-    }
 
-     // Set state, make sure legacy states from OG6 are converted to
-     // pending.
-    if (isset($entity->state)) {
-      $state = $entity->state ? OG_STATE_ACTIVE : OG_STATE_PENDING;
-    }
-    else {
-      $state = OG_STATE_ACTIVE;
-    }
     $this->prepare($entity, $row);
-    // Allow passing OG-membership fields via og_group().
-    $values = (array) $entity;
-    $values['entity'] = $entity->etid;
-    $values['state'] = $state;
-    $values['created'] = isset($entity->created) ? $entity->created : REQUEST_TIME;
 
-    $og_membership = og_group($entity->group_type, $entity->gid, $values);
-
-    if ($entity->entity_type == 'user') {
-      $cache = &drupal_static(__FUNCTION__, array());
-      if (isset($cache["$entity->group_type:$entity->gid"])) {
-        $og_roles = $cache["$entity->group_type:$entity->gid"];
-      }
-      else {
-        $og_roles = og_roles($entity->group_type, NULL, $entity->gid);
-        $cache["$entity->group_type:$entity->gid"] = $og_roles;
-      }
-      if (!empty($entity->is_admin)) {
-        $admin_rid = array_search(OG_ADMINISTRATOR_ROLE, $og_roles);
-        og_role_grant($entity->group_type, $entity->gid, $entity->etid, $admin_rid);
-      }
-      if (isset($entity->group_roles)) {
-        foreach ($entity->group_roles as $role) {
-          $rid = array_search($role, $og_roles);
-          og_role_grant($entity->group_type, $entity->gid, $entity->etid, $rid);
-        }
-      }
+    if (empty($entity->type)) {
+      throw new MigrateException(t('Missing biblio type.'));
     }
+    if (empty($entity->description)) {
+      throw new MigrateException(t('Missing description.'));
+    }
+
+    $biblio_type = clone($entity);
+    unset($biblio_type->migrate);
+    $result = biblio_type_save($biblio_type);
+    dpm($result, 'result');
 
     $this->complete($entity, $row);
 
-    return array($og_membership->id);
+    return array();
   }
 
   /**
