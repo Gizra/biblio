@@ -9,7 +9,6 @@
  * Destination class implementing migration into an OG Audience field.
  */
 class MigrateDestinationBiblioType extends MigrateDestination {
-
   public function __toString() {
     return t('biblio-entry');
   }

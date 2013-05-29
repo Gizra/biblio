@@ -8,7 +8,6 @@
  *
  */
 class MigrateDestinationBiblioEntry extends MigrateDestination {
-
   public function __toString() {
     return t('biblio-entry');
   }
@@ -47,9 +46,7 @@ class MigrateDestinationBiblioEntry extends MigrateDestination {
    */
   public function import(stdClass $entity, stdClass $row) {
     $this->prepare($entity, $row);
-
     $bid = entity_save('biblio', $entity);
-
     $this->complete($entity, $row);
 
     return array($bid);
@@ -68,8 +65,6 @@ class MigrateDestinationBiblioEntry extends MigrateDestination {
     // We do nothing here but allow child classes to act.
     $migration = Migration::currentMigration();
 
-    // Call any general handlers.
-    migrate_handler_invoke_all('og_membership', 'prepare', $entity, $row);
     // Then call any prepare handler for this specific Migration.
     if (method_exists($migration, 'prepare')) {
       $migration->prepare($entity, $row);
