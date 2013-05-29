@@ -2,22 +2,20 @@
 
 /**
  * @file
- *
  */
 
 /**
  *
  */
-class MigrateDestinationBiblioType extends MigrateDestination {
+class MigrateDestinationBiblioContributor extends MigrateDestination {
   public function __toString() {
-    return 'biblio-type';
+    return 'biblio-contributor';
   }
 
   static public function getKeySchema() {
     return array(
-      'id' => array(
-        'type' => 'varchar',
-        'length' => 255,
+      'cid' => array(
+        'type' => 'int',
         'not null' => TRUE,
       ),
     );
@@ -26,39 +24,29 @@ class MigrateDestinationBiblioType extends MigrateDestination {
   /**
    * Delete a biblio type.
    *
-   * @param $type
-   *  The type to be deleted.
+   * @param $cid
+   *  Contributor ID to remove.
    */
-  public function rollback($type) {
-    biblio_type_delete($type);
+  public function rollback($cid) {
   }
 
   /**
-   * Import a biblio type.
+   * Import a biblio contributor.
    *
    * @param $entity
-   *  Object object to build. Filled with any fields mapped in the Migration.
+   *  Object filled with any fields mapped in the migration.
    * @param $row
    *  Raw source data object - passed through to prepare/complete handlers.
    *
    * @return
+   *   The new contributor ID.
    */
   public function import(stdClass $entity, stdClass $row) {
     $this->prepare($entity, $row);
-
-    if (empty($entity->type)) {
-      throw new MigrateException(t('Missing biblio type.'));
-    }
-    if (empty($entity->description)) {
-      throw new MigrateException(t('Missing description.'));
-    }
-
-    // Save the type.
-    biblio_type_save($entity);
-
+    $result = entity_save('biblio_contributor', $entity);
     $this->complete($entity, $row);
 
-    return array($entity->type);
+    return array();
   }
 
   /**

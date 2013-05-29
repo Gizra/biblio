@@ -9,7 +9,7 @@
  */
 class MigrateDestinationBiblioEntry extends MigrateDestination {
   public function __toString() {
-    return t('biblio-entry');
+    return 'biblio-entry';
   }
 
   static public function getKeySchema() {

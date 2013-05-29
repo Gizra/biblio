@@ -19,7 +19,6 @@ files[] = tests/keyword.test
 files[] = tests/contributor.test
 files[] = tests/import.export.test
 
-
 files[] = views/biblio_handler_citation.inc
 files[] = views/biblio_handler_field_biblio_keyword_data_word.inc
 files[] = views/biblio_handler_field_biblio_keyword_kid.inc
@@ -46,10 +45,14 @@ files[] = views/biblio_handler_uid.inc
 files[] = includes/biblio.controller.inc
 files[] = includes/biblio.contributor.controller.inc
 
-files[] = includes/migrate/plugins/destinations/biblio_type.inc
+files[] = includes/migrate/plugins/destinations/biblio_contributor.inc
 files[] = includes/migrate/plugins/destinations/biblio_entry.inc
+files[] = includes/migrate/plugins/destinations/biblio_role.inc
+files[] = includes/migrate/plugins/destinations/biblio_type.inc
 
 ; Migrate to 7.x-3.x
-files[] = includes/migrate/7300/biblio_types.migrate.inc
 files[] = includes/migrate/7300/biblio_content.migrate.inc
+files[] = includes/migrate/7300/biblio_contributor_types.migrate.inc
+files[] = includes/migrate/7300/biblio_contributors.migrate.inc
+files[] = includes/migrate/7300/biblio_types.migrate.inc
 
