@@ -2,10 +2,7 @@
 
 /**
  * @file
- * Upgrade nodes that are group-content, by settings the correct field
- * value.
  */
-
 class BiblioMigrateContent extends Migration {
   public $dependencies = array('BiblioMigrateTypes');
 
@@ -17,10 +14,9 @@ class BiblioMigrateContent extends Migration {
     parent::__construct();
 
     $source_key = array(
-      'group_nid' => array(
+      'nid' => array(
         'type' => 'int',
         'not null' => TRUE,
-        'description' => 'Biblio entry ID.',
       ),
     );
 
@@ -28,10 +24,10 @@ class BiblioMigrateContent extends Migration {
     $this->source = new MigrateSourceSQL($this->query);
     $this->destination = new MigrateDestinationBiblioEntry();
 
-    $this->addFieldMapping('group_type', NULL)->defaultValue('node');
-    $this->addFieldMapping('gid', 'group_nid');
-
-    $this->addFieldMapping('entity_type', NULL)->defaultValue('node');
-    $this->addFieldMapping('etid', 'nid');
+    $this->addFieldMapping('title', 'biblio_sort_title');
+    $this->addFieldMapping('biblio_year', 'biblio_year');
+    $this->addFieldMapping('type', 'biblio_type')->sourceMigration('BiblioMigrateTypes');
+    $this->addFieldMapping('created', NULL)->defaultValue(REQUEST_TIME);
+    $this->addFieldMapping('changed', NULL)->defaultValue(REQUEST_TIME);
   }
 }

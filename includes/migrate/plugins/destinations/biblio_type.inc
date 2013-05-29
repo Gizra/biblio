@@ -59,7 +59,7 @@ class MigrateDestinationBiblioType extends MigrateDestination {
 
     $this->complete($entity, $row);
 
-    return array($row->tid);
+    return array($entity->type);
   }
 
   /**
