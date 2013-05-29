@@ -2,7 +2,6 @@
 
 /**
  * @file
- * Import Organic group memberships.
  */
 
 /**
@@ -25,16 +24,17 @@ class MigrateDestinationBiblioEntry extends MigrateDestination {
   }
 
   /**
-   * Delete a membership.
+   * Delete a biblio entry.
    *
    * @param $id
    *  IDs to be deleted.
    */
   public function rollback(array $id) {
+    entity_delete('biblio', $id['destid1']);
   }
 
   /**
-   * Import a single membership.
+   * Import a single biblio entry.
    *
    * @param $entity
    *  Object object to build. Filled with any fields mapped in the Migration.

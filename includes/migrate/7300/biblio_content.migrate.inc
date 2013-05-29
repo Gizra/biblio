@@ -7,9 +7,14 @@ class BiblioMigrateContent extends Migration {
   public $dependencies = array('BiblioMigrateTypes');
 
   public function __construct() {
-    $this->description = t('Migrate old biblio entries.');
+    $this->description = t('Migrate biblio 1.x entries.');
 
-    $this->query = db_select('_biblio_1x', 'b')->fields('b');
+    $this->query = db_select('_biblio_1x', 'b');
+    $this->query->fields('b', array('biblio_type', 'biblio_year'));
+    $this->query->fields('n', array('nid', 'title', 'created', 'uid'));
+    $this->query->innerJoin('node', 'n', 'n.nid = b.nid');
+    // Ignore unpublished biblio entries.
+    $this->query->condition('n.status', NODE_PUBLISHED);
 
     parent::__construct();
 
@@ -17,6 +22,7 @@ class BiblioMigrateContent extends Migration {
       'nid' => array(
         'type' => 'int',
         'not null' => TRUE,
+        'alias' => 'n',
       ),
     );
 
@@ -24,10 +30,12 @@ class BiblioMigrateContent extends Migration {
     $this->source = new MigrateSourceSQL($this->query);
     $this->destination = new MigrateDestinationBiblioEntry();
 
-    $this->addFieldMapping('title', 'biblio_sort_title');
-    $this->addFieldMapping('biblio_year', 'biblio_year');
+    $this->addFieldMapping('title', 'title');
     $this->addFieldMapping('type', 'biblio_type')->sourceMigration('BiblioMigrateTypes');
-    $this->addFieldMapping('created', NULL)->defaultValue(REQUEST_TIME);
+    $this->addFieldMapping('uid', 'uid');
+    $this->addFieldMapping('created', 'created');
     $this->addFieldMapping('changed', NULL)->defaultValue(REQUEST_TIME);
+
+    $this->addFieldMapping('biblio_year', 'biblio_year');
   }
 }

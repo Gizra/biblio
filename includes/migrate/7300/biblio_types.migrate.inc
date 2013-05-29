@@ -7,11 +7,14 @@
 class BiblioMigrateTypes extends Migration {
 
   public function __construct() {
-    $this->description = t('Migrate old biblio entries.');
+    $this->description = t('Migrate biblio 1.x entry types.');
 
     // Select the only the types that were in use in the 1.x biblio.
     $this->query = db_select('_biblio_types_1x', 'bt')->fields('bt');
     $this->query->innerJoin('_biblio_1x', 'b', 'biblio_type = tid');
+    // Ignore unpublished biblio entries.
+    $this->query->innerJoin('node', 'n', 'n.nid = b.nid');
+    $this->query->condition('n.status', NODE_PUBLISHED);
 
     parent::__construct();
 
