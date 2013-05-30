@@ -40,6 +40,6 @@ class BiblioMigrateContributorCollections extends Migration {
 
     $this->addFieldMapping('host_entity_id', 'nid')->sourceMigration('BiblioMigrateEntries');
     $this->addFieldMapping('biblio_contributor', 'cid')->sourceMigration('BiblioMigrateContributors');
-    $this->addFieldMapping('biblio_contributor_roles', 'auth_type')->sourceMigration('BiblioMigrateContributorTypes');
+    $this->addFieldMapping('biblio_contributor_role', 'auth_type')->sourceMigration('BiblioMigrateContributorTypes');
   }
 }
