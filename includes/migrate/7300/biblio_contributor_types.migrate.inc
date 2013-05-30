@@ -9,16 +9,16 @@ class BiblioMigrateContributorTypes extends Migration {
 
     // Fetch the used contributor types.
     $this->query = db_select('_biblio_contributor_type_data_1x', 'ctd')->distinct();
-    $this->query->addField('ctd', 'title');
+    $this->query->fields('ctd', array('auth_type', 'title'));
     $this->query->innerJoin('_biblio_contributor_1x', 'c', 'ctd.auth_type = c.auth_type');
 
     parent::__construct();
 
     $source_key = array(
-      'title' => array(
-        'type' => 'varchar',
-        'length' => 255,
+      'auth_type' => array(
+        'type' => 'int',
         'not null' => TRUE,
+        'alias' => 'ctd',
       ),
     );
 
