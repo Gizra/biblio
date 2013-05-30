@@ -93,9 +93,11 @@ class MigrateDestinationBiblioContributor extends MigrateDestination {
 
   public function fields() {
     return array(
-      'type' => 'The machine-readable name of this type.',
-      'name' => 'The human-readable name of this type.',
-      'description' => 'A brief description of this type.',
+      'cid' => 'Biblio Contributor ID. Unique ID for the contributor entity type.',
+      'name' => 'The name of the contributor.',
+      'type' => 'The bundle name of the contributor entity',
+      'created' => '',
+      'changed' => '',
     );
   }
 }
