@@ -51,8 +51,8 @@ files[] = includes/migrate/plugins/destinations/biblio_field_collection.inc
 files[] = includes/migrate/plugins/destinations/biblio_type.inc
 
 ; Migrate to 7.x-3.x
-files[] = includes/migrate/7300/biblio_content.migrate.inc
 files[] = includes/migrate/7300/biblio_contributor_collections.migrate.inc
 files[] = includes/migrate/7300/biblio_contributors.migrate.inc
+files[] = includes/migrate/7300/biblio_entries.migrate.inc
 files[] = includes/migrate/7300/biblio_types.migrate.inc
 
