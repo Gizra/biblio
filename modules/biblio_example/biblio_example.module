@@ -29,7 +29,7 @@ function biblio_example_attach_fields() {
   $field_names = array(
     'biblio_abstract',
     // Contributors reference.
-    'biblio_contributor',
+    'contributor_field_collection',
     // cache field.
     'biblio_cache',
     'biblio_image',
@@ -49,11 +49,10 @@ function biblio_example_attach_fields() {
   );
 
   foreach ($field_names as $field_name) {
-    biblio_create_field($field_name, 'biblio_contributor', 'author');
-    biblio_create_field($field_name, 'biblio_contributor', 'editor');
+    biblio_create_field($field_name, 'biblio_contributor', 'biblio_contributor');
+    biblio_create_field($field_name, 'biblio_contributor', 'biblio_contributor');
   }
 
-  biblio_create_field('contributor_field_collection', 'biblio', 'book');
   biblio_create_field('biblio_contributor_roles', 'field_collection_item', 'contributor_field_collection');
   biblio_create_field('biblio_contributor', 'field_collection_item', 'contributor_field_collection');
 }
@@ -62,7 +61,6 @@ function biblio_example_attach_fields() {
  * Creating dummy content.
  */
 function biblio_example_create_content() {
-
   $biblio = biblio_create('book');
   $wrapper = entity_metadata_wrapper('biblio', $biblio);
 
@@ -76,18 +74,28 @@ function biblio_example_create_content() {
     'given' => 'Gary',
     'family' => 'King',
   );
-  $biblio_contributor1 = biblio_contributor_create($name, 'author');
+  $biblio_contributor1 = biblio_contributor_create($name);
   $biblio_contributor1->save();
 
   $name = array(
     'given' => 'Maya',
     'family' => 'Sen',
   );
-  $biblio_contributor2 = biblio_contributor_create($name, 'author');
+  $biblio_contributor2 = biblio_contributor_create($name);
   $biblio_contributor2->save();
 
-  $wrapper->biblio_contributor[] = $biblio_contributor1;
-  $wrapper->biblio_contributor[] = $biblio_contributor2;
+  // Create field collections.
+  $field_collection1 = entity_create('field_collection_item', array('field_name' => 'contributor_field_collection'));
+  $field_collection1->setHostEntity('biblio', $biblio);
+  $collection_wrapper = entity_metadata_wrapper('field_collection_item', $field_collection1);
+  $collection_wrapper->biblio_contributor->set($biblio_contributor1);
+  $collection_wrapper->save();
+
+  $field_collection2 = entity_create('field_collection_item', array('field_name' => 'contributor_field_collection'));
+  $field_collection2->setHostEntity('biblio', $biblio);
+  $collection_wrapper = entity_metadata_wrapper('field_collection_item', $field_collection2);
+  $collection_wrapper->biblio_contributor->set($biblio_contributor2);
+  $collection_wrapper->save();
 
   $biblio->title = 'How Social Science Research Can Improve Teaching.';
 
@@ -109,6 +117,7 @@ function biblio_example_create_content() {
 
   // Save the charcter we will later group the pulications by.
   $wrapper->biblio_summary_char->set($trimmed[0]);
+  dpm($biblio);
   $wrapper->save();
 }
 
