@@ -1,15 +1,6 @@
 <?php
 
 /**
- * Implements hook_ctools_plugin_directory().
- */
-function biblio_example_ctools_plugin_directory($module, $plugin) {
-  if ($module == 'biblio') {
-    return 'plugins/' . $plugin;
-  }
-}
-
-/**
  * Implements hook_init().
  */
 function biblio_example_init() {
@@ -17,40 +8,20 @@ function biblio_example_init() {
     drupal_set_message('Clear caches for the Biblio Plugins to be registered.');
     return;
   }
+
+  return;
+
+  biblio_example_attach_fields();
+  biblio_example_create_content();
 }
 
 /**
- * Implements hook_menu().
+ * Implements hook_ctools_plugin_directory().
  */
-function biblio_example_menu() {
-  $items = array();
-
-  $items['biblio-example/attach-fields'] = array(
-    'title' => 'Attach biblio fields',
-    'access callback' => TRUE,
-    'page callback' => 'biblio_example_attach_fields',
-  );
-
-  $items['biblio-example/create-content'] = array(
-    'title' => 'Create biblio content',
-    'access callback' => TRUE,
-    'page callback' => 'biblio_example_create_content',
-  );
-
-  $items['biblio-example/create-field-collection-fields'] = array(
-    'title' => 'Create field collection field',
-    'access callback' => TRUE,
-    'page callback' => 'biblio_example_create_field_collection_fields',
-  );
-
-  $items['biblio-example/create-dummy-contributor'] = array(
-    'title' => 'Create dummy contributor',
-    'access callback' => TRUE,
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('biblio_example_create_dummy_contributor'),
-  );
-
-  return $items;
+function biblio_example_ctools_plugin_directory($module, $plugin) {
+  if ($module == 'biblio') {
+    return 'plugins/' . $plugin;
+  }
 }
 
 /**
@@ -84,13 +55,13 @@ function biblio_example_attach_fields() {
     biblio_create_field($field_name, 'biblio_contributor', 'editor');
   }
 
-  drupal_set_message(t('Fields were attached successfully.'));
-
-  return '';
+  biblio_create_field('contributor_field_collection', 'biblio', 'book');
+  biblio_create_field('biblio_contributor_roles', 'field_collection_item', 'contributor_field_collection');
+  biblio_create_field('biblio_contributor', 'field_collection_item', 'contributor_field_collection');
 }
 
 /**
- * Creating a dummy content.
+ * Creating dummy content.
  */
 function biblio_example_create_content() {
 
@@ -141,54 +112,5 @@ function biblio_example_create_content() {
   // Save the charcter we will later group the pulications by.
   $wrapper->biblio_summary_char->set($trimmed[0]);
   $wrapper->save();
-
-  return '';
-}
-
-/**
- * Create a field collection field for the biblio contributor.
- */
-function biblio_example_create_field_collection_fields() {
-  biblio_create_field('contributor_field_collection', 'biblio', 'book');
-  biblio_create_field('biblio_contributor_roles', 'field_collection_item', 'contributor_field_collection');
-  biblio_create_field('biblio_contributor', 'field_collection_item', 'contributor_field_collection');
-
-  drupal_set_message(t('The contributor fields were attached successfully'));
-  return '';
-}
-
-/**
- * Create dummy contributor.
- */
-function biblio_example_create_dummy_contributor($form, $form_state) {
-  $form['name'] = array(
-    '#type' => 'textfield',
-    '#title' => 'The contributor name',
-    '#required' => TRUE,
-  );
-
-  $form['actions'] = array(
-    '#type' => 'action',
-    'submit' => array(
-      '#type' => 'submit',
-      '#value' => t('Create'),
-    ),
-  );
-
-  return $form;
-}
-
-/**
- * Create the dummy contributor.
- */
-function biblio_example_create_dummy_contributor_submit($form, &$form_state) {
-  $contributor = biblio_contributor_create($form_state['values']['name'], 'author');
-  $contributor->save();
-
-  $form_state['redirect'] = 'admin/biblio/add/book';
-
-  drupal_set_message(t('The @contributor has created successfully', array(
-    '@contributor' => $form_state['values']['name'],
-  )));
 }
 

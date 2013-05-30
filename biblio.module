@@ -204,7 +204,7 @@ function biblio_get_notifiers_as_options() {
 function biblio_views_api() {
   return array(
     'api' => 2,
-    'path' => drupal_get_path('module', 'biblio') . '/views',
+    'path' => drupal_get_path('module', 'biblio') . '/includes/views',
   );
 }
 /**
