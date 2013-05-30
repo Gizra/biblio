@@ -8,13 +8,14 @@ class BiblioMigrateEntries extends Migration {
 
   private $optional_fields = array(
     'biblio_publication_year',
+    'biblio_other_numbers',
   );
 
   public function __construct() {
     $this->description = t('Migrate biblio 1.x entries.');
 
     $this->query = db_select('_biblio_1x', 'b');
-    $this->query->fields('b', array('biblio_type', 'biblio_year'));
+    $this->query->fields('b');
     $this->query->fields('n', array('nid', 'title', 'created', 'uid'));
     $this->query->innerJoin('node', 'n', 'n.nid = b.nid');
     // Ignore unpublished biblio entries.
@@ -41,6 +42,7 @@ class BiblioMigrateEntries extends Migration {
     $this->addFieldMapping('changed', NULL)->defaultValue(REQUEST_TIME);
 
     $this->addFieldMapping('biblio_publication_year', 'biblio_year');
+    $this->addFieldMapping('biblio_other_numbers', 'biblio_other_number')->defaultValue(NULL);
   }
 
   public function prepare($entity, $row) {
