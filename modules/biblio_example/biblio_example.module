@@ -88,7 +88,10 @@ function biblio_example_create_content() {
   $biblio_contributor2 = biblio_contributor_create($name);
   $biblio_contributor2->save();
 
-  // Create field collections.
+  // Reset any possible contributors field collections added by devel generate.
+  $wrapper->contributor_field_collection->set(NULL);
+
+  // Create contributors field collections.
   $field_collection1 = entity_create('field_collection_item', array('field_name' => 'contributor_field_collection'));
   $field_collection1->setHostEntity('biblio', $biblio);
   $collection_wrapper = entity_metadata_wrapper('field_collection_item', $field_collection1);

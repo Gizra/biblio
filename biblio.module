@@ -691,6 +691,15 @@ function biblio_biblio_fields_info() {
       'field_name' => 'biblio_issued',
       'module' => 'date',
       'type' => 'datestamp',
+      // @todo: Fix granularity.
+      'settings' => array(
+        'month' => 'month',
+        'day' => 'day',
+        'year' => 'year',
+        'hour' => 0,
+        'minute' => 0,
+        'second' => 0,
+      ),
     ),
     'instance' => array(
       'label' => 'Issued',
