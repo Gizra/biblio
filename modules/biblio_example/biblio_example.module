@@ -64,6 +64,13 @@ function biblio_example_create_content() {
   $biblio = biblio_create('book');
   $wrapper = entity_metadata_wrapper('biblio', $biblio);
 
+  // Populate all core fields on behalf of field.module
+  module_load_include('inc', 'devel_generate', 'devel_generate');
+  module_load_include('inc', 'devel_generate', 'devel_generate.fields');
+  devel_generate_fields($biblio, 'biblio', 'book');
+
+  $biblio->title = substr(devel_create_content(), 0, 100);
+
   // $wrapper->biblio_issued->set(time());
   $wrapper->biblio_in_press->set(TRUE);
   $wrapper->biblio_pages->set('22-25');
@@ -71,16 +78,17 @@ function biblio_example_create_content() {
 
   // Add contributor to collection.
   $name = array(
-    'given' => 'Gary',
-    'family' => 'King',
+    'given' => devel_generate_word(8),
+    'family' => devel_generate_word(8),
   );
   $biblio_contributor1 = biblio_contributor_create($name);
   $biblio_contributor1->save();
 
   $name = array(
-    'given' => 'Maya',
-    'family' => 'Sen',
+    'given' => devel_generate_word(8),
+    'family' => devel_generate_word(8),
   );
+
   $biblio_contributor2 = biblio_contributor_create($name);
   $biblio_contributor2->save();
 
@@ -97,8 +105,6 @@ function biblio_example_create_content() {
   $collection_wrapper->biblio_contributor->set($biblio_contributor2);
   $collection_wrapper->save();
 
-  $biblio->title = 'How Social Science Research Can Improve Teaching.';
-
   $get_text = $biblio->getText('example_citeproc', array('style_name' => 'chicago-author-date'));
 
   $value = array(
@@ -113,11 +119,11 @@ function biblio_example_create_content() {
 
   $wrapper->biblio_cache->set($value);
 
-  $trimmed = trim(strip_tags($get_text));
-
-  // Save the charcter we will later group the pulications by.
-  $wrapper->biblio_summary_char->set($trimmed[0]);
-  dpm($biblio);
+  // We need to trim some illegal chars.
+  // @todo: need to be smarter about this.
+  $trimmed = trim(strip_tags($get_text), ' “');
+  // Save the charcter we will later group the publications by.
+  $wrapper->biblio_summary_char->set(substr($trimmed, 0, 1));
   $wrapper->save();
 }
 
