@@ -282,14 +282,9 @@ function biblio_entity_info() {
     'bundle keys' => array(
       'bundle' => 'type',
     ),
-    // @todo: possibly figure out a better bundle name and/or figure out what
-    // @todo: Remove hardcoding.
     'bundles' => array(
-      'author' => array(
-        'label' => t('Author'),
-      ),
-      'editor' => array(
-        'label' => t('Editor'),
+      'contributor' => array(
+        'label' => t('Contributor'),
       ),
     ),
     'load hook' => 'biblio_contributor_load',

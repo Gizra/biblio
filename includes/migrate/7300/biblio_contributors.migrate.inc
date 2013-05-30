@@ -14,8 +14,6 @@ class BiblioMigrateContributors extends Migration {
 
     $this->query = db_select('_biblio_contributor_data_1x', 'cd');
     $this->query->fields('cd', array('cid', 'name'));
-    $this->query->addField('c', 'auth_type');
-    $this->query->innerJoin('_biblio_contributor_1x', 'c', 'cd.cid = c.cid');
 
     parent::__construct();
 
@@ -32,7 +30,7 @@ class BiblioMigrateContributors extends Migration {
     $this->destination = new MigrateDestinationBiblioContributor();
 
     $this->addFieldMapping('name', 'name');
-    $this->addFieldMapping('type', 'auth_type')->sourceMigration('BiblioMigrateContributorTypes');
+    $this->addFieldMapping('type', NULL)->defaultValue('contributor');
     $this->addFieldMapping('created', NULL)->defaultValue(REQUEST_TIME);
     $this->addFieldMapping('changed', NULL)->defaultValue(REQUEST_TIME);
   }
