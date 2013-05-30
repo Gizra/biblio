@@ -348,6 +348,9 @@ function biblio_type_save($biblio_type) {
     db_insert('biblio_type')
       ->fields((array)$biblio_type)
       ->execute();
+
+    // Attach the contributors field collection to the new biblio bundle.
+    biblio_create_field('contributor_field_collection', 'biblio', $biblio_type->type);
   }
   drupal_flush_all_caches();
 }
