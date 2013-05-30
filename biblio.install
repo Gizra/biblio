@@ -253,5 +253,8 @@ function biblio_update_7300(&$sandbox) {
     db_create_table($table, $table_schema);
   }
 
+  // Trigger the new installation hook.
+  biblio_install();
+
   return t('Old biblio tables were renamed and the new tables were created');
 }
