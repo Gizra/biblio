@@ -670,6 +670,12 @@ function biblio_biblio_fields_info() {
       'field_name' => 'biblio_in_press',
       'type' => 'list_boolean',
       'cardinality' => 1,
+      'settings' => array(
+        'allowed_values' => array(
+          0 => '0',
+          1 => '1',
+        ),
+      ),
     ),
     'instance' => array(
       'label' => t('In Press'),
@@ -693,12 +699,22 @@ function biblio_biblio_fields_info() {
       'type' => 'datestamp',
       // @todo: Fix granularity.
       'settings' => array(
-        'month' => 'month',
         'day' => 'day',
-        'year' => 'year',
+        'granularity' => array(
+          'day' => 'day',
+          'hour' => 'hour',
+          'minute' => 'minute',
+          'month' => 'month',
+          'year' => 'year',
+        ),
         'hour' => 0,
         'minute' => 0,
+        'month' => 'month',
         'second' => 0,
+        'timezone_db' => 'UTC',
+        'todate' => '',
+        'tz_handling' => 'site',
+        'year' => 'year',
       ),
     ),
     'instance' => array(
