@@ -69,24 +69,19 @@ function biblio_example_create_content() {
   module_load_include('inc', 'devel_generate', 'devel_generate.fields');
   devel_generate_fields($biblio, 'biblio', 'book');
 
-  $biblio->title = substr(devel_create_content(), 0, 100);
-
-  // $wrapper->biblio_issued->set(time());
-  $wrapper->biblio_in_press->set(TRUE);
-  $wrapper->biblio_pages->set('22-25');
-  $wrapper->biblio_abstract->set('This is the abstract!');
+  $biblio->title = devel_create_greeking(rand(3, 8));
 
   // Add contributor to collection.
   $name = array(
-    'given' => devel_generate_word(8),
-    'family' => devel_generate_word(8),
+    'given' => devel_create_greeking(1),
+    'family' => devel_create_greeking(1),
   );
   $biblio_contributor1 = biblio_contributor_create($name);
   $biblio_contributor1->save();
 
   $name = array(
-    'given' => devel_generate_word(8),
-    'family' => devel_generate_word(8),
+    'given' => devel_create_greeking(1),
+    'family' => devel_create_greeking(2),
   );
 
   $biblio_contributor2 = biblio_contributor_create($name);
