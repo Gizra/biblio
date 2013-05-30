@@ -2,11 +2,10 @@
 
 /**
  * @file
+ *
+ * Destination handler for biblio contributors.
  */
 
-/**
- *
- */
 class MigrateDestinationBiblioContributor extends MigrateDestination {
   public function __toString() {
     return 'biblio-contributor';
@@ -28,6 +27,7 @@ class MigrateDestinationBiblioContributor extends MigrateDestination {
    *  Contributor ID to remove.
    */
   public function rollback($cid) {
+    entity_delete('biblio_contributor', $cid['destid1']);
   }
 
   /**
@@ -43,10 +43,13 @@ class MigrateDestinationBiblioContributor extends MigrateDestination {
    */
   public function import(stdClass $entity, stdClass $row) {
     $this->prepare($entity, $row);
-    $result = entity_save('biblio_contributor', $entity);
+    $status = entity_save('biblio_contributor', $entity);
+    if (!$status) {
+      throw new Exception(t('Biblio contributor could not be created.'));
+    }
     $this->complete($entity, $row);
 
-    return array();
+    return array($entity->cid);
   }
 
   /**

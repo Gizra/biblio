@@ -5,9 +5,6 @@
  *
  */
 
-/**
- *
- */
 class MigrateDestinationBiblioType extends MigrateDestination {
   public function __toString() {
     return 'biblio-type';
