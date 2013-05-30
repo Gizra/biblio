@@ -3,7 +3,7 @@
 /**
  * @file
  */
-class BiblioMigrateContent extends Migration {
+class BiblioMigrateEntries extends Migration {
   public $dependencies = array('BiblioMigrateTypes');
 
   public function __construct() {

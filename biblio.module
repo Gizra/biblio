@@ -214,10 +214,11 @@ function biblio_views_api() {
 function biblio_migrate_api() {
   $migrations = array();
   if (db_table_exists('_biblio_1x')) {
+    $migrations['BiblioMigrateContributorCollections'] = array('class_name' => 'BiblioMigrateContributorCollections');
     $migrations['BiblioMigrateContributorTypes'] = array('class_name' => 'BiblioMigrateContributorTypes');
     $migrations['BiblioMigrateContributors'] = array('class_name' => 'BiblioMigrateContributors');
     $migrations['BiblioMigrateTypes'] = array('class_name' => 'BiblioMigrateTypes');
-    $migrations['BiblioMigrateContent'] = array('class_name' => 'BiblioMigrateContent');
+    $migrations['BiblioMigrateEntries'] = array('class_name' => 'BiblioMigrateEntries');
   }
 
   $api = array(
