@@ -9,8 +9,6 @@ function biblio_example_init() {
     return;
   }
 
-  return;
-
   biblio_example_attach_fields();
   biblio_example_create_content();
 }
