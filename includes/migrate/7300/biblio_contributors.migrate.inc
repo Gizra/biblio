@@ -7,8 +7,6 @@
  */
 
 class BiblioMigrateContributors extends Migration {
-  public $dependencies = array('BiblioMigrateContributorTypes');
-
   public function __construct() {
     $this->description = t('Migrate biblio 1.x contributors.');
 

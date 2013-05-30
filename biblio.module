@@ -215,7 +215,6 @@ function biblio_migrate_api() {
   $migrations = array();
   if (db_table_exists('_biblio_1x')) {
     $migrations['BiblioMigrateContributorCollections'] = array('class_name' => 'BiblioMigrateContributorCollections');
-    $migrations['BiblioMigrateContributorTypes'] = array('class_name' => 'BiblioMigrateContributorTypes');
     $migrations['BiblioMigrateContributors'] = array('class_name' => 'BiblioMigrateContributors');
     $migrations['BiblioMigrateTypes'] = array('class_name' => 'BiblioMigrateTypes');
     $migrations['BiblioMigrateEntries'] = array('class_name' => 'BiblioMigrateEntries');
@@ -351,6 +350,14 @@ function biblio_type_save($biblio_type) {
 
     // Attach the contributors field collection to the new biblio bundle.
     biblio_create_field('contributor_field_collection', 'biblio', $biblio_type->type);
+
+    // Verify that the field collection fields exist.
+    if (!field_info_field('biblio_contributor_role')) {
+      biblio_create_field('biblio_contributor_role', 'field_collection_item', 'contributor_field_collection');
+    }
+    if (!field_info_field('biblio_contributor')) {
+      biblio_create_field('biblio_contributor', 'field_collection_item', 'contributor_field_collection');
+    }
   }
   drupal_flush_all_caches();
 }
