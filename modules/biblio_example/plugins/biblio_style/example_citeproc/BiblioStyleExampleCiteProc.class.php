@@ -19,7 +19,7 @@ class BiblioStyleExampleCiteProc extends BiblioStyleCiteProc {
     $wrapper = entity_metadata_wrapper('biblio', $this->biblio);
     if (isset($wrapper->biblio_abstract) && $abstract = $wrapper->biblio_abstract->value()) {
       // Add the abstract.
-      $output .= "<br />" . $abstract;
+      $output .= "<br />" . substr($abstract,0, 100);
     }
     return $output;
   }
