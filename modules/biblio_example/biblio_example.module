@@ -53,7 +53,7 @@ function biblio_example_attach_fields() {
     biblio_create_field($field_name, 'biblio_contributor', 'biblio_contributor');
   }
 
-  biblio_create_field('biblio_contributor_roles', 'field_collection_item', 'contributor_field_collection');
+  biblio_create_field('biblio_contributor_role', 'field_collection_item', 'contributor_field_collection');
   biblio_create_field('biblio_contributor', 'field_collection_item', 'contributor_field_collection');
 }
 
@@ -69,19 +69,20 @@ function biblio_example_create_content() {
   module_load_include('inc', 'devel_generate', 'devel_generate.fields');
   devel_generate_fields($biblio, 'biblio', 'book');
 
-  $biblio->title = devel_create_greeking(rand(3, 8));
+  $biblio->title = devel_create_greeking(rand(3, 8), TRUE);
 
   // Add contributor to collection.
   $name = array(
-    'given' => devel_create_greeking(1),
-    'family' => devel_create_greeking(1),
+    'given' => devel_create_greeking(rand(1, 2), TRUE),
+    'family' => devel_create_greeking(rand(1, 2), TRUE),
   );
+
   $biblio_contributor1 = biblio_contributor_create($name);
   $biblio_contributor1->save();
 
   $name = array(
-    'given' => devel_create_greeking(1),
-    'family' => devel_create_greeking(2),
+    'given' => devel_create_greeking(rand(1, 2), TRUE),
+    'family' => devel_create_greeking(rand(1, 2), TRUE),
   );
 
   $biblio_contributor2 = biblio_contributor_create($name);

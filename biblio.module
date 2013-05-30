@@ -895,10 +895,10 @@ function biblio_biblio_fields_info() {
     ),
   );
 
-  $items['biblio_contributor_roles'] = array(
+  $items['biblio_contributor_role'] = array(
     'field' => array(
       'cardinality' => '1',
-      'field_name' => 'biblio_contributor_roles',
+      'field_name' => 'biblio_contributor_role',
       'module' => 'entityreference',
       'settings' => array(
         'handler' => 'base',
