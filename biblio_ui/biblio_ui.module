@@ -10,16 +10,15 @@
 function biblio_ui_menu() {
   $items = array();
 
-  $items['admin/biblio/add'] = array(
+  $items['biblio/add'] = array(
     'title' => 'Add biblio entries',
     'description' => 'Select a biblio type to create an entry for.',
     'access arguments' => array('create biblio'),
     'page callback' => 'biblio_ui_add_biblio_list',
-    'type' => MENU_LOCAL_ACTION,
   );
 
   foreach (biblio_types() as $type => $info) {
-    $items['admin/biblio/add/' . $type] = array(
+    $items['biblio/add/' . $type] = array(
       'title' => $info->name,
       'description' => 'Create biblio entries.',
       'access arguments' => array('create biblio'),
@@ -148,6 +147,9 @@ function biblio_ui_can_delete_bundle($bundle, $account = NULL) {
  */
 function biblio_ui_admin_paths() {
   return array(
+    'biblio' => TRUE,
+    'biblio/add' => TRUE,
+    'biblio/add/*' => TRUE,
     'biblio/*/edit' => TRUE,
     'biblio/*/delete' => TRUE,
     'biblio/*/devel' => TRUE,
@@ -233,7 +235,7 @@ function theme_biblio_ui_add_biblio_list($variables) {
     $output = '<ul class="admin-list">';
     foreach ($types as $type => $info) {
       $output .= '<li class="clearfix">';
-      $output .= '<span class="label">' . l($info->name, 'admin/biblio/add/' . $type) . '</span>';
+      $output .= '<span class="label">' . l($info->name, 'biblio/add/' . $type) . '</span>';
       $output .= '<div class="description">' . filter_xss_admin($info->description) . '</div>';
       $output .= '</li>';
     }
