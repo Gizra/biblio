@@ -13,35 +13,9 @@ package = Biblio
 configure = admin/config/content/biblio
 
 files[] = plugins/biblio_style/abstract.inc
-
-files[] = tests/biblio.test
-files[] = tests/keyword.test
-files[] = tests/contributor.test
-files[] = tests/import.export.test
-
-
-files[] = views/biblio_handler_citation.inc
-files[] = views/biblio_handler_field_biblio_keyword_data_word.inc
-files[] = views/biblio_handler_field_biblio_keyword_kid.inc
-files[] = views/biblio_handler_field_biblio_type.inc
-files[] = views/biblio_handler_field_contributor.inc
-files[] = views/biblio_handler_field.inc
-files[] = views/biblio_handler_field_markup.inc
-files[] = views/biblio_handler_filter_biblio_contributor_auth_type.inc
-files[] = views/biblio_handler_filter_biblio_keyword_kid.inc
-files[] = views/biblio_handler_filter_biblio_keyword_word.inc
-files[] = views/biblio_handler_filter_biblio_type.inc
-files[] = views/biblio_handler_filter_contributor_lastname.inc
-files[] = views/biblio_handler_filter_contributor_uid.inc
-files[] = views/biblio_handler_filter_contributor.inc
-files[] = views/biblio_handler_sort_contributor_lastname.inc
-files[] = views/biblio_handler_argument_many_to_one.inc
-files[] = views/biblio_handler_field_export_link.inc
-files[] = views/biblio_plugin_row_citation.inc
-files[] = views/biblio_plugin_style_citation.inc
-files[] = views/biblio_plugin_display_page.inc
-files[] = views/biblio_handler_date.inc
-files[] = views/biblio_handler_uid.inc
-
 files[] = includes/biblio.controller.inc
 files[] = includes/biblio.contributor.controller.inc
+
+; Views
+files[] = includes/views/biblio.views.inc
+files[] = includes/views/handlers/biblio_handler_field_biblio_render.inc

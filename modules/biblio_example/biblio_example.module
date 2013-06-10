@@ -31,12 +31,10 @@ function biblio_example_attach_fields() {
     // Contributors reference.
     'contributor_field_collection',
     // cache field.
-    'biblio_cache',
     'biblio_image',
     'biblio_in_press',
     'biblio_issued',
     'biblio_pages',
-    'biblio_summary_char',
   );
 
   foreach ($field_names as $field_name) {
@@ -108,25 +106,11 @@ function biblio_example_create_content() {
   $collection_wrapper->biblio_contributor->set($biblio_contributor2);
   $collection_wrapper->save();
 
+  // Getting the text will already save the Biblio entity.
   $get_text = $biblio->getText('example_citeproc', array('style_name' => 'chicago-author-date'));
 
-  $value = array(
-    'value' => $get_text,
-    'format' => 'full_html',
-  );
-
   // Show the CiteProc on the screen.
-  drupal_set_message($get_text);
-
-  // Cache the output, to be used for example with Views.
-
-  $wrapper->biblio_cache->set($value);
-
-  // We need to trim some illegal chars.
-  // @todo: need to be smarter about this.
-  $trimmed = trim(strip_tags($get_text), ' “');
-  // Save the charcter we will later group the publications by.
-  $wrapper->biblio_summary_char->set(substr($trimmed, 0, 1));
-  $wrapper->save();
+  // drupal_set_message($get_text);
+  // $wrapper->save();
 }
 
