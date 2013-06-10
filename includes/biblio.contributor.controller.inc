@@ -27,6 +27,7 @@ class BiblioContributor extends Entity {
       $wrapper->contributor_given = $name['given'];
     }
 
+    $this->name = implode(', ', $this->name);
   }
 }
 

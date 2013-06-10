@@ -97,12 +97,14 @@ class BiblioStyleCiteProc extends BiblioStyleBase {
     }
 
     // Add contributors.
-    if (isset($wrapper->biblio_contributor) && $contributors = $wrapper->biblio_contributor->value()) {
-      foreach ($contributors as $contributor) {
-        $type = $contributor->type;
+    if (isset($wrapper->contributor_field_collection) && $wrapper_contributors = $wrapper->contributor_field_collection) {
+      foreach ($wrapper_contributors as $wrapper_contributor) {
+        if (!$type = $wrapper_contributor->biblio_contributor_role->label()) {
+          $type = 'author';
+        }
 
         $mapped_contributor = new stdClass();
-        $contributor_wrapper = entity_metadata_wrapper('biblio_contributor', $contributor);
+        $contributor_wrapper = $wrapper_contributor->biblio_contributor;
 
         // Map the contributor data.
         foreach ($mapping['contributor']['text'] as $key => $field_name) {
