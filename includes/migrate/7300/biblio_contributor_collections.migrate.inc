@@ -51,16 +51,17 @@ class BiblioMigrateContributorCollections extends Migration {
     // Replace the role name with its term ID.
     $name = $entity->biblio_contributor_role[LANGUAGE_NONE][0]['target_id'];
     if ($terms = taxonomy_get_term_by_name($name, 'biblio_roles')) {
-      $tid = key($terms);
+      $term = key($terms);
     }
-    // Create the term if it doesn't exist
+    // Create the term if it doesn't exist.
     else {
       $term = (object) array(
         'name' => $name,
         'vid' => $this->roles_vocabulary->vid,
       );
-      $tid = taxonomy_term_save($term);
+      taxonomy_term_save($term);
     }
-    $entity->biblio_contributor_role[LANGUAGE_NONE][0]['target_id'] = $tid;
+
+    $entity->biblio_contributor_role[LANGUAGE_NONE][0]['target_id'] = $term->tid;
   }
 }
