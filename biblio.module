@@ -258,6 +258,7 @@ function biblio_entity_info() {
     'uri callback' => 'entity_class_uri',
     'module' => 'biblio',
     'access callback' => 'biblio_entity_access',
+    'views controller class' => 'BiblioViewsController',
   );
 
   if (db_table_exists('biblio_type')) {
@@ -624,33 +625,6 @@ function biblio_biblio_fields_info() {
     ),
   );
 
-  // Cache.
-  $items['biblio_cache'] = array(
-    'field' => array(
-      'cardinality' => '1',
-      'entity_types' => array(),
-      'field_name' => 'biblio_cache',
-      'module' => 'text',
-      'type' => 'text_long',
-    ),
-    'instance' => array(
-      'label' => 'Publication Cache',
-      'description' => 'Publication Cache.',
-      'settings' => array(
-        'text_processing' => '1',
-      ),
-      'widget' => array(
-        'active' => 1,
-        'module' => 'text',
-        'settings' => array(
-          'rows' => '5',
-        ),
-        'type' => 'text_textarea',
-        'weight' => '-1',
-      ),
-    ),
-  );
-
   // Image.
   $items['biblio_image'] = array(
     'field' => array(
@@ -785,8 +759,8 @@ function biblio_biblio_fields_info() {
         'day' => 'day',
         'granularity' => array(
           'day' => 'day',
-          'hour' => 'hour',
-          'minute' => 'minute',
+          'hour' => 0,
+          'minute' => 0,
           'month' => 'month',
           'year' => 'year',
         ),
