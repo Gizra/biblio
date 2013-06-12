@@ -771,7 +771,7 @@ function biblio_biblio_fields_info() {
       'field_name' => 'biblio_first_letter',
       'module' => 'text',
       'settings' => array(
-        'max_length' => '255',
+        'max_length' => '1',
       ),
       'type' => 'text',
     ),
@@ -786,7 +786,7 @@ function biblio_biblio_fields_info() {
         'active' => 1,
         'module' => 'text',
         'settings' => array(
-          'size' => '60',
+          'size' => '1',
         ),
         'type' => 'text_textfield',
         'weight' => '-3',
