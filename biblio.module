@@ -776,7 +776,7 @@ function biblio_biblio_fields_info() {
       'type' => 'text',
     ),
     'instance' => array(
-      'label' => 'Publication summary character',
+      'label' => 'Publication first letter',
       'description' => 'Hold the character to later the publications can be grouped by.',
       'settings' => array(
         'text_processing' => '0',

@@ -75,7 +75,7 @@ class Biblio extends Entity {
     if (isset($wrapper->biblio_first_letter)) {
       // Assign first letter to ease grouping.
       $trimmed = trim(strip_tags($output), ' “');
-      $wrapper->biblio_first_letter->set(substr($trimmed, 0, 1));
+      $wrapper->biblio_first_letter->set(strtoupper(substr($trimmed, 0, 1)));
     }
 
     if (isset($wrapper->biblio_publication_year) && isset($wrapper->biblio_issued) && $date = $wrapper->biblio_issued->value()) {

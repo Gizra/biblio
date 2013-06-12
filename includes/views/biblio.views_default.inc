@@ -138,7 +138,21 @@ function biblio_views_default_views() {
   $handler->display->display_options['pager']['type'] = 'full';
   $handler->display->display_options['pager']['options']['items_per_page'] = '25';
   $handler->display->display_options['style_plugin'] = 'list';
+  $handler->display->display_options['style_options']['grouping'] = array(
+    0 => array(
+      'field' => 'biblio_first_letter',
+      'rendered' => 0,
+      'rendered_strip' => 0,
+    ),
+  );
   $handler->display->display_options['row_plugin'] = 'fields';
+  /* Field: Biblio: Publication summary character */
+  $handler->display->display_options['fields']['biblio_first_letter']['id'] = 'biblio_first_letter';
+  $handler->display->display_options['fields']['biblio_first_letter']['table'] = 'field_data_biblio_first_letter';
+  $handler->display->display_options['fields']['biblio_first_letter']['field'] = 'biblio_first_letter';
+  $handler->display->display_options['fields']['biblio_first_letter']['label'] = '';
+  $handler->display->display_options['fields']['biblio_first_letter']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['biblio_first_letter']['element_label_colon'] = FALSE;
   /* Field: Biblio: Render bilbio (Get text) */
   $handler->display->display_options['fields']['biblio_render']['id'] = 'biblio_render';
   $handler->display->display_options['fields']['biblio_render']['table'] = 'biblio';
@@ -150,6 +164,7 @@ function biblio_views_default_views() {
   $handler = $view->new_display('page', 'Page', 'page');
   $handler->display->display_options['defaults']['hide_admin_links'] = FALSE;
   $handler->display->display_options['path'] = 'biblio-summary';
+
 
   $views['biblio_summary'] = $view;
 
