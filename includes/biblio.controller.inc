@@ -20,6 +20,11 @@ class Biblio extends Entity {
       $this->cache_id = '';
     }
 
+    $wrapper = entity_metadata_wrapper('biblio', $this);
+    if ($wrapper->biblio_in_press->value()) {
+      $wrapper->biblio_publication_year->set(9999);
+    }
+
     parent::save();
   }
 
@@ -78,7 +83,6 @@ class Biblio extends Entity {
       $year = date('Y', $date);
       $wrapper->biblio_publication_year->set($year);
     }
-
 
     $this->save();
 
