@@ -94,7 +94,7 @@ function biblio_views_default_views() {
       'rendered_strip' => 0,
     ),
     1 => array(
-      'field' => 'biblio_issued',
+      'field' => 'biblio_publication_year',
       'rendered' => 0,
       'rendered_strip' => 0,
     ),
@@ -105,24 +105,24 @@ function biblio_views_default_views() {
   $handler->display->display_options['fields']['biblio_in_press']['table'] = 'field_data_biblio_in_press';
   $handler->display->display_options['fields']['biblio_in_press']['field'] = 'biblio_in_press';
   $handler->display->display_options['fields']['biblio_in_press']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['biblio_in_press']['element_label_colon'] = FALSE;
+  /* Field: Biblio: Publication year */
+  $handler->display->display_options['fields']['biblio_publication_year']['id'] = 'biblio_publication_year';
+  $handler->display->display_options['fields']['biblio_publication_year']['table'] = 'field_data_biblio_publication_year';
+  $handler->display->display_options['fields']['biblio_publication_year']['field'] = 'biblio_publication_year';
+  $handler->display->display_options['fields']['biblio_publication_year']['label'] = '';
+  $handler->display->display_options['fields']['biblio_publication_year']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['biblio_publication_year']['element_label_colon'] = FALSE;
+  $handler->display->display_options['fields']['biblio_publication_year']['settings'] = array(
+    'thousand_separator' => '',
+    'prefix_suffix' => 1,
+  );
   /* Field: Biblio: Render bilbio (Get text) */
   $handler->display->display_options['fields']['biblio_render']['id'] = 'biblio_render';
   $handler->display->display_options['fields']['biblio_render']['table'] = 'biblio';
   $handler->display->display_options['fields']['biblio_render']['field'] = 'biblio_render';
   $handler->display->display_options['fields']['biblio_render']['label'] = '';
   $handler->display->display_options['fields']['biblio_render']['element_label_colon'] = FALSE;
-  /* Field: Biblio: Issued */
-  $handler->display->display_options['fields']['biblio_issued']['id'] = 'biblio_issued';
-  $handler->display->display_options['fields']['biblio_issued']['table'] = 'field_data_biblio_issued';
-  $handler->display->display_options['fields']['biblio_issued']['field'] = 'biblio_issued';
-  $handler->display->display_options['fields']['biblio_issued']['exclude'] = TRUE;
-  $handler->display->display_options['fields']['biblio_issued']['settings'] = array(
-    'format_type' => 'short',
-    'fromto' => 'both',
-    'multiple_number' => '',
-    'multiple_from' => '',
-    'multiple_to' => '',
-  );
   /* Sort criterion: Biblio: In Press (biblio_in_press) */
   $handler->display->display_options['sorts']['biblio_in_press_value']['id'] = 'biblio_in_press_value';
   $handler->display->display_options['sorts']['biblio_in_press_value']['table'] = 'field_data_biblio_in_press';
@@ -138,6 +138,7 @@ function biblio_views_default_views() {
   $handler = $view->new_display('page', 'Page', 'page');
   $handler->display->display_options['defaults']['hide_admin_links'] = FALSE;
   $handler->display->display_options['path'] = 'biblio-issued';
+
 
   $views['biblio_issued'] = $view;
 

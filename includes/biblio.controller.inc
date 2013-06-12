@@ -10,6 +10,20 @@ class Biblio extends Entity {
   }
 
   /**
+   * Override Entity:save().
+   *
+   * Clear biblio cache.
+   */
+  public function save() {
+    if (empty($this->_skip_cache)) {
+      $this->cache = '';
+      $this->cache_id = '';
+    }
+
+    parent::save();
+  }
+
+  /**
    * Get the text, rendered using a Biblio style plugin.
    *
    * @param $style_name
@@ -48,6 +62,9 @@ class Biblio extends Entity {
     $this->cache = $output;
     $this->cache_id = md5(serialize(array($style_name, $options)));
 
+    // Make sure the cache isn't cleared on save.
+    $this->_skip_cache = TRUE;
+
     $wrapper = entity_metadata_wrapper('biblio', $this);
 
     if (isset($wrapper->biblio_first_letter)) {
@@ -62,8 +79,6 @@ class Biblio extends Entity {
       $wrapper->biblio_publication_year->set($year);
     }
 
-
-    $this->cache_first_letter = substr($trimmed, 0, 1);
 
     $this->save();
 
