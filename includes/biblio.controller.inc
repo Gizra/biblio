@@ -48,7 +48,21 @@ class Biblio extends Entity {
     $this->cache = $output;
     $this->cache_id = md5(serialize(array($style_name, $options)));
 
-    $trimmed = trim(strip_tags($output), ' “');
+    $wrapper = entity_metadata_wrapper('biblio', $this);
+
+    if (isset($wrapper->biblio_first_letter)) {
+      // Assign first letter to ease grouping.
+      $trimmed = trim(strip_tags($output), ' “');
+      $wrapper->biblio_first_letter->set($trimmed);
+    }
+
+    if (isset($wrapper->biblio_publication_year) && isset($wrapper->biblio_issued) && $date = $wrapper->biblio_issued->value()) {
+      // Assign publication year to ease grouping.
+      $year = date('Y', $date);
+      $wrapper->biblio_publication_year->set($year);
+    }
+
+
     $this->cache_first_letter = substr($trimmed, 0, 1);
 
     $this->save();

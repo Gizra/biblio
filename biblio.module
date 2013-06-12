@@ -715,6 +715,86 @@ function biblio_biblio_fields_info() {
     ),
   );
 
+  // Publication year.
+  $items['biblio_publication_year'] = array(
+    'field' => array(
+      'cardinality' => '1',
+      'field_name' => 'biblio_publication_year',
+      'foreign keys' => array(),
+      'indexes' => array(),
+      'locked' => '0',
+      'module' => 'number',
+      'settings' => array(),
+      'translatable' => '0',
+      'type' => 'number_integer',
+    ),
+    'instance' => array(
+      'default_value' => NULL,
+      'description' => '',
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'module' => 'number',
+          'settings' => array(
+            'prefix_suffix' => TRUE,
+            'scale' => 0,
+            'thousand_separator' => ' ',
+          ),
+          'type' => 'number_integer',
+        ),
+      ),
+      'field_name' => 'biblio_publication_year',
+      'label' => 'Publication year',
+      'required' => FALSE,
+      'settings' => array(
+        'max' => '9999',
+        'min' => '-9999',
+        'prefix' => '',
+        'suffix' => '',
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 0,
+        'module' => 'number',
+        'settings' => array(),
+        'type' => 'number',
+        'weight' => 0,
+      ),
+    ),
+  );
+
+  // First letter; can be used to store the character we would like to later
+  // group the publications.
+  $items['biblio_first_letter'] = array(
+    'field' => array(
+      'cardinality' => '1',
+      'field_name' => 'biblio_first_letter',
+      'module' => 'text',
+      'settings' => array(
+        'max_length' => '255',
+      ),
+      'type' => 'text',
+    ),
+    'instance' => array(
+      'label' => 'Publication summary character',
+      'description' => 'Hold the character to later the publications can be grouped by.',
+      'settings' => array(
+        'text_processing' => '0',
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'text',
+        'settings' => array(
+          'size' => '60',
+        ),
+        'type' => 'text_textfield',
+        'weight' => '-3',
+      ),
+    ),
+  );
+
+
   // Pages.
   $items['biblio_pages'] = array(
     'field' => array(

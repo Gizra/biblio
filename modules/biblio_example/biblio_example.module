@@ -28,13 +28,14 @@ function biblio_example_ctools_plugin_directory($module, $plugin) {
 function biblio_example_attach_fields() {
   $field_names = array(
     'biblio_abstract',
-    // Contributors reference.
-    'contributor_field_collection',
-    // cache field.
+    'biblio_first_letter',
     'biblio_image',
     'biblio_in_press',
     'biblio_issued',
     'biblio_pages',
+    'biblio_publication_year',
+    // Contributors reference.
+    'contributor_field_collection',
   );
 
   foreach ($field_names as $field_name) {
@@ -88,6 +89,7 @@ function biblio_example_create_content() {
 
   if ($wrapper->biblio_in_press->value()) {
     $wrapper->biblio_issued->set(NULL);
+    $wrapper->biblio_publication_year->set(NULL);
   }
 
   // Reset any possible contributors field collections added by devel generate.
