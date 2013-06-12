@@ -159,12 +159,15 @@ function biblio_views_default_views() {
   $handler->display->display_options['fields']['biblio_render']['field'] = 'biblio_render';
   $handler->display->display_options['fields']['biblio_render']['label'] = '';
   $handler->display->display_options['fields']['biblio_render']['element_label_colon'] = FALSE;
+  /* Sort criterion: Biblio: Publication summary character (biblio_first_letter) */
+  $handler->display->display_options['sorts']['biblio_first_letter_value']['id'] = 'biblio_first_letter_value';
+  $handler->display->display_options['sorts']['biblio_first_letter_value']['table'] = 'field_data_biblio_first_letter';
+  $handler->display->display_options['sorts']['biblio_first_letter_value']['field'] = 'biblio_first_letter_value';
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page');
   $handler->display->display_options['defaults']['hide_admin_links'] = FALSE;
   $handler->display->display_options['path'] = 'biblio-summary';
-
 
   $views['biblio_summary'] = $view;
 
