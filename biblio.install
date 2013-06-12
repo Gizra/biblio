@@ -80,12 +80,6 @@ function biblio_schema() {
         'not null' => FALSE,
         'description' => 'The full HTML cache of the rendered Biblio, per its cache ID.',
       ),
-      'cache_first_letter' => array(
-        'type' => 'varchar',
-        'length' => 1,
-        'not null' => FALSE,
-        'description' => 'The first legal letter of the rendered Biblio, to ease grouping publications by first letter.',
-      ),
     ),
     'primary key' => array('bid'),
     'indexes' => array(
