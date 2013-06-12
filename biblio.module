@@ -982,3 +982,23 @@ function biblio_biblio_fields_info() {
 
   return $items;
 }
+
+
+/**
+ * Implements hook_views_pre_render().
+ *
+ * Replace publication year dummy value (9999) with "In Press".
+ * We have added this dummy value, so it would be easier to group publications
+ * by In Press and than by the real publication year.
+ */
+function biblio_views_pre_render(&$view) {
+  if ($view->name != 'biblio_issued') {
+    return;
+  }
+
+  if (empty($view->result[0]->field_biblio_publication_year[0]['rendered']) || $view->result[0]->field_biblio_publication_year[0]['rendered']['#markup'] != '9999') {
+    return;
+  }
+
+  $view->result[0]->field_biblio_publication_year[0]['rendered']['#markup'] = t('In Press');
+}
