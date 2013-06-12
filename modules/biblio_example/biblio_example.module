@@ -89,7 +89,6 @@ function biblio_example_create_content() {
 
   if ($wrapper->biblio_in_press->value()) {
     $wrapper->biblio_issued->set(NULL);
-    $wrapper->biblio_publication_year->set(NULL);
   }
 
   // Reset any possible contributors field collections added by devel generate.
@@ -112,7 +111,6 @@ function biblio_example_create_content() {
   $get_text = $biblio->getText('example_citeproc', array('style_name' => 'chicago-author-date'));
 
   // Show the CiteProc on the screen.
-  // drupal_set_message($get_text);
-  // $wrapper->save();
+  drupal_set_message($get_text);
 }
 

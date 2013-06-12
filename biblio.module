@@ -996,9 +996,11 @@ function biblio_views_pre_render(&$view) {
     return;
   }
 
-  if (empty($view->result[0]->field_biblio_publication_year[0]['rendered']) || $view->result[0]->field_biblio_publication_year[0]['rendered']['#markup'] != '9999') {
-    return;
-  }
+  foreach ($view->result as $key => $value) {
+    if (empty($value->field_biblio_publication_year[0]['rendered']) || $value->field_biblio_publication_year[0]['rendered']['#markup'] != '9999') {
+      continue;
+    }
 
-  $view->result[0]->field_biblio_publication_year[0]['rendered']['#markup'] = t('In Press');
+    $view->result[$key]->field_biblio_publication_year[0]['rendered']['#markup'] = t('In Press');
+  }
 }
