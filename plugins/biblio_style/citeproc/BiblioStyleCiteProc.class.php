@@ -99,7 +99,7 @@ class BiblioStyleCiteProc extends BiblioStyleBase {
     // Add contributors.
     if (isset($wrapper->contributor_field_collection) && $wrapper_contributors = $wrapper->contributor_field_collection) {
       foreach ($wrapper_contributors as $wrapper_contributor) {
-        if (!$type = $wrapper_contributor->biblio_contributor_role->label()) {
+        if (!$type = strtolower($wrapper_contributor->biblio_contributor_role->label())) {
           $type = 'author';
         }
 

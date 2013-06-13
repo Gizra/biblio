@@ -95,34 +95,6 @@ function biblio_permission() {
 }
 
 /**
- * Removes brace from a string
- *
- * @param string $title_string
- * @return string
- */
-function biblio_remove_brace($title_string) {
-    //$title_string = utf8_encode($title_string);
-    $matchpattern = '/\{\$(?:(?!\$\}).)*\$\}|(\{[^}]*\})/';
-    $output = preg_replace_callback($matchpattern, 'biblio_remove_brace_callback', $title_string);
-    return $output;
-}
-
-/**
- * Callback from preg_replace_callback
- *
- * @param array $match
- * @return array
- */
-function biblio_remove_brace_callback($match) {
-  if (isset($match[1])) {
-    $braceless = str_replace('{', '', $match[1]);
-    $braceless = str_replace('}', '', $braceless);
-    return $braceless;
-  }
-  return $match[0];
-}
-
-/**
  * Implements hook_ctools_plugin_api().
  */
 function biblio_ctools_plugin_api($module, $api) {
@@ -983,7 +955,6 @@ function biblio_biblio_fields_info() {
   return $items;
 }
 
-
 /**
  * Implements hook_views_pre_render().
  *
@@ -1003,4 +974,33 @@ function biblio_views_pre_render(&$view) {
 
     $view->result[$key]->field_biblio_publication_year[0]['rendered']['#markup'] = t('In Press');
   }
+}
+
+
+/**
+ * Removes brace from a string
+ *
+ * @param string $title_string
+ * @return string
+ */
+function biblio_remove_brace($title_string) {
+  //$title_string = utf8_encode($title_string);
+  $matchpattern = '/\{\$(?:(?!\$\}).)*\$\}|(\{[^}]*\})/';
+  $output = preg_replace_callback($matchpattern, 'biblio_remove_brace_callback', $title_string);
+  return $output;
+}
+
+/**
+ * Callback from preg_replace_callback
+ *
+ * @param array $match
+ * @return array
+ */
+function biblio_remove_brace_callback($match) {
+  if (isset($match[1])) {
+    $braceless = str_replace('{', '', $match[1]);
+    $braceless = str_replace('}', '', $braceless);
+    return $braceless;
+  }
+  return $match[0];
 }
