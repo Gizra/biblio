@@ -1225,5 +1225,335 @@ function biblio_biblio_fields_info() {
     ),
   );
 
+  // Short title.
+  $items['biblio_short_title'] = array(
+    'description' => 'Short title.',
+    'field' => array(
+      'cardinality' => '1',
+      'field_name' => 'biblio_short_title',
+      'module' => 'text',
+      'settings' => array(
+        'max_length' => '255',
+      ),
+      'type' => 'text',
+    ),
+    'instance' => array(
+      'label' => 'Short title',
+      'settings' => array(
+        'text_processing' => '0',
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'text',
+        'settings' => array(
+          'size' => '60',
+        ),
+        'type' => 'text_textfield',
+        'weight' => '-3',
+      ),
+    ),
+  );
+
+  // Short title.
+  $items['biblio_alternate_title'] = array(
+    'description' => 'Alternate Title',
+    'field' => array(
+      'cardinality' => '1',
+      'field_name' => 'biblio_alternate_title',
+      'module' => 'text',
+      'settings' => array(
+        'max_length' => '255',
+      ),
+      'type' => 'text',
+    ),
+    'instance' => array(
+      'label' => 'Alternate Title',
+      'settings' => array(
+        'text_processing' => '0',
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'text',
+        'settings' => array(
+          'size' => '60',
+        ),
+        'type' => 'text_textfield',
+        'weight' => '-3',
+      ),
+    ),
+  );
+
+  // Type of work.
+  $items['biblio_type_of_work'] = array(
+    'description' => 'Type of work',
+    'field' => array(
+      'cardinality' => '1',
+      'field_name' => 'biblio_type_of_work',
+      'module' => 'text',
+      'settings' => array(
+        'max_length' => '255',
+      ),
+      'type' => 'text',
+    ),
+    'instance' => array(
+      'label' => 'Type of work',
+      'settings' => array(
+        'text_processing' => '0',
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'text',
+        'settings' => array(
+          'size' => '60',
+        ),
+        'type' => 'text_textfield',
+        'weight' => '-3',
+      ),
+    ),
+  );
+
+  // Biblio URL.
+  $items['biblio_url'] = array(
+    'description' => 'URL',
+    'field' => array(
+      'cardinality' => '1',
+      'field_name' => 'biblio_url',
+      'module' => 'text',
+      'settings' => array(
+        'max_length' => '255',
+      ),
+      'type' => 'text',
+    ),
+    'instance' => array(
+      'label' => 'URL',
+      'settings' => array(
+        'text_processing' => '0',
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'text',
+        'settings' => array(
+          'size' => '60',
+        ),
+        'type' => 'text_textfield',
+        'weight' => '-3',
+      ),
+    ),
+  );
+
+  // Biblio volume.
+  $items['biblio_volume'] = array(
+    'description' => 'URL',
+    'field' => array(
+      'cardinality' => '1',
+      'field_name' => 'biblio_volume',
+      'module' => 'text',
+      'settings' => array(
+        'max_length' => '255',
+      ),
+      'type' => 'text',
+    ),
+    'instance' => array(
+      'label' => 'volume',
+      'settings' => array(
+        'text_processing' => '0',
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'text',
+        'settings' => array(
+          'size' => '60',
+        ),
+        'type' => 'text_textfield',
+        'weight' => '-3',
+      ),
+    ),
+  );
+
+  // Biblio volume.
+  $items['biblio_doi'] = array(
+    'description' => 'DOI',
+    'field' => array(
+      'cardinality' => '1',
+      'field_name' => 'biblio_doi',
+      'module' => 'text',
+      'settings' => array(
+        'max_length' => '255',
+      ),
+      'type' => 'text',
+    ),
+    'instance' => array(
+      'label' => 'volume',
+      'settings' => array(
+        'text_processing' => '0',
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'text',
+        'settings' => array(
+          'size' => '60',
+        ),
+        'type' => 'text_textfield',
+        'weight' => '-3',
+      ),
+    ),
+  );
+
+  // Biblio place published.
+  $items['biblio_place_published'] = array(
+    'description' => 'City',
+    'field' => array(
+      'cardinality' => '1',
+      'field_name' => 'biblio_place_published',
+      'module' => 'text',
+      'settings' => array(
+        'max_length' => '255',
+      ),
+      'type' => 'text',
+    ),
+    'instance' => array(
+      'label' => 'City',
+      'settings' => array(
+        'text_processing' => '0',
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'text',
+        'settings' => array(
+          'size' => '60',
+        ),
+        'type' => 'text_textfield',
+        'weight' => '-3',
+      ),
+    ),
+  );
+
+  // Biblio publisher.
+  $items['biblio_publisher'] = array(
+    'description' => 'Publisher',
+    'field' => array(
+      'cardinality' => '1',
+      'field_name' => 'biblio_publisher',
+      'module' => 'text',
+      'settings' => array(
+        'max_length' => '255',
+      ),
+      'type' => 'text',
+    ),
+    'instance' => array(
+      'label' => 'Publisher',
+      'settings' => array(
+        'text_processing' => '0',
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'text',
+        'settings' => array(
+          'size' => '60',
+        ),
+        'type' => 'text_textfield',
+        'weight' => '-3',
+      ),
+    ),
+  );
+
+  // Biblio edition.
+  $items['biblio_edition'] = array(
+    'description' => 'Edition',
+    'field' => array(
+      'cardinality' => '1',
+      'field_name' => 'biblio_edition',
+      'module' => 'text',
+      'settings' => array(
+        'max_length' => '255',
+      ),
+      'type' => 'text',
+    ),
+    'instance' => array(
+      'label' => 'Edition',
+      'settings' => array(
+        'text_processing' => '0',
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'text',
+        'settings' => array(
+          'size' => '60',
+        ),
+        'type' => 'text_textfield',
+        'weight' => '-3',
+      ),
+    ),
+  );
+
+  // Biblio edition.
+  $items['biblio_secondary_title'] = array(
+    'description' => 'Secondary title',
+    'field' => array(
+      'cardinality' => '1',
+      'field_name' => 'biblio_secondary_title',
+      'module' => 'text',
+      'settings' => array(
+        'max_length' => '255',
+      ),
+      'type' => 'text',
+    ),
+    'instance' => array(
+      'label' => 'Secondary title',
+      'settings' => array(
+        'text_processing' => '0',
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'text',
+        'settings' => array(
+          'size' => '60',
+        ),
+        'type' => 'text_textfield',
+        'weight' => '-3',
+      ),
+    ),
+  );
+
+  // Biblio edition.
+  $items['biblio_tertiary_title'] = array(
+    'description' => 'Tertiary title',
+    'field' => array(
+      'cardinality' => '1',
+      'field_name' => 'biblio_tertiary_title',
+      'module' => 'text',
+      'settings' => array(
+        'max_length' => '255',
+      ),
+      'type' => 'text',
+    ),
+    'instance' => array(
+      'label' => 'Tertiary title',
+      'settings' => array(
+        'text_processing' => '0',
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'text',
+        'settings' => array(
+          'size' => '60',
+        ),
+        'type' => 'text_textfield',
+        'weight' => '-3',
+      ),
+    ),
+  );
+
   return $items;
 }
