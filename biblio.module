@@ -876,6 +876,150 @@ function biblio_biblio_fields_info() {
     ),
   );
 
+  // Phone number.
+  $items['biblio_call_number'] = array(
+    'field' => array(
+      'cardinality' => '1',
+      'field_name' => 'biblio_call_number',
+      'foreign keys' => array(),
+      'indexes' => array(),
+      'locked' => '0',
+      'module' => 'number',
+      'settings' => array(),
+      'translatable' => '0',
+      'type' => 'number_integer',
+    ),
+    'instance' => array(
+      'default_value' => NULL,
+      'description' => '',
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'module' => 'number',
+          'settings' => array(
+            'prefix_suffix' => TRUE,
+            'scale' => 0,
+            'thousand_separator' => ' ',
+          ),
+          'type' => 'number_integer',
+        ),
+      ),
+      'field_name' => 'biblio_call_number',
+      'label' => 'Call number',
+      'required' => 1,
+      'settings' => array(
+        'max' => '9999',
+        'min' => '-9999',
+        'prefix' => '',
+        'suffix' => '',
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 0,
+        'module' => 'number',
+        'settings' => array(),
+        'type' => 'number',
+        'weight' => 0,
+      ),
+    ),
+  );
+
+  // ISBN number.
+  $items['biblio_isbn'] = array(
+    'field' => array(
+      'cardinality' => '1',
+      'field_name' => 'biblio_isbn',
+      'foreign keys' => array(),
+      'indexes' => array(),
+      'locked' => '0',
+      'module' => 'number',
+      'settings' => array(),
+      'translatable' => '0',
+      'type' => 'number_integer',
+    ),
+    'instance' => array(
+      'default_value' => NULL,
+      'description' => '',
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'module' => 'number',
+          'settings' => array(
+            'prefix_suffix' => TRUE,
+            'scale' => 0,
+            'thousand_separator' => ' ',
+          ),
+          'type' => 'number_integer',
+        ),
+      ),
+      'field_name' => 'biblio_isbn',
+      'label' => 'ISBN number',
+      'required' => 1,
+      'settings' => array(
+        'max' => '9999',
+        'min' => '-9999',
+        'prefix' => '',
+        'suffix' => '',
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 0,
+        'module' => 'number',
+        'settings' => array(),
+        'type' => 'number',
+        'weight' => 0,
+      ),
+    ),
+  );
+
+  // Phone number.
+  $items['biblio_accession_number'] = array(
+    'field' => array(
+      'cardinality' => '1',
+      'field_name' => 'biblio_accession_number',
+      'foreign keys' => array(),
+      'indexes' => array(),
+      'locked' => '0',
+      'module' => 'number',
+      'settings' => array(),
+      'translatable' => '0',
+      'type' => 'number_integer',
+    ),
+    'instance' => array(
+      'default_value' => NULL,
+      'description' => '',
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'module' => 'number',
+          'settings' => array(
+            'prefix_suffix' => TRUE,
+            'scale' => 0,
+            'thousand_separator' => ' ',
+          ),
+          'type' => 'number_integer',
+        ),
+      ),
+      'field_name' => 'biblio_accession_number',
+      'label' => 'Accession number',
+      'required' => 1,
+      'settings' => array(
+        'max' => '9999',
+        'min' => '-9999',
+        'prefix' => '',
+        'suffix' => '',
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 0,
+        'module' => 'number',
+        'settings' => array(),
+        'type' => 'number',
+        'weight' => 0,
+      ),
+    ),
+  );
+
   // Summary char; can be used to store the character we would like to later
   // group the publications.
   $items['biblio_summary_char'] = array(
