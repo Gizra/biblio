@@ -271,6 +271,9 @@ function biblio_update_7300(&$sandbox) {
     db_create_table($table, $table_schema);
   }
 
+  // Enable the new needed modules.
+  module_enable(array('date', 'entity', 'entityreference'));
+
   // Trigger the new installation hook.
   biblio_install();
 
