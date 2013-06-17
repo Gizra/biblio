@@ -42,7 +42,15 @@ class BiblioMigrateEntries extends Migration {
     $this->addFieldMapping('changed', NULL)->defaultValue(REQUEST_TIME);
 
     $this->addFieldMapping('biblio_publication_year', 'biblio_year');
-    $this->addFieldMapping('biblio_other_numbers', 'biblio_other_number')->defaultValue(NULL);
+    $this->addFieldMapping('biblio_other_number', 'biblio_other_numbers')->defaultValue(NULL);
+
+    // Need more work.
+    $this->addFieldMapping('biblio_publisher', 'biblio_publisher')->defaultValue(NULL);
+    $this->addFieldMapping('biblio_abstract', 'biblio_abst_e')->defaultValue(NULL);
+    $this->addFieldMapping('biblio_isbn', 'biblio_isbn')->defaultValue(NULL);
+    $this->addFieldMapping('biblio_type_of_work', 'biblio_type_of_work')->defaultValue(NULL);
+    $this->addFieldMapping('biblio_call_number', 'biblio_call_number')->defaultValue(NULL);
+    $this->addFieldMapping('biblio_alternate_title', 'biblio_alternate_title')->defaultValue(NULL);
   }
 
   public function prepare($entity, $row) {
