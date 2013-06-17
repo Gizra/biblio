@@ -272,7 +272,7 @@ function biblio_update_7300(&$sandbox) {
   }
 
   // Enable the new needed modules.
-  module_enable(array('date', 'entity', 'entityreference'));
+  module_enable(array('date', 'entity', 'entityreference', 'field_collection', 'libraries'));
 
   // Trigger the new installation hook.
   biblio_install();

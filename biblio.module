@@ -533,7 +533,6 @@ function biblio_create_field($field_name, $entity_type, $bundle, $biblio_field =
     $biblio_field = biblio_fields_info($field_name);
   }
 
-
   $field = field_info_field($field_name);
   // Allow overriding the field name.
   $biblio_field['field']['field_name'] = $field_name;
@@ -703,7 +702,6 @@ function biblio_biblio_fields_info() {
           'type' => 'text_default',
         ),
       ),
-      'field_name' => 'field_other_numbers',
       'label' => 'Other Numbers',
       'required' => 0,
       'settings' => array(
@@ -881,45 +879,26 @@ function biblio_biblio_fields_info() {
     'field' => array(
       'cardinality' => '1',
       'field_name' => 'biblio_call_number',
-      'foreign keys' => array(),
-      'indexes' => array(),
-      'locked' => '0',
-      'module' => 'number',
-      'settings' => array(),
-      'translatable' => '0',
-      'type' => 'number_integer',
+      'module' => 'text',
+      'settings' => array(
+        'max_length' => '255',
+      ),
+      'type' => 'text',
     ),
     'instance' => array(
-      'default_value' => NULL,
-      'description' => '',
-      'display' => array(
-        'default' => array(
-          'label' => 'above',
-          'module' => 'number',
-          'settings' => array(
-            'prefix_suffix' => TRUE,
-            'scale' => 0,
-            'thousand_separator' => ' ',
-          ),
-          'type' => 'number_integer',
-        ),
-      ),
-      'field_name' => 'biblio_call_number',
       'label' => 'Call number',
-      'required' => 1,
       'settings' => array(
-        'max' => '9999',
-        'min' => '-9999',
-        'prefix' => '',
-        'suffix' => '',
+        'text_processing' => '0',
         'user_register_form' => FALSE,
       ),
       'widget' => array(
-        'active' => 0,
-        'module' => 'number',
-        'settings' => array(),
-        'type' => 'number',
-        'weight' => 0,
+        'active' => 1,
+        'module' => 'text',
+        'settings' => array(
+          'size' => '60',
+        ),
+        'type' => 'text_textfield',
+        'weight' => '-3',
       ),
     ),
   );
@@ -929,45 +908,27 @@ function biblio_biblio_fields_info() {
     'field' => array(
       'cardinality' => '1',
       'field_name' => 'biblio_isbn',
-      'foreign keys' => array(),
-      'indexes' => array(),
-      'locked' => '0',
-      'module' => 'number',
-      'settings' => array(),
-      'translatable' => '0',
-      'type' => 'number_integer',
+      'module' => 'text',
+      'settings' => array(
+        'max_length' => '255',
+      ),
+      'type' => 'text',
     ),
     'instance' => array(
-      'default_value' => NULL,
-      'description' => '',
-      'display' => array(
-        'default' => array(
-          'label' => 'above',
-          'module' => 'number',
-          'settings' => array(
-            'prefix_suffix' => TRUE,
-            'scale' => 0,
-            'thousand_separator' => ' ',
-          ),
-          'type' => 'number_integer',
-        ),
-      ),
-      'field_name' => 'biblio_isbn',
-      'label' => 'ISBN number',
-      'required' => 1,
+      'label' => 'ISBN',
+      'description' => 'International Standard Book Number',
       'settings' => array(
-        'max' => '9999',
-        'min' => '-9999',
-        'prefix' => '',
-        'suffix' => '',
+        'text_processing' => '0',
         'user_register_form' => FALSE,
       ),
       'widget' => array(
-        'active' => 0,
-        'module' => 'number',
-        'settings' => array(),
-        'type' => 'number',
-        'weight' => 0,
+        'active' => 1,
+        'module' => 'text',
+        'settings' => array(
+          'size' => '60',
+        ),
+        'type' => 'text_textfield',
+        'weight' => '-3',
       ),
     ),
   );
@@ -1000,7 +961,6 @@ function biblio_biblio_fields_info() {
           'type' => 'number_integer',
         ),
       ),
-      'field_name' => 'biblio_accession_number',
       'label' => 'Accession number',
       'required' => 1,
       'settings' => array(
