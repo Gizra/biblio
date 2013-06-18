@@ -61,7 +61,7 @@ class BiblioMigrateContributorCollections extends Migration {
       );
       taxonomy_term_save($term);
     }
-
-    $entity->biblio_contributor_role[LANGUAGE_NONE][0]['target_id'] = $term->tid;
+    $wrapper = entity_metadata_wrapper('field_collection_item', $entity);
+    $wrapper->biblio_contributor_role->set($term->tid);
   }
 }
