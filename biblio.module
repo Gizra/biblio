@@ -1507,7 +1507,7 @@ function biblio_biblio_fields_info() {
     ),
   );
 
-  // Biblio edition.
+  // Biblio secondary title.
   $items['biblio_secondary_title'] = array(
     'description' => 'Secondary title',
     'field' => array(
@@ -1537,7 +1537,7 @@ function biblio_biblio_fields_info() {
     ),
   );
 
-  // Biblio edition.
+  // Biblio tertiary title.
   $items['biblio_tertiary_title'] = array(
     'description' => 'Tertiary title',
     'field' => array(
