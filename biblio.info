@@ -19,3 +19,14 @@ files[] = includes/biblio.contributor.controller.inc
 ; Views
 files[] = includes/views/biblio.views.inc
 files[] = includes/views/handlers/biblio_handler_field_biblio_render.inc
+
+; Migrate
+files[] = includes/migrate/plugins/destinations/biblio_contributor.inc
+files[] = includes/migrate/plugins/destinations/biblio_entry.inc
+files[] = includes/migrate/plugins/destinations/biblio_field_collection.inc
+files[] = includes/migrate/plugins/destinations/biblio_type.inc
+
+files[] = includes/migrate/7300/biblio_contributor_collections.migrate.inc
+files[] = includes/migrate/7300/biblio_contributors.migrate.inc
+files[] = includes/migrate/7300/biblio_entries.migrate.inc
+files[] = includes/migrate/7300/biblio_types.migrate.inc
