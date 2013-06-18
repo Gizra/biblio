@@ -265,8 +265,11 @@ function biblio_update_7300(&$sandbox) {
     db_create_table($table, $table_schema);
   }
 
-  // Trigger the new installation hook.
-  biblio_install();
+  // Enable the new needed modules.
+  module_enable(array('date', 'entity', 'entityreference', 'field_collection', 'libraries'));
 
+  // Trigger the new installation hook.
+  // @todo: Move this to a biblio_install_7300() file.
+  biblio_install();
   return t('Old biblio tables were renamed and the new tables were created');
 }
