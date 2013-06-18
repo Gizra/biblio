@@ -189,12 +189,32 @@ class BiblioStyleBibtex extends BiblioStyleBase {
   public function map() {
   }
 
+  /**
+   * Mapping of Biblio and BibTeX.
+   *
+   * - type: Array with the Biblio type as key, and the BibTeX type as the
+   *   value.
+   * - field: Array with field mapping, keyed by BibTeX name, and the Biblio
+   *   field as the value.
+   */
   public function getMapping() {
     return array(
       'type' => array(
+        'article'       => 102,
+        'book'          => 100,
+        'booklet'       => 129,
+        'conference'    => 103,
+        'inbook'        => 101,
+        'incollection'  => 101,
+        'inproceedings' => 103,
+        'manual'        => 129,
+        'mastersthesis' => 108,
+        'misc'          => 129,
+        'phdthesis'     => 108,
+        'proceedings'   => 104,
+        'techreport'    => 129,
+        'unpublished'   => 124,
       ),
-      // Array with field mapping, keyed by BibTeX name, and the Biblio field
-      // as the value.
       'field' => array(
         'title' => 'title',
         'volume' => 'biblio_volume',
