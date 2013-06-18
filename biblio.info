@@ -24,9 +24,9 @@ files[] = includes/views/handlers/biblio_handler_field_biblio_render.inc
 
 ; BibTeX
 files[] = plugins/biblio_style/bibtex/PARSECREATORS.php
-files[] = plugins/biblio_style/bibtexPARSEENTRIES.php
-files[] = plugins/biblio_style/bibtexPARSEMONTH.php
-files[] = plugins/biblio_style/bibtexPARSEPAGE.php
+files[] = plugins/biblio_style/bibtex/PARSEENTRIES.php
+files[] = plugins/biblio_style/bibtex/PARSEMONTH.php
+files[] = plugins/biblio_style/bibtex/PARSEPAGE.php
 
 ; Migrate
 files[] = includes/migrate/plugins/destinations/biblio_contributor.inc

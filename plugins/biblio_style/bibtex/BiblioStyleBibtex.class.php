@@ -8,8 +8,6 @@
 class BiblioStyleBibtex extends BiblioStyleBase {
 
   public function render($options = array(), $langcode = NULL) {
-    static $converter = NULL;
-
     $biblio = $this->biblio;
     $wrapper = entity_metadata_wrapper('biblio', $biblio);
 
@@ -39,18 +37,18 @@ class BiblioStyleBibtex extends BiblioStyleBase {
         break;
 
       case 109:
-        $institution  = $biblio->biblio_publisher->value();
+        $institution  = $wrapper->biblio_publisher->value();
         $biblio->biblio_publisher = NULL;
         break;
 
       case 102:
       default:
-        $journal = $biblio->biblio_secondary_title->value();
+        $journal = $wrapper->biblio_secondary_title->value();
         break;
     }
 
     $output .= '@' . $type . ' {';
-    $output .= ($biblio->biblio_citekey) ? $biblio->biblio_citekey  : "";
+    $output .= isset($biblio->biblio_citekey) ? $wrapper->biblio_citekey->value  : '';
     $output .= $this->formatEntry('title');
     $output .= $this->formatEntry('journal', $journal);
     $output .= $this->formatEntry('booktitle', $booktitle);
@@ -71,6 +69,8 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     $output .= $this->formatEntry('address');
     $output .= $this->formatEntry('abstract');
 
+    /*
+
     $kw_array = array();
     if (!empty($biblio->terms)) {
       foreach ($biblio->terms as $term) {
@@ -87,10 +87,14 @@ class BiblioStyleBibtex extends BiblioStyleBase {
       $output .= $this->formatEntry('keywords', implode(', ', $kw_array));
     }
 
+    */
+
     $output .= $this->formatEntry('isbn');
     $output .= $this->formatEntry('issn');
     $output .= $this->formatEntry('doi');
     $output .= $this->formatEntry('url');
+
+    /*
 
     if (!empty ($biblio->upload) && count($biblio->upload['und']) && user_access('view uploaded files')) {
       foreach ($biblio->upload['und'] as $file) {
@@ -98,8 +102,6 @@ class BiblioStyleBibtex extends BiblioStyleBase {
       }
       $output .= $this->formatEntry('attachments', implode(' , ', $attachments));
     }
-
-    /*
 
     $a = $e = $authors = array();
     if ($authors = biblio_get_contributor_category($biblio->biblio_contributors, 1)) {
@@ -128,10 +130,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     $output .= "\n}\n";
 
     // Convert any special characters to the latex equivalents.
-    if (!isset($converter)) {
-      include_once(drupal_get_path('module', 'biblio_bibtex') . '/transtab_unicode_bibtex.inc.php');
-      $converter = new PARSEENTRIES();
-    }
+    $converter = new PARSEENTRIES();
     $output = $converter->searchReplaceText($this->getTranstab(), $output, FALSE);
 
     return $output;
