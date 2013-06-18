@@ -33,7 +33,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
       case 108:
         $school = $wrapper->biblio_publisher->value();
         $biblio->biblio_publisher = NULL;
-        if (stripos($wrapper->biblio_type_of_work->value(), 'masters')) {
+        if (strpos($wrapper->biblio_type_of_work->value(), 'masters') === TRUE) {
           $type = 'mastersthesis';
         }
         break;
@@ -99,6 +99,8 @@ class BiblioStyleBibtex extends BiblioStyleBase {
       $output .= $this->formatEntry('attachments', implode(' , ', $attachments));
     }
 
+    /*
+
     $a = $e = $authors = array();
     if ($authors = biblio_get_contributor_category($biblio->biblio_contributors, 1)) {
       foreach ($authors as $author) {
@@ -116,10 +118,12 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     if (!empty($a)) {
       $output .= $this->formatEntry('author', $a);
     }
-    
+
     if (!empty($e)) {
       $output .= $this->formatEntry('editor', $e);
     }
+
+    */
 
     $output .= "\n}\n";
 
