@@ -13,32 +13,36 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     $biblio = $this->biblio;
 
     $bibtex = '';
-    $type = "article";
     $journal = $series = $booktitle = $school = $organization = $institution = NULL;
-    $type = _biblio_bibtex_type_map($biblio->biblio_type);
-    switch ($biblio->biblio_type) {
-      case 100 :
+    $type = $this->typeMap();
+
+    switch ($type) {
+      case 100:
         $series = $biblio->biblio_secondary_title;
         $organization = $biblio->biblio_publisher;
         break;
-      case 101 :
-      case 103 :
+
+      case 101:
+      case 103:
         $booktitle = $biblio->biblio_secondary_title;
         $organization = $biblio->biblio_publisher;
         $series = $biblio->biblio_tertiary_title;
         break;
-      case 108 :
+
+      case 108:
         $school = $biblio->biblio_publisher;
         $biblio->biblio_publisher = NULL;
         if (stripos($biblio->biblio_type_of_work, 'masters')) {
           $type = "mastersthesis";
         }
         break;
-      case 109 :
+
+      case 109:
         $institution  = $biblio->biblio_publisher;
         $biblio->biblio_publisher = NULL;
         break;
-      case 102 :
+
+      case 102:
       default:
         $journal = $biblio->biblio_secondary_title;
         break;
@@ -118,13 +122,24 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     return $bibtex;
   }
 
-  public function formatEntry($key, $value) {
+  private function formatEntry($key, $value) {
     return !empty($value) ? ",\n\t$key = {" . $value . "}" : '';
+  }
+
+  /**
+   * Get the BibTeX type from the Biblio entity.
+   *
+   * @return
+   */
+  private function typeMap() {
+    $type = $this->biblio->type;
+    $map = $this->getMapping();
+    return !empty($map['type'][$type]) ? $map['type'][$type] : 'article';
   }
 
 
   /**
-   * Map the fields from the Biblio entity to the ones known by CiteProc.
+   * Map the fields from the Biblio entity to the ones known by BibTeX.
    */
   public function map() {
   }
