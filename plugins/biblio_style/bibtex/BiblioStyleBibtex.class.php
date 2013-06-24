@@ -50,6 +50,8 @@ class BiblioStyleBibtex extends BiblioStyleBase {
         $this->importEntry($wrapper, $key, $entry);
       }
 
+      $this->ImportEntryContributors($wrapper, $entry);
+
       // @todo: Check if the Biblio doesn't already exist, and if so, load it.
       $wrapper->save();
 
@@ -178,6 +180,35 @@ class BiblioStyleBibtex extends BiblioStyleBase {
    */
   private function getEntryValueTertiaryTitle($key, $entry) {
     return !empty($entry['series']) && !empty($entry['booktitle']) ? $entry['series'] : NULL;
+  }
+
+  /**
+   * Create Biblio Contributor entities.
+   */
+  private function ImportEntryContributors($wrapper, $entry) {
+    foreach (array('author', 'editor') as $type) {
+      if (empty($entry[$type])) {
+        continue;
+      }
+
+      $biblio = $wrapper->value();
+
+      // split on ' and '.
+      $names = preg_split("/\s(and|&)\s/i", trim($entry[$type]));
+      foreach ($names as $name) {
+        $biblio_contributor = biblio_contributor_create($name);
+        $biblio_contributor->save();
+
+        // Create contributors field collections.
+        $field_collection = entity_create('field_collection_item', array('field_name' => 'contributor_field_collection'));
+        $field_collection->setHostEntity('biblio', $biblio);
+        $collection_wrapper = entity_metadata_wrapper('field_collection_item', $field_collection);
+        $collection_wrapper->biblio_contributor->set($biblio_contributor);
+
+        // @todo: Add reference to correct term.
+        $collection_wrapper->save();
+      }
+    }
   }
 
   public function render($options = array(), $langcode = NULL) {
@@ -469,8 +500,14 @@ class BiblioStyleBibtex extends BiblioStyleBase {
         // @todo: Use bilbio_file instead.
         'attachments' => array('property' => 'biblio_image', 'method' => 'formatEntryFiles'),
 
-        'author' => array('property' => 'contributor_field_collection', 'method' => 'formatEntryContributorAuthor'),
-        'editor' => array('property' => 'contributor_field_collection', 'method' => 'formatEntryContributorEditor'),
+        'author' => array(
+          'property' => 'contributor_field_collection',
+          'method' => 'formatEntryContributorAuthor',
+        ),
+        'editor' => array(
+          'property' => 'contributor_field_collection',
+          'method' => 'formatEntryContributorEditor',
+        ),
 
         // @todo: Is it ok to have this "fake" keys, or add this as property
         // to the array?
