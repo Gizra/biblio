@@ -147,13 +147,13 @@ class BiblioStyleBibtex extends BiblioStyleBase {
       }
     }
 
-    $first_entry = &drupal_static(__METHOD__, TRUE);
+    $first_entry = &drupal_static(__METHOD__, array());
 
-    $output = $first_entry ? '' : ",\n\t";
+    $output = isset($first_entry[$this->biblio->bid]) ? ",\n\t" : '';
 
-    // If we reached here, it means we have a first entity, so we turn off this
-    // flag.
-    $first_entry = FALSE;
+    // If we reached here, it means we have a first entity, so we can turn off
+    // this flag.
+    $first_entry[$this->biblio->bid] = FALSE;
 
     return $output . $key . ' = {'. $value . '}';
   }
