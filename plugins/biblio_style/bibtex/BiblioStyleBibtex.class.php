@@ -193,7 +193,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
       $biblio = $wrapper->value();
 
-      // split on ' and '.
+      // split names.
       $names = preg_split("/\s(and|&)\s/i", trim($entry[$type]));
       foreach ($names as $name) {
         $biblio_contributor = biblio_contributor_create($name);
