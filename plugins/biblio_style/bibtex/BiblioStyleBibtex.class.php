@@ -7,6 +7,15 @@
 
 class BiblioStyleBibtex extends BiblioStyleBase {
 
+  /**
+   * Import BibTeX entries.
+   *
+   * @todo: Deal with duplication.
+   *
+   * @param $data
+   * @param string $type
+   * @return array
+   */
   public function import($data, $type = 'text') {
     $bibtex = new PARSEENTRIES();
 
@@ -29,13 +38,18 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
     foreach ($entries as $entry) {
 
-      foreach ($map['field'] as $key => $value) {
+      $type = _biblio_bibtex_type_map($entry['bibtexEntryType'], 'import');
+      $biblio = biblio_create($type);
 
+      $wrapper = entity_metadata_wrapper('biblio', $biblio);
+
+      foreach (array_keys($map['field']) as $key) {
+        $this->importEntry($wrapper, $key, $entry);
       }
 
+      /*
       $node = new stdClass();
       $node->biblio_contributors = array();
-      $node->biblio_type = _biblio_bibtex_type_map($entry['bibtexEntryType'], 'import');
       switch ($entry['bibtexEntryType']) {
         case 'mastersthesis':
           $node->biblio_type_of_work = 'masters';
@@ -111,8 +125,36 @@ class BiblioStyleBibtex extends BiblioStyleBase {
       else {
         $dups[] = $dup;
       }
+
+      */
     }
     return array($nids, $dups);
+  }
+
+
+  private function importEntry($wrapper, $key, $entry) {
+    if (empty($entry[$key])) {
+      return;
+    }
+
+    $map = $this->getMapping();
+    $map = $map['field'];
+
+    $property_name = $map['field'][$key]['property'];
+    $method = $map['field'][$key]['import_method'];
+
+    $value = $this->{$method}();
+    $wrapper->{$property_name}->set($value);
+  }
+
+  /**
+   * Get the value of an entry.
+   *
+   * @param $key
+   * @param $entry
+   */
+  private function getEntryValue($key, $entry) {
+    return $entry[$key];
   }
 
   public function render($options = array(), $langcode = NULL) {
@@ -410,6 +452,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     foreach ($return['field'] as $key => $value) {
       if (empty($value['method'])) {
         $return['field'][$key]['method'] = 'formatEntryGeneric';
+        $return['field'][$key]['import_method'] = 'getEntryValue';
       }
     }
 
