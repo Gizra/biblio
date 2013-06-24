@@ -68,19 +68,14 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     $output .= $this->formatEntry('chapter');
     $output .= $this->formatEntry('address');
     $output .= $this->formatEntry('abstract');
-
     $output .= $this->formatEntry('keywords');
-
     $output .= $this->formatEntry('isbn');
     $output .= $this->formatEntry('issn');
     $output .= $this->formatEntry('doi');
     $output .= $this->formatEntry('url');
-
     $output .= $this->formatEntry('attachments');
-
     $output .= $this->formatEntry('author');
     $output .= $this->formatEntry('editor');
-
     $output .= "\n}\n";
 
     // Convert any special characters to the latex equivalents.
@@ -298,7 +293,6 @@ class BiblioStyleBibtex extends BiblioStyleBase {
         'attachments' => array('property' => 'biblio_image', 'method' => 'formatEntryFiles'),
 
         'author' => array('property' => 'contributor_field_collection', 'method' => 'formatEntryContributorAuthor'),
-
         'editor' => array('property' => 'contributor_field_collection', 'method' => 'formatEntryContributorEditor'),
       ),
     );
