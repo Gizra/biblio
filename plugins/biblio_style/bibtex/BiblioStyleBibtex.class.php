@@ -8,7 +8,8 @@
 class BiblioStyleBibtex extends BiblioStyleBase {
 
   public function render($options = array(), $langcode = NULL) {
-    $biblio = $this->biblio;
+    // We clone the biblio, as we might change the values.
+    $biblio = clone $this->biblio;
     $wrapper = entity_metadata_wrapper('biblio', $biblio);
 
     $output = '';
@@ -30,7 +31,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
       case 108:
         $school = $wrapper->biblio_publisher->value();
-        $biblio->biblio_publisher = NULL;
+        $biblio->biblio_publisher->set(NULL);
         if (strpos($wrapper->biblio_type_of_work->value(), 'masters') === TRUE) {
           $type = 'mastersthesis';
         }
@@ -38,7 +39,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
       case 109:
         $institution  = $wrapper->biblio_publisher->value();
-        $biblio->biblio_publisher = NULL;
+        $biblio->biblio_publisher->set(NULL);
         break;
 
       case 102:
