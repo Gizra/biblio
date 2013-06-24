@@ -34,6 +34,7 @@ function biblio_example_attach_fields() {
     'biblio_issued',
     'biblio_pages',
     'biblio_publication_year',
+    'biblio_publisher',
     'biblio_secondary_title',
     'biblio_tertiary_title',
     // Contributors reference.
