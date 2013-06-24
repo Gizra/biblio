@@ -8,14 +8,13 @@
 class BiblioStyleExampleCiteProc extends BiblioStyleCiteProc {
 
   public function render($options = array(), $langcode = NULL) {
+    $output = parent::render($options, $langcode);
+
     if (empty($this->biblio->title_no_url)) {
       // Convert the title to a URL referencing the bilbio.
       $url = entity_uri('biblio', $this->biblio);
-
-      // @todo: Find a better way to fix the title.
-      $this->biblio->title = l($this->biblio->title, $url['path'], $url['options']);
+      $output = str_replace($this->biblio->title, l($this->biblio->title, $url['path'], $url['options']), $output);
     }
-    $output = parent::render($options, $langcode);
 
     $wrapper = entity_metadata_wrapper('biblio', $this->biblio);
     if (isset($wrapper->biblio_abstract) && $abstract = $wrapper->biblio_abstract->value()) {
