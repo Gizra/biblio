@@ -7,6 +7,114 @@
 
 class BiblioStyleBibtex extends BiblioStyleBase {
 
+  public function import($data, $type = 'text') {
+    $bibtex = new PARSEENTRIES();
+
+    if ($type == 'file') {
+      $bibtex->openBib($data);
+    }
+    else {
+      $bibtex->loadBibtexString($data);
+    }
+
+    $bibtex->extractEntries();
+
+    if (!$bibtex->count) {
+      return;
+    }
+
+    $entries = $bibtex->getEntries();
+
+    $map = $this->getMapping();
+
+    foreach ($entries as $entry) {
+
+      foreach ($map['field'] as $key => $value) {
+
+      }
+
+      $node = new stdClass();
+      $node->biblio_contributors = array();
+      $node->biblio_type = _biblio_bibtex_type_map($entry['bibtexEntryType'], 'import');
+      switch ($entry['bibtexEntryType']) {
+        case 'mastersthesis':
+          $node->biblio_type_of_work = 'masters';
+          break;
+        case 'phdthesis':
+          $node->biblio_type_of_work = 'phd';
+          break;
+      }
+      if (!empty($entry['author'])) {
+        // split on ' and '
+        $author_array = preg_split("/\s(and|&)\s/i", trim($entry['author']));
+        foreach ($author_array as $key => $author) {
+          $node->biblio_contributors[]= array('name' => $author, 'auth_category' => 1, 'auth_type' => _biblio_get_auth_type(1, $node->biblio_type));
+        }
+      }
+
+      $node->biblio_citekey = (!empty($entry['bibtexCitation'])) ? $entry['bibtexCitation'] : NULL;
+      if (!empty($entry['editor'])) {
+        $author_array = preg_split("/\s(and|&)\s/i", trim($entry['editor']));
+        foreach ($author_array as $key => $author) {
+          $node->biblio_contributors[]= array('name' => $author, 'auth_category' => 2, 'auth_type' => _biblio_get_auth_type(2, $node->biblio_type));
+        }
+      }
+
+      $node->biblio_secondary_title = (!empty($entry['journal'])) ? $entry['journal'] : NULL;
+      if (!empty($entry['booktitle'])) $node->biblio_secondary_title =  $entry['booktitle'];
+      if (!empty($entry['series'])) {
+        if (!empty($entry['booktitle'])) {
+          $node->biblio_tertiary_title =  $entry['series'];
+        }
+        else {
+          $node->biblio_secondary_title =  $entry['series'];
+        }
+      }
+      $node->biblio_volume          = (!empty($entry['volume'])) ? $entry['volume'] : NULL;
+      $node->biblio_number          = (!empty($entry['number'])) ? $entry['number'] : NULL;
+      $node->biblio_year            = (!empty($entry['year'])) ? $entry['year'] : NULL;
+      $node->biblio_notes           = (!empty($entry['note'])) ? $entry['note'] : NULL;
+      $node->biblio_date            = (!empty($entry['month'])) ? $entry['month'] : NULL;
+      $node->biblio_pages           = (!empty($entry['pages'])) ? $entry['pages'] : NULL;
+      $node->biblio_publisher       = (!empty($entry['publisher'])) ? $entry['publisher'] : NULL;
+      if (!empty($entry['organization'])) $node->biblio_publisher = $entry['organization'];
+      if (!empty($entry['school']))       $node->biblio_publisher       = $entry['school'];
+      if (!empty($entry['institution']))  $node->biblio_publisher       = $entry['institution'];
+      $node->title                   = (!empty($entry['title'])) ? $entry['title'] : NULL;
+      $node->biblio_type_of_work    .= (!empty($entry['type'])) ? $entry['type'] : NULL;
+      $node->biblio_edition         = (!empty($entry['edition'])) ? $entry['edition'] : NULL;
+      $node->biblio_section         = (!empty($entry['chapter'])) ? $entry['chapter'] : NULL;
+      $node->biblio_place_published = (!empty($entry['address'])) ? $entry['address'] : NULL;
+      $node->biblio_abst_e          = (!empty($entry['abstract'])) ? $entry['abstract'] : NULL;
+      if (!empty($entry['keywords'])) {
+        if (strpos($entry['keywords'], ';')) {
+          $entry['keywords'] = str_replace(';', ',', $entry['keywords']);
+        }
+        $node->biblio_keywords = explode(',', $entry['keywords']);
+      }
+      $node->biblio_isbn            = (!empty($entry['isbn'])) ? $entry['isbn'] : NULL;
+      $node->biblio_issn            = (!empty($entry['issn'])) ? $entry['issn'] : NULL;
+      $node->biblio_url             = (!empty($entry['url'])) ? $entry['url'] : NULL;
+      $node->biblio_doi             = (!empty($entry['doi'])) ? $entry['doi'] : NULL;
+      $node->biblio_bibtex_md5      = md5(serialize($node));
+      $node->biblio_import_type     = 'bibtex';
+
+      if (!($dup = biblio_bibtex_check_md5($node->biblio_bibtex_md5))) {
+        if ($save) {
+          biblio_save_node($node, $terms, $batch, $session_id, $save);
+          $nids[] = (!empty($node->nid))? $node->nid : NULL;
+        }
+        else { // return the whole node if we are not saveing to the DB (used for the paste function on the input form)
+          $nids[] = $node;
+        }
+      }
+      else {
+        $dups[] = $dup;
+      }
+    }
+    return array($nids, $dups);
+  }
+
   public function render($options = array(), $langcode = NULL) {
     // We clone the biblio, as we might change the values.
     $biblio = clone $this->biblio;
