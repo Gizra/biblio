@@ -69,25 +69,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     $output .= $this->formatEntry('address');
     $output .= $this->formatEntry('abstract');
 
-    /*
-
-    $kw_array = array();
-    if (!empty($biblio->terms)) {
-      foreach ($biblio->terms as $term) {
-        $kw_array[] = $term->name;
-      }
-    }
-    if ($terms = $wrapper->biblio_keywords->value()) {
-      foreach ($terms as $term) {
-        $kw_array[] = $term;
-      }
-    }
-    if (!empty($kw_array)) {
-      $kw_array = array_unique($kw_array);
-      $output .= $this->formatEntry('keywords', implode(', ', $kw_array));
-    }
-
-    */
+    $output .= $this->formatEntry('keywords');
 
     $output .= $this->formatEntry('isbn');
     $output .= $this->formatEntry('issn');
@@ -214,12 +196,6 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     return !empty($map['type'][$type]) ? $map['type'][$type] : 'article';
   }
 
-
-  /**
-   * Map the fields from the Biblio entity to the ones known by BibTeX.
-   */
-  public function map() {
-  }
 
   /**
    * Mapping of Biblio and BibTeX.
