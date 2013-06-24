@@ -78,31 +78,8 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
     $output .= $this->formatEntry('attachments');
 
-    /*
-
-    $a = $e = $authors = array();
-    if ($authors = biblio_get_contributor_category($biblio->biblio_contributors, 1)) {
-      foreach ($authors as $author) {
-        $a[] = trim($author['name']);
-      }
-    }
-    if ($authors = biblio_get_contributor_category($biblio->biblio_contributors, 2)) {
-      foreach ($authors as $author) {
-        $e[] = trim($author['name']);
-      }
-    }
-    $a = implode(' and ', $a);
-    $e = implode(' and ', $e);
-
-    if (!empty($a)) {
-      $output .= $this->formatEntry('author', $a);
-    }
-
-    if (!empty($e)) {
-      $output .= $this->formatEntry('editor', $e);
-    }
-
-    */
+    $output .= $this->formatEntry('author');
+    $output .= $this->formatEntry('editor');
 
     $output .= "\n}\n";
 
@@ -212,7 +189,50 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     return implode(' , ', $url);
   }
 
+  /**
+   * Author contributor format entry.
+   *
+   * @param $wrapper
+   * @param $property_name
+   */
+  private function formatEntryContributorAuthor($wrapper, $property_name) {
+    return $this->formatEntryContributor($wrapper, $property_name, 'author');
+  }
 
+  /**
+   * Editor contributor format entry.
+   *
+   * @param $wrapper
+   * @param $property_name
+   */
+  private function formatEntryContributorEditor($wrapper, $property_name) {
+    return $this->formatEntryContributor($wrapper, $property_name, 'editor');
+  }
+
+  /**
+   * Helper function to get contributors name.
+   *
+   * @param $wrapper
+   * @param $property_name
+   * @param $role
+   * @return string
+   */
+  private function formatEntryContributor($wrapper, $property_name, $role) {
+    if (!$wrapper->{$property_name}->value()) {
+      return;
+    }
+
+    $names = array();
+    foreach ($wrapper->{$property_name} as $sub_wrapper) {
+      if (strtolower($sub_wrapper->biblio_contributor_role->label()) != $role) {
+        continue;
+      }
+
+      $names[] = $sub_wrapper->biblio_contributor->label();
+    }
+
+    return implode(' and ', $names);
+  }
 
   /**
    * Get the BibTeX type from the Biblio entity.
@@ -276,6 +296,10 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
         // @todo: Use bilbio_file instead.
         'attachments' => array('property' => 'biblio_image', 'method' => 'formatEntryFiles'),
+
+        'author' => array('property' => 'contributor_field_collection', 'method' => 'formatEntryContributorAuthor'),
+
+        'editor' => array('property' => 'contributor_field_collection', 'method' => 'formatEntryContributorEditor'),
       ),
     );
 
