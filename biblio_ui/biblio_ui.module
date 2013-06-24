@@ -341,7 +341,7 @@ function biblio_ui_manage_biblio($form, &$form_state, $type) {
       '#value' => t('Send'),
     ),
     'cancel' => array(
-      '#markup' => l(t('Cancel'), 'admin/biblio'),
+      '#markup' => l(t('Cancel'), 'biblio'),
     ),
   );
 
@@ -372,7 +372,7 @@ function biblio_ui_manage_biblio_submit($form, &$form_state) {
 
   $biblio->save();
 
-  $form_state['redirect'] = 'admin/biblio';
+  $form_state['redirect'] = 'biblio/' . $biblio->bid;
 }
 
 /**
@@ -386,7 +386,7 @@ function biblio_ui_delete_biblio($form, $form_state, $biblio) {
   return confirm_form($form,
     t('Are you sure you want to delete @title?',
       array('@title' => $biblio->title)),
-    'admin/biblio',
+    'biblio',
     t('Are you sure you want to delete this biblio entry? This action cannot be undone.'),
     t('Delete'),
     t('Cancel'));
@@ -400,7 +400,7 @@ function biblio_ui_delete_biblio_submit($form, &$form_state) {
   $biblio = $form_state['#entity'];
   $biblio->delete();
 
-  $form_state['redirect'] = 'admin/biblio';
+  $form_state['redirect'] = 'biblio';
 }
 
 /**
