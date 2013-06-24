@@ -147,7 +147,15 @@ class BiblioStyleBibtex extends BiblioStyleBase {
       }
     }
 
-    return ",\n\t$key = {" . $value . "}";
+    $first_entry = &drupal_static(__METHOD__, TRUE);
+
+    $output = $first_entry ? '' : ",\n\t";
+
+    // If we reached here, it means we have a first entity, so we turn off this
+    // flag.
+    $first_entry = FALSE;
+
+    return $output . $key . ' = {'. $value . '}';
   }
 
   /**
