@@ -272,9 +272,9 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     );
 
     // Assign default method to format entry.
-    foreach ($return as $key => $value) {
+    foreach ($return['field'] as $key => $value) {
       if (empty($value['method'])) {
-        $return[$key]['method'] = 'formatEntryGeneric';
+        $return['field'][$key]['method'] = 'formatEntryGeneric';
       }
     }
 
