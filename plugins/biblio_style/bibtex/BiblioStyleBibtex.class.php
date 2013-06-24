@@ -36,6 +36,9 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
     $map = $this->getMapping();
 
+    // Array of Biblios.
+    $biblios = array();
+
     foreach ($entries as $entry) {
 
       $type = _biblio_bibtex_type_map($entry['bibtexEntryType'], 'import');
@@ -46,6 +49,11 @@ class BiblioStyleBibtex extends BiblioStyleBase {
       foreach (array_keys($map['field']) as $key) {
         $this->importEntry($wrapper, $key, $entry);
       }
+
+      // @todo: Check if the Biblio doesn't already exist, and if so, load it.
+      $wrapper->save();
+
+      $biblios[] = $wrapper->value();
 
       /*
       $node = new stdClass();
@@ -128,7 +136,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
       */
     }
-    return array($nids, $dups);
+    return $biblios;
   }
 
 
