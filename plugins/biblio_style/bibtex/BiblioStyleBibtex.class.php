@@ -48,7 +48,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     }
 
     $output .= '@' . $type . ' {';
-    $output .= isset($biblio->biblio_citekey) ? $wrapper->biblio_citekey->value  : '';
+    $output .= isset($wrapper->biblio_citekey) ? $wrapper->biblio_citekey->value()  : '';
     $output .= $this->formatEntry('title');
     $output .= $this->formatEntry('journal', $journal);
     $output .= $this->formatEntry('booktitle', $booktitle);
@@ -158,17 +158,49 @@ class BiblioStyleBibtex extends BiblioStyleBase {
       // @todo: Cache the wrapper.
       $wrapper = entity_metadata_wrapper('biblio', $this->biblio);
 
-      $property_name = $map[$key];
+      $property_name = $map[$key]['property'];
       if (!isset($wrapper->{$property_name})) {
         return;
       }
 
-      if (!$value = $wrapper->{$property_name}->value()) {
+      $method = $map[$key]['method'];
+
+      if (!$value = $this->{$method}($wrapper, $property_name)) {
         return;
       }
     }
 
     return ",\n\t$key = {" . $value . "}";
+  }
+
+  /**
+   * Generic format entry.
+   *
+   * @param $wrapper
+   * @param $property_name
+   */
+  private function formatEntryGeneric($wrapper, $property_name) {
+    return $wrapper->{$property_name}->value();
+  }
+
+  /**
+   * Taxonomy term format entry.
+   *
+   * @param $wrapper
+   * @param $property_name
+   */
+  private function formatEntryTaxonomyTerms($wrapper, $property_name) {
+    if (!$terms = $wrapper->{$property_name}->value()) {
+      return;
+    }
+
+    $terms = is_array($terms) ? $terms : array($terms);
+    $values = array();
+    foreach ($terms as $term) {
+      $values[] = $term->name;
+    }
+
+    return implode(', ', $values);
   }
 
   /**
@@ -198,7 +230,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
    *   field as the value.
    */
   public function getMapping() {
-    return array(
+    $return  = array(
       'type' => array(
         'article'       => 102,
         'book'          => 100,
@@ -216,26 +248,37 @@ class BiblioStyleBibtex extends BiblioStyleBase {
         'unpublished'   => 124,
       ),
       'field' => array(
-        'title' => 'title',
-        'volume' => 'biblio_volume',
-        'number' => 'biblio_number',
-        'year' => 'biblio_year',
-        'note' => 'biblio_notes',
-        'month' => 'biblio_date',
-        'pages' => 'biblio_pages',
-        'publisher' => 'biblio_publisher',
-        'type' => 'biblio_type_of_work',
-        'edition' => 'biblio_edition',
-        'chapter' => 'biblio_section',
-        'address' => 'biblio_place_published',
-        'abstract' => 'biblio_abstract',
-        'isbn' => 'biblio_isbn',
-        'issn' => 'biblio_issn',
-        'doi' => 'biblio_doi',
+        'title' => array('property' => 'title'),
+        'volume' => array('property' => 'biblio_volume'),
+        'number' => array('property' => 'biblio_number'),
+        'year' => array('property' => 'biblio_year'),
+        'note' => array('property' => 'biblio_notes'),
+        'month' => array('property' => 'biblio_date'),
+        'pages' => array('property' => 'biblio_pages'),
+        'publisher' => array('property' => 'biblio_publisher'),
+        'type' => array('property' => 'biblio_type_of_work'),
+        'edition' => array('property' => 'biblio_edition'),
+        'chapter' => array('property' => 'biblio_section'),
+        'address' => array('property' => 'biblio_place_published'),
+        'abstract' => array('property' => 'biblio_abstract'),
+        'isbn' => array('property' => 'biblio_isbn'),
+        'issn' => array('property' => 'biblio_issn'),
+        'doi' => array('property' => 'biblio_doi'),
         // @todo: Is this the Biblio URL?
-        'url' => 'biblio_url',
+        'url' => array('property' => 'biblio_url'),
+
+        'keywords' => array('property' => 'biblio_keywords', 'method' => 'formatEntryTaxonomyTerms'),
       ),
     );
+
+    // Assign default method to format entry.
+    foreach ($return as $key => $value) {
+      if (empty($value['method'])) {
+        $return[$key]['method'] = 'formatEntryGeneric';
+      }
+    }
+
+    return $return;
   }
 
 
