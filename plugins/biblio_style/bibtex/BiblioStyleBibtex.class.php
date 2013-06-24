@@ -82,38 +82,13 @@ class BiblioStyleBibtex extends BiblioStyleBase {
         }
       }
 
-      $node->biblio_secondary_title = (!empty($entry['journal'])) ? $entry['journal'] : NULL;
-      if (!empty($entry['booktitle'])) $node->biblio_secondary_title =  $entry['booktitle'];
-      if (!empty($entry['series'])) {
-        if (!empty($entry['booktitle'])) {
-          $node->biblio_tertiary_title =  $entry['series'];
-        }
-        else {
-          $node->biblio_secondary_title =  $entry['series'];
-        }
-      }
-      $node->biblio_volume          = (!empty($entry['volume'])) ? $entry['volume'] : NULL;
-      $node->biblio_number          = (!empty($entry['number'])) ? $entry['number'] : NULL;
-      $node->biblio_year            = (!empty($entry['year'])) ? $entry['year'] : NULL;
-      $node->biblio_notes           = (!empty($entry['note'])) ? $entry['note'] : NULL;
-      $node->biblio_date            = (!empty($entry['month'])) ? $entry['month'] : NULL;
-      $node->biblio_pages           = (!empty($entry['pages'])) ? $entry['pages'] : NULL;
-      $node->title                   = (!empty($entry['title'])) ? $entry['title'] : NULL;
-      $node->biblio_type_of_work    .= (!empty($entry['type'])) ? $entry['type'] : NULL;
-      $node->biblio_edition         = (!empty($entry['edition'])) ? $entry['edition'] : NULL;
-      $node->biblio_section         = (!empty($entry['chapter'])) ? $entry['chapter'] : NULL;
-      $node->biblio_place_published = (!empty($entry['address'])) ? $entry['address'] : NULL;
-      $node->biblio_abst_e          = (!empty($entry['abstract'])) ? $entry['abstract'] : NULL;
       if (!empty($entry['keywords'])) {
         if (strpos($entry['keywords'], ';')) {
           $entry['keywords'] = str_replace(';', ',', $entry['keywords']);
         }
         $node->biblio_keywords = explode(',', $entry['keywords']);
       }
-      $node->biblio_isbn            = (!empty($entry['isbn'])) ? $entry['isbn'] : NULL;
-      $node->biblio_issn            = (!empty($entry['issn'])) ? $entry['issn'] : NULL;
-      $node->biblio_url             = (!empty($entry['url'])) ? $entry['url'] : NULL;
-      $node->biblio_doi             = (!empty($entry['doi'])) ? $entry['doi'] : NULL;
+
       $node->biblio_bibtex_md5      = md5(serialize($node));
       $node->biblio_import_type     = 'bibtex';
 
@@ -181,6 +156,28 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     }
 
     return !empty($entry['publisher']) ? $entry['publisher'] : NULL;
+  }
+
+  /**
+   * Get the value of a secondary title.
+   */
+  private function getEntryValueSecondaryTitle($key, $entry) {
+    if (!empty($entry['series']) && empty($entry['booktitle'])) {
+      return $entry['series'];
+    }
+
+    if (!empty($entry['booktitle'])) {
+      return $entry['booktitle'];
+    }
+
+    return !empty($entry['journal']) ? $entry['journal'] : NULL;
+  }
+
+  /**
+   * Get the value of a tertiary title.
+   */
+  private function getEntryValueTertiaryTitle($key, $entry) {
+    return !empty($entry['series']) && !empty($entry['booktitle']) ? $entry['series'] : NULL;
   }
 
   public function render($options = array(), $langcode = NULL) {
@@ -474,6 +471,19 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
         'author' => array('property' => 'contributor_field_collection', 'method' => 'formatEntryContributorAuthor'),
         'editor' => array('property' => 'contributor_field_collection', 'method' => 'formatEntryContributorEditor'),
+
+        // @todo: Is it ok to have this "fake" keys, or add this as property
+        // to the array?
+        // Keys used for import.
+        'secondary_title' => array(
+          'property' => 'biblio_secondary_title',
+          'import_method' => 'getEntryValueSecondaryTitle',
+        ),
+
+        'tertiary_title' => array(
+          'property' => 'biblio_tertiary_title',
+          'import_method' => 'getEntryValueTertiaryTitle',
+        ),
       ),
     );
 
