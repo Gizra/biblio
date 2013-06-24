@@ -68,21 +68,8 @@ class BiblioStyleBibtex extends BiblioStyleBase {
           $node->biblio_type_of_work = 'phd';
           break;
       }
-      if (!empty($entry['author'])) {
-        // split on ' and '
-        $author_array = preg_split("/\s(and|&)\s/i", trim($entry['author']));
-        foreach ($author_array as $key => $author) {
-          $node->biblio_contributors[]= array('name' => $author, 'auth_category' => 1, 'auth_type' => _biblio_get_auth_type(1, $node->biblio_type));
-        }
-      }
 
       $node->biblio_citekey = (!empty($entry['bibtexCitation'])) ? $entry['bibtexCitation'] : NULL;
-      if (!empty($entry['editor'])) {
-        $author_array = preg_split("/\s(and|&)\s/i", trim($entry['editor']));
-        foreach ($author_array as $key => $author) {
-          $node->biblio_contributors[]= array('name' => $author, 'auth_category' => 2, 'auth_type' => _biblio_get_auth_type(2, $node->biblio_type));
-        }
-      }
 
       if (!empty($entry['keywords'])) {
         if (strpos($entry['keywords'], ';')) {
