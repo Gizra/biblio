@@ -76,14 +76,9 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     $output .= $this->formatEntry('doi');
     $output .= $this->formatEntry('url');
 
-    /*
+    $output .= $this->formatEntry('attachments');
 
-    if (!empty ($biblio->upload) && count($biblio->upload['und']) && user_access('view uploaded files')) {
-      foreach ($biblio->upload['und'] as $file) {
-        $attachments[] = file_create_url($file['uri']);
-      }
-      $output .= $this->formatEntry('attachments', implode(' , ', $attachments));
-    }
+    /*
 
     $a = $e = $authors = array();
     if ($authors = biblio_get_contributor_category($biblio->biblio_contributors, 1)) {
@@ -186,6 +181,32 @@ class BiblioStyleBibtex extends BiblioStyleBase {
   }
 
   /**
+   * File format entry.
+   *
+   * @param $wrapper
+   * @param $property_name
+   */
+  private function formatEntryFiles($wrapper, $property_name) {
+    if (!user_access('view uploaded files')) {
+      return;
+    }
+
+    if (!$files =  $wrapper->{$property_name}->value()) {
+      return;
+    }
+
+    $url = array();
+    $files = !isset($files['fid']) ? $files : array($files);
+    foreach ($files as $file) {
+      $url[] = file_create_url($file['uri']);
+    }
+
+    return implode(' , ', $url);
+  }
+
+
+
+  /**
    * Get the BibTeX type from the Biblio entity.
    *
    * @return
@@ -244,6 +265,9 @@ class BiblioStyleBibtex extends BiblioStyleBase {
         'url' => array('property' => 'biblio_url'),
 
         'keywords' => array('property' => 'biblio_keywords', 'method' => 'formatEntryTaxonomyTerms'),
+
+        // @todo: Use bilbio_file instead.
+        'attachments' => array('property' => 'biblio_image', 'method' => 'formatEntryFiles'),
       ),
     );
 
