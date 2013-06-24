@@ -98,10 +98,6 @@ class BiblioStyleBibtex extends BiblioStyleBase {
       $node->biblio_notes           = (!empty($entry['note'])) ? $entry['note'] : NULL;
       $node->biblio_date            = (!empty($entry['month'])) ? $entry['month'] : NULL;
       $node->biblio_pages           = (!empty($entry['pages'])) ? $entry['pages'] : NULL;
-      $node->biblio_publisher       = (!empty($entry['publisher'])) ? $entry['publisher'] : NULL;
-      if (!empty($entry['organization'])) $node->biblio_publisher = $entry['organization'];
-      if (!empty($entry['school']))       $node->biblio_publisher       = $entry['school'];
-      if (!empty($entry['institution']))  $node->biblio_publisher       = $entry['institution'];
       $node->title                   = (!empty($entry['title'])) ? $entry['title'] : NULL;
       $node->biblio_type_of_work    .= (!empty($entry['type'])) ? $entry['type'] : NULL;
       $node->biblio_edition         = (!empty($entry['edition'])) ? $entry['edition'] : NULL;
@@ -163,6 +159,28 @@ class BiblioStyleBibtex extends BiblioStyleBase {
    */
   private function getEntryValue($key, $entry) {
     return $entry[$key];
+  }
+
+  /**
+   * Get the value of a publisher.
+   *
+   * @param $key
+   * @param $entry
+   */
+  private function getEntryValuePublisher($key, $entry) {
+    if (!empty($entry['organization'])) {
+      return $entry['organization'];
+    }
+
+    if (!empty($entry['school'])) {
+      return $entry['school'];
+    }
+
+    if (!empty($entry['institution'])) {
+      return $entry['institution'];
+    }
+
+    return !empty($entry['publisher']) ? $entry['publisher'] : NULL;
   }
 
   public function render($options = array(), $langcode = NULL) {
@@ -434,7 +452,10 @@ class BiblioStyleBibtex extends BiblioStyleBase {
         'note' => array('property' => 'biblio_notes'),
         'month' => array('property' => 'biblio_date'),
         'pages' => array('property' => 'biblio_pages'),
-        'publisher' => array('property' => 'biblio_publisher'),
+        'publisher' => array(
+          'property' => 'biblio_publisher',
+          'import_method' => 'getEntryValuePublisher',
+        ),
         'type' => array('property' => 'biblio_type_of_work'),
         'edition' => array('property' => 'biblio_edition'),
         'chapter' => array('property' => 'biblio_section'),
