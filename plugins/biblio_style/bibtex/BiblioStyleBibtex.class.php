@@ -41,7 +41,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
     foreach ($entries as $entry) {
 
-      $type = _biblio_bibtex_type_map($entry['bibtexEntryType'], 'import');
+      $type = $this->typeMap('import', $entry['bibtexEntryType']);
       $biblio = biblio_create($type);
 
       $wrapper = entity_metadata_wrapper('biblio', $biblio);
@@ -205,7 +205,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
     $output = '';
     $journal = $series = $booktitle = $school = $organization = $institution = NULL;
-    $type = $this->typeMap();
+    $type = $this->typeMap('render', $this->biblio->type);
 
     switch ($type) {
       case 100:
@@ -426,10 +426,17 @@ class BiblioStyleBibtex extends BiblioStyleBase {
    *
    * @return
    */
-  private function typeMap() {
-    $type = $this->biblio->type;
+  private function typeMap($op = 'render', $type) {
     $map = $this->getMapping();
-    return !empty($map['type'][$type]) ? $map['type'][$type] : 'article';
+    $map = $map['type'];
+
+    if ($op == 'render') {
+      return !empty($map[$type]) ? $map[$type] : 'article';
+    }
+
+    $key = array_search($type, $map);
+    // On Import default to 129 which is "misc".
+    return $key ? $key : 129;
   }
 
 
