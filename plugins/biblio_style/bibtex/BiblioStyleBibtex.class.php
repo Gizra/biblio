@@ -47,6 +47,9 @@ class BiblioStyleBibtex extends BiblioStyleBase {
       $wrapper = entity_metadata_wrapper('biblio', $biblio);
 
       foreach (array_keys($map['field']) as $key) {
+        if (in_array($key, array('author', 'editor'))) {
+          continue;
+        }
         $this->importEntry($wrapper, $key, $entry);
       }
 
@@ -109,9 +112,23 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     $map = $map['field'];
 
     $property_name = $map[$key]['property'];
+
+    biblio_create_field($property_name, $wrapper->type(), $wrapper->getBundle());
+
+    if (!isset($wrapper->{$property_name})) {
+      return;
+    }
+
     $method = $map[$key]['import_method'];
 
     $value = $this->{$method}($key, $entry);
+
+    // @todo: Make title writable.
+    $wrapper_info = $wrapper->{$property_name}->info();
+    if (empty($wrapper_info['setter callback'])) {
+      return;
+    }
+
     $wrapper->{$property_name}->set($value);
   }
 
@@ -436,8 +453,8 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
     // @todo: This looks wrong.
     $key = array_search(strtolower($type), $map);
-    // On Import default to "misc".
-    return $key ? $key : 'misc';
+    // On Import default to 129 which is "misc".
+    return $key ? $key : 129;
   }
 
 

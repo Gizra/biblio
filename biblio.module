@@ -501,8 +501,8 @@ function biblio_contributor_load_multiple($cids = array()) {
  *   biblio_fields_info() with the field name.
  */
 function biblio_create_field($field_name, $entity_type, $bundle, $biblio_field = array()) {
-  if (empty($biblio_field)) {
-    $biblio_field = biblio_fields_info($field_name);
+  if (!$biblio_field && !$biblio_field = biblio_fields_info($field_name)) {
+    return;
   }
 
   $field = field_info_field($field_name);
