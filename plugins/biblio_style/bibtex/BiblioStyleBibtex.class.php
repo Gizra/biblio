@@ -108,10 +108,10 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     $map = $this->getMapping();
     $map = $map['field'];
 
-    $property_name = $map['field'][$key]['property'];
-    $method = $map['field'][$key]['import_method'];
+    $property_name = $map[$key]['property'];
+    $method = $map[$key]['import_method'];
 
-    $value = $this->{$method}();
+    $value = $this->{$method}($key, $entry);
     $wrapper->{$property_name}->set($value);
   }
 
@@ -122,7 +122,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
    * @param $entry
    */
   private function getEntryValue($key, $entry) {
-    return $entry[$key];
+    return !empty($entry[$key]) ? $entry[$key] : NULL;
   }
 
   /**
@@ -434,9 +434,10 @@ class BiblioStyleBibtex extends BiblioStyleBase {
       return !empty($map[$type]) ? $map[$type] : 'article';
     }
 
-    $key = array_search($type, $map);
-    // On Import default to 129 which is "misc".
-    return $key ? $key : 129;
+    // @todo: This looks wrong.
+    $key = array_search(strtolower($type), $map);
+    // On Import default to "misc".
+    return $key ? $key : 'misc';
   }
 
 
@@ -522,6 +523,9 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     foreach ($return['field'] as $key => $value) {
       if (empty($value['method'])) {
         $return['field'][$key]['method'] = 'formatEntryGeneric';
+      }
+
+      if (empty($value['import_method'])) {
         $return['field'][$key]['import_method'] = 'getEntryValue';
       }
     }
