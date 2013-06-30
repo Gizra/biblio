@@ -277,6 +277,13 @@ function biblio_entity_info() {
 }
 
 /**
+ * Implements hook_entity_property_info_alter().
+ */
+function biblio_entity_property_info_alter(&$info) {
+  $info['biblio']['properties']['title']['setter callback'] = 'entity_property_verbatim_set';
+}
+
+/**
  * Get the bundles of the biblio.
  *
  * @param string $type
