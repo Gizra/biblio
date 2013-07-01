@@ -114,7 +114,7 @@ class BiblioMigrateEntries extends Migration {
     // Make sure optional fields are attached if they have an assigned value.
     foreach ($this->optionalFields as $field_name) {
       biblio_create_field($field_name, 'biblio', $entity->type);
-      if (!$entity->$field_name) {
+      if (empty($entity->$field_name)) {
         continue;
       }
 
