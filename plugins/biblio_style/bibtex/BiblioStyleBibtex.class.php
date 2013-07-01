@@ -41,8 +41,9 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
     foreach ($entries as $entry) {
 
-      $type = $this->typeMap('import', $entry['bibtexEntryType']);
-      $biblio = biblio_create($type);
+      // @todo: Why does the original return a number?
+      // $type = $this->typeMap('import', $entry['bibtexEntryType']);
+      $biblio = biblio_create(strtolower($entry['bibtexEntryType']));
 
       $wrapper = entity_metadata_wrapper('biblio', $biblio);
 
