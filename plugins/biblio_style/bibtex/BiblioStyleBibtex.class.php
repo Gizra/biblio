@@ -257,8 +257,8 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     }
 
     // @todo: Use the human name instead of ucfirst()?
-    $output .= '@' . ucfirst($type). ' {';
-    $output .= isset($wrapper->biblio_citekey) ? $wrapper->biblio_citekey->value()  : '';
+    $output .= '@' . ucfirst($type). '{';
+    $output .= $this->formatEntry('bibtexCitation', NULL, FALSE);
     $output .= $this->formatEntry('title');
     $output .= $this->formatEntry('journal', $journal);
     $output .= $this->formatEntry('booktitle', $booktitle);
@@ -305,7 +305,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
    *   entity. Defaults to NULL.
    * @return string
    */
-  private function formatEntry($key, $value = NULL) {
+  private function formatEntry($key, $value = NULL, $use_key = TRUE) {
     if (empty($value)) {
       $map = $this->getMapping();
       $map = $map['field'];
@@ -337,7 +337,11 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     // this flag.
     $first_entry[$this->biblio->bid] = FALSE;
 
-    return $output . $key . ' = {'. $value . '}';
+    if ($use_key) {
+      return $output . $key . ' = {'. $value . '}';
+    }
+
+    return $output . $value;
   }
 
   /**
@@ -461,7 +465,6 @@ class BiblioStyleBibtex extends BiblioStyleBase {
           'property' => 'biblio_publisher',
           'import_method' => 'getEntryValuePublisher',
         ),
-        'type' => array('property' => 'biblio_type_of_work'),
         'edition' => array('property' => 'biblio_edition'),
         'chapter' => array('property' => 'biblio_section'),
         'address' => array('property' => 'biblio_place_published'),
@@ -485,6 +488,10 @@ class BiblioStyleBibtex extends BiblioStyleBase {
           'property' => 'contributor_field_collection',
           'method' => 'formatEntryContributorEditor',
         ),
+
+        // @todo: Special entry types?
+        'bibtexEntryType' => array('property' => 'biblio_type_of_work'),
+        'bibtexCitation' => array('property' => 'biblio_citekey'),
 
         // @todo: Is it ok to have this "fake" keys, or add this as property
         // to the array?

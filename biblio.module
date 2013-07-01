@@ -579,7 +579,6 @@ function biblio_fields_info($field_name = NULL) {
 function biblio_biblio_fields_info() {
   // Abstract.
   $items['biblio_abstract'] = array(
-    'type' => array('biblio'),
     'description' => 'Publication abstract data.',
     'field' => array(
       'cardinality' => '1',
@@ -591,6 +590,30 @@ function biblio_biblio_fields_info() {
     'instance' => array(
       'label' => 'Publication abstract',
       'description' => 'Holds generic info the biblio.',
+      'widget' => array(
+        'active' => 1,
+        'module' => 'text',
+        'settings' => array(
+          'rows' => '5',
+        ),
+        'type' => 'text_textarea',
+        'weight' => '-1',
+      ),
+    ),
+  );
+
+  // Citekey.
+  $items['biblio_citekey'] = array(
+    'field' => array(
+      'cardinality' => '1',
+      'entity_types' => array(),
+      'field_name' => 'biblio_citekey',
+      'module' => 'text',
+      'type' => 'text_long',
+    ),
+    'instance' => array(
+      'label' => 'Publication citation',
+      'description' => 'Publication citation.',
       'widget' => array(
         'active' => 1,
         'module' => 'text',
