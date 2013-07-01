@@ -212,6 +212,11 @@ class BiblioStyleBibtex extends BiblioStyleBase {
         $collection_wrapper->biblio_contributor->set($biblio_contributor);
 
         // @todo: Add reference to correct term.
+        $term = taxonomy_get_term_by_name(ucfirst($type), 'biblio_roles');
+        $term = reset($term);
+
+        $collection_wrapper->biblio_contributor_role->set($term);
+
         $collection_wrapper->save();
       }
     }
@@ -435,11 +440,14 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
     $names = array();
     foreach ($wrapper->{$property_name} as $sub_wrapper) {
-      if (strtolower($sub_wrapper->biblio_contributor_role->label()) != $role) {
+      if (strtolower($sub_wrapper->biblio_contributor_role->label()) != strtolower($role)) {
         continue;
       }
 
-      $names[] = $sub_wrapper->biblio_contributor->label();
+      $given = $sub_wrapper->biblio_contributor->contributor_given->value();
+      $family = $sub_wrapper->biblio_contributor->contributor_family->value();
+
+      $names[] = $given . '{' . $family . '}';
     }
 
     return implode(' and ', $names);
