@@ -12,9 +12,6 @@ class BiblioMigrateTypes extends Migration {
     // Select the only the types that were in use in the 1.x biblio.
     $this->query = db_select('_biblio_types_1x', 'bt')->fields('bt');
     $this->query->innerJoin('_biblio_1x', 'b', 'biblio_type = tid');
-    // Ignore unpublished biblio entries.
-    $this->query->innerJoin('node', 'n', 'n.nid = b.nid');
-    $this->query->condition('n.status', NODE_PUBLISHED);
 
     parent::__construct();
 
@@ -37,7 +34,7 @@ class BiblioMigrateTypes extends Migration {
   public function prepare($entity, $row) {
     // Create the type machine name.
     $entity->type = drupal_strtolower($entity->type);
-    $entity->type = preg_replace('/[ -]+/', '_' , $entity->type);
+    $entity->type = str_replace(array('-', ' '), '_', $entity->type);
 
     // Make sure there's a description.
     if (!$entity->description) {

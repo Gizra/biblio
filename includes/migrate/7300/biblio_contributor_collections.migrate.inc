@@ -50,8 +50,8 @@ class BiblioMigrateContributorCollections extends Migration {
   public function prepare($entity, $row) {
     // Replace the role name with its term ID.
     $name = $entity->biblio_contributor_role[LANGUAGE_NONE][0]['target_id'];
-    if ($terms = taxonomy_get_term_by_name($name, 'biblio_roles')) {
-      $term = key($terms);
+    if ($term = taxonomy_get_term_by_name($name, 'biblio_roles')) {
+      $term = reset($term);
     }
     // Create the term if it doesn't exist.
     else {
