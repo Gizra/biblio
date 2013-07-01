@@ -8,6 +8,13 @@
  * Implements hook_install().
  */
 function biblio_install() {
+  _biblio_install_add_biblio_roles();
+}
+
+/**
+ * Add biblio roles vocabulary and terms.
+ */
+function _biblio_install_add_biblio_roles() {
   if (!$vocabulary = taxonomy_vocabulary_machine_name_load('biblio_roles')) {
     $vocabulary = new stdClass();
     $vocabulary->name = 'Biblio roles';
@@ -26,10 +33,11 @@ function biblio_install() {
   taxonomy_term_save($term);
 }
 
+
 /**
- * Implements hook_schema().
+ * Snapshot of the schema for biblio_update_7300().
  */
-function biblio_schema() {
+function biblio_schema_7300() {
   $schema['biblio'] = array(
     'fields' => array(
       'bid' => array(
@@ -163,7 +171,7 @@ function biblio_schema() {
         'default' => 0,
         'description' => t('The {biblio}.bid of the node.'),
       ),
-      ),
+    ),
     'primary key' => array('cid', 'vid'),
     'indexes' => array(
       'pid' => array('pid'),
@@ -194,10 +202,10 @@ function biblio_schema() {
         'default' => '',
         'description' => t('The description of the collection'),
       ),
-      ),
+    ),
     'primary key' => array('cid'),
     'indexes' => array(
-        'name' => array('name'),
+      'name' => array('name'),
     ),
   );
 
@@ -233,6 +241,13 @@ function biblio_schema() {
 }
 
 /**
+ * Implements hook_schema().
+ */
+function biblio_schema() {
+  return biblio_schema_7300();
+}
+
+/**
  * Upgrade schema to 3.x.
  */
 function biblio_update_7300(&$sandbox) {
@@ -260,16 +275,15 @@ function biblio_update_7300(&$sandbox) {
     db_rename_table($table, "_{$table}_1x");
   }
 
-  $schema = biblio_schema();
+  $schema = biblio_schema_7300();
   foreach ($schema as $table => $table_schema) {
     db_create_table($table, $table_schema);
   }
 
+  // @todo: Add exception.
   // Enable the new needed modules.
   module_enable(array('date', 'entity', 'entityreference', 'field_collection', 'libraries'));
 
-  // Trigger the new installation hook.
-  // @todo: Move this to a biblio_install_7300() file.
-  biblio_install();
+  _biblio_install_add_biblio_roles();
   return t('Old biblio tables were renamed and the new tables were created');
 }
