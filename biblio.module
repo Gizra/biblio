@@ -799,10 +799,10 @@ function biblio_biblio_fields_info() {
   );
 
   // Publication year.
-  $items['biblio_publication_year'] = array(
+  $items['biblio_year'] = array(
     'field' => array(
       'cardinality' => '1',
-      'field_name' => 'biblio_publication_year',
+      'field_name' => 'biblio_year',
       'foreign keys' => array(),
       'indexes' => array(),
       'locked' => '0',
@@ -826,7 +826,7 @@ function biblio_biblio_fields_info() {
           'type' => 'number_integer',
         ),
       ),
-      'field_name' => 'biblio_publication_year',
+      'field_name' => 'biblio_year',
       'label' => 'Publication year',
       'required' => FALSE,
       'settings' => array(
@@ -909,10 +909,10 @@ function biblio_biblio_fields_info() {
   );
 
   // Publication year.
-  $items['biblio_publication_year'] = array(
+  $items['biblio_year'] = array(
     'field' => array(
       'cardinality' => '1',
-      'field_name' => 'biblio_publication_year',
+      'field_name' => 'biblio_year',
       'foreign keys' => array(),
       'indexes' => array(),
       'locked' => '0',
@@ -936,7 +936,7 @@ function biblio_biblio_fields_info() {
           'type' => 'number_integer',
         ),
       ),
-      'field_name' => 'biblio_publication_year',
+      'field_name' => 'biblio_year',
       'label' => 'Publication year',
       'required' => 1,
       'settings' => array(
@@ -1613,11 +1613,11 @@ function biblio_views_pre_render(&$view) {
   }
 
   foreach ($view->result as $key => $value) {
-    if (empty($value->field_biblio_publication_year[0]['rendered']) || $value->field_biblio_publication_year[0]['rendered']['#markup'] != '9999') {
+    if (empty($value->field_biblio_year[0]['rendered']) || $value->field_biblio_year[0]['rendered']['#markup'] != '9999') {
       continue;
     }
 
-    $view->result[$key]->field_biblio_publication_year[0]['rendered']['#markup'] = t('In Press');
+    $view->result[$key]->field_biblio_year[0]['rendered']['#markup'] = t('In Press');
   }
 }
 

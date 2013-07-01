@@ -28,7 +28,7 @@ class Biblio extends Entity {
 
 
     if ($wrapper->biblio_in_press->value()) {
-      $wrapper->biblio_publication_year->set(9999);
+      $wrapper->biblio_year->set(9999);
     }
 
     parent::save();
@@ -84,10 +84,10 @@ class Biblio extends Entity {
       $wrapper->biblio_first_letter->set(strtoupper(substr($trimmed, 0, 1)));
     }
 
-    if (isset($wrapper->biblio_publication_year) && isset($wrapper->biblio_issued) && $date = $wrapper->biblio_issued->value()) {
+    if (isset($wrapper->biblio_year) && isset($wrapper->biblio_issued) && $date = $wrapper->biblio_issued->value()) {
       // Assign publication year to ease grouping.
       $year = date('Y', $date);
-      $wrapper->biblio_publication_year->set($year);
+      $wrapper->biblio_year->set($year);
     }
 
     $this->save();

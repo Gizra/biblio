@@ -81,20 +81,20 @@ function biblio_views_default_views() {
   $handler->display->display_options['style_plugin'] = 'list';
   $handler->display->display_options['style_options']['grouping'] = array(
     0 => array(
-      'field' => 'biblio_publication_year',
+      'field' => 'biblio_year',
       'rendered' => 0,
       'rendered_strip' => 0,
     ),
   );
   $handler->display->display_options['row_plugin'] = 'fields';
   /* Field: Biblio: Publication year */
-  $handler->display->display_options['fields']['biblio_publication_year']['id'] = 'biblio_publication_year';
-  $handler->display->display_options['fields']['biblio_publication_year']['table'] = 'field_data_biblio_publication_year';
-  $handler->display->display_options['fields']['biblio_publication_year']['field'] = 'biblio_publication_year';
-  $handler->display->display_options['fields']['biblio_publication_year']['label'] = '';
-  $handler->display->display_options['fields']['biblio_publication_year']['exclude'] = TRUE;
-  $handler->display->display_options['fields']['biblio_publication_year']['element_label_colon'] = FALSE;
-  $handler->display->display_options['fields']['biblio_publication_year']['settings'] = array(
+  $handler->display->display_options['fields']['biblio_year']['id'] = 'biblio_year';
+  $handler->display->display_options['fields']['biblio_year']['table'] = 'field_data_biblio_year';
+  $handler->display->display_options['fields']['biblio_year']['field'] = 'biblio_year';
+  $handler->display->display_options['fields']['biblio_year']['label'] = '';
+  $handler->display->display_options['fields']['biblio_year']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['biblio_year']['element_label_colon'] = FALSE;
+  $handler->display->display_options['fields']['biblio_year']['settings'] = array(
     'thousand_separator' => '',
     'prefix_suffix' => 1,
   );
@@ -104,11 +104,11 @@ function biblio_views_default_views() {
   $handler->display->display_options['fields']['biblio_render']['field'] = 'biblio_render';
   $handler->display->display_options['fields']['biblio_render']['label'] = '';
   $handler->display->display_options['fields']['biblio_render']['element_label_colon'] = FALSE;
-  /* Sort criterion: Biblio: Publication year (biblio_publication_year) */
-  $handler->display->display_options['sorts']['biblio_publication_year_value']['id'] = 'biblio_publication_year_value';
-  $handler->display->display_options['sorts']['biblio_publication_year_value']['table'] = 'field_data_biblio_publication_year';
-  $handler->display->display_options['sorts']['biblio_publication_year_value']['field'] = 'biblio_publication_year_value';
-  $handler->display->display_options['sorts']['biblio_publication_year_value']['order'] = 'DESC';
+  /* Sort criterion: Biblio: Publication year (biblio_year) */
+  $handler->display->display_options['sorts']['biblio_year_value']['id'] = 'biblio_year_value';
+  $handler->display->display_options['sorts']['biblio_year_value']['table'] = 'field_data_biblio_year';
+  $handler->display->display_options['sorts']['biblio_year_value']['field'] = 'biblio_year_value';
+  $handler->display->display_options['sorts']['biblio_year_value']['order'] = 'DESC';
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page');

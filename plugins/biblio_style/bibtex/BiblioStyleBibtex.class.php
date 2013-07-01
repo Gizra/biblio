@@ -72,8 +72,6 @@ class BiblioStyleBibtex extends BiblioStyleBase {
           break;
       }
 
-      $node->biblio_citekey = (!empty($entry['bibtexCitation'])) ? $entry['bibtexCitation'] : NULL;
-
       if (!empty($entry['keywords'])) {
         if (strpos($entry['keywords'], ';')) {
           $entry['keywords'] = str_replace(';', ',', $entry['keywords']);
