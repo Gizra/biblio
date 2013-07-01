@@ -233,11 +233,9 @@ function biblio_entity_info() {
     'views controller class' => 'BiblioViewsController',
   );
 
-  if (db_table_exists('biblio_type')) {
-    if ($bundles = biblio_types()) {
-      foreach ($bundles as $bundle) {
-        $return['biblio']['bundles'][$bundle->type] = $bundle->name;
-      }
+  if (db_table_exists('biblio_type') && $bundles = biblio_types()) {
+    foreach ($bundles as $bundle) {
+      $return['biblio']['bundles'][$bundle->type] = array('label' => $bundle->name);
     }
   }
 
@@ -339,7 +337,9 @@ function biblio_type_save($biblio_type) {
       biblio_create_field('biblio_contributor', 'field_collection_item', 'contributor_field_collection');
     }
   }
-  drupal_flush_all_caches();
+
+  // @todo: Remove?
+  // drupal_flush_all_caches();
 }
 
 /**
