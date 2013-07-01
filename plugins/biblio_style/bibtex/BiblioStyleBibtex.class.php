@@ -53,7 +53,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
         $this->importEntry($wrapper, $key, $entry);
       }
 
-      // $this->ImportEntryContributors($wrapper, $entry);
+      $this->ImportEntryContributors($wrapper, $entry);
 
       // @todo: Check if the Biblio doesn't already exist, and if so, load it.
       $wrapper->save();
@@ -196,9 +196,13 @@ class BiblioStyleBibtex extends BiblioStyleBase {
       $biblio = $wrapper->value();
 
       // split names.
-      $names = preg_split("/\s(and|&)\s/i", trim($entry[$type]));
+      $names = preg_split("/(and|&)/i", trim($entry[$type]));
       foreach ($names as $name) {
-        $biblio_contributor = biblio_contributor_create($name);
+        // Try to extract the given and family name.
+        // @todo: Fix this preg_split.
+        $sub_name = preg_split("/{|}/i", $name);
+
+        $biblio_contributor = biblio_contributor_create(array('given' =>$sub_name[0], 'family' => $sub_name[1]));
         $biblio_contributor->save();
 
         // Create contributors field collections.
