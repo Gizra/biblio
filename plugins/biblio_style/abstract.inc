@@ -15,7 +15,7 @@ interface BiblioStyleInterface {
    * @param Biblio $biblio
    *   The Biblio entity.
    */
-  public function __construct($plugin, Biblio $biblio);
+  public function __construct($plugin, Biblio $biblio = NULL);
 
 
   /**
@@ -42,7 +42,7 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
    */
   protected $biblio;
 
-  public function __construct($plugin, Biblio $biblio) {
+  public function __construct($plugin, Biblio $biblio = NULL) {
     $this->plugin = $plugin;
     $this->biblio = $biblio;
   }

@@ -28,15 +28,16 @@ function biblio_example_ctools_plugin_directory($module, $plugin) {
 function biblio_example_attach_fields() {
   $field_names = array(
     'biblio_abstract',
+    'biblio_citekey',
     'biblio_first_letter',
     'biblio_image',
     'biblio_in_press',
     'biblio_issued',
     'biblio_pages',
-    'biblio_publication_year',
     'biblio_publisher',
     'biblio_secondary_title',
     'biblio_tertiary_title',
+    'biblio_year',
     // Contributors reference.
     'contributor_field_collection',
   );

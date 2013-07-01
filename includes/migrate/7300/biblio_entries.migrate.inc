@@ -7,7 +7,7 @@ class BiblioMigrateEntries extends Migration {
   public $dependencies = array('BiblioMigrateTypes');
 
   private $optional_fields = array(
-    'biblio_publication_year',
+    'biblio_year',
     'biblio_other_numbers',
     'biblio_publisher',
     'biblio_abst_e',
@@ -50,7 +50,7 @@ class BiblioMigrateEntries extends Migration {
     $this->addFieldMapping('uid', 'uid');
     $this->addFieldMapping('created', 'created');
     $this->addFieldMapping('changed', NULL)->defaultValue(REQUEST_TIME);
-    $this->addFieldMapping('biblio_publication_year', 'biblio_year');
+    $this->addFieldMapping('biblio_year', 'biblio_year');
     $this->addFieldMapping('biblio_other_numbers', 'biblio_other_number')->defaultValue(NULL);
     $this->addFieldMapping('biblio_publisher', 'biblio_publisher')->defaultValue(NULL);
 

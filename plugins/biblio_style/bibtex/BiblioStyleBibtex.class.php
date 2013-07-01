@@ -7,6 +7,221 @@
 
 class BiblioStyleBibtex extends BiblioStyleBase {
 
+  /**
+   * Import BibTeX entries.
+   *
+   * @todo: Deal with duplication.
+   *
+   * @param $data
+   * @param string $type
+   * @return array
+   */
+  public function import($data, $type = 'text') {
+    $bibtex = new PARSEENTRIES();
+
+    if ($type == 'file') {
+      $bibtex->openBib($data);
+    }
+    else {
+      $bibtex->loadBibtexString($data);
+    }
+
+    $bibtex->extractEntries();
+
+    if (!$bibtex->count) {
+      return;
+    }
+
+    $entries = $bibtex->getEntries();
+
+    $map = $this->getMapping();
+
+    // Array of Biblios.
+    $biblios = array();
+
+    foreach ($entries as $entry) {
+
+      // @todo: Why does the original return a number?
+      $biblio = biblio_create(strtolower($entry['bibtexEntryType']));
+
+      $wrapper = entity_metadata_wrapper('biblio', $biblio);
+
+      foreach (array_keys($map['field']) as $key) {
+        if (in_array($key, array('author', 'editor'))) {
+          continue;
+        }
+        $this->importEntry($wrapper, $key, $entry);
+      }
+
+      $this->ImportEntryContributors($wrapper, $entry);
+
+      // @todo: Check if the Biblio doesn't already exist, and if so, load it.
+      $wrapper->save();
+
+      $biblios[] = $wrapper->value();
+
+      /*
+      $node = new stdClass();
+      $node->biblio_contributors = array();
+      switch ($entry['bibtexEntryType']) {
+        case 'mastersthesis':
+          $node->biblio_type_of_work = 'masters';
+          break;
+        case 'phdthesis':
+          $node->biblio_type_of_work = 'phd';
+          break;
+      }
+
+      if (!empty($entry['keywords'])) {
+        if (strpos($entry['keywords'], ';')) {
+          $entry['keywords'] = str_replace(';', ',', $entry['keywords']);
+        }
+        $node->biblio_keywords = explode(',', $entry['keywords']);
+      }
+
+      $node->biblio_bibtex_md5      = md5(serialize($node));
+      $node->biblio_import_type     = 'bibtex';
+
+      if (!($dup = biblio_bibtex_check_md5($node->biblio_bibtex_md5))) {
+        if ($save) {
+          biblio_save_node($node, $terms, $batch, $session_id, $save);
+          $nids[] = (!empty($node->nid))? $node->nid : NULL;
+        }
+        else { // return the whole node if we are not saveing to the DB (used for the paste function on the input form)
+          $nids[] = $node;
+        }
+      }
+      else {
+        $dups[] = $dup;
+      }
+
+      */
+    }
+    return $biblios;
+  }
+
+
+  private function importEntry($wrapper, $key, $entry) {
+    if (empty($entry[$key])) {
+      return;
+    }
+
+    $map = $this->getMapping();
+    $map = $map['field'];
+
+    $property_name = $map[$key]['property'];
+
+    biblio_create_field($property_name, $wrapper->type(), $wrapper->getBundle());
+
+    if (!isset($wrapper->{$property_name})) {
+      return;
+    }
+
+    $method = $map[$key]['import_method'];
+
+    $value = $this->{$method}($key, $entry);
+
+    // @todo: Make title writable.
+    $wrapper_info = $wrapper->{$property_name}->info();
+    if (empty($wrapper_info['setter callback'])) {
+      return;
+    }
+
+    $wrapper->{$property_name}->set($value);
+  }
+
+  /**
+   * Get the value of an entry.
+   *
+   * @param $key
+   * @param $entry
+   */
+  private function getEntryValue($key, $entry) {
+    return !empty($entry[$key]) ? $entry[$key] : NULL;
+  }
+
+  /**
+   * Get the value of a publisher.
+   *
+   * @param $key
+   * @param $entry
+   */
+  private function getEntryValuePublisher($key, $entry) {
+    if (!empty($entry['organization'])) {
+      return $entry['organization'];
+    }
+
+    if (!empty($entry['school'])) {
+      return $entry['school'];
+    }
+
+    if (!empty($entry['institution'])) {
+      return $entry['institution'];
+    }
+
+    return !empty($entry['publisher']) ? $entry['publisher'] : NULL;
+  }
+
+  /**
+   * Get the value of a secondary title.
+   */
+  private function getEntryValueSecondaryTitle($key, $entry) {
+    if (!empty($entry['series']) && empty($entry['booktitle'])) {
+      return $entry['series'];
+    }
+
+    if (!empty($entry['booktitle'])) {
+      return $entry['booktitle'];
+    }
+
+    return !empty($entry['journal']) ? $entry['journal'] : NULL;
+  }
+
+  /**
+   * Get the value of a tertiary title.
+   */
+  private function getEntryValueTertiaryTitle($key, $entry) {
+    return !empty($entry['series']) && !empty($entry['booktitle']) ? $entry['series'] : NULL;
+  }
+
+  /**
+   * Create Biblio Contributor entities.
+   */
+  private function ImportEntryContributors($wrapper, $entry) {
+    foreach (array('author', 'editor') as $type) {
+      if (empty($entry[$type])) {
+        continue;
+      }
+
+      $biblio = $wrapper->value();
+
+      // split names.
+      $names = preg_split("/(and|&)/i", trim($entry[$type]));
+      foreach ($names as $name) {
+        // Try to extract the given and family name.
+        // @todo: Fix this preg_split.
+        $sub_name = preg_split("/{|}/i", $name);
+
+        $biblio_contributor = biblio_contributor_create(array('given' =>$sub_name[0], 'family' => $sub_name[1]));
+        $biblio_contributor->save();
+
+        // Create contributors field collections.
+        $field_collection = entity_create('field_collection_item', array('field_name' => 'contributor_field_collection'));
+        $field_collection->setHostEntity('biblio', $biblio);
+        $collection_wrapper = entity_metadata_wrapper('field_collection_item', $field_collection);
+        $collection_wrapper->biblio_contributor->set($biblio_contributor);
+
+        // @todo: Add reference to correct term.
+        $term = taxonomy_get_term_by_name(ucfirst($type), 'biblio_roles');
+        $term = reset($term);
+
+        $collection_wrapper->biblio_contributor_role->set($term);
+
+        $collection_wrapper->save();
+      }
+    }
+  }
+
   public function render($options = array(), $langcode = NULL) {
     // We clone the biblio, as we might change the values.
     $biblio = clone $this->biblio;
@@ -14,7 +229,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
     $output = '';
     $journal = $series = $booktitle = $school = $organization = $institution = NULL;
-    $type = $this->typeMap();
+    $type = $this->biblio->type;
 
     switch ($type) {
       case 100:
@@ -48,8 +263,9 @@ class BiblioStyleBibtex extends BiblioStyleBase {
         break;
     }
 
-    $output .= '@' . $type . ' {';
-    $output .= isset($wrapper->biblio_citekey) ? $wrapper->biblio_citekey->value()  : '';
+    // @todo: Use the human name instead of ucfirst()?
+    $output .= '@' . ucfirst($type). '{';
+    $output .= $this->formatEntry('bibtexCitation', NULL, FALSE);
     $output .= $this->formatEntry('title');
     $output .= $this->formatEntry('journal', $journal);
     $output .= $this->formatEntry('booktitle', $booktitle);
@@ -96,7 +312,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
    *   entity. Defaults to NULL.
    * @return string
    */
-  private function formatEntry($key, $value = NULL) {
+  private function formatEntry($key, $value = NULL, $use_key = TRUE) {
     if (empty($value)) {
       $map = $this->getMapping();
       $map = $map['field'];
@@ -128,7 +344,11 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     // this flag.
     $first_entry[$this->biblio->bid] = FALSE;
 
-    return $output . $key . ' = {'. $value . '}';
+    if ($use_key) {
+      return $output . $key . ' = {'. $value . '}';
+    }
+
+    return $output . $value;
   }
 
   /**
@@ -220,27 +440,18 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
     $names = array();
     foreach ($wrapper->{$property_name} as $sub_wrapper) {
-      if (strtolower($sub_wrapper->biblio_contributor_role->label()) != $role) {
+      if (strtolower($sub_wrapper->biblio_contributor_role->label()) != strtolower($role)) {
         continue;
       }
 
-      $names[] = $sub_wrapper->biblio_contributor->label();
+      $given = $sub_wrapper->biblio_contributor->contributor_given->value();
+      $family = $sub_wrapper->biblio_contributor->contributor_family->value();
+
+      $names[] = $given . '{' . $family . '}';
     }
 
     return implode(' and ', $names);
   }
-
-  /**
-   * Get the BibTeX type from the Biblio entity.
-   *
-   * @return
-   */
-  private function typeMap() {
-    $type = $this->biblio->type;
-    $map = $this->getMapping();
-    return !empty($map['type'][$type]) ? $map['type'][$type] : 'article';
-  }
-
 
   /**
    * Mapping of Biblio and BibTeX.
@@ -252,22 +463,6 @@ class BiblioStyleBibtex extends BiblioStyleBase {
    */
   public function getMapping() {
     $return  = array(
-      'type' => array(
-        'article'       => 102,
-        'book'          => 100,
-        'booklet'       => 129,
-        'conference'    => 103,
-        'inbook'        => 101,
-        'incollection'  => 101,
-        'inproceedings' => 103,
-        'manual'        => 129,
-        'mastersthesis' => 108,
-        'misc'          => 129,
-        'phdthesis'     => 108,
-        'proceedings'   => 104,
-        'techreport'    => 129,
-        'unpublished'   => 124,
-      ),
       'field' => array(
         'title' => array('property' => 'title'),
         'volume' => array('property' => 'biblio_volume'),
@@ -276,8 +471,10 @@ class BiblioStyleBibtex extends BiblioStyleBase {
         'note' => array('property' => 'biblio_notes'),
         'month' => array('property' => 'biblio_date'),
         'pages' => array('property' => 'biblio_pages'),
-        'publisher' => array('property' => 'biblio_publisher'),
-        'type' => array('property' => 'biblio_type_of_work'),
+        'publisher' => array(
+          'property' => 'biblio_publisher',
+          'import_method' => 'getEntryValuePublisher',
+        ),
         'edition' => array('property' => 'biblio_edition'),
         'chapter' => array('property' => 'biblio_section'),
         'address' => array('property' => 'biblio_place_published'),
@@ -293,8 +490,31 @@ class BiblioStyleBibtex extends BiblioStyleBase {
         // @todo: Use bilbio_file instead.
         'attachments' => array('property' => 'biblio_image', 'method' => 'formatEntryFiles'),
 
-        'author' => array('property' => 'contributor_field_collection', 'method' => 'formatEntryContributorAuthor'),
-        'editor' => array('property' => 'contributor_field_collection', 'method' => 'formatEntryContributorEditor'),
+        'author' => array(
+          'property' => 'contributor_field_collection',
+          'method' => 'formatEntryContributorAuthor',
+        ),
+        'editor' => array(
+          'property' => 'contributor_field_collection',
+          'method' => 'formatEntryContributorEditor',
+        ),
+
+        // @todo: Special entry types?
+        'bibtexEntryType' => array('property' => 'biblio_type_of_work'),
+        'bibtexCitation' => array('property' => 'biblio_citekey'),
+
+        // @todo: Is it ok to have this "fake" keys, or add this as property
+        // to the array?
+        // Keys used for import.
+        'secondary_title' => array(
+          'property' => 'biblio_secondary_title',
+          'import_method' => 'getEntryValueSecondaryTitle',
+        ),
+
+        'tertiary_title' => array(
+          'property' => 'biblio_tertiary_title',
+          'import_method' => 'getEntryValueTertiaryTitle',
+        ),
       ),
     );
 
@@ -302,6 +522,10 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     foreach ($return['field'] as $key => $value) {
       if (empty($value['method'])) {
         $return['field'][$key]['method'] = 'formatEntryGeneric';
+      }
+
+      if (empty($value['import_method'])) {
+        $return['field'][$key]['import_method'] = 'getEntryValue';
       }
     }
 
