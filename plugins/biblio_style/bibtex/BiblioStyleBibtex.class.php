@@ -42,7 +42,6 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     foreach ($entries as $entry) {
 
       // @todo: Why does the original return a number?
-      // $type = $this->typeMap('import', $entry['bibtexEntryType']);
       $biblio = biblio_create(strtolower($entry['bibtexEntryType']));
 
       $wrapper = entity_metadata_wrapper('biblio', $biblio);
@@ -54,7 +53,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
         $this->importEntry($wrapper, $key, $entry);
       }
 
-      $this->ImportEntryContributors($wrapper, $entry);
+      // $this->ImportEntryContributors($wrapper, $entry);
 
       // @todo: Check if the Biblio doesn't already exist, and if so, load it.
       $wrapper->save();
@@ -223,7 +222,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
     $output = '';
     $journal = $series = $booktitle = $school = $organization = $institution = NULL;
-    $type = $this->typeMap('render', $this->biblio->type);
+    $type = $this->biblio->type;
 
     switch ($type) {
       case 100:
@@ -257,7 +256,8 @@ class BiblioStyleBibtex extends BiblioStyleBase {
         break;
     }
 
-    $output .= '@' . $type . ' {';
+    // @todo: Use the human name instead of ucfirst()?
+    $output .= '@' . ucfirst($type). ' {';
     $output .= isset($wrapper->biblio_citekey) ? $wrapper->biblio_citekey->value()  : '';
     $output .= $this->formatEntry('title');
     $output .= $this->formatEntry('journal', $journal);
@@ -440,26 +440,6 @@ class BiblioStyleBibtex extends BiblioStyleBase {
   }
 
   /**
-   * Get the BibTeX type from the Biblio entity.
-   *
-   * @return
-   */
-  private function typeMap($op = 'render', $type) {
-    $map = $this->getMapping();
-    $map = $map['type'];
-
-    if ($op == 'render') {
-      return !empty($map[$type]) ? $map[$type] : 'article';
-    }
-
-    // @todo: This looks wrong.
-    $key = array_search(strtolower($type), $map);
-    // On Import default to 129 which is "misc".
-    return $key ? $key : 129;
-  }
-
-
-  /**
    * Mapping of Biblio and BibTeX.
    *
    * - type: Array with the Biblio type as key, and the BibTeX type as the
@@ -469,22 +449,6 @@ class BiblioStyleBibtex extends BiblioStyleBase {
    */
   public function getMapping() {
     $return  = array(
-      'type' => array(
-        'article'       => 102,
-        'book'          => 100,
-        'booklet'       => 129,
-        'conference'    => 103,
-        'inbook'        => 101,
-        'incollection'  => 101,
-        'inproceedings' => 103,
-        'manual'        => 129,
-        'mastersthesis' => 108,
-        'misc'          => 129,
-        'phdthesis'     => 108,
-        'proceedings'   => 104,
-        'techreport'    => 129,
-        'unpublished'   => 124,
-      ),
       'field' => array(
         'title' => array('property' => 'title'),
         'volume' => array('property' => 'biblio_volume'),
