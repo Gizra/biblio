@@ -10,8 +10,9 @@ class BiblioMigrateEntries extends Migration {
     'biblio_year',
     'biblio_other_numbers',
     'biblio_publisher',
-    'biblio_abst_e',
+    'biblio_abstract',
     'biblio_isbn',
+    'biblio_in_press',
     'biblio_type_of_work',
     'biblio_call_number',
     'biblio_alternate_title',
@@ -72,7 +73,9 @@ class BiblioMigrateEntries extends Migration {
     // TODO: The migration map the field as 'biblio_abstract' and not as
     // 'biblio_abst_e' which cause to the abstract from the original biblio
     // to not be imported.
-    $this->addFieldMapping('biblio_abstract', 'biblio_abst_e')->defaultValue(NULL);
+    $this
+      ->addFieldMapping('biblio_abstract', 'biblio_abst_e')
+      ->defaultValue(NULL);
 
     $this
       ->addFieldMapping('biblio_isbn', 'biblio_isbn')
@@ -110,11 +113,10 @@ class BiblioMigrateEntries extends Migration {
   public function prepare($entity, $row) {
     // Make sure optional fields are attached if they have an assigned value.
     foreach ($this->optionalFields as $field_name) {
+      biblio_create_field($field_name, 'biblio', $entity->type);
       if (!$entity->$field_name) {
         continue;
       }
-
-      biblio_create_field($field_name, 'biblio', $entity->type);
 
       $entity->$field_name = array(LANGUAGE_NONE => array(array('value' => $entity->$field_name)));
     }
