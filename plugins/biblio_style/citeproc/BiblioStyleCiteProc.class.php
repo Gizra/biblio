@@ -176,7 +176,9 @@ class BiblioStyleCiteProc extends BiblioStyleBase {
 
         'date' => array(
           // Date Variables.
-          'issued' => 'biblio_issued',
+          // @todo: We use the biblio_year instead of biblio_issued, as timestamp
+          // is starting in 1970, and dates can be before that.
+          'issued' => 'biblio_year',
           'event' => 'event',
           'accessed' => 'accessed',
           'container' => 'container',
