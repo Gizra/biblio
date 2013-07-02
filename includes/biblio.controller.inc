@@ -26,7 +26,6 @@ class Biblio extends Entity {
       biblio_create_field('biblio_in_press', $wrapper->type(), $wrapper->getBundle());
     }
 
-
     if ($wrapper->biblio_in_press->value()) {
       $wrapper->biblio_year->set(9999);
     }

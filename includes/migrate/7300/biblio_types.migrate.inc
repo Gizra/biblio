@@ -12,6 +12,7 @@ class BiblioMigrateTypes extends Migration {
     // Select the only the types that were in use in the 1.x biblio.
     $this->query = db_select('_biblio_types_1x', 'bt')->fields('bt');
     $this->query->innerJoin('_biblio_1x', 'b', 'biblio_type = tid');
+    $this->query->distinct();
 
     parent::__construct();
 
