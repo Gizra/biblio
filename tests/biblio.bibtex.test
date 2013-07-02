@@ -15,6 +15,41 @@ class BiblioBibtex extends DrupalWebTestCase {
 
   function setUp() {
     parent::setUp('biblio');
+
+    $field_names = array(
+      'biblio_abstract',
+      'biblio_citekey',
+      'biblio_edition',
+      'biblio_first_letter',
+      'biblio_image',
+      'biblio_in_press',
+      'biblio_issued',
+      'biblio_pages',
+      'biblio_place_published',
+      'biblio_publisher',
+      'biblio_secondary_title',
+      'biblio_tertiary_title',
+      'biblio_year',
+      // Contributors reference.
+      'contributor_field_collection',
+    );
+
+    foreach ($field_names as $field_name) {
+      biblio_create_field($field_name, 'biblio', 'book');
+    }
+
+    $field_names = array(
+      'contributor_given',
+      'contributor_family',
+    );
+
+    foreach ($field_names as $field_name) {
+      biblio_create_field($field_name, 'biblio_contributor', 'biblio_contributor');
+      biblio_create_field($field_name, 'biblio_contributor', 'biblio_contributor');
+    }
+
+    biblio_create_field('biblio_contributor_role', 'field_collection_item', 'contributor_field_collection');
+    biblio_create_field('biblio_contributor', 'field_collection_item', 'contributor_field_collection');
   }
 
   /**
@@ -29,12 +64,12 @@ class BiblioBibtex extends DrupalWebTestCase {
     $biblio_style = new $class($plugin);
     $data = '
 @Book{abramowitz+stegun,
- author    = "Milton {Abramowitz} and Irene A. {Stegun}",
- title     = "Handbook of Mathematical Functions with Formulas, Graphs, and Mathematical Tables",
- publisher = "Dover",
- year      =  1964,
- address   = "New York",
- edition   = "ninth Dover printing, tenth GPO printing"
+  author    = "Milton {Abramowitz} and Irene A. {Stegun}",
+  title     = "Handbook of Mathematical Functions with Formulas, Graphs, and Mathematical Tables",
+  publisher = "Dover",
+  year      =  1964,
+  address   = "New York",
+  edition   = "ninth Dover printing, tenth GPO printing"
 }';
 
     $biblios = $biblio_style->import($data);
@@ -51,6 +86,8 @@ class BiblioBibtex extends DrupalWebTestCase {
 }';
 
     $output = $biblio->getText('bibtex', array('opening_tag' => '"', 'closing_tag' => '"'));
-    $this->assertEqual($output, $expected_result);
+
+    // We use trim, to remove whitespace.
+    $this->assertEqual(trim($output), trim($expected_result));
   }
 }
