@@ -28,6 +28,9 @@ files[] = plugins/biblio_style/bibtex/PARSEENTRIES.php
 files[] = plugins/biblio_style/bibtex/PARSEMONTH.php
 files[] = plugins/biblio_style/bibtex/PARSEPAGE.php
 
+; PubMed
+files[] = plugins/biblio_style/pubmed/EntrezPubmedArticle.php
+
 ; Migrate
 files[] = includes/migrate/plugins/destinations/biblio_contributor.inc
 files[] = includes/migrate/plugins/destinations/biblio_entry.inc
