@@ -28,7 +28,7 @@ class BiblioBibtex extends DrupalWebTestCase {
 
     $biblio_style = new $class($plugin);
     $data = '
-    @Book{abramowitz+stegun,
+@Book{abramowitz+stegun,
  author    = "Milton {Abramowitz} and Irene A. {Stegun}",
  title     = "Handbook of Mathematical Functions with Formulas, Graphs, and Mathematical Tables",
  publisher = "Dover",
@@ -40,6 +40,17 @@ class BiblioBibtex extends DrupalWebTestCase {
     $biblios = $biblio_style->import($data);
     $biblio = $biblios[0];
 
+    $expected_result = '
+@Book{abramowitz+stegun,
+	title = "Handbook of Mathematical Functions with Formulas, Graphs, and Mathematical Tables",
+	year = "1964",
+	publisher = "Dover",
+	edition = "ninth Dover printing, tenth GPO printing",
+	address = "New York",
+	author = "Milton {Abramowitz} and  Irene A. {Stegun}"
+}';
+
     $output = $biblio->getText('bibtex', array('opening_tag' => '"', 'closing_tag' => '"'));
+    $this->assertEqual($output, $expected_result);
   }
 }
