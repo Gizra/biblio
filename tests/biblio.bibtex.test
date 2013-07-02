@@ -1,0 +1,45 @@
+<?php
+
+/**
+ * Test BibTeX style plugin.
+ */
+class BiblioBibtex extends DrupalWebTestCase {
+
+  public static function getInfo() {
+    return array(
+      'name' => 'BibTeX',
+      'description' => 'Test BibTeX style plugin.',
+      'group' => 'Biblio',
+    );
+  }
+
+  function setUp() {
+    parent::setUp('biblio');
+  }
+
+  /**
+   * Test Import.
+   */
+  function testImport() {
+    ctools_include('plugins');
+
+    $plugin = biblio_get_biblio_style('bibtex');
+    $class = ctools_plugin_load_class('biblio', 'biblio_style', 'bibtex', 'class');
+
+    $biblio_style = new $class($plugin);
+    $data = '
+    @Book{abramowitz+stegun,
+ author    = "Milton {Abramowitz} and Irene A. {Stegun}",
+ title     = "Handbook of Mathematical Functions with Formulas, Graphs, and Mathematical Tables",
+ publisher = "Dover",
+ year      =  1964,
+ address   = "New York",
+ edition   = "ninth Dover printing, tenth GPO printing"
+}';
+
+    $biblios = $biblio_style->import($data);
+    $biblio = $biblios[0];
+
+    $output = $biblio->getText('bibtex', array('open_tag' => '"', 'closing_tag' => '"'));
+  }
+}
