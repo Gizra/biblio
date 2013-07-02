@@ -345,7 +345,9 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     $first_entry[$this->biblio->bid] = FALSE;
 
     if ($use_key) {
-      return $output . $key . ' = {'. $value . '}';
+      $opening_tag = $this->plugin['options']['opening_tag'];
+      $closing_tag = $this->plugin['options']['closing_tag'];
+      return $output . $key . ' = '. $opening_tag .  $value . $closing_tag;
     }
 
     return $output . $value;

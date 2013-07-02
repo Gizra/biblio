@@ -40,6 +40,6 @@ class BiblioBibtex extends DrupalWebTestCase {
     $biblios = $biblio_style->import($data);
     $biblio = $biblios[0];
 
-    $output = $biblio->getText('bibtex', array('open_tag' => '"', 'closing_tag' => '"'));
+    $output = $biblio->getText('bibtex', array('opening_tag' => '"', 'closing_tag' => '"'));
   }
 }
