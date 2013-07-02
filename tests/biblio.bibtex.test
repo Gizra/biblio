@@ -88,6 +88,6 @@ class BiblioBibtex extends DrupalWebTestCase {
     $output = $biblio->getText('bibtex', array('opening_tag' => '"', 'closing_tag' => '"'));
 
     // We use trim, to remove whitespace.
-    $this->assertEqual(trim($output), trim($expected_result));
+    $this->assertEqual(trim($output), trim($expected_result), 'Render is equal to the expected result');
   }
 }
