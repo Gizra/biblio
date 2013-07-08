@@ -12,12 +12,10 @@ class BiblioMigrateEntries extends Migration {
 
     $this->query = db_select('_biblio_1x', 'b');
     $this->query->innerJoin('node', 'n', 'n.nid = b.nid');
-    $this->query->condition('b.biblio_type', 0, '>');
 
     $this->query
       ->fields('b')
       ->fields('n', array('nid', 'title', 'created', 'uid'))
-      ->condition('n.nid', 80211)
       // @todo: Ignore unpublished biblio entries.
       ->condition('n.status', NODE_PUBLISHED);
 
