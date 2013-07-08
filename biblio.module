@@ -329,13 +329,8 @@ function biblio_type_save($biblio_type) {
     // Attach the contributors field collection to the new biblio bundle.
     biblio_create_field('contributor_field_collection', 'biblio', $biblio_type->type);
 
-    // Verify that the field collection fields exist.
-    if (!field_info_field('biblio_contributor_role')) {
-      biblio_create_field('biblio_contributor_role', 'field_collection_item', 'contributor_field_collection');
-    }
-    if (!field_info_field('biblio_contributor')) {
-      biblio_create_field('biblio_contributor', 'field_collection_item', 'contributor_field_collection');
-    }
+    biblio_create_field('biblio_contributor_role', 'field_collection_item', 'contributor_field_collection');
+    biblio_create_field('biblio_contributor', 'field_collection_item', 'contributor_field_collection');
   }
 
   // @todo: Remove?
