@@ -233,6 +233,9 @@ function biblio_entity_info() {
     'views controller class' => 'BiblioViewsController',
   );
 
+  // @todo: Biblio 1.x had a biblio type called "Biblio" if type was 0.
+  $return['biblio']['bundles']['biblio'] = array('label' => 'Biblio');
+
   if (db_table_exists('biblio_type') && $bundles = biblio_types()) {
     foreach ($bundles as $bundle) {
       $return['biblio']['bundles'][$bundle->type] = array('label' => $bundle->name);
