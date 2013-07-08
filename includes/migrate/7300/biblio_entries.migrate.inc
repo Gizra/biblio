@@ -11,7 +11,7 @@ class BiblioMigrateEntries extends Migration {
     $this->description = t('Migrate biblio 1.x entries.');
 
     $this->query = db_select('_biblio_1x', 'b');
-    $this->query->innerJoin('node', 'n', 'n.nid = b.nid');
+    $this->query->innerJoin('node', 'n', 'n.nid = b.nid AND n.vid = b.vid');
 
     $this->query
       ->fields('b')
