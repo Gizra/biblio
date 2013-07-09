@@ -53,7 +53,8 @@ class BiblioMigrateEntries extends Migration {
     $this->addSimpleMappings($fields);
 
     $this
-      ->addFieldMapping('type', 'biblio_type');
+      ->addFieldMapping('type', 'biblio_type')
+      ->sourceMigration('BiblioMigrateTypes');
 
     $this
       ->addFieldMapping('changed', NULL)
