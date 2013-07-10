@@ -55,17 +55,19 @@ class MigrateDestinationBiblioType extends MigrateDestination {
 
     // Add fields.
     $field_names = array(
+      'biblio_abstract',
+      'biblio_accession_number',
+      'biblio_alternate_title',
       'biblio_year',
       'biblio_other_numbers',
       'biblio_publisher',
       'biblio_isbn',
       'biblio_type_of_work',
       'biblio_call_number',
-      'biblio_alternate_title',
       'biblio_url',
-      'biblio_accession_number',
       'biblio_doi',
       'biblio_short_title',
+      'biblio_in_press',
     );
 
     foreach ($field_names as $field_name) {

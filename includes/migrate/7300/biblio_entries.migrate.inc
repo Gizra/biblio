@@ -29,9 +29,9 @@ class BiblioMigrateEntries extends Migration {
       ),
     );
 
-    $this->map = new MigrateSQLMap($this->machineName, $source_key, MigrateDestinationBiblioEntry::getKeySchema());
+    $this->map = new MigrateSQLMap($this->machineName, $source_key,  MigrateDestinationEntityAPI::getKeySchema('biblio'));
     $this->source = new MigrateSourceSQL($this->query);
-    $this->destination = new MigrateDestinationBiblioEntry();
+    $this->destination = new MigrateDestinationEntityAPI('biblio', 'book');
 
     $fields = array(
       'title',
@@ -50,7 +50,15 @@ class BiblioMigrateEntries extends Migration {
       'biblio_short_title',
     );
 
+    // @todo: Add biblio_in_press
+
     $this->addSimpleMappings($fields);
+
+    $this
+      ->addFieldMapping('biblio_year', 'biblio_year');
+
+    $this
+      ->addFieldMapping('type')->defaultValue('book');
 
     $this
       ->addFieldMapping('type', 'biblio_type')
