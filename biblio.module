@@ -71,9 +71,17 @@ function biblio_permission() {
      'title' => t('Edit all Biblio entries'),
      'description' => t('Allows the user to edit ALL biblio entries regardless of who "owns" them, otherwise they are restricted to on'),
    ),
-    'delete biblios' => array(
-      'title' => t('Delete Biblios'),
+   'edit own biblio entries' => array(
+     'title' => t('Edit pwn Biblio entries'),
+     'description' => t('Allows the user to edit his own biblio entries'),
+   ),
+    'delete biblio entries' => array(
+      'title' => t('Delete biblio entries'),
       'description' => t('Allows the user to delete any biblio entities'),
+    ),
+    'delete own biblio entries' => array(
+      'title' => t('Delete own biblio entries'),
+      'description' => t('Allows the user to delete his own biblio entities'),
     ),
     'edit by all biblio authors' => array(
       'title' => t('Edit by all Biblio authors'),
