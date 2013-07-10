@@ -31,6 +31,9 @@ class BiblioMigrateEntries extends Migration {
 
     $this->map = new MigrateSQLMap($this->machineName, $source_key,  MigrateDestinationEntityAPI::getKeySchema('biblio'));
     $this->source = new MigrateSourceSQL($this->query);
+
+    // @todo: All bundles have all the field, so we hardcode the bundle. Is this
+    // ok?
     $this->destination = new MigrateDestinationEntityAPI('biblio', 'book');
 
     $fields = array(
@@ -53,12 +56,6 @@ class BiblioMigrateEntries extends Migration {
     // @todo: Add biblio_in_press
 
     $this->addSimpleMappings($fields);
-
-    $this
-      ->addFieldMapping('biblio_year', 'biblio_year');
-
-    $this
-      ->addFieldMapping('type')->defaultValue('book');
 
     $this
       ->addFieldMapping('type', 'biblio_type')
