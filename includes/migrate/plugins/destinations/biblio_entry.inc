@@ -46,10 +46,10 @@ class MigrateDestinationBiblioEntry extends MigrateDestination {
    */
   public function import(stdClass $entity, stdClass $row) {
     $this->prepare($entity, $row);
-    $bid = entity_save('biblio', $entity);
+    entity_save('biblio', $entity);
     $this->complete($entity, $row);
 
-    return array($bid);
+    return array($entity->bid);
   }
 
   /**
