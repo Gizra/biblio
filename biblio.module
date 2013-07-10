@@ -63,7 +63,7 @@ function biblio_permission() {
       'title' => t('Access Biblio content'),
       'description' => t('Allows the user to view Biblio nodes'),
     ),
-   'create biblio' => array(
+   'create biblio content' => array(
      'title' => t('Create Biblio'),
      'description' => t('Allows the user to create new Biblios'),
    ),
