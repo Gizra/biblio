@@ -91,6 +91,34 @@ function biblio_permission() {
       'title' => t('Manage Biblio content'),
       'description' => t('This determines if the user will be able to access the managment interface for biblios and contributors (admin/content/biblio)'),
     ),
+    'import from file' => array(
+      'title' => t('Import from file'),
+      'description' => t('Allows the user to import bibliographic data from files such as BibTex, RIS, EndNote'),
+    ),
+    'show export links' => array(
+      'title' => t('Show export links'),
+      'description' => t('Allows users to see links which allow export of bibliographic data for an individual entry or the entire result set'),
+    ),
+    'show download links' => array(
+      'title' => t('Show download links'),
+      'description' => t('Allows users to see links to any attachements associated with the Biblio entry'),
+    ),
+    'show own download links' => array(
+      'title' => t('Show own download links'),
+      'description' => t('Allows user to only see download links on entries for which they are the owner.'),
+    ),
+    'show filter tab' => array(
+      'title' => t('Show filter tab'),
+      'description' => t('This determines if the "Filter" tab on the Biblio list page will be shown to the user'),
+    ),
+    'show sort links' => array(
+      'title' => t('Show sort links'),
+      'description' => t('This determines if the "Sort" links on the Biblio list page will be shown to the user'),
+    ),
+    'view full text' => array(
+      'title' => t('Show full text'),
+      'description' => t('This determines if the user will be able to access the "Full Text" of the article if it is available'),
+    ),
   );
 }
 
