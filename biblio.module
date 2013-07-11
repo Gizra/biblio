@@ -1013,49 +1013,32 @@ function biblio_biblio_fields_info() {
     ),
   );
 
-  // Phone number.
+  // Accession number
   $items['biblio_accession_number'] = array(
     'field' => array(
       'cardinality' => '1',
       'field_name' => 'biblio_accession_number',
-      'foreign keys' => array(),
-      'indexes' => array(),
-      'locked' => '0',
-      'module' => 'number',
-      'settings' => array(),
-      'translatable' => '0',
-      'type' => 'number_integer',
+      'module' => 'text',
+      'settings' => array(
+        'max_length' => '255',
+      ),
+      'type' => 'text',
     ),
     'instance' => array(
-      'default_value' => NULL,
-      'description' => '',
-      'display' => array(
-        'default' => array(
-          'label' => 'above',
-          'module' => 'number',
-          'settings' => array(
-            'prefix_suffix' => TRUE,
-            'scale' => 0,
-            'thousand_separator' => ' ',
-          ),
-          'type' => 'number_integer',
-        ),
-      ),
-      'label' => 'Accession number',
-      'required' => FALSE,
+      'label' => 'ISBN',
+      'description' => 'Accession number',
       'settings' => array(
-        'max' => '9999',
-        'min' => '-9999',
-        'prefix' => '',
-        'suffix' => '',
+        'text_processing' => '0',
         'user_register_form' => FALSE,
       ),
       'widget' => array(
-        'active' => 0,
-        'module' => 'number',
-        'settings' => array(),
-        'type' => 'number',
-        'weight' => 0,
+        'active' => 1,
+        'module' => 'text',
+        'settings' => array(
+          'size' => '60',
+        ),
+        'type' => 'text_textfield',
+        'weight' => '-3',
       ),
     ),
   );
