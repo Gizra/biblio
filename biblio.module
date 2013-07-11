@@ -63,7 +63,7 @@ function biblio_permission() {
       'title' => t('Access Biblio content'),
       'description' => t('Allows the user to view Biblio nodes'),
     ),
-   'create biblio' => array(
+   'create biblio content' => array(
      'title' => t('Create Biblio'),
      'description' => t('Allows the user to create new Biblios'),
    ),
@@ -71,9 +71,17 @@ function biblio_permission() {
      'title' => t('Edit all Biblio entries'),
      'description' => t('Allows the user to edit ALL biblio entries regardless of who "owns" them, otherwise they are restricted to on'),
    ),
-    'delete biblios' => array(
-      'title' => t('Delete Biblios'),
+   'edit own biblio entries' => array(
+     'title' => t('Edit pwn Biblio entries'),
+     'description' => t('Allows the user to edit his own biblio entries'),
+   ),
+    'delete biblio entries' => array(
+      'title' => t('Delete biblio entries'),
       'description' => t('Allows the user to delete any biblio entities'),
+    ),
+    'delete own biblio entries' => array(
+      'title' => t('Delete own biblio entries'),
+      'description' => t('Allows the user to delete his own biblio entities'),
     ),
     'edit by all biblio authors' => array(
       'title' => t('Edit by all Biblio authors'),
@@ -90,6 +98,34 @@ function biblio_permission() {
     'manage biblio content' => array(
       'title' => t('Manage Biblio content'),
       'description' => t('This determines if the user will be able to access the managment interface for biblios and contributors (admin/content/biblio)'),
+    ),
+    'import from file' => array(
+      'title' => t('Import from file'),
+      'description' => t('Allows the user to import bibliographic data from files such as BibTex, RIS, EndNote'),
+    ),
+    'show export links' => array(
+      'title' => t('Show export links'),
+      'description' => t('Allows users to see links which allow export of bibliographic data for an individual entry or the entire result set'),
+    ),
+    'show download links' => array(
+      'title' => t('Show download links'),
+      'description' => t('Allows users to see links to any attachements associated with the Biblio entry'),
+    ),
+    'show own download links' => array(
+      'title' => t('Show own download links'),
+      'description' => t('Allows user to only see download links on entries for which they are the owner.'),
+    ),
+    'show filter tab' => array(
+      'title' => t('Show filter tab'),
+      'description' => t('This determines if the "Filter" tab on the Biblio list page will be shown to the user'),
+    ),
+    'show sort links' => array(
+      'title' => t('Show sort links'),
+      'description' => t('This determines if the "Sort" links on the Biblio list page will be shown to the user'),
+    ),
+    'view full text' => array(
+      'title' => t('Show full text'),
+      'description' => t('This determines if the user will be able to access the "Full Text" of the article if it is available'),
     ),
   );
 }
