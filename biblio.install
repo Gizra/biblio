@@ -275,15 +275,22 @@ function biblio_update_7300(&$sandbox) {
     db_rename_table($table, "_{$table}_1x");
   }
 
+  _biblio_install_add_biblio_roles();
+
   $schema = biblio_schema_7300();
   foreach ($schema as $table => $table_schema) {
     db_create_table($table, $table_schema);
   }
 
-  // @todo: Add exception.
   // Enable the new needed modules.
-  module_enable(array('date', 'entity', 'entityreference', 'field_collection', 'libraries'));
+  try {
+    module_enable(array('date', 'entity', 'entityreference', 'field_collection', 'libraries'));
+  }
+  catch(Exception $e) {
+    drupal_set_message(t('An error occurred when trying to activate the needed module: @error.', array(
+      '@error' => $e->getMessage(),
+    )), 'error');
+  }
 
-  _biblio_install_add_biblio_roles();
   return t('Old biblio tables were renamed and the new tables were created');
 }
