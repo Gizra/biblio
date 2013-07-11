@@ -23,13 +23,42 @@ class BiblioMigrateContributors extends Migration {
       ),
     );
 
-    $this->map = new MigrateSQLMap($this->machineName, $source_key, MigrateDestinationBiblioContributor::getKeySchema());
+    $this->map = new MigrateSQLMap($this->machineName, $source_key, MigrateDestinationEntityAPI::getKeySchema('biblio_contributor'));
     $this->source = new MigrateSourceSQL($this->query);
-    $this->destination = new MigrateDestinationBiblioContributor();
+    $this->destination = new MigrateDestinationEntityAPI('biblio_contributor', 'contributor');
 
-    $this->addFieldMapping('name', 'name');
+    $this
+      ->addFieldMapping('name', 'name')
+      ->callbacks((array($this, 'prepareName')));
+
     $this->addFieldMapping('type', NULL)->defaultValue('contributor');
     $this->addFieldMapping('created', NULL)->defaultValue(REQUEST_TIME);
     $this->addFieldMapping('changed', NULL)->defaultValue(REQUEST_TIME);
+  }
+
+  /**
+   * Split the name to given and family name.
+   *
+   * @param $name
+   */
+  public function prepareName($name) {
+    $name = str_replace(',', '', $name);
+    $name = explode(' ', $name, 2);
+
+    // Try to be smart and use words with a dot as the first name.
+    if (strpos($name[0], '.') === TRUE) {
+      $return = array(
+        'given' => $name[0],
+        'family' => !empty($name[1]) ? $name[1] : '',
+      );
+    }
+    else {
+      $return = array(
+        'family' => $name[0],
+        'given' => !empty($name[1]) ? $name[1] : '',
+      );
+    }
+
+    return $return;
   }
 }

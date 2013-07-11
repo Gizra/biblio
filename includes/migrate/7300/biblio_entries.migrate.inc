@@ -29,7 +29,7 @@ class BiblioMigrateEntries extends Migration {
       ),
     );
 
-    $this->map = new MigrateSQLMap($this->machineName, $source_key,  MigrateDestinationEntityAPI::getKeySchema('biblio'));
+    $this->map = new MigrateSQLMap($this->machineName, $source_key, MigrateDestinationEntityAPI::getKeySchema('biblio'));
     $this->source = new MigrateSourceSQL($this->query);
 
     // @todo: All bundles have all the field, so we hardcode the bundle. Is this
