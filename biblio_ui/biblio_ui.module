@@ -147,7 +147,6 @@ function biblio_ui_can_delete_bundle($bundle, $account = NULL) {
  */
 function biblio_ui_admin_paths() {
   return array(
-    'biblio' => TRUE,
     'biblio/add' => TRUE,
     'biblio/add/*' => TRUE,
     'biblio/*/edit' => TRUE,
