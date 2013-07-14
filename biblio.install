@@ -283,14 +283,9 @@ function biblio_update_7300(&$sandbox) {
   }
 
   // Enable the new needed modules.
-  try {
-    module_enable(array('date', 'entity', 'entityreference', 'field_collection', 'libraries'));
-  }
-  catch(Exception $e) {
-    drupal_set_message(t('An error occurred when trying to activate the needed module: @error.', array(
-      '@error' => $e->getMessage(),
-    )), 'error');
+  if (!module_enable(array('date', 'entity', 'entityreference', 'field_collection', 'libraries'))) {
+    throw new DrupalUpdateException('Date, Entity reference, Field collection and Libraries modules must be present for Biblio 2.x.');
   }
 
-  return t('Old biblio tables were renamed and the new tables were created');
+  return t('Old biblio tables were renamed and the new tables were created.');
 }
