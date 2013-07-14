@@ -40,30 +40,21 @@ class BiblioMigrateEntries extends Migration {
       'title',
       'uid',
       'created',
-      'biblio_year',
-      'biblio_other_numbers',
-      'biblio_publisher',
-      'biblio_isbn',
-      'biblio_type_of_work',
-      'biblio_call_number',
-      'biblio_alternate_title',
-      'biblio_url',
-      'biblio_accession_number',
-      'biblio_doi',
-      'biblio_short_title',
+      'changed',
     );
 
-    // @todo: Add biblio_in_press
+    foreach (array_keys(biblio_fields_info()) as $field_name) {
+      if (in_array($field_name, array('biblio_type', 'biblio_abstract'))) {
+        continue;
+      }
+      $fields[] = $field_name;
+    }
 
     $this->addSimpleMappings($fields);
 
     $this
       ->addFieldMapping('type', 'biblio_type')
       ->sourceMigration('BiblioMigrateTypes');
-
-    $this
-      ->addFieldMapping('changed', NULL)
-      ->defaultValue(REQUEST_TIME);
 
     // TODO: The migration map the field as 'biblio_abstract' and not as
     // 'biblio_abst_e' which cause to the abstract from the original biblio
