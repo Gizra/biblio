@@ -53,6 +53,19 @@ class MigrateDestinationBiblioType extends MigrateDestination {
     // Save the type.
     biblio_type_save($entity);
 
+    foreach (biblio_fields_info() as $field_name => $field) {
+      // @todo: Add info on the array to which entity should be used.
+      if (strpos($field_name, 'biblio_') !== 0) {
+        continue;
+      }
+
+      if ($field_name == 'biblio_contributor') {
+        continue;
+      }
+
+      biblio_create_field($field_name, 'biblio', $entity->type);
+    }
+
     $this->complete($entity, $row);
 
     return array($entity->type);
