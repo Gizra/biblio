@@ -27,12 +27,13 @@ class BiblioMigrateContributors extends Migration {
     $this->source = new MigrateSourceSQL($this->query);
     $this->destination = new MigrateDestinationEntityAPI('biblio_contributor', 'contributor');
 
-    $this
-      ->addFieldMapping('name', 'name');
-      // ->callbacks((array($this, 'prepareName')));
+    $this->addFieldMapping('name', 'name');
 
     $this->addFieldMapping('type', NULL)->defaultValue('contributor');
     $this->addFieldMapping('created', NULL)->defaultValue(REQUEST_TIME);
     $this->addFieldMapping('changed', NULL)->defaultValue(REQUEST_TIME);
+
+    biblio_create_field('contributor_family', 'biblio_contributor', 'contributor');
+    biblio_create_field('contributor_given', 'biblio_contributor', 'contributor');
   }
 }

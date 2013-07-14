@@ -11,28 +11,41 @@ class BiblioContributor extends Entity {
       return;
     }
 
-    if (empty($values['name'])) {
-      return;
-    }
-
-    $name = $values['name'];
-    if (is_array($values['name'])) {
+    if (isset($values['family']) && isset($values['given'])) {
       $wrapper = entity_metadata_wrapper('biblio_contributor', $this);
 
       // @todo: Add fields if not yet added.
-      if ($name['family']) {
-        $wrapper->contributor_family = $name['family'];
-      }
-
-      if ($name['given']) {
-        $wrapper->contributor_given = $name['given'];
-      }
+      $wrapper->contributor_family = $values['family'];
+      $wrapper->contributor_given = $values['given'];
 
       $this->name = implode(', ', $this->name);
+      return;
     }
-    else {
-      $this->name = $name;
+    elseif (!empty($values['name'])) {
+      $this->name = $values['name'];
     }
+  }
+
+  public function save() {
+    $wrapper = entity_metadata_wrapper('biblio_contributor', $this);
+
+    if (!$wrapper->contributor_family->value() && !$wrapper->contributor_given->value()) {
+      // Set the "given" snd "family" based in the name property.
+      $name = str_replace(',', '', $this->name);
+      $name = explode(' ', $name, 2);
+
+      // Try to be smart and use words with a dot as the first name.
+      if (strpos($name[0], '.') === TRUE) {
+        $wrapper->contributor_family->set(!empty($name[1]) ? $name[1] : '');
+        $wrapper->contributor_given->set($name[0]);
+      }
+      else {
+        $wrapper->contributor_family->set($name[0]);
+        $wrapper->contributor_given->set(!empty($name[1]) ? $name[1] : '');
+      }
+    }
+
+    parent::save();
   }
 }
 

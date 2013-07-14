@@ -990,7 +990,7 @@ function biblio_biblio_fields_info() {
     ),
   );
 
-  // Phone number.
+  // Call number.
   $items['biblio_call_number'] = array(
     'field' => array(
       'cardinality' => '1',
