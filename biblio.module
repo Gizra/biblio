@@ -1061,8 +1061,8 @@ function biblio_biblio_fields_info() {
       'type' => 'text',
     ),
     'instance' => array(
-      'label' => 'ISBN',
-      'description' => 'Accession number',
+      'label' => 'Accession number',
+      'description' => '',
       'settings' => array(
         'text_processing' => '0',
         'user_register_form' => FALSE,
