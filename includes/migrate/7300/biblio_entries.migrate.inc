@@ -44,7 +44,8 @@ class BiblioMigrateEntries extends Migration {
     );
 
     foreach (array_keys(biblio_fields_info()) as $field_name) {
-      if (in_array($field_name, array('biblio_type', 'biblio_abstract'))) {
+
+      if (in_array($field_name, array('biblio_type', 'biblio_abstract', 'biblio_in_press', 'biblio_issued'))) {
         continue;
       }
       $fields[] = $field_name;
@@ -62,5 +63,21 @@ class BiblioMigrateEntries extends Migration {
     $this
       ->addFieldMapping('biblio_abstract', 'biblio_abst_e')
       ->defaultValue(NULL);
+
+    $this
+      ->addFieldMapping('biblio_in_press', 'biblio_year')
+      ->callbacks(array($this, 'prepareBiblioInPress'));
+
+    $this
+      ->addFieldMapping('biblio_issued', 'biblio_year')
+      ->callbacks(array($this, 'prepareBiblioIssued'));
+  }
+
+  public function prepareBiblioInPress($value) {
+    return $value == '9998' ? 1 : 0;
+  }
+
+  public function prepareBiblioIssued($value) {
+    return $value == '9999' ? 1 : 0;
   }
 }
