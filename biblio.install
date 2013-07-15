@@ -15,25 +15,8 @@ function biblio_install() {
  * Implements hook_enable()
  */
 function biblio_enable() {
-  _biblio_install_add_publication_types();
+  biblio_add_publication_types();
   biblio_create_fields_by_bundle();
-}
-
-/**
- * Create new Biblio bundles.
- *
- * @todo: Make the bundles configurable?
- */
-function _biblio_install_add_publication_types() {
-  foreach (biblio_get_types_info() as $values) {
-    $name = $values['name'];
-
-    $row = new stdClass();
-    $row->type = strtolower(str_replace(' ', '_', $name));
-    $row->name = $name;
-    $row->description = $values['description'];
-    biblio_type_save($row);
-  }
 }
 
 /**

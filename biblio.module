@@ -545,8 +545,11 @@ function biblio_create_fields_by_bundle($bundles = array()) {
         continue;
       }
 
-      // Allow per bundle settings to override the instance's default settings.
-      $field_info = drupal_array_merge_deep($field_info['instance'], $field_info['bundles_info'][$bundle]);
+      if (!empty($field_info['bundles_info'][$bundle])) {
+        // Allow per bundle settings to override the instance's default settings.
+        $field_info = drupal_array_merge_deep($field_info['instance'], $field_info['bundles_info'][$bundle]);
+      }
+
       biblio_create_field($field_name, 'biblio', $bundle, $field_info);
     }
   }
@@ -613,6 +616,7 @@ function biblio_fields_info($field_name = NULL) {
             'entity type' => array(),
             'multiple' => FALSE,
             'description' => '',
+            'bundles_info' => array(),
           );
 
           // Add the module information.
@@ -1640,6 +1644,23 @@ function biblio_biblio_fields_info() {
   );
 
   return $items;
+}
+
+/**
+ * Create new Biblio bundles.
+ *
+ * @todo: Make the bundles configurable?
+ */
+function biblio_add_publication_types() {
+  foreach (biblio_get_types_info() as $values) {
+    $name = $values['name'];
+
+    $row = new stdClass();
+    $row->type = strtolower(str_replace(' ', '_', $name));
+    $row->name = $name;
+    $row->description = $values['description'];
+    biblio_type_save($row);
+  }
 }
 
 
