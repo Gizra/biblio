@@ -540,7 +540,8 @@ function biblio_create_fields_by_bundle($bundles = array()) {
   $fields_info = biblio_fields_info();
   foreach ($bundles as $bundle) {
     foreach ($fields_info as $field_name => $field_info) {
-      if (empty($field_info['bundles_info'][$bundle])) {
+      if (!empty($field_info['bundles_info']) && empty($field_info['bundles_info'][$bundle])) {
+        // The field shouldn't be added to the bundle.
         continue;
       }
 

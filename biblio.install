@@ -338,10 +338,6 @@ function biblio_update_7300(&$sandbox) {
     db_rename_table($table, "_{$table}_1x");
   }
 
-  _biblio_install_add_biblio_roles();
-  _biblio_install_add_publication_types();
-  biblio_create_fields_by_bundle();
-
   $schema = biblio_schema_7300();
   foreach ($schema as $table => $table_schema) {
     db_create_table($table, $table_schema);
@@ -351,6 +347,10 @@ function biblio_update_7300(&$sandbox) {
   if (!module_enable(array('date', 'entity', 'entityreference', 'field_collection', 'libraries'))) {
     throw new DrupalUpdateException('Date, Entity reference, Field collection and Libraries modules must be present for Biblio 2.x.');
   }
+
+  _biblio_install_add_biblio_roles();
+  _biblio_install_add_publication_types();
+  biblio_create_fields_by_bundle();
 
   return t('Old biblio tables were renamed and the new tables were created.');
 }
