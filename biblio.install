@@ -15,7 +15,7 @@ function biblio_install() {
  * Implements hook_enable()
  */
 function biblio_enable() {
-  biblio_add_publication_types();
+  _biblio_install_add_publication_types();
   biblio_create_fields_by_bundle();
 }
 
@@ -24,7 +24,7 @@ function biblio_enable() {
  *
  * @todo: Make the bundles configurable?
  */
-function biblio_add_publication_types() {
+function _biblio_install_add_publication_types() {
   $bundles[] = array('name' => 'Book');
   $bundles[] = array('name' => 'Book Chapter');
   $bundles[] = array('name' => 'Journal Article');
@@ -339,6 +339,8 @@ function biblio_update_7300(&$sandbox) {
   }
 
   _biblio_install_add_biblio_roles();
+  _biblio_install_add_publication_types();
+  biblio_create_fields_by_bundle();
 
   $schema = biblio_schema_7300();
   foreach ($schema as $table => $table_schema) {
