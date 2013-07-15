@@ -25,43 +25,6 @@ function biblio_enable() {
  * @todo: Make the bundles configurable?
  */
 function _biblio_install_add_publication_types() {
-  $bundles[] = array('name' => 'Book');
-  $bundles[] = array('name' => 'Book Chapter');
-  $bundles[] = array('name' => 'Journal Article');
-  $bundles[] = array('name' => 'Journal');
-  $bundles[] = array('name' => 'Conference Paper');
-  $bundles[] = array('name' => 'Conference Proceedings');
-  $bundles[] = array('name' => 'Newspaper Article');
-  $bundles[] = array('name' => 'Magazine Article');
-  $bundles[] = array('name' => 'Web Article');
-  $bundles[] = array('name' => 'Website');
-  $bundles[] = array('name' => 'Web service');
-  $bundles[] = array('name' => 'Web project page');
-  $bundles[] = array('name' => 'Thesis');
-  $bundles[] = array('name' => 'Report');
-  $bundles[] = array('name' => 'Film');
-  $bundles[] = array('name' => 'Broadcast');
-  $bundles[] = array('name' => 'Artwork');
-  $bundles[] = array('name' => 'Software');
-  $bundles[] = array('name' => 'Audiovisual');
-  $bundles[] = array('name' => 'Hearing');
-  $bundles[] = array('name' => 'Case');
-  $bundles[] = array('name' => 'Bill');
-  $bundles[] = array('name' => 'Statute');
-  $bundles[] = array('name' => 'Patent');
-  $bundles[] = array('name' => 'Personal');
-  $bundles[] = array('name' => 'Manuscript');
-  $bundles[] = array('name' => 'Map');
-  $bundles[] = array('name' => 'Chart');
-  $bundles[] = array('name' => 'Unpublished');
-  $bundles[] = array('name' => 'Database');
-  $bundles[] = array('name' => 'Government Report');
-  $bundles[] = array('name' => 'Classical');
-  $bundles[] = array('name' => 'Legal Ruling');
-  $bundles[] = array('name' => 'Miscellaneous');
-  $bundles[] = array('name' => 'Miscellaneous Section');
-  $bundles[] = array('name' => 'Presentation');
-
   foreach ($bundles as $values) {
     $values += array('description' => '');
     $name = $values['name'];
@@ -349,8 +312,6 @@ function biblio_update_7300(&$sandbox) {
   }
 
   _biblio_install_add_biblio_roles();
-  _biblio_install_add_publication_types();
-  biblio_create_fields_by_bundle();
 
   return t('Old biblio tables were renamed and the new tables were created.');
 }

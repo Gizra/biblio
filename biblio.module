@@ -1642,6 +1642,80 @@ function biblio_biblio_fields_info() {
   return $items;
 }
 
+
+function biblio_get_types_info($type = NULL) {
+  $return = &drupal_static(__FUNCTION__, array());
+
+  if (empty($return)) {
+    foreach (module_implements('biblio_types_info') as $module) {
+      if ($types = module_invoke($module, 'biblio_types_info')) {
+        foreach ($types as $key => $value) {
+
+          // Add default values.
+          $value += array(
+            'description' => '',
+            'style_info' => array(),
+          );
+
+          // Add the module information.
+          $return[$key] = array_merge($value, array('module' => $module));
+        }
+      }
+    }
+
+    // Allow other modules to alter the field info.
+    drupal_alter('biblio_types_info', $return);
+  }
+
+  if (!empty($type)) {
+    return !empty($return[$type]) ?  $return[$type] : FALSE;
+  }
+
+  return $return;
+}
+
+/**
+ * Implements biblio_types_info().
+ */
+function biblio_biblio_types_info() {
+  $types[] = array('name' => 'Book');
+  $types[] = array('name' => 'Book Chapter');
+  $types[] = array('name' => 'Journal Article');
+  $types[] = array('name' => 'Journal');
+  $types[] = array('name' => 'Conference Paper');
+  $types[] = array('name' => 'Conference Proceedings');
+  $types[] = array('name' => 'Newspaper Article');
+  $types[] = array('name' => 'Magazine Article');
+  $types[] = array('name' => 'Web Article');
+  $types[] = array('name' => 'Website');
+  $types[] = array('name' => 'Web service');
+  $types[] = array('name' => 'Web project page');
+  $types[] = array('name' => 'Thesis');
+  $types[] = array('name' => 'Report');
+  $types[] = array('name' => 'Film');
+  $types[] = array('name' => 'Broadcast');
+  $types[] = array('name' => 'Artwork');
+  $types[] = array('name' => 'Software');
+  $types[] = array('name' => 'Audiovisual');
+  $types[] = array('name' => 'Hearing');
+  $types[] = array('name' => 'Case');
+  $types[] = array('name' => 'Bill');
+  $types[] = array('name' => 'Statute');
+  $types[] = array('name' => 'Patent');
+  $types[] = array('name' => 'Personal');
+  $types[] = array('name' => 'Manuscript');
+  $types[] = array('name' => 'Map');
+  $types[] = array('name' => 'Chart');
+  $types[] = array('name' => 'Unpublished');
+  $types[] = array('name' => 'Database');
+  $types[] = array('name' => 'Government Report');
+  $types[] = array('name' => 'Classical');
+  $types[] = array('name' => 'Legal Ruling');
+  $types[] = array('name' => 'Miscellaneous');
+  $types[] = array('name' => 'Miscellaneous Section');
+  $types[] = array('name' => 'Presentation');
+}
+
 /**
  * Implements hook_views_pre_render().
  *
