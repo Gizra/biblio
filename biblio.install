@@ -25,8 +25,7 @@ function biblio_enable() {
  * @todo: Make the bundles configurable?
  */
 function _biblio_install_add_publication_types() {
-  foreach ($bundles as $values) {
-    $values += array('description' => '');
+  foreach (biblio_get_types_info() as $values) {
     $name = $values['name'];
 
     $row = new stdClass();
