@@ -1678,42 +1678,44 @@ function biblio_get_types_info($type = NULL) {
  * Implements biblio_types_info().
  */
 function biblio_biblio_types_info() {
-  $types[] = array('name' => 'Book');
-  $types[] = array('name' => 'Book Chapter');
-  $types[] = array('name' => 'Journal Article');
-  $types[] = array('name' => 'Journal');
-  $types[] = array('name' => 'Conference Paper');
-  $types[] = array('name' => 'Conference Proceedings');
-  $types[] = array('name' => 'Newspaper Article');
-  $types[] = array('name' => 'Magazine Article');
-  $types[] = array('name' => 'Web Article');
-  $types[] = array('name' => 'Website');
-  $types[] = array('name' => 'Web service');
-  $types[] = array('name' => 'Web project page');
-  $types[] = array('name' => 'Thesis');
-  $types[] = array('name' => 'Report');
-  $types[] = array('name' => 'Film');
-  $types[] = array('name' => 'Broadcast');
-  $types[] = array('name' => 'Artwork');
-  $types[] = array('name' => 'Software');
-  $types[] = array('name' => 'Audiovisual');
-  $types[] = array('name' => 'Hearing');
-  $types[] = array('name' => 'Case');
-  $types[] = array('name' => 'Bill');
-  $types[] = array('name' => 'Statute');
-  $types[] = array('name' => 'Patent');
-  $types[] = array('name' => 'Personal');
-  $types[] = array('name' => 'Manuscript');
-  $types[] = array('name' => 'Map');
-  $types[] = array('name' => 'Chart');
-  $types[] = array('name' => 'Unpublished');
-  $types[] = array('name' => 'Database');
-  $types[] = array('name' => 'Government Report');
-  $types[] = array('name' => 'Classical');
-  $types[] = array('name' => 'Legal Ruling');
-  $types[] = array('name' => 'Miscellaneous');
-  $types[] = array('name' => 'Miscellaneous Section');
-  $types[] = array('name' => 'Presentation');
+  $types['book'] = array('name' => 'Book');
+  $types['book_chapter'] = array('name' => 'Book Chapter');
+  $types['journal_article'] = array('name' => 'Journal Article');
+  $types['journal'] = array('name' => 'Journal');
+  $types['conference_paper'] = array('name' => 'Conference Paper');
+  $types['conference_proceedings'] = array('name' => 'Conference Proceedings');
+  $types['newspaper_article'] = array('name' => 'Newspaper Article');
+  $types['magazine_article'] = array('name' => 'Magazine Article');
+  $types['web_article'] = array('name' => 'Web Article');
+  $types['website'] = array('name' => 'Website');
+  $types['web_service'] = array('name' => 'Web service');
+  $types['web_project_page'] = array('name' => 'Web project page');
+  $types['thesis'] = array('name' => 'Thesis');
+  $types['report'] = array('name' => 'Report');
+  $types['film'] = array('name' => 'Film');
+  $types['broadcast'] = array('name' => 'Broadcast');
+  $types['artwork'] = array('name' => 'Artwork');
+  $types['software'] = array('name' => 'Software');
+  $types['audiovisual'] = array('name' => 'Audiovisual');
+  $types['hearing'] = array('name' => 'Hearing');
+  $types['case'] = array('name' => 'Case');
+  $types['bill'] = array('name' => 'Bill');
+  $types['statute'] = array('name' => 'Statute');
+  $types['patent'] = array('name' => 'Patent');
+  $types['personal'] = array('name' => 'Personal');
+  $types['manuscript'] = array('name' => 'Manuscript');
+  $types['map'] = array('name' => 'Map');
+  $types['chart'] = array('name' => 'Chart');
+  $types['unpublished'] = array('name' => 'Unpublished');
+  $types['database'] = array('name' => 'Database');
+  $types['government_report'] = array('name' => 'Government Report');
+  $types['classical'] = array('name' => 'Classical');
+  $types['legal_ruling'] = array('name' => 'Legal Ruling');
+  $types['miscellaneous'] = array('name' => 'Miscellaneous');
+  $types['miscellaneous_section'] = array('name' => 'Miscellaneous Section');
+  $types['presentation'] = array('name' => 'Presentation');
+
+  return $types;
 }
 
 /**
