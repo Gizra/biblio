@@ -12,6 +12,14 @@ function biblio_install() {
 }
 
 /**
+ * Implements hook_enable()
+ */
+function biblio_enable() {
+
+  biblio_create_fields_by_bundle();
+}
+
+/**
  * Add biblio roles vocabulary and terms.
  */
 function _biblio_install_add_biblio_roles() {
