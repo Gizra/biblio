@@ -274,8 +274,11 @@ function biblio_schema() {
 
 /**
  * Upgrade schema to 3.x.
+ *
+ * We are not creating the Biblio types here, as we can't rely on Biblio being
+ * enabled.
  */
-function biblio_update_7300(&$sandbox) {
+function biblio_update_7300() {
   // Rename the old biblio tables.
   $old_biblio_tables = array(
     'biblio',
