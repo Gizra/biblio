@@ -12,6 +12,14 @@ function biblio_install() {
 }
 
 /**
+ * Implements hook_enable()
+ */
+function biblio_enable() {
+  biblio_add_publication_types();
+  biblio_create_fields_by_bundle();
+}
+
+/**
  * Add biblio roles vocabulary and terms.
  */
 function _biblio_install_add_biblio_roles() {
@@ -249,8 +257,11 @@ function biblio_schema() {
 
 /**
  * Upgrade schema to 3.x.
+ *
+ * We are not creating the Biblio types here, as we can't rely on Biblio being
+ * enabled.
  */
-function biblio_update_7300(&$sandbox) {
+function biblio_update_7300() {
   // Rename the old biblio tables.
   $old_biblio_tables = array(
     'biblio',
@@ -275,8 +286,6 @@ function biblio_update_7300(&$sandbox) {
     db_rename_table($table, "_{$table}_1x");
   }
 
-  _biblio_install_add_biblio_roles();
-
   $schema = biblio_schema_7300();
   foreach ($schema as $table => $table_schema) {
     db_create_table($table, $table_schema);
@@ -286,6 +295,8 @@ function biblio_update_7300(&$sandbox) {
   if (!module_enable(array('date', 'entity', 'entityreference', 'field_collection', 'libraries'))) {
     throw new DrupalUpdateException('Date, Entity reference, Field collection and Libraries modules must be present for Biblio 2.x.');
   }
+
+  _biblio_install_add_biblio_roles();
 
   return t('Old biblio tables were renamed and the new tables were created.');
 }

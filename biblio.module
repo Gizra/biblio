@@ -528,7 +528,35 @@ function biblio_contributor_load_multiple($cids = array()) {
 }
 
 /**
- * Create an biblio field in a bundle.
+ * Attach fields to bundles.
+ *
+ * @param $bundles
+ *   Array with the bundles to process, or empty array to use all Biblio bundles.
+ */
+function biblio_create_fields_by_bundle($bundles = array()) {
+  $entity_info = entity_get_info('biblio');
+  $bundles = $bundles ? $bundles : array_keys($entity_info['bundles']);
+
+  $fields_info = biblio_fields_info();
+  foreach ($bundles as $bundle) {
+    foreach ($fields_info as $field_name => $field_info) {
+      if (!empty($field_info['bundles_info']) && empty($field_info['bundles_info'][$bundle])) {
+        // The field shouldn't be added to the bundle.
+        continue;
+      }
+
+      if (!empty($field_info['bundles_info'][$bundle])) {
+        // Allow per bundle settings to override the instance's default settings.
+        $field_info = drupal_array_merge_deep($field_info['instance'], $field_info['bundles_info'][$bundle]);
+      }
+
+      biblio_create_field($field_name, 'biblio', $bundle, $field_info);
+    }
+  }
+}
+
+/**
+ * Create a biblio field in a bundle.
  *
  * @param string $field_name
  *   The field name
@@ -588,6 +616,7 @@ function biblio_fields_info($field_name = NULL) {
             'entity type' => array(),
             'multiple' => FALSE,
             'description' => '',
+            'bundles_info' => array(),
           );
 
           // Add the module information.
@@ -1615,6 +1644,99 @@ function biblio_biblio_fields_info() {
   );
 
   return $items;
+}
+
+/**
+ * Create new Biblio bundles.
+ *
+ * @todo: Make the bundles configurable?
+ */
+function biblio_add_publication_types() {
+  foreach (biblio_get_types_info() as $values) {
+    $name = $values['name'];
+
+    $row = new stdClass();
+    $row->type = strtolower(str_replace(' ', '_', $name));
+    $row->name = $name;
+    $row->description = $values['description'];
+    biblio_type_save($row);
+  }
+}
+
+
+function biblio_get_types_info($type = NULL) {
+  $return = &drupal_static(__FUNCTION__, array());
+
+  if (empty($return)) {
+    foreach (module_implements('biblio_types_info') as $module) {
+      if ($types = module_invoke($module, 'biblio_types_info')) {
+        foreach ($types as $key => $value) {
+
+          // Add default values.
+          $value += array(
+            'description' => '',
+            'style_info' => array(),
+          );
+
+          // Add the module information.
+          $return[$key] = array_merge($value, array('module' => $module));
+        }
+      }
+    }
+
+    // Allow other modules to alter the field info.
+    drupal_alter('biblio_types_info', $return);
+  }
+
+  if (!empty($type)) {
+    return !empty($return[$type]) ?  $return[$type] : FALSE;
+  }
+
+  return $return;
+}
+
+/**
+ * Implements biblio_types_info().
+ */
+function biblio_biblio_types_info() {
+  $types['book'] = array('name' => 'Book');
+  $types['book_chapter'] = array('name' => 'Book Chapter');
+  $types['journal_article'] = array('name' => 'Journal Article');
+  $types['journal'] = array('name' => 'Journal');
+  $types['conference_paper'] = array('name' => 'Conference Paper');
+  $types['conference_proceedings'] = array('name' => 'Conference Proceedings');
+  $types['newspaper_article'] = array('name' => 'Newspaper Article');
+  $types['magazine_article'] = array('name' => 'Magazine Article');
+  $types['web_article'] = array('name' => 'Web Article');
+  $types['website'] = array('name' => 'Website');
+  $types['web_service'] = array('name' => 'Web service');
+  $types['web_project_page'] = array('name' => 'Web project page');
+  $types['thesis'] = array('name' => 'Thesis');
+  $types['report'] = array('name' => 'Report');
+  $types['film'] = array('name' => 'Film');
+  $types['broadcast'] = array('name' => 'Broadcast');
+  $types['artwork'] = array('name' => 'Artwork');
+  $types['software'] = array('name' => 'Software');
+  $types['audiovisual'] = array('name' => 'Audiovisual');
+  $types['hearing'] = array('name' => 'Hearing');
+  $types['case'] = array('name' => 'Case');
+  $types['bill'] = array('name' => 'Bill');
+  $types['statute'] = array('name' => 'Statute');
+  $types['patent'] = array('name' => 'Patent');
+  $types['personal'] = array('name' => 'Personal');
+  $types['manuscript'] = array('name' => 'Manuscript');
+  $types['map'] = array('name' => 'Map');
+  $types['chart'] = array('name' => 'Chart');
+  $types['unpublished'] = array('name' => 'Unpublished');
+  $types['database'] = array('name' => 'Database');
+  $types['government_report'] = array('name' => 'Government Report');
+  $types['classical'] = array('name' => 'Classical');
+  $types['legal_ruling'] = array('name' => 'Legal Ruling');
+  $types['miscellaneous'] = array('name' => 'Miscellaneous');
+  $types['miscellaneous_section'] = array('name' => 'Miscellaneous Section');
+  $types['presentation'] = array('name' => 'Presentation');
+
+  return $types;
 }
 
 /**
