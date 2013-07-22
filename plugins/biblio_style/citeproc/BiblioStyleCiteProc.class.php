@@ -202,9 +202,11 @@ class BiblioStyleCiteProc extends BiblioStyleBase {
       ),
       'contributor' => array(
         'text' => array(
-          'initials' => 'contributor_initials',
-          'given' => 'contributor_given',
-          'family' => 'contributor_family',
+          'initials' => 'initials',
+          'given' => 'firstname',
+          'family' => 'lastname',
+          'prefix' => 'prefix',
+          'suffix' => 'suffix',
         ),
       ),
     );

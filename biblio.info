@@ -5,6 +5,7 @@ core = 7.x
 dependencies[] = date
 dependencies[] = entity
 dependencies[] = entityreference
+dependencies[] = inline_entity_form
 dependencies[] = field_collection
 dependencies[] = libraries
 dependencies[] = list
@@ -17,6 +18,12 @@ configure = admin/config/content/biblio
 files[] = plugins/biblio_style/abstract.inc
 files[] = includes/biblio.controller.inc
 files[] = includes/biblio.contributor.controller.inc
+
+; Inline entity form
+files[] = includes/biblio_contributor.inline_entity_form.inc
+
+; Metadata
+files[] = includes/biblio_contributor.metadata.inc
 
 ; Views
 files[] = includes/views/biblio.views.inc

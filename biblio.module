@@ -308,16 +308,13 @@ function biblio_entity_info() {
     'uri callback' => 'entity_class_uri',
     'module' => 'biblio',
     'access callback' => 'biblio_entity_access',
+    'inline entity form' => array(
+      'controller' => 'BiblioContributorInlineEntityFormController',
+    ),
   );
 
-  return $return;
-}
 
-/**
- * Implements hook_entity_property_info_alter().
- */
-function biblio_entity_property_info_alter(&$info) {
-  $info['biblio']['properties']['title']['setter callback'] = 'entity_property_verbatim_set';
+  return $return;
 }
 
 /**
@@ -371,9 +368,6 @@ function biblio_type_save($biblio_type) {
     biblio_create_field('biblio_contributor_role', 'field_collection_item', 'contributor_field_collection');
     biblio_create_field('biblio_contributor', 'field_collection_item', 'contributor_field_collection');
   }
-
-  // @todo: Remove?
-  // drupal_flush_all_caches();
 }
 
 /**
@@ -397,7 +391,6 @@ function biblio_type_delete($type) {
   db_delete('biblio_type')
     ->condition('type', $type)
     ->execute();
-  drupal_flush_all_caches();
 }
 
 /**
@@ -488,7 +481,7 @@ function biblio_load_multiple($bids = array(), $reset = FALSE) {
 }
 
 /**
- * Create a contributor entity object
+ * Create a contributor entity object.
  *
  * @param string $name
  *   The name of the contributor. If given, this function will parse out the
@@ -499,15 +492,19 @@ function biblio_load_multiple($bids = array(), $reset = FALSE) {
  * @return object
  *  The contributor entity object
  */
-function biblio_contributor_create($name = array(), $values = array()) {
+function biblio_contributor_create($values = array()) {
   global $language;
 
-  $values['name'] = $name;
   $values['type'] = 'biblio_contributor';
   $values += array(
     'language' => $language->language,
     'created' => REQUEST_TIME,
     'changed' => REQUEST_TIME,
+    'prefix' => '',
+    'lastname' => '',
+    'initials' => '',
+    'suffix' => '',
+    'firstname' => '',
   );
 
   return entity_create('biblio_contributor', $values);
@@ -540,6 +537,12 @@ function biblio_create_fields_by_bundle($bundles = array()) {
   $fields_info = biblio_fields_info();
   foreach ($bundles as $bundle) {
     foreach ($fields_info as $field_name => $field_info) {
+      if (in_array($field_name, array('biblio_contributor_role', 'biblio_contributor'))) {
+        // @todo: Add better way to distniush fields that don't need to be
+        // attached to the Biblio entity.
+        continue;
+      }
+
       if (!empty($field_info['bundles_info']) && empty($field_info['bundles_info'][$bundle])) {
         // The field shouldn't be added to the bundle.
         continue;
@@ -547,7 +550,7 @@ function biblio_create_fields_by_bundle($bundles = array()) {
 
       if (!empty($field_info['bundles_info'][$bundle])) {
         // Allow per bundle settings to override the instance's default settings.
-        $field_info = drupal_array_merge_deep($field_info['instance'], $field_info['bundles_info'][$bundle]);
+        $field_info['instance'] = drupal_array_merge_deep($field_info['instance'], $field_info['bundles_info'][$bundle]);
       }
 
       biblio_create_field($field_name, 'biblio', $bundle, $field_info);
@@ -805,6 +808,9 @@ function biblio_biblio_fields_info() {
         'module' => 'options',
         'type' => 'options_onoff',
         'weight' => 0,
+        'settings' => array(
+          'display_label' => TRUE,
+        ),
       ),
     ),
   );
@@ -1139,68 +1145,6 @@ function biblio_biblio_fields_info() {
     ),
   );
 
-  // Given name.
-  $items['contributor_given'] = array(
-    'description' => 'Contributor given name.',
-    'field' => array(
-      'cardinality' => '1',
-      'field_name' => 'contributor_given',
-      'module' => 'text',
-      'settings' => array(
-        'max_length' => '255',
-      ),
-      'type' => 'text',
-    ),
-    'instance' => array(
-      'label' => 'Given name',
-      'description' => 'Contributor given name.',
-      'settings' => array(
-        'text_processing' => '0',
-        'user_register_form' => FALSE,
-      ),
-      'widget' => array(
-        'active' => 1,
-        'module' => 'text',
-        'settings' => array(
-          'size' => '60',
-        ),
-        'type' => 'text_textfield',
-        'weight' => '-3',
-      ),
-    ),
-  );
-
-  // Family name.
-  $items['contributor_family'] = array(
-    'description' => 'Contributor family name.',
-    'field' => array(
-      'cardinality' => '1',
-      'field_name' => 'contributor_family',
-      'module' => 'text',
-      'settings' => array(
-        'max_length' => '255',
-      ),
-      'type' => 'text',
-    ),
-    'instance' => array(
-      'label' => 'Given name',
-      'description' => 'Contributor family name.',
-      'settings' => array(
-        'text_processing' => '0',
-        'user_register_form' => FALSE,
-      ),
-      'widget' => array(
-        'active' => 1,
-        'module' => 'text',
-        'settings' => array(
-          'size' => '60',
-        ),
-        'type' => 'text_textfield',
-        'weight' => '-3',
-      ),
-    ),
-  );
-
   // Contributor fields.
   $items['contributor_field_collection'] = array(
     'field' => array(
@@ -1301,13 +1245,14 @@ function biblio_biblio_fields_info() {
       ),
       'widget' => array(
         'active' => 1,
-        'module' => 'entityreference',
+        'module' => 'inline_entity_form',
         'settings' => array(
-          'match_operator' => 'CONTAINS',
-          'path' => '',
-          'size' => '60',
+          'type_settings' => array(
+            'allow_existing' => TRUE,
+            'match_operator' => 'CONTAINS',
+          ),
         ),
-        'type' => 'entityreference_autocomplete',
+        'type' => 'inline_entity_form',
         'weight' => '1',
       ),
     ),
@@ -1369,6 +1314,11 @@ function biblio_biblio_fields_info() {
         ),
         'type' => 'text_textfield',
         'weight' => '-3',
+      ),
+    ),
+    'bundles_info' => array(
+      'book' => array(
+        'label' => 'Abbreviation',
       ),
     ),
   );
@@ -1758,33 +1708,4 @@ function biblio_views_pre_render(&$view) {
 
     $view->result[$key]->field_biblio_year[0]['rendered']['#markup'] = t('In Press');
   }
-}
-
-
-/**
- * Removes brace from a string
- *
- * @param string $title_string
- * @return string
- */
-function biblio_remove_brace($title_string) {
-  //$title_string = utf8_encode($title_string);
-  $matchpattern = '/\{\$(?:(?!\$\}).)*\$\}|(\{[^}]*\})/';
-  $output = preg_replace_callback($matchpattern, 'biblio_remove_brace_callback', $title_string);
-  return $output;
-}
-
-/**
- * Callback from preg_replace_callback
- *
- * @param array $match
- * @return array
- */
-function biblio_remove_brace_callback($match) {
-  if (isset($match[1])) {
-    $braceless = str_replace('{', '', $match[1]);
-    $braceless = str_replace('}', '', $braceless);
-    return $braceless;
-  }
-  return $match[0];
 }

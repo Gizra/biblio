@@ -9,7 +9,6 @@ function biblio_example_init() {
     return;
   }
 
-  biblio_example_attach_fields();
   biblio_example_create_content();
 }
 
@@ -20,44 +19,6 @@ function biblio_example_ctools_plugin_directory($module, $plugin) {
   if ($module == 'biblio') {
     return 'plugins/' . $plugin;
   }
-}
-
-/**
- * Attach fields for the biblio book bundle.
- */
-function biblio_example_attach_fields() {
-  $field_names = array(
-    'biblio_abstract',
-    'biblio_citekey',
-    'biblio_first_letter',
-    'biblio_image',
-    'biblio_in_press',
-    'biblio_issued',
-    'biblio_pages',
-    'biblio_publisher',
-    'biblio_secondary_title',
-    'biblio_tertiary_title',
-    'biblio_year',
-    // Contributors reference.
-    'contributor_field_collection',
-  );
-
-  foreach ($field_names as $field_name) {
-    biblio_create_field($field_name, 'biblio', 'book');
-  }
-
-  $field_names = array(
-    'contributor_given',
-    'contributor_family',
-  );
-
-  foreach ($field_names as $field_name) {
-    biblio_create_field($field_name, 'biblio_contributor', 'biblio_contributor');
-    biblio_create_field($field_name, 'biblio_contributor', 'biblio_contributor');
-  }
-
-  biblio_create_field('biblio_contributor_role', 'field_collection_item', 'contributor_field_collection');
-  biblio_create_field('biblio_contributor', 'field_collection_item', 'contributor_field_collection');
 }
 
 /**
@@ -75,20 +36,20 @@ function biblio_example_create_content() {
   $biblio->title = devel_create_greeking(rand(3, 8), TRUE);
 
   // Add contributor to collection.
-  $name = array(
-    'given' => devel_create_greeking(rand(1, 2), TRUE),
-    'family' => devel_create_greeking(rand(1, 2), TRUE),
+  $values = array(
+    'firstname' => devel_create_greeking(rand(1, 2), TRUE),
+    'lastname' => devel_create_greeking(rand(1, 2), TRUE),
   );
 
-  $biblio_contributor1 = biblio_contributor_create($name);
+  $biblio_contributor1 = biblio_contributor_create($values);
   $biblio_contributor1->save();
 
-  $name = array(
-    'given' => devel_create_greeking(rand(1, 2), TRUE),
-    'family' => devel_create_greeking(rand(1, 2), TRUE),
+  $values = array(
+    'firstname' => devel_create_greeking(rand(1, 2), TRUE),
+    'lastname' => devel_create_greeking(rand(1, 2), TRUE),
   );
 
-  $biblio_contributor2 = biblio_contributor_create($name);
+  $biblio_contributor2 = biblio_contributor_create($values);
   $biblio_contributor2->save();
 
   if ($wrapper->biblio_in_press->value()) {
