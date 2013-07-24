@@ -110,31 +110,44 @@ function biblio_schema_7300() {
   );
 
   $schema['biblio_contributor'] = array(
-    'description' => 'Relational table linking authors to biblio entries',
+    'description' => 'Contains contributor information for each publication',
     'fields' => array(
       'cid' => array(
         'type' => 'serial',
         'not null' => TRUE,
         'unsigned' => TRUE,
-        'description' => 'Biblio Contributor ID. Unique ID for the contributor entity type.',
+        'description' => 'Primary Key: Author ID',
+      ),
+      'aka' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default'  => 0,
+        'unsigned' => TRUE,
+        'description' => 'Also known as, links this author entry with others so you can have variation on the name, but listing by cid will find all other (aka) author entries',
+      ),
+      'alt_form' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default'  => 0,
+        'unsigned' => TRUE,
+        'description' => 'Alternate form of an author name, this value points to the desired form (cid), this form is kept in the database so  that future imports of the same name will not create a new author.',
+      ),
+      'drupal_uid' => array(
+        'type' => 'int',
+        'not null' => FALSE,
+        'unsigned' => TRUE,
+        'description' => 'Drupal User ID',
       ),
       'name' => array(
-        'description' => 'The name of the contributor.',
         'type' => 'varchar',
-        'length' => 255,
+        'length' => '255',
         'not null' => TRUE,
         'default' => '',
-      ),
-      'type' => array(
-        'description' => 'The bundle name of the contributor entity',
-        'type' => 'varchar',
-        'length' => 32,
-        'not null' => TRUE,
-        'default' => '',
+        'description' => 'Full name',
       ),
       'lastname' => array(
         'type' => 'varchar',
-        'length' => 255,
+        'length' => '255',
         'not null' => TRUE,
         'default' => '',
         'description' => 'Author last name',
@@ -186,16 +199,19 @@ function biblio_schema_7300() {
         'length' => '32',
         'not null' => FALSE,
         'description' => '',
-      )
-    ),
-    'foreign keys' => array(
-      'biblio' => array(
-        'table' => 'biblio',
-        'columns' => array('bid' => 'bid'),
       ),
     ),
-    'primary key' => array(
-      'cid',
+    'foreign keys' => array(
+      'biblio_contributor' => array(
+        'table' => 'biblio_contributor',
+        'columns' => array('cid' => 'cid'),
+      ),
+    ),
+    'primary key' => array('cid'),
+    'indexes' => array(
+      'lastname' => array('lastname'),
+      'firstname' => array('firstname'),
+      'initials' => array('initials')
     ),
   );
 
@@ -247,7 +263,6 @@ function biblio_update_7300() {
     'biblio_collection',
     'biblio_collection_type',
     'biblio_contributor',
-    'biblio_contributor_data',
     'biblio_contributor_type',
     'biblio_contributor_type_data',
     'biblio_duplicates',
@@ -265,12 +280,15 @@ function biblio_update_7300() {
     db_rename_table($table, "_{$table}_1x");
   }
 
+  db_rename_table('biblio_contributor_data', 'biblio_contributor');
+
   $schema = biblio_schema_7300();
+  unset($schema['biblio_contributor']);
   foreach ($schema as $table => $table_schema) {
     db_create_table($table, $table_schema);
   }
 
-  // Enable the new needed modules. We also enable Biblio so we can reply on
+  // Enable the new needed modules. We also enable Biblio as we need to rely on
   // it and create Biblio types.
   if (!module_enable(array('biblio', 'biblio_ui', 'inline_entity_form', 'date', 'entity', 'entityreference', 'field_collection', 'libraries'))) {
     throw new DrupalUpdateException('Inline entity form, Date, Entity reference, Field collection and Libraries modules must be present for Biblio 2.x.');

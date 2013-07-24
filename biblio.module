@@ -223,7 +223,6 @@ function biblio_migrate_api() {
   $migrations = array();
   if (db_table_exists('_biblio_1x')) {
     $migrations['BiblioMigrateContributorCollections'] = array('class_name' => 'BiblioMigrateContributorCollections');
-    $migrations['BiblioMigrateContributors'] = array('class_name' => 'BiblioMigrateContributors');
     $migrations['BiblioMigrateTypes'] = array('class_name' => 'BiblioMigrateTypes');
     $migrations['BiblioMigrateEntries'] = array('class_name' => 'BiblioMigrateEntries');
   }
@@ -286,11 +285,7 @@ function biblio_entity_info() {
     'fieldable' => TRUE,
     'entity keys' => array(
       'id' => 'cid',
-      'bundle' => 'type',
       'label' => 'name',
-    ),
-    'bundle keys' => array(
-      'bundle' => 'type',
     ),
     'bundles' => array(
       'contributor' => array(

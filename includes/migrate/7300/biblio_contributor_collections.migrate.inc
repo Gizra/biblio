@@ -6,7 +6,6 @@
 class BiblioMigrateContributorCollections extends Migration {
   public $dependencies = array(
     'BiblioMigrateEntries',
-    'BiblioMigrateContributors',
   );
 
   public function __construct() {
@@ -41,7 +40,7 @@ class BiblioMigrateContributorCollections extends Migration {
     $this->destination = new BiblioMigrateDestinationFieldCollection('contributor_field_collection', array('host_entity_type' => 'biblio'));
 
     $this->addFieldMapping('host_entity_id', 'nid')->sourceMigration('BiblioMigrateEntries');
-    $this->addFieldMapping('biblio_contributor', 'cid')->sourceMigration('BiblioMigrateContributors');
+    $this->addFieldMapping('biblio_contributor', 'cid');
     $this->addFieldMapping('biblio_contributor_role', 'role');
 
     $this->roles_vocabulary = taxonomy_vocabulary_machine_name_load('biblio_roles');
