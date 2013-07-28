@@ -349,9 +349,24 @@ function biblio_ui_manage_biblio($form, &$form_state, $type) {
 
 /**
  * Validate the submitted biblio.
+ *
+ * Make sure that year has value, unless "In press" or "Submitted" or checked.
  */
 function biblio_ui_manage_biblio_validate($form, &$form_state) {
   field_attach_form_validate('biblio', $form_state['#entity'], $form, $form_state);
+
+  if (isset($form_state['values']['biblio_year'][LANGUAGE_NONE][0]['value']) && is_numeric($form_state['values']['biblio_year'][LANGUAGE_NONE][0]['value'])) {
+    // Year has value.
+    return;
+  }
+
+  if (!empty($form_state['values']['biblio_in_press'][LANGUAGE_NONE][0]['value']) || !empty($form_state['values']['biblio_issued'][LANGUAGE_NONE][0]['value'])) {
+    // "In press" or "Submitted" are checked.
+    return;
+  }
+
+  form_set_error('biblio_year', t('Year is required if "In press" or "Submitted" are not checked.'));
+
 }
 
 /**
