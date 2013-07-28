@@ -336,12 +336,13 @@ function biblio_types($type = NULL) {
 /**
  * Save biblio type.
  *
+ * @todo: When changing the machine name create a batch api that will update
+ *  the biblio entries to the new bundle machine name.
+ *
  * @param object $biblio_type
  *  The values of a biblio type.
  */
 function biblio_type_save($biblio_type) {
-  // @TODO: When changing the machine name create a batch api that will update
-  // the biblio entries to the new bundle machine name.
   if (biblio_types($biblio_type->type)) {
     db_update('biblio_type')
       ->fields(array(
