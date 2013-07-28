@@ -42,11 +42,11 @@ function biblio_views_default_views() {
   $handler->display->display_options['fields']['biblio_render']['field'] = 'biblio_render';
   $handler->display->display_options['fields']['biblio_render']['label'] = '';
   $handler->display->display_options['fields']['biblio_render']['element_label_colon'] = FALSE;
-  /* Sort criterion: Biblio: Issued (biblio_issued) */
-  $handler->display->display_options['sorts']['biblio_issued_value']['id'] = 'biblio_issued_value';
-  $handler->display->display_options['sorts']['biblio_issued_value']['table'] = 'field_data_biblio_issued';
-  $handler->display->display_options['sorts']['biblio_issued_value']['field'] = 'biblio_issued_value';
-  $handler->display->display_options['sorts']['biblio_issued_value']['order'] = 'DESC';
+  /* Sort criterion: Biblio: Issued (biblio_year) */
+  $handler->display->display_options['sorts']['biblio_year_value']['id'] = 'biblio_year_value';
+  $handler->display->display_options['sorts']['biblio_year_value']['table'] = 'field_data_biblio_year';
+  $handler->display->display_options['sorts']['biblio_year_value']['field'] = 'biblio_year_value';
+  $handler->display->display_options['sorts']['biblio_year_value']['order'] = 'DESC';
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page');
@@ -56,7 +56,7 @@ function biblio_views_default_views() {
   $views['biblio'] = $view;
 
   $view = new view();
-  $view->name = 'biblio_issued';
+  $view->name = 'biblio_year';
   $view->description = '';
   $view->tag = 'default';
   $view->base_table = 'biblio';
@@ -115,7 +115,7 @@ function biblio_views_default_views() {
   $handler->display->display_options['defaults']['hide_admin_links'] = FALSE;
   $handler->display->display_options['path'] = 'biblio-issued';
 
-  $views['biblio_issued'] = $view;
+  $views['biblio_year'] = $view;
 
   $view = new view();
   $view->name = 'biblio_summary';

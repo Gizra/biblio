@@ -57,9 +57,6 @@ class BiblioMigrateEntries extends Migration {
       ->addFieldMapping('type', 'biblio_type')
       ->sourceMigration('BiblioMigrateTypes');
 
-    // TODO: The migration map the field as 'biblio_abstract' and not as
-    // 'biblio_abst_e' which cause to the abstract from the original biblio
-    // to not be imported.
     $this
       ->addFieldMapping('biblio_abstract', 'biblio_abst_e')
       ->defaultValue(NULL);

@@ -79,12 +79,6 @@ class Biblio extends Entity {
       $wrapper->biblio_first_letter->set(strtoupper(substr($trimmed, 0, 1)));
     }
 
-    if (isset($wrapper->biblio_year) && isset($wrapper->biblio_issued) && $date = $wrapper->biblio_issued->value()) {
-      // Assign publication year to ease grouping.
-      $year = date('Y', $date);
-      $wrapper->biblio_year->set($year);
-    }
-
     $this->save();
 
     return $output;

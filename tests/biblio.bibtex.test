@@ -23,7 +23,6 @@ class BiblioBibtex extends DrupalWebTestCase {
       'biblio_first_letter',
       'biblio_image',
       'biblio_in_press',
-      'biblio_issued',
       'biblio_pages',
       'biblio_place_published',
       'biblio_publisher',

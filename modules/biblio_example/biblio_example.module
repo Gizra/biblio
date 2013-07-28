@@ -53,7 +53,7 @@ function biblio_example_create_content() {
   $biblio_contributor2->save();
 
   if ($wrapper->biblio_in_press->value()) {
-    $wrapper->biblio_issued->set(NULL);
+    $wrapper->biblio_year->set(NULL);
   }
 
   // Reset any possible contributors field collections added by devel generate.
