@@ -62,19 +62,20 @@ class BiblioMigrateEntries extends Migration {
       ->defaultValue(NULL);
 
     $this
-      ->addFieldMapping('biblio_in_press', 'biblio_year')
-      ->callbacks(array($this, 'prepareBiblioInPress'));
-
-    $this
-      ->addFieldMapping('biblio_issued', 'biblio_year')
-      ->callbacks(array($this, 'prepareBiblioIssued'));
+      ->addFieldMapping('biblio_status', 'biblio_year')
+      ->callbacks(array($this, 'prepareBiblioStatus'));
   }
 
-  public function prepareBiblioInPress($value) {
-    return $value == '9998' ? 1 : 0;
-  }
+  public function prepareBiblioStatus($value) {
+    switch ($value) {
+      case '9998':
+        return 'in_press';
 
-  public function prepareBiblioIssued($value) {
-    return $value == '9999' ? 1 : 0;
+      case '9999':
+        return 'issued';
+
+      default:
+        return 'published';
+    }
   }
 }
