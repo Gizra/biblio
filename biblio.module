@@ -1581,6 +1581,7 @@ function biblio_get_types_info($type = NULL) {
  * Implements biblio_types_info().
  */
 function biblio_biblio_types_info() {
+  $types['artwork'] = array('name' => 'Artwork');
   $types['book'] = array('name' => 'Book');
   $types['book_chapter'] = array('name' => 'Book Chapter');
   $types['journal_article'] = array('name' => 'Journal Article');
@@ -1597,7 +1598,6 @@ function biblio_biblio_types_info() {
   $types['report'] = array('name' => 'Report');
   $types['film'] = array('name' => 'Film');
   $types['broadcast'] = array('name' => 'Broadcast');
-  $types['artwork'] = array('name' => 'Artwork');
   $types['software'] = array('name' => 'Software');
   $types['audiovisual'] = array('name' => 'Audiovisual');
   $types['hearing'] = array('name' => 'Hearing');
