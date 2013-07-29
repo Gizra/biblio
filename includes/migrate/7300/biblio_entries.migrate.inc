@@ -16,8 +16,8 @@ class BiblioMigrateEntries extends Migration {
     $this->query
       ->fields('b')
       ->fields('n', array('nid', 'title', 'created', 'uid'))
-      // @todo: Ignore unpublished biblio entries.
-      ->condition('n.status', NODE_PUBLISHED);
+      ->condition('n.status', NODE_PUBLISHED)
+      ->condition('b.biblio_type', 0, '>');
 
     parent::__construct();
 
