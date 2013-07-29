@@ -1517,6 +1517,35 @@ function biblio_biblio_fields_info() {
     ),
   );
 
+  // Publication status.
+  $items['biblio_status'] = array(
+    'field' => array(
+      'field_name' => 'biblio_status',
+      'type' => 'list_text',
+      'cardinality' => 1,
+      'settings' => array(
+        'allowed_values' => array(
+          'in_press' => 'In press',
+          'submitted' => 'Submitted',
+          'published' => 'Published',
+        ),
+      ),
+    ),
+    'instance' => array(
+      'label' => t('Publication status'),
+      'description' => t('Determine the publication status (In press, Submitted, Published, etc\').'),
+      'display_label' => 1,
+      'widget' => array(
+        'module' => 'options',
+        'type' => 'options_select',
+        'weight' => 0,
+        'settings' => array(
+          'display_label' => TRUE,
+        ),
+      ),
+    ),
+  );
+
   return $items;
 }
 
