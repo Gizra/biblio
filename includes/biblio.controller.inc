@@ -76,7 +76,7 @@ class Biblio extends Entity {
     if (isset($wrapper->biblio_first_letter)) {
       // Assign first letter to ease grouping.
       $trimmed = trim(strip_tags($output), ' “');
-      $wrapper->biblio_first_letter->set(strtoupper(substr($trimmed, 0, 1)));
+      $wrapper->biblio_first_letter->set(strtoupper(drupal_substr($trimmed, 0, 1)));
     }
 
     $this->save();
