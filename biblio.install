@@ -125,13 +125,6 @@ function biblio_schema_7300() {
         'unsigned' => TRUE,
         'description' => 'Also known as, links this author entry with others so you can have variation on the name, but listing by cid will find all other (aka) author entries',
       ),
-      'alt_form' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-        'default'  => 0,
-        'unsigned' => TRUE,
-        'description' => 'Alternate form of an author name, this value points to the desired form (cid), this form is kept in the database so  that future imports of the same name will not create a new author.',
-      ),
       'drupal_uid' => array(
         'type' => 'int',
         'not null' => FALSE,
