@@ -539,17 +539,14 @@ function biblio_create_fields_by_bundle($bundles = array()) {
         continue;
       }
 
-      if (!empty($field_info['bundles_info']) && empty($field_info['bundles_info'][$bundle])) {
-        // The field shouldn't be added to the bundle.
-        continue;
-      }
-
-      if (!empty($field_info['bundles_info'][$bundle])) {
+      if (!empty($field_info['bundles_info']) && isset($field_info['bundles_info'][$bundle])) {
         // Allow per bundle settings to override the instance's default settings.
         $field_info['instance'] = drupal_array_merge_deep($field_info['instance'], $field_info['bundles_info'][$bundle]);
+        biblio_create_field($field_name, 'biblio', $bundle, $field_info);
       }
-
-      biblio_create_field($field_name, 'biblio', $bundle, $field_info);
+      elseif (!isset($field_info['bundles_info'])) {
+        biblio_create_field($field_name, 'biblio', $bundle, $field_info);
+      }
     }
   }
 }
@@ -615,7 +612,6 @@ function biblio_fields_info($field_name = NULL) {
             'entity type' => array(),
             'multiple' => FALSE,
             'description' => '',
-            'bundles_info' => array(),
           );
 
           // Add the module information.
