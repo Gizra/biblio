@@ -279,7 +279,7 @@ function biblio_ui_manage_biblio($form, &$form_state, $type) {
 
   field_attach_form('biblio', $biblio, $form, $form_state);
 
-  // Show biblio publication year only if biblio statu sis 'published'.
+  // Show publication year only if biblio status is "published".
   $form['biblio_year']['#states'] = array(
     'visible' => array(
       ':input[name="biblio_status[und]"]' => array('value' => 'published'),
