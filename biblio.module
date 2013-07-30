@@ -725,6 +725,38 @@ function biblio_biblio_fields_info() {
     ),
   );
 
+  // PDF file.
+  $items['biblio_pdf'] = array(
+    'field' => array(
+      'field_name' => 'biblio_pdf',
+      'type' => 'file',
+      'cardinality' => '1',
+      'locked' => '0',
+      'translatable' => '0',
+      'settings' => array(
+        'uri_scheme' => 'public',
+      ),
+    ),
+    'instance' => array(
+      'label' => 'The publication PDF',
+      'description' => 'PDF for the biblio',
+      'settings' => array(
+        'file_directory' => '',
+        'file_extensions' => 'pdf',
+        'max_filesize' => '',
+        'max_resolution' => '',
+        'min_resolution' => '',
+        'title_field' => 0,
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'type' => 'file_generic',
+        'weight' => '-4',
+      ),
+    ),
+  );
+
   // Other Numbers.
   $items['biblio_other_number'] = array(
     'field' => array(
