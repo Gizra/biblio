@@ -46,6 +46,13 @@ class Biblio extends Entity {
       throw new Exception(format_string('Biblio style "@style" does not exist.', array('@style' => $style_name)));
     }
 
+    foreach ($plugin['assets']['js'] as $js_file) {
+      drupal_add_js($js_file);
+    }
+    foreach ($plugin['assets']['css'] as $css_file) {
+      drupal_add_css($css_file);
+    }
+
     if ($output = $this->getCache($style_name, $options, $skip_cache)) {
       return $output;
     }

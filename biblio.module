@@ -160,6 +160,10 @@ function biblio_plugin_process(&$plugin, $info) {
   $plugin += array(
     'description' => '',
     'options' => array(),
+    'assets' => array(
+      'js' => array(),
+      'css' => array(),
+    ),
   );
 }
 
