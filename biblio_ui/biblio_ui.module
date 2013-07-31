@@ -209,7 +209,7 @@ function biblio_ui_entity_info_alter(&$info) {
 function biblio_ui_views_api() {
   return array(
     'api' => 3,
-    'path' => drupal_get_path('module', 'biblio_ui') . '/includes',
+    'path' => drupal_get_path('module', 'biblio_ui') . '/includes/views',
   );
 }
 
@@ -367,12 +367,12 @@ function biblio_ui_manage_biblio_validate($form, &$form_state) {
     return;
   }
 
-  if (!empty($form_state['values']['biblio_in_press'][LANGUAGE_NONE][0]['value']) || !empty($form_state['values']['biblio_issued'][LANGUAGE_NONE][0]['value'])) {
+  if ($form_state['values']['biblio_status'][LANGUAGE_NONE][0]['value'] != 'published') {
     // "In press" or "Submitted" are checked.
     return;
   }
 
-  form_set_error('biblio_year', t('Year is required if "In press" or "Submitted" are not checked.'));
+  form_set_error('biblio_year', t('Year is required if Publication status is "Published".'));
 
 }
 

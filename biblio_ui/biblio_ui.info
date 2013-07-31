@@ -7,5 +7,5 @@ dependencies[] = views_ui
 
 package = Biblio
 
-files[] = includes/handlers/biblio_ui_delete.inc
-files[] = includes/handlers/biblio_ui_edit.inc
+files[] = includes/views/handlers/biblio_ui_handler_delete.inc
+files[] = includes/views/handlers/biblio_ui_handler_edit.inc
