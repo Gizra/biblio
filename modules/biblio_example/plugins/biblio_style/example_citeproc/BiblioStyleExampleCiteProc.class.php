@@ -24,6 +24,16 @@ class BiblioStyleExampleCiteProc extends BiblioStyleCiteProc {
       $output .= '<div class="abstract-body bid-' . $id .'">' . substr($abstract, 0, 100) . '</div>';
     }
 
+    $variables = array(
+      'bid' => $wrapper->getIdentifier(),
+      'image' => theme('image_style'),
+      'citation' => '',
+      'abstract' => '',
+      'pdf_list' => '',
+    );
+
+    return theme('biblio_example_citeproc', $variables);
+
     return $output;
   }
 }

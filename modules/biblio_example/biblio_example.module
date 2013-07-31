@@ -12,6 +12,19 @@ function biblio_example_init() {
   biblio_example_create_content();
 }
 
+
+/**
+ * Implements hook_theme().
+ */
+function biblio_example_theme() {
+  $theme['biblio_example_citeproc'] = array(
+    'image' => NULL,
+    'citation' => NULL,
+  );
+
+  return $theme;
+}
+
 /**
  * Implements hook_ctools_plugin_directory().
  */
