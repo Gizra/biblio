@@ -19,7 +19,9 @@ class BiblioStyleExampleCiteProc extends BiblioStyleCiteProc {
     $wrapper = entity_metadata_wrapper('biblio', $this->biblio);
     if (isset($wrapper->biblio_abstract) && $abstract = $wrapper->biblio_abstract->value()) {
       // Add the abstract.
-      $output .= "<br />" . drupal_substr($abstract,0, 100);
+      $id = $wrapper->getIdentifier();
+      $output .= '<br/><a class="show-abstract" bid="' . $id .'">ABSTRACT</a></br>';
+      $output .= '<div class="abstract-body bid-' . $id .'">' . substr($abstract, 0, 100) . '</div>';
     }
 
     return $output;

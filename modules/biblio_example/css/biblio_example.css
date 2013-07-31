@@ -1,0 +1,26 @@
+a.show-abstract {
+  background: url('../images/biblio-example-sprite.png') no-repeat 0 1px transparent;
+  padding-left: 12px;
+  text-decoration: none;
+  color: #336599;
+}
+
+a.show-abstract.open {
+  background: url('../images/biblio-example-sprite.png') no-repeat 0 -12px transparent;
+  padding-left: 12px;
+  text-decoration: none;
+  color: #336599;
+}
+
+a.show-abstract:hover {
+  text-decoration: none;
+  cursor: pointer;
+}
+
+div.abstract-body {
+  line-height: 1.5em;
+  display: none;
+  background: #FAFAFA;
+  padding: 8px;
+  border: 1px solid #CCC;
+}
