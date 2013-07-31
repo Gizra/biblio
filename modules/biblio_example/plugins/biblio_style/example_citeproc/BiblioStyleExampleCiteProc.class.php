@@ -20,8 +20,8 @@ class BiblioStyleExampleCiteProc extends BiblioStyleCiteProc {
     if (isset($wrapper->biblio_abstract) && $abstract = $wrapper->biblio_abstract->value()) {
       // Add the abstract.
       $id = $wrapper->getIdentifier();
-      $output .= '<br/><span class="show-abstract" bid="' . $id .'">ABSTRACT</span></br>';
-      $output .= '<div style="display: none;" class="bid-' . $id .'">' . substr($abstract, 0, 100) . '</div>';
+      $output .= '<br/><a class="show-abstract" bid="' . $id .'">ABSTRACT</a></br>';
+      $output .= '<div class="abstract-body bid-' . $id .'">' . substr($abstract, 0, 100) . '</div>';
     }
 
     return $output;
