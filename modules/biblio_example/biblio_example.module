@@ -18,7 +18,7 @@ function biblio_example_init() {
  */
 function biblio_example_theme() {
   $theme['biblio_example_citeproc'] = array(
-    'varibles' => array(
+    'variables' => array(
       'id' => NULL,
       'image' => NULL,
       'citation' => NULL,
@@ -71,10 +71,6 @@ function biblio_example_create_content() {
 
   $biblio_contributor2 = biblio_contributor_create($values);
   $biblio_contributor2->save();
-
-  if ($wrapper->biblio_in_press->value()) {
-    $wrapper->biblio_year->set(NULL);
-  }
 
   // Reset any possible contributors field collections added by devel generate.
   $wrapper->contributor_field_collection->set(NULL);

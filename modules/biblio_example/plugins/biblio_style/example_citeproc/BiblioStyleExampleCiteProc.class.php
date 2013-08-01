@@ -18,11 +18,8 @@ class BiblioStyleExampleCiteProc extends BiblioStyleCiteProc {
     }
 
     // Get abstract.
-    $abstract = '';
     $wrapper = entity_metadata_wrapper('biblio', $this->biblio);
-    if (isset($wrapper->biblio_abstract) && $wrapper->biblio_abstract->value()) {
-      $abstract = $wrapper->biblio_abstract->value();
-    }
+    $abstract = isset($wrapper->biblio_abstract) ? $wrapper->biblio_abstract->value() : '';
 
     $items = array();
     foreach ($wrapper->biblio_pdf->value() as $pdf_file) {
