@@ -4,7 +4,6 @@
  * Implements hook_init().
  */
 function biblio_example_init() {
-  return;
   if (!class_exists('BiblioStyleCiteProc')) {
     drupal_set_message('Clear caches for the Biblio Plugins to be registered.');
     return;
