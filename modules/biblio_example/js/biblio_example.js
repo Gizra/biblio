@@ -11,7 +11,7 @@ Drupal.behaviors.toggleAbstract = {
 
       $(this).toggleClass('open');
 
-      $("div .bid-" + bid).slideToggle("fast");
+      $(".abstract-body.bid-" + bid).slideToggle("fast");
     });
   }
 }

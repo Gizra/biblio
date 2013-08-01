@@ -734,7 +734,7 @@ function biblio_biblio_fields_info() {
     'field' => array(
       'field_name' => 'biblio_pdf',
       'type' => 'file',
-      'cardinality' => '1',
+      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
       'locked' => '0',
       'translatable' => '0',
       'settings' => array(
