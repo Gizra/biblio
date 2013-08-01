@@ -78,6 +78,15 @@ function biblio_ui_menu() {
     );
   }
 
+  $items['biblio/import'] = array(
+    'title' => 'Import biblio entries',
+    'description' => 'Import publications in various styles.',
+    'access arguments' => array('create biblio'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('biblio_ui_import_biblio'),
+    'file' => 'biblio_ui.pages.inc',
+  );
+
   $items['admin/structure/biblio'] = array(
     'title' => 'Biblio types',
     'description' => 'Manage biblio types',
