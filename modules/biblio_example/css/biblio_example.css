@@ -30,19 +30,15 @@ div.abstract-body {
   border: 1px solid #CCC;
 }
 
-div.single-publication .publication-image {
-  border: 1px solid #777;
-  width: 40px;
-  height: 30px;
+div.single-publication > .first {
+  float: left;
+  width: 60px;
+  margin-right: -60px;
 }
 
-div.single-publication .first {
+div.single-publication > .second {
   float: left;
-  margin-right: 20px;
-}
-
-div.single-publication .second {
-  float: left;
+  margin-left: 70px;
 }
 
 div.single-publication span.publication-citation {
@@ -55,6 +51,7 @@ div.single-publication .pdf-wrapper ul {
 
 div.single-publication .pdf-wrapper ul li {
   margin-right: 5px;
+  display: inline;
 }
 
 div.single-publication .publication-pdf {

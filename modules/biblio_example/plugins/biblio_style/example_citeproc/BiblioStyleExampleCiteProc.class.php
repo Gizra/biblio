@@ -36,7 +36,7 @@ class BiblioStyleExampleCiteProc extends BiblioStyleCiteProc {
 
     $variables = array(
       'bid' => $wrapper->getIdentifier(),
-      'image' => theme('image', array('path' => $image['uri'])),
+      'image' => theme('image', array('path' => $image['uri'], 'width' => 50, 'height' => 50)),
       'citation' => $citation,
       'abstract' => $abstract,
       'pdf_list' => theme('item_list', array('items' => $items)),
