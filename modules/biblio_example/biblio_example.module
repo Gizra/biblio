@@ -4,6 +4,7 @@
  * Implements hook_init().
  */
 function biblio_example_init() {
+  return;
   if (!class_exists('BiblioStyleCiteProc')) {
     drupal_set_message('Clear caches for the Biblio Plugins to be registered.');
     return;
@@ -18,8 +19,15 @@ function biblio_example_init() {
  */
 function biblio_example_theme() {
   $theme['biblio_example_citeproc'] = array(
-    'image' => NULL,
-    'citation' => NULL,
+    'varibles' => array(
+      'id' => NULL,
+      'image' => NULL,
+      'citation' => NULL,
+      'abstract' => NULL,
+      'pdf_list' => NULL,
+    ),
+    'path' => drupal_get_path('module', 'biblio_example') . '/templates',
+    'template' => 'biblio-example-citeproc',
   );
 
   return $theme;

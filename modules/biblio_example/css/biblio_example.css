@@ -1,18 +1,23 @@
-a.show-abstract {
+span.publication-abstract {
+  margin: 0 5px 0 5px;
+  float: left;
+}
+
+span.publication-abstract a.show-abstract {
   background: url('../images/biblio-example-sprite.png') no-repeat 0 1px transparent;
   padding-left: 12px;
   text-decoration: none;
   color: #336599;
 }
 
-a.show-abstract.open {
+span.publication-abstract a.show-abstract.open {
   background: url('../images/biblio-example-sprite.png') no-repeat 0 -12px transparent;
   padding-left: 12px;
   text-decoration: none;
   color: #336599;
 }
 
-a.show-abstract:hover {
+span.publication-abstract a.show-abstract:hover {
   text-decoration: none;
   cursor: pointer;
 }
@@ -23,4 +28,28 @@ div.abstract-body {
   background: #FAFAFA;
   padding: 8px;
   border: 1px solid #CCC;
+}
+
+div.single-publication .publication-image {
+  border: 1px solid #777;
+  width: 40px;
+  height: 30px;
+}
+
+div.single-publication .first {
+  float: left;
+  margin-right: 20px;
+}
+
+div.single-publication .second {
+  float: left;
+}
+
+div.single-publication span.publication-citation {
+  float: left;
+}
+
+div.single-publication span.publication-pdf {
+  background: url('../images/biblio-pdf.png') no-repeat 0px 0px transparent;
+  padding-left: 16px;
 }
