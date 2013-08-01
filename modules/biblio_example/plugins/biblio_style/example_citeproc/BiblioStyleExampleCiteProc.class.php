@@ -22,13 +22,21 @@ class BiblioStyleExampleCiteProc extends BiblioStyleCiteProc {
     $abstract = isset($wrapper->biblio_abstract) ? $wrapper->biblio_abstract->value() : '';
 
     $items = array();
+    $options = array(
+      'attributes' => array(
+        'class' => 'publication-pdf',
+      ),
+    );
     foreach ($wrapper->biblio_pdf->value() as $pdf_file) {
-      $items[] = file_create_url($pdf_file['uri']);
+      $url = file_create_url($pdf_file['uri']);
+      $items[] = l($pdf_file['filename'], $url, $options);
     }
+
+    $image = $wrapper->biblio_image->value();
 
     $variables = array(
       'bid' => $wrapper->getIdentifier(),
-      'image' => theme('image_style'),
+      'image' => theme('image', array('path' => $image['uri'])),
       'citation' => $citation,
       'abstract' => $abstract,
       'pdf_list' => theme('item_list', array('items' => $items)),

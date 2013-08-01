@@ -49,7 +49,15 @@ div.single-publication span.publication-citation {
   float: left;
 }
 
-div.single-publication span.publication-pdf {
+div.single-publication .pdf-wrapper ul {
+  list-style: none;
+}
+
+div.single-publication .pdf-wrapper ul li {
+  margin-right: 5px;
+}
+
+div.single-publication .publication-pdf {
   background: url('../images/biblio-pdf.png') no-repeat 0px 0px transparent;
   padding-left: 16px;
 }
