@@ -120,6 +120,14 @@ function biblio_ui_menu() {
       'type' => MENU_LOCAL_TASK,
       'weight' => 1,
     );
+
+    $items['admin/config/content/biblio'] = array(
+      'title' => 'Biblio settings',
+      'description' => 'Configure Biblio settings.',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('biblio_ui_admin_form'),
+      'access arguments' => array('administer biblio'),
+    );
   }
 
   return $items;
@@ -163,6 +171,13 @@ function biblio_ui_theme() {
     'biblio_ui_add_biblio_list' => array(),
     'biblio_ui_bundle_overview' => array(),
   );
+}
+
+/**
+ * Implements hook_uninstall();
+ */
+function biblio_ui_uninstall() {
+  variable_del('biblio_debug');
 }
 
 /**
@@ -570,4 +585,18 @@ function biblio_ui_delete_bundle_submit($form, $form_state) {
   drupal_set_message(t('The bundle @title was deleted successfully.', array(
     '@title' => $form_state['#type']->name,
   )));
+}
+
+/**
+ * Page callback; Form for biblio settings.
+ */
+function biblio_ui_admin_form($form, &$form_state) {
+  $form['biblio_debug'] = array(
+    '#type' => 'checkbox',
+    '#title' => 'Debug mode',
+    '#description' => 'Disable biblio caching.',
+    '#default_value' => variable_get('biblio_debug'),
+  );
+
+  return system_settings_form($form);
 }
