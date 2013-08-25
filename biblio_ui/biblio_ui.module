@@ -593,8 +593,8 @@ function biblio_ui_delete_bundle_submit($form, $form_state) {
 function biblio_ui_admin_form($form, &$form_state) {
   $form['biblio_debug'] = array(
     '#type' => 'checkbox',
-    '#title' => 'Debug mode',
-    '#description' => 'Disable biblio caching.',
+    '#title' => t('Debug mode'),
+    '#description' => t('Disable biblio caching.'),
     '#default_value' => variable_get('biblio_debug'),
   );
 
