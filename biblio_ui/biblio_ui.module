@@ -120,6 +120,15 @@ function biblio_ui_menu() {
       'type' => MENU_LOCAL_TASK,
       'weight' => 1,
     );
+
+    $items['admin/config/content/biblio'] = array(
+      'title' => 'Biblio settings',
+      'description' => 'Configure Biblio settings.',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('biblio_ui_admin_form'),
+      'access arguments' => array('administer biblio'),
+      'file' => 'biblio_ui.admin.inc'
+    );
   }
 
   return $items;
@@ -163,6 +172,13 @@ function biblio_ui_theme() {
     'biblio_ui_add_biblio_list' => array(),
     'biblio_ui_bundle_overview' => array(),
   );
+}
+
+/**
+ * Implements hook_uninstall();
+ */
+function biblio_ui_uninstall() {
+  variable_del('biblio_debug');
 }
 
 /**
