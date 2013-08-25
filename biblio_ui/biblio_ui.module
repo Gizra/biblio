@@ -127,6 +127,7 @@ function biblio_ui_menu() {
       'page callback' => 'drupal_get_form',
       'page arguments' => array('biblio_ui_admin_form'),
       'access arguments' => array('administer biblio'),
+      'file' => 'biblio_ui.admin.inc'
     );
   }
 
@@ -585,18 +586,4 @@ function biblio_ui_delete_bundle_submit($form, $form_state) {
   drupal_set_message(t('The bundle @title was deleted successfully.', array(
     '@title' => $form_state['#type']->name,
   )));
-}
-
-/**
- * Page callback; Form for biblio settings.
- */
-function biblio_ui_admin_form($form, &$form_state) {
-  $form['biblio_debug'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Debug mode'),
-    '#description' => t('Disable biblio caching.'),
-    '#default_value' => variable_get('biblio_debug'),
-  );
-
-  return system_settings_form($form);
 }
