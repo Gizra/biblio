@@ -44,8 +44,6 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     $biblios = array();
 
     foreach ($entries as $entry) {
-
-      // @todo: Why does the original return a number?
       $biblio = biblio_create(strtolower($entry['bibtexEntryType']));
 
       $wrapper = entity_metadata_wrapper('biblio', $biblio);
