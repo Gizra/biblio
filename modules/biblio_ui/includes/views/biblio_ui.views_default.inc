@@ -78,8 +78,6 @@ function biblio_ui_views_default_views() {
   $handler->display->display_options['fields']['nothing']['field'] = 'nothing';
   $handler->display->display_options['fields']['nothing']['label'] = 'Author';
   $handler->display->display_options['fields']['nothing']['alter']['text'] = '[firstname] [lastname]';
-  $handler->display->display_options['fields']['nothing']['alter']['make_link'] = TRUE;
-  $handler->display->display_options['fields']['nothing']['alter']['path'] = 'biblio-contributor/[cid]';
   /* Field: Contributor: Delete */
   $handler->display->display_options['fields']['delete']['id'] = 'delete';
   $handler->display->display_options['fields']['delete']['table'] = 'biblio_contributor';

@@ -148,22 +148,6 @@ function biblio_ui_menu() {
     'type' => MENU_LOCAL_ACTION,
   );
 
-  $items['biblio-contributor/%biblio_contributor'] = array(
-    'title' => 'View',
-    'page callback' => array('biblio_ui_contributor_entry_display'),
-    'page arguments' => array(1),
-    'access arguments' => array('view biblio contributor entry'),
-  );
-
-  $items['biblio-contributor/%biblio_contributor/view'] = array(
-    'title' => 'View',
-    'access arguments' => array('view biblio contributor entry'),
-    'page callback' => array('biblio_ui_contributor_entry_display'),
-    'page arguments' => array(1),
-    'type' => MENU_DEFAULT_LOCAL_TASK,
-    'weight' => '50',
-  );
-
   $items['biblio-contributor/%biblio_contributor/edit'] = array(
     'title' => 'Edit',
     'description arguments' => array(1, 'edit'),
@@ -797,15 +781,6 @@ function biblio_ui_contributor_create_form_submit($form, &$form_state) {
   $contributor->save();
 
   $form_state['redirect'] = 'biblio-contributor/' . $contributor->cid;
-}
-
-/**
- * Displaying the biblio contributor entry.
- */
-function biblio_ui_contributor_entry_display(BiblioContributor $contributor) {
-  $entity = entity_view('biblio_contributor', array($contributor));
-
-  return render($entity);
 }
 
 /**
