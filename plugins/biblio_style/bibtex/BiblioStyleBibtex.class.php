@@ -26,15 +26,9 @@ class BiblioStyleBibtex extends BiblioStyleBase {
    * @param string $type
    * @return array
    */
-  public function import($data, $type = 'text') {
+  public function import($data) {
     $bibtex = new PARSEENTRIES();
-
-    if ($type == 'file') {
-      $bibtex->openBib($data);
-    }
-    else {
-      $bibtex->loadBibtexString($data);
-    }
+    $bibtex->loadBibtexString($data);
 
     $bibtex->extractEntries();
 
