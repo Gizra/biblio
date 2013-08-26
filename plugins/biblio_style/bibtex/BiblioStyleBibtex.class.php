@@ -8,9 +8,10 @@
 class BiblioStyleBibtex extends BiblioStyleBase {
 
   public function settingsForm() {
-    $form = array(
+    $form['foo'] = array(
       '#type' => 'checkbox',
       '#title' => 'foo',
+
     );
 
     return $form;
