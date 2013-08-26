@@ -44,7 +44,14 @@ function biblio_ui_import_biblio($form, &$form_state) {
     '#prefix' => '<div id="biblio-ui-style-settings">',
     '#suffix' => '</div>',
     '#parents' => array('style_settings'),
-    '#type' => 'fieldset',
+    '#type' => 'container',
+    '#attached' => array(
+      // We use Entity-reference classes to indent the handler settings.
+      'css' => array(drupal_get_path('module', 'entityreference') . '/entityreference.admin.css'),
+    ),
+    '#attributes' => array(
+      'class' => array('entityreference-settings'),
+    ),
   );
 
   if (!empty($form_state['values']['plugin_name'])) {
