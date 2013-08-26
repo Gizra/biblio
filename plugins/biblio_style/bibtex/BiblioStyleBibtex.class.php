@@ -7,16 +7,6 @@
 
 class BiblioStyleBibtex extends BiblioStyleBase {
 
-  public function settingsForm() {
-    $form['foo'] = array(
-      '#type' => 'checkbox',
-      '#title' => 'foo',
-
-    );
-
-    return $form;
-  }
-
   /**
    * Import BibTeX entries.
    *
