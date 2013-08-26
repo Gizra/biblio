@@ -100,6 +100,10 @@ function biblio_contributor_ui_permission() {
       'title' => t('Delete biblio contributor entry'),
       'description' => t('Grant to the user the permission to delete a biblio contributor via the UI'),
     ),
+    'delete own biblio contributor entry' => array(
+      'title' => t('Delete own biblio contributor entry'),
+      'description' => t('Grant to the user the permission to delete his own biblio contributor entry via the UI'),
+    ),
     'view biblio contributor entry' => array(
       'title' => t('View biblio contributor entry'),
       'description' => t('Grant to the user the permission to view a biblio contributor via the UI'),
@@ -117,23 +121,6 @@ function biblio_contributor_ui_admin_paths() {
     'biblio-contributor/*/edit' => TRUE,
     'biblio-contributor/*/delete' => TRUE,
     'biblio-contributor/*/devel' => TRUE,
-  );
-}
-
-/**
- * Implements hook_entity_info_alter().
- */
-function biblio_contributor_entity_info_alter(&$items) {
-}
-
-/**
- * Implements hook_theme().
- */
-function biblio_contributor_ui_theme() {
-  return array(
-    'biblio_contributor_ui_form' => array(
-      'arguments' => array('form' => NULL),
-    ),
   );
 }
 

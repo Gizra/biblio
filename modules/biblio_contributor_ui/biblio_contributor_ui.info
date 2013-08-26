@@ -4,3 +4,7 @@ core = 7.x
 package = Biblio
 
 dependencies[] = biblio
+
+files[] = includes/views/biblio_contributor_ui.views.inc
+files[] = includes/views/handlers/biblio_contributor_ui_handler_delete.inc
+files[] = includes/views/handlers/biblio_contributor_ui_handler_edit.inc
