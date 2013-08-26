@@ -149,7 +149,10 @@ function biblio_ui_menu() {
  */
 function biblio_ui_can_delete_bundle($bundle, $account = NULL) {
   global $user;
-  $account = (!$account) ? user_load($user->uid) : user_load($account->uid);
+
+  if (empty($account)) {
+    $account = user_load($user->uid);
+  }
 
   $query = new entityFieldQuery();
   $number = $query
@@ -158,7 +161,7 @@ function biblio_ui_can_delete_bundle($bundle, $account = NULL) {
     ->count()
     ->execute();
 
-  return !($number && user_access('manage biblio structure'));
+  return !($number && user_access('manage biblio structure', $account));
 }
 
 /**
