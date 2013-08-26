@@ -191,7 +191,7 @@ function biblio_contributor_ui_create_form($form, &$form_state, BiblioContributo
 
   $form['publisher'] = array(
     '#type' => 'textfield',
-    '#title' => t('Created by'),
+    '#title' => t('Existing user'),
     '#maxlength' => 60,
     '#autocomplete_path' => 'user/autocomplete',
     '#default_value' => !empty($contributor->uid) ? user_load($contributor->uid)->name : $account->name,
