@@ -211,8 +211,12 @@ class BiblioStyleBibtex extends BiblioStyleBase {
         // Try to extract the given and family name.
         // @todo: Fix this preg_split.
         $sub_name = preg_split("/{|}/i", $name);
+        $values = array('given' =>$sub_name[0]);
+        if (!empty($sub_name[1])) {
+          $values['family'] = $sub_name[1];
+        }
 
-        $biblio_contributor = biblio_contributor_create(array('given' =>$sub_name[0], 'family' => $sub_name[1]));
+        $biblio_contributor = biblio_contributor_create($values);
         $biblio_contributor->save();
 
         // Create contributors field collections.

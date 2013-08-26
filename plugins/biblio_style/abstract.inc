@@ -54,4 +54,8 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
   public function settingsForm() {
     return array();
   }
+
+  public function settingsFormValidate() {
+
+  }
 }

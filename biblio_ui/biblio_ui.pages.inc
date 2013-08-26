@@ -9,7 +9,7 @@
  * Import biblios.
  */
 function biblio_ui_import_biblio($form, &$form_state) {
-  $form['import_text'] = array(
+  $form['data'] = array(
     '#type' => 'textarea',
     '#title' => t('Import text'),
     '#required' => TRUE,
@@ -38,6 +38,7 @@ function biblio_ui_import_biblio($form, &$form_state) {
       'callback' => 'biblio_ui_import_settings_ajax_callback',
       'wrapper' => 'biblio-ui-style-settings',
     ),
+    '#required' => TRUE,
   );
 
   $form['style_settings'] = array(
@@ -95,4 +96,39 @@ function _biblio_ui_add_import_settings($plugin_name) {
  */
 function biblio_ui_import_settings_ajax_callback(array $form, array &$form_state) {
   return $form['style_settings'];
+}
+
+/**
+ * Validate handler; @todo: call plugin's validate.
+ */
+function biblio_ui_import_biblio_validate($form, &$form_state) {
+}
+
+/**
+ * Submit handler
+ *
+ * @todo: Make batch.
+ */
+function biblio_ui_import_biblio_submit($form, &$form_state) {
+  $plugin_name = $form_state['values']['plugin_name'];
+  $plugin = biblio_get_biblio_style($plugin_name);
+  $class_name = ctools_plugin_load_class('biblio', 'biblio_style', $plugin_name, 'class');
+  $biblio_style = new $class_name($plugin);
+
+  $biblios = $biblio_style->import($form_state['values']['data']);
+
+  if (!$biblios) {
+    // @todo: Better report errors.
+    drupal_set_message(t('No entries were imported'));
+    return;
+  }
+
+  $items = array();
+
+  foreach ($biblios as $biblio) {
+    $items[] = l($biblio->title, 'biblio/' . $biblio->bid);
+  }
+
+  $params = array('!items' => theme('item_list', array('items' => $items)));
+  drupal_set_message(format_plural(count($biblios), 'Created the following biblio: !items', 'Created the following biblios: !items', $params));
 }
