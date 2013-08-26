@@ -50,4 +50,8 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
   public function render($options = array(), $langcode = NULL) {
     return '';
   }
+
+  public function settingsForm() {
+    return array();
+  }
 }
