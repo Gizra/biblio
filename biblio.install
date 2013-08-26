@@ -193,16 +193,17 @@ function biblio_schema_7300() {
         'not null' => FALSE,
         'description' => '',
       ),
-      // TODO: Figure in which hook update we need to add them: 7300 or 7301.
       'created' => array(
+        'description' => 'The Unix timestamp when the entry was created.',
         'type' => 'int',
         'not null' => TRUE,
-        'description' => '',
+        'default' => 0,
       ),
       'changed' => array(
+        'description' => 'The Unix timestamp when the entry was most recently saved.',
         'type' => 'int',
         'not null' => TRUE,
-        'description' => '',
+        'default' => 0,
       ),
     ),
     'foreign keys' => array(
