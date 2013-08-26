@@ -16,15 +16,9 @@ class BiblioStyleBibtex extends BiblioStyleBase {
    * @param string $type
    * @return array
    */
-  public function import($data, $type = 'text') {
+  public function import($data) {
     $bibtex = new PARSEENTRIES();
-
-    if ($type == 'file') {
-      $bibtex->openBib($data);
-    }
-    else {
-      $bibtex->loadBibtexString($data);
-    }
+    $bibtex->loadBibtexString($data);
 
     $bibtex->extractEntries();
 
@@ -40,8 +34,6 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     $biblios = array();
 
     foreach ($entries as $entry) {
-
-      // @todo: Why does the original return a number?
       $biblio = biblio_create(strtolower($entry['bibtexEntryType']));
 
       $wrapper = entity_metadata_wrapper('biblio', $biblio);
@@ -201,8 +193,12 @@ class BiblioStyleBibtex extends BiblioStyleBase {
         // Try to extract the given and family name.
         // @todo: Fix this preg_split.
         $sub_name = preg_split("/{|}/i", $name);
+        $values = array('given' =>$sub_name[0]);
+        if (!empty($sub_name[1])) {
+          $values['family'] = $sub_name[1];
+        }
 
-        $biblio_contributor = biblio_contributor_create(array('given' =>$sub_name[0], 'family' => $sub_name[1]));
+        $biblio_contributor = biblio_contributor_create($values);
         $biblio_contributor->save();
 
         // Create contributors field collections.

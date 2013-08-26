@@ -28,7 +28,8 @@ function biblio_ui_menu() {
   }
 
   $items['biblio/%biblio'] = array(
-    'title' => 'View',
+    'title callback' => 'biblio_ui_biblio_title',
+    'title arguments' => array(1),
     'access arguments' => array('view biblio'),
     'page callback' => 'biblio_ui_view_biblio',
     'page arguments' => array(1),
@@ -77,6 +78,15 @@ function biblio_ui_menu() {
       'weight' => 80,
     );
   }
+
+  $items['biblio/import'] = array(
+    'title' => 'Import biblio entries',
+    'description' => 'Import publications in various styles.',
+    'access arguments' => array('create biblio'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('biblio_ui_import_biblio'),
+    'file' => 'biblio_ui.pages.inc',
+  );
 
   $items['admin/structure/biblio'] = array(
     'title' => 'Biblio types',
@@ -139,7 +149,10 @@ function biblio_ui_menu() {
  */
 function biblio_ui_can_delete_bundle($bundle, $account = NULL) {
   global $user;
-  $account = (!$account) ? user_load($user->uid) : user_load($account->uid);
+
+  if (empty($account)) {
+    $account = user_load($user->uid);
+  }
 
   $query = new entityFieldQuery();
   $number = $query
@@ -148,7 +161,19 @@ function biblio_ui_can_delete_bundle($bundle, $account = NULL) {
     ->count()
     ->execute();
 
-  return !($number && user_access('manage biblio structure'));
+  return !($number && user_access('manage biblio structure', $account));
+}
+
+/**
+ * Title callback; Return the biblio title and the type.
+ */
+function biblio_ui_biblio_title(Biblio $biblio) {
+  $type = biblio_types($biblio->type);
+  $params = array(
+    '@title' => $biblio->title,
+    '@type' =>$type->name,
+  );
+  return format_string('@title (@type)', $params);
 }
 
 /**
