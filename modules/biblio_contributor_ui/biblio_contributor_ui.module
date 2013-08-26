@@ -117,7 +117,6 @@ function biblio_contributor_ui_permission() {
 function biblio_contributor_ui_admin_paths() {
   return array(
     'biblio-contributor/add' => TRUE,
-    'biblio-contributor/add/*' => TRUE,
     'biblio-contributor/*/edit' => TRUE,
     'biblio-contributor/*/delete' => TRUE,
     'biblio-contributor/*/devel' => TRUE,
@@ -184,17 +183,17 @@ function biblio_contributor_ui_create_form($form, &$form_state, BiblioContributo
     '#disabled' => TRUE,
   );
 
-  $form['additional_settings'] = array(
-    '#type' => 'vertical_tabs',
-    '#weight' => 99,
-  );
-
   $form['publisher'] = array(
     '#type' => 'textfield',
     '#title' => t('Existing user'),
     '#maxlength' => 60,
     '#autocomplete_path' => 'user/autocomplete',
-    '#default_value' => !empty($contributor->uid) ? user_load($contributor->uid)->name : $account->name,
+    '#default_value' => !empty($contributor->uid) ? user_load($contributor->uid)->name : '',
+  );
+
+  $form['additional_settings'] = array(
+    '#type' => 'vertical_tabs',
+    '#weight' => 99,
   );
 
   $form['published'] = array(
@@ -241,7 +240,7 @@ function biblio_contributor_ui_create_form_validate($form, $form_state) {
  */
 function biblio_contributor_ui_create_form_submit($form, &$form_state) {
   $contributor = $form_state['#entity'];
-  $keys = array('prefix', 'firstname', 'initials', 'lastname', 'suffix', 'name');
+  $keys = array('prefix', 'firstname', 'initials', 'lastname', 'suffix');
 
   foreach ($keys as $key) {
     $contributor->{$key} = $form_state['values'][$key];
