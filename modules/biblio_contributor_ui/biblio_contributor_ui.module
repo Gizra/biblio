@@ -38,7 +38,6 @@ function biblio_contributor_ui_menu() {
     'access arguments' => array('view biblio contributor entry'),
     'page callback' => array('biblio_contributor_ui_entry_display'),
     'page arguments' => array(1),
-    'access arguments' => array('view biblio contributor entry'),
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => '50',
   );
@@ -304,4 +303,32 @@ function biblio_contributor_ui_entry_display(BiblioContributor $contributor) {
   $entity = entity_view('biblio_contributor', array($contributor));
 
   return render($entity);
+}
+
+/**
+ * Form for deleting a contributor entry.
+ */
+function biblio_contributor_ui_delete_form($form, $form_state, BiblioContributor $contributor) {
+  $form_state['#entity'] = $contributor;
+
+  // Always provide entity id in the same form key as in the entity edit form.
+  return confirm_form($form,
+    t('Are you sure you want to delete @title?',
+      array('@title' => $contributor->name)),
+    'biblio',
+    t('Are you sure you want to delete this contributor entry? This action cannot be undone.'),
+    t('Delete'),
+    t('Cancel'));
+
+  return $form;
+}
+
+/**
+ * Delete the contributor entry.
+ */
+function biblio_contributor_ui_delete_form_submit($form, &$form_state) {
+  $contributor = $form_state['#entity'];
+  $contributor->delete();
+
+  $form_state['redirect'] = 'admin/biblio-contributor';
 }
