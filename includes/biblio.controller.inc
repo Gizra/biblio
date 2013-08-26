@@ -53,7 +53,7 @@ class Biblio extends Entity {
       drupal_add_css($css_file);
     }
 
-    if ($output = $this->getCache($style_name, $options, $skip_cache)) {
+    if (!variable_get('biblio_debug') && $output = $this->getCache($style_name, $options, $skip_cache)) {
       return $output;
     }
 

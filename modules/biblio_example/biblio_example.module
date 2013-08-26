@@ -12,6 +12,26 @@ function biblio_example_init() {
   biblio_example_create_content();
 }
 
+
+/**
+ * Implements hook_theme().
+ */
+function biblio_example_theme() {
+  $theme['biblio_example_citeproc'] = array(
+    'variables' => array(
+      'id' => NULL,
+      'image' => NULL,
+      'citation' => NULL,
+      'abstract' => NULL,
+      'pdf_list' => NULL,
+    ),
+    'path' => drupal_get_path('module', 'biblio_example') . '/templates',
+    'template' => 'biblio-example-citeproc',
+  );
+
+  return $theme;
+}
+
 /**
  * Implements hook_ctools_plugin_directory().
  */
@@ -51,10 +71,6 @@ function biblio_example_create_content() {
 
   $biblio_contributor2 = biblio_contributor_create($values);
   $biblio_contributor2->save();
-
-  if ($wrapper->biblio_in_press->value()) {
-    $wrapper->biblio_year->set(NULL);
-  }
 
   // Reset any possible contributors field collections added by devel generate.
   $wrapper->contributor_field_collection->set(NULL);
