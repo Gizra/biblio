@@ -193,6 +193,17 @@ function biblio_schema_7300() {
         'not null' => FALSE,
         'description' => '',
       ),
+      // TODO: Figure in which hook update we need to add them: 7300 or 7301.
+      'created' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'description' => '',
+      ),
+      'changed' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'description' => '',
+      ),
     ),
     'foreign keys' => array(
       'biblio_contributor' => array(
