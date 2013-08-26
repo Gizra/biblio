@@ -8,7 +8,7 @@
 /**
  * Implements hook_views_default_views().
  */
-function biblio_contributor_ui_views() {
+function biblio_ui_views_default_views() {
   $view = new view();
   $view->name = 'biblio_contributor';
   $view->description = '';

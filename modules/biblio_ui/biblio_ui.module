@@ -10,6 +10,7 @@
 function biblio_ui_menu() {
   $items = array();
 
+  // Biblio UI.
   $items['biblio/add'] = array(
     'title' => 'Add biblio entries',
     'description' => 'Select a biblio type to create an entry for.',
@@ -131,6 +132,71 @@ function biblio_ui_menu() {
     );
   }
 
+  // Biblio contributor UI.
+  $items['admin/biblio-contributor'] = array(
+    'title' => 'Biblio contributor',
+    'access arguments' => array('manage biblio contributor'),
+    'page callback' => array('views_embed_view'),
+    'page arguments' => array('biblio_contributor'),
+  );
+
+  $items['admin/biblio-contributor/add'] = array(
+    'title' => 'Add biblio contributor',
+    'access arguments' => array('create biblio contributor entry'),
+    'page callback' => array('drupal_get_form'),
+    'page arguments' => array('biblio_ui_contributor_create_form'),
+    'type' => MENU_LOCAL_ACTION,
+  );
+
+  $items['biblio-contributor/%biblio_contributor'] = array(
+    'title' => 'View',
+    'page callback' => array('biblio_ui_contributor_entry_display'),
+    'page arguments' => array(1),
+    'access arguments' => array('view biblio contributor entry'),
+  );
+
+  $items['biblio-contributor/%biblio_contributor/view'] = array(
+    'title' => 'View',
+    'access arguments' => array('view biblio contributor entry'),
+    'page callback' => array('biblio_ui_contributor_entry_display'),
+    'page arguments' => array(1),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => '50',
+  );
+
+  $items['biblio-contributor/%biblio_contributor/edit'] = array(
+    'title' => 'Edit',
+    'description arguments' => array(1, 'edit'),
+    'access arguments' => array('edit biblio contributor entry'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('biblio_ui_contributor_create_form', 1),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => '60',
+  );
+
+  $items['biblio-contributor/%biblio_contributor/delete'] = array(
+    'title' => 'Delete',
+    'description arguments' => array(1, 'delete'),
+    'access arguments' => array('delete biblio contributor entry'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('biblio_ui_contributor_delete_form', 1),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => '70',
+  );
+
+  if (module_exists('devel')) {
+    $items['biblio-contributor/%biblio_contributor/devel'] = array(
+      'title' => 'Devel',
+      'page callback' => 'devel_load_object',
+      'page arguments' => array('biblio-contributor', 1),
+      'access arguments' => array('access devel information'),
+      'type' => MENU_LOCAL_TASK,
+      'file' => 'devel.pages.inc',
+      'file path' => drupal_get_path('module', 'devel'),
+      'weight' => 80,
+    );
+  }
+
   return $items;
 }
 
@@ -148,7 +214,7 @@ function biblio_ui_can_delete_bundle($bundle, $account = NULL) {
     ->count()
     ->execute();
 
-  return !($number && user_access('manage biblio structure'));
+  return !($number && user_access('manage biblio structure', $account));
 }
 
 /**
@@ -161,6 +227,10 @@ function biblio_ui_admin_paths() {
     'biblio/*/edit' => TRUE,
     'biblio/*/delete' => TRUE,
     'biblio/*/devel' => TRUE,
+    'biblio-contributor/add' => TRUE,
+    'biblio-contributor/*/edit' => TRUE,
+    'biblio-contributor/*/delete' => TRUE,
+    'biblio-contributor/*/devel' => TRUE,
   );
 }
 
@@ -182,6 +252,38 @@ function biblio_ui_uninstall() {
 }
 
 /**
+ * Implements hook_permission().
+ */
+function biblio_ui_permission() {
+  return array(
+    'manage biblio contributor' => array(
+      'title' => t('Manage biblio contributor'),
+      'description' => t('Grant to the user the permission to manage biblio contributor entries via the UI.'),
+    ),
+    'create biblio contributor entry' => array(
+      'title' => t('Create biblio contributor entry'),
+      'description' => t('Grant to the user the permission to create a biblio contributor via the UI'),
+    ),
+    'update biblio contributor entry' => array(
+      'title' => t('Update biblio contributor entry'),
+      'description' => t('Grant to the user the permission to update a biblio contributor via the UI'),
+    ),
+    'delete biblio contributor entry' => array(
+      'title' => t('Delete biblio contributor entry'),
+      'description' => t('Grant to the user the permission to delete a biblio contributor via the UI'),
+    ),
+    'delete own biblio contributor entry' => array(
+      'title' => t('Delete own biblio contributor entry'),
+      'description' => t('Grant to the user the permission to delete his own biblio contributor entry via the UI'),
+    ),
+    'view biblio contributor entry' => array(
+      'title' => t('View biblio contributor entry'),
+      'description' => t('Grant to the user the permission to view a biblio contributor via the UI'),
+    ),
+  );
+}
+
+/**
  * Generating a description for page when editing or deleting a biblio.
  *
  * @param $biblio
@@ -189,7 +291,7 @@ function biblio_ui_uninstall() {
  * @param $action
  *  The action: delete or edit.
  *
- * @return
+ * @return string
  *  The title which the page should present.
  */
 function biblio_ui_description_callback($biblio, $action) {
@@ -426,7 +528,6 @@ function biblio_ui_delete_biblio($form, $form_state, $biblio) {
     t('Are you sure you want to delete this biblio entry? This action cannot be undone.'),
     t('Delete'),
     t('Cancel'));
-  return $form;
 }
 
 /**
@@ -447,8 +548,6 @@ function biblio_ui_manage_bundles() {
 
   $data = array();
   foreach ($bundles as $i => $bundle) {
-    $links = array();
-
     $data[$i] = array(
       theme('biblio_ui_bundle_overview', array('bundle' => $bundle)),
       l(t('Edit'), 'admin/structure/biblio/' . $bundle->type),
@@ -585,4 +684,159 @@ function biblio_ui_delete_bundle_submit($form, $form_state) {
   drupal_set_message(t('The bundle @title was deleted successfully.', array(
     '@title' => $form_state['#type']->name,
   )));
+}
+
+/**
+ * Manage biblio contributor UI.
+ */
+function biblio_ui_contributor_create_form($form, &$form_state, BiblioContributor $contributor = NULL) {
+  if (!$contributor) {
+    $contributor = biblio_contributor_create();
+  }
+  $form_state['#entity'] = $contributor;
+
+  $form['prefix'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Prefix'),
+    '#default_value' => $contributor->prefix,
+  );
+
+  $form['firstname'] = array(
+    '#type' => 'textfield',
+    '#title' => t('First name'),
+    '#default_value' => $contributor->firstname,
+  );
+
+  $form['initials'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Initials'),
+    '#default_value' => $contributor->initials,
+  );
+
+  $form['lastname'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Last name'),
+    '#default_value' => $contributor->lastname,
+  );
+
+  $form['suffix'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Suffix'),
+    '#default_value' => $contributor->suffix,
+  );
+
+  if (!empty($contributor->name)) {
+    $form['name'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Full name'),
+      '#default_value' => $contributor->name,
+      '#disabled' => TRUE,
+    );
+  }
+
+  $form['publisher'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Existing user'),
+    '#maxlength' => 60,
+    '#autocomplete_path' => 'user/autocomplete',
+    '#default_value' => !empty($contributor->uid) ? user_load($contributor->uid)->name : '',
+  );
+
+  $form['additional_settings'] = array(
+    '#type' => 'vertical_tabs',
+    '#weight' => 99,
+  );
+
+  $form['published'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Published'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#group' => 'additional_settings',
+    '#weight' => 100,
+  );
+
+  $timestamp_property = empty($contributor->is_new) ? 'changed' : 'created';
+
+  $form['published']['created'] = array(
+    '#type' => 'textfield',
+    '#date_format' => 'Y-m-d G:i',
+    '#title' => t('Published time'),
+    '#default_value' => date('Y-m-d H:i', $contributor->{$timestamp_property}),
+  );
+
+  $form['actions'] = array(
+    '#type' => 'actions',
+    'submit' => array(
+      '#type' => 'submit',
+      '#value' => t('Send'),
+    ),
+    'cancel' => array(
+      '#markup' => l(t('Cancel'), 'biblio-contributor'),
+    ),
+  );
+
+  return $form;
+}
+
+/**
+ * Validate handler for the biblio contributor.
+ */
+function biblio_ui_contributor_create_form_validate($form, $form_state) {
+  field_attach_form_validate('biblio_contributor', $form_state['#entity'], $form, $form_state);
+}
+
+/**
+ * Creating/updating the biblio contributor.
+ */
+function biblio_ui_contributor_create_form_submit($form, &$form_state) {
+  $contributor = $form_state['#entity'];
+  $keys = array('prefix', 'firstname', 'initials', 'lastname', 'suffix');
+
+  foreach ($keys as $key) {
+    $contributor->{$key} = $form_state['values'][$key];
+  }
+
+  $timestamp_property = empty($contributor->is_new) ? 'changed' : 'created';
+
+  $contributor->{$timestamp_property} = strtotime($form_state['values']['created']);
+  $contributor->drupal_uid = user_load_by_name($form_state['values']['publisher'])->uid;
+
+  $contributor->save();
+
+  $form_state['redirect'] = 'biblio-contributor/' . $contributor->cid;
+}
+
+/**
+ * Displaying the biblio contributor entry.
+ */
+function biblio_ui_contributor_entry_display(BiblioContributor $contributor) {
+  $entity = entity_view('biblio_contributor', array($contributor));
+
+  return render($entity);
+}
+
+/**
+ * Form for deleting a contributor entry.
+ */
+function biblio_ui_contributor_delete_form($form, $form_state, BiblioContributor $contributor) {
+  $form_state['#entity'] = $contributor;
+
+  return confirm_form($form,
+    t('Are you sure you want to delete @title?',
+      array('@title' => $contributor->name)),
+    'biblio',
+    t('Are you sure you want to delete this contributor entry? This action cannot be undone.'),
+    t('Delete'),
+    t('Cancel'));
+}
+
+/**
+ * Delete the contributor entry.
+ */
+function biblio_ui_contributor_delete_form_submit($form, &$form_state) {
+  $contributor = $form_state['#entity'];
+  $contributor->delete();
+
+  $form_state['redirect'] = 'admin/biblio-contributor';
 }
