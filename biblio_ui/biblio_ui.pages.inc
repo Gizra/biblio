@@ -15,6 +15,28 @@ function biblio_ui_import_biblio($form, &$form_state) {
     '#required' => TRUE,
   );
 
+  $options = array('' => '-' . t('Select') . '-');
+  foreach (biblio_get_biblio_styles() as $plugin_name => $plugin) {
+    if (empty($plugin['import'])) {
+      continue;
+    }
+
+    $class_name = ctools_plugin_load_class('biblio', 'biblio_style', $plugin_name, 'class');
+    if (!class_exists($class_name)) {
+      continue;
+    }
+
+    $options[$plugin_name] = $plugin['title'];
+  }
+
+  $form['plugin_name'] = array(
+    '#title' => t('Biblio style'),
+    '#type' => 'select',
+    '#options' => $options,
+    '#ajax' => TRUE,
+  );
+
+
   $form['biblio'] = array(
     '#type' => 'container',
     '#attached' => array(
@@ -55,7 +77,7 @@ function biblio_ui_import_settings_ajax_callback(array $form, array &$form_state
 
 
 function _biblio_ui_field_instance_settings_form($form, $form_state) {
-  _biblio_ui_get_content_sync_elements($form);
+  _biblio_ui_get_content_sync_elements($form, $form_state);
   if (!empty($form['biblio_settings'])) {
     $form['biblio_settings'] += array(
       '#type' => 'fieldset',
@@ -73,47 +95,22 @@ function _biblio_ui_field_instance_settings_form($form, $form_state) {
 /**
  * Get the field or instance elements for the field configuration.
  */
-function _biblio_ui_get_content_sync_elements(&$element) {
-  $element['biblio_settings'] = array();
-
-  $options = array('' => '-' . t('Select') . '-');
-
-  $options = array();
-  foreach (biblio_get_biblio_styles() as $plugin_name => $plugin) {
-    if (empty($plugin['import'])) {
-      continue;
-    }
-
-    $class_name = ctools_plugin_load_class('biblio', 'biblio_style', $plugin_name, 'class');
-    if (!class_exists($class_name)) {
-      continue;
-    }
-
-    $options[$plugin_name] = $plugin['title'];
-  }
-
-  $element['content_sync'] = array(
+function _biblio_ui_get_content_sync_elements(&$element, $form_state) {
+  $element['biblio_settings'] = array(
     '#tree' => TRUE,
   );
 
-  $plugin = NULL;
+  $plugin_name = $form_state['values']['plugin_name'];
+  dpm($form_state);
 
-  if ($plugin_name = !empty($instance['settings']['content_sync']['plugin_name']) ? $instance['settings']['content_sync']['plugin_name'] : FALSE) {
-    $plugin = biblio_get_biblio_style($plugin_name);
-  }
-
-  $element['biblio_settings']['plugin_name'] = array(
-    '#title' => t('Plugin name'),
-    '#description' => $plugin ? $plugin['description'] : '',
-    '#type' => 'select',
-    '#options' => $options,
-    '#ajax' => TRUE,
-    '#default_value' => $plugin_name,
-  );
-
-  if (!$plugin) {
+  if (!$plugin = biblio_get_biblio_style($plugin_name)) {
     return;
   }
+
+  dpm($plugin);
+  return;
+
+  dpm($plugin);
 
   // Get the handler's settings form.
   $class_name = ctools_plugin_load_class('biblio', 'biblio_style', $plugin_name, 'class');
