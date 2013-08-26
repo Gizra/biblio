@@ -135,7 +135,7 @@ function biblio_ui_menu() {
   // Biblio contributor UI.
   $items['admin/biblio-contributor'] = array(
     'title' => 'Biblio contributor',
-    'access arguments' => array('manage biblio contributor'),
+    'access arguments' => array('create biblio contributor entry'),
     'page callback' => array('views_embed_view'),
     'page arguments' => array('biblio_contributor'),
   );
@@ -256,10 +256,6 @@ function biblio_ui_uninstall() {
  */
 function biblio_ui_permission() {
   return array(
-    'manage biblio contributor' => array(
-      'title' => t('Manage biblio contributor'),
-      'description' => t('Grant to the user the permission to manage biblio contributor entries via the UI.'),
-    ),
     'create biblio contributor entry' => array(
       'title' => t('Create biblio contributor entry'),
       'description' => t('Grant to the user the permission to create a biblio contributor via the UI'),
@@ -271,10 +267,6 @@ function biblio_ui_permission() {
     'delete biblio contributor entry' => array(
       'title' => t('Delete biblio contributor entry'),
       'description' => t('Grant to the user the permission to delete a biblio contributor via the UI'),
-    ),
-    'delete own biblio contributor entry' => array(
-      'title' => t('Delete own biblio contributor entry'),
-      'description' => t('Grant to the user the permission to delete his own biblio contributor entry via the UI'),
     ),
     'view biblio contributor entry' => array(
       'title' => t('View biblio contributor entry'),
