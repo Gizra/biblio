@@ -10,6 +10,13 @@
 function biblio_ui_menu() {
   $items = array();
 
+  $items['admin/biblio'] = array(
+    'title' => 'Biblio',
+    'access arguments' => array('administer biblio'),
+    'page callback' => array('views_embed_view'),
+    'page arguments' => array('biblio'),
+  );
+
   $items['biblio/add'] = array(
     'title' => 'Add biblio entries',
     'description' => 'Select a biblio type to create an entry for.',

@@ -1,0 +1,6 @@
+name = Biblio contributor UI
+description = Provide a UI to manage Biblio contributor entries.
+core = 7.x
+package = Biblio
+
+dependencies[] = biblio
