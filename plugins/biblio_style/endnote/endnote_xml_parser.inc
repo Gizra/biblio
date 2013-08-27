@@ -23,6 +23,15 @@ class EndNoteXMLParser {
   private $dups;
   private $unmapped;
 
+  /**
+   * Parsing an XML string to an object.
+   *
+   * @param $string
+   *  The string to parse.
+   */
+  public function parseString($string) {
+  }
+
   function parse($file, $terms, $batch, $session_id) {
     $this->terms = $terms;
     $this->batch_proc = $batch;
