@@ -5,22 +5,42 @@
  * EndNote tagged biblio style.
  */
 
-class BiblioStyleEndNoteTagged extends BiblioStyleBase {
+class BiblioStyleEndNote extends BiblioStyleBase {
+
+  public function settingsForm() {
+    $form['type'] = array(
+      '#type' => 'select',
+      '#title' => t('Type'),
+      '#required' => TRUE,
+      '#options' => array(
+        'tagged' => t('Tagged'),
+        'xml' => t('XML'),
+      ),
+      '#default_value' => 'tagged',
+
+    );
+
+    return $form;
+  }
 
   public function import($data, $options = array()) {
-    $data = str_replace("\n\r", "\n", $data);
+    $data = str_replace("\r\n", "\n", $data);
     $data = explode("\n", $data);
 
-    $biblio = $this->biblio;
-    $wrapper = entity_metadata_wrapper('biblio', $biblio);
-
     foreach ($data as $row) {
+      if (empty($row)) {
+        // Empty line.
+        continue;
+      }
       $tag = substr($row, 0, 2);
-      $value = substr($row, 2);
+      $value = substr($row, 3);
 
       switch ($tag) {
         case '%0' :
-          $biblio->biblio_type = strtolower($value);
+          $type = strtolower(str_replace(array(' ', '-'), '_', $value));
+
+          $biblio = biblio_create($type);
+          $wrapper = entity_metadata_wrapper('biblio', $biblio);
           break;
 
         /*
@@ -64,14 +84,16 @@ class BiblioStyleEndNoteTagged extends BiblioStyleBase {
           break;
 
         default :
-          $map = getMapping();
+          $map = $this->getMapping();
           if (!empty($map[$tag])) {
+            dpm(array($map[$tag], $value));
             $wrapper->{$map[$tag]}->set($value);
           }
       }
-
-      // $wrapper->save();
     }
+
+    dpm($biblio);
+    // $wrapper->save();
   }
 
   public function getMapping() {
