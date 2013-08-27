@@ -24,8 +24,6 @@ class BiblioStylePubmed extends BiblioStyleBase {
     // Array of Biblios.
     $biblios = array();
 
-    $map = $this->getMapping();
-
     foreach ($xml->xpath('//PubmedArticle') as $article) {
 
       $biblio = biblio_create('article');
@@ -48,7 +46,6 @@ class BiblioStylePubmed extends BiblioStyleBase {
 
       $citekey = variable_get('biblio_auto_citekey', TRUE) ? '' : $article->MedlineCitation->PMID;
       $wrapper->biblio_citekey->set($citekey);
-
 
       $wrapper->biblio_volume->set($article->Article->Journal->JournalIssue->Volume);
       $wrapper->biblio_issue->set($article->Article->Journal->JournalIssue->Issue);
