@@ -49,61 +49,9 @@ class BiblioStyleEndNote extends BiblioStyleBase {
         continue;
       }
 
-      $wrapper->{$map[$tag]}->set($value);
+      $method = $map[$tag]['import_method'];
 
-
-
-      switch ($tag) {
-        // @todo: Get the type before the foreach() so we know for sure we have
-        // a valid Biblio.
-        case '%0' :
-
-          break;
-
-        /*
-        case '%A' :
-          $node->biblio_contributors[] = array(
-            'name' => $value,
-            'auth_category' => 1,
-            'auth_type' => _biblio_get_auth_type(1, $node->biblio_type));
-          break;
-
-        case '%E' :
-          $node->biblio_contributors[] = array(
-            'name' => $value,
-            'auth_category' => 2,
-            'auth_type' => _biblio_get_auth_type(2, $node->biblio_type));
-          break;
-
-
-        case '%Y' :
-          $node->biblio_contributors[] = array(
-            'name' => $value,
-            'auth_category' => 3,
-            'auth_type' => _biblio_get_auth_type(3, $node->biblio_type));
-          break;
-        case '%?' :
-          $node->biblio_contributors[] = array(
-            'name' => $value,
-            'auth_category' => 4,
-            'auth_type' => _biblio_get_auth_type(4, $node->biblio_type));
-          break;
-
-        */
-        case '%X' :
-          $wrapper->biblio_abstract->set($value);
-
-          break;
-        case '%Z' :
-          $wrapper->biblio_notes->set($value);
-          break;
-
-        default :
-          $map = $this->getMapping();
-          if (!empty($map[$tag])) {
-            $wrapper->{$map[$tag]}->set($value);
-          }
-      }
+      $this->{$method}($wrapper, $tag, $value);
     }
 
     dpm($biblio);
@@ -193,7 +141,9 @@ class BiblioStyleEndNote extends BiblioStyleBase {
       '%T' => array('property' => 'title'),
       '%U' => array('property' => 'biblio_url'),
       '%V' => array('property' => 'biblio_volume'),
+      '%X' => array('property' => 'biblio_abstract'),
       '%Y' => array('method' => 'importEntryContributors'),
+      '%X' => array('property' => 'biblio_notes'),
       '%1' => array('property' => 'biblio_custom1'),
       '%2' => array('property' => 'biblio_custom2'),
       '%3' => array('property' => 'biblio_custom3'),
