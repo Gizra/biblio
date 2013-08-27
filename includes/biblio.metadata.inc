@@ -15,6 +15,7 @@ class BiblioMetadataController extends EntityDefaultMetadataController {
     $properties = &$info[$this->type]['properties'];
 
     $properties['title']['setter callback'] = 'entity_property_verbatim_set';
+    $properties['language']['setter callback'] = 'entity_property_verbatim_set';
 
     return $info;
   }
