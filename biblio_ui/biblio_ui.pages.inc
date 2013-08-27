@@ -46,6 +46,7 @@ function biblio_ui_import_biblio($form, &$form_state) {
     '#suffix' => '</div>',
     '#parents' => array('style_settings'),
     '#type' => 'container',
+    '#tree' => TRUE,
     '#attached' => array(
       // We use Entity-reference classes to indent the handler settings.
       'css' => array(drupal_get_path('module', 'entityreference') . '/entityreference.admin.css'),
@@ -115,7 +116,8 @@ function biblio_ui_import_biblio_submit($form, &$form_state) {
   $class_name = ctools_plugin_load_class('biblio', 'biblio_style', $plugin_name, 'class');
   $biblio_style = new $class_name($plugin);
 
-  $biblios = $biblio_style->import($form_state['values']['data']);
+  $options = !empty($form_state['values']['style_settings']) ? $form_state['values']['style_settings'] : array();
+  $biblios = $biblio_style->import($form_state['values']['data'], $options);
 
   if (!$biblios) {
     // @todo: Better report errors.

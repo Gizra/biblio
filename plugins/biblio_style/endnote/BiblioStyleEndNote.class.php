@@ -23,7 +23,19 @@ class BiblioStyleEndNote extends BiblioStyleBase {
     return $form;
   }
 
+  /**
+   * @todo: Add import options defaults.
+   */
   public function import($data, $options = array()) {
+    $options += array(
+      'type' => 'tagged',
+    );
+    if ($options['type'] == 'tagged') {
+      return $this->importTagged($data, $options);
+    }
+  }
+
+  public function importTagged($data, $options = array()) {
     $biblios = array();
 
     $data = str_replace("\r\n", "\n", $data);
