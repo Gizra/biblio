@@ -50,7 +50,6 @@ class BiblioStyleEndNote extends BiblioStyleBase {
       }
 
       $method = $map[$tag]['import_method'];
-
       $this->{$method}($wrapper, $tag, $value);
     }
 
@@ -60,7 +59,8 @@ class BiblioStyleEndNote extends BiblioStyleBase {
 
   private function importEntryGeneric($wrapper, $tag, $value) {
     $map = $this->getMapping();
-    $wrapper->{$map[$tag]}->set($value);
+    $key = $map[$tag]['property'];
+    $wrapper->{$key}->set($value);
   }
 
   /**
@@ -122,11 +122,11 @@ class BiblioStyleEndNote extends BiblioStyleBase {
 
   public function getMapping() {
     $return = array(
-      '%A' => array('method' => 'importEntryContributors'),
+      '%A' => array('import_method' => 'importEntryContributors'),
       '%B' => array('property' => 'biblio_secondary_title'),
       '%C' => array('property' => 'biblio_place_published'),
       '%D' => array('property' => 'biblio_year'),
-      '%E' => array('method' => 'importEntryContributors'),
+      '%E' => array('import_method' => 'importEntryContributors'),
       '%F' => array('property' => 'biblio_label'),
       '%G' => array('property' => 'language'),
       '%I' => array('property' => 'biblio_publisher'),
@@ -142,7 +142,7 @@ class BiblioStyleEndNote extends BiblioStyleBase {
       '%U' => array('property' => 'biblio_url'),
       '%V' => array('property' => 'biblio_volume'),
       '%X' => array('property' => 'biblio_abstract'),
-      '%Y' => array('method' => 'importEntryContributors'),
+      '%Y' => array('import_method' => 'importEntryContributors'),
       '%X' => array('property' => 'biblio_notes'),
       '%1' => array('property' => 'biblio_custom1'),
       '%2' => array('property' => 'biblio_custom2'),
@@ -155,7 +155,7 @@ class BiblioStyleEndNote extends BiblioStyleBase {
       '%7' => array('property' => 'biblio_edition'),
       '%8' => array('property' => 'biblio_date'),
       '%9' => array('property' => 'biblio_type_of_work'),
-      '%?' => array('method' => 'importEntryContributors'),
+      '%?' => array('import_method' => 'importEntryContributors'),
       '%@' => array('property' => 'biblio_isbn'),
       '%<' => array('property' => 'biblio_research_notes'),
       '%!' => array('property' => 'biblio_short_title'),
