@@ -642,7 +642,6 @@ function biblio_fields_info($field_name = NULL) {
 function biblio_biblio_fields_info() {
   // Abstract.
   $items['biblio_abstract'] = array(
-    'description' => 'Publication abstract data.',
     'field' => array(
       'cardinality' => '1',
       'entity_types' => array(),
@@ -1339,10 +1338,7 @@ function biblio_biblio_fields_info() {
       'cardinality' => '1',
       'field_name' => 'biblio_notes',
       'module' => 'text',
-      'settings' => array(
-        'max_length' => '255',
-      ),
-      'type' => 'text',
+      'type' => 'text_long',
     ),
     'instance' => array(
       'label' => 'Notes',
@@ -1368,10 +1364,7 @@ function biblio_biblio_fields_info() {
       'cardinality' => '1',
       'field_name' => 'biblio_research_notes',
       'module' => 'text',
-      'settings' => array(
-        'max_length' => '255',
-      ),
-      'type' => 'text',
+      'type' => 'text_long',
     ),
     'instance' => array(
       'label' => 'Research Notes',
@@ -1391,7 +1384,7 @@ function biblio_biblio_fields_info() {
     ),
   );
 
-  // Translated title..
+  // Translated title.
   $items['biblio_translated_title'] = array(
     'field' => array(
       'cardinality' => '1',

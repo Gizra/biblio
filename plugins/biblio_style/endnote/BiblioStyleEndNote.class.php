@@ -24,6 +24,8 @@ class BiblioStyleEndNote extends BiblioStyleBase {
   }
 
   public function import($data, $options = array()) {
+    $biblios = array();
+
     $data = str_replace("\r\n", "\n", $data);
     $data = explode("\n", $data);
 
@@ -53,8 +55,9 @@ class BiblioStyleEndNote extends BiblioStyleBase {
       $this->{$method}($wrapper, $tag, $value);
     }
 
-    dpm($biblio);
-    // $wrapper->save();
+    // @todo: Pass back
+    $biblios[] = $wrapper->save();
+    return $biblios;
   }
 
   private function importEntryGeneric($wrapper, $tag, $value) {
