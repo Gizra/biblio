@@ -55,8 +55,9 @@ class BiblioStyleEndNote extends BiblioStyleBase {
       $this->{$method}($wrapper, $tag, $value);
     }
 
-    // @todo: Pass back
-    $biblios[] = $wrapper->save();
+    // @todo: Check md5.
+    $wrapper->save();
+    $biblios[] = $biblio;
     return $biblios;
   }
 
