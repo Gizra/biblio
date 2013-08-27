@@ -102,7 +102,7 @@ class BiblioStyleEndNote extends BiblioStyleBase {
       '%C' => 'biblio_place_published',
       '%D' => 'biblio_year',
       '%F' => 'biblio_label',
-      '%G' => 'biblio_lang',
+      '%G' => 'language',
       '%I' => 'biblio_publisher',
       '%J' => 'biblio_secondary_title',
       '%K' => 'biblio_keywords',

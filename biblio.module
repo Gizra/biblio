@@ -1130,34 +1130,6 @@ function biblio_biblio_fields_info() {
     ),
   );
 
-  // Language.
-  $items['biblio_language'] = array(
-    'field' => array(
-      'cardinality' => '1',
-      'field_name' => 'biblio_language',
-      'module' => 'text',
-      'settings' => array(
-        'max_length' => '255',
-      ),
-      'type' => 'text',
-    ),
-    'instance' => array(
-      'label' => 'Publication Language',
-      'settings' => array(
-        'text_processing' => '0',
-        'user_register_form' => FALSE,
-      ),
-      'widget' => array(
-        'active' => 1,
-        'module' => 'text',
-        'settings' => array(
-          'size' => '60',
-        ),
-        'type' => 'text_textfield',
-        'weight' => '-3',
-      ),
-    ),
-  );
 
   // Reprint edition.
   $items['biblio_reprint_edition'] = array(
