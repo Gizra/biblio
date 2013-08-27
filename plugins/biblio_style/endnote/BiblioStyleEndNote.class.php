@@ -17,7 +17,6 @@ class BiblioStyleEndNote extends BiblioStyleBase {
         'xml' => t('XML'),
       ),
       '#default_value' => 'tagged',
-
     );
 
     return $form;
@@ -32,6 +31,9 @@ class BiblioStyleEndNote extends BiblioStyleBase {
     );
     if ($options['type'] == 'tagged') {
       return $this->importTagged($data, $options);
+    }
+    elseif ($options['type'] == 'xml') {
+      return $this->importXML($data, $options);
     }
   }
 
@@ -71,6 +73,12 @@ class BiblioStyleEndNote extends BiblioStyleBase {
     $wrapper->save();
     $biblios[] = $biblio;
     return $biblios;
+  }
+
+  public function importXML($data, $options = array()) {
+    require_once drupal_get_path('module', 'biblio') . '/plugins/biblio_style/endnote/BiblioStyleEndNote.class.php';
+
+    $parser = new EndNoteXMLParser;
   }
 
   private function importEntryGeneric($wrapper, $tag, $value) {
