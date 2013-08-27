@@ -35,16 +35,29 @@ class BiblioStyleEndNote extends BiblioStyleBase {
       $tag = substr($row, 0, 2);
       $value = substr($row, 3);
 
+      if ($tag == '%0') {
+        $type = strtolower(str_replace(array(' ', '-'), '_', $value));
+
+        $biblio = biblio_create($type);
+        $wrapper = entity_metadata_wrapper('biblio', $biblio);
+
+        continue;
+      }
+
+      $map = $this->getMapping();
+      if (empty($map[$tag])) {
+        continue;
+      }
+
+      $wrapper->{$map[$tag]}->set($value);
+
+
+
       switch ($tag) {
+        // @todo: Get the type before the foreach() so we know for sure we have
+        // a valid Biblio.
         case '%0' :
-          $type = strtolower(str_replace(array(' ', '-'), '_', $value));
 
-          $biblio = biblio_create($type);
-          $wrapper = entity_metadata_wrapper('biblio', $biblio);
-          break;
-
-        case '%T' :
-          $biblio->title = $value;
           break;
 
         /*
@@ -97,44 +110,120 @@ class BiblioStyleEndNote extends BiblioStyleBase {
     // $wrapper->save();
   }
 
+  private function importEntryGeneric($wrapper, $tag, $value) {
+    $map = $this->getMapping();
+    $wrapper->{$map[$tag]}->set($value);
+  }
+
+  /**
+   * Create Biblio Contributor entities.
+   */
+  private function importEntryContributors($wrapper, $tag, $value) {
+    switch ($tag) {
+      case '%A':
+        $type = 'author';
+        break;
+
+      case '%E':
+        $type = 'editor';
+        break;
+
+      case '%Y':
+        // @todo: Find the role.
+        break;
+
+      case '%?':
+        // @todo: Find the role.
+        break;
+    }
+
+    $biblio = $wrapper->value();
+
+    // @todo: Add $this->getBiblioContributorsFromNames() to get
+    // new $biblio_contributors or existing.
+
+    // split names.
+    $names = preg_split("/(and|&)/i", trim($value));
+    foreach ($names as $name) {
+      // Try to extract the given and family name.
+      // @todo: Fix this preg_split.
+      $sub_name = preg_split("/{|}/i", $name);
+      $values = array('given' =>$sub_name[0]);
+      if (!empty($sub_name[1])) {
+        $values['family'] = $sub_name[1];
+      }
+
+      $biblio_contributor = biblio_contributor_create($values);
+      $biblio_contributor->save();
+
+      // Create contributors field collections.
+      $field_collection = entity_create('field_collection_item', array('field_name' => 'contributor_field_collection'));
+      $field_collection->setHostEntity('biblio', $biblio);
+      $collection_wrapper = entity_metadata_wrapper('field_collection_item', $field_collection);
+      $collection_wrapper->biblio_contributor->set($biblio_contributor);
+
+      // @todo: Add reference to correct term.
+      $term = taxonomy_get_term_by_name(ucfirst($type), 'biblio_roles');
+      $term = reset($term);
+
+      $collection_wrapper->biblio_contributor_role->set($term);
+
+      $collection_wrapper->save();
+    }
+  }
+
   public function getMapping() {
-    return array(
-      '%B' => 'biblio_secondary_title',
-      '%C' => 'biblio_place_published',
-      '%D' => 'biblio_year',
-      '%F' => 'biblio_label',
-      '%G' => 'language',
-      '%I' => 'biblio_publisher',
-      '%J' => 'biblio_secondary_title',
-      '%K' => 'biblio_keywords',
-      '%L' => 'biblio_call_number',
-      '%M' => 'biblio_accession_number',
-      '%N' => 'biblio_issue',
-      '%P' => 'biblio_pages',
-      '%R' => 'biblio_doi',
-      '%S' => 'biblio_tertiary_title',
-      '%U' => 'biblio_url',
-      '%V' => 'biblio_volume',
-      '%1' => 'biblio_custom1',
-      '%2' => 'biblio_custom2',
-      '%3' => 'biblio_custom3',
-      '%4' => 'biblio_custom4',
-      '%#' => 'biblio_custom5',
-      '%$' => 'biblio_custom6',
-      '%]' => 'biblio_custom7',
-      '%6' => 'biblio_number_of_volumes',
-      '%7' => 'biblio_edition',
-      '%8' => 'biblio_date',
-      '%9' => 'biblio_type_of_work',
-      '%?' => '',
-      '%@' => 'biblio_isbn',
-      '%<' => 'biblio_research_notes',
-      '%!' => 'biblio_short_title',
-      '%&' => 'biblio_section',
-      '%(' => 'biblio_original_publication',
-      '%)' => 'biblio_reprint_edition',
-      '%*' => '',
-      '%+' => '',
+    $return = array(
+      '%A' => array('method' => 'importEntryContributors'),
+      '%B' => array('property' => 'biblio_secondary_title'),
+      '%C' => array('property' => 'biblio_place_published'),
+      '%D' => array('property' => 'biblio_year'),
+      '%E' => array('method' => 'importEntryContributors'),
+      '%F' => array('property' => 'biblio_label'),
+      '%G' => array('property' => 'language'),
+      '%I' => array('property' => 'biblio_publisher'),
+      '%J' => array('property' => 'biblio_secondary_title'),
+      '%K' => array('property' => 'biblio_keywords'),
+      '%L' => array('property' => 'biblio_call_number'),
+      '%M' => array('property' => 'biblio_accession_number'),
+      '%N' => array('property' => 'biblio_issue'),
+      '%P' => array('property' => 'biblio_pages'),
+      '%R' => array('property' => 'biblio_doi'),
+      '%S' => array('property' => 'biblio_tertiary_title'),
+      '%T' => array('property' => 'title'),
+      '%U' => array('property' => 'biblio_url'),
+      '%V' => array('property' => 'biblio_volume'),
+      '%Y' => array('method' => 'importEntryContributors'),
+      '%1' => array('property' => 'biblio_custom1'),
+      '%2' => array('property' => 'biblio_custom2'),
+      '%3' => array('property' => 'biblio_custom3'),
+      '%4' => array('property' => 'biblio_custom4'),
+      '%#' => array('property' => 'biblio_custom5'),
+      '%$' => array('property' => 'biblio_custom6'),
+      '%]' => array('property' => 'biblio_custom7'),
+      '%6' => array('property' => 'biblio_number_of_volumes'),
+      '%7' => array('property' => 'biblio_edition'),
+      '%8' => array('property' => 'biblio_date'),
+      '%9' => array('property' => 'biblio_type_of_work'),
+      '%?' => array('method' => 'importEntryContributors'),
+      '%@' => array('property' => 'biblio_isbn'),
+      '%<' => array('property' => 'biblio_research_notes'),
+      '%!' => array('property' => 'biblio_short_title'),
+      '%&' => array('property' => 'biblio_section'),
+      '%(' => array('property' => 'biblio_original_publication'),
+      '%)' => array('property' => 'biblio_reprint_edition'),
+      '%*' => array('property' => ''),
+      '%+' => array('property' => ''),
     );
+
+    // Assign default import method.
+    foreach ($return as $key => $value) {
+      if (empty($value['import_method'])) {
+        $return[$key]['import_method'] = 'importEntryGeneric';
+      }
+    }
+
+    return $return;
+
   }
 }
