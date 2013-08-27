@@ -43,6 +43,10 @@ class BiblioStyleEndNote extends BiblioStyleBase {
           $wrapper = entity_metadata_wrapper('biblio', $biblio);
           break;
 
+        case '%T' :
+          $biblio->title = $value;
+          break;
+
         /*
         case '%A' :
           $node->biblio_contributors[] = array(
@@ -58,9 +62,7 @@ class BiblioStyleEndNote extends BiblioStyleBase {
             'auth_type' => _biblio_get_auth_type(2, $node->biblio_type));
           break;
 
-        case '%T' :
-          $biblio->title = $value;
-          break;
+
         case '%Y' :
           $node->biblio_contributors[] = array(
             'name' => $value,
@@ -86,7 +88,6 @@ class BiblioStyleEndNote extends BiblioStyleBase {
         default :
           $map = $this->getMapping();
           if (!empty($map[$tag])) {
-            dpm(array($map[$tag], $value));
             $wrapper->{$map[$tag]}->set($value);
           }
       }
