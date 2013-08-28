@@ -51,43 +51,6 @@ class BiblioStyleBibtex extends BiblioStyleBase {
       $wrapper->save();
 
       $biblios[] = $wrapper->value();
-
-      /*
-      $node = new stdClass();
-      $node->biblio_contributors = array();
-      switch ($entry['bibtexEntryType']) {
-        case 'mastersthesis':
-          $node->biblio_type_of_work = 'masters';
-          break;
-        case 'phdthesis':
-          $node->biblio_type_of_work = 'phd';
-          break;
-      }
-
-      if (!empty($entry['keywords'])) {
-        if (strpos($entry['keywords'], ';')) {
-          $entry['keywords'] = str_replace(';', ',', $entry['keywords']);
-        }
-        $node->biblio_keywords = explode(',', $entry['keywords']);
-      }
-
-      $node->biblio_bibtex_md5      = md5(serialize($node));
-      $node->biblio_import_type     = 'bibtex';
-
-      if (!($dup = biblio_bibtex_check_md5($node->biblio_bibtex_md5))) {
-        if ($save) {
-          biblio_save_node($node, $terms, $batch, $session_id, $save);
-          $nids[] = (!empty($node->nid))? $node->nid : NULL;
-        }
-        else { // return the whole node if we are not saveing to the DB (used for the paste function on the input form)
-          $nids[] = $node;
-        }
-      }
-      else {
-        $dups[] = $dup;
-      }
-
-      */
     }
     return $biblios;
   }
@@ -111,14 +74,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
     $method = $map[$key]['import_method'];
 
-    $value = $this->{$method}($key, $entry);
-
-    $wrapper_info = $wrapper->{$property_name}->info();
-    if (empty($wrapper_info['setter callback'])) {
-      return;
-    }
-
-    $wrapper->{$property_name}->set($value);
+    $this->{$method}($wrapper, $key, $entry);
   }
 
   /**
@@ -127,8 +83,31 @@ class BiblioStyleBibtex extends BiblioStyleBase {
    * @param $key
    * @param $entry
    */
-  private function getEntryValue($key, $entry) {
-    return !empty($entry[$key]) ? $entry[$key] : NULL;
+  private function getEntryValue($wrapper, $tag, $entry) {
+    $map = $this->getMapping();
+    $map = $map['field'];
+    $key = $map[$tag]['property'];
+    $wrapper->{$key}->set($entry[$tag]);
+
+  }
+
+  /**
+   * Get the value of a year.
+   *
+   * @param $key
+   * @param $entry
+   */
+  private function getEntryValueYear($wrapper, $tag, $entry) {
+    $map = $this->getMapping();
+    $map = $map['field'];
+    $key = $map[$tag]['property'];
+
+    if (strtolower($entry[$tag]) == 'in press') {
+      $wrapper->biblio_status->set('in_press');
+      return;
+    }
+
+    $wrapper->{$key}->set($entry[$tag]);
   }
 
   /**
@@ -137,42 +116,70 @@ class BiblioStyleBibtex extends BiblioStyleBase {
    * @param $key
    * @param $entry
    */
-  private function getEntryValuePublisher($key, $entry) {
-    if (!empty($entry['organization'])) {
-      return $entry['organization'];
+  private function getEntryValuePublisher($wrapper, $tag, $entry) {
+    $types = array(
+      'organization',
+      'school',
+      'institution',
+      'publisher',
+    );
+
+    foreach ($types as $type) {
+      if (!empty($entry[$type])) {
+        $value = $entry[$type];
+        break;
+      }
     }
 
-    if (!empty($entry['school'])) {
-      return $entry['school'];
+    if (empty($value)) {
+      return;
     }
 
-    if (!empty($entry['institution'])) {
-      return $entry['institution'];
-    }
-
-    return !empty($entry['publisher']) ? $entry['publisher'] : NULL;
+    $map = $this->getMapping();
+    $map = $map['field'];
+    $key = $map[$tag]['property'];
+    $wrapper->{$key}->set($value);
   }
 
   /**
    * Get the value of a secondary title.
    */
-  private function getEntryValueSecondaryTitle($key, $entry) {
-    if (!empty($entry['series']) && empty($entry['booktitle'])) {
-      return $entry['series'];
+  private function getEntryValueSecondaryTitle($wrapper, $tag, $entry) {
+    $types = array(
+      'booktitle',
+      'series',
+      'journal',
+    );
+
+    foreach ($types as $type) {
+      if (!empty($entry[$type])) {
+        $value = $entry[$type];
+        break;
+      }
     }
 
-    if (!empty($entry['booktitle'])) {
-      return $entry['booktitle'];
+    if (empty($value)) {
+      return;
     }
 
-    return !empty($entry['journal']) ? $entry['journal'] : NULL;
+    $map = $this->getMapping();
+    $map = $map['field'];
+    $key = $map[$tag]['property'];
+    $wrapper->{$key}->set($value);
   }
 
   /**
    * Get the value of a tertiary title.
    */
-  private function getEntryValueTertiaryTitle($key, $entry) {
-    return !empty($entry['series']) && !empty($entry['booktitle']) ? $entry['series'] : NULL;
+  private function getEntryValueTertiaryTitle($wrapper, $tag, $entry) {
+    if (empty($entry['series']) || empty($entry['booktitle'])) {
+      return;
+    }
+
+    $map = $this->getMapping();
+    $map = $map['field'];
+    $key = $map[$tag]['property'];
+    $wrapper->{$key}->set($entry['series']);
   }
 
   /**
@@ -464,7 +471,10 @@ class BiblioStyleBibtex extends BiblioStyleBase {
         'title' => array('property' => 'title'),
         'volume' => array('property' => 'biblio_volume'),
         'number' => array('property' => 'biblio_number'),
-        'year' => array('property' => 'biblio_year'),
+        'year' => array(
+          'property' => 'biblio_year',
+          'import_method' => 'getEntryValueYear',
+        ),
         'note' => array('property' => 'biblio_notes'),
         'month' => array('property' => 'biblio_date'),
         'pages' => array('property' => 'biblio_pages'),
