@@ -3,12 +3,12 @@
 /**
  * Test BibTeX style plugin.
  */
-class BiblioBibtex extends DrupalWebTestCase {
+class BiblioImportTestCase extends DrupalWebTestCase {
 
   public static function getInfo() {
     return array(
-      'name' => 'BibTeX',
-      'description' => 'Test BibTeX style plugin.',
+      'name' => 'Import',
+      'description' => 'Test Import of different style plugins.',
       'group' => 'Biblio',
     );
   }
