@@ -15,11 +15,6 @@ class Biblio extends Entity {
    * Clear biblio cache.
    */
   public function save() {
-    if (empty($this->_skip_cache)) {
-      $this->cache = '';
-      $this->cache_id = '';
-    }
-
     $wrapper = entity_metadata_wrapper('biblio', $this);
 
     if (isset($wrapper->biblio_in_press) && $wrapper->biblio_in_press->value()) {
@@ -29,18 +24,26 @@ class Biblio extends Entity {
     // The md5 is used later to determine whether or not two Biblio objects
     // are the same and prevent duplications. In order for that to work, we
     // must first remove the unique parameters from the Biblio object.
-    $object = new stdClass;
-    $object->title = $this->title;
+    $clone = clone $this;
+    unset($clone->bid);
+    unset($clone->cache);
+    unset($clone->cache_id);
+    unset($clone->changed);
+    unset($clone->created);
+    unset($clone->is_new);
+    unset($clone->md5);
+    unset($clone->_skip_cache);
 
-    foreach (field_info_instances('biblio', $this->type) as $instance) {
-      $field_name = $instance['field_name'];
-      if (!empty($this->{$field_name})) {
-        $object->{$field_name} = $this->{$field_name};
-      }
-    }
+    $md5 = md5(serialize($clone));
 
-    $md5 = md5(serialize($object));
+    dpm($md5, __METHOD__);
+
     $this->md5 = $md5;
+
+    if (empty($this->_skip_cache)) {
+      $this->cache = '';
+      $this->cache_id = '';
+    }
 
     parent::save();
   }
