@@ -60,16 +60,17 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
   }
 
   public function isDuplicate(Biblio $biblio) {
-    $clone = clone $biblio;
-    unset($clone->bid);
-    unset($clone->changed);
-    unset($clone->created);
-    unset($clone->is_new);
-    unset($clone->md5);
+    $object = new stdClass;
+    $object->title = $biblio->title;
 
-    $md5 = md5(serialize($clone));
+    foreach (field_info_instances('biblio', $biblio->type) as $instance) {
+      $field_name = $instance['field_name'];
+      if (!empty($biblio->{$field_name})) {
+        $object->{$field_name} = $biblio->{$field_name};
+      }
+    }
 
-    dpm(array($clone, $md5), __METHOD__);
+    $md5 = md5(serialize($object));
 
     $query = new EntityFieldQuery();
     $result = $query
@@ -77,6 +78,5 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
       ->propertyCondition('md5', $md5)
       ->range(0, 1)
       ->execute();
-    dpm($result, 'count');
   }
 }

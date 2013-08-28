@@ -29,17 +29,17 @@ class Biblio extends Entity {
     // The md5 is used later to determine whether or not two Biblio objects
     // are the same and prevent duplications. In order for that to work, we
     // must first remove the unique parameters from the Biblio object.
-    $clone = clone $this;
-    unset($clone->bid);
-    unset($clone->changed);
-    unset($clone->created);
-    unset($clone->is_new);
-    unset($clone->md5);
+    $object = new stdClass;
+    $object->title = $this->title;
 
-    $md5 = md5(serialize($clone));
+    foreach (field_info_instances('biblio', $this->type) as $instance) {
+      $field_name = $instance['field_name'];
+      if (!empty($this->{$field_name})) {
+        $object->{$field_name} = $this->{$field_name};
+      }
+    }
 
-    dpm(array($clone, $md5), __METHOD__);
-
+    $md5 = md5(serialize($object));
     $this->md5 = $md5;
 
     parent::save();
