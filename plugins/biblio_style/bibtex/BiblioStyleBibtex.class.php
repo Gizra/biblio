@@ -49,48 +49,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
       // @todo: Check if the Biblio doesn't already exist.
       // Check if this is a unique Biblio.
       if (empty($options['allow_duplicate'])) {
-        // The md5 is to determine whether or not two Biblio objects are the
-        // same and prevent duplications. In order for that to work, we must
-        // first remove the unique time parameters from the Biblio object.
-        $clone = clone $biblio;
-        unset($clone->created);
-        unset($clone->changed);
-        unset($clone->bid);
-        unset($clone->md5);
-        unset($clone->is_new);
-
-        $entites = array();
-        foreach ($clone->contributor_field_collection[LANGUAGE_NONE] as &$entity) {
-          $entites[] = $entity['entity']->item_id;
-        }
-        $clone->contributor_field_collection = $entites;
-
-        $md5 = md5(serialize($clone));
-
-        dpm($clone, 'clone');
-        dpm($md5, 'md5');
-
-        $wrapper777 = entity_metadata_wrapper('biblio', $biblio);
-        $value = $wrapper777->value();
-
-        unset($value->created);
-        unset($value->changed);
-        unset($value->bid);
-        unset($value->md5);
-        unset($value->is_new);
-
-        $md5 = md5(serialize($value));
-
-        dpm($value, 'value');
-        dpm($md5, 'md5');
-
-        $query = new EntityFieldQuery();
-        $result = $query
-          ->entityCondition('entity_type', 'biblio')
-          ->propertyCondition('md5', $md5)
-          ->count()
-          ->execute();
-        dpm($result, 'count!');
+        $this->isDuplicate($biblio);
       }
 
       $wrapper->save();

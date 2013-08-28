@@ -58,4 +58,25 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
   public function settingsFormValidate() {
 
   }
+
+  public function isDuplicate(Biblio $biblio) {
+    $clone = clone $biblio;
+    unset($clone->bid);
+    unset($clone->changed);
+    unset($clone->created);
+    unset($clone->is_new);
+    unset($clone->md5);
+
+    $md5 = md5(serialize($clone));
+
+    dpm(array($clone, $md5), __METHOD__);
+
+    $query = new EntityFieldQuery();
+    $result = $query
+      ->entityCondition('entity_type', 'biblio')
+      ->propertyCondition('md5', $md5)
+      ->range(0, 1)
+      ->execute();
+    dpm($result, 'count');
+  }
 }
