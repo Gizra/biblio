@@ -16,7 +16,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
    * @param string $type
    * @return array
    */
-  public function import($data) {
+  public function import($data, $options = array()) {
     $bibtex = new PARSEENTRIES();
     $bibtex->loadBibtexString($data);
 
@@ -32,7 +32,6 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
     // Array of Biblios.
     $biblios = array();
-
     foreach ($entries as $entry) {
       $biblio = biblio_create(strtolower($entry['bibtexEntryType']));
 
@@ -47,7 +46,53 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
       $this->ImportEntryContributors($wrapper, $entry);
 
-      // @todo: Check if the Biblio doesn't already exist, and if so, load it.
+      // @todo: Check if the Biblio doesn't already exist.
+      // Check if this is a unique Biblio.
+      if (empty($options['allow_duplicate'])) {
+        // The md5 is to determine whether or not two Biblio objects are the
+        // same and prevent duplications. In order for that to work, we must
+        // first remove the unique time parameters from the Biblio object.
+        $clone = clone $biblio;
+        unset($clone->created);
+        unset($clone->changed);
+        unset($clone->bid);
+        unset($clone->md5);
+        unset($clone->is_new);
+
+        $entites = array();
+        foreach ($clone->contributor_field_collection[LANGUAGE_NONE] as &$entity) {
+          $entites[] = $entity['entity']->item_id;
+        }
+        $clone->contributor_field_collection = $entites;
+
+        $md5 = md5(serialize($clone));
+
+        dpm($clone, 'clone');
+        dpm($md5, 'md5');
+
+        $wrapper777 = entity_metadata_wrapper('biblio', $biblio);
+        $value = $wrapper777->value();
+
+        unset($value->created);
+        unset($value->changed);
+        unset($value->bid);
+        unset($value->md5);
+        unset($value->is_new);
+
+        $md5 = md5(serialize($value));
+
+        dpm($value, 'value');
+        dpm($md5, 'md5');
+
+        $query = new EntityFieldQuery();
+        $result = $query
+          ->entityCondition('entity_type', 'biblio')
+          ->propertyCondition('md5', $md5)
+          ->count()
+          ->execute();
+        dpm($result, 'count!');
+      }
+
       $wrapper->save();
 
       $biblios[] = $wrapper->value();
@@ -200,20 +245,17 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
         $biblio_contributor = biblio_contributor_create($values);
         $biblio_contributor->save();
-
         // Create contributors field collections.
         $field_collection = entity_create('field_collection_item', array('field_name' => 'contributor_field_collection'));
         $field_collection->setHostEntity('biblio', $biblio);
         $collection_wrapper = entity_metadata_wrapper('field_collection_item', $field_collection);
         $collection_wrapper->biblio_contributor->set($biblio_contributor);
-
         // @todo: Add reference to correct term.
         $term = taxonomy_get_term_by_name(ucfirst($type), 'biblio_roles');
         $term = reset($term);
 
         $collection_wrapper->biblio_contributor_role->set($term);
-
-        $collection_wrapper->save();
+        $field_collection->save(TRUE);
       }
     }
   }
