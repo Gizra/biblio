@@ -3,12 +3,12 @@
 /**
  * Test BibTeX style plugin.
  */
-class BiblioImportTestCase extends DrupalWebTestCase {
+class BiblioImportAndRenderTestCase extends DrupalWebTestCase {
 
   public static function getInfo() {
     return array(
-      'name' => 'Import',
-      'description' => 'Test Import of different style plugins.',
+      'name' => 'Import and render',
+      'description' => 'Test Import and render of different style plugins.',
       'group' => 'Biblio',
     );
   }
@@ -18,14 +18,14 @@ class BiblioImportTestCase extends DrupalWebTestCase {
 
     biblio_add_publication_types();
     biblio_create_fields_by_bundle(array('book'));
+
+    ctools_include('plugins');
   }
 
   /**
-   * Test Import.
+   * Test BibTex.
    */
-  function testImport() {
-    ctools_include('plugins');
-
+  function testBibTex() {
     $plugin = biblio_get_biblio_style('bibtex');
     $class = ctools_plugin_load_class('biblio', 'biblio_style', 'bibtex', 'class');
 
@@ -57,5 +57,29 @@ class BiblioImportTestCase extends DrupalWebTestCase {
 
     // We use trim, to remove whitespace.
     $this->assertEqual(trim($output), trim($expected_result), 'Render is equal to the expected result');
+  }
+
+  /**
+   * Test end note tagged.
+   */
+  function testEndNoteTagged() {
+    $plugin = biblio_get_biblio_style('endnote');
+    $class = ctools_plugin_load_class('biblio', 'biblio_style', 'endnote', 'class');
+
+    $biblio_style = new $class($plugin);
+    $data = '
+%0 Book
+%J PS: Political Science and Politics
+%D 2013
+%T Restructuring the Social Sciences: Reflections from Harvard’s Institute for Quantitative Social Science
+%A Gary King
+%X The social sciences are undergoing a dramatic transformation from studying problems to solving them.
+%B PS: Political Science and Politics
+%G eng';
+
+    $biblios = $biblio_style->import($data);
+    $biblio = $biblios[0];
+
+    $this->assertEqual('eng', $biblio->language, 'Language imported properly');
   }
 }
