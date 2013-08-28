@@ -101,7 +101,14 @@ function biblio_schema_7300() {
         'length' => '32',
         'not null' => FALSE,
         'description' => '',
-      )
+      ),
+      'language' => array(
+        'description' => 'The {languages}.language of this Biblio.',
+        'type' => 'varchar',
+        'length' => 12,
+        'not null' => TRUE,
+        'default' => '',
+      ),
     ),
     'primary key' => array('bid'),
     'indexes' => array(
@@ -192,6 +199,18 @@ function biblio_schema_7300() {
         'length' => '32',
         'not null' => FALSE,
         'description' => '',
+      ),
+      'created' => array(
+        'description' => 'The Unix timestamp when the entry was created.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'changed' => array(
+        'description' => 'The Unix timestamp when the entry was most recently saved.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
       ),
     ),
     'foreign keys' => array(

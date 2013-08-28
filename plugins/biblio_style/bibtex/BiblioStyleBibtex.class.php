@@ -44,7 +44,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
         $this->importEntry($wrapper, $key, $entry);
       }
 
-      $this->ImportEntryContributors($wrapper, $entry);
+      $this->importEntryContributors($wrapper, $entry);
 
       // @todo: Check if the Biblio doesn't already exist.
       // Check if this is a unique Biblio.
@@ -117,7 +117,6 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
     $value = $this->{$method}($key, $entry);
 
-    // @todo: Make title writable.
     $wrapper_info = $wrapper->{$property_name}->info();
     if (empty($wrapper_info['setter callback'])) {
       return;
@@ -183,7 +182,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
   /**
    * Create Biblio Contributor entities.
    */
-  private function ImportEntryContributors($wrapper, $entry) {
+  private function importEntryContributors($wrapper, $entry) {
     foreach (array('author', 'editor') as $type) {
       if (empty($entry[$type])) {
         continue;
