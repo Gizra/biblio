@@ -16,39 +16,8 @@ class BiblioBibtex extends DrupalWebTestCase {
   function setUp() {
     parent::setUp('biblio');
 
-    $field_names = array(
-      'biblio_abstract',
-      'biblio_citekey',
-      'biblio_edition',
-      'biblio_first_letter',
-      'biblio_image',
-      'biblio_in_press',
-      'biblio_pages',
-      'biblio_place_published',
-      'biblio_publisher',
-      'biblio_secondary_title',
-      'biblio_tertiary_title',
-      'biblio_year',
-      // Contributors reference.
-      'contributor_field_collection',
-    );
-
-    foreach ($field_names as $field_name) {
-      biblio_create_field($field_name, 'biblio', 'book');
-    }
-
-    $field_names = array(
-      'contributor_given',
-      'contributor_family',
-    );
-
-    foreach ($field_names as $field_name) {
-      biblio_create_field($field_name, 'biblio_contributor', 'biblio_contributor');
-      biblio_create_field($field_name, 'biblio_contributor', 'biblio_contributor');
-    }
-
-    biblio_create_field('biblio_contributor_role', 'field_collection_item', 'contributor_field_collection');
-    biblio_create_field('biblio_contributor', 'field_collection_item', 'contributor_field_collection');
+    biblio_add_publication_types();
+    biblio_create_fields_by_bundle(array('book'));
   }
 
   /**

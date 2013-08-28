@@ -12,9 +12,16 @@ function biblio_install() {
 }
 
 /**
- * Implements hook_enable()
+ * Implements hook_enable().
+ *
+ * When enabling module via CLI, we know there is no timeout, so we can create
+ * all the bundles. Otherwise, user will have to do it via UI as a batch
+ * operation.
  */
 function biblio_enable() {
+  if (!drupal_is_cli()) {
+    return;
+  }
   biblio_add_publication_types();
   biblio_create_fields_by_bundle();
 }
