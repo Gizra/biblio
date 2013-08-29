@@ -229,11 +229,30 @@ class BiblioStyleEndNote extends BiblioStyleBase {
     }
   }
 
-  private function formatEntryKeywords(&$output = array(), $wrapper, $tag) {
+  /**
+   * Generic entry render.
+   *
+   * @param array $output
+   * @param EntityMetadataWrapper $wrapper
+   * @param $tag
+   */
+  private function renderEntryGeneric(&$output = array(), EntityMetadataWrapper $wrapper, $tag) {
+    $map = $this->getMapping();
+    $property = $map['property'];
+    if (!$value = $wrapper->{$property}->value()) {
+      return;
+    }
+
+    $output[] = "%{$tag} " . $value;
+  }
+
+  private function formatEntryKeywords(&$output = array(), EntityMetadataWrapper $wrapper, $tag) {
     foreach ($wrapper->biblio_keywords as $sub_wrapper) {
       $output[] = "%K " . $sub_wrapper->label();
     }
   }
+
+
 
 
   public function getMapping() {
@@ -289,6 +308,10 @@ class BiblioStyleEndNote extends BiblioStyleBase {
     foreach ($return as $key => $value) {
       if (empty($value['import_method'])) {
         $return[$key]['import_method'] = 'importEntryGeneric';
+      }
+
+      if (empty($value['render_method'])) {
+        $return[$key]['render_method'] = 'renderEntryGeneric';
       }
     }
 
