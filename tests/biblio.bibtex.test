@@ -22,11 +22,11 @@ class BiblioBibtex extends DrupalWebTestCase {
       'biblio_edition',
       'biblio_first_letter',
       'biblio_image',
-      'biblio_in_press',
       'biblio_pages',
       'biblio_place_published',
       'biblio_publisher',
       'biblio_secondary_title',
+      'biblio_status',
       'biblio_tertiary_title',
       'biblio_year',
       // Contributors reference.

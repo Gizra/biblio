@@ -22,10 +22,6 @@ class Biblio extends Entity {
 
     $wrapper = entity_metadata_wrapper('biblio', $this);
 
-    if (isset($wrapper->biblio_in_press) && $wrapper->biblio_in_press->value()) {
-      $wrapper->biblio_year->set(9999);
-    }
-
     parent::save();
   }
 
