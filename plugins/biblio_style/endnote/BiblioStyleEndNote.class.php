@@ -225,7 +225,10 @@ class BiblioStyleEndNote extends BiblioStyleBase {
    */
   private function renderEntryGeneric(&$output = array(), EntityMetadataWrapper $wrapper, $tag) {
     $map = $this->getMapping();
-    $property = $map[$tag]['property'];
+    if (!$property = $map[$tag]['property']) {
+      return;
+    }
+
     if (!isset($wrapper->{$property}) || !$value = $wrapper->{$property}->value()) {
       return;
     }
@@ -237,6 +240,14 @@ class BiblioStyleEndNote extends BiblioStyleBase {
     foreach ($wrapper->biblio_keywords as $sub_wrapper) {
       $output[] = "%K " . $sub_wrapper->label();
     }
+  }
+
+  private function renderEntryFile(&$output = array(), EntityMetadataWrapper $wrapper, $tag) {
+    if (!$file = $wrapper->biblio_pdf->value()) {
+      return;
+    }
+
+    $output[] = "%> " . file_create_url($file['uri']);
   }
 
   private function renderEntryContributors(&$output = array(), EntityMetadataWrapper $wrapper, $tag) {
@@ -299,6 +310,12 @@ class BiblioStyleEndNote extends BiblioStyleBase {
       ),
       '%@' => array('property' => 'biblio_isbn'),
       '%<' => array('property' => 'biblio_research_notes'),
+      '%>' => array(
+        'property' => 'biblio_pdf',
+        // @todo: We can try and download the file.
+        'import_method' => FALSE,
+        'render_method' => 'renderEntryFile'
+      ),
       '%!' => array('property' => 'biblio_short_title'),
       '%&' => array('property' => 'biblio_section'),
       '%(' => array('property' => 'biblio_original_publication'),
