@@ -41,6 +41,7 @@ class BiblioImportAndRenderTestCase extends DrupalWebTestCase {
 
     $biblios = $biblio_style->import($data);
     $biblio = $biblios[0];
+    $output = $biblio->getText('bibtex', array('opening_tag' => '"', 'closing_tag' => '"'));
 
     $expected_result = '
 @Book{abramowitz+stegun,
@@ -52,10 +53,8 @@ class BiblioImportAndRenderTestCase extends DrupalWebTestCase {
 	author = "Milton {Abramowitz} and  Irene A. {Stegun}"
 }';
 
-    $output = $biblio->getText('bibtex', array('opening_tag' => '"', 'closing_tag' => '"'));
-
     // We use trim, to remove whitespace.
-    $this->assertEqual(trim($output), trim($expected_result), 'Render is equal to the expected result');
+    $this->assertEqual(trim($output), trim($expected_result), 'BibTex render is equal to the expected result');
   }
 
   /**
@@ -73,16 +72,21 @@ class BiblioImportAndRenderTestCase extends DrupalWebTestCase {
 %B PS: Political Science and Politics
 %D 2013
 %G eng
-%J PS: Political Science and Politics
 %T Restructuring the Social Sciences: Reflections from Harvard’s Institute for Quantitative Social Science
 %X The social sciences are undergoing a dramatic transformation from studying problems to solving them.';
 
     $biblios = $biblio_style->import($data);
     $biblio = $biblios[0];
-
-
     $output = $biblio->getText('endnote', array('type' => 'tagged'));
 
-    $this->assertEqual(trim($output), trim($data), 'Render is equal to the expected result');
+    $expected_result = '%0 Book
+%D 2013
+%G eng
+%T Restructuring the Social Sciences: Reflections from Harvard’s Institute for Quantitative Social Science
+%X The social sciences are undergoing a dramatic transformation from studying problems to solving them.
+%A Gary King
+%B PS: Political Science and Politics';
+
+    $this->assertEqual(trim($output), trim($expected_result), 'EndNote render is equal to the expected result');
   }
 }

@@ -156,7 +156,7 @@ class BiblioStyleEndNote extends BiblioStyleBase {
 
 
 
-    return implode("\r\n", $output);
+    return implode("\n", $output);
   }
 
   /**
