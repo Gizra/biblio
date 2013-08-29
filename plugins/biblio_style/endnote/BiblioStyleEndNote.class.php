@@ -136,6 +136,106 @@ class BiblioStyleEndNote extends BiblioStyleBase {
     }
   }
 
+  /**
+   * @inheritdoc
+   */
+  public function render($options = array(), $langcode = NULL) {
+    $output = array();
+
+    // We clone the biblio, as we might change the values.
+    $biblio = clone $this->biblio;
+    $wrapper = entity_metadata_wrapper('biblio', $biblio);
+
+    $output[] = "%0 " . $biblio->type;
+
+    foreach ($this->getMapping() as $tag => $tag_info) {
+      $method = $tag_info['render_method'];
+      $this->{$method}($output, $wrapper, $tag);
+    }
+
+    dpm($output);
+    return implode("\r\n", $output);
+
+
+    switch ($biblio->biblio_type) {
+      case 100 :
+      case 101 :
+      case 103 :
+      case 104 :
+      case 105 :
+      case 108 :
+      case 119 :
+        if (!empty($biblio->biblio_secondary_title))
+          $output[] = "%B " . trim($node->biblio_secondary_title) . "\r\n";
+        break;
+      case 102 :
+        if (!empty($node->biblio_secondary_title))
+          $output[] = "%J " . trim($node->biblio_secondary_title) . "\r\n";
+        break; // journal
+    }
+    if (isset($node->biblio_year) && $node->biblio_year < 9998)  $output[] = "%D " . trim($node->biblio_year) . "\r\n";
+    if (!empty($node->title))  $output[] = "%T " . trim($node->title) . "\r\n";
+
+    foreach (biblio_get_contributor_category($node->biblio_contributors, 1) as $auth) {
+      $output[] = "%A " . trim($auth['name']) . "\r\n";
+    }
+    foreach (biblio_get_contributor_category($node->biblio_contributors, 2) as $auth) {
+      $output[] = "%E " . trim($auth['name']) . "\r\n";
+    }
+    foreach (biblio_get_contributor_category($node->biblio_contributors, 3) as $auth) {
+      $output[] = "%Y " . trim($auth['name']) . "\r\n";
+    }
+    foreach (biblio_get_contributor_category($node->biblio_contributors, 4) as $auth) {
+      $output[] = "%? " . trim($auth['name']) . "\r\n";
+    }
+
+    $kw_array = array();
+    if (!empty($node->terms)) {
+      foreach ($node->terms as $term) {
+        $kw_array[] = $term->name;
+      }
+    }
+    if (!empty($node->biblio_keywords)) {
+      foreach ($node->biblio_keywords as $term) {
+        $kw_array[] = $term;
+      }
+    }
+    if (!empty($kw_array)) {
+      $kw_array = array_unique($kw_array);
+      foreach ($kw_array as $term) {
+        $output[] = "%K " . trim($term) . "\r\n";
+      }
+    }
+    $abst = "";
+    if (!empty($node->biblio_abst_e))  $abst .= trim($node->biblio_abst_e);
+    if ($abst) {
+      $search = array("/\r/", "/\n/");
+      $replace = " ";
+      $abst = preg_replace($search, $replace, $abst);
+      $output[] = "%X " . $abst . "\r\n";
+    }
+    $skip_fields = array('biblio_year',  'biblio_abst_e', 'biblio_abst_f', 'biblio_type' );
+    $fields = drupal_schema_fields_sql('biblio');
+    $fields = array_diff($fields, $skip_fields);
+    foreach ($fields as $field) {
+      if (!empty($node->$field)) {
+        $output[] = _biblio_tagged_format_entry($field, $node->$field);
+      }
+    }
+    if (!empty ($node->upload) && count($node->upload['und']) && user_access('view uploaded files')) {
+      foreach ($node->upload['und'] as $file) {
+        $output[] = "%> " . file_create_url($file['uri']) . "\r\n"; // insert file here.
+      }
+    }
+  }
+
+  private function formatEntryKeywords(&$output = array(), $wrapper, $tag) {
+    foreach ($wrapper->biblio_keywords as $sub_wrapper) {
+      $output[] = "%K " . $sub_wrapper->label();
+    }
+  }
+
+
   public function getMapping() {
     $return = array(
       '%A' => array('import_method' => 'importEntryContributors'),
@@ -147,7 +247,10 @@ class BiblioStyleEndNote extends BiblioStyleBase {
       '%G' => array('property' => 'language'),
       '%I' => array('property' => 'biblio_publisher'),
       '%J' => array('property' => 'biblio_secondary_title'),
-      '%K' => array('property' => 'biblio_keywords'),
+      '%K' => array(
+        'property' => 'biblio_keywords',
+        'render_method' => 'formatEntryKeywords',
+      ),
       '%L' => array('property' => 'biblio_call_number'),
       '%M' => array('property' => 'biblio_accession_number'),
       '%N' => array('property' => 'biblio_issue'),
@@ -192,4 +295,5 @@ class BiblioStyleEndNote extends BiblioStyleBase {
     return $return;
 
   }
+
 }
