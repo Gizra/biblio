@@ -18,14 +18,13 @@ class BiblioImportAndRenderTestCase extends DrupalWebTestCase {
 
     biblio_add_publication_types();
     biblio_create_fields_by_bundle(array('book'));
-
-    ctools_include('plugins');
   }
 
   /**
    * Test BibTex.
    */
   function testBibTex() {
+    ctools_include('plugins');
     $plugin = biblio_get_biblio_style('bibtex');
     $class = ctools_plugin_load_class('biblio', 'biblio_style', 'bibtex', 'class');
 
@@ -42,6 +41,7 @@ class BiblioImportAndRenderTestCase extends DrupalWebTestCase {
 
     $biblios = $biblio_style->import($data);
     $biblio = $biblios[0];
+    $output = $biblio->getText('bibtex', array('opening_tag' => '"', 'closing_tag' => '"'));
 
     $expected_result = '
 @Book{abramowitz+stegun,
@@ -53,33 +53,40 @@ class BiblioImportAndRenderTestCase extends DrupalWebTestCase {
 	author = "Milton {Abramowitz} and  Irene A. {Stegun}"
 }';
 
-    $output = $biblio->getText('bibtex', array('opening_tag' => '"', 'closing_tag' => '"'));
-
     // We use trim, to remove whitespace.
-    $this->assertEqual(trim($output), trim($expected_result), 'Render is equal to the expected result');
+    $this->assertEqual(trim($output), trim($expected_result), 'BibTex render is equal to the expected result');
   }
 
   /**
    * Test end note tagged.
    */
   function testEndNoteTagged() {
+    ctools_include('plugins');
     $plugin = biblio_get_biblio_style('endnote');
     $class = ctools_plugin_load_class('biblio', 'biblio_style', 'endnote', 'class');
 
     $biblio_style = new $class($plugin);
     $data = '
 %0 Book
-%J PS: Political Science and Politics
-%D 2013
-%T Restructuring the Social Sciences: Reflections from Harvard’s Institute for Quantitative Social Science
 %A Gary King
-%X The social sciences are undergoing a dramatic transformation from studying problems to solving them.
 %B PS: Political Science and Politics
-%G eng';
+%D 2013
+%G eng
+%T Restructuring the Social Sciences: Reflections from Harvard’s Institute for Quantitative Social Science
+%X The social sciences are undergoing a dramatic transformation from studying problems to solving them.';
 
     $biblios = $biblio_style->import($data);
     $biblio = $biblios[0];
+    $output = $biblio->getText('endnote', array('type' => 'tagged'));
 
-    $this->assertEqual('eng', $biblio->language, 'Language imported properly');
+    $expected_result = '%0 Book
+%D 2013
+%G eng
+%T Restructuring the Social Sciences: Reflections from Harvard’s Institute for Quantitative Social Science
+%X The social sciences are undergoing a dramatic transformation from studying problems to solving them.
+%A Gary King
+%B PS: Political Science and Politics';
+
+    $this->assertEqual(trim($output), trim($expected_result), 'EndNote render is equal to the expected result');
   }
 }
