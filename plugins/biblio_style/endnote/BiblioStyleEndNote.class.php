@@ -83,23 +83,9 @@ class BiblioStyleEndNote extends BiblioStyleBase {
    * Create Biblio Contributor entities.
    */
   private function importEntryContributors($wrapper, $tag, $value) {
-    switch ($tag) {
-      case '%A':
-        $type = 'author';
-        break;
-
-      case '%E':
-        $type = 'editor';
-        break;
-
-      case '%Y':
-        // @todo: Find the role.
-        break;
-
-      case '%?':
-        // @todo: Find the role.
-        break;
-    }
+    // The role and type are in the map.
+    $map = $this->getMapping();
+    $type = $map[$tag]['type'];
 
     $biblio = $wrapper->value();
 
@@ -263,6 +249,7 @@ class BiblioStyleEndNote extends BiblioStyleBase {
       '%A' => array(
         'import_method' => 'importEntryContributors',
         'render_method' => 'renderEntryContributors',
+        'type' => 'Author',
       ),
       '%B' => array('property' => 'biblio_secondary_title'),
       '%C' => array('property' => 'biblio_place_published'),
@@ -270,6 +257,7 @@ class BiblioStyleEndNote extends BiblioStyleBase {
       '%E' => array(
         'import_method' => 'importEntryContributors',
         'render_method' => 'renderEntryContributors',
+        'type' => 'Editor',
       ),
       '%F' => array('property' => 'biblio_label'),
       '%G' => array('property' => 'language'),
