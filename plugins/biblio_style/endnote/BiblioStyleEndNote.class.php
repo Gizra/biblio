@@ -246,29 +246,33 @@ class BiblioStyleEndNote extends BiblioStyleBase {
     $output[] = "%{$tag} " . $value;
   }
 
-  private function formatEntryKeywords(&$output = array(), EntityMetadataWrapper $wrapper, $tag) {
+  private function renderEntryKeywords(&$output = array(), EntityMetadataWrapper $wrapper, $tag) {
     foreach ($wrapper->biblio_keywords as $sub_wrapper) {
       $output[] = "%K " . $sub_wrapper->label();
     }
   }
 
 
-
-
   public function getMapping() {
     $return = array(
-      '%A' => array('import_method' => 'importEntryContributors'),
+      '%A' => array(
+        'import_method' => 'importEntryContributors',
+        'render_method' => 'renderEntryContributors',
+      ),
       '%B' => array('property' => 'biblio_secondary_title'),
       '%C' => array('property' => 'biblio_place_published'),
       '%D' => array('property' => 'biblio_year'),
-      '%E' => array('import_method' => 'importEntryContributors'),
+      '%E' => array(
+        'import_method' => 'importEntryContributors',
+        'render_method' => 'renderEntryContributors',
+      ),
       '%F' => array('property' => 'biblio_label'),
       '%G' => array('property' => 'language'),
       '%I' => array('property' => 'biblio_publisher'),
       '%J' => array('property' => 'biblio_secondary_title'),
       '%K' => array(
         'property' => 'biblio_keywords',
-        'render_method' => 'formatEntryKeywords',
+        'render_method' => 'renderEntryKeywords',
       ),
       '%L' => array('property' => 'biblio_call_number'),
       '%M' => array('property' => 'biblio_accession_number'),
@@ -280,7 +284,10 @@ class BiblioStyleEndNote extends BiblioStyleBase {
       '%U' => array('property' => 'biblio_url'),
       '%V' => array('property' => 'biblio_volume'),
       '%X' => array('property' => 'biblio_abstract'),
-      '%Y' => array('import_method' => 'importEntryContributors'),
+      '%Y' => array(
+        'import_method' => 'importEntryContributors',
+        'render_method' => 'renderEntryContributors',
+      ),
       '%X' => array('property' => 'biblio_notes'),
       '%1' => array('property' => 'biblio_custom1'),
       '%2' => array('property' => 'biblio_custom2'),
@@ -293,15 +300,16 @@ class BiblioStyleEndNote extends BiblioStyleBase {
       '%7' => array('property' => 'biblio_edition'),
       '%8' => array('property' => 'biblio_date'),
       '%9' => array('property' => 'biblio_type_of_work'),
-      '%?' => array('import_method' => 'importEntryContributors'),
+      '%?' => array(
+        'import_method' => 'importEntryContributors',
+        'render_method' => 'renderEntryContributors',
+      ),
       '%@' => array('property' => 'biblio_isbn'),
       '%<' => array('property' => 'biblio_research_notes'),
       '%!' => array('property' => 'biblio_short_title'),
       '%&' => array('property' => 'biblio_section'),
       '%(' => array('property' => 'biblio_original_publication'),
       '%)' => array('property' => 'biblio_reprint_edition'),
-      '%*' => array('property' => ''),
-      '%+' => array('property' => ''),
     );
 
     // Assign default import method.
