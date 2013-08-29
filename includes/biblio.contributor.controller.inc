@@ -12,7 +12,7 @@ class BiblioContributor extends Entity {
   /**
    * Overrides Entity::save().
    *
-   * Re-build the contributor name.
+   * @todo: Re-build the contributor name.
    */
   public function save() {
     $this->name = $this->lastname . ' ' . $this->firstname;

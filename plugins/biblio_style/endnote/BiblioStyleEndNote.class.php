@@ -98,9 +98,9 @@ class BiblioStyleEndNote extends BiblioStyleBase {
       // Try to extract the given and family name.
       // @todo: Fix this preg_split.
       $sub_name = preg_split("/{|}/i", $name);
-      $values = array('given' =>$sub_name[0]);
+      $values = array('firstname' => $sub_name[0]);
       if (!empty($sub_name[1])) {
-        $values['family'] = $sub_name[1];
+        $values['lastname'] = $sub_name[1];
       }
 
       $biblio_contributor = biblio_contributor_create($values);
@@ -118,7 +118,7 @@ class BiblioStyleEndNote extends BiblioStyleBase {
 
       $collection_wrapper->biblio_contributor_role->set($term);
 
-      $collection_wrapper->save();
+      $field_collection->save(FALSE);
     }
   }
 
@@ -136,9 +136,12 @@ class BiblioStyleEndNote extends BiblioStyleBase {
 
     $output[] = "%0 " . $type->name;
 
+    $execute_once = array();
+
     foreach ($this->getMapping() as $tag => $tag_info) {
       $method = $tag_info['render_method'];
-      if ($method == 'renderEntryContributors') {
+      if ($tag_info['execute_once']) {
+        $execute_once[$method] = $method;
         // Skip rendering contributors as we will do it in one step, to prevent
         // iterating over the same values over and over again.
         continue;
@@ -146,82 +149,14 @@ class BiblioStyleEndNote extends BiblioStyleBase {
       $this->{$method}($output, $wrapper, $tag);
     }
 
-    // Render the contributors.
-    $this->renderEntryContributors($output, $wrapper);
+    foreach ($execute_once as $method) {
+      // Render the contributors.
+      $this->{$method}($output, $wrapper);
+    }
+
+
 
     return implode("\r\n", $output);
-
-
-    switch ($biblio->biblio_type) {
-      case 100 :
-      case 101 :
-      case 103 :
-      case 104 :
-      case 105 :
-      case 108 :
-      case 119 :
-        if (!empty($biblio->biblio_secondary_title))
-          $output[] = "%B " . trim($node->biblio_secondary_title) . "\r\n";
-        break;
-      case 102 :
-        if (!empty($node->biblio_secondary_title))
-          $output[] = "%J " . trim($node->biblio_secondary_title) . "\r\n";
-        break; // journal
-    }
-    if (isset($node->biblio_year) && $node->biblio_year < 9998)  $output[] = "%D " . trim($node->biblio_year) . "\r\n";
-    if (!empty($node->title))  $output[] = "%T " . trim($node->title) . "\r\n";
-
-    foreach (biblio_get_contributor_category($node->biblio_contributors, 1) as $auth) {
-      $output[] = "%A " . trim($auth['name']) . "\r\n";
-    }
-    foreach (biblio_get_contributor_category($node->biblio_contributors, 2) as $auth) {
-      $output[] = "%E " . trim($auth['name']) . "\r\n";
-    }
-    foreach (biblio_get_contributor_category($node->biblio_contributors, 3) as $auth) {
-      $output[] = "%Y " . trim($auth['name']) . "\r\n";
-    }
-    foreach (biblio_get_contributor_category($node->biblio_contributors, 4) as $auth) {
-      $output[] = "%? " . trim($auth['name']) . "\r\n";
-    }
-
-    $kw_array = array();
-    if (!empty($node->terms)) {
-      foreach ($node->terms as $term) {
-        $kw_array[] = $term->name;
-      }
-    }
-    if (!empty($node->biblio_keywords)) {
-      foreach ($node->biblio_keywords as $term) {
-        $kw_array[] = $term;
-      }
-    }
-    if (!empty($kw_array)) {
-      $kw_array = array_unique($kw_array);
-      foreach ($kw_array as $term) {
-        $output[] = "%K " . trim($term) . "\r\n";
-      }
-    }
-    $abst = "";
-    if (!empty($node->biblio_abst_e))  $abst .= trim($node->biblio_abst_e);
-    if ($abst) {
-      $search = array("/\r/", "/\n/");
-      $replace = " ";
-      $abst = preg_replace($search, $replace, $abst);
-      $output[] = "%X " . $abst . "\r\n";
-    }
-    $skip_fields = array('biblio_year',  'biblio_abst_e', 'biblio_abst_f', 'biblio_type' );
-    $fields = drupal_schema_fields_sql('biblio');
-    $fields = array_diff($fields, $skip_fields);
-    foreach ($fields as $field) {
-      if (!empty($node->$field)) {
-        $output[] = _biblio_tagged_format_entry($field, $node->$field);
-      }
-    }
-    if (!empty ($node->upload) && count($node->upload['und']) && user_access('view uploaded files')) {
-      foreach ($node->upload['und'] as $file) {
-        $output[] = "%> " . file_create_url($file['uri']) . "\r\n"; // insert file here.
-      }
-    }
   }
 
   /**
@@ -231,7 +166,7 @@ class BiblioStyleEndNote extends BiblioStyleBase {
    * @param EntityMetadataWrapper $wrapper
    * @param $tag
    */
-  private function renderEntryGeneric(&$output = array(), EntityMetadataWrapper $wrapper, $tag) {
+  public function renderEntryGeneric(&$output = array(), EntityMetadataWrapper $wrapper, $tag) {
     $map = $this->getMapping();
     if (!$property = $map[$tag]['property']) {
       return;
@@ -243,6 +178,18 @@ class BiblioStyleEndNote extends BiblioStyleBase {
 
     $output[] = "{$tag} " . $value;
   }
+
+  public function renderEntrySecondaryTitle(&$output = array(), EntityMetadataWrapper $wrapper) {
+    if (!$value = $wrapper->biblio_secondary_title->value()) {
+      return;
+    }
+
+    $biblio = $wrapper->value();
+    $tag = $biblio->type == 'journal' ? '%J' : '%B';
+
+    $output[] = $tag . ' ' . $value;
+  }
+
 
   public function renderEntryKeywords(&$output = array(), EntityMetadataWrapper $wrapper, $tag) {
     foreach ($wrapper->biblio_keywords as $sub_wrapper) {
@@ -291,19 +238,29 @@ class BiblioStyleEndNote extends BiblioStyleBase {
         'import_method' => 'importEntryContributors',
         'render_method' => 'renderEntryContributors',
         'role' => 'Author',
+        'execute_once' => TRUE,
       ),
-      '%B' => array('property' => 'biblio_secondary_title'),
+      '%B' => array(
+        'property' => 'biblio_secondary_title',
+        'render_method' => 'renderEntrySecondaryTitle',
+        'execute_once' => TRUE,
+      ),
       '%C' => array('property' => 'biblio_place_published'),
       '%D' => array('property' => 'biblio_year'),
       '%E' => array(
         'import_method' => 'importEntryContributors',
         'render_method' => 'renderEntryContributors',
         'role' => 'Editor',
+        'execute_once' => TRUE,
       ),
       '%F' => array('property' => 'biblio_label'),
       '%G' => array('property' => 'language'),
       '%I' => array('property' => 'biblio_publisher'),
-      '%J' => array('property' => 'biblio_secondary_title'),
+      '%J' => array(
+        'property' => 'biblio_secondary_title',
+        'render_method' => 'renderEntrySecondaryTitle',
+        'execute_once' => TRUE,
+      ),
       '%K' => array(
         'property' => 'biblio_keywords',
         'render_method' => 'renderEntryKeywords',
@@ -321,6 +278,9 @@ class BiblioStyleEndNote extends BiblioStyleBase {
       '%Y' => array(
         'import_method' => 'importEntryContributors',
         'render_method' => 'renderEntryContributors',
+        // @todo: Fix role.
+        'role' => '%Y',
+        'execute_once' => TRUE,
       ),
       '%X' => array('property' => 'biblio_notes'),
       '%1' => array('property' => 'biblio_custom1'),
@@ -337,6 +297,9 @@ class BiblioStyleEndNote extends BiblioStyleBase {
       '%?' => array(
         'import_method' => 'importEntryContributors',
         'render_method' => 'renderEntryContributors',
+        // @todo: Fix role.
+        'role' => '%?',
+        'execute_once' => TRUE,
       ),
       '%@' => array('property' => 'biblio_isbn'),
       '%<' => array('property' => 'biblio_research_notes'),
@@ -354,13 +317,11 @@ class BiblioStyleEndNote extends BiblioStyleBase {
 
     // Assign default import method.
     foreach ($return as $key => $value) {
-      if (empty($value['import_method'])) {
-        $return[$key]['import_method'] = 'importEntryGeneric';
-      }
-
-      if (empty($value['render_method'])) {
-        $return[$key]['render_method'] = 'renderEntryGeneric';
-      }
+      $return[$key] += array(
+        'import_method' => 'importEntryGeneric',
+        'render_method' => 'renderEntryGeneric',
+        'execute_once' => FALSE,
+      );
     }
 
     return $return;
