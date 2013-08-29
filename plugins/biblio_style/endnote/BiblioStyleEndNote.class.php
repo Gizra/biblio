@@ -146,14 +146,15 @@ class BiblioStyleEndNote extends BiblioStyleBase {
     $biblio = clone $this->biblio;
     $wrapper = entity_metadata_wrapper('biblio', $biblio);
 
-    $output[] = "%0 " . $biblio->type;
+    $type = biblio_types($biblio->type);
+
+    $output[] = "%0 " . $type->name;
 
     foreach ($this->getMapping() as $tag => $tag_info) {
       $method = $tag_info['render_method'];
       $this->{$method}($output, $wrapper, $tag);
     }
 
-    dpm($output);
     return implode("\r\n", $output);
 
 
@@ -238,12 +239,12 @@ class BiblioStyleEndNote extends BiblioStyleBase {
    */
   private function renderEntryGeneric(&$output = array(), EntityMetadataWrapper $wrapper, $tag) {
     $map = $this->getMapping();
-    $property = $map['property'];
-    if (!$value = $wrapper->{$property}->value()) {
+    $property = $map[$tag]['property'];
+    if (!isset($wrapper->{$property}) || !$value = $wrapper->{$property}->value()) {
       return;
     }
 
-    $output[] = "%{$tag} " . $value;
+    $output[] = "{$tag} " . $value;
   }
 
   private function renderEntryKeywords(&$output = array(), EntityMetadataWrapper $wrapper, $tag) {
@@ -251,6 +252,10 @@ class BiblioStyleEndNote extends BiblioStyleBase {
       $output[] = "%K " . $sub_wrapper->label();
     }
   }
+
+  private function renderEntryContributors(&$output = array(), EntityMetadataWrapper $wrapper, $tag) {
+  }
+
 
 
   public function getMapping() {
