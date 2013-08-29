@@ -83,9 +83,9 @@ class BiblioStyleEndNote extends BiblioStyleBase {
    * Create Biblio Contributor entities.
    */
   private function importEntryContributors($wrapper, $tag, $value) {
-    // The role and type are in the map.
+    // The role is in the map.
     $map = $this->getMapping();
-    $type = $map[$tag]['type'];
+    $role = $map[$tag]['role'];
 
     $biblio = $wrapper->value();
 
@@ -113,7 +113,7 @@ class BiblioStyleEndNote extends BiblioStyleBase {
       $collection_wrapper->biblio_contributor->set($biblio_contributor);
 
       // @todo: Add reference to correct term.
-      $term = taxonomy_get_term_by_name(ucfirst($type), 'biblio_roles');
+      $term = taxonomy_get_term_by_name(ucfirst($role), 'biblio_roles');
       $term = reset($term);
 
       $collection_wrapper->biblio_contributor_role->set($term);
@@ -138,8 +138,16 @@ class BiblioStyleEndNote extends BiblioStyleBase {
 
     foreach ($this->getMapping() as $tag => $tag_info) {
       $method = $tag_info['render_method'];
+      if ($method == 'renderEntryContributors') {
+        // Skip rendering contributors as we will do it in one step, to prevent
+        // iterating over the same values over and over again.
+        continue;
+      }
       $this->{$method}($output, $wrapper, $tag);
     }
+
+    // Render the contributors.
+    $this->renderEntryContributors($output, $wrapper);
 
     return implode("\r\n", $output);
 
@@ -236,13 +244,13 @@ class BiblioStyleEndNote extends BiblioStyleBase {
     $output[] = "{$tag} " . $value;
   }
 
-  private function renderEntryKeywords(&$output = array(), EntityMetadataWrapper $wrapper, $tag) {
+  public function renderEntryKeywords(&$output = array(), EntityMetadataWrapper $wrapper, $tag) {
     foreach ($wrapper->biblio_keywords as $sub_wrapper) {
       $output[] = "%K " . $sub_wrapper->label();
     }
   }
 
-  private function renderEntryFile(&$output = array(), EntityMetadataWrapper $wrapper, $tag) {
+  public function renderEntryFile(&$output = array(), EntityMetadataWrapper $wrapper, $tag) {
     if (!$file = $wrapper->biblio_pdf->value()) {
       return;
     }
@@ -250,9 +258,31 @@ class BiblioStyleEndNote extends BiblioStyleBase {
     $output[] = "%> " . file_create_url($file['uri']);
   }
 
-  private function renderEntryContributors(&$output = array(), EntityMetadataWrapper $wrapper, $tag) {
-  }
+  public function renderEntryContributors(&$output = array(), EntityMetadataWrapper $wrapper) {
+    if (!$values = $wrapper->contributor_field_collection->value()) {
+      return;
+    }
+    $map = array();
 
+    // Normalize map, to get array keyed by Biblio role and the EndNote tag as
+    // the value.
+    foreach ($this->getMapping() as $tag => $tag_info) {
+      if ($tag_info['render_method'] != 'renderEntryContributors') {
+        continue;
+      }
+
+      $role = $tag_info['role'];
+      $map[$role] = $tag;
+    }
+
+    foreach ($wrapper->contributor_field_collection as $sub_wrapper) {
+      $role = $sub_wrapper->biblio_contributor_role->label();
+      $contributor = $sub_wrapper->biblio_contributor->value();
+
+      $tag = $map[$role];
+      $output[] = $tag . ' ' . $contributor->name;
+    }
+  }
 
 
   public function getMapping() {
@@ -260,7 +290,7 @@ class BiblioStyleEndNote extends BiblioStyleBase {
       '%A' => array(
         'import_method' => 'importEntryContributors',
         'render_method' => 'renderEntryContributors',
-        'type' => 'Author',
+        'role' => 'Author',
       ),
       '%B' => array('property' => 'biblio_secondary_title'),
       '%C' => array('property' => 'biblio_place_published'),
@@ -268,7 +298,7 @@ class BiblioStyleEndNote extends BiblioStyleBase {
       '%E' => array(
         'import_method' => 'importEntryContributors',
         'render_method' => 'renderEntryContributors',
-        'type' => 'Editor',
+        'role' => 'Editor',
       ),
       '%F' => array('property' => 'biblio_label'),
       '%G' => array('property' => 'language'),
