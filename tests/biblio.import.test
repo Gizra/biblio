@@ -3,12 +3,12 @@
 /**
  * Test BibTeX style plugin.
  */
-class BiblioBibtex extends DrupalWebTestCase {
+class BiblioImportAndRenderTestCase extends DrupalWebTestCase {
 
   public static function getInfo() {
     return array(
-      'name' => 'BibTeX',
-      'description' => 'Test BibTeX style plugin.',
+      'name' => 'Import and render',
+      'description' => 'Test Import and render of different style plugins.',
       'group' => 'Biblio',
     );
   }
@@ -16,47 +16,16 @@ class BiblioBibtex extends DrupalWebTestCase {
   function setUp() {
     parent::setUp('biblio');
 
-    $field_names = array(
-      'biblio_abstract',
-      'biblio_citekey',
-      'biblio_edition',
-      'biblio_first_letter',
-      'biblio_image',
-      'biblio_pages',
-      'biblio_place_published',
-      'biblio_publisher',
-      'biblio_secondary_title',
-      'biblio_status',
-      'biblio_tertiary_title',
-      'biblio_year',
-      // Contributors reference.
-      'contributor_field_collection',
-    );
+    biblio_add_publication_types();
+    biblio_create_fields_by_bundle(array('book'));
 
-    foreach ($field_names as $field_name) {
-      biblio_create_field($field_name, 'biblio', 'book');
-    }
-
-    $field_names = array(
-      'contributor_given',
-      'contributor_family',
-    );
-
-    foreach ($field_names as $field_name) {
-      biblio_create_field($field_name, 'biblio_contributor', 'biblio_contributor');
-      biblio_create_field($field_name, 'biblio_contributor', 'biblio_contributor');
-    }
-
-    biblio_create_field('biblio_contributor_role', 'field_collection_item', 'contributor_field_collection');
-    biblio_create_field('biblio_contributor', 'field_collection_item', 'contributor_field_collection');
+    ctools_include('plugins');
   }
 
   /**
-   * Test Import.
+   * Test BibTex.
    */
-  function testImport() {
-    ctools_include('plugins');
-
+  function testBibTex() {
     $plugin = biblio_get_biblio_style('bibtex');
     $class = ctools_plugin_load_class('biblio', 'biblio_style', 'bibtex', 'class');
 
@@ -88,5 +57,29 @@ class BiblioBibtex extends DrupalWebTestCase {
 
     // We use trim, to remove whitespace.
     $this->assertEqual(trim($output), trim($expected_result), 'Render is equal to the expected result');
+  }
+
+  /**
+   * Test end note tagged.
+   */
+  function testEndNoteTagged() {
+    $plugin = biblio_get_biblio_style('endnote');
+    $class = ctools_plugin_load_class('biblio', 'biblio_style', 'endnote', 'class');
+
+    $biblio_style = new $class($plugin);
+    $data = '
+%0 Book
+%J PS: Political Science and Politics
+%D 2013
+%T Restructuring the Social Sciences: Reflections from Harvard’s Institute for Quantitative Social Science
+%A Gary King
+%X The social sciences are undergoing a dramatic transformation from studying problems to solving them.
+%B PS: Political Science and Politics
+%G eng';
+
+    $biblios = $biblio_style->import($data);
+    $biblio = $biblios[0];
+
+    $this->assertEqual('eng', $biblio->language, 'Language imported properly');
   }
 }

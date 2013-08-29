@@ -199,9 +199,9 @@ class BiblioStyleBibtex extends BiblioStyleBase {
         // Try to extract the given and family name.
         // @todo: Fix this preg_split.
         $sub_name = preg_split("/{|}/i", $name);
-        $values = array('given' =>$sub_name[0]);
+        $values = array('firstname' =>$sub_name[0]);
         if (!empty($sub_name[1])) {
-          $values['family'] = $sub_name[1];
+          $values['lastname'] = $sub_name[1];
         }
 
         $biblio_contributor = biblio_contributor_create($values);
@@ -448,8 +448,8 @@ class BiblioStyleBibtex extends BiblioStyleBase {
         continue;
       }
 
-      $given = $sub_wrapper->biblio_contributor->contributor_given->value();
-      $family = $sub_wrapper->biblio_contributor->contributor_family->value();
+      $given = $sub_wrapper->biblio_contributor->firstname->value();
+      $family = $sub_wrapper->biblio_contributor->lastname->value();
 
       $names[] = $given . '{' . $family . '}';
     }
