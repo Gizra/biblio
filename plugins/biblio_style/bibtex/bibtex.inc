@@ -5,7 +5,7 @@ $plugin = array(
   'description' => t('BibTeX style.'),
   'class' => 'BiblioStyleBibtex',
   // Indicates this style plugin can import entries.
-  'import' => 'TRUE',
+  'import' => TRUE,
   'options' => array(
     'opening_tag' => '{',
     'closing_tag' => '}',
