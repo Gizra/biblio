@@ -33,16 +33,19 @@ class BiblioStyleEndNote extends BiblioStyleBase {
     if ($options['type'] == 'tagged') {
       return $this->importTagged($data, $options);
     }
+    elseif ($options['type'] == 'xml') {
+      return $this->importXML($data, $options);
+    }
   }
 
   /**
    * Import XML.
    */
   public function importXML($data, $options = array()) {
-    if (strpos($data, 'record') === TRUE && strpos($data, 'ref-type') === TRUE) {
+    if (strpos($data, 'record') !== FALSE && strpos($data, 'ref-type') !== FALSE) {
       $format = 'endNote8';
     }
-    elseif (strpos($data, 'RECORD') === TRUE && strpos($data, 'REFERENCE_TYPE') === TRUE) {
+    elseif (strpos($data, 'RECORD') !== FALSE && strpos($data, 'REFERENCE_TYPE') !== FALSE) {
       $format = 'endNote7';
     }
 
@@ -150,6 +153,10 @@ class BiblioStyleEndNote extends BiblioStyleBase {
     //    global $this->node, $nids, $this->element, $terms, $batch_proc, $session_id, $this->contributors_type, $this->contrib_count, $this->dates, $this->urls, $this->keyword_count, $this->font_attr;
     switch ($name) {
       case 'record' :
+
+        // @todo.
+        break;
+
         $this->element = $this->contributors_type = $this->contrib_count = $this->dates = $this->urls = '';
         $this->node->biblio_xml_md5 = md5(serialize($this->node));
         if ( !($dup = $this->biblio_xml_check_md5($this->node->biblio_xml_md5)) ) {
@@ -418,6 +425,10 @@ class BiblioStyleEndNote extends BiblioStyleBase {
       }
     }
   }
+
+  public function field_map() {}
+
+  public function type_map() {}
 
 
   /**

@@ -61,11 +61,6 @@ class BiblioImportAndRenderTestCase extends DrupalWebTestCase {
    * Test end note tagged.
    */
   function testEndNoteTagged() {
-    ctools_include('plugins');
-    $plugin = biblio_get_biblio_style('endnote');
-    $class = ctools_plugin_load_class('biblio', 'biblio_style', 'endnote', 'class');
-
-    $biblio_style = new $class($plugin);
     $data = '
 %0 Book
 %A Gary King
@@ -74,6 +69,12 @@ class BiblioImportAndRenderTestCase extends DrupalWebTestCase {
 %G eng
 %T Restructuring the Social Sciences: Reflections from Harvard’s Institute for Quantitative Social Science
 %X The social sciences are undergoing a dramatic transformation from studying problems to solving them.';
+
+    ctools_include('plugins');
+    $plugin = biblio_get_biblio_style('endnote');
+    $class = ctools_plugin_load_class('biblio', 'biblio_style', 'endnote', 'class');
+
+    $biblio_style = new $class($plugin);
 
     $biblios = $biblio_style->import($data);
     $biblio = $biblios[0];
