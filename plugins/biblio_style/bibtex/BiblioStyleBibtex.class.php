@@ -103,6 +103,8 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     $key = $map[$tag]['property'];
 
     if (strtolower($entry[$tag]) == 'in press') {
+      // Biblio is in press, set the Biblio's status to be "In Press" and leave
+      // the year empty.
       $wrapper->biblio_status->set('in_press');
       return;
     }
