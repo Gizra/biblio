@@ -2192,6 +2192,43 @@ function biblio_biblio_fields_info() {
     ),
   );
 
+  // Language field.
+  $items['biblio_language'] = array(
+    'field' => array(
+      'cardinality' => '1',
+      'field_name' => 'biblio_language',
+      'module' => 'text',
+      'settings' => array(
+        'max_length' => '255',
+      ),
+      'type' => 'text',
+    ),
+    'instance' => array(
+      'label' => 'Language',
+      'settings' => array(
+        'text_processing' => '0',
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'text',
+        'settings' => array(
+          'size' => '60',
+        ),
+        'type' => 'text_textfield',
+        'weight' => '-3',
+      ),
+    ),
+    'bundles_info' => array(
+      'audiovisual' => array(),
+      'book' => array(),
+      'book_chapter' => array(),
+      'bill' => array(),
+      'case' => array(),
+      'classical' => array(),
+    ),
+  );
+
   return $items;
 }
 
