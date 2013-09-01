@@ -70,7 +70,7 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
    * @return
    *  MD5 string that represents the given biblio.
    */
-  public static function generateBiblioMd5($biblio) {
+  public static function generateBiblioMd5(Biblio $biblio) {
     $clone = clone $biblio;
 
     // Remove unique or temporary data.
