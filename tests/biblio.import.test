@@ -55,6 +55,22 @@ class BiblioImportAndRenderTestCase extends DrupalWebTestCase {
 
     // We use trim, to remove whitespace.
     $this->assertEqual(trim($output), trim($expected_result), 'BibTex render is equal to the expected result');
+
+    // Verify the biblio did not import on the second time.
+    $biblio_style = new $class($plugin);
+    $data = '
+@Book{abramowitz+stegun,
+  author    = "Milton {Abramowitz} and Irene A. {Stegun}",
+  title     = "Handbook of Mathematical Functions with Formulas, Graphs, and Mathematical Tables",
+  publisher = "Dover",
+  year      =  1964,
+  address   = "New York",
+  edition   = "ninth Dover printing, tenth GPO printing"
+}';
+
+    $biblios = $biblio_style->import($data);
+    // This part is failing.
+    $this->assertTrue(empty($biblios), 'The import did not inserted twice.');
   }
 
   /**
