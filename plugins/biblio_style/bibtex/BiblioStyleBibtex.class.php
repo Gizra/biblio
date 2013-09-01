@@ -46,52 +46,19 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
       $this->importEntryContributors($wrapper, $entry);
 
-      // @todo: Check if the Biblio doesn't already exist.
-      // Check if this is a unique Biblio.
       if (empty($options['allow_duplicate'])) {
-        //$this->isDuplicate($biblio);
+        // Check if this is a unique Biblio.
+        if ($duplicate = $this->isDuplicate($biblio)) {
+          // Not unique, populate wrapper with existing biblio.
+          $wrapper = entity_metadata_wrapper('biblio', $duplicate);
+        }
+        else {
+          // Unique, save biblio.
+          $wrapper->save();
+        }
       }
-
-      $wrapper->save();
 
       $biblios[] = $wrapper->value();
-
-      /*
-      $node = new stdClass();
-      $node->biblio_contributors = array();
-      switch ($entry['bibtexEntryType']) {
-        case 'mastersthesis':
-          $node->biblio_type_of_work = 'masters';
-          break;
-        case 'phdthesis':
-          $node->biblio_type_of_work = 'phd';
-          break;
-      }
-
-      if (!empty($entry['keywords'])) {
-        if (strpos($entry['keywords'], ';')) {
-          $entry['keywords'] = str_replace(';', ',', $entry['keywords']);
-        }
-        $node->biblio_keywords = explode(',', $entry['keywords']);
-      }
-
-      $node->biblio_bibtex_md5      = md5(serialize($node));
-      $node->biblio_import_type     = 'bibtex';
-
-      if (!($dup = biblio_bibtex_check_md5($node->biblio_bibtex_md5))) {
-        if ($save) {
-          biblio_save_node($node, $terms, $batch, $session_id, $save);
-          $nids[] = (!empty($node->nid))? $node->nid : NULL;
-        }
-        else { // return the whole node if we are not saveing to the DB (used for the paste function on the input form)
-          $nids[] = $node;
-        }
-      }
-      else {
-        $dups[] = $dup;
-      }
-
-      */
     }
     return $biblios;
   }
