@@ -35,6 +35,45 @@ class BiblioStyleEndNote extends BiblioStyleBase {
     }
   }
 
+  /**
+   * Import XML.
+   */
+  public function importXML($data, $options = array()) {
+    if (strpos($data, 'record') === TRUE && strpos($data, 'ref-type') === TRUE) {
+      $format = 'endnote8';
+    }
+    elseif (strpos($data, 'RECORD') === TRUE && strpos($data, 'REFERENCE_TYPE') === TRUE) {
+      $format = 'endnote7';
+    }
+
+    if (empty($format)) {
+      return;
+    }
+
+    $data = str_replace("\r\n", "\n", $data);
+
+    $parser = drupal_xml_parser_create($data);
+    xml_parser_set_option($parser, XML_OPTION_CASE_FOLDING, FALSE);
+    xml_parser_set_option($parser, XML_OPTION_SKIP_WHITE, TRUE);
+    xml_set_object($parser, $this);
+    xml_set_element_handler($parser, $format . '_startElement', $format . '_endElement');
+    xml_set_character_data_handler($parser, $format . '_characterData');
+
+    if (!xml_parse($parser, $data)) {
+      $params = array(
+        '@error' => xml_error_string(xml_get_error_code($parser)),
+        '@line' => xml_get_current_line_number($parser),
+      );
+      drupal_set_message(t('XML error: @error at line @line'), $params);
+    }
+    
+    xml_parser_free($parser);
+  }
+
+
+  /**
+   * Import tagged.
+   */
   public function importTagged($data, $options = array()) {
     $biblios = array();
 
@@ -122,10 +161,27 @@ class BiblioStyleEndNote extends BiblioStyleBase {
     }
   }
 
+
   /**
    * @inheritdoc
    */
   public function render($options = array(), $langcode = NULL) {
+    $options += array(
+      'type' => 'tagged',
+    );
+    if ($options['type'] == 'tagged') {
+      return $this->renderTagged($options, $langcode);
+    }
+    elseif ($options['type'] == 'xml') {
+      // @todo:
+      // return $this->renderXML($options, $langcode);
+    }
+  }
+
+  /**
+   * Render tagged.
+   */
+  public function renderTagged($options = array(), $langcode = NULL) {
     $output = array();
 
     // We clone the biblio, as we might change the values.
@@ -153,8 +209,6 @@ class BiblioStyleEndNote extends BiblioStyleBase {
       // Render the contributors.
       $this->{$method}($output, $wrapper);
     }
-
-
 
     return implode("\n", $output);
   }
