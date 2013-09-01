@@ -21,24 +21,7 @@ class Biblio extends Entity {
       $wrapper->biblio_year->set(9999);
     }
 
-    // The md5 is used later to determine whether or not two Biblio objects
-    // are the same and prevent duplications. In order for that to work, we
-    // must first remove the unique parameters from the Biblio object.
-    $clone = clone $this;
-    unset($clone->bid);
-    unset($clone->cache);
-    unset($clone->cache_id);
-    unset($clone->changed);
-    unset($clone->created);
-    unset($clone->is_new);
-    unset($clone->md5);
-    unset($clone->_skip_cache);
-
-    $md5 = md5(serialize($clone));
-
-    dpm($md5, __METHOD__);
-
-    $this->md5 = $md5;
+    $this->md5 = biblio_generate_biblio_md5($this);
 
     if (empty($this->_skip_cache)) {
       $this->cache = '';

@@ -49,7 +49,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
       // @todo: Check if the Biblio doesn't already exist.
       // Check if this is a unique Biblio.
       if (empty($options['allow_duplicate'])) {
-        $this->isDuplicate($biblio);
+        //$this->isDuplicate($biblio);
       }
 
       $wrapper->save();
@@ -202,7 +202,9 @@ class BiblioStyleBibtex extends BiblioStyleBase {
         }
 
         $biblio_contributor = biblio_contributor_create($values);
-        $biblio_contributor->save();
+        // Get existing Biblio Contributor object, save it if it doesn't exist.
+        $this->getBiblioContributor($biblio_contributor);
+
         // Create contributors field collections.
         $field_collection = entity_create('field_collection_item', array('field_name' => 'contributor_field_collection'));
         $field_collection->setHostEntity('biblio', $biblio);
