@@ -160,4 +160,22 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
     $biblio_contributor->md5 = $md5;
     $biblio_contributor->save();
   }
+
+  public function renderEntryFiles(EntityMetadataWrapper $wrapper, $property_name = 'biblio_pdf') {
+    if (!user_access('view uploaded files')) {
+      return;
+    }
+
+    if (!$files =  $wrapper->{$property_name}->value()) {
+      return;
+    }
+
+    $url = array();
+    $files = !isset($files['fid']) ? $files : array($files);
+    foreach ($files as $file) {
+      $url[] = file_create_url($file['uri']);
+    }
+
+    return $url;
+  }
 }

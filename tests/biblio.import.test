@@ -1,0 +1,92 @@
+<?php
+
+/**
+ * Test BibTeX style plugin.
+ */
+class BiblioImportAndRenderTestCase extends DrupalWebTestCase {
+
+  public static function getInfo() {
+    return array(
+      'name' => 'Import and render',
+      'description' => 'Test Import and render of different style plugins.',
+      'group' => 'Biblio',
+    );
+  }
+
+  function setUp() {
+    parent::setUp('biblio');
+
+    biblio_add_publication_types();
+    biblio_create_fields_by_bundle(array('book'));
+  }
+
+  /**
+   * Test BibTex.
+   */
+  function testBibTex() {
+    ctools_include('plugins');
+    $plugin = biblio_get_biblio_style('bibtex');
+    $class = ctools_plugin_load_class('biblio', 'biblio_style', 'bibtex', 'class');
+
+    $biblio_style = new $class($plugin);
+    $data = '
+@Book{abramowitz+stegun,
+  author    = "Milton {Abramowitz} and Irene A. {Stegun}",
+  title     = "Handbook of Mathematical Functions with Formulas, Graphs, and Mathematical Tables",
+  publisher = "Dover",
+  year      =  1964,
+  address   = "New York",
+  edition   = "ninth Dover printing, tenth GPO printing"
+}';
+
+    $biblios = $biblio_style->import($data);
+    $biblio = $biblios[0];
+    $output = $biblio->getText('bibtex', array('opening_tag' => '"', 'closing_tag' => '"'));
+
+    $expected_result = '
+@Book{abramowitz+stegun,
+	title = "Handbook of Mathematical Functions with Formulas, Graphs, and Mathematical Tables",
+	year = "1964",
+	publisher = "Dover",
+	edition = "ninth Dover printing, tenth GPO printing",
+	address = "New York",
+	author = "Milton {Abramowitz} and  Irene A. {Stegun}"
+}';
+
+    // We use trim, to remove whitespace.
+    $this->assertEqual(trim($output), trim($expected_result), 'BibTex render is equal to the expected result');
+  }
+
+  /**
+   * Test end note tagged.
+   */
+  function testEndNoteTagged() {
+    ctools_include('plugins');
+    $plugin = biblio_get_biblio_style('endnote');
+    $class = ctools_plugin_load_class('biblio', 'biblio_style', 'endnote', 'class');
+
+    $biblio_style = new $class($plugin);
+    $data = '
+%0 Book
+%A Gary King
+%B PS: Political Science and Politics
+%D 2013
+%G eng
+%T Restructuring the Social Sciences: Reflections from Harvard’s Institute for Quantitative Social Science
+%X The social sciences are undergoing a dramatic transformation from studying problems to solving them.';
+
+    $biblios = $biblio_style->import($data);
+    $biblio = $biblios[0];
+    $output = $biblio->getText('endnote', array('type' => 'tagged'));
+
+    $expected_result = '%0 Book
+%D 2013
+%G eng
+%T Restructuring the Social Sciences: Reflections from Harvard’s Institute for Quantitative Social Science
+%X The social sciences are undergoing a dramatic transformation from studying problems to solving them.
+%A Gary King
+%B PS: Political Science and Politics';
+
+    $this->assertEqual(trim($output), trim($expected_result), 'EndNote render is equal to the expected result');
+  }
+}

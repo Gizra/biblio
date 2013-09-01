@@ -49,4 +49,4 @@ files[] = includes/migrate/7300/biblio_entries.migrate.inc
 files[] = includes/migrate/7300/biblio_types.migrate.inc
 
 ; Tests
-files[] = tests/biblio.bibtex.test
+files[] = tests/biblio.import.test

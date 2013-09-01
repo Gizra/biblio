@@ -196,9 +196,9 @@ class BiblioStyleBibtex extends BiblioStyleBase {
         // Try to extract the given and family name.
         // @todo: Fix this preg_split.
         $sub_name = preg_split("/{|}/i", $name);
-        $values = array('given' =>$sub_name[0]);
+        $values = array('firstname' =>$sub_name[0]);
         if (!empty($sub_name[1])) {
-          $values['family'] = $sub_name[1];
+          $values['lastname'] = $sub_name[1];
         }
 
         $biblio_contributor = biblio_contributor_create($values);
@@ -387,22 +387,10 @@ class BiblioStyleBibtex extends BiblioStyleBase {
    * @param $wrapper
    * @param $property_name
    */
-  private function formatEntryFiles($wrapper, $property_name) {
-    if (!user_access('view uploaded files')) {
-      return;
+  public function formatEntryFiles($wrapper, $property_name) {
+    if ($url = parent::renderEntryFiles($wrapper, $property_name)) {
+      return implode(' , ', $url);
     }
-
-    if (!$files =  $wrapper->{$property_name}->value()) {
-      return;
-    }
-
-    $url = array();
-    $files = !isset($files['fid']) ? $files : array($files);
-    foreach ($files as $file) {
-      $url[] = file_create_url($file['uri']);
-    }
-
-    return implode(' , ', $url);
   }
 
   /**
@@ -444,8 +432,8 @@ class BiblioStyleBibtex extends BiblioStyleBase {
         continue;
       }
 
-      $given = $sub_wrapper->biblio_contributor->contributor_given->value();
-      $family = $sub_wrapper->biblio_contributor->contributor_family->value();
+      $given = $sub_wrapper->biblio_contributor->firstname->value();
+      $family = $sub_wrapper->biblio_contributor->lastname->value();
 
       $names[] = $given . '{' . $family . '}';
     }
@@ -488,7 +476,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
         'keywords' => array('property' => 'biblio_keywords', 'method' => 'formatEntryTaxonomyTerms'),
 
         // @todo: Use bilbio_file instead.
-        'attachments' => array('property' => 'biblio_image', 'method' => 'formatEntryFiles'),
+        'attachments' => array('property' => 'biblio_image', 'method' => 'renderEntryFiles'),
 
         'author' => array(
           'property' => 'contributor_field_collection',
