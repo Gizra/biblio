@@ -40,10 +40,10 @@ class BiblioStyleEndNote extends BiblioStyleBase {
    */
   public function importXML($data, $options = array()) {
     if (strpos($data, 'record') === TRUE && strpos($data, 'ref-type') === TRUE) {
-      $format = 'endnote8';
+      $format = 'endNote8';
     }
     elseif (strpos($data, 'RECORD') === TRUE && strpos($data, 'REFERENCE_TYPE') === TRUE) {
-      $format = 'endnote7';
+      $format = 'endNote7';
     }
 
     if (empty($format)) {
@@ -56,8 +56,8 @@ class BiblioStyleEndNote extends BiblioStyleBase {
     xml_parser_set_option($parser, XML_OPTION_CASE_FOLDING, FALSE);
     xml_parser_set_option($parser, XML_OPTION_SKIP_WHITE, TRUE);
     xml_set_object($parser, $this);
-    xml_set_element_handler($parser, $format . '_startElement', $format . '_endElement');
-    xml_set_character_data_handler($parser, $format . '_characterData');
+    xml_set_element_handler($parser, $format . 'StartElement', $format . 'EndElement');
+    xml_set_character_data_handler($parser, $format . 'CharacterData');
 
     if (!xml_parse($parser, $data)) {
       $params = array(
@@ -66,8 +66,350 @@ class BiblioStyleEndNote extends BiblioStyleBase {
       );
       drupal_set_message(t('XML error: @error at line @line'), $params);
     }
-    
+
     xml_parser_free($parser);
+  }
+
+
+  function endNote8StartElement($parser, $name, $attrs) {
+    switch ($name) {
+      case 'record' :
+        $this->node = new stdClass();
+        $this->node->biblio_contributors = array();
+        break;
+      case 'style' :
+        $this->font_attr = explode(' ', $attrs['face']);
+        foreach ($this->font_attr as $fatt) {
+          switch ($fatt) {
+            case 'normal':
+              break;
+            case 'bold':
+              $this->endNote8CharacterData(NULL, '<b>');
+              break;
+            case 'italic':
+              $this->endNote8CharacterData(NULL, '<i>');
+              break;
+            case 'underline':
+              $this->endNote8CharacterData(NULL, '<u>');
+              break;
+            case 'superscript':
+              $this->endNote8CharacterData(NULL, '<sup>');
+              break;
+            case 'subscript':
+              $this->endNote8CharacterData(NULL, '<sub>');
+              break;
+          }
+        }
+        break;
+      case 'keywords' :
+        $this->keyword_count = 0;
+        break;
+      case 'authors' :
+      case 'secondary-authors' :
+      case 'tertiary-authors' :
+      case 'subsidiary-authors' :
+      case 'translated-authors' :
+        $this->contributors_type = $name;
+        $this->contributors = array();
+        $this->contrib_count = 0;
+        break;
+      case 'author' :
+        $this->contributors[$this->contrib_count]['name'] = '';
+        $this->element = $name;
+        break;
+      case 'year' :
+      case 'pub-dates' :
+      case 'copyright-dates' :
+        $this->dates = $name;
+        break;
+      case 'web-urls' :
+      case 'pdf-urls' :
+      case 'text-urls' :
+      case 'related-urls' :
+      case 'image-urls' :
+        $this->urls = $name;
+        break;
+      case 'keyword':
+        $this->node->biblio_keywords[$this->keyword_count] = '';
+        $this->element = $name;
+        break;
+
+      default :
+        $this->element = $name;
+    }
+  }
+
+  function endNote8EndElement($parser, $name) {
+    //    global $this->node, $nids, $this->element, $terms, $batch_proc, $session_id, $this->contributors_type, $this->contrib_count, $this->dates, $this->urls, $this->keyword_count, $this->font_attr;
+    switch ($name) {
+      case 'record' :
+        $this->element = $this->contributors_type = $this->contrib_count = $this->dates = $this->urls = '';
+        $this->node->biblio_xml_md5 = md5(serialize($this->node));
+        if ( !($dup = $this->biblio_xml_check_md5($this->node->biblio_xml_md5)) ) {
+          biblio_save_node($this->node, $this->terms, $this->batch_proc, $this->session_id);
+          if (!empty($this->node->nid)) $this->nids[] = $this->node->nid;
+        }
+        else {
+          $this->dups[] = $dup;
+        }
+        break;
+      case 'authors' :
+      case 'secondary-authors' :
+      case 'tertiary-authors' :
+      case 'subsidiary-authors' :
+      case 'translated-authors' :
+        $this->contributors_type = '';
+        foreach ($this->contributors as $contributor) {
+          $this->node->biblio_contributors[] = $contributor;
+        }
+        break;
+      case 'author' :
+        switch ($this->contributors_type) {
+          case 'authors' :
+            $this->contributors[$this->contrib_count]['auth_category'] = 1;
+            $this->contributors[$this->contrib_count]['auth_type'] =  1;
+            break;
+          case 'secondary-authors' :
+            $this->contributors[$this->contrib_count]['auth_category'] = 2;
+            $this->contributors[$this->contrib_count]['auth_type'] = 2;
+            break;
+          case 'tertiary-authors' :
+            $this->contributors[$this->contrib_count]['auth_category'] = 3;
+            $this->contributors[$this->contrib_count]['auth_type'] = 3;
+            break;
+          case 'subsidiary-authors' :
+            $this->contributors[$this->contrib_count]['auth_category'] = 4;
+            $this->contributors[$this->contrib_count]['auth_type'] = 4;
+            break;
+          case 'translated-authors' :
+            $this->contributors[$this->contrib_count]['auth_category'] = 5;
+            $this->contributors[$this->contrib_count]['auth_type'] = 5;
+            break;
+        }
+        $this->contrib_count++;
+        break;
+      case 'keyword' :
+        $this->keyword_count++;
+        break;
+      case 'year' :
+      case 'pub-dates' :
+      case 'copyright-dates' :
+        $this->dates = '';
+        break;
+      case 'web-urls' :
+      case 'pdf-urls' :
+      case 'text-urls' :
+      case 'related-urls' :
+      case 'image-urls' :
+        $this->urls = '';
+        break;
+      case 'ref-type':
+        $this->node->biblio_type = $this->type_map($this->node->biblio_type);
+        $this->element = '';
+        break;
+      case 'style' :
+        foreach ($this->font_attr as $fatt) {
+          switch ($fatt) {
+            case 'normal':
+              break;
+            case 'bold':
+              $this->endNote8CharacterData(NULL, '</b>');
+              break;
+            case 'italic':
+              $this->endNote8CharacterData(NULL, '</i>');
+              break;
+            case 'underline':
+              $this->endNote8CharacterData(NULL, '</u>');
+              break;
+            case 'superscript':
+              $this->endNote8CharacterData(NULL, '</sup>');
+              break;
+            case 'subscript':
+              $this->endNote8CharacterData(NULL, '</sub>');
+              break;
+          }
+        }
+        $this->font_attr = array();
+        break;
+      default :
+        $this->element = '';
+    }
+
+
+  }
+
+  function endNote8CharacterData($parser, $data) {
+    // first replace any carriage returns with html line breaks
+    $data = str_ireplace("\n", "<br/>", $data);
+    if (trim(htmlspecialchars_decode($data))) {
+      switch ($this->element) {
+        //Author information
+        case 'author' :
+          $this->contributors[$this->contrib_count]['name'] .= $data;
+          break;
+        case 'keyword' :
+          $this->node->biblio_keywords[$this->keyword_count] .= $data;
+          break;
+        case 'dates' :
+          switch ($this->dates) {
+            case 'year' :
+              $this->node->biblio_year .= $data;
+              break;
+          }
+          break;
+        case 'date' :
+          switch ($this->dates) {
+            case 'pub-dates' :
+              $this->node->biblio_date .= $data;
+              break;
+            case 'copyright-dates' :
+              break;
+          }
+          break;
+        case 'urls' :
+        case 'url' :
+          switch ($this->urls) {
+            case 'web-urls' :
+              $this->node->biblio_url .= $data;
+              break;
+            case 'pdf-urls' :
+            case 'text-urls' :
+            case 'image-urls' :
+              break;
+            case 'related-urls' :
+          }
+          break;
+        case 'title':
+          $this->node->title .= $data;
+          break;
+        default:
+          if ($field = $this->field_map(trim($this->element))) {
+            $this->node->$field .= $data;
+          }
+          else {
+            if (!in_array($this->element, $this->unmapped)) {
+              $this->unmapped[] = $this->element;
+            }
+          }
+      }
+    }
+  }
+
+  function endNote7StartElement($parser, $name, $attrs) {
+    switch ($name) {
+      case 'RECORD' :
+        $this->node = new stdClass();
+        $this->node->biblio_contributors = array();
+        $this->node->biblio_type = 102; // we set 102 here because the xml parser won't
+        // process a value of 0 (ZERO) which is the
+        // ref-type 102. if there is a non-zero value it will be overwritten
+        $this->element = '';
+        break;
+      case 'AUTHORS':
+      case 'SECONDARY_AUTHORS':
+      case 'TERTIARY_AUTHORS':
+      case 'SUBSIDIARY_AUTHORS':
+        $this->contrib_count = 0;
+        $this->contributors = array();
+        break;
+      case 'AUTHOR':
+      case 'SECONDARY_AUTHOR':
+      case 'TERTIARY_AUTHOR':
+      case 'SUBSIDIARY_AUTHOR':
+        $this->contributors[$this->contrib_count]['name'] = '';
+        $this->element = $name;
+        break;
+      case 'KEYWORDS':
+        $this->keyword_count = 0;
+        break;
+      case 'KEYWORD':
+        $this->node->biblio_keywords[$this->keyword_count] = '';
+        $this->element = $name;
+        break;
+      default:
+        $this->element = $name;
+    }
+  }
+
+  function endNote7EndElement($parser, $name) {
+    switch ($name) {
+      case 'RECORD' :
+        $this->node->biblio_xml_md5 = md5(serialize($this->node));
+        if ( !($dup = $this->biblio_xml_check_md5($this->node->biblio_xml_md5)) ) {
+          biblio_save_node($this->node, $this->terms, $this->batch_proc, $this->session_id);
+          if (!empty($this->node->nid)) $this->nids[] = $this->node->nid;
+        }
+        else {
+          $this->dups[] = $dup;
+        }
+        break;
+      case 'AUTHORS':
+      case 'SECONDARY_AUTHORS':
+      case 'TERTIARY_AUTHORS':
+      case 'SUBSIDIARY_AUTHORS':
+        $this->contributors_type = '';
+        foreach ($this->contributors as $contributor) {
+          $this->node->biblio_contributors[] = $contributor;
+        }
+        break;
+      case 'AUTHOR':
+        $this->contributors[$this->contrib_count]['auth_category'] = 1;
+        $this->contributors[$this->contrib_count]['auth_type'] = 1;
+        $this->contrib_count++;
+        break;
+      case 'SECONDARY_AUTHOR':
+        $this->contributors[$this->contrib_count]['auth_category'] = 2;
+        $this->contributors[$this->contrib_count]['auth_type'] = 2;
+        $this->contrib_count++;
+        break;
+      case 'TERTIARY_AUTHOR':
+        $this->contributors[$this->contrib_count]['auth_category'] = 3;
+        $this->contributors[$this->contrib_count]['auth_type'] = 3;
+        $this->contrib_count++;
+        break;
+      case 'SUBSIDIARY_AUTHOR':
+        $this->contributors[$this->contrib_count]['auth_category'] = 4;
+        $this->contributors[$this->contrib_count]['auth_type'] = 4;
+        $this->contrib_count++;
+        break;
+      case 'KEYWORD':
+        $this->keyword_count++;
+        break;
+      default:
+
+    }
+    $this->element = '';
+  }
+
+  function endNote7CharacterData($parser, $data) {
+    if (trim($data)) {
+      switch ($this->element) {
+        case 'REFERENCE_TYPE':
+          $this->node->biblio_type = $this->type_map($data);
+          break;
+        case 'AUTHOR':
+        case 'SECONDARY_AUTHOR':
+        case 'TERTIARY_AUTHOR':
+        case 'SUBSIDIARY_AUTHOR':
+          $this->contributors[$this->contrib_count]['name'] .= $data;
+          break;
+        case 'KEYWORD':
+          $this->node->biblio_keywords[$this->keyword_count] .= $data;
+          break;
+        case 'TITLE':
+          $this->node->title .= $data;
+          break;
+        default:
+          if ($field = $this->field_map(trim($this->element))) {
+            $this->node->$field .= $data;
+          }
+          else {
+            if (!in_array($this->element, $this->unmapped)) {
+              $this->unmapped[] = $this->element;
+            }
+          }
+      }
+    }
   }
 
 
