@@ -77,8 +77,8 @@ class BiblioStyleEndNote extends BiblioStyleBase {
   function endNote8StartElement($parser, $name, $attrs) {
     switch ($name) {
       case 'record' :
-        $this->node = new stdClass();
-        $this->node->biblio_contributors = array();
+        $this->biblio = new stdClass();
+        $this->biblio->biblio_contributors = array();
         break;
 
       case 'style' :
@@ -140,7 +140,7 @@ class BiblioStyleEndNote extends BiblioStyleBase {
         break;
 
       case 'keyword':
-        $this->node->biblio_keywords[$this->keyword_count] = '';
+        $this->biblio->biblio_keywords[$this->keyword_count] = '';
         $this->element = $name;
         break;
 
@@ -150,18 +150,19 @@ class BiblioStyleEndNote extends BiblioStyleBase {
   }
 
   function endNote8EndElement($parser, $name) {
-    //    global $this->node, $nids, $this->element, $terms, $batch_proc, $session_id, $this->contributors_type, $this->contrib_count, $this->dates, $this->urls, $this->keyword_count, $this->font_attr;
+    //    global $this->biblio, $nids, $this->element, $terms, $batch_proc, $session_id, $this->contributors_type, $this->contrib_count, $this->dates, $this->urls, $this->keyword_count, $this->font_attr;
     switch ($name) {
       case 'record' :
+        dpm($this);
 
         // @todo.
         break;
 
         $this->element = $this->contributors_type = $this->contrib_count = $this->dates = $this->urls = '';
-        $this->node->biblio_xml_md5 = md5(serialize($this->node));
-        if ( !($dup = $this->biblio_xml_check_md5($this->node->biblio_xml_md5)) ) {
-          biblio_save_node($this->node, $this->terms, $this->batch_proc, $this->session_id);
-          if (!empty($this->node->nid)) $this->nids[] = $this->node->nid;
+        $this->biblio->biblio_xml_md5 = md5(serialize($this->biblio));
+        if ( !($dup = $this->biblio_xml_check_md5($this->biblio->biblio_xml_md5)) ) {
+          biblio_save_node($this->biblio, $this->terms, $this->batch_proc, $this->session_id);
+          if (!empty($this->biblio->nid)) $this->nids[] = $this->biblio->nid;
         }
         else {
           $this->dups[] = $dup;
@@ -174,7 +175,7 @@ class BiblioStyleEndNote extends BiblioStyleBase {
       case 'translated-authors' :
         $this->contributors_type = '';
         foreach ($this->contributors as $contributor) {
-          $this->node->biblio_contributors[] = $contributor;
+          $this->biblio->biblio_contributors[] = $contributor;
         }
         break;
       case 'author' :
@@ -218,7 +219,7 @@ class BiblioStyleEndNote extends BiblioStyleBase {
         $this->urls = '';
         break;
       case 'ref-type':
-        $this->node->biblio_type = $this->type_map($this->node->biblio_type);
+        $this->biblio->biblio_type = $this->type_map($this->biblio->biblio_type);
         $this->element = '';
         break;
       case 'style' :
@@ -262,19 +263,19 @@ class BiblioStyleEndNote extends BiblioStyleBase {
           $this->contributors[$this->contrib_count]['name'] .= $data;
           break;
         case 'keyword' :
-          $this->node->biblio_keywords[$this->keyword_count] .= $data;
+          $this->biblio->biblio_keywords[$this->keyword_count] .= $data;
           break;
         case 'dates' :
           switch ($this->dates) {
             case 'year' :
-              $this->node->biblio_year .= $data;
+              $this->biblio->biblio_year .= $data;
               break;
           }
           break;
         case 'date' :
           switch ($this->dates) {
             case 'pub-dates' :
-              $this->node->biblio_date .= $data;
+              $this->biblio->biblio_date .= $data;
               break;
             case 'copyright-dates' :
               break;
@@ -284,7 +285,7 @@ class BiblioStyleEndNote extends BiblioStyleBase {
         case 'url' :
           switch ($this->urls) {
             case 'web-urls' :
-              $this->node->biblio_url .= $data;
+              $this->biblio->biblio_url .= $data;
               break;
             case 'pdf-urls' :
             case 'text-urls' :
@@ -294,11 +295,11 @@ class BiblioStyleEndNote extends BiblioStyleBase {
           }
           break;
         case 'title':
-          $this->node->title .= $data;
+          $this->biblio->title .= $data;
           break;
         default:
           if ($field = $this->field_map(trim($this->element))) {
-            $this->node->$field .= $data;
+            $this->biblio->$field .= $data;
           }
           else {
             if (!in_array($this->element, $this->unmapped)) {
@@ -312,9 +313,9 @@ class BiblioStyleEndNote extends BiblioStyleBase {
   function endNote7StartElement($parser, $name, $attrs) {
     switch ($name) {
       case 'RECORD' :
-        $this->node = new stdClass();
-        $this->node->biblio_contributors = array();
-        $this->node->biblio_type = 102; // we set 102 here because the xml parser won't
+        $this->biblio = new stdClass();
+        $this->biblio->biblio_contributors = array();
+        $this->biblio->biblio_type = 102; // we set 102 here because the xml parser won't
         // process a value of 0 (ZERO) which is the
         // ref-type 102. if there is a non-zero value it will be overwritten
         $this->element = '';
@@ -337,7 +338,7 @@ class BiblioStyleEndNote extends BiblioStyleBase {
         $this->keyword_count = 0;
         break;
       case 'KEYWORD':
-        $this->node->biblio_keywords[$this->keyword_count] = '';
+        $this->biblio->biblio_keywords[$this->keyword_count] = '';
         $this->element = $name;
         break;
       default:
@@ -348,10 +349,10 @@ class BiblioStyleEndNote extends BiblioStyleBase {
   function endNote7EndElement($parser, $name) {
     switch ($name) {
       case 'RECORD' :
-        $this->node->biblio_xml_md5 = md5(serialize($this->node));
-        if ( !($dup = $this->biblio_xml_check_md5($this->node->biblio_xml_md5)) ) {
-          biblio_save_node($this->node, $this->terms, $this->batch_proc, $this->session_id);
-          if (!empty($this->node->nid)) $this->nids[] = $this->node->nid;
+        $this->biblio->biblio_xml_md5 = md5(serialize($this->biblio));
+        if ( !($dup = $this->biblio_xml_check_md5($this->biblio->biblio_xml_md5)) ) {
+          biblio_save_node($this->biblio, $this->terms, $this->batch_proc, $this->session_id);
+          if (!empty($this->biblio->nid)) $this->nids[] = $this->biblio->nid;
         }
         else {
           $this->dups[] = $dup;
@@ -363,7 +364,7 @@ class BiblioStyleEndNote extends BiblioStyleBase {
       case 'SUBSIDIARY_AUTHORS':
         $this->contributors_type = '';
         foreach ($this->contributors as $contributor) {
-          $this->node->biblio_contributors[] = $contributor;
+          $this->biblio->biblio_contributors[] = $contributor;
         }
         break;
       case 'AUTHOR':
@@ -399,7 +400,7 @@ class BiblioStyleEndNote extends BiblioStyleBase {
     if (trim($data)) {
       switch ($this->element) {
         case 'REFERENCE_TYPE':
-          $this->node->biblio_type = $this->type_map($data);
+          $this->biblio->biblio_type = $this->type_map($data);
           break;
         case 'AUTHOR':
         case 'SECONDARY_AUTHOR':
@@ -408,14 +409,14 @@ class BiblioStyleEndNote extends BiblioStyleBase {
           $this->contributors[$this->contrib_count]['name'] .= $data;
           break;
         case 'KEYWORD':
-          $this->node->biblio_keywords[$this->keyword_count] .= $data;
+          $this->biblio->biblio_keywords[$this->keyword_count] .= $data;
           break;
         case 'TITLE':
-          $this->node->title .= $data;
+          $this->biblio->title .= $data;
           break;
         default:
           if ($field = $this->field_map(trim($this->element))) {
-            $this->node->$field .= $data;
+            $this->biblio->$field .= $data;
           }
           else {
             if (!in_array($this->element, $this->unmapped)) {
@@ -739,7 +740,5 @@ class BiblioStyleEndNote extends BiblioStyleBase {
     }
 
     return $return;
-
   }
-
 }
