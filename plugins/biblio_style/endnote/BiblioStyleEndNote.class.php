@@ -77,6 +77,7 @@ class BiblioStyleEndNote extends BiblioStyleBase {
         $this->node = new stdClass();
         $this->node->biblio_contributors = array();
         break;
+
       case 'style' :
         $this->font_attr = explode(' ', $attrs['face']);
         foreach ($this->font_attr as $fatt) {
@@ -101,9 +102,11 @@ class BiblioStyleEndNote extends BiblioStyleBase {
           }
         }
         break;
+
       case 'keywords' :
         $this->keyword_count = 0;
         break;
+
       case 'authors' :
       case 'secondary-authors' :
       case 'tertiary-authors' :
@@ -113,15 +116,18 @@ class BiblioStyleEndNote extends BiblioStyleBase {
         $this->contributors = array();
         $this->contrib_count = 0;
         break;
+
       case 'author' :
         $this->contributors[$this->contrib_count]['name'] = '';
         $this->element = $name;
         break;
+
       case 'year' :
       case 'pub-dates' :
       case 'copyright-dates' :
         $this->dates = $name;
         break;
+
       case 'web-urls' :
       case 'pdf-urls' :
       case 'text-urls' :
@@ -129,6 +135,7 @@ class BiblioStyleEndNote extends BiblioStyleBase {
       case 'image-urls' :
         $this->urls = $name;
         break;
+
       case 'keyword':
         $this->node->biblio_keywords[$this->keyword_count] = '';
         $this->element = $name;
