@@ -21,7 +21,7 @@ class Biblio extends Entity {
       $wrapper->biblio_year->set(9999);
     }
 
-    $this->md5 = biblio_generate_biblio_md5($this);
+    $this->md5 = BiblioStyleBase::generateBiblioMd5($this);
 
     if (empty($this->_skip_cache)) {
       $this->cache = '';

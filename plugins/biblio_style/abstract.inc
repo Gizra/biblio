@@ -70,7 +70,7 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
    * @return
    *  MD5 string that represents the given biblio.
    */
-  function biblio_generate_biblio_md5($biblio) {
+  public static function generateBiblioMd5($biblio) {
     $clone = clone $biblio;
 
     // Remove unique or temporary data.
@@ -113,7 +113,7 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
    *  The duplicate Biblio ID, FALSE if not found.
    */
   public function isDuplicate($biblio) {
-    $md5 = biblio_generate_biblio_md5($biblio);
+    $md5 = $this->generateBiblioMd5($biblio);
 
     $query = new EntityFieldQuery();
     $result = $query
@@ -126,11 +126,14 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
   }
 
   /**
-   * Handles getting biblio contributor object; Returns an existing contributor
-   * if the given contributor was found, otherwise creates it.
+   * Returns saved biblio contributor object; Returns an existing contributor
+   * if the given contributor was found, otherwise creates it first.
    *
    * @param $biblio_contributor
    *  Biblio Contributor object.
+   *
+   * @return
+   *  Saved Biblio Contributor object.
    */
   public function getBiblioContributor($biblio_contributor) {
     $clone = clone $biblio_contributor;
@@ -153,12 +156,13 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
 
     if (!empty($result['biblio_contributor'])) {
       // Found similar contributor.
-      $biblio_contributor = biblio_contributor_load(key($result['biblio_contributor']));
-      return;
+      return biblio_contributor_load(key($result['biblio_contributor']));
     }
 
     $biblio_contributor->md5 = $md5;
     $biblio_contributor->save();
+
+    return $biblio_contributor;
   }
 
   public function renderEntryFiles(EntityMetadataWrapper $wrapper, $property_name = 'biblio_pdf') {

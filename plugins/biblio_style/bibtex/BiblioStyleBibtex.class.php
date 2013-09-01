@@ -48,17 +48,16 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
       if (empty($options['allow_duplicate'])) {
         // Check if this is a unique Biblio.
-        if ($duplicate = $this->isDuplicate($biblio)) {
-          // Not unique, populate wrapper with existing biblio.
-          $wrapper = entity_metadata_wrapper('biblio', $duplicate);
+        if ($duplicate_id = $this->isDuplicate($biblio)) {
+          // Not unique, display message to the user.
+          drupal_set_message(t('Biblio "@title" already imported, view it <a href="@url">here</a>.', array('@title' => $biblio->title, '@url' => url('biblio/' . $duplicate_id))));
         }
         else {
-          // Unique, save biblio.
+          // Unique, save biblio and add it to Imported list.
           $wrapper->save();
+          $biblios[] = $wrapper->value();
         }
       }
-
-      $biblios[] = $wrapper->value();
     }
     return $biblios;
   }
@@ -170,7 +169,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
         $biblio_contributor = biblio_contributor_create($values);
         // Get existing Biblio Contributor object, save it if it doesn't exist.
-        $this->getBiblioContributor($biblio_contributor);
+        $biblio_contributor = $this->getBiblioContributor($biblio_contributor);
 
         // Create contributors field collections.
         $field_collection = entity_create('field_collection_item', array('field_name' => 'contributor_field_collection'));
