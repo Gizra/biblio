@@ -34,7 +34,8 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     $biblios = array();
 
     foreach ($entries as $entry) {
-      $biblio = biblio_create(strtolower($entry['bibtexEntryType']));
+      $biblio_type = $this->getBiblioType($entry['bibtexEntryType']);
+      $biblio = biblio_create($biblio_type);
 
       $wrapper = entity_metadata_wrapper('biblio', $biblio);
 
@@ -227,19 +228,19 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     $type = $this->biblio->type;
 
     switch ($type) {
-      case 100:
+      case 'book':
         $series = $wrapper->biblio_secondary_title->value();
         $organization = $wrapper->biblio_publisher->value();
         break;
 
-      case 101:
-      case 103:
+      case 'book_chapter':
+      case 'conference_paper':
         $booktitle = $wrapper->biblio_secondary_title->value();
         $organization = $wrapper->biblio_publisher->value();
         $series = $wrapper->biblio_tertiary_title->value();
         break;
 
-      case 108:
+      case 'thesis':
         $school = $wrapper->biblio_publisher->value();
         $biblio->biblio_publisher->set(NULL);
         if (strpos($wrapper->biblio_type_of_work->value(), 'masters') === TRUE) {
@@ -247,12 +248,12 @@ class BiblioStyleBibtex extends BiblioStyleBase {
         }
         break;
 
-      case 109:
+      case 'report':
         $institution  = $wrapper->biblio_publisher->value();
         $biblio->biblio_publisher->set(NULL);
         break;
 
-      case 102:
+      case 'journal_article':
       default:
         $journal = $wrapper->biblio_secondary_title->value();
         break;
@@ -439,6 +440,27 @@ class BiblioStyleBibtex extends BiblioStyleBase {
   }
 
   /**
+   * Returns Biblio Publication Type based on Publication Type.
+   *
+   * @param $type
+   *  Bibtex Publication Type.
+   *
+   * @return
+   *  Biblio Publication Type if the Publication Type was found in the Mapping,
+   *  otherwise returns the given type in lowercase.
+   */
+  function getBiblioType($type) {
+    $map = $this->getMapping();
+    $type = strtolower($type);
+
+    if (!empty($map['types'][$type])) {
+      return $map['types'][$type];
+    }
+
+    return $type;
+  }
+
+  /**
    * Mapping of Biblio and BibTeX.
    *
    * - type: Array with the Biblio type as key, and the BibTeX type as the
@@ -500,6 +522,22 @@ class BiblioStyleBibtex extends BiblioStyleBase {
           'property' => 'biblio_tertiary_title',
           'import_method' => 'getEntryValueTertiaryTitle',
         ),
+      ),
+      'types' => array(
+        'article' => 'journal_article',
+        'book' => 'book',
+        'booklet' => 'miscellaneous',
+        'conference' => 'conference_paper',
+        'inbook' => 'book_chapter',
+        'incollection' => 'book_chapter',
+        'inproceedings' => 'conference_paper',
+        'manual' => 'miscellaneous',
+        'mastersthesis' => 'thesis',
+        'misc' => 'miscellaneous',
+        'phdthesis' => 'thesis',
+        'proceedings' => 'conference_proceedings',
+        'techreport' => 'report',
+        'unpublished' => 'unpublished',
       ),
     );
 
