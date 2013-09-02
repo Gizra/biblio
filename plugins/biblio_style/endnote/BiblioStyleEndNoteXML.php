@@ -26,6 +26,7 @@ class BiblioStyleEndNoteXML extends BiblioStyleEndNote {
       return;
     }
 
+    // Get the Biblio type from the XML.
     $pattern = $format == 'endNote8' ? '/<ref-type>(.*)<\/ref-type>/' : '/<REFERENCE_TYPE>(.*)<\/REFERENCE_TYPE>/';
 
     preg_match($pattern, $data, $match);
@@ -33,9 +34,10 @@ class BiblioStyleEndNoteXML extends BiblioStyleEndNote {
       return;
     }
 
-    $data = str_replace("\r\n", "\n", $data);
+    $type = $this->getBiblioType($type);
+    $this->biblio = biblio_create($type);
 
-    $this->biblio = biblio_create('book');
+    $data = str_replace("\r\n", "\n", $data);
 
     $parser = drupal_xml_parser_create($data);
     xml_parser_set_option($parser, XML_OPTION_CASE_FOLDING, FALSE);

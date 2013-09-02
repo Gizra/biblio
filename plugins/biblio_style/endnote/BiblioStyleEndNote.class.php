@@ -51,4 +51,16 @@ class BiblioStyleEndNote extends BiblioStyleBase {
     $handler = new $class_name( $this->plugin, $this->biblio);
     return $handler->render($options, $langcode);
   }
+
+  /**
+   * @todo: Make abstract function?
+   */
+  public function getMapping() {
+    return array(
+      'field' => array(),
+      'type' => array(
+
+      ),
+    );
+  }
 }

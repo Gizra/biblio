@@ -97,4 +97,14 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
 
     return $type;
   }
+
+  /**
+   * @todo: Make abstract function?
+   */
+  public function getMapping() {
+    return array(
+      'field' => array(),
+      'type' => array(),
+    );
+  }
 }

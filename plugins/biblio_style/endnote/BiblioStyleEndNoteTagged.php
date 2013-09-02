@@ -34,7 +34,7 @@ class BiblioStyleEndNoteTagged extends BiblioStyleEndNote {
       }
 
       $map = $this->getMapping();
-      if (empty($map[$tag])) {
+      if (empty($map['field'][$tag])) {
         continue;
       }
 
@@ -60,7 +60,7 @@ class BiblioStyleEndNoteTagged extends BiblioStyleEndNote {
   private function importEntryContributors($wrapper, $tag, $value) {
     // The role is in the map.
     $map = $this->getMapping();
-    $role = $map[$tag]['role'];
+    $role = $map['field'][$tag]['role'];
 
     $biblio = $wrapper->value();
 
@@ -113,7 +113,8 @@ class BiblioStyleEndNoteTagged extends BiblioStyleEndNote {
 
     $execute_once = array();
 
-    foreach ($this->getMapping() as $tag => $tag_info) {
+    $map = $this->getMapping();
+    foreach ($map['field'] as $tag => $tag_info) {
       $method = $tag_info['render_method'];
       if ($tag_info['execute_once']) {
         $execute_once[$method] = $method;
@@ -141,7 +142,7 @@ class BiblioStyleEndNoteTagged extends BiblioStyleEndNote {
    */
   public function renderEntryGeneric(&$output = array(), EntityMetadataWrapper $wrapper, $tag) {
     $map = $this->getMapping();
-    if (!$property = $map[$tag]['property']) {
+    if (!$property = $map['field'][$tag]['property']) {
       return;
     }
 
@@ -182,31 +183,33 @@ class BiblioStyleEndNoteTagged extends BiblioStyleEndNote {
     if (!$values = $wrapper->contributor_field_collection->value()) {
       return;
     }
-    $map = array();
+    $contrib_map = array();
 
     // Normalize map, to get array keyed by Biblio role and the EndNote tag as
     // the value.
-    foreach ($this->getMapping() as $tag => $tag_info) {
+    $map = $this->getMapping();
+    foreach ($map['field'] as $tag => $tag_info) {
       if ($tag_info['render_method'] != 'renderEntryContributors') {
         continue;
       }
 
       $role = $tag_info['role'];
-      $map[$role] = $tag;
+      $contrib_map[$role] = $tag;
     }
 
     foreach ($wrapper->contributor_field_collection as $sub_wrapper) {
       $role = $sub_wrapper->biblio_contributor_role->label();
       $contributor = $sub_wrapper->biblio_contributor->value();
 
-      $tag = $map[$role];
+      $tag = $contrib_map[$role];
       $output[] = $tag . ' ' . $contributor->name;
     }
   }
 
 
   public function getMapping() {
-    $return = array(
+    $return = parent::getMapping();
+    $return['field'] = array(
       '%A' => array(
         'import_method' => 'importEntryContributors',
         'render_method' => 'renderEntryContributors',
@@ -289,8 +292,8 @@ class BiblioStyleEndNoteTagged extends BiblioStyleEndNote {
     );
 
     // Assign default import method.
-    foreach ($return as $key => $value) {
-      $return[$key] += array(
+    foreach ($return['field'] as $key => $value) {
+      $return['field'] += array(
         'import_method' => 'importEntryGeneric',
         'render_method' => 'renderEntryGeneric',
         'execute_once' => FALSE,
