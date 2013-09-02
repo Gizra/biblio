@@ -90,7 +90,9 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
       */
     }
-    return $biblios;
+    return array(
+      'new' => $biblios,
+    );
   }
 
 

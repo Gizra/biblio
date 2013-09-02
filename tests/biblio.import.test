@@ -40,7 +40,7 @@ class BiblioImportAndRenderTestCase extends DrupalWebTestCase {
 }';
 
     $biblios = $biblio_style->import($data);
-    $biblio = $biblios[0];
+    $biblio = $biblios['new'][0];
     $output = $biblio->getText('bibtex', array('opening_tag' => '"', 'closing_tag' => '"'));
 
     $expected_result = '
