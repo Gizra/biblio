@@ -2219,14 +2219,6 @@ function biblio_biblio_fields_info() {
         'weight' => '-3',
       ),
     ),
-    'bundles_info' => array(
-      'audiovisual' => array(),
-      'book' => array(),
-      'book_chapter' => array(),
-      'bill' => array(),
-      'case' => array(),
-      'classical' => array(),
-    ),
   );
 
   return $items;
