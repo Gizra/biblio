@@ -71,6 +71,20 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
    *  MD5 string that represents the given biblio.
    */
   public static function generateBiblioMd5(Biblio $biblio) {
+    // Run through field collection items and get the contributor's target IDs.
+    $contributors = array();
+    // Add this point the field collection might not be saved, so we can't use
+    // the wrapper. Instead we iterate over the field collection items, and
+    // get their values.
+    foreach ($biblio->contributor_field_collection[LANGUAGE_NONE] as $item) {
+      $field_collection_item = $item['entity'] ? $item['entity'] : $item['value'];
+      $wrapper = entity_metadata_wrapper('field_collection_item', $field_collection_item);
+      $contributors[] = array(
+        $wrapper->biblio_contributor->getIdentifier(),
+        $wrapper->biblio_contributor_role->getIdentifier(),
+      );
+    }
+
     $clone = clone $biblio;
 
     // Remove unique or temporary data.
@@ -82,16 +96,6 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
     unset($clone->is_new);
     unset($clone->md5);
     unset($clone->_skip_cache);
-
-    // Run through field collection items and get the contributor's target IDs.
-    $contributors = array();
-    $wrapper = entity_metadata_wrapper('biblio', $biblio);
-    foreach ($wrapper->contributor_field_collection as $sub_wrapper) {
-      $contributors[] = array(
-        $sub_wrapper->biblio_contributor->getIdentifier(),
-        $sub_wrapper->biblio_contributor_role->getIdentifier(),
-      );
-    }
 
     // Replace field collection item in clone with the contributor's target IDs.
     $clone->contributor_field_collection = $contributors;
