@@ -7,10 +7,14 @@
 
 class BiblioStyleEndNoteXML extends BiblioStyleEndNote {
 
+  // @todo: Remove.
+  public $biblio = NULL;
+
   /**
    * Import XML.
    */
   public function import($data, $options = array()) {
+    $match = array();
     if (strpos($data, 'record') !== FALSE && strpos($data, 'ref-type') !== FALSE) {
       $format = 'endNote8';
     }
@@ -22,7 +26,16 @@ class BiblioStyleEndNoteXML extends BiblioStyleEndNote {
       return;
     }
 
+    $pattern = $format == 'endNote8' ? '/<ref-type>(.*)<\/ref-type>/' : '/<REFERENCE_TYPE>(.*)<\/REFERENCE_TYPE>/';
+
+    preg_match($pattern, $data, $match);
+    if (!$type = intval($match[1])) {
+      return;
+    }
+
     $data = str_replace("\r\n", "\n", $data);
+
+    $this->biblio = biblio_create('book');
 
     $parser = drupal_xml_parser_create($data);
     xml_parser_set_option($parser, XML_OPTION_CASE_FOLDING, FALSE);
@@ -45,11 +58,6 @@ class BiblioStyleEndNoteXML extends BiblioStyleEndNote {
 
   function endNote8StartElement($parser, $name, $attrs) {
     switch ($name) {
-      case 'record' :
-        $this->biblio = new stdClass();
-        $this->biblio->biblio_contributors = array();
-        break;
-
       case 'style' :
         $this->font_attr = explode(' ', $attrs['face']);
         foreach ($this->font_attr as $fatt) {
@@ -122,7 +130,7 @@ class BiblioStyleEndNoteXML extends BiblioStyleEndNote {
     //    global $this->biblio, $nids, $this->element, $terms, $batch_proc, $session_id, $this->contributors_type, $this->contrib_count, $this->dates, $this->urls, $this->keyword_count, $this->font_attr;
     switch ($name) {
       case 'record' :
-        dpm($this);
+        dpm($this->biblio);
 
         // @todo.
         break;
