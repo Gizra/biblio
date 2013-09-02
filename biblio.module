@@ -488,7 +488,7 @@ function biblio_load_multiple($bids = array(), $reset = FALSE) {
  *   last name, initials, etc.) and the type
  * @param array  $values
  *
- * @return BiblioContributor
+ * @return object
  *  The contributor entity object
  */
 function biblio_contributor_create($values = array()) {
