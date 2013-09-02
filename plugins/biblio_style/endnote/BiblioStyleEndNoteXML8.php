@@ -295,11 +295,47 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
 
   }
 
-
   public function getMapping() {
     $return = array(
       'type' => array(
-        '17' => 'journal_article',
+        2 => 'artwork',
+        3 => 'audio_visual',
+        4 => 'bill',
+        5 => 'book_chapter',
+        6 => 'book',
+        7 => 'case',
+        9 => 'software',
+        10 => 'conference_proceeding',
+        12 => 'web_article',
+        13 => 'generic',
+        14 => 'hearing',
+        17 => 'journal_article',
+        19 => 'magazine_article',
+        20 => 'map',
+        21 => 'broadcast',
+        23 => 'newspaper_article',
+        25 => 'patent',
+        26 => 'personal_communication',
+        27 => 'report',
+        28 => 'edited_book',
+        31 => 'statute',
+        32 => 'thesis',
+        34 => 'unpublished',
+        36 => 'manuscript',
+        37 => 'figure',
+        38 => 'chart',
+        39 => 'equation',
+        43 => 'electronic_article',
+        44 => 'electronic_book',
+        45 => 'online_database',
+        46 => 'government_document',
+        47 => 'conference_paper',
+        48 => 'online_multimedia',
+        49 => 'classical_work',
+        50 => 'legal_ruling',
+        52 => 'dictionary',
+        53 => 'encyclopedia',
+        54 => 'grant',
       ),
     );
 
