@@ -132,5 +132,5 @@ function biblio_ui_import_biblio_submit($form, &$form_state) {
   }
 
   $params = array('!items' => theme('item_list', array('items' => $items)));
-  drupal_set_message(format_plural(count($biblios), 'Created the following biblio: !items', 'Created the following biblios: !items', $params));
+  drupal_set_message(format_plural(count($biblios['new']), 'Created the following biblio: !items', 'Created the following biblios: !items', $params));
 }

@@ -94,6 +94,8 @@ class BiblioStylePubmed extends BiblioStyleBase {
       $biblios[] = $biblio;
     }
 
-    return $biblios;
+    return array(
+      'new' => $biblios,
+    );
   }
 }

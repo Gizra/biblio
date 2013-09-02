@@ -54,6 +54,7 @@ class BiblioImportAndRenderTestCase extends DrupalWebTestCase {
 }';
 
     // We use trim, to remove whitespace.
+    // TODO: FIX.
     $this->assertEqual(trim($output), trim($expected_result), 'BibTex render is equal to the expected result');
   }
 
