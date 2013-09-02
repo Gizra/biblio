@@ -181,7 +181,6 @@ class BiblioStyleBibtex extends BiblioStyleBase {
         $term = reset($term);
 
         $collection_wrapper->biblio_contributor_role->set($term);
-        $field_collection->save(TRUE);
       }
     }
   }
