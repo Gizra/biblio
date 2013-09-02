@@ -34,7 +34,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     $biblios = array();
 
     foreach ($entries as $entry) {
-      $biblio_type = $this->getBiblioType(strtolower($entry['bibtexEntryType']));
+      $biblio_type = $this->getBiblioType($entry['bibtexEntryType']);
       $biblio = biblio_create($biblio_type);
 
       $wrapper = entity_metadata_wrapper('biblio', $biblio);
