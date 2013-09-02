@@ -85,14 +85,12 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
 
     // Run through field collection items and get the contributor's target IDs.
     $contributors = array();
-    if (!empty($clone->contributor_field_collection[LANGUAGE_NONE])) {
-      foreach ($clone->contributor_field_collection[LANGUAGE_NONE] as &$item) {
-        $wrapper = entity_metadata_wrapper('field_collection_item', $item['entity']);
-        $contributors[] = array(
-          $wrapper->biblio_contributor->getIdentifier(),
-          $wrapper->biblio_contributor_role->getIdentifier(),
-        );
-      }
+    $wrapper = entity_metadata_wrapper('biblio', $biblio);
+    foreach ($wrapper->contributor_field_collection as $sub_wrapper) {
+      $contributors[] = array(
+        $sub_wrapper->biblio_contributor->getIdentifier(),
+        $sub_wrapper->biblio_contributor_role->getIdentifier(),
+      );
     }
 
     // Replace field collection item in clone with the contributor's target IDs.
