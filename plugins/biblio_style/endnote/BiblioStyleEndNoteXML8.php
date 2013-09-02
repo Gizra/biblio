@@ -226,8 +226,9 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
   }
 
   function characterData($parser, $data) {
+    // @todo: Do it only for text fields.
     // first replace any carriage returns with html line breaks
-    $data = str_ireplace("\n", "<br/>", $data);
+    $data = str_replace("\n", "<br/>", $data);
     if (trim(htmlspecialchars_decode($data))) {
       switch ($this->element) {
         //Author information
