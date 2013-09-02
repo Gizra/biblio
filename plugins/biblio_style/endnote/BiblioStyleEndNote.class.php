@@ -254,7 +254,7 @@ class BiblioStyleEndNote extends BiblioStyleBase {
         'execute_once' => TRUE,
       ),
       '%F' => array('property' => 'biblio_label'),
-      '%G' => array('property' => 'language'),
+      '%G' => array('property' => 'biblio_language'),
       '%I' => array('property' => 'biblio_publisher'),
       '%J' => array(
         'property' => 'biblio_secondary_title',

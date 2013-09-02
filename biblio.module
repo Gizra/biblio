@@ -270,7 +270,7 @@ function biblio_entity_info() {
     'module' => 'biblio',
     'access callback' => 'biblio_entity_access',
     'views controller class' => 'BiblioViewsController',
-    'metadata controller class' => 'BiblioMetadataController',
+    'metadata controller class' => 'EntityDefaultMetadataController',
   );
 
   // @todo: Biblio 1.x had a biblio type called "Biblio" if type was 0.
@@ -424,12 +424,11 @@ function biblio_entity_access($op, $type = NULL, $account = NULL) {
  * @param array $values
  *  An associative array of any additional values to be set when creating this
  *  entity. These values will be carried throughout the biblio object's life.
- *  Example: $values['language'] => 'en';
+ *  Example: $values['type'] => 'book';
  * @return object
  *  The biblio object, with default values.
  */
 function biblio_create($type, $values = array()) {
-  global $language;
   if (empty($account)) {
     global $user;
     $account = clone $user;
@@ -438,7 +437,6 @@ function biblio_create($type, $values = array()) {
   $values['uid'] = $account->uid;
   $values['title'] = '';
   $values += array(
-    'language' => $language->language,
     'created' => REQUEST_TIME,
     'changed' => REQUEST_TIME,
   );
@@ -490,7 +488,7 @@ function biblio_load_multiple($bids = array(), $reset = FALSE) {
  *   last name, initials, etc.) and the type
  * @param array  $values
  *
- * @return object
+ * @return BiblioContributor
  *  The contributor entity object
  */
 function biblio_contributor_create($values = array()) {

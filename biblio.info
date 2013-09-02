@@ -25,7 +25,6 @@ files[] = includes/biblio.contributor.controller.inc
 files[] = includes/biblio_contributor.inline_entity_form.inc
 
 ; Metadata
-files[] = includes/biblio.metadata.inc
 files[] = includes/biblio_contributor.metadata.inc
 
 ; Views
