@@ -270,7 +270,7 @@ function biblio_entity_info() {
     'module' => 'biblio',
     'access callback' => 'biblio_entity_access',
     'views controller class' => 'BiblioViewsController',
-    'metadata controller class' => 'EntityDefaultMetadataController',
+    'metadata controller class' => 'BiblioMetadataController',
   );
 
   // @todo: Biblio 1.x had a biblio type called "Biblio" if type was 0.
