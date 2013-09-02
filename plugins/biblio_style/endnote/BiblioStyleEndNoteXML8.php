@@ -296,7 +296,11 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
 
 
   public function getMapping() {
-    $return = array();
+    $return = array(
+      'type' => array(
+        '17' => 'journal_article',
+      ),
+    );
 
     return $return;
   }
