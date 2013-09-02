@@ -440,27 +440,6 @@ class BiblioStyleBibtex extends BiblioStyleBase {
   }
 
   /**
-   * Returns Biblio Publication Type based on Publication Type.
-   *
-   * @param $type
-   *  Bibtex Publication Type.
-   *
-   * @return
-   *  Biblio Publication Type if the Publication Type was found in the Mapping,
-   *  otherwise returns the given type in lowercase.
-   */
-  function getBiblioType($type) {
-    $map = $this->getMapping();
-    $type = strtolower($type);
-
-    if (!empty($map['types'][$type])) {
-      return $map['types'][$type];
-    }
-
-    return $type;
-  }
-
-  /**
    * Mapping of Biblio and BibTeX.
    *
    * - type: Array with the Biblio type as key, and the BibTeX type as the
@@ -523,7 +502,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
           'import_method' => 'getEntryValueTertiaryTitle',
         ),
       ),
-      'types' => array(
+      'type' => array(
         'article' => 'journal_article',
         'book' => 'book',
         'booklet' => 'miscellaneous',
