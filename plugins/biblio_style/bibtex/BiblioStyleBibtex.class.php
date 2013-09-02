@@ -453,8 +453,8 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     $map = $this->getMapping();
     $type = strtolower($type);
 
-    if (!empty($map[$type])) {
-      return $map[$type];
+    if (!empty($map['types'][$type])) {
+      return $map['types'][$type];
     }
 
     return $type;
