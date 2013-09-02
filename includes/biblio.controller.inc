@@ -26,7 +26,7 @@ class Biblio extends Entity {
       $wrapper->biblio_year->set(9999);
     }
 
-    if (!$wrapper->biblio_status->value() && $wrapper->biblio_year->value()) {
+    if (empty($this->biblio_status) && !empty($this->biblio_year)) {
       // If Year is populated and Status is not, the status should be Published.
       $wrapper->biblio_status->set('published');
     }
