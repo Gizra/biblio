@@ -2,10 +2,10 @@
 
 /**
  * @file
- * EndNote tagged biblio style.
+ * EndNote XML biblio style.
  */
 
-class BiblioStyleEndNoteXML extends BiblioStyleBase {
+class BiblioStyleEndNoteXML extends BiblioStyleEndNote {
 
   /**
    * Import XML.

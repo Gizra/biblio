@@ -5,7 +5,7 @@
  * EndNote tagged biblio style.
  */
 
-class BiblioStyleEndNoteTagged extends BiblioStyleBase {
+class BiblioStyleEndNoteTagged extends BiblioStyleEndNote {
 
   /**
    * Import tagged.
