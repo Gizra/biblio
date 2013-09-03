@@ -342,7 +342,7 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
         'abstract' => 'biblio_abst_e',
         'access-date' => 'biblio_access_date',
         'accession-num' => 'biblio_accession_number',
-        'alt-title' => 'biblio_alternative_title',
+        'alt-title' => 'biblio_alternate_title',
         'auth-address' => 'biblio_auth_address',
         'call-num' => 'biblio_call_number',
         'custom1' => 'biblio_custom1',
