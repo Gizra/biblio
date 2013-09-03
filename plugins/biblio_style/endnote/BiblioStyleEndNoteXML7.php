@@ -175,7 +175,7 @@ class BiblioStyleEndNoteXML7 extends BiblioStyleEndNoteXML8 {
         26 => 'chart',
         31 => 'generic',
       ),
-      'fields' => array(
+      'field' => array(
         'ABSTRACT' => array('property' => 'biblio_abstract'),
         'ACCESSION_NUMBER' => array('property' => 'biblio_accession_number'),
         'ALTERNATE_TITLE' => array('property' => 'biblio_alternate_title'),
@@ -192,7 +192,6 @@ class BiblioStyleEndNoteXML7 extends BiblioStyleEndNoteXML8 {
         'PAGES' => array('property' => 'biblio_pages'),
         'PLACE_PUBLISHED' => array('property' => 'biblio_place_published'),
         'PUBLISHER' => array('property' => 'biblio_publisher'),
-        'REFERENCE_TYPE' => array('property' => 'type'),
         'REPRINT_EDITION' => array('property' => 'biblio_reprint_edition'),
         'SECONDARY_TITLE' => array('property' => 'biblio_secondary_title'),
         'SECTION' => array('property' => 'biblio_section'),

@@ -29,6 +29,7 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
 
     $type = $this->getBiblioType($type);
     $this->biblio = biblio_create($type);
+    $this->wrapper = entity_metadata_wrapper('biblio', $this->biblio);
 
     $data = str_replace("\r\n", "\n", $data);
 
@@ -226,9 +227,22 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
   }
 
   function characterData($parser, $data) {
-    // @todo: Do it only for text fields.
-    // first replace any carriage returns with html line breaks
-    $data = str_replace("\n", "<br/>", $data);
+    $map = $this->getMapping();
+    if (!empty($map['field'][$this->element]['import_method'])) {
+      $method = $map['field'][$this->element]['import_method'];
+
+      // Prepare the data by striping any tags or white space.
+      $data = explode("\n", $data);
+      foreach ($data as $key => $value) {
+        $data[$key] = trim(htmlspecialchars_decode(strip_tags($value)));
+      }
+      $data = implode('', $data);
+      $this->{$method}($this->wrapper, $this->element, $data);
+    }
+
+    return;
+
+
     if (trim(htmlspecialchars_decode($data))) {
       switch ($this->element) {
         //Author information
@@ -281,6 +295,16 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
           }
       }
     }
+  }
+
+  /**
+   * Generic import entry.
+   */
+  public function importEntryGeneric(EntityMetadataWrapper $wrapper, $key, $data) {
+    if (!$data) {
+      return;
+    }
+    $wrapper->{$key}->set($data);
   }
 
   public function field_map() {}
@@ -337,7 +361,7 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
         53 => 'encyclopedia',
         54 => 'grant',
       ),
-      'fields' => array(
+      'field' => array(
         'abbr-1' => array('property' => 'biblio_short_title'),
         'abstract' => array('property' => 'biblio_abstract'),
         'access-date' => array('property' => 'biblio_access_date'),
@@ -359,7 +383,6 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
         'pub-dates' => array('property' => 'biblio_date'),
         'pub-location' => array('property' => 'biblio_place_published'),
         'publisher' => array('property' => 'biblio_publisher'),
-        'ref-type' => array('property' => 'type'),
         'related-urls' => array('property' => 'biblio_url'),
         'remote-database-name' => array('property' => 'biblio_remote_db_name'),
         'remote-database-provider' => array('property' => 'biblio_remote_db_provider'),
@@ -369,7 +392,10 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
         'section' => array('property' => 'biblio_section'),
         'short-title' => array('property' => 'biblio_short_title'),
         'tertiary-title' => array('property' => 'biblio_tertiary_title'),
-        'title' => array('property' => 'title'),
+        'title' => array(
+          'property' => 'title',
+          'import_method' => 'importEntryGeneric',
+        ),
         'translated-title' => array('property' => 'biblio_translated_title'),
         'volume' => array('property' => 'biblio_volume'),
         'work-type' => array('property' => 'biblio_type_of_work'),
