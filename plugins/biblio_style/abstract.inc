@@ -225,3 +225,39 @@ function _grabFirstnameInitials($value) {
 
   return array($firstname, $initials, $prefix);
 }
+
+/**
+ * Grab surname and surname prefix from a given string.
+ *
+ * @param $value
+ *   String containing surname and surname prefix.
+ *
+ * @return
+ *   Array with two separated strings: surname and surname prefix.
+ */
+function _grabSurname($value) {
+  $prefix  = array();
+  $surname = array();
+
+  // Split the given string to its parts.
+  $parts = explode(' ', $value);
+
+  foreach ($parts as $part) {
+    if (empty($surname) && (ord(substr($part, 0, 1)) >= 97) && (ord(substr($part, 0, 1)) <= 122)) {
+      // The part starts with a lowercase letter and comes before any surnames
+      // were found so this is a prefix such as 'den', 'von', 'de la' etc.
+      $prefix[] = $part;
+      continue;
+    }
+
+    // The part starts with an uppercase letter and/or comes after a surname
+    // was found in the given string so this is a surname such as 'Bush'.
+    $surname[] = $part;
+  }
+
+  // Convert arrays to strings.
+  $prefix = !empty($prefix) ? implode(' ', $prefix) : '';
+  $surname = !empty($surname) ? implode(' ', $surname) : '';
+
+  return array($surname, $prefix);
+}
