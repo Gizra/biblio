@@ -68,5 +68,4 @@ class BiblioStyleEndNote extends BiblioStyleBase {
     $handler = new $class_name( $this->plugin, $this->biblio);
     return $handler->render($options, $langcode);
   }
-
 }
