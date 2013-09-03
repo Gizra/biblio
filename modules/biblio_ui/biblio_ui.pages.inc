@@ -119,7 +119,7 @@ function biblio_ui_import_biblio_submit($form, &$form_state) {
   $options = !empty($form_state['values']['style_settings']) ? $form_state['values']['style_settings'] : array();
   $biblios = $biblio_style->import($form_state['values']['data'], $options);
 
-  if (!$biblios) {
+  if (!$biblios['new']) {
     // @todo: Better report errors.
     drupal_set_message(t('No entries were imported'));
     return;
@@ -127,10 +127,10 @@ function biblio_ui_import_biblio_submit($form, &$form_state) {
 
   $items = array();
 
-  foreach ($biblios as $biblio) {
+  foreach ($biblios['new'] as $biblio) {
     $items[] = l($biblio->title, 'biblio/' . $biblio->bid);
   }
 
   $params = array('!items' => theme('item_list', array('items' => $items)));
-  drupal_set_message(format_plural(count($biblios), 'Created the following biblio: !items', 'Created the following biblios: !items', $params));
+  drupal_set_message(format_plural(count($biblios['new']), 'Created the following biblio: !items', 'Created the following biblios: !items', $params));
 }
