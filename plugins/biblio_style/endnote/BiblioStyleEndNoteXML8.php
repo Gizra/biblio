@@ -294,13 +294,18 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
   /**
    * Generic import entry.
    */
-  public function importEntryGeneric(EntityMetadataWrapper $wrapper, $key, $data) {
+  public function importEntryGeneric(EntityMetadataWrapper $wrapper, $property, $data) {
     if (!$data) {
       // No data given, it might have been a carriage return that was striped.
       return;
     }
-    dpm($data, $key);
-    $wrapper->{$key}->set($data);
+
+    // @todo: Make more generic + configurable?
+    if (!isset($wrapper->{$property})) {
+      // Create field.
+      biblio_create_field($property, 'biblio', $wrapper->getBundle());
+    }
+    $wrapper->{$property}->set($data);
   }
 
   public function field_map() {}
