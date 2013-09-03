@@ -77,14 +77,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
     $method = $map[$key]['import_method'];
 
-    $value = $this->{$method}($key, $entry);
-
-    $wrapper_info = $wrapper->{$property_name}->info();
-    if (empty($wrapper_info['setter callback'])) {
-      return;
-    }
-
-    $wrapper->{$property_name}->set($value);
+    $this->{$method}($wrapper, $key, $entry);
   }
 
   /**
@@ -93,8 +86,30 @@ class BiblioStyleBibtex extends BiblioStyleBase {
    * @param $key
    * @param $entry
    */
-  private function getEntryValue($key, $entry) {
-    return !empty($entry[$key]) ? $entry[$key] : NULL;
+  private function getEntryValue($wrapper, $tag, $entry) {
+    $map = $this->getMapping();
+    $map = $map['field'];
+    $property = $map[$tag]['property'];
+
+    $wrapper->{$property}->set($entry[$tag]);
+
+  }
+
+  /**
+   * Get the value of a year.
+   *
+   * @param $key
+   * @param $entry
+   */
+  private function getEntryValueYear($wrapper, $tag, $entry) {
+    if (strtolower($entry[$tag]) == 'in press') {
+      // Biblio is in press, set the Biblio's status to be "In Press" and leave
+      // the year empty.
+      $wrapper->biblio_status->set('in_press');
+      return;
+    }
+
+    $this->getEntryValue($wrapper, $tag, $entry);
   }
 
   /**
@@ -103,42 +118,64 @@ class BiblioStyleBibtex extends BiblioStyleBase {
    * @param $key
    * @param $entry
    */
-  private function getEntryValuePublisher($key, $entry) {
-    if (!empty($entry['organization'])) {
-      return $entry['organization'];
+  private function getEntryValuePublisher($wrapper, $tag, $entry) {
+    $types = array(
+      'organization',
+      'school',
+      'institution',
+      'publisher',
+    );
+
+    foreach ($types as $type) {
+      if (!empty($entry[$type])) {
+        $value = $entry[$type];
+        break;
+      }
     }
 
-    if (!empty($entry['school'])) {
-      return $entry['school'];
+    if (empty($value)) {
+      return;
     }
 
-    if (!empty($entry['institution'])) {
-      return $entry['institution'];
-    }
-
-    return !empty($entry['publisher']) ? $entry['publisher'] : NULL;
+    $entry[$tag] = $value;
+    $this->getEntryValue($wrapper, $tag, $entry);
   }
 
   /**
    * Get the value of a secondary title.
    */
-  private function getEntryValueSecondaryTitle($key, $entry) {
-    if (!empty($entry['series']) && empty($entry['booktitle'])) {
-      return $entry['series'];
+  private function getEntryValueSecondaryTitle($wrapper, $tag, $entry) {
+    $types = array(
+      'booktitle',
+      'series',
+      'journal',
+    );
+
+    foreach ($types as $type) {
+      if (!empty($entry[$type])) {
+        $value = $entry[$type];
+        break;
+      }
     }
 
-    if (!empty($entry['booktitle'])) {
-      return $entry['booktitle'];
+    if (empty($value)) {
+      return;
     }
 
-    return !empty($entry['journal']) ? $entry['journal'] : NULL;
+    $entry[$tag] = $value;
+    $this->getEntryValue($wrapper, $tag, $entry);
   }
 
   /**
    * Get the value of a tertiary title.
    */
-  private function getEntryValueTertiaryTitle($key, $entry) {
-    return !empty($entry['series']) && !empty($entry['booktitle']) ? $entry['series'] : NULL;
+  private function getEntryValueTertiaryTitle($wrapper, $tag, $entry) {
+    if (empty($entry['series']) || empty($entry['booktitle'])) {
+      return;
+    }
+
+    $entry[$tag] = $entry['series'];
+    $this->getEntryValue($wrapper, $tag, $entry);
   }
 
   /**
@@ -205,7 +242,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
       case 'thesis':
         $school = $wrapper->biblio_publisher->value();
-        $biblio->biblio_publisher->set(NULL);
+        $wrapper->biblio_publisher->set(NULL);
         if (strpos($wrapper->biblio_type_of_work->value(), 'masters') === TRUE) {
           $type = 'mastersthesis';
         }
@@ -213,7 +250,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
       case 'report':
         $institution  = $wrapper->biblio_publisher->value();
-        $biblio->biblio_publisher->set(NULL);
+        $wrapper->biblio_publisher->set(NULL);
         break;
 
       case 'journal_article':
@@ -416,7 +453,10 @@ class BiblioStyleBibtex extends BiblioStyleBase {
         'title' => array('property' => 'title'),
         'volume' => array('property' => 'biblio_volume'),
         'number' => array('property' => 'biblio_number'),
-        'year' => array('property' => 'biblio_year'),
+        'year' => array(
+          'property' => 'biblio_year',
+          'import_method' => 'getEntryValueYear',
+        ),
         'note' => array('property' => 'biblio_notes'),
         'month' => array('property' => 'biblio_date'),
         'pages' => array('property' => 'biblio_pages'),
