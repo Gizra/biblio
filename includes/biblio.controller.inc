@@ -15,11 +15,6 @@ class Biblio extends Entity {
    * Clear biblio cache.
    */
   public function save() {
-    if (empty($this->_skip_cache)) {
-      $this->cache = '';
-      $this->cache_id = '';
-    }
-
     $wrapper = entity_metadata_wrapper('biblio', $this);
 
     if (isset($wrapper->biblio_in_press) && $wrapper->biblio_in_press->value()) {
@@ -29,6 +24,13 @@ class Biblio extends Entity {
     if (!$wrapper->biblio_status->value() && $wrapper->biblio_year->value()) {
       // If Year is populated and Status is not, the status should be Published.
       $wrapper->biblio_status->set('published');
+    }
+
+    $this->md5 = BiblioStyleBase::generateBiblioMd5($this);
+
+    if (empty($this->_skip_cache)) {
+      $this->cache = '';
+      $this->cache_id = '';
     }
 
     parent::save();
