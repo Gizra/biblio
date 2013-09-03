@@ -28,8 +28,8 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
     }
 
     $type = $this->getBiblioType($type);
-    $this->biblio = biblio_create($type);
-    $this->wrapper = entity_metadata_wrapper('biblio', $this->biblio);
+    $this->biblio = $biblio = biblio_create($type);
+    $this->wrapper = $wrapper = entity_metadata_wrapper('biblio', $this->biblio);
 
     $data = str_replace("\r\n", "\n", $data);
 
@@ -49,6 +49,13 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
     }
 
     xml_parser_free($parser);
+
+    // @todo: Check md5.
+    $wrapper->save();
+    $biblios[] = $biblio;
+    return array(
+      'new' => $biblios,
+    );
   }
 
 
