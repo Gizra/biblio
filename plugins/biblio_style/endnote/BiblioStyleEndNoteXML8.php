@@ -137,22 +137,6 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
   function endElement($parser, $name) {
     //    global $this->biblio, $nids, $this->element, $terms, $batch_proc, $session_id, $this->contributors_type, $this->contrib_count, $this->dates, $this->urls, $this->keyword_count, $this->font_attr;
     switch ($name) {
-      case 'record' :
-        dpm($this->biblio);
-
-        // @todo.
-        break;
-
-        $this->element = $this->contributors_type = $this->contrib_count = $this->dates = $this->urls = '';
-        $this->biblio->biblio_xml_md5 = md5(serialize($this->biblio));
-        if ( !($dup = $this->biblio_xml_check_md5($this->biblio->biblio_xml_md5)) ) {
-          biblio_save_node($this->biblio, $this->terms, $this->batch_proc, $this->session_id);
-          if (!empty($this->biblio->nid)) $this->nids[] = $this->biblio->nid;
-        }
-        else {
-          $this->dups[] = $dup;
-        }
-        break;
       case 'authors' :
       case 'secondary-authors' :
       case 'tertiary-authors' :
@@ -203,10 +187,6 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
       case 'image-urls' :
         $this->urls = '';
         break;
-      case 'ref-type':
-        $this->biblio->biblio_type = $this->type_map($this->biblio->biblio_type);
-        $this->element = '';
-        break;
       case 'style' :
         foreach ($this->font_attr as $fatt) {
           switch ($fatt) {
@@ -242,6 +222,8 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
     $map = $this->getMapping();
     if (!empty($map['field'][$this->element]['import_method'])) {
       $method = $map['field'][$this->element]['import_method'];
+      $property = $map['field'][$this->element]['property'];
+
 
       // Prepare the data by striping any tags or white space.
       $data = explode("\n", $data);
@@ -249,7 +231,7 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
         $data[$key] = trim(htmlspecialchars_decode(strip_tags($value)));
       }
       $data = implode('', $data);
-      $this->{$method}($this->wrapper, $this->element, $data);
+      $this->{$method}($this->wrapper, $property, $data);
     }
 
     return;
@@ -317,6 +299,7 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
       // No data given, it might have been a carriage return that was striped.
       return;
     }
+    dpm($data, $key);
     $wrapper->{$key}->set($data);
   }
 
@@ -405,16 +388,21 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
         'section' => array('property' => 'biblio_section'),
         'short-title' => array('property' => 'biblio_short_title'),
         'tertiary-title' => array('property' => 'biblio_tertiary_title'),
-        'title' => array(
-          'property' => 'title',
-          'import_method' => 'importEntryGeneric',
-        ),
+        'title' => array('property' => 'title'),
         'translated-title' => array('property' => 'biblio_translated_title'),
         'volume' => array('property' => 'biblio_volume'),
         'work-type' => array('property' => 'biblio_type_of_work'),
         'year' => array('property' => 'biblio_year'),
       ),
     );
+
+
+    // Add default values.
+    foreach (array_keys($return['field']) as $key) {
+      $return['field'][$key] += array(
+        'import_method' => 'importEntryGeneric',
+      );
+    }
 
     return $return;
   }
