@@ -98,10 +98,6 @@ class BiblioStyleBibtex extends BiblioStyleBase {
    * @param $entry
    */
   private function getEntryValueYear($wrapper, $tag, $entry) {
-    $map = $this->getMapping();
-    $map = $map['field'];
-    $key = $map[$tag]['property'];
-
     if (strtolower($entry[$tag]) == 'in press') {
       // Biblio is in press, set the Biblio's status to be "In Press" and leave
       // the year empty.
@@ -109,7 +105,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
       return;
     }
 
-    $wrapper->{$key}->set($entry[$tag]);
+    $this->getEntryValue($wrapper, $tag, $entry);
   }
 
   /**
@@ -136,11 +132,8 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     if (empty($value)) {
       return;
     }
-
-    $map = $this->getMapping();
-    $map = $map['field'];
-    $key = $map[$tag]['property'];
-    $wrapper->{$key}->set($value);
+    $entry[$tag] = $value;
+    $this->getEntryValue($wrapper, $tag, $entry);
   }
 
   /**
@@ -164,10 +157,8 @@ class BiblioStyleBibtex extends BiblioStyleBase {
       return;
     }
 
-    $map = $this->getMapping();
-    $map = $map['field'];
-    $key = $map[$tag]['property'];
-    $wrapper->{$key}->set($value);
+    $entry[$tag] = $value;
+    $this->getEntryValue($wrapper, $tag, $entry);
   }
 
   /**
@@ -178,10 +169,8 @@ class BiblioStyleBibtex extends BiblioStyleBase {
       return;
     }
 
-    $map = $this->getMapping();
-    $map = $map['field'];
-    $key = $map[$tag]['property'];
-    $wrapper->{$key}->set($entry['series']);
+    $entry[$tag] = $entry['series'];
+    $this->getEntryValue($wrapper, $tag, $entry);
   }
 
   /**

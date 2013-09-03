@@ -26,10 +26,6 @@ class BiblioImportAndRenderTestCase extends DrupalWebTestCase {
    * Test BibTex.
    */
   function testBibTex() {
-    $plugin = biblio_get_biblio_style('bibtex');
-    $class = ctools_plugin_load_class('biblio', 'biblio_style', 'bibtex', 'class');
-
-    $biblio_style = new $class($plugin);
     $data = '
 @Book{abramowitz+stegun,
   author    = "Milton {Abramowitz} and Irene A. {Stegun}",
@@ -39,9 +35,6 @@ class BiblioImportAndRenderTestCase extends DrupalWebTestCase {
   address   = "New York",
   edition   = "ninth Dover printing, tenth GPO printing"
 }';
-
-    $biblios = $biblio_style->import($data);
-    $biblio = $biblios[0];
 
     $expected_result = '
 @Book{abramowitz+stegun,
@@ -53,20 +46,28 @@ class BiblioImportAndRenderTestCase extends DrupalWebTestCase {
 	author = "Milton {Abramowitz} and  Irene A. {Stegun}"
 }';
 
+    ctools_include('plugins');
+    $plugin = biblio_get_biblio_style('bibtex');
+    $class = ctools_plugin_load_class('biblio', 'biblio_style', 'bibtex', 'class');
+
+    $biblio_style = new $class($plugin);
+
+    $biblios = $biblio_style->import($data);
+    $biblio = $biblios['new'][0];
     $output = $biblio->getText('bibtex', array('opening_tag' => '"', 'closing_tag' => '"'));
 
+
+
     // We use trim, to remove whitespace.
-    $this->assertEqual(trim($output), trim($expected_result), 'Render is equal to the expected result');
+    debug(trim($output));
+    debug(trim($expected_result));
+    $this->assertEqual(trim($output), trim($expected_result), 'BibTex render is equal to the expected result');
   }
 
   /**
    * Test end note tagged.
    */
   function testEndNoteTagged() {
-    $plugin = biblio_get_biblio_style('endnote');
-    $class = ctools_plugin_load_class('biblio', 'biblio_style', 'endnote', 'class');
-
-    $biblio_style = new $class($plugin);
     $data = '
 %0 Book
 %J PS: Political Science and Politics
@@ -77,9 +78,27 @@ class BiblioImportAndRenderTestCase extends DrupalWebTestCase {
 %B PS: Political Science and Politics
 %G eng';
 
-    $biblios = $biblio_style->import($data);
-    $biblio = $biblios[0];
+    $expected_result = '%0 Book
+%D 2013
+%G eng
+%T Restructuring the Social Sciences: Reflections from Harvard’s Institute for Quantitative Social Science
+%X The social sciences are undergoing a dramatic transformation from studying problems to solving them.
+%A Gary King
+%B PS: Political Science and Politics';
 
-    $this->assertEqual('eng', $biblio->language, 'Language imported properly');
+    ctools_include('plugins');
+    $plugin = biblio_get_biblio_style('endnote');
+    $class = ctools_plugin_load_class('biblio', 'biblio_style', 'endnote', 'class');
+
+    $biblio_style = new $class($plugin);
+
+
+    $biblios = $biblio_style->import($data);
+    $biblio = $biblios['new'][0];
+    $output = $biblio->getText('endnote', array('type' => 'tagged'));
+
+
+
+    $this->assertEqual(trim($output), trim($expected_result), 'EndNote render is equal to the expected result');
   }
 }
