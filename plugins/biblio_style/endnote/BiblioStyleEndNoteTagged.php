@@ -209,6 +209,38 @@ class BiblioStyleEndNoteTagged extends BiblioStyleEndNote {
 
   public function getMapping() {
     $return = parent::getMapping();
+    $return['type'] = array(
+      'Artwork' => 'artwork',
+      'Audiovisual Material' => 'audio_visual',
+      'Bill' => 'bill',
+      'Book' => 'book',
+      'Book Section' => 'book_chapter',
+      'Case' => 'case',
+      'Chart or Table' => 'chart',
+      'Classical Work' => 'classical',
+      'Conference Paper' => 'conference_paper',
+      'Conference Proceedings' => 'conference_proceedings',
+      'Edited Book' => 'book',
+      'Film or Broadcast' => 'film',
+      'Generic' => 'miscellaneous',
+      'Government Document' => 'government_report',
+      'Hearing' => 'hearing',
+      'Journal Article' => 'journal_article',
+      'Legal Rule or Regulation' => 'legal_ruling',
+      'Magazine Article' => 'magazine_article',
+      'Manuscript' => 'manuscript',
+      'Map' => 'map',
+      'Newspaper Article' => 'newspaper_article',
+      'Online Database' => 'database',
+      'Patent' => 'patent',
+      'Personal Communication' => 'personal',
+      'Report' => 'report',
+      'Statute' => 'statute',
+      'Thesis' => 'thesis',
+      'Unpublished Work' => 'unpublished',
+      'Web Page' => 'web_article',
+    );
+
     $return['field'] = array(
       '%A' => array(
         'import_method' => 'importEntryContributors',
