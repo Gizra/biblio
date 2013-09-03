@@ -147,10 +147,71 @@ class BiblioStyleEndNoteXML7 extends BiblioStyleEndNoteXML8 {
 
   }
 
-
-
   public function getMapping() {
-    $return = array();
+    $return = array(
+      'type' => array(
+        0 => 'Journal Article',
+        1 => 'Book',
+        2 => 'Thesis',
+        3 => 'Conference Proceedings',
+        4 => 'Personal Communication',
+        5 => 'NewsPaper Article',
+        6 => 'Computer Program',
+        7 => 'Book Section',
+        8 => 'Magazine Article',
+        9 => 'Edited Book',
+        10 => 'Report',
+        11 => 'Map',
+        12 => 'Audiovisual Material',
+        13 => 'Artwork',
+        15 => 'Patent',
+        16 => 'Electronic Source',
+        17 => 'Bill',
+        18 => 'Case',
+        19 => 'Hearing',
+        20 => 'Manuscript',
+        21 => 'Film or Broadcast',
+        22 => 'Statute',
+        26 => 'Chart or Table',
+        31 => 'Generic',
+      ),
+      'fields' => array(
+        'ABSTRACT' => 'biblio_abst_e',
+        'ACCESSION_NUMBER' => 'biblio_accession_number',
+        'ALTERNATE_TITLE' => 'biblio_alternate_title',
+        'CALL_NUMBER' => 'biblio_call_number',
+        'CUSTOM1' => 'biblio_custom1',
+        'CUSTOM2' => 'biblio_custom2',
+        'CUSTOM3' => 'biblio_custom3',
+        'CUSTOM4' => 'biblio_custom4',
+        'CUSTOM5' => 'biblio_custom5',
+        'CUSTOM6' => 'biblio_custom6',
+        'DATE' => 'biblio_date',
+        'EDITION' => 'biblio_edition',
+        'ISBN' => 'biblio_isbn',
+        'ISSUE' => 'biblio_issue',
+        'LABEL' => 'biblio_label',
+        'NOTES' => 'biblio_notes',
+        'NUMBER' => 'biblio_number',
+        'NUMBER_OF_VOLUMES' => 'biblio_number_of_volumes',
+        'ORIGINAL_PUB' => 'biblio_original_publication',
+        'PAGES' => 'biblio_pages',
+        'PLACE_PUBLISHED' => 'biblio_place_published',
+        'PUBLISHER' => 'biblio_publisher',
+        // TODO:  Check if we need to write this to the type key or into external
+        //        field.
+        'REFERENCE_TYPE' => 'type',
+        'REPRINT_EDITION' => 'biblio_reprint_edition',
+        'SECONDARY_TITLE' => 'biblio_secondary_title',
+        'SECTION' => 'biblio_section',
+        'SHORT_TITLE' => 'biblio_short_title',
+        'TERTIARY_TITLE' => 'biblio_tertiary_title',
+        'TYPE_OF_WORK' => 'biblio_type_of_work',
+        'URL' => 'biblio_url',
+        'VOLUME' => 'biblio_volume',
+        'YEAR' => 'biblio_year',
+      ),
+    );
 
     return $return;
   }
