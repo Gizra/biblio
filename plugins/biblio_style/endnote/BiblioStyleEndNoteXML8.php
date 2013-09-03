@@ -214,15 +214,31 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
       default :
         $this->element = '';
     }
-
-
   }
 
   function characterData($parser, $data) {
     $map = $this->getMapping();
-    if (!empty($map['field'][$this->element]['import_method'])) {
-      $method = $map['field'][$this->element]['import_method'];
-      $property = $map['field'][$this->element]['property'];
+
+    $parent_elements = array(
+      'date',
+      'dates',
+      'url',
+      'urls',
+    );
+
+    if (in_array($this->element, array('date', 'dates'))) {
+      $element = $this->dates;
+    }
+    elseif (in_array($this->element, array('url', 'urls'))) {
+      $element = $this->urls;
+    }
+    else {
+      $element = $this->element;
+    }
+
+    if (!empty($map['field'][$element]['import_method'])) {
+      $method = $map['field'][$element]['import_method'];
+      $property = $map['field'][$element]['property'];
 
       // Prepare the data by striping any tags or white space.
       $data = explode("\n", $data);
@@ -234,60 +250,43 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
       $this->{$method}($this->wrapper, $property, $data);
     }
 
-    return;
-
-
-    if (trim(htmlspecialchars_decode($data))) {
-      switch ($this->element) {
-        //Author information
-        case 'author' :
-          $this->contributors[$this->contrib_count]['name'] .= $data;
-          break;
-        case 'keyword' :
-          $this->biblio->biblio_keywords[$this->keyword_count] .= $data;
-          break;
-        case 'dates' :
-          switch ($this->dates) {
-            case 'year' :
-              $this->biblio->biblio_year .= $data;
-              break;
-          }
-          break;
-        case 'date' :
-          switch ($this->dates) {
-            case 'pub-dates' :
-              $this->biblio->biblio_date .= $data;
-              break;
-            case 'copyright-dates' :
-              break;
-          }
-          break;
-        case 'urls' :
-        case 'url' :
-          switch ($this->urls) {
-            case 'web-urls' :
-              $this->biblio->biblio_url .= $data;
-              break;
-            case 'pdf-urls' :
-            case 'text-urls' :
-            case 'image-urls' :
-              break;
-            case 'related-urls' :
-          }
-          break;
-        case 'title':
-          $this->biblio->title .= $data;
-          break;
-        default:
-          if ($field = $this->field_map(trim($this->element))) {
-            $this->biblio->$field .= $data;
-          }
-          else {
-            if (!in_array($this->element, $this->unmapped)) {
-              $this->unmapped[] = $this->element;
-            }
-          }
-      }
+    switch ($element) {
+      //Author information
+      case 'author' :
+        $this->contributors[$this->contrib_count]['name'] .= $data;
+        break;
+      case 'keyword' :
+        $this->biblio->biblio_keywords[$this->keyword_count] .= $data;
+        break;
+      case 'dates' :
+        switch ($this->dates) {
+          case 'year' :
+            $this->biblio->biblio_year .= $data;
+            break;
+        }
+        break;
+      case 'date' :
+        switch ($this->dates) {
+          case 'pub-dates' :
+            $this->biblio->biblio_date .= $data;
+            break;
+          case 'copyright-dates' :
+            break;
+        }
+        break;
+      case 'urls' :
+      case 'url' :
+        switch ($this->urls) {
+          case 'web-urls' :
+            $this->biblio->biblio_url .= $data;
+            break;
+          case 'pdf-urls' :
+          case 'text-urls' :
+          case 'image-urls' :
+            break;
+          case 'related-urls' :
+        }
+        break;
     }
   }
 
@@ -308,6 +307,30 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
     $value = $wrapper->{$property}->value() . $data;
     $wrapper->{$property}->set($value);
   }
+
+  public function importEntryYear(EntityMetadataWrapper $wrapper, $property, $data) {
+    if (!$data) {
+      // No data given, it might have been a carriage return that was striped.
+      return;
+    }
+
+    if (is_numeric($data)) {
+      $wrapper->biblio_year->set($data);
+      return;
+    }
+
+    // @todo: Get Biblio status valid options from field.
+    $options = array(
+      'in_press',
+    );
+
+    $data = str_replace(' ', '_', strtolower($data));
+
+    if (in_array($data, $options)) {
+      $wrapper->biblio_status->set($data);
+    }
+  }
+
 
   public function field_map() {}
 
@@ -398,7 +421,10 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
         'translated-title' => array('property' => 'biblio_translated_title'),
         'volume' => array('property' => 'biblio_volume'),
         'work-type' => array('property' => 'biblio_type_of_work'),
-        'year' => array('property' => 'biblio_year'),
+        'year' => array(
+          'property' => 'biblio_year',
+          'import_method' => 'importEntryYear',
+        ),
       ),
     );
 
