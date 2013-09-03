@@ -224,13 +224,13 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
       $method = $map['field'][$this->element]['import_method'];
       $property = $map['field'][$this->element]['property'];
 
-
       // Prepare the data by striping any tags or white space.
       $data = explode("\n", $data);
       foreach ($data as $key => $value) {
-        $data[$key] = trim(htmlspecialchars_decode(strip_tags($value)));
+        $data[$key] = trim(htmlspecialchars_decode($value));
       }
       $data = implode('', $data);
+
       $this->{$method}($this->wrapper, $property, $data);
     }
 
@@ -305,7 +305,8 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
       // Create field.
       biblio_create_field($property, 'biblio', $wrapper->getBundle());
     }
-    $wrapper->{$property}->set($data);
+    $value = $wrapper->{$property}->value() . $data;
+    $wrapper->{$property}->set($value);
   }
 
   public function field_map() {}
