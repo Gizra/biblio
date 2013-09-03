@@ -242,7 +242,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
       case 'thesis':
         $school = $wrapper->biblio_publisher->value();
-        $biblio->biblio_publisher->set(NULL);
+        $wrapper->biblio_publisher->set(NULL);
         if (strpos($wrapper->biblio_type_of_work->value(), 'masters') === TRUE) {
           $type = 'mastersthesis';
         }
@@ -250,7 +250,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
       case 'report':
         $institution  = $wrapper->biblio_publisher->value();
-        $biblio->biblio_publisher->set(NULL);
+        $wrapper->biblio_publisher->set(NULL);
         break;
 
       case 'journal_article':
