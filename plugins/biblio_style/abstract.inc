@@ -102,7 +102,7 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
   }
 
   /**
-   * Searches for a biblio object similar to the given one.
+   * Searches for a biblio object identical to the given one.
    *
    * @param $biblio
    *  Biblio object.
@@ -110,7 +110,7 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
    * @return
    *  The duplicate Biblio ID, FALSE if not found.
    */
-  public function isDuplicate($biblio) {
+  public function isDuplicate(Biblio $biblio) {
     $md5 = $this->generateBiblioMd5($biblio);
 
     $query = new EntityFieldQuery();
@@ -133,7 +133,7 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
    * @return
    *  Saved Biblio Contributor object.
    */
-  public function getBiblioContributor($biblio_contributor) {
+  public function getBiblioContributor(BiblioContributor $biblio_contributor) {
     $clone = clone $biblio_contributor;
 
     unset($clone->cid);
@@ -153,7 +153,7 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
       ->execute();
 
     if (!empty($result['biblio_contributor'])) {
-      // Found similar contributor.
+      // Found existing contributor.
       return biblio_contributor_load(key($result['biblio_contributor']));
     }
 
