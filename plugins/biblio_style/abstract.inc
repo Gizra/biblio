@@ -206,16 +206,16 @@ function _grabFirstnameInitials($value) {
       continue;
     }
 
-    if (preg_match("/[a-zA-Z]{2,}/", trim($part))) {
-      // The part is an alphabetical string containing two letters or more and
-      // therefore a first name such as George, Mark etc.
+    if (preg_match("/[a-zA-Z]{2,}/", $part)) {
+      // The part starts with an uppercase letter and contains two letters or
+      // more and therefore is a first name such as 'George'.
       $firstname[] = $part;
       continue;
     }
 
-    // The part contains only one letter and perhaps a dot, therefore this is
-    // an initial like the W in George W. Bush.
-    $initials[] = trim(str_replace(".", " ", trim($part)));
+    // The part contains only one uppercase letter and perhaps a dot and
+    // therefore is an initial such as the W in 'George W. Bush'.
+    $initials[] = trim(str_replace('.', ' ', $part));
   }
 
   // Convert arrays to strings.
