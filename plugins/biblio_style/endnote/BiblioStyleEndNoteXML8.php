@@ -366,8 +366,6 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
         'pub-dates' => 'biblio_date',
         'pub-location' => 'biblio_place_published',
         'publisher' => 'biblio_publisher',
-        // TODO:  Check if we need to write this to the type key or into external
-        //        field.
         'ref-type' => 'type',
         'related-urls' => 'biblio_url',
         'remote-database-name' => 'biblio_remote_db_name',
