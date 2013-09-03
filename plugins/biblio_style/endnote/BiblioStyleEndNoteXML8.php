@@ -302,6 +302,7 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
    */
   public function importEntryGeneric(EntityMetadataWrapper $wrapper, $key, $data) {
     if (!$data) {
+      // No data given, it might have been a carriage return that was striped.
       return;
     }
     $wrapper->{$key}->set($data);
