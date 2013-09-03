@@ -45,7 +45,12 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
         '@error' => xml_error_string(xml_get_error_code($parser)),
         '@line' => xml_get_current_line_number($parser),
       );
-      drupal_set_message(t('XML error: @error at line @line'), $params);
+      return array(
+        'error' => array(
+          'data' => $data,
+          'message' => t('XML error: @error at line @line', $params),
+        ),
+      );
     }
 
     xml_parser_free($parser);
