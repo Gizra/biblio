@@ -182,27 +182,25 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
   }
 
   /**
-   * @param array $names
+   * Get saved contributor objects by their names.
+   *
+   * @param $names
+   *  String of contributors' names separated by 'and'.
+   *
+   * @return
+   *  Array of saved contributor objects.
    */
   public function getBiblioContributorsFromNames($names) {
-    if (!is_array($names)) {
-      // split names.
-      $names = preg_split("/(and|&)/i", trim($names));
-    }
+    // Split names.
+    $names = preg_split("/(and|&)/i", trim($names));
 
     $contributors = array();
     foreach ($names as $name) {
-      // Try to extract the given and family name.
-      // @todo: Fix this preg_split.
-      $sub_name = preg_split("/{|}/i", $name);
-      $values = array('firstname' =>$sub_name[0]);
-      if (!empty($sub_name[1])) {
-        $values['lastname'] = $sub_name[1];
-      }
-
-      $biblio_contributor = biblio_contributor_create($values);
+      // Parse contributor's name to get each part separately.
+      $values = $this->parseContributorName($name);
 
       // Get existing Biblio Contributor object, save it if it doesn't exist.
+      $biblio_contributor = biblio_contributor_create($values);
       $biblio_contributor = $this->getBiblioContributor($biblio_contributor);
 
       $contributors[] = $biblio_contributor;
@@ -211,9 +209,19 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
     return $contributors;
   }
 
-  public function biblio_parse_contributor($contributor_array) {
+  /**
+   * Grab each part of a contributor's name separately.
+   *
+   * @param $full_name
+   *  Full name of contributor.
+   *
+   * @return
+   *  Array of parsed name, ready for creating a contributor.
+   */
+  public function parseContributorName($full_name) {
 
-    if (isset($contributor_array['auth_category']) && $contributor_array['auth_category'] == 5) {
+    // @todo
+    /*if (isset($contributor_array['auth_category']) && $contributor_array['auth_category'] == 5) {
       $contributor_array['firstname'] = '';
       $contributor_array['initials'] = '';
       $contributor_array['lastname'] = trim($contributor_array['name']);
@@ -221,12 +229,12 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
       $contributor_array['literal'] = 1;
 
       return $contributor_array;
-    }
+    }*/
 
-    $appellation = $prefix = $surname = $firstname = $initials = '';
+    $appellation = $prefix = $lastname = $firstname = $initials = '';
 
     // Remove unneeded spaces from full name.
-    $full_name = trim($contributor_array['name']);
+    $full_name = trim($full_name);
     $full_name = preg_replace("/\s{2,}/", ' ', $full_name);
 
     // Split full name by commas.
@@ -238,32 +246,32 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
       // No commas in full name.
 
       if (preg_match("/(.*) {([^\\\].*)}/", $full_name, $matches) && !(preg_match("/(.*) {\\\.{.*}.*}/", $full_name, $matches2))) {
-        // Complete surname enclosed in {...}, unless the string starts with a
+        // Complete last name enclosed in {...}, unless the string starts with a
         // backslash (\) because then it is probably a special latex-sign.
         // In the last case, any NESTED curly braces should also be taken into
         // account! so second clause rules out things such as 'a{\"{o}}'.
 
         $name_parts = explode(' ', $matches[1]);
-        $surname = $matches[2];
+        $lastname = $matches[2];
       }
       else {
-        // The pattern is firstname-initials-surname, such as 'George Bush',
+        // The pattern is firstname-initials-lastname, such as 'George Bush',
         // 'George W. Bush', 'G W Bush' etc.
 
         // Split full name by spaces.
         $name_parts = explode(' ', $full_name);
 
-        // Last element in the array should be the surname.
+        // Last element in the array should be the last name.
         // There shouldn't be a prefix if the name was entered correctly.
-        $surname = array_pop($name_parts);
+        $lastname = array_pop($name_parts);
       }
     }
     elseif ($commas == 1) {
       // There is 1 comma in full name, such as in 'Bush, George', 'Bush, G W',
       // 'Bush, George W', 'de la Bush, George W' etc.
 
-      // Get surname and prefix separately.
-      list ($surname, $prefix) = $this->grabSurname(array_shift($name_parts));
+      // Get last name and prefix separately.
+      list ($lastname, $prefix) = $this->grabLastname(array_shift($name_parts));
     }
     else {
       // There are 2 commas in full name, such as in 'Bush, Jr. III, George W'.
@@ -271,24 +279,24 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
       // Middle element in array is 'Jr.', 'IV' etc.
       $appellation = implode(' ', array_splice($name_parts, 1, 1));
 
-      // Get surname and prefix separately.
-      list($surname, $prefix) = $this->grabSurname(array_shift($name_parts));
+      // Get last name and prefix separately.
+      list($lastname, $prefix) = $this->grabLastname(array_shift($name_parts));
     }
 
-    // After removing the surname, prefix and appellation from the full name, we
-    // are left with the first name and initials, and perhaps a surname prefix.
+    // After removing the last name, prefix and appellation from the full name,
+    // we are left with first name and initials, and perhaps last name prefix.
     $remainder = implode(' ', $name_parts);
     list($firstname, $initials, $prefix2) = $this->grabFirstnameInitials($remainder);
 
     if (!empty($prefix2)) {
-      // Found a prefix in remainder, add it to the surname prefix.
+      // Found a prefix in remainder, add it to the last name prefix.
       $prefix .= $prefix2;
     }
 
     // Fill results in the array.
     $contributor_array['firstname'] = $firstname;
     $contributor_array['initials'] = substr($initials, 0, 10);
-    $contributor_array['lastname'] = $surname;
+    $contributor_array['lastname'] = $lastname;
     $contributor_array['prefix'] = $prefix;
     $contributor_array['suffix'] = $appellation;
 
@@ -296,10 +304,10 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
   }
 
   /**
-   * Grab first name, initials and surname prefix from a given string.
+   * Grab first name, initials and last name prefix from a given string.
    *
    * @param $value
-   *   String containing first name, initials and perhaps a surname prefix.
+   *   String containing first name, initials and perhaps a last name prefix.
    *
    * @return
    *   Array with three separated strings: first name, initials and prefix.
@@ -314,7 +322,7 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
 
     foreach ($parts as $part) {
       if ((ord(substr($part, 0, 1)) >= 97) && (ord(substr($part, 0, 1)) <= 122)) {
-        // The part starts with a lowercase letter, so this is a surname prefix
+        // The part starts with a lowercase letter, so this is a last name prefix
         // such as 'den', 'von', 'de la' etc.
         $prefix[] = $part;
         continue;
@@ -341,38 +349,38 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
   }
 
   /**
-   * Grab surname and surname prefix from a given string.
+   * Grab last name and last name prefix from a given string.
    *
    * @param $value
-   *   String containing surname and surname prefix.
+   *   String containing last name and last name prefix.
    *
    * @return
-   *   Array with two separated strings: surname and surname prefix.
+   *   Array with two separated strings: last name and last name prefix.
    */
-  public function grabSurname($value) {
+  public function grabLastname($value) {
     $prefix  = array();
-    $surname = array();
+    $lastname = array();
 
     // Split the given string to its parts.
     $parts = explode(' ', $value);
 
     foreach ($parts as $part) {
-      if (empty($surname) && (ord(substr($part, 0, 1)) >= 97) && (ord(substr($part, 0, 1)) <= 122)) {
-        // The part starts with a lowercase letter and comes before any surnames
+      if (empty($lastname) && (ord(substr($part, 0, 1)) >= 97) && (ord(substr($part, 0, 1)) <= 122)) {
+        // The part starts with a lowercase letter and comes before any last names
         // were found so this is a prefix such as 'den', 'von', 'de la' etc.
         $prefix[] = $part;
         continue;
       }
 
-      // The part starts with an uppercase letter and/or comes after a surname
-      // was found in the given string so this is a surname such as 'Bush'.
-      $surname[] = $part;
+      // The part starts with an uppercase letter and/or comes after a last name
+      // was found in the given string so this is a last name such as 'Bush'.
+      $lastname[] = $part;
     }
 
     // Convert arrays to strings.
     $prefix = !empty($prefix) ? implode(' ', $prefix) : '';
-    $surname = !empty($surname) ? implode(' ', $surname) : '';
+    $lastname = !empty($lastname) ? implode(' ', $lastname) : '';
 
-    return array($surname, $prefix);
+    return array($lastname, $prefix);
   }
 }
