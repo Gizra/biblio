@@ -354,7 +354,7 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
         'custom7' => 'biblio_custom7',
         'edition' => 'biblio_edition',
         'full-title' => 'biblio_secondary_title',
-        'biblio' => 'biblio_isbn',
+        'isbn' => 'biblio_isbn',
         'issue' => 'biblio_issue',
         'label' => 'biblio_label',
         'language' => 'biblio_language',
@@ -366,7 +366,9 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
         'pub-dates' => 'biblio_date',
         'pub-location' => 'biblio_place_published',
         'publisher' => 'biblio_publisher',
-        'ref-type' => 'biblio_type',
+        // TODO:  Check if we need to write this to the type key or into external
+        //        field.
+        'ref-type' => 'type',
         'related-urls' => 'biblio_url',
         'remote-database-name' => 'biblio_remote_db_name',
         'remote-database-provider' => 'biblio_remote_db_provider',
