@@ -15,15 +15,17 @@ class Biblio extends Entity {
    * Clear biblio cache.
    */
   public function save() {
-    if (empty($this->_skip_cache)) {
-      $this->cache = '';
-      $this->cache_id = '';
-    }
-
     $wrapper = entity_metadata_wrapper('biblio', $this);
 
     if (isset($wrapper->biblio_in_press) && $wrapper->biblio_in_press->value()) {
       $wrapper->biblio_year->set(9999);
+    }
+
+    $this->md5 = BiblioStyleBase::generateBiblioMd5($this);
+
+    if (empty($this->_skip_cache)) {
+      $this->cache = '';
+      $this->cache_id = '';
     }
 
     parent::save();

@@ -16,7 +16,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
    * @param string $type
    * @return array
    */
-  public function import($data) {
+  public function import($data, $options = array()) {
     $bibtex = new PARSEENTRIES();
     $bibtex->loadBibtexString($data);
 
@@ -32,7 +32,6 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
     // Array of Biblios.
     $biblios = array();
-
     foreach ($entries as $entry) {
       $biblio_type = $this->getBiblioType($entry['bibtexEntryType']);
       $biblio = biblio_create($biblio_type);
@@ -48,47 +47,18 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
       $this->importEntryContributors($wrapper, $entry);
 
-      // @todo: Check if the Biblio doesn't already exist, and if so, load it.
-      $wrapper->save();
-
-      $biblios[] = $wrapper->value();
-
-      /*
-      $node = new stdClass();
-      $node->biblio_contributors = array();
-      switch ($entry['bibtexEntryType']) {
-        case 'mastersthesis':
-          $node->biblio_type_of_work = 'masters';
-          break;
-        case 'phdthesis':
-          $node->biblio_type_of_work = 'phd';
-          break;
-      }
-
-      if (!empty($entry['keywords'])) {
-        if (strpos($entry['keywords'], ';')) {
-          $entry['keywords'] = str_replace(';', ',', $entry['keywords']);
+      if (empty($options['allow_duplicate'])) {
+        // Check if this is a unique Biblio.
+        if ($duplicate_id = $this->isDuplicate($biblio)) {
+          // Not unique, display message to the user.
+          drupal_set_message(t('Biblio "@title" already imported, view it <a href="@url">here</a>.', array('@title' => $biblio->title, '@url' => url('biblio/' . $duplicate_id))));
         }
-        $node->biblio_keywords = explode(',', $entry['keywords']);
-      }
-
-      $node->biblio_bibtex_md5      = md5(serialize($node));
-      $node->biblio_import_type     = 'bibtex';
-
-      if (!($dup = biblio_bibtex_check_md5($node->biblio_bibtex_md5))) {
-        if ($save) {
-          biblio_save_node($node, $terms, $batch, $session_id, $save);
-          $nids[] = (!empty($node->nid))? $node->nid : NULL;
-        }
-        else { // return the whole node if we are not saveing to the DB (used for the paste function on the input form)
-          $nids[] = $node;
+        else {
+          // Unique, save biblio and add it to Imported list.
+          $wrapper->save();
+          $biblios[] = $wrapper->value();
         }
       }
-      else {
-        $dups[] = $dup;
-      }
-
-      */
     }
     return $biblios;
   }
@@ -199,21 +169,20 @@ class BiblioStyleBibtex extends BiblioStyleBase {
         }
 
         $biblio_contributor = biblio_contributor_create($values);
-        $biblio_contributor->save();
+        // Get existing Biblio Contributor object, save it if it doesn't exist.
+        $biblio_contributor = $this->getBiblioContributor($biblio_contributor);
 
         // Create contributors field collections.
         $field_collection = entity_create('field_collection_item', array('field_name' => 'contributor_field_collection'));
         $field_collection->setHostEntity('biblio', $biblio);
         $collection_wrapper = entity_metadata_wrapper('field_collection_item', $field_collection);
         $collection_wrapper->biblio_contributor->set($biblio_contributor);
-
         // @todo: Add reference to correct term.
         $term = taxonomy_get_term_by_name(ucfirst($type), 'biblio_roles');
         $term = reset($term);
 
         $collection_wrapper->biblio_contributor_role->set($term);
-
-        $collection_wrapper->save();
+        $field_collection->save(TRUE);
       }
     }
   }

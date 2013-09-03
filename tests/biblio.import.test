@@ -55,12 +55,17 @@ class BiblioImportAndRenderTestCase extends DrupalWebTestCase {
 
     // We use trim, to remove whitespace.
     $this->assertEqual(trim($output), trim($expected_result), 'BibTex render is equal to the expected result');
+
+    debug($biblio->bid);
+    $biblios = $biblio_style->import($data);
+    $biblio = $biblios[0];
+    debug($biblio->bid);
   }
 
   /**
    * Test end note tagged.
    */
-  function testEndNoteTagged() {
+  function __testEndNoteTagged() {
     ctools_include('plugins');
     $plugin = biblio_get_biblio_style('endnote');
     $class = ctools_plugin_load_class('biblio', 'biblio_style', 'endnote', 'class');
