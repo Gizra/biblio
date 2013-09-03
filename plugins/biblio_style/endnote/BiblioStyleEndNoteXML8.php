@@ -258,13 +258,6 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
       case 'keyword' :
         $this->biblio->biblio_keywords[$this->keyword_count] .= $data;
         break;
-      case 'dates' :
-        switch ($this->dates) {
-          case 'year' :
-            $this->biblio->biblio_year .= $data;
-            break;
-        }
-        break;
       case 'date' :
         switch ($this->dates) {
           case 'pub-dates' :
@@ -308,6 +301,9 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
     $wrapper->{$property}->set($value);
   }
 
+  /**
+   * Import year and Biblio status.
+   */
   public function importEntryYear(EntityMetadataWrapper $wrapper, $property, $data) {
     if (!$data) {
       // No data given, it might have been a carriage return that was striped.
@@ -322,6 +318,7 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
     // @todo: Get Biblio status valid options from field.
     $options = array(
       'in_press',
+      'submitted',
     );
 
     $data = str_replace(' ', '_', strtolower($data));
