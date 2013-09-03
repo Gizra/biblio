@@ -155,7 +155,7 @@ class BiblioStyleEndNoteXML7 extends BiblioStyleEndNoteXML8 {
         2 => 'thesis',
         3 => 'conference_proceedings',
         4 => 'personal_communication',
-        5 => 'newsPaper_article',
+        5 => 'newspaper_article',
         6 => 'computer_program',
         7 => 'book_section',
         8 => 'magazine_article',
