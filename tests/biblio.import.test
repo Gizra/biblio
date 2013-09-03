@@ -86,7 +86,7 @@ class BiblioImportAndRenderTestCase extends DrupalWebTestCase {
 
 
     $biblios = $biblio_style->import($data);
-    $biblio = $biblios[0];
+    $biblio = $biblios['new'][0];
     $output = $biblio->getText('endnote', array('type' => 'tagged'));
 
     $this->assertEqual(trim($output), trim($expected_result), 'EndNote render is equal to the expected result');
