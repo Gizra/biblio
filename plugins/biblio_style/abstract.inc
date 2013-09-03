@@ -182,6 +182,91 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
   }
 
   /**
+  public function biblio_parse_contributor($contributor_array) {
+
+    if (isset($contributor_array['auth_category']) && $contributor_array['auth_category'] == 5) {
+      $contributor_array['firstname'] = '';
+      $contributor_array['initials'] = '';
+      $contributor_array['lastname'] = trim($contributor_array['name']);
+      $contributor_array['prefix'] = '';
+      $contributor_array['literal'] = 1;
+
+      return $contributor_array;
+    }
+
+    $appellation = $prefix = $surname = $firstname = $initials = '';
+
+    // Remove unneeded spaces from full name.
+    $full_name = trim($contributor_array['name']);
+    $full_name = preg_replace("/\s{2,}/", ' ', $full_name);
+
+    // Split full name by commas.
+    $name_parts = explode(',', $full_name);
+    // Count commas.
+    $commas = count($name_parts) - 1;
+
+    if (!$commas) {
+      // No commas in full name.
+
+      if (preg_match("/(.*) {([^\\\].*)}/", $full_name, $matches) && !(preg_match("/(.*) {\\\.{.*}.*}/", $full_name, $matches2))) {
+        // Complete surname enclosed in {...}, unless the string starts with a
+        // backslash (\) because then it is probably a special latex-sign.
+        // In the last case, any NESTED curly braces should also be taken into
+        // account! so second clause rules out things such as 'a{\"{o}}'.
+
+        $name_parts = explode(' ', $matches[1]);
+        $surname = $matches[2];
+      }
+      else {
+        // The pattern is firstname-initials-surname, such as 'George Bush',
+        // 'George W. Bush', 'G W Bush' etc.
+
+        // Split full name by spaces.
+        $name_parts = explode(' ', $full_name);
+
+        // Last element in the array should be the surname.
+        // There shouldn't be a prefix if the name was entered correctly.
+        $surname = array_pop($name_parts);
+      }
+    }
+    elseif ($commas == 1) {
+      // There is 1 comma in full name, such as in 'Bush, George', 'Bush, G W',
+      // 'Bush, George W', 'de la Bush, George W' etc.
+
+      // Get surname and prefix separately.
+      list ($surname, $prefix) = $this->grabSurname(array_shift($name_parts));
+    }
+    else {
+      // There are 2 commas in full name, such as in 'Bush, Jr. III, George W'.
+
+      // Middle element in array is 'Jr.', 'IV' etc.
+      $appellation = implode(' ', array_splice($name_parts, 1, 1));
+
+      // Get surname and prefix separately.
+      list($surname, $prefix) = $this->grabSurname(array_shift($name_parts));
+    }
+
+    // After removing the surname, prefix and appellation from the full name, we
+    // are left with the first name and initials, and perhaps a surname prefix.
+    $remainder = implode(' ', $name_parts);
+    list($firstname, $initials, $prefix2) = $this->grabFirstnameInitials($remainder);
+
+    if (!empty($prefix2)) {
+      // Found a prefix in remainder, add it to the surname prefix.
+      $prefix .= $prefix2;
+    }
+
+    // Fill results in the array.
+    $contributor_array['firstname'] = $firstname;
+    $contributor_array['initials'] = substr($initials, 0, 10);
+    $contributor_array['lastname'] = $surname;
+    $contributor_array['prefix'] = $prefix;
+    $contributor_array['suffix'] = $appellation;
+
+    return $contributor_array;
+  }
+
+  /**
    * Grab first name, initials and surname prefix from a given string.
    *
    * @param $value
