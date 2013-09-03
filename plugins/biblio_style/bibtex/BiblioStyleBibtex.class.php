@@ -16,7 +16,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
    * @param string $type
    * @return array
    */
-  public function import($data) {
+  public function import($data, $options = array()) {
     $bibtex = new PARSEENTRIES();
     $bibtex->loadBibtexString($data);
 
@@ -30,11 +30,9 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
     $map = $this->getMapping();
 
-    // Array of Biblios.
-    $biblios = array();
-
     foreach ($entries as $entry) {
-      $biblio = biblio_create(strtolower($entry['bibtexEntryType']));
+      $biblio_type = $this->getBiblioType($entry['bibtexEntryType']);
+      $biblio = biblio_create($biblio_type);
 
       $wrapper = entity_metadata_wrapper('biblio', $biblio);
 
@@ -47,12 +45,17 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
       $this->importEntryContributors($wrapper, $entry);
 
-      // @todo: Check if the Biblio doesn't already exist, and if so, load it.
-      $wrapper->save();
-
-      $biblios[] = $wrapper->value();
+      // Check if this is a unique Biblio.
+      if ($duplicate_id = $this->isDuplicate($biblio)) {
+        $return['duplicate'][] = $biblio;
+      }
+      else {
+        // Unique, save biblio and add it to Imported list.
+        $wrapper->save();
+        $return['new'][] = $wrapper->value();
+      }
     }
-    return $biblios;
+    return $return;
   }
 
 
@@ -196,21 +199,19 @@ class BiblioStyleBibtex extends BiblioStyleBase {
         }
 
         $biblio_contributor = biblio_contributor_create($values);
-        $biblio_contributor->save();
+        // Get existing Biblio Contributor object, save it if it doesn't exist.
+        $biblio_contributor = $this->getBiblioContributor($biblio_contributor);
 
         // Create contributors field collections.
         $field_collection = entity_create('field_collection_item', array('field_name' => 'contributor_field_collection'));
         $field_collection->setHostEntity('biblio', $biblio);
         $collection_wrapper = entity_metadata_wrapper('field_collection_item', $field_collection);
         $collection_wrapper->biblio_contributor->set($biblio_contributor);
-
         // @todo: Add reference to correct term.
         $term = taxonomy_get_term_by_name(ucfirst($type), 'biblio_roles');
         $term = reset($term);
 
         $collection_wrapper->biblio_contributor_role->set($term);
-
-        $collection_wrapper->save();
       }
     }
   }
@@ -225,19 +226,19 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     $type = $this->biblio->type;
 
     switch ($type) {
-      case 100:
+      case 'book':
         $series = $wrapper->biblio_secondary_title->value();
         $organization = $wrapper->biblio_publisher->value();
         break;
 
-      case 101:
-      case 103:
+      case 'book_chapter':
+      case 'conference_paper':
         $booktitle = $wrapper->biblio_secondary_title->value();
         $organization = $wrapper->biblio_publisher->value();
         $series = $wrapper->biblio_tertiary_title->value();
         break;
 
-      case 108:
+      case 'thesis':
         $school = $wrapper->biblio_publisher->value();
         $biblio->biblio_publisher->set(NULL);
         if (strpos($wrapper->biblio_type_of_work->value(), 'masters') === TRUE) {
@@ -245,12 +246,12 @@ class BiblioStyleBibtex extends BiblioStyleBase {
         }
         break;
 
-      case 109:
+      case 'report':
         $institution  = $wrapper->biblio_publisher->value();
         $biblio->biblio_publisher->set(NULL);
         break;
 
-      case 102:
+      case 'journal_article':
       default:
         $journal = $wrapper->biblio_secondary_title->value();
         break;
@@ -382,22 +383,10 @@ class BiblioStyleBibtex extends BiblioStyleBase {
    * @param $wrapper
    * @param $property_name
    */
-  private function formatEntryFiles($wrapper, $property_name) {
-    if (!user_access('view uploaded files')) {
-      return;
+  public function formatEntryFiles($wrapper, $property_name) {
+    if ($url = parent::renderEntryFiles($wrapper, $property_name)) {
+      return implode(' , ', $url);
     }
-
-    if (!$files =  $wrapper->{$property_name}->value()) {
-      return;
-    }
-
-    $url = array();
-    $files = !isset($files['fid']) ? $files : array($files);
-    foreach ($files as $file) {
-      $url[] = file_create_url($file['uri']);
-    }
-
-    return implode(' , ', $url);
   }
 
   /**
@@ -486,7 +475,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
         'keywords' => array('property' => 'biblio_keywords', 'method' => 'formatEntryTaxonomyTerms'),
 
         // @todo: Use bilbio_file instead.
-        'attachments' => array('property' => 'biblio_image', 'method' => 'formatEntryFiles'),
+        'attachments' => array('property' => 'biblio_image', 'method' => 'renderEntryFiles'),
 
         'author' => array(
           'property' => 'contributor_field_collection',
@@ -513,6 +502,22 @@ class BiblioStyleBibtex extends BiblioStyleBase {
           'property' => 'biblio_tertiary_title',
           'import_method' => 'getEntryValueTertiaryTitle',
         ),
+      ),
+      'type' => array(
+        'article' => 'journal_article',
+        'book' => 'book',
+        'booklet' => 'miscellaneous',
+        'conference' => 'conference_paper',
+        'inbook' => 'book_chapter',
+        'incollection' => 'book_chapter',
+        'inproceedings' => 'conference_paper',
+        'manual' => 'miscellaneous',
+        'mastersthesis' => 'thesis',
+        'misc' => 'miscellaneous',
+        'phdthesis' => 'thesis',
+        'proceedings' => 'conference_proceedings',
+        'techreport' => 'report',
+        'unpublished' => 'unpublished',
       ),
     );
 

@@ -18,8 +18,6 @@ class BiblioImportAndRenderTestCase extends DrupalWebTestCase {
 
     biblio_add_publication_types();
     biblio_create_fields_by_bundle(array('book'));
-
-    ctools_include('plugins');
   }
 
   /**
@@ -56,11 +54,6 @@ class BiblioImportAndRenderTestCase extends DrupalWebTestCase {
     $biblio = $biblios['new'][0];
     $output = $biblio->getText('bibtex', array('opening_tag' => '"', 'closing_tag' => '"'));
 
-
-
-    // We use trim, to remove whitespace.
-    debug(trim($output));
-    debug(trim($expected_result));
     $this->assertEqual(trim($output), trim($expected_result), 'BibTex render is equal to the expected result');
   }
 
@@ -70,13 +63,12 @@ class BiblioImportAndRenderTestCase extends DrupalWebTestCase {
   function testEndNoteTagged() {
     $data = '
 %0 Book
-%J PS: Political Science and Politics
-%D 2013
-%T Restructuring the Social Sciences: Reflections from Harvard’s Institute for Quantitative Social Science
 %A Gary King
-%X The social sciences are undergoing a dramatic transformation from studying problems to solving them.
 %B PS: Political Science and Politics
-%G eng';
+%D 2013
+%G eng
+%T Restructuring the Social Sciences: Reflections from Harvard’s Institute for Quantitative Social Science
+%X The social sciences are undergoing a dramatic transformation from studying problems to solving them.';
 
     $expected_result = '%0 Book
 %D 2013
@@ -94,10 +86,8 @@ class BiblioImportAndRenderTestCase extends DrupalWebTestCase {
 
 
     $biblios = $biblio_style->import($data);
-    $biblio = $biblios['new'][0];
+    $biblio = $biblios[0];
     $output = $biblio->getText('endnote', array('type' => 'tagged'));
-
-
 
     $this->assertEqual(trim($output), trim($expected_result), 'EndNote render is equal to the expected result');
   }

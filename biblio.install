@@ -109,13 +109,6 @@ function biblio_schema_7300() {
         'not null' => FALSE,
         'description' => '',
       ),
-      'language' => array(
-        'description' => 'The {languages}.language of this Biblio.',
-        'type' => 'varchar',
-        'length' => 12,
-        'not null' => TRUE,
-        'default' => '',
-      ),
     ),
     'primary key' => array('bid'),
     'indexes' => array(

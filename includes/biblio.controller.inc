@@ -29,8 +29,6 @@ class Biblio extends Entity {
       $this->cache_id = '';
     }
 
-    $wrapper = entity_metadata_wrapper('biblio', $this);
-
     parent::save();
   }
 
