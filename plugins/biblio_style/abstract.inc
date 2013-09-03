@@ -181,3 +181,47 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
     return $url;
   }
 }
+/**
+ * Grab first name, initials and surname prefix from a given string.
+ *
+ * @param $value
+ *   String containing first name, initials and perhaps a surname prefix.
+ *
+ * @return
+ *   Array with three separated strings: first name, initials and prefix.
+ */
+function _grabFirstnameInitials($value) {
+  $prefix = array();
+  $firstname = array();
+  $initials = array();
+
+  // Split the given string to its parts.
+  $parts = explode(' ', $value);
+
+  foreach ($parts as $part) {
+    if ((ord(substr($part, 0, 1)) >= 97) && (ord(substr($part, 0, 1)) <= 122)) {
+      // The part starts with a lowercase letter, so this is a surname prefix
+      // such as 'den', 'von', 'de la' etc.
+      $prefix[] = $part;
+      continue;
+    }
+
+    if (preg_match("/[a-zA-Z]{2,}/", trim($part))) {
+      // The part is an alphabetical string containing two letters or more and
+      // therefore a first name such as George, Mark etc.
+      $firstname[] = $part;
+      continue;
+    }
+
+    // The part contains only one letter and perhaps a dot, therefore this is
+    // an initial like the W in George W. Bush.
+    $initials[] = trim(str_replace(".", " ", trim($part)));
+  }
+
+  // Convert arrays to strings.
+  $prefix = !empty($prefix) ? implode(' ', $prefix) : '';
+  $firstname = !empty($firstname) ? implode(' ', $firstname) : '';
+  $initials = !empty($initials) ? implode(' ', $initials) : '';
+
+  return array($firstname, $initials, $prefix);
+}
