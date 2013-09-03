@@ -369,6 +369,7 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
         'section' => array('property' => 'biblio_section'),
         'short-title' => array('property' => 'biblio_short_title'),
         'tertiary-title' => array('property' => 'biblio_tertiary_title'),
+        'title' => array('property' => 'title'),
         'translated-title' => array('property' => 'biblio_translated_title'),
         'volume' => array('property' => 'biblio_volume'),
         'work-type' => array('property' => 'biblio_type_of_work'),
