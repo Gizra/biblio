@@ -182,6 +182,35 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
   }
 
   /**
+   * @param array $names
+   */
+  public function getBiblioContributorsFromNames($names) {
+    if (!is_array($names)) {
+      // split names.
+      $names = preg_split("/(and|&)/i", trim($names));
+    }
+
+    $contributors = array();
+    foreach ($names as $name) {
+      // Try to extract the given and family name.
+      // @todo: Fix this preg_split.
+      $sub_name = preg_split("/{|}/i", $name);
+      $values = array('firstname' =>$sub_name[0]);
+      if (!empty($sub_name[1])) {
+        $values['lastname'] = $sub_name[1];
+      }
+
+      $biblio_contributor = biblio_contributor_create($values);
+
+      // Get existing Biblio Contributor object, save it if it doesn't exist.
+      $biblio_contributor = $this->getBiblioContributor($biblio_contributor);
+
+      $contributors[] = $biblio_contributor;
+    }
+
+    return $contributors;
+  }
+
   public function biblio_parse_contributor($contributor_array) {
 
     if (isset($contributor_array['auth_category']) && $contributor_array['auth_category'] == 5) {
