@@ -211,7 +211,7 @@ class BiblioStyleEndNoteTagged extends BiblioStyleEndNote {
     $return = parent::getMapping();
     $return['type'] = array(
       'Artwork' => 'artwork',
-      'Audiovisual Material' => 'audio_visual',
+      'Audiovisual Material' => 'audiovisual',
       'Bill' => 'bill',
       'Book' => 'book',
       'Book Section' => 'book_chapter',
