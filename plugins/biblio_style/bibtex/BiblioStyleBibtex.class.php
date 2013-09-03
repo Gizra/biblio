@@ -89,8 +89,9 @@ class BiblioStyleBibtex extends BiblioStyleBase {
   private function getEntryValue($wrapper, $tag, $entry) {
     $map = $this->getMapping();
     $map = $map['field'];
-    $key = $map[$tag]['property'];
-    $wrapper->{$key}->set($entry[$tag]);
+    $property = $map[$tag]['property'];
+
+    $wrapper->{$property}->set($entry[$tag]);
 
   }
 
@@ -135,6 +136,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     if (empty($value)) {
       return;
     }
+
     $entry[$tag] = $value;
     $this->getEntryValue($wrapper, $tag, $entry);
   }
