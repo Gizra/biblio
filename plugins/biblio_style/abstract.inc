@@ -180,84 +180,85 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
 
     return $url;
   }
-}
-/**
- * Grab first name, initials and surname prefix from a given string.
- *
- * @param $value
- *   String containing first name, initials and perhaps a surname prefix.
- *
- * @return
- *   Array with three separated strings: first name, initials and prefix.
- */
-function _grabFirstnameInitials($value) {
-  $prefix = array();
-  $firstname = array();
-  $initials = array();
 
-  // Split the given string to its parts.
-  $parts = explode(' ', $value);
+  /**
+   * Grab first name, initials and surname prefix from a given string.
+   *
+   * @param $value
+   *   String containing first name, initials and perhaps a surname prefix.
+   *
+   * @return
+   *   Array with three separated strings: first name, initials and prefix.
+   */
+  public function grabFirstnameInitials($value) {
+    $prefix = array();
+    $firstname = array();
+    $initials = array();
 
-  foreach ($parts as $part) {
-    if ((ord(substr($part, 0, 1)) >= 97) && (ord(substr($part, 0, 1)) <= 122)) {
-      // The part starts with a lowercase letter, so this is a surname prefix
-      // such as 'den', 'von', 'de la' etc.
-      $prefix[] = $part;
-      continue;
+    // Split the given string to its parts.
+    $parts = explode(' ', $value);
+
+    foreach ($parts as $part) {
+      if ((ord(substr($part, 0, 1)) >= 97) && (ord(substr($part, 0, 1)) <= 122)) {
+        // The part starts with a lowercase letter, so this is a surname prefix
+        // such as 'den', 'von', 'de la' etc.
+        $prefix[] = $part;
+        continue;
+      }
+
+      if (preg_match("/[a-zA-Z]{2,}/", $part)) {
+        // The part starts with an uppercase letter and contains two letters or
+        // more and therefore is a first name such as 'George'.
+        $firstname[] = $part;
+        continue;
+      }
+
+      // The part contains only one uppercase letter and perhaps a dot and
+      // therefore is an initial such as the W in 'George W. Bush'.
+      $initials[] = trim(str_replace('.', ' ', $part));
     }
 
-    if (preg_match("/[a-zA-Z]{2,}/", $part)) {
-      // The part starts with an uppercase letter and contains two letters or
-      // more and therefore is a first name such as 'George'.
-      $firstname[] = $part;
-      continue;
-    }
+    // Convert arrays to strings.
+    $prefix = !empty($prefix) ? implode(' ', $prefix) : '';
+    $firstname = !empty($firstname) ? implode(' ', $firstname) : '';
+    $initials = !empty($initials) ? implode(' ', $initials) : '';
 
-    // The part contains only one uppercase letter and perhaps a dot and
-    // therefore is an initial such as the W in 'George W. Bush'.
-    $initials[] = trim(str_replace('.', ' ', $part));
+    return array($firstname, $initials, $prefix);
   }
 
-  // Convert arrays to strings.
-  $prefix = !empty($prefix) ? implode(' ', $prefix) : '';
-  $firstname = !empty($firstname) ? implode(' ', $firstname) : '';
-  $initials = !empty($initials) ? implode(' ', $initials) : '';
+  /**
+   * Grab surname and surname prefix from a given string.
+   *
+   * @param $value
+   *   String containing surname and surname prefix.
+   *
+   * @return
+   *   Array with two separated strings: surname and surname prefix.
+   */
+  public function grabSurname($value) {
+    $prefix  = array();
+    $surname = array();
 
-  return array($firstname, $initials, $prefix);
-}
+    // Split the given string to its parts.
+    $parts = explode(' ', $value);
 
-/**
- * Grab surname and surname prefix from a given string.
- *
- * @param $value
- *   String containing surname and surname prefix.
- *
- * @return
- *   Array with two separated strings: surname and surname prefix.
- */
-function _grabSurname($value) {
-  $prefix  = array();
-  $surname = array();
+    foreach ($parts as $part) {
+      if (empty($surname) && (ord(substr($part, 0, 1)) >= 97) && (ord(substr($part, 0, 1)) <= 122)) {
+        // The part starts with a lowercase letter and comes before any surnames
+        // were found so this is a prefix such as 'den', 'von', 'de la' etc.
+        $prefix[] = $part;
+        continue;
+      }
 
-  // Split the given string to its parts.
-  $parts = explode(' ', $value);
-
-  foreach ($parts as $part) {
-    if (empty($surname) && (ord(substr($part, 0, 1)) >= 97) && (ord(substr($part, 0, 1)) <= 122)) {
-      // The part starts with a lowercase letter and comes before any surnames
-      // were found so this is a prefix such as 'den', 'von', 'de la' etc.
-      $prefix[] = $part;
-      continue;
+      // The part starts with an uppercase letter and/or comes after a surname
+      // was found in the given string so this is a surname such as 'Bush'.
+      $surname[] = $part;
     }
 
-    // The part starts with an uppercase letter and/or comes after a surname
-    // was found in the given string so this is a surname such as 'Bush'.
-    $surname[] = $part;
+    // Convert arrays to strings.
+    $prefix = !empty($prefix) ? implode(' ', $prefix) : '';
+    $surname = !empty($surname) ? implode(' ', $surname) : '';
+
+    return array($surname, $prefix);
   }
-
-  // Convert arrays to strings.
-  $prefix = !empty($prefix) ? implode(' ', $prefix) : '';
-  $surname = !empty($surname) ? implode(' ', $surname) : '';
-
-  return array($surname, $prefix);
 }
