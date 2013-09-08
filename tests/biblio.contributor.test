@@ -1,0 +1,37 @@
+<?php
+
+/**
+ * Test BibTeX style plugin.
+ */
+class BiblioContributorTestCase extends DrupalWebTestCase {
+
+  public static function getInfo() {
+    return array(
+      'name' => 'Get contributor by name',
+      'description' => 'Test Import and render of different style plugins.',
+      'group' => 'Biblio',
+    );
+  }
+
+  function setUp() {
+    parent::setUp('biblio');
+  }
+
+  /**
+   * Test BibTex.
+   */
+  function testGetBiblioContributorsFromNames() {
+    $data = 'Nofar and G. Bush';
+
+    ctools_include('plugins');
+    $plugin = biblio_get_biblio_style('bibtex');
+    $class = ctools_plugin_load_class('biblio', 'biblio_style', 'bibtex', 'class');
+
+    $biblio_style = new $class($plugin);
+
+    $biblio_contributors = $biblio_style->getBiblioContributorsFromNames($data);
+
+    $this->assertEqual($biblio_contributors[0]->firstname, 'Nofar');
+    $this->assertEqual($biblio_contributors[1]->firstname, 'Nofar');
+  }
+}
