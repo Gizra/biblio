@@ -135,6 +135,9 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
     }
   }
 
+  /**
+   * @todo: Import keywords and contributors.
+   */
   public function characterData($parser, $data) {
     $map = $this->getMapping();
 
@@ -288,6 +291,7 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
         'tertiary-title' => array('property' => 'biblio_tertiary_title'),
         'title' => array('property' => 'title'),
         'translated-title' => array('property' => 'biblio_translated_title'),
+        'url' => array('property' => 'biblio_url'),
         'volume' => array('property' => 'biblio_volume'),
         'work-type' => array('property' => 'biblio_type_of_work'),
         'year' => array(

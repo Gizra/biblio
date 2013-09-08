@@ -1690,7 +1690,7 @@ function biblio_biblio_fields_info() {
   $items['biblio_url'] = array(
     'description' => 'URL',
     'field' => array(
-      'cardinality' => '1',
+      'cardinality' => 1,
       'field_name' => 'biblio_url',
       'module' => 'text',
       'settings' => array(
@@ -2272,7 +2272,7 @@ function biblio_get_types_info($type = NULL) {
 }
 
 /**
- * Implements biblio_types_info().
+ * Implements hook_biblio_types_info().
  */
 function biblio_biblio_types_info() {
   $types['audiovisual'] = array('name' => 'Audiovisual');
