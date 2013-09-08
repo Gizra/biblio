@@ -50,3 +50,4 @@ files[] = includes/migrate/7300/biblio_types.migrate.inc
 
 ; Tests
 files[] = tests/biblio.import.test
+files[] = tests/biblio.contributor.test
