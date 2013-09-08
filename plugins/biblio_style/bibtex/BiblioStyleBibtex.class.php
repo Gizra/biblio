@@ -297,36 +297,8 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     foreach ($formats as $info) {
       $output .= call_user_func_array(array($this, "formatEntry"), $info);
     }
-    $output .= "\n}\n";
 
-//    $output .= $this->formatEntry('bibtexCitation', NULL, FALSE);
-//    $output .= $this->formatEntry('title');
-//    $output .= $this->formatEntry('journal', $journal);
-//    $output .= $this->formatEntry('booktitle', $booktitle);
-//    $output .= $this->formatEntry('series', $series);
-//    $output .= $this->formatEntry('volume');
-//    $output .= $this->formatEntry('number');
-//    $output .= $this->formatEntry('year');
-//    $output .= $this->formatEntry('note');
-//    $output .= $this->formatEntry('month');
-//    $output .= $this->formatEntry('pages');
-//    $output .= $this->formatEntry('publisher');
-//    $output .= $this->formatEntry('school', $school);
-//    $output .= $this->formatEntry('organization', $organization);
-//    $output .= $this->formatEntry('institution', $institution);
-//    $output .= $this->formatEntry('type');
-//    $output .= $this->formatEntry('edition');
-//    $output .= $this->formatEntry('chapter');
-//    $output .= $this->formatEntry('address');
-//    $output .= $this->formatEntry('abstract');
-//    $output .= $this->formatEntry('keywords');
-//    $output .= $this->formatEntry('isbn');
-//    $output .= $this->formatEntry('issn');
-//    $output .= $this->formatEntry('doi');
-//    $output .= $this->formatEntry('url');
-//    $output .= $this->formatEntry('attachments');
-//    $output .= $this->formatEntry('author');
-//    $output .= $this->formatEntry('editor');
+    $output .= "\n}\n";
 
     // Convert any special characters to the latex equivalents.
     $converter = new PARSEENTRIES();
