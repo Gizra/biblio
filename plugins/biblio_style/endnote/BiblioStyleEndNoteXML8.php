@@ -153,40 +153,6 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
 
       $this->{$method}($this->wrapper, $property, $data);
     }
-
-    return;
-
-    switch ($element) {
-      //Author information
-      case 'author' :
-        $this->contributors[$this->contrib_count]['name'] .= $data;
-        break;
-      case 'keyword' :
-        $this->biblio->biblio_keywords[$this->keyword_count] .= $data;
-        break;
-      case 'date' :
-        switch ($this->dates) {
-          case 'pub-dates' :
-            $this->biblio->biblio_date .= $data;
-            break;
-          case 'copyright-dates' :
-            break;
-        }
-        break;
-      case 'urls' :
-      case 'url' :
-        switch ($this->urls) {
-          case 'web-urls' :
-            $this->biblio->biblio_url .= $data;
-            break;
-          case 'pdf-urls' :
-          case 'text-urls' :
-          case 'image-urls' :
-            break;
-          case 'related-urls' :
-        }
-        break;
-    }
   }
 
   /**
