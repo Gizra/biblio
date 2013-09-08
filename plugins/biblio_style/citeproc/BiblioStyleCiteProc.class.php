@@ -58,7 +58,7 @@ class BiblioStyleCiteProc extends BiblioStyleBase {
       $date = array();
 
       // @todo: Add "In press".
-      if (isset($wrapper->biblio_in_press) && $wrapper->biblio_in_press->value()) {
+      if (strtolower($wrapper->biblio_status->value()) == 'in press') {
         // CiteProc currently doesn't support the literal key. So this is
         // actually ignored, however, this is the "right" way.
         $this->mappedBiblio->{$key}->literal = 'In press';

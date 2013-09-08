@@ -45,7 +45,7 @@ class BiblioMigrateEntries extends Migration {
 
     foreach (array_keys(biblio_fields_info()) as $field_name) {
 
-      if (in_array($field_name, array('biblio_type', 'biblio_abstract', 'biblio_in_press', 'biblio_issued', 'biblio_status'))) {
+      if (in_array($field_name, array('biblio_type', 'biblio_abstract', 'biblio_issued', 'biblio_status'))) {
         continue;
       }
       $fields[] = $field_name;
