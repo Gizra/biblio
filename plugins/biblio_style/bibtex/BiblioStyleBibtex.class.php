@@ -31,7 +31,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     $map = $this->getMapping();
 
     // Array of Biblios.
-    $biblios = array();
+    $biblios = array('new' => array());
 
     foreach ($entries as $entry) {
       $biblio_type = $this->getBiblioType($entry['bibtexEntryType']);
@@ -57,10 +57,11 @@ class BiblioStyleBibtex extends BiblioStyleBase {
         else {
           // Unique, save biblio and add it to Imported list.
           $wrapper->save();
-          $biblios[] = $wrapper->value();
+          $biblios['new'][] = $wrapper->value();
         }
       }
     }
+
     return $biblios;
   }
 
