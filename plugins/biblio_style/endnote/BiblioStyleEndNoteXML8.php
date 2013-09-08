@@ -219,13 +219,6 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
   function characterData($parser, $data) {
     $map = $this->getMapping();
 
-    $parent_elements = array(
-      'date',
-      'dates',
-      'url',
-      'urls',
-    );
-
     if (in_array($this->element, array('date', 'dates'))) {
       $element = $this->dates;
     }
