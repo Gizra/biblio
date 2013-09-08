@@ -262,40 +262,14 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     }
 
     // @todo: Use the human name instead of ucfirst()?
-    $output .= '@' . ucfirst($type). '{';
-    $formats = array(
-      array('bibtex',NULL, FALSE),
-      array('title'),
-      array('journal', $journal),
-      array('booktitle', $booktitle),
-      array('series', $series),
-      array('volume'),
-      array('number'),
-      array('year'),
-      array('note'),
-      array('month'),
-      array('pages'),
-      array('publisher'),
-      array('school', $school),
-      array('organization',$organization),
-      array('institution', $institution),
-      array('type'),
-      array('edition'),
-      array('chapter'),
-      array('address'),
-      array('abstract'),
-      array('keywords'),
-      array('isbn'),
-      array('issn'),
-      array('doi'),
-      array('url'),
-      array('attachments'),
-      array('author'),
-      array('editor'),
-    );
+    $type_info = biblio_get_types_info($type);
+    $output = array();
+    $output[] = '@' . $type_info->name . '{';
 
-    foreach ($formats as $info) {
-      $output .= call_user_func_array(array($this, "formatEntry"), $info);
+    $map = $this->getMapping();
+    foreach ($map['field'] as $key => $info) {
+      $method = $info['method'];
+      $this->{$method}($wrapper, $key, $output);
     }
 
     $output .= "\n}\n";
@@ -388,6 +362,13 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     return implode(', ', $values);
   }
 
+  public function formatEntryPublisher(EntityMetadataWrapper $wrapper, $key, &$options) {
+    $map = $this->getMapping();
+
+    $property_name = $map['field']['property'];
+
+  }
+
   /**
    * File format entry.
    *
@@ -459,45 +440,60 @@ class BiblioStyleBibtex extends BiblioStyleBase {
   public function getMapping() {
     $return  = array(
       'field' => array(
-        'title' => array('property' => 'title'),
-        'volume' => array('property' => 'biblio_volume'),
-        'number' => array('property' => 'biblio_number'),
-        'year' => array('property' => 'biblio_year'),
-        'note' => array('property' => 'biblio_notes'),
-        'month' => array('property' => 'biblio_date'),
-        'pages' => array('property' => 'biblio_pages'),
-        'publisher' => array(
-          'property' => 'biblio_publisher',
-          'import_method' => 'getEntryValuePublisher',
-        ),
-        'edition' => array('property' => 'biblio_edition'),
-        'chapter' => array('property' => 'biblio_section'),
-        'address' => array('property' => 'biblio_place_published'),
         'abstract' => array('property' => 'biblio_abstract'),
-        'isbn' => array('property' => 'biblio_isbn'),
-        'issn' => array('property' => 'biblio_issn'),
-        'doi' => array('property' => 'biblio_doi'),
-        // @todo: Is this the Biblio URL?
-        'url' => array('property' => 'biblio_url'),
-
-        'keywords' => array('property' => 'biblio_keywords', 'method' => 'formatEntryTaxonomyTerms'),
-
-        // @todo: Use bilbio_file instead.
-        'attachments' => array('property' => 'biblio_image', 'method' => 'renderEntryFiles'),
-
+        'address' => array('property' => 'biblio_place_published'),
         'author' => array(
           'property' => 'contributor_field_collection',
           'method' => 'formatEntryContributorAuthor',
         ),
+        // @todo: Use bilbio_file instead.
+        'attachments' => array(
+          'property' => 'biblio_image',
+          'method' => 'renderEntryFiles'
+        ),
+        'bibtex' => array('property' => 'bibtext'),
+        'booktitle' => array(
+          'property' => 'booktitle',
+          'method' => 'formatEntryBookTitle',
+        ),
+        'chapter' => array('property' => 'biblio_section'),
         'editor' => array(
           'property' => 'contributor_field_collection',
           'method' => 'formatEntryContributorEditor',
         ),
-
+        'edition' => array('property' => 'biblio_edition'),
         // @todo: Special entry types?
         'bibtexEntryType' => array('property' => 'biblio_type_of_work'),
         'bibtexCitation' => array('property' => 'biblio_citekey'),
-
+        'doi' => array('property' => 'biblio_doi'),
+        'isbn' => array('property' => 'biblio_isbn'),
+        'issn' => array('property' => 'biblio_issn'),
+        'month' => array('property' => 'biblio_date'),
+        'note' => array('property' => 'biblio_notes'),
+        'number' => array('property' => 'biblio_number'),
+        'pages' => array('property' => 'biblio_pages'),
+        'publisher' => array(
+          'property' => 'biblio_publisher',
+          'import_method' => 'getEntryValuePublisher',
+          'method' => 'formatEntryPublisher'
+        ),
+        'journal' => array(
+          'property' => 'journal',
+          'method' => 'formatEntryJournal',
+        ),
+        'series' => array(
+          'property' => 'series',
+          'method' => 'formatEntrySeries',
+        ),
+        'title' => array('property' => 'title'),
+        'volume' => array('property' => 'biblio_volume'),
+        'year' => array('property' => 'biblio_year'),
+        // @todo: Is this the Biblio URL?
+        'url' => array('property' => 'biblio_url'),
+        'keywords' => array(
+          'property' => 'biblio_keywords',
+          'method' => 'formatEntryTaxonomyTerms'
+        ),
         // @todo: Is it ok to have this "fake" keys, or add this as property
         // to the array?
         // Keys used for import.
@@ -505,10 +501,22 @@ class BiblioStyleBibtex extends BiblioStyleBase {
           'property' => 'biblio_secondary_title',
           'import_method' => 'getEntryValueSecondaryTitle',
         ),
-
         'tertiary_title' => array(
           'property' => 'biblio_tertiary_title',
           'import_method' => 'getEntryValueTertiaryTitle',
+        ),
+        'type' => array('property' => 'type'),
+        'institution' => array(
+          'property' => 'institution',
+          'method' => 'formatEntryInstitution',
+        ),
+        'organization' => array(
+          'property' => 'organization',
+          'method' => 'formatEntryOrganization',
+        ),
+        'school' => array(
+          'property' => 'school',
+          'method' => 'formatEntrySchool',
         ),
       ),
       'type' => array(
