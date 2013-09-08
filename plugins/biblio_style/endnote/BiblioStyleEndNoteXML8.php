@@ -64,7 +64,7 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
   }
 
 
-  function startElement($parser, $name, $attrs) {
+  public function startElement($parser, $name, $attrs) {
     switch ($name) {
       case 'style' :
         $this->font_attr = explode(' ', $attrs['face']);
@@ -134,7 +134,7 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
     }
   }
 
-  function endElement($parser, $name) {
+  public function endElement($parser, $name) {
     //    global $this->biblio, $nids, $this->element, $terms, $batch_proc, $session_id, $this->contributors_type, $this->contrib_count, $this->dates, $this->urls, $this->keyword_count, $this->font_attr;
     switch ($name) {
       case 'authors' :
@@ -216,7 +216,7 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
     }
   }
 
-  function characterData($parser, $data) {
+  public function characterData($parser, $data) {
     $map = $this->getMapping();
 
     if (in_array($this->element, array('date', 'dates'))) {
