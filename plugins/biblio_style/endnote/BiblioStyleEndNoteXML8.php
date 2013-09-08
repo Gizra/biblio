@@ -65,79 +65,73 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
 
 
   public function startElement($parser, $name, $attrs) {
-    switch ($name) {
-      case 'style' :
-        $this->font_attr = explode(' ', $attrs['face']);
-        foreach ($this->font_attr as $font_attr) {
-          switch ($font_attr) {
-            case 'normal':
-              // Do nothing.
-              break;
+    if ($name == 'style') {
+      $this->font_attr = explode(' ', $attrs['face']);
+      foreach ($this->font_attr as $font_attr) {
+        switch ($font_attr) {
+          case 'normal':
+            // Do nothing.
+            break;
 
-            case 'bold':
-              $this->characterData(NULL, '<b>');
-              break;
+          case 'bold':
+            $this->characterData(NULL, '<b>');
+            break;
 
-            case 'italic':
-              $this->characterData(NULL, '<i>');
-              break;
+          case 'italic':
+            $this->characterData(NULL, '<i>');
+            break;
 
-            case 'underline':
-              $this->characterData(NULL, '<u>');
-              break;
+          case 'underline':
+            $this->characterData(NULL, '<u>');
+            break;
 
-            case 'superscript':
-              $this->characterData(NULL, '<sup>');
-              break;
+          case 'superscript':
+            $this->characterData(NULL, '<sup>');
+            break;
 
-            case 'subscript':
-              $this->characterData(NULL, '<sub>');
-              break;
-          }
+          case 'subscript':
+            $this->characterData(NULL, '<sub>');
+            break;
         }
-        break;
-
-      default :
-        $this->element = $name;
+      }
+    }
+    else {
+      $this->element = $name;
     }
   }
 
   public function endElement($parser, $name) {
-    //    global $this->biblio, $nids, $this->element, $terms, $batch_proc, $session_id, $this->contributors_type, $this->contrib_count, $this->dates, $this->urls, $this->keyword_count, $this->font_attr;
-    switch ($name) {
-      case 'style' :
-        foreach ($this->font_attr as $font_attr) {
-          switch ($font_attr) {
-            case 'normal':
-              // Do nothing.
-              break;
+    if ($name == 'style') {
+      foreach ($this->font_attr as $font_attr) {
+        switch ($font_attr) {
+          case 'normal':
+            // Do nothing.
+            break;
 
-            case 'bold':
-              $this->characterData(NULL, '</b>');
-              break;
+          case 'bold':
+            $this->characterData(NULL, '</b>');
+            break;
 
-            case 'italic':
-              $this->characterData(NULL, '</i>');
-              break;
+          case 'italic':
+            $this->characterData(NULL, '</i>');
+            break;
 
-            case 'underline':
-              $this->characterData(NULL, '</u>');
-              break;
+          case 'underline':
+            $this->characterData(NULL, '</u>');
+            break;
 
-            case 'superscript':
-              $this->characterData(NULL, '</sup>');
-              break;
+          case 'superscript':
+            $this->characterData(NULL, '</sup>');
+            break;
 
-            case 'subscript':
-              $this->characterData(NULL, '</sub>');
-              break;
-          }
+          case 'subscript':
+            $this->characterData(NULL, '</sub>');
+            break;
         }
-        $this->font_attr = array();
-        break;
-
-      default :
-        $this->element = '';
+      }
+    }
+    else {
+      $this->element = '';
     }
   }
 
