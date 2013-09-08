@@ -68,65 +68,33 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
     switch ($name) {
       case 'style' :
         $this->font_attr = explode(' ', $attrs['face']);
-        foreach ($this->font_attr as $fatt) {
-          switch ($fatt) {
+        foreach ($this->font_attr as $font_attr) {
+          switch ($font_attr) {
             case 'normal':
+              // Do nothing.
               break;
+
             case 'bold':
               $this->characterData(NULL, '<b>');
               break;
+
             case 'italic':
               $this->characterData(NULL, '<i>');
               break;
+
             case 'underline':
               $this->characterData(NULL, '<u>');
               break;
+
             case 'superscript':
               $this->characterData(NULL, '<sup>');
               break;
+
             case 'subscript':
               $this->characterData(NULL, '<sub>');
               break;
           }
         }
-        break;
-
-      case 'keywords' :
-        $this->keyword_count = 0;
-        break;
-
-      case 'authors' :
-      case 'secondary-authors' :
-      case 'tertiary-authors' :
-      case 'subsidiary-authors' :
-      case 'translated-authors' :
-        $this->contributors_type = $name;
-        $this->contributors = array();
-        $this->contrib_count = 0;
-        break;
-
-      case 'author' :
-        $this->contributors[$this->contrib_count]['name'] = '';
-        $this->element = $name;
-        break;
-
-      case 'year' :
-      case 'pub-dates' :
-      case 'copyright-dates' :
-        $this->dates = $name;
-        break;
-
-      case 'web-urls' :
-      case 'pdf-urls' :
-      case 'text-urls' :
-      case 'related-urls' :
-      case 'image-urls' :
-        $this->urls = $name;
-        break;
-
-      case 'keyword':
-        $this->biblio->biblio_keywords[$this->keyword_count] = '';
-        $this->element = $name;
         break;
 
       default :
@@ -137,73 +105,29 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
   public function endElement($parser, $name) {
     //    global $this->biblio, $nids, $this->element, $terms, $batch_proc, $session_id, $this->contributors_type, $this->contrib_count, $this->dates, $this->urls, $this->keyword_count, $this->font_attr;
     switch ($name) {
-      case 'authors' :
-      case 'secondary-authors' :
-      case 'tertiary-authors' :
-      case 'subsidiary-authors' :
-      case 'translated-authors' :
-        $this->contributors_type = '';
-        foreach ($this->contributors as $contributor) {
-          $this->biblio->biblio_contributors[] = $contributor;
-        }
-        break;
-      case 'author' :
-        switch ($this->contributors_type) {
-          case 'authors' :
-            $this->contributors[$this->contrib_count]['auth_category'] = 1;
-            $this->contributors[$this->contrib_count]['auth_type'] =  1;
-            break;
-          case 'secondary-authors' :
-            $this->contributors[$this->contrib_count]['auth_category'] = 2;
-            $this->contributors[$this->contrib_count]['auth_type'] = 2;
-            break;
-          case 'tertiary-authors' :
-            $this->contributors[$this->contrib_count]['auth_category'] = 3;
-            $this->contributors[$this->contrib_count]['auth_type'] = 3;
-            break;
-          case 'subsidiary-authors' :
-            $this->contributors[$this->contrib_count]['auth_category'] = 4;
-            $this->contributors[$this->contrib_count]['auth_type'] = 4;
-            break;
-          case 'translated-authors' :
-            $this->contributors[$this->contrib_count]['auth_category'] = 5;
-            $this->contributors[$this->contrib_count]['auth_type'] = 5;
-            break;
-        }
-        $this->contrib_count++;
-        break;
-      case 'keyword' :
-        $this->keyword_count++;
-        break;
-      case 'year' :
-      case 'pub-dates' :
-      case 'copyright-dates' :
-        $this->dates = '';
-        break;
-      case 'web-urls' :
-      case 'pdf-urls' :
-      case 'text-urls' :
-      case 'related-urls' :
-      case 'image-urls' :
-        $this->urls = '';
-        break;
       case 'style' :
-        foreach ($this->font_attr as $fatt) {
-          switch ($fatt) {
+        foreach ($this->font_attr as $font_attr) {
+          switch ($font_attr) {
             case 'normal':
+              // Do nothing.
               break;
+
             case 'bold':
               $this->characterData(NULL, '</b>');
               break;
+
             case 'italic':
               $this->characterData(NULL, '</i>');
               break;
+
             case 'underline':
               $this->characterData(NULL, '</u>');
               break;
+
             case 'superscript':
               $this->characterData(NULL, '</sup>');
               break;
+
             case 'subscript':
               $this->characterData(NULL, '</sub>');
               break;
@@ -211,6 +135,7 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
         }
         $this->font_attr = array();
         break;
+
       default :
         $this->element = '';
     }
@@ -219,15 +144,7 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
   public function characterData($parser, $data) {
     $map = $this->getMapping();
 
-    if (in_array($this->element, array('date', 'dates'))) {
-      $element = $this->dates;
-    }
-    elseif (in_array($this->element, array('url', 'urls'))) {
-      $element = $this->urls;
-    }
-    else {
-      $element = $this->element;
-    }
+    $element = $this->element;
 
     if (!empty($map['field'][$element]['import_method'])) {
       $method = $map['field'][$element]['import_method'];
@@ -242,6 +159,8 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
 
       $this->{$method}($this->wrapper, $property, $data);
     }
+
+    return;
 
     switch ($element) {
       //Author information
