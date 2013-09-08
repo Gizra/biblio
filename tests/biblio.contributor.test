@@ -8,7 +8,7 @@ class BiblioContributorTestCase extends DrupalWebTestCase {
   public static function getInfo() {
     return array(
       'name' => 'Get contributor by name',
-      'description' => 'Test Import and render of different style plugins.',
+      'description' => 'Test parsing different formats of contributor names.',
       'group' => 'Biblio',
     );
   }
@@ -18,20 +18,93 @@ class BiblioContributorTestCase extends DrupalWebTestCase {
   }
 
   /**
-   * Test BibTex.
+   * Test parsing different formats of contributor names.
    */
   function testGetBiblioContributorsFromNames() {
-    $data = 'Nofar and G. Bush';
-
     ctools_include('plugins');
     $plugin = biblio_get_biblio_style('bibtex');
     $class = ctools_plugin_load_class('biblio', 'biblio_style', 'bibtex', 'class');
 
     $biblio_style = new $class($plugin);
 
+    // Test single last name.
+    $data = 'Bush';
+    $biblio_contributors = $biblio_style->getBiblioContributorsFromNames($data);
+    $this->assertEqual($biblio_contributors[0]->lastname, 'Bush');
+
+    // Test single name with multiple spaces.
+    $data = '  George    W.    Bush  ';
+    $biblio_contributors = $biblio_style->getBiblioContributorsFromNames($data);
+    $this->assertEqual($biblio_contributors[0]->firstname, 'George');
+    $this->assertEqual($biblio_contributors[0]->initials, 'W');
+    $this->assertEqual($biblio_contributors[0]->lastname, 'Bush');
+
+    // Test single name with a comma and spaces.
+    $data = '  Bush  ,   George   W  ';
+    $biblio_contributors = $biblio_style->getBiblioContributorsFromNames($data);
+    $this->assertEqual($biblio_contributors[0]->firstname, 'George');
+    $this->assertEqual($biblio_contributors[0]->initials, 'W');
+    $this->assertEqual($biblio_contributors[0]->lastname, 'Bush');
+
+    // Test single name with a prefix and with multiple spaces.
+    $data = '  de   la   Bush  ,  George    W  ';
+    $biblio_contributors = $biblio_style->getBiblioContributorsFromNames($data);
+    $this->assertEqual($biblio_contributors[0]->firstname, 'George');
+    $this->assertEqual($biblio_contributors[0]->initials, 'W');
+    $this->assertEqual($biblio_contributors[0]->prefix, 'de la');
+    $this->assertEqual($biblio_contributors[0]->lastname, 'Bush');
+
+    // Test single name with a suffix, two commas, and with multiple spaces.
+    $data = '  Bush   ,  Jr.   III  , George   W.   ';
+    $biblio_contributors = $biblio_style->getBiblioContributorsFromNames($data);
+    $this->assertEqual($biblio_contributors[0]->firstname, 'George');
+    $this->assertEqual($biblio_contributors[0]->initials, 'W');
+    $this->assertEqual($biblio_contributors[0]->suffix, 'Jr. III');
+    $this->assertEqual($biblio_contributors[0]->lastname, 'Bush');
+
+    // Test two names separated by 'and', with extra spaces.
+    $data = 'George W. Bush   and    George Bush ';
+    $biblio_contributors = $biblio_style->getBiblioContributorsFromNames($data);
+    $this->assertEqual($biblio_contributors[0]->firstname, 'George');
+    $this->assertEqual($biblio_contributors[0]->initials, 'W');
+    $this->assertEqual($biblio_contributors[0]->lastname, 'Bush');
+    $this->assertEqual($biblio_contributors[1]->firstname, 'George');
+    $this->assertEqual($biblio_contributors[1]->lastname, 'Bush');
+
+    // Test multiple names of different kinds.
+    $data = 'George W. Bush and George Bush and G W Bush ' .
+      'and Bush, George and Bush, G W and Bush, George W and de la Bush, George W ' .
+      'and Bush, Jr. III, George W';
+
     $biblio_contributors = $biblio_style->getBiblioContributorsFromNames($data);
 
-    $this->assertEqual($biblio_contributors[0]->lastname, 'Nofar');
-    $this->assertEqual($biblio_contributors[1]->firstname, 'Nofar');
+    $this->assertEqual($biblio_contributors[0]->firstname, 'George');
+    $this->assertEqual($biblio_contributors[0]->initials, 'W');
+    $this->assertEqual($biblio_contributors[0]->lastname, 'Bush');
+    $this->assertEqual($biblio_contributors[1]->firstname, 'George');
+    $this->assertEqual($biblio_contributors[1]->initials, '');
+    $this->assertEqual($biblio_contributors[1]->lastname, 'Bush');
+    $this->assertEqual($biblio_contributors[2]->firstname, '');
+    $this->assertEqual($biblio_contributors[2]->initials, 'G W');
+    $this->assertEqual($biblio_contributors[2]->lastname, 'Bush');
+
+    $this->assertEqual($biblio_contributors[3]->firstname, 'George');
+    $this->assertEqual($biblio_contributors[3]->initials, '');
+    $this->assertEqual($biblio_contributors[3]->lastname, 'Bush');
+    $this->assertEqual($biblio_contributors[4]->firstname, '');
+    $this->assertEqual($biblio_contributors[4]->initials, 'G W');
+    $this->assertEqual($biblio_contributors[4]->lastname, 'Bush');
+    $this->assertEqual($biblio_contributors[5]->firstname, 'George');
+    $this->assertEqual($biblio_contributors[5]->initials, 'W');
+    $this->assertEqual($biblio_contributors[5]->lastname, 'Bush');
+    $this->assertEqual($biblio_contributors[6]->firstname, 'George');
+    $this->assertEqual($biblio_contributors[6]->initials, 'W');
+    $this->assertEqual($biblio_contributors[6]->prefix, 'de la');
+    $this->assertEqual($biblio_contributors[6]->lastname, 'Bush');
+
+    $this->assertEqual($biblio_contributors[7]->firstname, 'George');
+    $this->assertEqual($biblio_contributors[7]->initials, 'W');
+    $this->assertEqual($biblio_contributors[7]->suffix, 'Jr. III');
+    $this->assertEqual($biblio_contributors[7]->lastname, 'Bush');
   }
 }

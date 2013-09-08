@@ -297,11 +297,11 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
     }
 
     // Fill results in the array.
-    $contributor_array['firstname'] = $firstname;
-    $contributor_array['initials'] = substr($initials, 0, 10);
-    $contributor_array['lastname'] = $lastname;
-    $contributor_array['prefix'] = $prefix;
-    $contributor_array['suffix'] = $appellation;
+    $contributor_array['firstname'] = trim($firstname);
+    $contributor_array['initials'] = substr(trim($initials), 0, 10);
+    $contributor_array['lastname'] = trim($lastname);
+    $contributor_array['prefix'] = trim($prefix);
+    $contributor_array['suffix'] = trim($appellation);
 
     return $contributor_array;
   }
