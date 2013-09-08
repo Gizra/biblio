@@ -277,7 +277,6 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
         'number' => array('property' => 'biblio_number'),
         'orig-pub' => array('property' => 'biblio_original_publication'),
         'pages' => array('property' => 'biblio_pages'),
-        'pub-dates' => array('property' => 'biblio_date'),
         'pub-location' => array('property' => 'biblio_place_published'),
         'publisher' => array('property' => 'biblio_publisher'),
         'related-urls' => array('property' => 'biblio_url'),
