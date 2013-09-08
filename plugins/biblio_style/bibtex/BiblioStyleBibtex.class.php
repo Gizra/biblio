@@ -335,11 +335,15 @@ class BiblioStyleBibtex extends BiblioStyleBase {
   /**
    * Generic format entry.
    *
-   * @param $wrapper
-   * @param $property_name
+   * @param EntityMetadataWrapper $wrapper
+   *  The wrapper object.
+   * @param $key
+   *  The property name which holds the value of the field.
+   * @param $output
+   *  Referenced variable which will holds the render value of the row.
    */
-  private function formatEntryGeneric($wrapper, $property_name) {
-    return $wrapper->{$property_name}->value();
+  private function formatEntryGeneric(EntityMetadataWrapper $wrapper, $key, &$output) {
+    $output[] = $wrapper->{$key}->value();
   }
 
   /**
@@ -451,7 +455,10 @@ class BiblioStyleBibtex extends BiblioStyleBase {
           'property' => 'biblio_image',
           'method' => 'renderEntryFiles'
         ),
-        'bibtex' => array('property' => 'bibtext'),
+        'bibtex' => array(
+          'property' => 'bibtext',
+          'method' => 'formatEntryBibText',
+        ),
         'booktitle' => array(
           'property' => 'booktitle',
           'method' => 'formatEntryBookTitle',
