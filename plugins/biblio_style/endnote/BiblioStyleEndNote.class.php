@@ -70,7 +70,9 @@ class BiblioStyleEndNote extends BiblioStyleBase {
     // @todo: Check md5.
     $wrapper->save();
     $biblios[] = $biblio;
-    return $biblios;
+    return array(
+      'new' => $biblios,
+    );
   }
 
   private function importEntryGeneric($wrapper, $tag, $value) {
@@ -254,7 +256,7 @@ class BiblioStyleEndNote extends BiblioStyleBase {
         'execute_once' => TRUE,
       ),
       '%F' => array('property' => 'biblio_label'),
-      '%G' => array('property' => 'language'),
+      '%G' => array('property' => 'biblio_language'),
       '%I' => array('property' => 'biblio_publisher'),
       '%J' => array(
         'property' => 'biblio_secondary_title',

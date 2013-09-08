@@ -383,4 +383,25 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
 
     return array($lastname, $prefix);
   }
+
+  /*
+   * Returns Biblio Publication Type based on Publication Type.
+   *
+   * @param $type
+   *  Bibtex Publication Type.
+   *
+   * @return
+   *  Biblio Publication Type if the Publication Type was found in the Mapping,
+   *  otherwise returns the given type in lowercase.
+   */
+  function getBiblioType($type) {
+    $map = $this->getMapping();
+    $type = strtolower($type);
+
+    if (!empty($map['type'][$type])) {
+      return $map['type'][$type];
+    }
+
+    return $type;
+  }
 }

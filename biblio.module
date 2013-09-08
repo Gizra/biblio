@@ -424,12 +424,11 @@ function biblio_entity_access($op, $type = NULL, $account = NULL) {
  * @param array $values
  *  An associative array of any additional values to be set when creating this
  *  entity. These values will be carried throughout the biblio object's life.
- *  Example: $values['language'] => 'en';
+ *  Example: $values['type'] => 'book';
  * @return object
  *  The biblio object, with default values.
  */
 function biblio_create($type, $values = array()) {
-  global $language;
   if (empty($account)) {
     global $user;
     $account = clone $user;
@@ -438,7 +437,6 @@ function biblio_create($type, $values = array()) {
   $values['uid'] = $account->uid;
   $values['title'] = '';
   $values += array(
-    'language' => $language->language,
     'created' => REQUEST_TIME,
     'changed' => REQUEST_TIME,
   );
@@ -2188,6 +2186,35 @@ function biblio_biblio_fields_info() {
         'settings' => array(
           'display_label' => TRUE,
         ),
+      ),
+    ),
+  );
+
+  // Language field.
+  $items['biblio_language'] = array(
+    'field' => array(
+      'cardinality' => '1',
+      'field_name' => 'biblio_language',
+      'module' => 'text',
+      'settings' => array(
+        'max_length' => '255',
+      ),
+      'type' => 'text',
+    ),
+    'instance' => array(
+      'label' => 'Language',
+      'settings' => array(
+        'text_processing' => '0',
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'text',
+        'settings' => array(
+          'size' => '60',
+        ),
+        'type' => 'text_textfield',
+        'weight' => '-3',
       ),
     ),
   );
