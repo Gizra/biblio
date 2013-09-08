@@ -91,7 +91,11 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     $map = $map['field'];
     $property = $map[$tag]['property'];
 
-    $wrapper->{$property}->set($entry[$tag]);
+    // Some BibTex might come we double curly brackets, so strip them out from
+    // the beginning and end of the value.
+    $value = trim($entry[$tag], '{}');
+
+    $wrapper->{$property}->set($value);
 
   }
 
