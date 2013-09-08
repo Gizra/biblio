@@ -63,7 +63,6 @@ class BiblioImportAndRenderTestCase extends DrupalWebTestCase {
   /**
    * Test end note tagged.
    */
-
   function testEndNoteTagged() {
     $data = '
 %0 Book
