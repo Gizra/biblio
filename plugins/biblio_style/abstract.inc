@@ -213,7 +213,7 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
   }
 
   /**
-   * Grab each part of a contributor's name separately.
+   * Get each part of a contributor's name separately.
    *
    * @param $full_name
    *  Full name of contributor.
@@ -274,7 +274,7 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
       // 'Bush, George W', 'de la Bush, George W' etc.
 
       // Get last name and prefix separately.
-      list ($lastname, $prefix) = $this->grabLastname(array_shift($name_parts));
+      list ($lastname, $prefix) = $this->getLastname(array_shift($name_parts));
     }
     else {
       // There are 2 commas in full name, such as in 'Bush, Jr. III, George W'.
@@ -283,13 +283,13 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
       $appellation = implode(' ', array_splice($name_parts, 1, 1));
 
       // Get last name and prefix separately.
-      list($lastname, $prefix) = $this->grabLastname(array_shift($name_parts));
+      list($lastname, $prefix) = $this->getLastname(array_shift($name_parts));
     }
 
     // After removing the last name, prefix and appellation from the full name,
     // we are left with first name and initials, and perhaps last name prefix.
     $remainder = implode(' ', $name_parts);
-    list($firstname, $initials, $prefix2) = $this->grabFirstnameInitials($remainder);
+    list($firstname, $initials, $prefix2) = $this->getFirstnameInitials($remainder);
 
     if (!empty($prefix2)) {
       // Found a prefix in remainder, add it to the last name prefix.
@@ -307,7 +307,7 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
   }
 
   /**
-   * Grab first name, initials and last name prefix from a given string.
+   * Get first name, initials and last name prefix from a given string.
    *
    * @param $value
    *   String containing first name, initials and perhaps a last name prefix.
@@ -315,7 +315,7 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
    * @return
    *   Array with three separated strings: first name, initials and prefix.
    */
-  public function grabFirstnameInitials($value) {
+  public function getFirstnameInitials($value) {
     $prefix = array();
     $firstname = array();
     $initials = array();
@@ -352,7 +352,7 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
   }
 
   /**
-   * Grab last name and last name prefix from a given string.
+   * Get last name and last name prefix from a given string.
    *
    * @param $value
    *   String containing last name and last name prefix.
@@ -360,7 +360,7 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
    * @return
    *   Array with two separated strings: last name and last name prefix.
    */
-  public function grabLastname($value) {
+  public function getLastname($value) {
     $prefix  = array();
     $lastname = array();
 

@@ -29,13 +29,6 @@ class Biblio extends Entity {
       $this->cache_id = '';
     }
 
-    $this->md5 = BiblioStyleBase::generateBiblioMd5($this);
-
-    if (empty($this->_skip_cache)) {
-      $this->cache = '';
-      $this->cache_id = '';
-    }
-
     parent::save();
   }
 

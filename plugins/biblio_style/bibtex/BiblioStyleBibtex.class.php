@@ -48,17 +48,15 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
       $this->importEntryContributors($wrapper, $entry);
 
-      if (empty($options['allow_duplicate'])) {
-        // Check if this is a unique Biblio.
-        if ($duplicate_id = $this->isDuplicate($biblio)) {
-          // Not unique, display message to the user.
-          drupal_set_message(t('Biblio "@title" already imported, view it <a href="@url">here</a>.', array('@title' => $biblio->title, '@url' => url('biblio/' . $duplicate_id))));
-        }
-        else {
-          // Unique, save biblio and add it to Imported list.
-          $wrapper->save();
-          $biblios['new'][] = $wrapper->value();
-        }
+      // Check if this is a unique Biblio.
+      if ($duplicate_id = $this->isDuplicate($biblio)) {
+        // Not unique, display message to the user.
+        drupal_set_message(t('Biblio "@title" already imported, view it <a href="@url">here</a>.', array('@title' => $biblio->title, '@url' => url('biblio/' . $duplicate_id))));
+      }
+      else {
+        // Unique, save biblio and add it to Imported list.
+        $wrapper->save();
+        $biblios['new'][] = $wrapper->value();
       }
     }
 
@@ -219,7 +217,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     $biblio = clone $this->biblio;
     $wrapper = entity_metadata_wrapper('biblio', $biblio);
 
-    $outputgenerateBiblioMd5 = '';
+    $output = '';
     $journal = $series = $booktitle = $school = $organization = $institution = NULL;
     $type = $this->biblio->type;
 

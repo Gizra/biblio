@@ -56,10 +56,8 @@ class BiblioImportAndRenderTestCase extends DrupalWebTestCase {
 
     $this->assertEqual(trim($output), trim($expected_result), 'BibTex render is equal to the expected result');
 
-    debug($biblio->bid);
     $biblios = $biblio_style->import($data);
     $biblio = $biblios[0];
-    debug($biblio->bid);
   }
 
   /**
