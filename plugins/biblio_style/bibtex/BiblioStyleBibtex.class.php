@@ -382,18 +382,27 @@ class BiblioStyleBibtex extends BiblioStyleBase {
   /**
    * Author contributor format entry.
    *
-   * @param $wrapper
-   * @param $property_name
+   * @param EntityMetadataWrapper $wrapper
+   *  The wrapper object.
+   * @param $key
+   *  The property name which holds the value of the field.
+   *
+   * @return string
    */
-  private function formatEntryContributorAuthor(EntityMetadataWrapper$wrapper, $key) {
+  private function formatEntryContributorAuthor(EntityMetadataWrapper $wrapper, $key) {
     return $this->formatEntryContributor($wrapper, $key, 'author');
   }
 
   /**
    * Editor contributor format entry.
    *
-   * @param $wrapper
-   * @param $property_name
+   * @param EntityMetadataWrapper $wrapper
+   *  The wrapper object.
+   * @param $key
+   *  The property name which holds the value of the field.
+   *
+   * @return string
+   *  The contributors name.
    */
   private function formatEntryContributorEditor(EntityMetadataWrapper $wrapper, $key) {
     return $this->formatEntryContributor($wrapper, $key, 'editor');
@@ -402,10 +411,14 @@ class BiblioStyleBibtex extends BiblioStyleBase {
   /**
    * Helper function to get contributors name.
    *
-   * @param $wrapper
-   * @param $property_name
+   * @param EntityMetadataWrapper $wrapper
+   *  The wrapper object.
+   * @param $key
+   *  The property name which holds the value of the field.
    * @param $role
+   *
    * @return string
+   *  The contributors name.
    */
   private function formatEntryContributor(EntityMetadataWrapper$wrapper, $key, $role) {
     if (!$wrapper->{$key}->value()) {
