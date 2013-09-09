@@ -5,7 +5,7 @@
  * BibTeX style.
  */
 
-class BiblioStyleBibtex extends BiblioStyleBase {
+class BiblioStyleBibtex extends BiblioStyleBase implements BiblioStyleImportInterface {
 
   /**
    * Import BibTeX entries.
@@ -16,7 +16,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
    * @param string $type
    * @return array
    */
-  public function import($data, $options = array()) {
+  public function importData($data, $options = array()) {
     $bibtex = new PARSEENTRIES();
     $bibtex->loadBibtexString($data);
 

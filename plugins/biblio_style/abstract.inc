@@ -2,7 +2,6 @@
 
 /**
  * Biblio Style interface
- *
  */
 interface BiblioStyleInterface {
 
@@ -25,6 +24,38 @@ interface BiblioStyleInterface {
    *   A an HTML string.
    */
   public function render($options = array(), $langcode = NULL);
+}
+
+/**
+ * Biblio Style interface for a style that supports import.
+ */
+interface BiblioStyleImportInterface extends BiblioStyleInterface {
+
+  /**
+   * Import data to Biblio.
+   *
+   * @param $data
+   *   String of data.
+   * @param array $options
+   *   Array of options to pass to the Biblio style.
+   *
+   * @return
+   *   Array keyed with:
+   *   - 'succuess': Array of unsaved Biblio objects.
+   *   - 'error': Array of data that could not be imported.
+   *     @code
+   *     $return = array(
+   *       'error' => array(
+   *         array(
+   *           'data' => 'data sent to import',
+   *           'error' => 'error message',
+   *         ),
+   *       ),
+   *     ),
+   *     @endcode
+   */
+  public function importData($data, $options = array());
+
 }
 
 /**

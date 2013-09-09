@@ -5,12 +5,12 @@
  * EndNote XML8 biblio style.
  */
 
-class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
+class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote implements BiblioStyleImportInterface {
 
   /**
    * @inheritdoc
    */
-  public function import($data, $options = array()) {
+  public function importData($data, $options = array()) {
     $options += array(
       // Populate the pattern here, so BiblioStyleEndNoteXML7 can re-use
       // this class.

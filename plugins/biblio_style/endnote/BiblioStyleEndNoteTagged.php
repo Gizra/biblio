@@ -5,12 +5,12 @@
  * EndNote tagged biblio style.
  */
 
-class BiblioStyleEndNoteTagged extends BiblioStyleEndNote {
+class BiblioStyleEndNoteTagged extends BiblioStyleEndNote implements BiblioStyleImportInterface {
 
   /**
    * @inheritdoc
    */
-  public function import($data, $options = array()) {
+  public function importData($data, $options = array()) {
     $biblios = array();
 
     $data = str_replace("\r\n", "\n", $data);
