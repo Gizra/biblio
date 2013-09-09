@@ -330,7 +330,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
    *  The value of the property.
    */
   private function formatEntrySeries(EntityMetadataWrapper $wrapper, $key) {
-    return in_array($this->biblio->type, array('book_chapter','conference_paper')) ? $wrapper->biblio_tertiary_title->value() ? $wrapper->biblio_secondary_title->value();
+    return in_array($this->biblio->type, array('book_chapter','conference_paper')) ? $wrapper->biblio_tertiary_title->value() : $wrapper->biblio_secondary_title->value();
   }
 
   /**
