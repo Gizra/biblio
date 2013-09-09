@@ -216,7 +216,6 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
    */
   public function importEntryContributor(EntityMetadataWrapper $wrapper, $role, $name) {
     $biblio = $wrapper->value();
-    $contributors = $this->getBiblioContributorsFromNames($name);
 
     // Map the role to Biblio.
     $role = $role == 'authors' ? 'author' : str_replace('-authors', '', $role);
@@ -242,32 +241,7 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
         $role = 'Translator';
     }
 
-
-
-    foreach ($contributors as $contributor) {
-      // Create contributors field collections.
-      $field_collection = entity_create('field_collection_item', array('field_name' => 'contributor_field_collection'));
-      $field_collection->setHostEntity('biblio', $biblio);
-      $collection_wrapper = entity_metadata_wrapper('field_collection_item', $field_collection);
-      $collection_wrapper->biblio_contributor->set($contributor);
-
-      // @todo: Add reference to correct term.
-      if ($term = taxonomy_get_term_by_name(ucfirst($role), 'biblio_roles')) {
-        $term = reset($term);
-      }
-      else {
-        // Create a new term.
-        $vocabulary = taxonomy_vocabulary_machine_name_load('biblio_roles');
-        $values = array(
-          'name' => ucfirst($role),
-          'vid' => $vocabulary->vid,
-        );
-        $term = entity_create('taxonomy_term', $values);
-        taxonomy_term_save($term);
-      }
-
-      $collection_wrapper->biblio_contributor_role->set($term);
-    }
+    $this->addBiblioContributorsToCollection($biblio, $name, $role);
   }
 
 

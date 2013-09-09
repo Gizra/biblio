@@ -63,38 +63,7 @@ class BiblioStyleEndNoteTagged extends BiblioStyleEndNote {
     $role = $map['field'][$tag]['role'];
 
     $biblio = $wrapper->value();
-
-    // @todo: Add $this->getBiblioContributorsFromNames() to get
-    // new $biblio_contributors or existing.
-
-    // split names.
-    $names = preg_split("/(and|&)/i", trim($value));
-    foreach ($names as $name) {
-      // Try to extract the given and family name.
-      // @todo: Fix this preg_split.
-      $sub_name = preg_split("/{|}/i", $name);
-      $values = array('firstname' => $sub_name[0]);
-      if (!empty($sub_name[1])) {
-        $values['lastname'] = $sub_name[1];
-      }
-
-      $biblio_contributor = biblio_contributor_create($values);
-      $biblio_contributor->save();
-
-      // Create contributors field collections.
-      $field_collection = entity_create('field_collection_item', array('field_name' => 'contributor_field_collection'));
-      $field_collection->setHostEntity('biblio', $biblio);
-      $collection_wrapper = entity_metadata_wrapper('field_collection_item', $field_collection);
-      $collection_wrapper->biblio_contributor->set($biblio_contributor);
-
-      // @todo: Add reference to correct term.
-      $term = taxonomy_get_term_by_name(ucfirst($role), 'biblio_roles');
-      $term = reset($term);
-
-      $collection_wrapper->biblio_contributor_role->set($term);
-
-      $field_collection->save(FALSE);
-    }
+    $this->addBiblioContributorsToCollection($biblio, $value, $role);
   }
 
   /**
