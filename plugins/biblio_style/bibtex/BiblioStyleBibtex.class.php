@@ -30,6 +30,9 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
     $map = $this->getMapping();
 
+    // Array of Biblios.
+    $biblios = array('new' => array());
+
     foreach ($entries as $entry) {
       $biblio_type = $this->getBiblioType($entry['bibtexEntryType']);
       $biblio = biblio_create($biblio_type);
@@ -47,15 +50,17 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
       // Check if this is a unique Biblio.
       if ($duplicate_id = $this->isDuplicate($biblio)) {
-        $return['duplicate'][] = $biblio;
+        // Not unique, display message to the user.
+        drupal_set_message(t('Biblio "@title" already imported, view it <a href="@url">here</a>.', array('@title' => $biblio->title, '@url' => url('biblio/' . $duplicate_id))));
       }
       else {
         // Unique, save biblio and add it to Imported list.
         $wrapper->save();
-        $return['new'][] = $wrapper->value();
+        $biblios['new'][] = $wrapper->value();
       }
     }
-    return $return;
+
+    return $biblios;
   }
 
 
@@ -193,30 +198,19 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
       $biblio = $wrapper->value();
 
-      // split names.
-      $names = preg_split("/(and|&)/i", trim($entry[$type]));
-      foreach ($names as $name) {
-        // Try to extract the given and family name.
-        // @todo: Fix this preg_split.
-        $sub_name = preg_split("/{|}/i", $name);
-        $values = array('firstname' =>$sub_name[0]);
-        if (!empty($sub_name[1])) {
-          $values['lastname'] = $sub_name[1];
-        }
+      // Get array of saved contributor objects from string of names.
+      $contributors = $this->getBiblioContributorsFromNames($entry[$type]);
 
-        $biblio_contributor = biblio_contributor_create($values);
-        // Get existing Biblio Contributor object, save it if it doesn't exist.
-        $biblio_contributor = $this->getBiblioContributor($biblio_contributor);
-
+      foreach ($contributors as $contributor) {
         // Create contributors field collections.
         $field_collection = entity_create('field_collection_item', array('field_name' => 'contributor_field_collection'));
         $field_collection->setHostEntity('biblio', $biblio);
         $collection_wrapper = entity_metadata_wrapper('field_collection_item', $field_collection);
-        $collection_wrapper->biblio_contributor->set($biblio_contributor);
+        $collection_wrapper->biblio_contributor->set($contributor);
+
         // @todo: Add reference to correct term.
         $term = taxonomy_get_term_by_name(ucfirst($type), 'biblio_roles');
         $term = reset($term);
-
         $collection_wrapper->biblio_contributor_role->set($term);
       }
     }
