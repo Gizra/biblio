@@ -103,8 +103,6 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
       $clone->contributor_field_collection = $contributors;
     }
 
-
-
     $md5 = md5(serialize($clone));
 
     return $md5;

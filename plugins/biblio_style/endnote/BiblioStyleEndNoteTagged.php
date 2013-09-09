@@ -325,7 +325,7 @@ class BiblioStyleEndNoteTagged extends BiblioStyleEndNote {
 
     // Assign default import method.
     foreach ($return['field'] as $key => $value) {
-      $return['field'] += array(
+      $return['field'][$key] += array(
         'import_method' => 'importEntryGeneric',
         'render_method' => 'renderEntryGeneric',
         'execute_once' => FALSE,
