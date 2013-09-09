@@ -201,7 +201,9 @@ class BiblioStyleEndNoteTagged extends BiblioStyleEndNote {
       $role = $sub_wrapper->biblio_contributor_role->label();
       $contributor = $sub_wrapper->biblio_contributor->value();
 
-      $tag = $contrib_map[$role];
+      // If we can't map the type, assume it is an author.
+      // @todo: Is this right?
+      $tag = !empty($contrib_map[$role]) ? $contrib_map[$role] : '%A';
       $output[] = $tag . ' ' . $contributor->name;
     }
   }
@@ -261,7 +263,7 @@ class BiblioStyleEndNoteTagged extends BiblioStyleEndNote {
       '%E' => array(
         'import_method' => 'importEntryContributors',
         'render_method' => 'renderEntryContributors',
-        'role' => 'Editor',
+        'role' => 'Secondary Author',
         'execute_once' => TRUE,
       ),
       '%F' => array('property' => 'biblio_label'),
@@ -289,8 +291,7 @@ class BiblioStyleEndNoteTagged extends BiblioStyleEndNote {
       '%Y' => array(
         'import_method' => 'importEntryContributors',
         'render_method' => 'renderEntryContributors',
-        // @todo: Fix role.
-        'role' => '%Y',
+        'role' => 'Tertiary Author',
         'execute_once' => TRUE,
       ),
       '%X' => array('property' => 'biblio_notes'),
@@ -308,8 +309,7 @@ class BiblioStyleEndNoteTagged extends BiblioStyleEndNote {
       '%?' => array(
         'import_method' => 'importEntryContributors',
         'render_method' => 'renderEntryContributors',
-        // @todo: Fix role.
-        'role' => '%?',
+        'role' => 'Subsidiary Author',
         'execute_once' => TRUE,
       ),
       '%@' => array('property' => 'biblio_isbn'),
