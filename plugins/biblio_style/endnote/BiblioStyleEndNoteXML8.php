@@ -7,9 +7,6 @@
 
 class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
 
-  // @todo: Remove.
-  public $biblio = NULL;
-
   /**
    * @inheritdoc
    */
