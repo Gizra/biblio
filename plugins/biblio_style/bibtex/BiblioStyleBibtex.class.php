@@ -269,13 +269,41 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     $map = $this->getMapping();
     foreach ($map['field'] as $key => $info) {
       $method = $info['method'];
-      $this->{$method}($wrapper, $key, $output);
+      $property_name = $map[$key]['property'];
+      $use_key = $map[$key]['use_key'];
+
+      $wrapper = entity_metadata_wrapper('biblio', $this->biblio);
+
+      if (!isset($wrapper->{$property_name})) {
+        continue;
+      }
+
+      if (!$value = $this->{$method}($wrapper, $key)) {
+        continue;
+      }
+
+      $first_entry = &drupal_static(__METHOD__, array());
+      $prefix = isset($first_entry[$this->biblio->bid]) ? ",\n\t" : '';
+
+      // If we reached here, it means we have a first entity, so we can turn off
+      // this flag.
+      $first_entry[$this->biblio->bid] = FALSE;
+
+      if ($use_key) {
+        $opening_tag = $this->plugin['options']['opening_tag'];
+        $closing_tag = $this->plugin['options']['closing_tag'];
+        $output[] = $prefix . $key . ' = '. $opening_tag .  $value . $closing_tag;
+      }
+      else {
+        $output[] = $output . $value;
+      }
     }
 
-    $output .= "\n}\n";
+    $output[] = "\n}\n";
 
     // Convert any special characters to the latex equivalents.
     $converter = new PARSEENTRIES();
+    $output = implode("\n", $output);
     $output = $converter->searchReplaceText($this->getTranstab(), $output, FALSE);
 
     return $output;
