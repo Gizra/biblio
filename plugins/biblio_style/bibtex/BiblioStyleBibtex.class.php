@@ -5,18 +5,12 @@
  * BibTeX style.
  */
 
-class BiblioStyleBibtex extends BiblioStyleBase {
+class BiblioStyleBibtex extends BiblioStyleBase implements BiblioStyleImportInterface {
 
   /**
-   * Import BibTeX entries.
-   *
-   * @todo: Deal with duplication.
-   *
-   * @param $data
-   * @param string $type
-   * @return array
+   * @inheritdoc
    */
-  public function import($data, $options = array()) {
+  public function importData($data, $options = array()) {
     $bibtex = new PARSEENTRIES();
     $bibtex->loadBibtexString($data);
 
@@ -31,7 +25,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     $map = $this->getMapping();
 
     // Array of Biblios.
-    $biblios = array('new' => array());
+    $biblios = array();
 
     foreach ($entries as $entry) {
       $biblio_type = $this->getBiblioType($entry['bibtexEntryType']);
@@ -47,17 +41,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
       }
 
       $this->importEntryContributors($wrapper, $entry);
-
-      // Check if this is a unique Biblio.
-      if ($duplicate_id = $this->isDuplicate($biblio)) {
-        // Not unique, display message to the user.
-        drupal_set_message(t('Biblio "@title" already imported, view it <a href="@url">here</a>.', array('@title' => $biblio->title, '@url' => url('biblio/' . $duplicate_id))));
-      }
-      else {
-        // Unique, save biblio and add it to Imported list.
-        $wrapper->save();
-        $biblios['new'][] = $wrapper->value();
-      }
+      $biblios['success'][] = $wrapper->value();
     }
 
     return $biblios;

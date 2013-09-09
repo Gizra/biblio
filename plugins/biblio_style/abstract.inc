@@ -2,7 +2,6 @@
 
 /**
  * Biblio Style interface
- *
  */
 interface BiblioStyleInterface {
 
@@ -25,6 +24,38 @@ interface BiblioStyleInterface {
    *   A an HTML string.
    */
   public function render($options = array(), $langcode = NULL);
+}
+
+/**
+ * Biblio Style interface for a style that supports import.
+ */
+interface BiblioStyleImportInterface extends BiblioStyleInterface {
+
+  /**
+   * Import data to Biblio.
+   *
+   * @param $data
+   *   String of data.
+   * @param array $options
+   *   Array of options to pass to the Biblio style.
+   *
+   * @return
+   *   Array keyed with:
+   *   - 'succuess': Array of unsaved Biblio objects.
+   *   - 'error': Array of data that could not be imported.
+   *     @code
+   *     $return = array(
+   *       'error' => array(
+   *         array(
+   *           'data' => 'data sent to import',
+   *           'error' => 'error message',
+   *         ),
+   *       ),
+   *     ),
+   *     @endcode
+   */
+  public function importData($data, $options = array());
+
 }
 
 /**
@@ -127,7 +158,14 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
       ->range(0, 1)
       ->execute();
 
-    return !empty($result['biblio']) ? key($result['biblio']) : FALSE;
+    if (empty($result['biblio'])) {
+      return;
+    }
+
+    $row = reset($result['biblio']);
+    $biblio = biblio_load($row->bid);
+
+    return $biblio;
   }
 
   /**
@@ -428,7 +466,7 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
     return array($lastname, $prefix);
   }
 
-  /*
+  /**
    * Returns Biblio Publication Type based on Publication Type.
    *
    * @param $type
@@ -438,7 +476,7 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
    *  Biblio Publication Type if the Publication Type was found in the Mapping,
    *  otherwise returns the given type in lowercase.
    */
-  function getBiblioType($type) {
+  public function getBiblioType($type) {
     $map = $this->getMapping();
     $type = strtolower($type);
 
@@ -447,6 +485,52 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
     }
 
     return $type;
+  }
+
+  /**
+   * Entry point for data import.
+   *
+   * @param $data
+   *   String of data.
+   * @param array $options
+   *   Array of options to pass to the Biblio style.
+   *
+   * @return array
+   *   Array keyed with 'new', 'duplicate', and 'error.
+   */
+  public function import($data, $options = array()) {
+    $return = array('new' => array(), 'duplicate' => array(), 'error' => array());
+
+    if ($result = $this->importData($data, $options)) {
+      $return = $this->saveOrFindDuplicateFromImportData($result);
+    }
+    return $return;
+  }
+
+  /**
+   * Given a of successful import, find duplicates or save the new Biblios.
+   *
+   * @param $result
+   *   Array keyed with 'success' and 'error'.
+   *
+   * @return array
+   *   Array keyed with 'new', 'duplicate', and 'error.
+   *
+   * @see BiblioStyleBase::saveOrFindDuplicateFromImportData()
+   */
+  public function saveOrFindDuplicateFromImportData($result) {
+    $result += array('success' => array());
+    foreach ($result['success'] as $biblio) {
+      if ($duplicate_biblio = $this->isDuplicate($biblio)) {
+        $result['duplicate'][] = $duplicate_biblio;
+      }
+      else {
+        $biblio->save();
+        $result['new'][] = $biblio;
+      }
+    }
+    unset($result['success']);
+    return $result;
   }
 
   /**

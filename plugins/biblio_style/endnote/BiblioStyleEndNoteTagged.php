@@ -5,12 +5,12 @@
  * EndNote tagged biblio style.
  */
 
-class BiblioStyleEndNoteTagged extends BiblioStyleEndNote {
+class BiblioStyleEndNoteTagged extends BiblioStyleEndNote implements BiblioStyleImportInterface {
 
   /**
    * @inheritdoc
    */
-  public function import($data, $options = array()) {
+  public function importData($data, $options = array()) {
     $biblios = array();
 
     $data = str_replace("\r\n", "\n", $data);
@@ -42,9 +42,7 @@ class BiblioStyleEndNoteTagged extends BiblioStyleEndNote {
       $this->{$method}($wrapper, $tag, $value);
     }
 
-    // @todo: Check md5.
-    $wrapper->save();
-    $biblios['new'][] = $biblio;
+    $biblios['success'][] = $biblio;
     return $biblios;
   }
 
