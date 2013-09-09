@@ -225,7 +225,6 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     $biblio = clone $this->biblio;
     $wrapper = entity_metadata_wrapper('biblio', $biblio);
 
-    $output = '';
     $journal = $series = $booktitle = $school = $organization = $institution = NULL;
     $type = $this->biblio->type;
 
@@ -244,7 +243,6 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
       case 'thesis':
         $school = $wrapper->biblio_publisher->value();
-        $biblio->biblio_publisher->set(NULL);
         if (strpos($wrapper->biblio_type_of_work->value(), 'masters') === TRUE) {
           $type = 'mastersthesis';
         }
@@ -252,7 +250,6 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
       case 'report':
         $institution  = $wrapper->biblio_publisher->value();
-        $biblio->biblio_publisher->set(NULL);
         break;
 
       case 'journal_article':
@@ -264,30 +261,30 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     // @todo: Use the human name instead of ucfirst()?
     $type_info = biblio_get_types_info($type);
     $output = array();
-    $output[] = '@' . $type_info->name . '{';
+    $output[] = '@' . $type_info['name'] . '{';
 
     $map = $this->getMapping();
     foreach ($map['field'] as $key => $info) {
       $method = $info['method'];
-      $property_name = $map[$key]['property'];
-      $use_key = $map[$key]['use_key'];
+      $property_name = $info['property'];
+      $use_key = $info['use_key'];
 
       $wrapper = entity_metadata_wrapper('biblio', $this->biblio);
 
-      if (!isset($wrapper->{$property_name})) {
+      if (empty($wrapper->{$property_name})) {
         continue;
       }
 
-      if (!$value = $this->{$method}($wrapper, $key)) {
+      if (!$value = $this->{$method}($wrapper, $property_name)) {
         continue;
       }
 
       $first_entry = &drupal_static(__METHOD__, array());
-      $prefix = isset($first_entry[$this->biblio->bid]) ? ",\n\t" : '';
 
       // If we reached here, it means we have a first entity, so we can turn off
       // this flag.
       $first_entry[$this->biblio->bid] = FALSE;
+      $prefix = ",\n\t";
 
       if ($use_key) {
         $opening_tag = $this->plugin['options']['opening_tag'];
@@ -295,7 +292,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
         $output[] = $prefix . $key . ' = '. $opening_tag .  $value . $closing_tag;
       }
       else {
-        $output[] = $output . $value;
+        $output[] = $prefix . $value;
       }
     }
 
@@ -303,61 +300,10 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
     // Convert any special characters to the latex equivalents.
     $converter = new PARSEENTRIES();
-    $output = implode("\n", $output);
+    $output = implode("", $output);
     $output = $converter->searchReplaceText($this->getTranstab(), $output, FALSE);
 
     return $output;
-  }
-
-  /**
-   * Format an entry.
-   *
-   * @param $key
-   *   The BibTeX key name.
-   * @param $value
-   *   Optional; The value to format. If empty, try to get it from the Biblio
-   *   entity. Defaults to NULL.
-   * @return string
-   */
-  private function formatEntry($key, $value = NULL, $use_key = TRUE) {
-    if (empty($value)) {
-      $map = $this->getMapping();
-      $map = $map['field'];
-
-      if (empty($map[$key])) {
-        return;
-      }
-
-      // @todo: Cache the wrapper.
-      $wrapper = entity_metadata_wrapper('biblio', $this->biblio);
-
-      $property_name = $map[$key]['property'];
-      if (!isset($wrapper->{$property_name})) {
-        return;
-      }
-
-      $method = $map[$key]['method'];
-
-      if (!$value = $this->{$method}($wrapper, $property_name)) {
-        return;
-      }
-    }
-
-    $first_entry = &drupal_static(__METHOD__, array());
-
-    $output = isset($first_entry[$this->biblio->bid]) ? ",\n\t" : '';
-
-    // If we reached here, it means we have a first entity, so we can turn off
-    // this flag.
-    $first_entry[$this->biblio->bid] = FALSE;
-
-    if ($use_key) {
-      $opening_tag = $this->plugin['options']['opening_tag'];
-      $closing_tag = $this->plugin['options']['closing_tag'];
-      return $output . $key . ' = '. $opening_tag .  $value . $closing_tag;
-    }
-
-    return $output . $value;
   }
 
   /**
@@ -395,10 +341,21 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     return implode(', ', $values);
   }
 
-  public function formatEntryPublisher(EntityMetadataWrapper $wrapper, $key, &$options) {
-    $map = $this->getMapping();
-
-    $property_name = $map['field']['property'];
+  /**
+   * Return the value of the publisher property.
+   *
+   * @param EntityMetadataWrapper $wrapper
+   *  The wrapper object.
+   * @param $key
+   *  The property name which holds the value of the field.
+   *
+   * @return
+   *  The value of the property.
+   */
+  public function formatEntryPublisher(EntityMetadataWrapper $wrapper, $key) {
+    if (!in_array($this->biblio->type, array('thesis','report'))) {
+      return $wrapper->{$key}->value();
+    }
   }
 
   /**
