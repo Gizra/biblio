@@ -136,7 +136,7 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
   }
 
   /**
-   * @todo: Import keywords and contributors.
+   * @todo: Import keywords.
    */
   public function characterData($parser, $data) {
     $map = $this->getMapping();
