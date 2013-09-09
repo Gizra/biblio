@@ -190,7 +190,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
   /**
    * Create Biblio Contributor entities.
    */
-  private function importEntryContributors($wrapper, $entry) {
+  public function importEntryContributors($wrapper, $entry) {
     foreach (array('author', 'editor') as $type) {
       if (empty($entry[$type])) {
         continue;

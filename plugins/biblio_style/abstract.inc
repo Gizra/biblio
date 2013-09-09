@@ -84,20 +84,24 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
     unset($clone->_skip_cache);
     unset($clone->biblio_status);
 
-    // Run through field collection items and get the contributor's target IDs.
-    $contributors = array();
 
-    foreach ($clone->contributor_field_collection[LANGUAGE_NONE] as $value) {
-      $entity = $value['entity'];
+    if (!empty($clone->contributor_field_collection)) {
+      // Run through field collection items and get the contributor's target
+      // IDs. We can't use the wrapper, as the entities might not be saved yet
+      // so we access the fields directly.
+      $contributors = array();
+      foreach ($clone->contributor_field_collection[LANGUAGE_NONE] as $value) {
+        $entity = !empty($value['entity']) ? $value['entity'] : entity_load_single('field_collection_item', $value['value']);
 
-      $contributors[] = array(
-        $entity->biblio_contributor[LANGUAGE_NONE][0]['target_id'],
-        $entity->biblio_contributor_role[LANGUAGE_NONE][0]['target_id'],
-      );
+        $contributors[] = array(
+          $entity->biblio_contributor[LANGUAGE_NONE][0]['target_id'],
+          $entity->biblio_contributor_role[LANGUAGE_NONE][0]['target_id'],
+        );
+      }
+
+      // Replace field collection item in clone with the contributor's target IDs.
+      $clone->contributor_field_collection = $contributors;
     }
-
-    // Replace field collection item in clone with the contributor's target IDs.
-    $clone->contributor_field_collection = $contributors;
 
     $md5 = md5(serialize($clone));
 
@@ -182,6 +186,43 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
     }
 
     return $url;
+  }
+
+
+  /**
+   * Add contributors to the field collection of a Biblio.
+   *
+   * @param $names
+   *   String with name(s) of the contributors.
+   * @param $role
+   *   The role of the contributor (e.g "Author", "Editor).
+   */
+  public function addBiblioContributorsToCollection(Biblio $biblio, $names, $role) {
+    $contributors = $this->getBiblioContributorsFromNames($names);
+    foreach ($contributors as $contributor) {
+      // Create contributors field collections.
+      $field_collection = entity_create('field_collection_item', array('field_name' => 'contributor_field_collection'));
+      $field_collection->setHostEntity('biblio', $biblio);
+      $collection_wrapper = entity_metadata_wrapper('field_collection_item', $field_collection);
+      $collection_wrapper->biblio_contributor->set($contributor);
+
+      // @todo: Add reference to correct term.
+      if ($term = taxonomy_get_term_by_name(ucfirst($role), 'biblio_roles')) {
+        $term = reset($term);
+      }
+      else {
+        // Create a new term.
+        $vocabulary = taxonomy_vocabulary_machine_name_load('biblio_roles');
+        $values = array(
+          'name' => ucfirst($role),
+          'vid' => $vocabulary->vid,
+        );
+        $term = entity_create('taxonomy_term', $values);
+        taxonomy_term_save($term);
+      }
+
+      $collection_wrapper->biblio_contributor_role->set($term);
+    }
   }
 
   /**
@@ -406,5 +447,15 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
     }
 
     return $type;
+  }
+
+  /**
+   * @todo: Make abstract function?
+   */
+  public function getMapping() {
+    return array(
+      'field' => array(),
+      'type' => array(),
+    );
   }
 }

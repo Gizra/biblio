@@ -32,6 +32,11 @@ files[] = includes/biblio_contributor.metadata.inc
 files[] = includes/views/biblio.views.inc
 files[] = includes/views/handlers/biblio_handler_field_biblio_render.inc
 
+; EndNote
+files[] = plugins/biblio_style/endnote/BiblioStyleEndNoteTagged.php
+files[] = plugins/biblio_style/endnote/BiblioStyleEndNoteXML7.php
+files[] = plugins/biblio_style/endnote/BiblioStyleEndNoteXML8.php
+
 ; BibTeX
 files[] = plugins/biblio_style/bibtex/PARSECREATORS.php
 files[] = plugins/biblio_style/bibtex/PARSEENTRIES.php
