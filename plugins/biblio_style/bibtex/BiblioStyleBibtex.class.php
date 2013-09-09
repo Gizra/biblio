@@ -16,7 +16,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
    * @param string $type
    * @return array
    */
-  public function import($data) {
+  public function import($data, $options = array()) {
     $bibtex = new PARSEENTRIES();
     $bibtex->loadBibtexString($data);
 
@@ -31,7 +31,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     $map = $this->getMapping();
 
     // Array of Biblios.
-    $biblios = array();
+    $biblios = array('new' => array());
 
     foreach ($entries as $entry) {
       $biblio_type = $this->getBiblioType($entry['bibtexEntryType']);
@@ -48,51 +48,19 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
       $this->importEntryContributors($wrapper, $entry);
 
-      // @todo: Check if the Biblio doesn't already exist, and if so, load it.
-      $wrapper->save();
-
-      $biblios[] = $wrapper->value();
-
-      /*
-      $node = new stdClass();
-      $node->biblio_contributors = array();
-      switch ($entry['bibtexEntryType']) {
-        case 'mastersthesis':
-          $node->biblio_type_of_work = 'masters';
-          break;
-        case 'phdthesis':
-          $node->biblio_type_of_work = 'phd';
-          break;
-      }
-
-      if (!empty($entry['keywords'])) {
-        if (strpos($entry['keywords'], ';')) {
-          $entry['keywords'] = str_replace(';', ',', $entry['keywords']);
-        }
-        $node->biblio_keywords = explode(',', $entry['keywords']);
-      }
-
-      $node->biblio_bibtex_md5      = md5(serialize($node));
-      $node->biblio_import_type     = 'bibtex';
-
-      if (!($dup = biblio_bibtex_check_md5($node->biblio_bibtex_md5))) {
-        if ($save) {
-          biblio_save_node($node, $terms, $batch, $session_id, $save);
-          $nids[] = (!empty($node->nid))? $node->nid : NULL;
-        }
-        else { // return the whole node if we are not saveing to the DB (used for the paste function on the input form)
-          $nids[] = $node;
-        }
+      // Check if this is a unique Biblio.
+      if ($duplicate_id = $this->isDuplicate($biblio)) {
+        // Not unique, display message to the user.
+        drupal_set_message(t('Biblio "@title" already imported, view it <a href="@url">here</a>.', array('@title' => $biblio->title, '@url' => url('biblio/' . $duplicate_id))));
       }
       else {
-        $dups[] = $dup;
+        // Unique, save biblio and add it to Imported list.
+        $wrapper->save();
+        $biblios['new'][] = $wrapper->value();
       }
-
-      */
     }
-    return array(
-      'new' => $biblios,
-    );
+
+    return $biblios;
   }
 
 
@@ -114,14 +82,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
     $method = $map[$key]['import_method'];
 
-    $value = $this->{$method}($key, $entry);
-
-    $wrapper_info = $wrapper->{$property_name}->info();
-    if (empty($wrapper_info['setter callback'])) {
-      return;
-    }
-
-    $wrapper->{$property_name}->set($value);
+    $this->{$method}($wrapper, $key, $entry);
   }
 
   /**
@@ -130,8 +91,34 @@ class BiblioStyleBibtex extends BiblioStyleBase {
    * @param $key
    * @param $entry
    */
-  private function getEntryValue($key, $entry) {
-    return !empty($entry[$key]) ? $entry[$key] : NULL;
+  private function getEntryValue($wrapper, $tag, $entry) {
+    $map = $this->getMapping();
+    $map = $map['field'];
+    $property = $map[$tag]['property'];
+
+    // Some BibTex might come we double curly brackets, so strip them out from
+    // the beginning and end of the value.
+    $value = trim($entry[$tag], '{}');
+
+    $wrapper->{$property}->set($value);
+
+  }
+
+  /**
+   * Get the value of a year.
+   *
+   * @param $key
+   * @param $entry
+   */
+  private function getEntryValueYear($wrapper, $tag, $entry) {
+    if (strtolower($entry[$tag]) == 'in press') {
+      // Biblio is in press, set the Biblio's status to be "In Press" and leave
+      // the year empty.
+      $wrapper->biblio_status->set('in_press');
+      return;
+    }
+
+    $this->getEntryValue($wrapper, $tag, $entry);
   }
 
   /**
@@ -140,48 +127,70 @@ class BiblioStyleBibtex extends BiblioStyleBase {
    * @param $key
    * @param $entry
    */
-  private function getEntryValuePublisher($key, $entry) {
-    if (!empty($entry['organization'])) {
-      return $entry['organization'];
+  private function getEntryValuePublisher($wrapper, $tag, $entry) {
+    $types = array(
+      'organization',
+      'school',
+      'institution',
+      'publisher',
+    );
+
+    foreach ($types as $type) {
+      if (!empty($entry[$type])) {
+        $value = $entry[$type];
+        break;
+      }
     }
 
-    if (!empty($entry['school'])) {
-      return $entry['school'];
+    if (empty($value)) {
+      return;
     }
 
-    if (!empty($entry['institution'])) {
-      return $entry['institution'];
-    }
-
-    return !empty($entry['publisher']) ? $entry['publisher'] : NULL;
+    $entry[$tag] = $value;
+    $this->getEntryValue($wrapper, $tag, $entry);
   }
 
   /**
    * Get the value of a secondary title.
    */
-  private function getEntryValueSecondaryTitle($key, $entry) {
-    if (!empty($entry['series']) && empty($entry['booktitle'])) {
-      return $entry['series'];
+  private function getEntryValueSecondaryTitle($wrapper, $tag, $entry) {
+    $types = array(
+      'booktitle',
+      'series',
+      'journal',
+    );
+
+    foreach ($types as $type) {
+      if (!empty($entry[$type])) {
+        $value = $entry[$type];
+        break;
+      }
     }
 
-    if (!empty($entry['booktitle'])) {
-      return $entry['booktitle'];
+    if (empty($value)) {
+      return;
     }
 
-    return !empty($entry['journal']) ? $entry['journal'] : NULL;
+    $entry[$tag] = $value;
+    $this->getEntryValue($wrapper, $tag, $entry);
   }
 
   /**
    * Get the value of a tertiary title.
    */
-  private function getEntryValueTertiaryTitle($key, $entry) {
-    return !empty($entry['series']) && !empty($entry['booktitle']) ? $entry['series'] : NULL;
+  private function getEntryValueTertiaryTitle($wrapper, $tag, $entry) {
+    if (empty($entry['series']) || empty($entry['booktitle'])) {
+      return;
+    }
+
+    $entry[$tag] = $entry['series'];
+    $this->getEntryValue($wrapper, $tag, $entry);
   }
 
   /**
    * Create Biblio Contributor entities.
    */
-  private function importEntryContributors($wrapper, $entry) {
+  public function importEntryContributors($wrapper, $entry) {
     foreach (array('author', 'editor') as $type) {
       if (empty($entry[$type])) {
         continue;
@@ -189,33 +198,20 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
       $biblio = $wrapper->value();
 
-      // split names.
-      $names = preg_split("/(and|&)/i", trim($entry[$type]));
-      foreach ($names as $name) {
-        // Try to extract the given and family name.
-        // @todo: Fix this preg_split.
-        $sub_name = preg_split("/{|}/i", $name);
-        $values = array('firstname' =>$sub_name[0]);
-        if (!empty($sub_name[1])) {
-          $values['lastname'] = $sub_name[1];
-        }
+      // Get array of saved contributor objects from string of names.
+      $contributors = $this->getBiblioContributorsFromNames($entry[$type]);
 
-        $biblio_contributor = biblio_contributor_create($values);
-        $biblio_contributor->save();
-
+      foreach ($contributors as $contributor) {
         // Create contributors field collections.
         $field_collection = entity_create('field_collection_item', array('field_name' => 'contributor_field_collection'));
         $field_collection->setHostEntity('biblio', $biblio);
         $collection_wrapper = entity_metadata_wrapper('field_collection_item', $field_collection);
-        $collection_wrapper->biblio_contributor->set($biblio_contributor);
+        $collection_wrapper->biblio_contributor->set($contributor);
 
         // @todo: Add reference to correct term.
         $term = taxonomy_get_term_by_name(ucfirst($type), 'biblio_roles');
         $term = reset($term);
-
         $collection_wrapper->biblio_contributor_role->set($term);
-
-        $collection_wrapper->save();
       }
     }
   }
