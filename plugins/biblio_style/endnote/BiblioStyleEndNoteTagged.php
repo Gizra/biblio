@@ -42,9 +42,7 @@ class BiblioStyleEndNoteTagged extends BiblioStyleEndNote implements BiblioStyle
       $this->{$method}($wrapper, $tag, $value);
     }
 
-    // @todo: Check md5.
-    $wrapper->save();
-    $biblios['new'][] = $biblio;
+    $biblios['success'][] = $biblio;
     return $biblios;
   }
 

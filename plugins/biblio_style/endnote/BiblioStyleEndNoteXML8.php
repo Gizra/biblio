@@ -56,7 +56,7 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote implements BiblioStyleIm
     $wrapper->save();
     $biblios[] = $biblio;
     return array(
-      'new' => $biblios,
+      'success' => $biblios,
     );
   }
 
