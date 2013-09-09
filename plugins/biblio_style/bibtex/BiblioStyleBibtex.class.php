@@ -458,6 +458,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
         'bibtex' => array(
           'property' => 'bibtext',
           'method' => 'formatEntryBibText',
+          'use_key' => FALSE,
         ),
         'booktitle' => array(
           'property' => 'booktitle',
@@ -546,13 +547,11 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
     // Assign default method to format entry.
     foreach ($return['field'] as $key => $value) {
-      if (empty($value['method'])) {
-        $return['field'][$key]['method'] = 'formatEntryGeneric';
-      }
-
-      if (empty($value['import_method'])) {
-        $return['field'][$key]['import_method'] = 'getEntryValue';
-      }
+      $return['field'][$key] += array(
+        'method' => 'formatEntryGeneric',
+        'import_method' => 'getEntryValue',
+        'use_key' => TRUE,
+      );
     }
 
     return $return;
