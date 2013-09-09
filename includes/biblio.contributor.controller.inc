@@ -15,7 +15,7 @@ class BiblioContributor extends Entity {
    * @todo: Re-build the contributor name.
    */
   public function save() {
-    $this->name = $this->lastname ? $this->lastname . ' ' . $this->firstname : $this->firstname;
+    $this->name = $this->lastname ? $this->firstname . ' ' . $this->lastname : $this->firstname;
     parent::save();
   }
 }
