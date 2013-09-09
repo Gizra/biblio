@@ -480,8 +480,49 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
     return $type;
   }
 
+  /**
+   * Entry point for data import.
+   *
+   * @param $data
+   *   String of data.
+   * @param array $options
+   *   Array of options to pass to the Biblio style.
+   *
+   * @return array
+   *   Array keyed with 'new', 'duplicate', and 'error.
+   */
   public function import($data, $options = array()) {
-    $result = $this->importData($data, $options);
+    $return = array('new' => array(), 'duplicate' => array(), 'error' => array());
+
+    if ($result = $this->importData($data, $options)) {
+      $this->saveOrFindDuplicateFromImportData($result);
+    }
+    return $return;
+  }
+
+  /**
+   * Given a of successful import, find duplicates or save the new Biblios.
+   *
+   * @param $result
+   *   Array keyed with 'success' and 'error'.
+   *
+   * @return array
+   *   Array keyed with 'new', 'duplicate', and 'error.
+   *
+   * @see BiblioStyleBase::saveOrFindDuplicateFromImportData()
+   */
+  public function saveOrFindDuplicateFromImportData($result) {
+    $result += array('success' => array());
+    foreach ($result['success'] as $biblio) {
+      if ($this->isDuplicate($biblio)) {
+        $result['duplicate'][] = $biblio;
+      }
+      else {
+        $biblio->save();
+        $result['new'][] = $biblio;
+      }
+    }
+    unset($result['success']);
     return $result;
   }
 
