@@ -2,7 +2,7 @@
 
 /**
  * @file
- * EndNote XML biblio style.
+ * EndNote XML7 biblio style.
  */
 
 class BiblioStyleEndNoteXML7 extends BiblioStyleEndNoteXML8 {
