@@ -229,7 +229,6 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     // TODO: Out source this segment to small methods.
     switch ($type) {
       case 'book':
-        $series = $wrapper->biblio_secondary_title->value();
         $organization = $wrapper->biblio_publisher->value();
         break;
 
@@ -237,7 +236,6 @@ class BiblioStyleBibtex extends BiblioStyleBase {
       case 'conference_paper':
         $booktitle = $wrapper->biblio_secondary_title->value();
         $organization = $wrapper->biblio_publisher->value();
-        $series = $wrapper->biblio_tertiary_title->value();
         break;
 
       case 'thesis':
@@ -318,6 +316,21 @@ class BiblioStyleBibtex extends BiblioStyleBase {
    */
   private function formatEntryGeneric(EntityMetadataWrapper $wrapper, $key) {
     return $wrapper->{$key}->value();
+  }
+
+  /**
+   * Rendering the series property.
+   *
+   * @param EntityMetadataWrapper $wrapper
+   *  The wrapper object.
+   * @param $key
+   *  The property name which holds the value of the field.
+   *
+   * @return
+   *  The value of the property.
+   */
+  private function formatEntrySeries(EntityMetadataWrapper $wrapper, $key) {
+    return in_array($this->biblio->type, array('book_chapter','conference_paper')) ? $wrapper->biblio_tertiary_title->value() ? $wrapper->biblio_secondary_title->value();
   }
 
   /**
@@ -420,7 +433,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
    * @return string
    *  The contributors name.
    */
-  private function formatEntryContributor(EntityMetadataWrapper$wrapper, $key, $role) {
+  private function formatEntryContributor(EntityMetadataWrapper $wrapper, $key, $role) {
     if (!$wrapper->{$key}->value()) {
       return;
     }
