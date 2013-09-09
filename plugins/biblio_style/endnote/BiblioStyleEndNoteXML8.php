@@ -144,9 +144,6 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
     $element = $this->element;
 
     if (!empty($map['field'][$element]['import_method'])) {
-      $method = $map['field'][$element]['import_method'];
-      $property = $map['field'][$element]['property'];
-
       // Prepare the data by striping any tags or white space.
       $data = explode("\n", $data);
       foreach ($data as $key => $value) {
@@ -154,7 +151,17 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
       }
       $data = implode('', $data);
 
-      $this->{$method}($this->wrapper, $property, $data);
+      if (!$data) {
+        // No data given, it might have been a carriage return that was striped.
+        return;
+      }
+
+      $method = $map['field'][$element]['import_method'];
+
+      // Key might be a Biblio field, or the role of a contributor.
+      $key = !empty($map['field'][$element]['property']) ? $map['field'][$element]['property'] : $map['field'][$element]['role'];
+
+      $this->{$method}($this->wrapper, $key, $data);
     }
   }
 
@@ -162,11 +169,6 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
    * Generic import entry.
    */
   public function importEntryGeneric(EntityMetadataWrapper $wrapper, $property, $data) {
-    if (!$data) {
-      // No data given, it might have been a carriage return that was striped.
-      return;
-    }
-
     // @todo: Make more generic + configurable?
     if (!isset($wrapper->{$property})) {
       // Create field.
@@ -180,11 +182,6 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
    * Import year and Biblio status.
    */
   public function importEntryYear(EntityMetadataWrapper $wrapper, $property, $data) {
-    if (!$data) {
-      // No data given, it might have been a carriage return that was striped.
-      return;
-    }
-
     if (is_numeric($data)) {
       $wrapper->biblio_year->set($data);
       return;
@@ -203,10 +200,33 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
     }
   }
 
+  /**
+   * Import a Contributor.
+   *
+   * @param EntityMetadataWrapper $wrapper
+   *   The Biblio wrapper.
+   * @param $role
+   *   The role of the contributor.
+   * @param $name
+   *   The name of the contributor.
+   */
+  public function importEntryContributor(EntityMetadataWrapper $wrapper, $role, $name) {
+    $biblio = $wrapper->value();
+    $contributors = $this->getBiblioContributorsFromNames($name);
 
-  public function field_map() {}
+    foreach ($contributors as $contributor) {
+      // Create contributors field collections.
+      $field_collection = entity_create('field_collection_item', array('field_name' => 'contributor_field_collection'));
+      $field_collection->setHostEntity('biblio', $biblio);
+      $collection_wrapper = entity_metadata_wrapper('field_collection_item', $field_collection);
+      $collection_wrapper->biblio_contributor->set($contributor);
 
-  public function type_map() {}
+      // @todo: Add reference to correct term.
+      $term = taxonomy_get_term_by_name(ucfirst($role), 'biblio_roles');
+      $term = reset($term);
+      $collection_wrapper->biblio_contributor_role->set($term);
+    }
+  }
 
 
   /**
@@ -259,6 +279,10 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
         54 => 'miscellaneous',
       ),
       'field' => array(
+        'author' => array(
+          'property' => 'author',
+          'import_method' => 'importEntryContributor',
+        ),
         'abbr-1' => array('property' => 'biblio_short_title'),
         'abstract' => array('property' => 'biblio_abstract'),
         'access-date' => array('property' => 'biblio_access_date'),
