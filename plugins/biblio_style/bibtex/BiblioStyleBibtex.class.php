@@ -367,11 +367,12 @@ class BiblioStyleBibtex extends BiblioStyleBase {
    *  The wrapper object.
    * @param $key
    *  The property name which holds the value of the field.
-   * @param $output
-   *  Referenced variable which will holds the render value of the row.
+   *
+   * @return
+   *  The value of the property.
    */
-  private function formatEntryGeneric(EntityMetadataWrapper $wrapper, $key, &$output) {
-    $output[] = $wrapper->{$key}->value();
+  private function formatEntryGeneric(EntityMetadataWrapper $wrapper, $key) {
+    return $wrapper->{$key}->value();
   }
 
   /**
@@ -398,7 +399,6 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     $map = $this->getMapping();
 
     $property_name = $map['field']['property'];
-
   }
 
   /**
@@ -474,86 +474,86 @@ class BiblioStyleBibtex extends BiblioStyleBase {
       'field' => array(
         'abstract' => array('property' => 'biblio_abstract'),
         'address' => array('property' => 'biblio_place_published'),
-        'author' => array(
-          'property' => 'contributor_field_collection',
-          'method' => 'formatEntryContributorAuthor',
-        ),
         // @todo: Use bilbio_file instead.
         'attachments' => array(
           'property' => 'biblio_image',
           'method' => 'renderEntryFiles'
+        ),
+        'author' => array(
+          'property' => 'contributor_field_collection',
+          'method' => 'formatEntryContributorAuthor',
         ),
         'bibtex' => array(
           'property' => 'bibtext',
           'method' => 'formatEntryBibText',
           'use_key' => FALSE,
         ),
+        'bibtexEntryType' => array('property' => 'biblio_type_of_work'),
+        'bibtexCitation' => array('property' => 'biblio_citekey'),
         'booktitle' => array(
           'property' => 'booktitle',
           'method' => 'formatEntryBookTitle',
         ),
         'chapter' => array('property' => 'biblio_section'),
+        'doi' => array('property' => 'biblio_doi'),
         'editor' => array(
           'property' => 'contributor_field_collection',
           'method' => 'formatEntryContributorEditor',
         ),
         'edition' => array('property' => 'biblio_edition'),
         // @todo: Special entry types?
-        'bibtexEntryType' => array('property' => 'biblio_type_of_work'),
-        'bibtexCitation' => array('property' => 'biblio_citekey'),
-        'doi' => array('property' => 'biblio_doi'),
         'isbn' => array('property' => 'biblio_isbn'),
         'issn' => array('property' => 'biblio_issn'),
+        'institution' => array(
+          'property' => 'institution',
+          'method' => 'formatEntryInstitution',
+        ),
+        'journal' => array(
+          'property' => 'journal',
+          'method' => 'formatEntryJournal',
+        ),
+        'keywords' => array(
+          'property' => 'biblio_keywords',
+          'method' => 'formatEntryTaxonomyTerms'
+        ),
         'month' => array('property' => 'biblio_date'),
         'note' => array('property' => 'biblio_notes'),
         'number' => array('property' => 'biblio_number'),
+        'organization' => array(
+          'property' => 'organization',
+          'method' => 'formatEntryOrganization',
+        ),
         'pages' => array('property' => 'biblio_pages'),
         'publisher' => array(
           'property' => 'biblio_publisher',
           'import_method' => 'getEntryValuePublisher',
           'method' => 'formatEntryPublisher'
         ),
-        'journal' => array(
-          'property' => 'journal',
-          'method' => 'formatEntryJournal',
+        // @todo: Is it ok to have this "fake" keys, or add this as property
+        // to the array?
+        'school' => array(
+          'property' => 'school',
+          'method' => 'formatEntrySchool',
         ),
         'series' => array(
           'property' => 'series',
           'method' => 'formatEntrySeries',
         ),
-        'title' => array('property' => 'title'),
-        'volume' => array('property' => 'biblio_volume'),
-        'year' => array('property' => 'biblio_year'),
-        // @todo: Is this the Biblio URL?
-        'url' => array('property' => 'biblio_url'),
-        'keywords' => array(
-          'property' => 'biblio_keywords',
-          'method' => 'formatEntryTaxonomyTerms'
-        ),
-        // @todo: Is it ok to have this "fake" keys, or add this as property
-        // to the array?
-        // Keys used for import.
         'secondary_title' => array(
           'property' => 'biblio_secondary_title',
           'import_method' => 'getEntryValueSecondaryTitle',
         ),
+        'title' => array('property' => 'title'),
+        // Keys used for import.
         'tertiary_title' => array(
           'property' => 'biblio_tertiary_title',
           'import_method' => 'getEntryValueTertiaryTitle',
         ),
         'type' => array('property' => 'type'),
-        'institution' => array(
-          'property' => 'institution',
-          'method' => 'formatEntryInstitution',
-        ),
-        'organization' => array(
-          'property' => 'organization',
-          'method' => 'formatEntryOrganization',
-        ),
-        'school' => array(
-          'property' => 'school',
-          'method' => 'formatEntrySchool',
-        ),
+        // @todo: Is this the Biblio URL?
+        'url' => array('property' => 'biblio_url'),
+        'volume' => array('property' => 'biblio_volume'),
+        'year' => array('property' => 'biblio_year'),
       ),
       'type' => array(
         'article' => 'journal_article',
