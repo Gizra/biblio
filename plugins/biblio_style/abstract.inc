@@ -459,7 +459,7 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
     return array($lastname, $prefix);
   }
 
-  /*
+  /**
    * Returns Biblio Publication Type based on Publication Type.
    *
    * @param $type
@@ -469,7 +469,7 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
    *  Biblio Publication Type if the Publication Type was found in the Mapping,
    *  otherwise returns the given type in lowercase.
    */
-  function getBiblioType($type) {
+  public function getBiblioType($type) {
     $map = $this->getMapping();
     $type = strtolower($type);
 
@@ -478,6 +478,11 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
     }
 
     return $type;
+  }
+
+  public function import($data, $options = array()) {
+    $result = $this->importData($data, $options);
+    return $result;
   }
 
   /**

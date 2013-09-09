@@ -8,13 +8,7 @@
 class BiblioStyleBibtex extends BiblioStyleBase implements BiblioStyleImportInterface {
 
   /**
-   * Import BibTeX entries.
-   *
-   * @todo: Deal with duplication.
-   *
-   * @param $data
-   * @param string $type
-   * @return array
+   * @inheritdoc
    */
   public function importData($data, $options = array()) {
     $bibtex = new PARSEENTRIES();
