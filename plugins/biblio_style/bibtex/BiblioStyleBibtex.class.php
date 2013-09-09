@@ -224,10 +224,9 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     // We clone the biblio, as we might change the values.
     $biblio = clone $this->biblio;
     $wrapper = entity_metadata_wrapper('biblio', $biblio);
-
-    $journal = $series = $booktitle = $school = $organization = $institution = NULL;
     $type = $this->biblio->type;
 
+    // TODO: Out source this segment to small methods.
     switch ($type) {
       case 'book':
         $series = $wrapper->biblio_secondary_title->value();
@@ -243,9 +242,6 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
       case 'thesis':
         $school = $wrapper->biblio_publisher->value();
-        if (strpos($wrapper->biblio_type_of_work->value(), 'masters') === TRUE) {
-          $type = 'mastersthesis';
-        }
         break;
 
       case 'report':
@@ -258,24 +254,27 @@ class BiblioStyleBibtex extends BiblioStyleBase {
         break;
     }
 
-    // @todo: Use the human name instead of ucfirst()?
+    if ($type == 'thesis' && !empty($wrapper->biblio_type_of_work) && strpos($wrapper->biblio_type_of_work->value(), 'masters') === TRUE) {
+      $type = 'mastersthesis';
+    }
     $type_info = biblio_get_types_info($type);
+
     $output = array();
     $output[] = '@' . $type_info['name'] . '{';
 
     $map = $this->getMapping();
     foreach ($map['field'] as $key => $info) {
       $method = $info['method'];
-      $property_name = $info['property'];
+      $property = $info['property'];
       $use_key = $info['use_key'];
 
       $wrapper = entity_metadata_wrapper('biblio', $this->biblio);
 
-      if (empty($wrapper->{$property_name})) {
+      if (empty($wrapper->{$property})) {
         continue;
       }
 
-      if (!$value = $this->{$method}($wrapper, $property_name)) {
+      if (!$value = $this->{$method}($wrapper, $property)) {
         continue;
       }
 
@@ -324,11 +323,16 @@ class BiblioStyleBibtex extends BiblioStyleBase {
   /**
    * Taxonomy term format entry.
    *
-   * @param $wrapper
-   * @param $property_name
+   * @param EntityMetadataWrapper $wrapper
+   *  The wrapper object.
+   * @param $key
+   *  The property name which holds the value of the field.
+   *
+   * @return String
+   *  The value of the property.
    */
-  private function formatEntryTaxonomyTerms($wrapper, $property_name) {
-    if (!$terms = $wrapper->{$property_name}->value()) {
+  private function formatEntryTaxonomyTerms($wrapper, $key) {
+    if (!$terms = $wrapper->{$key}->value()) {
       return;
     }
 
@@ -361,11 +365,16 @@ class BiblioStyleBibtex extends BiblioStyleBase {
   /**
    * File format entry.
    *
-   * @param $wrapper
-   * @param $property_name
+   * @param EntityMetadataWrapper $wrapper
+   *  The wrapper object.
+   * @param $key
+   *  The property name which holds the value of the field.
+   *
+   * @return string
+   *  The value of the property.
    */
-  public function formatEntryFiles($wrapper, $property_name) {
-    if ($url = parent::renderEntryFiles($wrapper, $property_name)) {
+  public function formatEntryFiles(EntityMetadataWrapper $wrapper, $key) {
+    if ($url = parent::renderEntryFiles($wrapper, $key)) {
       return implode(' , ', $url);
     }
   }
@@ -376,8 +385,8 @@ class BiblioStyleBibtex extends BiblioStyleBase {
    * @param $wrapper
    * @param $property_name
    */
-  private function formatEntryContributorAuthor($wrapper, $property_name) {
-    return $this->formatEntryContributor($wrapper, $property_name, 'author');
+  private function formatEntryContributorAuthor(EntityMetadataWrapper$wrapper, $key) {
+    return $this->formatEntryContributor($wrapper, $key, 'author');
   }
 
   /**
@@ -386,8 +395,8 @@ class BiblioStyleBibtex extends BiblioStyleBase {
    * @param $wrapper
    * @param $property_name
    */
-  private function formatEntryContributorEditor($wrapper, $property_name) {
-    return $this->formatEntryContributor($wrapper, $property_name, 'editor');
+  private function formatEntryContributorEditor(EntityMetadataWrapper $wrapper, $key) {
+    return $this->formatEntryContributor($wrapper, $key, 'editor');
   }
 
   /**
@@ -398,13 +407,13 @@ class BiblioStyleBibtex extends BiblioStyleBase {
    * @param $role
    * @return string
    */
-  private function formatEntryContributor($wrapper, $property_name, $role) {
-    if (!$wrapper->{$property_name}->value()) {
+  private function formatEntryContributor(EntityMetadataWrapper$wrapper, $key, $role) {
+    if (!$wrapper->{$key}->value()) {
       return;
     }
 
     $names = array();
-    foreach ($wrapper->{$property_name} as $sub_wrapper) {
+    foreach ($wrapper->{$key} as $sub_wrapper) {
       if (strtolower($sub_wrapper->biblio_contributor_role->label()) != strtolower($role)) {
         continue;
       }
