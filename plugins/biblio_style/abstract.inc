@@ -158,7 +158,14 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
       ->range(0, 1)
       ->execute();
 
-    return !empty($result['biblio']) ? key($result['biblio']) : FALSE;
+    if (empty($result['biblio'])) {
+      return;
+    }
+
+    $row = reset($result['biblio']);
+    $biblio = biblio_load($row->bid);
+
+    return $biblio;
   }
 
   /**
@@ -495,7 +502,7 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
     $return = array('new' => array(), 'duplicate' => array(), 'error' => array());
 
     if ($result = $this->importData($data, $options)) {
-      $this->saveOrFindDuplicateFromImportData($result);
+      $return = $this->saveOrFindDuplicateFromImportData($result);
     }
     return $return;
   }
@@ -514,8 +521,8 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
   public function saveOrFindDuplicateFromImportData($result) {
     $result += array('success' => array());
     foreach ($result['success'] as $biblio) {
-      if ($this->isDuplicate($biblio)) {
-        $result['duplicate'][] = $biblio;
+      if ($duplicate_biblio = $this->isDuplicate($biblio)) {
+        $result['duplicate'][] = $duplicate_biblio;
       }
       else {
         $biblio->save();
