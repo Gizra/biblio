@@ -11,7 +11,7 @@ class BiblioStyleEndNoteXML7 extends BiblioStyleEndNoteXML8 {
   public $biblio = NULL;
 
   /**
-   * Import XML.
+   * @inheritdoc
    */
   public function import($data, $options = array()) {
     $options['pattern'] = '/<REFERENCE_TYPE>(.*)<\/REFERENCE_TYPE>/';
@@ -27,6 +27,9 @@ class BiblioStyleEndNoteXML7 extends BiblioStyleEndNoteXML8 {
 
   }
 
+  /**
+   * @inheritdoc
+   */
   public function getMapping() {
     $return = array(
       'type' => array(

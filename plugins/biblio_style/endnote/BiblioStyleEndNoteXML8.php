@@ -11,7 +11,7 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
   public $biblio = NULL;
 
   /**
-   * Import XML.
+   * @inheritdoc
    */
   public function import($data, $options = array()) {
     $options += array(
@@ -230,12 +230,15 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
 
 
   /**
-   * Render tagged.
+   * @inheritdoc
    */
   public function render($options = array(), $langcode = NULL) {
 
   }
 
+  /**
+   * @inheritdoc
+   */
   public function getMapping() {
     $return = array(
       'type' => array(

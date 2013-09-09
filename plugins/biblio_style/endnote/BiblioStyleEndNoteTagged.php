@@ -8,7 +8,7 @@
 class BiblioStyleEndNoteTagged extends BiblioStyleEndNote {
 
   /**
-   * Import tagged.
+   * @inheritdoc
    */
   public function import($data, $options = array()) {
     $biblios = array();
@@ -98,7 +98,7 @@ class BiblioStyleEndNoteTagged extends BiblioStyleEndNote {
   }
 
   /**
-   * Render tagged.
+   * @inheritdoc
    */
   public function render($options = array(), $langcode = NULL) {
     $output = array();
@@ -207,6 +207,9 @@ class BiblioStyleEndNoteTagged extends BiblioStyleEndNote {
   }
 
 
+  /**
+   * @inheritdoc
+   */
   public function getMapping() {
     $return = parent::getMapping();
     $return['type'] = array(
