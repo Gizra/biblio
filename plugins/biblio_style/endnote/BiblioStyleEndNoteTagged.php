@@ -38,19 +38,19 @@ class BiblioStyleEndNoteTagged extends BiblioStyleEndNote {
         continue;
       }
 
-      $method = $map[$tag]['import_method'];
+      $method = $map['field'][$tag]['import_method'];
       $this->{$method}($wrapper, $tag, $value);
     }
 
     // @todo: Check md5.
     $wrapper->save();
-    $biblios[] = $biblio;
+    $biblios['new'][] = $biblio;
     return $biblios;
   }
 
   private function importEntryGeneric($wrapper, $tag, $value) {
     $map = $this->getMapping();
-    $key = $map[$tag]['property'];
+    $key = $map['field'][$tag]['property'];
     $wrapper->{$key}->set($value);
   }
 

@@ -84,7 +84,6 @@ class BiblioImportAndRenderTestCase extends DrupalWebTestCase {
 
     $biblio_style = new $class($plugin);
 
-
     $biblios = $biblio_style->import($data);
     $biblio = $biblios['new'][0];
     $output = $biblio->getText('endnote', array('type' => 'tagged'));
