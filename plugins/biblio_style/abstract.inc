@@ -190,6 +190,8 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
 
 
   /**
+   * Add contributors to the field collection of a Biblio.
+   *
    * @param $names
    *   String with name(s) of the contributors.
    * @param $role
