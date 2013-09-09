@@ -217,6 +217,7 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
     // Map the role to Biblio.
     $role = $role == 'authors' ? 'author' : str_replace('-authors', '', $role);
 
+    // @todo: Check if roles make sense.
     switch ($role) {
       case 'authors':
         $role = 'Author';
