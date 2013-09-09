@@ -97,6 +97,10 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
     }
     else {
       $this->element = $name;
+      if (strpos('authors', $name) !== FALSE) {
+        // Add the role of the contributor.
+        $this->role = $name;
+      }
     }
   }
 
@@ -159,7 +163,7 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
       $method = $map['field'][$element]['import_method'];
 
       // Key might be a Biblio field, or the role of a contributor.
-      $key = !empty($map['field'][$element]['property']) ? $map['field'][$element]['property'] : $map['field'][$element]['role'];
+      $key = $element == 'author' ? $this->role : $map['field'][$element]['property'];
 
       $this->{$method}($this->wrapper, $key, $data);
     }
@@ -213,6 +217,9 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
   public function importEntryContributor(EntityMetadataWrapper $wrapper, $role, $name) {
     $biblio = $wrapper->value();
     $contributors = $this->getBiblioContributorsFromNames($name);
+
+    // Map the role to Biblio.
+    $role = $role == 'authors' ? 'author' : str_replace('-authors', '', $role);
 
     foreach ($contributors as $contributor) {
       // Create contributors field collections.
@@ -282,8 +289,10 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote {
         54 => 'miscellaneous',
       ),
       'field' => array(
+        // Todo: Get the role from the XML tag.
         'author' => array(
-          'property' => 'author',
+          // We don't have a property for this key. The role name will be taken
+          // from the parent tag (e.g. <authors>, <secondary-authors>).
           'import_method' => 'importEntryContributor',
         ),
         'abbr-1' => array('property' => 'biblio_short_title'),
