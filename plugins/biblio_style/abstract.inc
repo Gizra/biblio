@@ -91,7 +91,7 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
       // so we access the fields directly.
       $contributors = array();
       foreach ($clone->contributor_field_collection[LANGUAGE_NONE] as $value) {
-        $entity = $value['entity'];
+        $entity = !empty($value['entity']) ? $value['entity'] : entity_load_single('field_collection_item', $value['value']);
 
         $contributors[] = array(
           $entity->biblio_contributor[LANGUAGE_NONE][0]['target_id'],
