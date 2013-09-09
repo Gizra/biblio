@@ -226,22 +226,6 @@ class BiblioStyleBibtex extends BiblioStyleBase {
     $wrapper = entity_metadata_wrapper('biblio', $biblio);
     $type = $this->biblio->type;
 
-    // TODO: Out source this segment to small methods.
-    switch ($type) {
-      case 'thesis':
-        $school = $wrapper->biblio_publisher->value();
-        break;
-
-      case 'report':
-        $institution  = $wrapper->biblio_publisher->value();
-        break;
-
-      case 'journal_article':
-      default:
-        $journal = $wrapper->biblio_secondary_title->value();
-        break;
-    }
-
     if ($type == 'thesis' && !empty($wrapper->biblio_type_of_work) && strpos($wrapper->biblio_type_of_work->value(), 'masters') === TRUE) {
       $type = 'mastersthesis';
     }
@@ -354,6 +338,36 @@ class BiblioStyleBibtex extends BiblioStyleBase {
   }
 
   /**
+   * Rendering the school property.
+   *
+   * @param EntityMetadataWrapper $wrapper
+   *  The wrapper object.
+   * @param $key
+   *  The property name which holds the value of the field.
+   *
+   * @return
+   *  The value of the property.
+   */
+  private function formatEntrySchool(EntityMetadataWrapper $wrapper, $key) {
+    return $this->biblio->type == 'thesis' ? $wrapper->biblio_publisher->value() : NULL;
+  }
+
+  /**
+   * Rendering the institution property.
+   *
+   * @param EntityMetadataWrapper $wrapper
+   *  The wrapper object.
+   * @param $key
+   *  The property name which holds the value of the field.
+   *
+   * @return
+   *  The value of the property.
+   */
+  private function formatEntryInstitution(EntityMetadataWrapper $wrapper, $key) {
+    return $this->biblio->type == 'report' ? $wrapper->biblio_publisher->value() : NULL;
+  }
+
+  /**
    * Taxonomy term format entry.
    *
    * @param EntityMetadataWrapper $wrapper
@@ -390,9 +404,22 @@ class BiblioStyleBibtex extends BiblioStyleBase {
    *  The value of the property.
    */
   public function formatEntryPublisher(EntityMetadataWrapper $wrapper, $key) {
-    if (!in_array($this->biblio->type, array('thesis','report'))) {
-      return $wrapper->{$key}->value();
-    }
+    return in_array($this->biblio->type, array('thesis','report')) ? $wrapper->{$key}->value() : NULL;
+  }
+
+  /**
+   * Return the value of the entry journal property.
+   *
+   * @param EntityMetadataWrapper $wrapper
+   *  The wrapper object.
+   * @param $key
+   *  The property name which holds the value of the field.
+   *
+   * @return
+   *  The value of the property.
+   */
+  public function formatEntryJournal(EntityMetadataWrapper $wrapper, $key) {
+    return !in_array($this->biblio->type, array('book','book_chapter', 'conference_paper', 'thesis', 'report')) ? $wrapper->biblio_secondary_title->value() : NULL;
   }
 
   /**
