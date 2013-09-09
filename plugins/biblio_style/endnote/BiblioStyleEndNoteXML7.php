@@ -10,7 +10,7 @@ class BiblioStyleEndNoteXML7 extends BiblioStyleEndNoteXML8 {
   /**
    * @inheritdoc
    */
-  public function import($data, $options = array()) {
+  public function importData($data, $options = array()) {
     $options['pattern'] = '/<REFERENCE_TYPE>(.*)<\/REFERENCE_TYPE>/';
     return parent::import($data, $options);
   }

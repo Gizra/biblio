@@ -26,7 +26,7 @@ class BiblioStyleEndNote extends BiblioStyleBase {
   /**
    * @inheritdoc
    */
-  public function import($data, $options = array()) {
+  public function importData($data, $options = array()) {
     $options += array(
       'type' => 'tagged',
     );
@@ -51,7 +51,7 @@ class BiblioStyleEndNote extends BiblioStyleBase {
     }
 
     $handler = new $class_name( $this->plugin, $this->biblio);
-    return $handler->import($data, $options);
+    return $handler->importData($data, $options);
   }
 
 
