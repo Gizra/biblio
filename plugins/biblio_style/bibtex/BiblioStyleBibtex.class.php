@@ -228,11 +228,6 @@ class BiblioStyleBibtex extends BiblioStyleBase {
 
     // TODO: Out source this segment to small methods.
     switch ($type) {
-      case 'book_chapter':
-      case 'conference_paper':
-        $booktitle = $wrapper->biblio_secondary_title->value();
-        break;
-
       case 'thesis':
         $school = $wrapper->biblio_publisher->value();
         break;
@@ -341,6 +336,21 @@ class BiblioStyleBibtex extends BiblioStyleBase {
    */
   private function formatEntryOrganization(EntityMetadataWrapper $wrapper, $key) {
     return in_array($this->biblio->type, array('book_chapter','conference_paper', 'book')) ? $wrapper->biblio_publisher->value() : NULL;
+  }
+
+  /**
+   * Rendering the book title property.
+   *
+   * @param EntityMetadataWrapper $wrapper
+   *  The wrapper object.
+   * @param $key
+   *  The property name which holds the value of the field.
+   *
+   * @return
+   *  The value of the property.
+   */
+  private function formatEntryBookTitle(EntityMetadataWrapper $wrapper, $key) {
+    return in_array($this->biblio->type, array('book_chapter','conference_paper')) ? $wrapper->biblio_secondary_title->value() : NULL;
   }
 
   /**
