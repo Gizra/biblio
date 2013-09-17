@@ -186,7 +186,12 @@ class BiblioStyleBibtex extends BiblioStyleBase implements BiblioStyleImportInte
       $contributors = $this->getBiblioContributorsFromNames($entry[$type]);
 
       foreach ($contributors as $contributor) {
-        // Create contributors field collections.
+        // Create contributors field collections without saving them.
+        // We do not save the field collections because the whole Biblio object
+        // may not be saved if it is duplicate, and in that case we will have
+        // field collections without a host. By not saving the field collections
+        // here we make sure they will only be saved if and when the whole
+        // Biblio is saved.
         $field_collection = entity_create('field_collection_item', array('field_name' => 'contributor_field_collection'));
         $field_collection->setHostEntity('biblio', $biblio);
         $collection_wrapper = entity_metadata_wrapper('field_collection_item', $field_collection);
