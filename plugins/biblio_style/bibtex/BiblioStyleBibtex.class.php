@@ -253,7 +253,12 @@ class BiblioStyleBibtex extends BiblioStyleBase {
       $first_entry[$this->biblio->bid] = FALSE;
       $prefix = ",\n\t";
 
-      if ($use_key) {
+      if ($key == 'bibtexCitation') {
+        // Place bibtexCitation as the second element of the output, right after
+        // the Biblio type.
+        $output = array_merge(array_slice($output, 0 , 1), array($value), array_slice($output, 1));
+      }
+      elseif ($use_key) {
         $opening_tag = $this->plugin['options']['opening_tag'];
         $closing_tag = $this->plugin['options']['closing_tag'];
         $output[] = $prefix . $key . ' = '. $opening_tag .  $value . $closing_tag;
@@ -400,7 +405,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
    *  The value of the property.
    */
   public function formatEntryPublisher(EntityMetadataWrapper $wrapper, $key) {
-    return in_array($this->biblio->type, array('thesis','report')) ? $wrapper->{$key}->value() : NULL;
+    return !in_array($this->biblio->type, array('thesis','report')) ? $wrapper->{$key}->value() : NULL;
   }
 
   /**
@@ -490,7 +495,7 @@ class BiblioStyleBibtex extends BiblioStyleBase {
       $given = $sub_wrapper->biblio_contributor->firstname->value();
       $family = $sub_wrapper->biblio_contributor->lastname->value();
 
-      $names[] = $given . '{' . $family . '}';
+      $names[] = $given . ' {' . $family . '}';
     }
 
     return implode(' and ', $names);
@@ -523,7 +528,6 @@ class BiblioStyleBibtex extends BiblioStyleBase {
           'method' => 'formatEntryBibText',
           'use_key' => FALSE,
         ),
-        'bibtexEntryType' => array('property' => 'biblio_type_of_work'),
         'bibtexCitation' => array('property' => 'biblio_citekey'),
         'booktitle' => array(
           'property' => 'booktitle',
@@ -584,7 +588,6 @@ class BiblioStyleBibtex extends BiblioStyleBase {
           'property' => 'biblio_tertiary_title',
           'import_method' => 'getEntryValueTertiaryTitle',
         ),
-        'type' => array('property' => 'type'),
         // @todo: Is this the Biblio URL?
         'url' => array('property' => 'biblio_url'),
         'volume' => array('property' => 'biblio_volume'),
