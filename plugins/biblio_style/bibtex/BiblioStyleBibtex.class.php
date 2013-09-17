@@ -492,10 +492,32 @@ class BiblioStyleBibtex extends BiblioStyleBase {
         continue;
       }
 
-      $given = $sub_wrapper->biblio_contributor->firstname->value();
-      $family = $sub_wrapper->biblio_contributor->lastname->value();
+      $contributor = $sub_wrapper->biblio_contributor->value();
 
-      $names[] = $given . ' {' . $family . '}';
+      // Add a dot to each letter in initials.
+      if (!empty($contributor->initials)) {
+        $letters = explode(' ', $contributor->initials);
+        foreach ($letters as &$letter) {
+          $letter .= '.';
+        }
+        $contributor->initials = implode(' ', $letters);
+      }
+
+      // Get the contributor's full name, which is all non-empty name parts.
+      $fields = array('firstname', 'initials', 'suffix', 'prefix', 'lastname');
+      $full_name = array();
+      foreach ($fields as $field) {
+        if (empty($contributor->{$field})) {
+          // No value in field.
+          continue;
+        }
+
+        // Add the field's value to the full name.
+        $full_name[] = $contributor->{$field};
+      }
+
+      // Add the full name to the list of contributors.
+      $names[] = implode(' ', $full_name);
     }
 
     return implode(' and ', $names);
