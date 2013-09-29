@@ -17,7 +17,7 @@ class BiblioStylePubmed extends BiblioStyleBase {
    * @return array
    */
   public function import($data, $type = 'text') {
-    $xml = $data;
+    $xml = new SimpleXMLElement($data);
 
     $pubmed = new BiblioEntrezPubmedArticle();
 
@@ -68,6 +68,12 @@ class BiblioStylePubmed extends BiblioStyleBase {
     $wrapper->{$property_name}->set($sub_data);
   }
 
+  public function importAbstract(EntityMetadataWrapper $wrapper, $property_name, $data) {
+  }
+
+  public function importYear(EntityMetadataWrapper $wrapper, $property_name, $data) {
+  }
+
   /**
    * Import secondary title.
    *
@@ -102,11 +108,6 @@ class BiblioStylePubmed extends BiblioStyleBase {
       'title' => array(
         'import_location' => array('Article', 'ArticleTitle'),
       ),
-      'biblio_citekey' => $citekey,
-      'biblio_pubmed_id' => $this->id,
-      'biblio_pubmed_md5' => $this->md5,
-      'biblio_contributors' => $this->contributors(),
-
       'biblio_year' => array(
         'import_method' => 'importYear',
       ),
@@ -132,7 +133,7 @@ class BiblioStylePubmed extends BiblioStyleBase {
         'import_method' => 'importAbstract',
       ),
       // @todo: Where should we map this?
-      'biblio_custom1' => "http://www.ncbi.nlm.nih.gov/pubmed/{$this->id}?dopt=Abstract",
+      // 'biblio_custom1' => "http://www.ncbi.nlm.nih.gov/pubmed/{$this->id}?dopt=Abstract",
 
       'biblio_keywords' => array(
         'import_method' => 'importKeywords',
