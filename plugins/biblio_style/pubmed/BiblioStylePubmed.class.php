@@ -19,8 +19,6 @@ class BiblioStylePubmed extends BiblioStyleBase {
   public function importData($data, $type = 'text') {
     $xml = new SimpleXMLElement($data);
 
-    $pubmed = new BiblioEntrezPubmedArticle();
-
     // Array of Biblios.
     $biblios = array();
     $mapping = $this->getMapping();
