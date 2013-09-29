@@ -95,7 +95,6 @@ class BiblioStylePubmed extends BiblioStyleBase {
       $output = '';
       $attrs = $text->attributes();
       if (isset($attrs['Label'])) {
-        $abstract .= $attrs['Label'] . ': ';
         $output = $attrs['Label'] . ': ';
       }
       $output .= (string) $text;
