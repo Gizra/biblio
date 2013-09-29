@@ -124,7 +124,33 @@ class BiblioStylePubmed extends BiblioStyleBase {
   }
 
 
+  /**
+   * Import year property.
+   *
+   * @todo: Is this assumption ok?
+   * According to PubMed that date might be a string or an XML. We take the
+   * first 4 digits as the year,as Biblio year field is an integer field.
+   *
+   * @link http://www.nlm.nih.gov/bsd/licensee/elements_descriptions.html#pubdate
+   *
+   * @param EntityMetadataWrapper $wrapper
+   *   The wrapped Biblio.
+   * @param $property_name
+   *   The propery name (e.g. biblio_keywords).
+   * @param $data
+   *   A single PubMed article to be processed.
+   */
   public function importYear(EntityMetadataWrapper $wrapper, $property_name, $data) {
+    $pub_date = $data->Article->Journal->JournalIssue->PubDate;
+
+    if ($pub_date->Year) {
+      $year = (string) $pub_date->Year;
+    }
+    elseif ($pub_date->MedlineDate) {
+      $year = substr((string)$pub_date->MedlineDate, 0, 4);
+    }
+
+    $wrapper->{$property_name}->set($year);
   }
 
   /**
