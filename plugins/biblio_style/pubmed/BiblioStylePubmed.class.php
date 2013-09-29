@@ -70,7 +70,7 @@ class BiblioStylePubmed extends BiblioStyleBase {
       $sub_data = $sub_data->{$location};
     }
 
-    // $wrapper->{$property_name}->set($sub_data);
+    $wrapper->{$property_name}->set((string)$sub_data);
   }
 
   public function importAbstract(EntityMetadataWrapper $wrapper, $property_name, $data) {
