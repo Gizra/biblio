@@ -98,4 +98,55 @@ class BiblioStylePubmed extends BiblioStyleBase {
       'new' => $biblios,
     );
   }
+
+  /**
+   * @inheritdoc
+   */
+  public function getMapping() {
+    $return = parent::getMapping();
+
+    $return['field'] = array(
+      'title' => array(
+        'import_location' => array('Article', 'ArticleTitle'),
+      ),
+      'biblio_citekey' => $citekey,
+      'biblio_pubmed_id' => $this->id,
+      'biblio_pubmed_md5' => $this->md5,
+      'biblio_contributors' => $this->contributors(),
+      // MedlineCitations are always articles from journals or books
+      'biblio_type' => 102,
+      'biblio_date' => $this->date(),
+      'biblio_year' => substr($this->date(), 0, 4),
+      'biblio_secondary_title' => $journal,
+      'biblio_alternate_title' => array(
+        'import_location' => array('Journal', 'ISOAbbreviation'),
+      ),
+      'biblio_volume' => array(
+        'import_location' => array('Journal', 'JournalIssue', 'Volume'),
+      ),
+      'biblio_issue' => array(
+        'import_location' => array('Journal', 'JournalIssue', 'Issue'),
+      ),
+      'biblio_issn' => array(
+        'import_location' => array('Journal', 'ISSN'),
+      ),
+      'biblio_pages' => array(
+        'import_location' => array('Pagination', 'MedlinePgn'),
+      ),
+      'biblio_abst_e' => $this->abst(),
+      'biblio_custom1' => "http://www.ncbi.nlm.nih.gov/pubmed/{$this->id}?dopt=Abstract",
+      'biblio_keywords' => $this->keywords(),
+      'biblio_lang' => $this->lang(),
+    );
+
+    // Assign default import method.
+    foreach ($return['field'] as $key => $value) {
+      $return['field'][$key] += array(
+        'import_method' => 'importEntryGeneric',
+        'render_method' => 'renderEntryGeneric',
+      );
+    }
+
+    return $return;
+  }
 }
