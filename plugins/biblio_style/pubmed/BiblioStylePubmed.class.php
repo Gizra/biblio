@@ -16,7 +16,7 @@ class BiblioStylePubmed extends BiblioStyleBase {
    * @param string $type
    * @return array
    */
-  public function import($data, $type = 'text') {
+  public function importData($data, $type = 'text') {
     $xml = new SimpleXMLElement($data);
 
     $pubmed = new BiblioEntrezPubmedArticle();
@@ -74,9 +74,35 @@ class BiblioStylePubmed extends BiblioStyleBase {
   }
 
   public function importAbstract(EntityMetadataWrapper $wrapper, $property_name, $data) {
+    if (!isset($data->Article->Abstract)) {
+      return;
+    }
+
+    $abstract = array();
+    foreach ($data->Article->Abstract->AbstractText as $text) {
+      $output = '';
+      $attrs = $text->attributes();
+      if (isset($attrs['Label'])) {
+        $abstract .= $attrs['Label'] . ': ';
+        $output = $attrs['Label'] . ': ';
+      }
+      $output .= (string) $text;
+      $abstract[] =  $output;
+    }
+    $wrapper->{$property_name}->set(implode("\n", $abstract));
   }
 
   public function importKeywords(EntityMetadataWrapper $wrapper, $property_name, $data) {
+    // @todo: Use generic utility function.
+    return;
+    if (!isset($data->MeshHeadingList->MeshHeading)) {
+      return;
+    }
+    $keywords = array();
+    foreach ($data->MeshHeadingList->MeshHeading as $heading) {
+      $keywords[] = (string)$heading->DescriptorName;
+    }
+    return $keywords;
   }
 
   public function importYear(EntityMetadataWrapper $wrapper, $property_name, $data) {
