@@ -30,9 +30,14 @@ class BiblioStylePubmed extends BiblioStyleBase {
       $biblio = biblio_create('article');
       $wrapper = entity_metadata_wrapper('biblio', $biblio);
 
-      foreach ($mapping['field'] as $propery_name => $property) {
+      foreach ($mapping['field'] as $property_name => $property) {
+        if (empty($wrapper->{$property_name})) {
+          // @todo: Is this the right place.
+          biblio_create_field($property_name, 'biblio', $wrapper->getBundle());
+        }
+
         $method = $property['import_method'];
-        $this->{$method}($wrapper, $propery_name, $article);
+        $this->{$method}($wrapper, $property_name, $article->MedlineCitation);
       }
 
       $biblios['success'][] = $biblio;
@@ -65,10 +70,13 @@ class BiblioStylePubmed extends BiblioStyleBase {
       $sub_data = $sub_data->{$location};
     }
 
-    $wrapper->{$property_name}->set($sub_data);
+    // $wrapper->{$property_name}->set($sub_data);
   }
 
   public function importAbstract(EntityMetadataWrapper $wrapper, $property_name, $data) {
+  }
+
+  public function importKeywords(EntityMetadataWrapper $wrapper, $property_name, $data) {
   }
 
   public function importYear(EntityMetadataWrapper $wrapper, $property_name, $data) {
@@ -95,7 +103,7 @@ class BiblioStylePubmed extends BiblioStyleBase {
       $title = $data->Article->Journal->Title;
     }
 
-    $wrapper->{$property_name}->set($title);
+    $wrapper->{$property_name}->set((string)$title);
   }
 
   /**
