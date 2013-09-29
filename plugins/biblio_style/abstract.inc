@@ -508,6 +508,38 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
   }
 
   /**
+   * Helper function to import existing or new keywords.
+   *
+   * @param EntityMetadataWrapper $wrapper
+   *   The wrapped Biblio.
+   * @param $property_name
+   *   The propery name. Defaults to "biblio_keywords".
+   * @param array $keywords
+   *   Array of term names.
+   * @param string $vocabulary_name
+   *   The vocabulary of the terms. Defaults to "biblio_keywords".
+   */
+  public function importKeywords(EntityMetadataWrapper $wrapper, $property_name = 'biblio_keywords', $keywords = array(), $vocabulary_name = 'biblio_keywords') {
+    $terms = array();
+    foreach ($keywords as $term_name) {
+      if (!$term = taxonomy_get_term_by_name($term_name, $vocabulary_name)) {
+        $vocabulary = taxonomy_vocabulary_machine_name_load($vocabulary_name);
+        $values = array(
+          'name' => $term_name,
+          'vid' => $vocabulary->vid,
+        );
+        $term = entity_create('taxonomy_term', $values);
+        taxonomy_term_save($term);
+      }
+
+      // taxonomy_get_term_by_name() returns an array, so normalize it.
+      $terms[] = is_array($term) ? reset($term) : $term;
+    }
+
+    $wrapper->{$property_name}->set($terms);
+  }
+
+  /**
    * Given a of successful import, find duplicates or save the new Biblios.
    *
    * @param $result

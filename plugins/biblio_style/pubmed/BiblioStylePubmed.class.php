@@ -27,7 +27,7 @@ class BiblioStylePubmed extends BiblioStyleBase {
 
     foreach ($xml->xpath('//PubmedArticle') as $article) {
 
-      $biblio = biblio_create('article');
+      $biblio = biblio_create('journal');
       $wrapper = entity_metadata_wrapper('biblio', $biblio);
 
       foreach ($mapping['field'] as $property_name => $property) {
@@ -73,6 +73,16 @@ class BiblioStylePubmed extends BiblioStyleBase {
     $wrapper->{$property_name}->set((string)$sub_data);
   }
 
+  /**
+   * Import abstract property.
+   *
+   * @param EntityMetadataWrapper $wrapper
+   *   The wrapped Biblio.
+   * @param $property_name
+   *   The propery name (e.g. biblio_abstract).
+   * @param $data
+   *   A single PubMed article to be processed.
+   */
   public function importAbstract(EntityMetadataWrapper $wrapper, $property_name, $data) {
     if (!isset($data->Article->Abstract)) {
       return;
@@ -92,9 +102,17 @@ class BiblioStylePubmed extends BiblioStyleBase {
     $wrapper->{$property_name}->set(implode("\n", $abstract));
   }
 
+  /**
+   * Import keywords property.
+   *
+   * @param EntityMetadataWrapper $wrapper
+   *   The wrapped Biblio.
+   * @param $property_name
+   *   The propery name (e.g. biblio_keywords).
+   * @param $data
+   *   A single PubMed article to be processed.
+   */
   public function importKeywords(EntityMetadataWrapper $wrapper, $property_name, $data) {
-    // @todo: Use generic utility function.
-    return;
     if (!isset($data->MeshHeadingList->MeshHeading)) {
       return;
     }
@@ -102,8 +120,9 @@ class BiblioStylePubmed extends BiblioStyleBase {
     foreach ($data->MeshHeadingList->MeshHeading as $heading) {
       $keywords[] = (string)$heading->DescriptorName;
     }
-    return $keywords;
+    parent::importKeywords($wrapper, $property_name, $keywords);
   }
+
 
   public function importYear(EntityMetadataWrapper $wrapper, $property_name, $data) {
   }
