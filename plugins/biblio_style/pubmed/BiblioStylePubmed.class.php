@@ -100,6 +100,28 @@ class BiblioStylePubmed extends BiblioStyleBase {
   }
 
   /**
+   * @param EntityMetadataWrapper $wrapper
+   *   The wrapped Biblio.
+   * @param $property_name
+   *   The propery name (e.g. biblio_year).
+   * @param $data
+   *   A single PubMed article to be processed.
+   */
+  public function importSecondaryTitle(EntityMetadataWrapper $wrapper, $property_name, $data) {
+    if (!empty($data->MedlineJournalInfo->MedlineTA)) {
+      $title = $data->MedlineJournalInfo->MedlineTA;
+    }
+    elseif (!empty($data->Article->Journal->ISOAbbreviation)) {
+      $title = $data->Article->Journal->ISOAbbreviation;
+    }
+    else {
+      $title = $data->Article->Journal->Title;
+    }
+
+    $wrapper->{$property_name}->set($title);
+  }
+
+  /**
    * @inheritdoc
    */
   public function getMapping() {
@@ -113,11 +135,13 @@ class BiblioStylePubmed extends BiblioStyleBase {
       'biblio_pubmed_id' => $this->id,
       'biblio_pubmed_md5' => $this->md5,
       'biblio_contributors' => $this->contributors(),
-      // MedlineCitations are always articles from journals or books
-      'biblio_type' => 102,
-      'biblio_date' => $this->date(),
-      'biblio_year' => substr($this->date(), 0, 4),
-      'biblio_secondary_title' => $journal,
+
+      'biblio_year' => array(
+        'import_method' => 'importYear',
+      ),
+      'biblio_secondary_title' => array(
+        'import_method' => 'importSecondaryTitle',
+      ),
       'biblio_alternate_title' => array(
         'import_location' => array('Journal', 'ISOAbbreviation'),
       ),
@@ -133,10 +157,18 @@ class BiblioStylePubmed extends BiblioStyleBase {
       'biblio_pages' => array(
         'import_location' => array('Pagination', 'MedlinePgn'),
       ),
-      'biblio_abst_e' => $this->abst(),
+      'biblio_abstract' => array(
+        'import_method' => 'importAbstract',
+      ),
+      // @todo: Where should we map this?
       'biblio_custom1' => "http://www.ncbi.nlm.nih.gov/pubmed/{$this->id}?dopt=Abstract",
-      'biblio_keywords' => $this->keywords(),
-      'biblio_lang' => $this->lang(),
+
+      'biblio_keywords' => array(
+        'import_method' => 'importKeywords',
+      ),
+      'biblio_language' => array(
+        'import_location' => array('Article', 'Language'),
+      ),
     );
 
     // Assign default import method.
