@@ -100,6 +100,35 @@ class BiblioStylePubmed extends BiblioStyleBase {
   }
 
   /**
+   * Import a generic property.
+   *
+   * @param EntityMetadataWrapper $wrapper
+   *   The wrapped Biblio.
+   * @param $property_name
+   *   The propery name (e.g. biblio_year).
+   * @param $data
+   *   A single PubMed article to be processed.
+   */
+  public function importEntryGeneric(EntityMetadataWrapper $wrapper, $property_name, $data) {
+    $mapping = $this->getMapping();
+    $property = $mapping['field'][$property_name];
+
+    // Drill into the object until we have reached our property.
+    $sub_data = $data;
+
+    foreach ($property['import_location'] as $location) {
+      if (empty($sub_data->{$location})) {
+        return;
+      }
+      $sub_data = $sub_data->{$location};
+    }
+
+    $wrapper->{$property_name}->set($sub_data);
+  }
+
+  /**
+   * Import secondary title.
+   *
    * @param EntityMetadataWrapper $wrapper
    *   The wrapped Biblio.
    * @param $property_name
