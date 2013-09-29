@@ -214,45 +214,43 @@ class BiblioStylePubmed extends BiblioStyleBase {
     $return = parent::getMapping();
 
     $return['field'] = array(
-      'title' => array(
-        'import_location' => array('Article', 'ArticleTitle'),
-      ),
-      'biblio_year' => array(
-        'import_method' => 'importYear',
-      ),
-      'biblio_secondary_title' => array(
-        'import_method' => 'importSecondaryTitle',
+      'biblio_abstract' => array(
+        'import_method' => 'importAbstract',
       ),
       'biblio_alternate_title' => array(
         'import_location' => array('Journal', 'ISOAbbreviation'),
       ),
-      'biblio_volume' => array(
-        'import_location' => array('Journal', 'JournalIssue', 'Volume'),
+      'biblio_doi' => array(
+        'import_method' => 'importDoi',
       ),
-      'biblio_issue' => array(
-        'import_location' => array('Journal', 'JournalIssue', 'Issue'),
+      'biblio_secondary_title' => array(
+        'import_method' => 'importSecondaryTitle',
       ),
       'biblio_issn' => array(
         'import_location' => array('Journal', 'ISSN'),
       ),
-      'biblio_pages' => array(
-        'import_location' => array('Pagination', 'MedlinePgn'),
+      'biblio_issue' => array(
+        'import_location' => array('Journal', 'JournalIssue', 'Issue'),
       ),
-      'biblio_abstract' => array(
-        'import_method' => 'importAbstract',
-      ),
-      // @todo: Where should we map this?
-      // 'biblio_custom1' => "http://www.ncbi.nlm.nih.gov/pubmed/{$this->id}?dopt=Abstract",
-
-      'biblio_doi' => array(
-        'import_method' => 'importDoi',
-      ),
-
       'biblio_keywords' => array(
         'import_method' => 'importKeywords',
       ),
       'biblio_language' => array(
         'import_location' => array('Article', 'Language'),
+      ),
+      'biblio_pages' => array(
+        'import_location' => array('Pagination', 'MedlinePgn'),
+      ),
+      'biblio_volume' => array(
+        'import_location' => array('Journal', 'JournalIssue', 'Volume'),
+      ),
+      'biblio_year' => array(
+        'import_method' => 'importYear',
+      ),
+      // @todo: Where should we map this?
+      // 'biblio_custom1' => "http://www.ncbi.nlm.nih.gov/pubmed/{$this->id}?dopt=Abstract",
+      'title' => array(
+        'import_location' => array('Article', 'ArticleTitle'),
       ),
     );
 
