@@ -209,151 +209,167 @@ class BiblioStyleBibtex extends BiblioStyleBase implements BiblioStyleImportInte
     // We clone the biblio, as we might change the values.
     $biblio = clone $this->biblio;
     $wrapper = entity_metadata_wrapper('biblio', $biblio);
-
-    $output = '';
-    $journal = $series = $booktitle = $school = $organization = $institution = NULL;
     $type = $this->biblio->type;
 
-    switch ($type) {
-      case 'book':
-        $series = $wrapper->biblio_secondary_title->value();
-        $organization = $wrapper->biblio_publisher->value();
-        break;
+    if ($type == 'thesis' && !empty($wrapper->biblio_type_of_work) && strpos($wrapper->biblio_type_of_work->value(), 'masters') === TRUE) {
+      $type = 'mastersthesis';
+    }
+    $type_info = biblio_get_types_info($type);
 
-      case 'book_chapter':
-      case 'conference_paper':
-        $booktitle = $wrapper->biblio_secondary_title->value();
-        $organization = $wrapper->biblio_publisher->value();
-        $series = $wrapper->biblio_tertiary_title->value();
-        break;
+    $output = array();
+    $output[] = '@' . $type_info['name'] . '{';
 
-      case 'thesis':
-        $school = $wrapper->biblio_publisher->value();
-        $wrapper->biblio_publisher->set(NULL);
-        if (strpos($wrapper->biblio_type_of_work->value(), 'masters') === TRUE) {
-          $type = 'mastersthesis';
-        }
-        break;
+    $map = $this->getMapping();
+    foreach ($map['field'] as $key => $info) {
+      $method = $info['method'];
+      $property = $info['property'];
+      $use_key = $info['use_key'];
 
-      case 'report':
-        $institution  = $wrapper->biblio_publisher->value();
-        $wrapper->biblio_publisher->set(NULL);
-        break;
+      $wrapper = entity_metadata_wrapper('biblio', $this->biblio);
 
-      case 'journal_article':
-      default:
-        $journal = $wrapper->biblio_secondary_title->value();
-        break;
+      if (empty($wrapper->{$property})) {
+        continue;
+      }
+
+      if (!$value = $this->{$method}($wrapper, $property)) {
+        continue;
+      }
+
+      $first_entry = &drupal_static(__METHOD__, array());
+
+      // If we reached here, it means we have a first entity, so we can turn off
+      // this flag.
+      $first_entry[$this->biblio->bid] = FALSE;
+      $prefix = ",\n\t";
+
+      if ($key == 'bibtexCitation') {
+        // Place bibtexCitation as the second element of the output, right after
+        // the Biblio type.
+        $output = array_merge(array_slice($output, 0 , 1), array($value), array_slice($output, 1));
+      }
+      elseif ($use_key) {
+        $opening_tag = $this->plugin['options']['opening_tag'];
+        $closing_tag = $this->plugin['options']['closing_tag'];
+        $output[] = $prefix . $key . ' = '. $opening_tag .  $value . $closing_tag;
+      }
+      else {
+        $output[] = $prefix . $value;
+      }
     }
 
-    // @todo: Use the human name instead of ucfirst()?
-    $output .= '@' . ucfirst($type). '{';
-    $output .= $this->formatEntry('bibtexCitation', NULL, FALSE);
-    $output .= $this->formatEntry('title');
-    $output .= $this->formatEntry('journal', $journal);
-    $output .= $this->formatEntry('booktitle', $booktitle);
-    $output .= $this->formatEntry('series', $series);
-    $output .= $this->formatEntry('volume');
-    $output .= $this->formatEntry('number');
-    $output .= $this->formatEntry('year');
-    $output .= $this->formatEntry('note');
-    $output .= $this->formatEntry('month');
-    $output .= $this->formatEntry('pages');
-    $output .= $this->formatEntry('publisher');
-    $output .= $this->formatEntry('school', $school);
-    $output .= $this->formatEntry('organization', $organization);
-    $output .= $this->formatEntry('institution', $institution);
-    $output .= $this->formatEntry('type');
-    $output .= $this->formatEntry('edition');
-    $output .= $this->formatEntry('chapter');
-    $output .= $this->formatEntry('address');
-    $output .= $this->formatEntry('abstract');
-    $output .= $this->formatEntry('keywords');
-    $output .= $this->formatEntry('isbn');
-    $output .= $this->formatEntry('issn');
-    $output .= $this->formatEntry('doi');
-    $output .= $this->formatEntry('url');
-    $output .= $this->formatEntry('attachments');
-    $output .= $this->formatEntry('author');
-    $output .= $this->formatEntry('editor');
-    $output .= "\n}\n";
+    $output[] = "\n}\n";
 
     // Convert any special characters to the latex equivalents.
     $converter = new PARSEENTRIES();
+    $output = implode("", $output);
     $output = $converter->searchReplaceText($this->getTranstab(), $output, FALSE);
 
     return $output;
   }
 
   /**
-   * Format an entry.
+   * Generic format entry.
    *
+   * @param EntityMetadataWrapper $wrapper
+   *  The wrapper object.
    * @param $key
-   *   The BibTeX key name.
-   * @param $value
-   *   Optional; The value to format. If empty, try to get it from the Biblio
-   *   entity. Defaults to NULL.
-   * @return string
+   *  The property name which holds the value of the field.
+   *
+   * @return
+   *  The value of the property.
    */
-  private function formatEntry($key, $value = NULL, $use_key = TRUE) {
-    if (empty($value)) {
-      $map = $this->getMapping();
-      $map = $map['field'];
-
-      if (empty($map[$key])) {
-        return;
-      }
-
-      // @todo: Cache the wrapper.
-      $wrapper = entity_metadata_wrapper('biblio', $this->biblio);
-
-      $property_name = $map[$key]['property'];
-      if (!isset($wrapper->{$property_name})) {
-        return;
-      }
-
-      $method = $map[$key]['method'];
-
-      if (!$value = $this->{$method}($wrapper, $property_name)) {
-        return;
-      }
-    }
-
-    $first_entry = &drupal_static(__METHOD__, array());
-
-    $output = isset($first_entry[$this->biblio->bid]) ? ",\n\t" : '';
-
-    // If we reached here, it means we have a first entity, so we can turn off
-    // this flag.
-    $first_entry[$this->biblio->bid] = FALSE;
-
-    if ($use_key) {
-      $opening_tag = $this->plugin['options']['opening_tag'];
-      $closing_tag = $this->plugin['options']['closing_tag'];
-      return $output . $key . ' = '. $opening_tag .  $value . $closing_tag;
-    }
-
-    return $output . $value;
+  private function formatEntryGeneric(EntityMetadataWrapper $wrapper, $key) {
+    return $wrapper->{$key}->value();
   }
 
   /**
-   * Generic format entry.
+   * Rendering the series property.
    *
-   * @param $wrapper
-   * @param $property_name
+   * @param EntityMetadataWrapper $wrapper
+   *  The wrapper object.
+   * @param $key
+   *  The property name which holds the value of the field.
+   *
+   * @return
+   *  The value of the property.
    */
-  private function formatEntryGeneric($wrapper, $property_name) {
-    return $wrapper->{$property_name}->value();
+  private function formatEntrySeries(EntityMetadataWrapper $wrapper, $key) {
+    return in_array($this->biblio->type, array('book_chapter','conference_paper')) ? $wrapper->biblio_tertiary_title->value() : $wrapper->biblio_secondary_title->value();
+  }
+
+  /**
+   * Rendering the organization property.
+   *
+   * @param EntityMetadataWrapper $wrapper
+   *  The wrapper object.
+   * @param $key
+   *  The property name which holds the value of the field.
+   *
+   * @return
+   *  The value of the property.
+   */
+  private function formatEntryOrganization(EntityMetadataWrapper $wrapper, $key) {
+    return in_array($this->biblio->type, array('book_chapter','conference_paper', 'book')) ? $wrapper->biblio_publisher->value() : NULL;
+  }
+
+  /**
+   * Rendering the book title property.
+   *
+   * @param EntityMetadataWrapper $wrapper
+   *  The wrapper object.
+   * @param $key
+   *  The property name which holds the value of the field.
+   *
+   * @return
+   *  The value of the property.
+   */
+  private function formatEntryBookTitle(EntityMetadataWrapper $wrapper, $key) {
+    return in_array($this->biblio->type, array('book_chapter','conference_paper')) ? $wrapper->biblio_secondary_title->value() : NULL;
+  }
+
+  /**
+   * Rendering the school property.
+   *
+   * @param EntityMetadataWrapper $wrapper
+   *  The wrapper object.
+   * @param $key
+   *  The property name which holds the value of the field.
+   *
+   * @return
+   *  The value of the property.
+   */
+  private function formatEntrySchool(EntityMetadataWrapper $wrapper, $key) {
+    return $this->biblio->type == 'thesis' ? $wrapper->biblio_publisher->value() : NULL;
+  }
+
+  /**
+   * Rendering the institution property.
+   *
+   * @param EntityMetadataWrapper $wrapper
+   *  The wrapper object.
+   * @param $key
+   *  The property name which holds the value of the field.
+   *
+   * @return
+   *  The value of the property.
+   */
+  private function formatEntryInstitution(EntityMetadataWrapper $wrapper, $key) {
+    return $this->biblio->type == 'report' ? $wrapper->biblio_publisher->value() : NULL;
   }
 
   /**
    * Taxonomy term format entry.
    *
-   * @param $wrapper
-   * @param $property_name
+   * @param EntityMetadataWrapper $wrapper
+   *  The wrapper object.
+   * @param $key
+   *  The property name which holds the value of the field.
+   *
+   * @return String
+   *  The value of the property.
    */
-  private function formatEntryTaxonomyTerms($wrapper, $property_name) {
-    if (!$terms = $wrapper->{$property_name}->value()) {
+  private function formatEntryTaxonomyTerms($wrapper, $key) {
+    if (!$terms = $wrapper->{$key}->value()) {
       return;
     }
 
@@ -367,13 +383,48 @@ class BiblioStyleBibtex extends BiblioStyleBase implements BiblioStyleImportInte
   }
 
   /**
+   * Return the value of the publisher property.
+   *
+   * @param EntityMetadataWrapper $wrapper
+   *  The wrapper object.
+   * @param $key
+   *  The property name which holds the value of the field.
+   *
+   * @return
+   *  The value of the property.
+   */
+  public function formatEntryPublisher(EntityMetadataWrapper $wrapper, $key) {
+    return !in_array($this->biblio->type, array('thesis','report')) ? $wrapper->{$key}->value() : NULL;
+  }
+
+  /**
+   * Return the value of the entry journal property.
+   *
+   * @param EntityMetadataWrapper $wrapper
+   *  The wrapper object.
+   * @param $key
+   *  The property name which holds the value of the field.
+   *
+   * @return
+   *  The value of the property.
+   */
+  public function formatEntryJournal(EntityMetadataWrapper $wrapper, $key) {
+    return !in_array($this->biblio->type, array('book','book_chapter', 'conference_paper', 'thesis', 'report')) ? $wrapper->biblio_secondary_title->value() : NULL;
+  }
+
+  /**
    * File format entry.
    *
-   * @param $wrapper
-   * @param $property_name
+   * @param EntityMetadataWrapper $wrapper
+   *  The wrapper object.
+   * @param $key
+   *  The property name which holds the value of the field.
+   *
+   * @return string
+   *  The value of the property.
    */
-  public function formatEntryFiles($wrapper, $property_name) {
-    if ($url = parent::renderEntryFiles($wrapper, $property_name)) {
+  public function formatEntryFiles(EntityMetadataWrapper $wrapper, $key) {
+    if ($url = parent::renderEntryFiles($wrapper, $key)) {
       return implode(' , ', $url);
     }
   }
@@ -381,46 +432,81 @@ class BiblioStyleBibtex extends BiblioStyleBase implements BiblioStyleImportInte
   /**
    * Author contributor format entry.
    *
-   * @param $wrapper
-   * @param $property_name
+   * @param EntityMetadataWrapper $wrapper
+   *  The wrapper object.
+   * @param $key
+   *  The property name which holds the value of the field.
+   *
+   * @return string
    */
-  private function formatEntryContributorAuthor($wrapper, $property_name) {
-    return $this->formatEntryContributor($wrapper, $property_name, 'author');
+  private function formatEntryContributorAuthor(EntityMetadataWrapper $wrapper, $key) {
+    return $this->formatEntryContributor($wrapper, $key, 'author');
   }
 
   /**
    * Editor contributor format entry.
    *
-   * @param $wrapper
-   * @param $property_name
+   * @param EntityMetadataWrapper $wrapper
+   *  The wrapper object.
+   * @param $key
+   *  The property name which holds the value of the field.
+   *
+   * @return string
+   *  The contributors name.
    */
-  private function formatEntryContributorEditor($wrapper, $property_name) {
-    return $this->formatEntryContributor($wrapper, $property_name, 'editor');
+  private function formatEntryContributorEditor(EntityMetadataWrapper $wrapper, $key) {
+    return $this->formatEntryContributor($wrapper, $key, 'editor');
   }
 
   /**
    * Helper function to get contributors name.
    *
-   * @param $wrapper
-   * @param $property_name
+   * @param EntityMetadataWrapper $wrapper
+   *  The wrapper object.
+   * @param $key
+   *  The property name which holds the value of the field.
    * @param $role
+   *
    * @return string
+   *  The contributors name.
    */
-  private function formatEntryContributor($wrapper, $property_name, $role) {
-    if (!$wrapper->{$property_name}->value()) {
+  private function formatEntryContributor(EntityMetadataWrapper $wrapper, $key, $role) {
+    if (!$wrapper->{$key}->value()) {
       return;
     }
 
     $names = array();
-    foreach ($wrapper->{$property_name} as $sub_wrapper) {
+    foreach ($wrapper->{$key} as $sub_wrapper) {
       if (strtolower($sub_wrapper->biblio_contributor_role->label()) != strtolower($role)) {
         continue;
       }
 
-      $given = $sub_wrapper->biblio_contributor->firstname->value();
-      $family = $sub_wrapper->biblio_contributor->lastname->value();
+      $contributor = $sub_wrapper->biblio_contributor->value();
 
-      $names[] = $given . '{' . $family . '}';
+      // Add a dot to each letter in initials.
+      if (!empty($contributor->initials)) {
+        $letters = explode(' ', $contributor->initials);
+        foreach ($letters as &$letter) {
+          $letter .= '.';
+        }
+        $contributor->initials = implode(' ', $letters);
+      }
+
+      // Get the contributor's full name, which is all non-empty name parts.
+      $fields = array('firstname', 'initials', 'suffix', 'prefix', 'lastname');
+      $full_name = array();
+      foreach ($fields as $field) {
+        if (empty($contributor->{$field})) {
+          // No value in field.
+          continue;
+        }
+
+        // Add the field's value to the full name.
+        $full_name[] = $contributor->{$field};
+      }
+
+      // Add the full name to the list of contributors.
+      $names[] = implode(' ', $full_name);
     }
 
     return implode(' and ', $names);
@@ -437,60 +523,86 @@ class BiblioStyleBibtex extends BiblioStyleBase implements BiblioStyleImportInte
   public function getMapping() {
     $return  = array(
       'field' => array(
-        'title' => array('property' => 'title'),
-        'volume' => array('property' => 'biblio_volume'),
-        'number' => array('property' => 'biblio_number'),
-        'year' => array(
-          'property' => 'biblio_year',
-          'import_method' => 'getEntryValueYear',
-        ),
-        'note' => array('property' => 'biblio_notes'),
-        'month' => array('property' => 'biblio_date'),
-        'pages' => array('property' => 'biblio_pages'),
-        'publisher' => array(
-          'property' => 'biblio_publisher',
-          'import_method' => 'getEntryValuePublisher',
-        ),
-        'edition' => array('property' => 'biblio_edition'),
-        'chapter' => array('property' => 'biblio_section'),
-        'address' => array('property' => 'biblio_place_published'),
         'abstract' => array('property' => 'biblio_abstract'),
-        'isbn' => array('property' => 'biblio_isbn'),
-        'issn' => array('property' => 'biblio_issn'),
-        'doi' => array('property' => 'biblio_doi'),
-        // @todo: Is this the Biblio URL?
-        'url' => array('property' => 'biblio_url'),
-
-        'keywords' => array('property' => 'biblio_keywords', 'method' => 'formatEntryTaxonomyTerms'),
-
+        'address' => array('property' => 'biblio_place_published'),
         // @todo: Use bilbio_file instead.
-        'attachments' => array('property' => 'biblio_image', 'method' => 'renderEntryFiles'),
-
+        'attachments' => array(
+          'property' => 'biblio_image',
+          'method' => 'renderEntryFiles'
+        ),
         'author' => array(
           'property' => 'contributor_field_collection',
           'method' => 'formatEntryContributorAuthor',
         ),
+        'bibtex' => array(
+          'property' => 'bibtext',
+          'method' => 'formatEntryBibText',
+          'use_key' => FALSE,
+        ),
+        'bibtexCitation' => array('property' => 'biblio_citekey'),
+        'booktitle' => array(
+          'property' => 'booktitle',
+          'method' => 'formatEntryBookTitle',
+        ),
+        'chapter' => array('property' => 'biblio_section'),
+        'doi' => array('property' => 'biblio_doi'),
         'editor' => array(
           'property' => 'contributor_field_collection',
           'method' => 'formatEntryContributorEditor',
         ),
-
+        'edition' => array('property' => 'biblio_edition'),
         // @todo: Special entry types?
-        'bibtexEntryType' => array('property' => 'biblio_type_of_work'),
-        'bibtexCitation' => array('property' => 'biblio_citekey'),
-
+        'isbn' => array('property' => 'biblio_isbn'),
+        'issn' => array('property' => 'biblio_issn'),
+        'institution' => array(
+          'property' => 'institution',
+          'method' => 'formatEntryInstitution',
+        ),
+        'journal' => array(
+          'property' => 'journal',
+          'method' => 'formatEntryJournal',
+        ),
+        'keywords' => array(
+          'property' => 'biblio_keywords',
+          'method' => 'formatEntryTaxonomyTerms'
+        ),
+        'month' => array('property' => 'biblio_date'),
+        'note' => array('property' => 'biblio_notes'),
+        'number' => array('property' => 'biblio_number'),
+        'organization' => array(
+          'property' => 'organization',
+          'method' => 'formatEntryOrganization',
+        ),
+        'pages' => array('property' => 'biblio_pages'),
+        'publisher' => array(
+          'property' => 'biblio_publisher',
+          'import_method' => 'getEntryValuePublisher',
+          'method' => 'formatEntryPublisher'
+        ),
         // @todo: Is it ok to have this "fake" keys, or add this as property
         // to the array?
-        // Keys used for import.
+        'school' => array(
+          'property' => 'school',
+          'method' => 'formatEntrySchool',
+        ),
+        'series' => array(
+          'property' => 'series',
+          'method' => 'formatEntrySeries',
+        ),
         'secondary_title' => array(
           'property' => 'biblio_secondary_title',
           'import_method' => 'getEntryValueSecondaryTitle',
         ),
-
+        'title' => array('property' => 'title'),
+        // Keys used for import.
         'tertiary_title' => array(
           'property' => 'biblio_tertiary_title',
           'import_method' => 'getEntryValueTertiaryTitle',
         ),
+        // @todo: Is this the Biblio URL?
+        'url' => array('property' => 'biblio_url'),
+        'volume' => array('property' => 'biblio_volume'),
+        'year' => array('property' => 'biblio_year'),
       ),
       'type' => array(
         'article' => 'journal_article',
@@ -512,13 +624,11 @@ class BiblioStyleBibtex extends BiblioStyleBase implements BiblioStyleImportInte
 
     // Assign default method to format entry.
     foreach ($return['field'] as $key => $value) {
-      if (empty($value['method'])) {
-        $return['field'][$key]['method'] = 'formatEntryGeneric';
-      }
-
-      if (empty($value['import_method'])) {
-        $return['field'][$key]['import_method'] = 'getEntryValue';
-      }
+      $return['field'][$key] += array(
+        'method' => 'formatEntryGeneric',
+        'import_method' => 'getEntryValue',
+        'use_key' => TRUE,
+      );
     }
 
     return $return;
