@@ -37,7 +37,7 @@ class BiblioStylePubmed extends BiblioStyleBase {
         }
 
         $method = $property['import_method'];
-        $this->{$method}($wrapper, $property_name, $article->MedlineCitation);
+        $this->{$method}($wrapper, $property_name, $article->MedlineCitation, $article->PubmedData);
       }
 
       $biblios['success'][] = $biblio;
@@ -55,8 +55,10 @@ class BiblioStylePubmed extends BiblioStyleBase {
    *   The propery name (e.g. biblio_year).
    * @param $data
    *   A single PubMed article to be processed.
+   * @param $pubmed_data
+   *   A single PubMed article data extracted from "PubmedData".
    */
-  public function importEntryGeneric(EntityMetadataWrapper $wrapper, $property_name, $data) {
+  public function importEntryGeneric(EntityMetadataWrapper $wrapper, $property_name, SimpleXMLElement $data, SimpleXMLElement $pubmed_data) {
     $mapping = $this->getMapping();
     $property = $mapping['field'][$property_name];
 
@@ -82,8 +84,10 @@ class BiblioStylePubmed extends BiblioStyleBase {
    *   The propery name (e.g. biblio_abstract).
    * @param $data
    *   A single PubMed article to be processed.
+   * @param $pubmed_data
+   *   A single PubMed article data extracted from "PubmedData".
    */
-  public function importAbstract(EntityMetadataWrapper $wrapper, $property_name, $data) {
+  public function importAbstract(EntityMetadataWrapper $wrapper, $property_name, SimpleXMLElement $data, SimpleXMLElement $pubmed_data) {
     if (!isset($data->Article->Abstract)) {
       return;
     }
@@ -103,6 +107,26 @@ class BiblioStylePubmed extends BiblioStyleBase {
   }
 
   /**
+   * Import DOI property.
+   *
+   * @param EntityMetadataWrapper $wrapper
+   *   The wrapped Biblio.
+   * @param $property_name
+   *   The propery name (e.g. biblio_abstract).
+   * @param $data
+   *   A single PubMed article to be processed.
+   * @param $pubmed_data
+   *   A single PubMed article data extracted from "PubmedData".
+   */
+  public function importDoi(EntityMetadataWrapper $wrapper, $property_name, SimpleXMLElement $data, SimpleXMLElement $pubmed_data) {
+    if (!$doi = $data->xpath('.//ELocationID[@EIdType="doi"]/text()')) {
+      $doi = $pubmed_data->xpath('.//ArticleId[@IdType="doi"]/text()');
+    }
+
+    $wrapper->{$property_name}->set((string)$doi[0]);
+  }
+
+  /**
    * Import keywords property.
    *
    * @param EntityMetadataWrapper $wrapper
@@ -111,8 +135,10 @@ class BiblioStylePubmed extends BiblioStyleBase {
    *   The propery name (e.g. biblio_keywords).
    * @param $data
    *   A single PubMed article to be processed.
+   * @param $pubmed_data
+   *   A single PubMed article data extracted from "PubmedData".
    */
-  public function importKeywords(EntityMetadataWrapper $wrapper, $property_name, $data) {
+  public function importKeywords(EntityMetadataWrapper $wrapper, $property_name, SimpleXMLElement $data, SimpleXMLElement $pubmed_data) {
     if (!isset($data->MeshHeadingList->MeshHeading)) {
       return;
     }
@@ -139,8 +165,10 @@ class BiblioStylePubmed extends BiblioStyleBase {
    *   The propery name (e.g. biblio_keywords).
    * @param $data
    *   A single PubMed article to be processed.
+   * @param $pubmed_data
+   *   A single PubMed article data extracted from "PubmedData".
    */
-  public function importYear(EntityMetadataWrapper $wrapper, $property_name, $data) {
+  public function importYear(EntityMetadataWrapper $wrapper, $property_name, SimpleXMLElement $data, SimpleXMLElement $pubmed_data) {
     $pub_date = $data->Article->Journal->JournalIssue->PubDate;
 
     if ($pub_date->Year) {
@@ -162,8 +190,10 @@ class BiblioStylePubmed extends BiblioStyleBase {
    *   The propery name (e.g. biblio_year).
    * @param $data
    *   A single PubMed article to be processed.
+   * @param $pubmed_data
+   *   A single PubMed article data extracted from "PubmedData".
    */
-  public function importSecondaryTitle(EntityMetadataWrapper $wrapper, $property_name, $data) {
+  public function importSecondaryTitle(EntityMetadataWrapper $wrapper, $property_name, SimpleXMLElement $data, SimpleXMLElement $pubmed_data) {
     if (!empty($data->MedlineJournalInfo->MedlineTA)) {
       $title = $data->MedlineJournalInfo->MedlineTA;
     }
@@ -213,6 +243,10 @@ class BiblioStylePubmed extends BiblioStyleBase {
       ),
       // @todo: Where should we map this?
       // 'biblio_custom1' => "http://www.ncbi.nlm.nih.gov/pubmed/{$this->id}?dopt=Abstract",
+
+      'biblio_doi' => array(
+        'import_method' => 'importDoi',
+      ),
 
       'biblio_keywords' => array(
         'import_method' => 'importKeywords',
