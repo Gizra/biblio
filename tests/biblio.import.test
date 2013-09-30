@@ -233,8 +233,19 @@ class BiblioImportAndRenderTestCase extends DrupalWebTestCase {
 
     $biblios = $biblio_style->import($data);
     $biblio = $biblios['new'][0];
-    $output = $biblio->getText('bibtex');
 
-    $this->assertEqual(trim($output), trim($expected_result), 'EndNote render is equal to the expected result');
+    $wrapper = entity_metadata_wrapper('biblio', $biblio);
+    $values = array(
+      'title' => 'Assessment of Controversial Pediatric Asthma Management Options Using GRADE.',
+      'biblio_year' => '2012',
+      'biblio_secondary_title' => 'Pediatrics',
+      'biblio_abstract' => 'This is the Abstract.',
+      'biblio_doi' => '10.1542/peds.2011-3559',
+      'biblio_language' => 'ENG',
+    );
+
+    foreach ($values as $property_name => $value) {
+      $this->assertEqual($wrapper->{$property_name}->value(), $value);
+    }
   }
 }
