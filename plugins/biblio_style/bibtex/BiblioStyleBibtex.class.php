@@ -39,10 +39,6 @@ class BiblioStyleBibtex extends BiblioStyleBase implements BiblioStyleImportInte
           continue;
         }
 
-        if (empty($entry[$key])) {
-          continue;
-        }
-
         $property_name = $map[$key]['property'];
         if (!isset($wrapper->{$property_name})) {
           biblio_create_field($property_name, 'biblio', $biblio_type);
@@ -60,34 +56,55 @@ class BiblioStyleBibtex extends BiblioStyleBase implements BiblioStyleImportInte
     return $biblios;
   }
 
-
+  /**
+   * Import keywords.
+   *
+   * @param EntityMetadataWrapper $wrapper
+   *   The wrapped Biblio object.
+   * @param $key
+   *   The key to import.
+   * @param $entry
+   *   The data to import from.
+   */
   public function importKeywords(EntityMetadataWrapper $wrapper, $key, $entry) {
-
+    if (empty($entry[$key])) {
+      return;
+    }
+    $keywords = str_replace(';', ',', $entry[$key]);
+    parent::importKeywords($wrapper, explode(',', $keywords));
   }
 
 
 
   /**
-   * Get the value of an entry.
+   * Import a generic property.
    *
+   * @param EntityMetadataWrapper $wrapper
+   *   The wrapped Biblio object.
    * @param $key
+   *   The key to import.
    * @param $entry
+   *   The data to import from.
    */
-  public function importGeneric(EntityMetadataWrapper $wrapper, $tag, $entry) {
+  public function importGeneric(EntityMetadataWrapper $wrapper, $key, $entry) {
+    if (empty($entry[$key])) {
+      return;
+    }
+
     $map = $this->getMapping();
     $map = $map['field'];
-    $property = $map[$tag]['property'];
+    $property = $map[$key]['property'];
 
     // Some BibTex might come we double curly brackets, so strip them out from
     // the beginning and end of the value.
-    $value = trim($entry[$tag], '{}');
+    $value = trim($entry[$key], '{}');
 
     $wrapper->{$property}->set($value);
 
   }
 
   /**
-   * Get the value of a year.
+   * Import year.
    *
    * @param EntityMetadataWrapper $wrapper
    *   The wrapped Biblio object.
@@ -96,19 +113,22 @@ class BiblioStyleBibtex extends BiblioStyleBase implements BiblioStyleImportInte
    * @param $entry
    *   The data to import from.
    */
-  private function importYear(EntityMetadataWrapper $wrapper, $tag, $entry) {
-    if (strtolower($entry[$tag]) == 'in press') {
+  public function importYear(EntityMetadataWrapper $wrapper, $key, $entry) {
+    if (empty($entry[$key])) {
+      return;
+    }
+    if (strtolower($entry[$key]) == 'in press') {
       // Biblio is in press, set the Biblio's status to be "In Press" and leave
       // the year empty.
       $wrapper->biblio_status->set('in_press');
       return;
     }
 
-    $this->import($wrapper, $tag, $entry);
+    $this->import($wrapper, $key, $entry);
   }
 
   /**
-   * Get the value of a publisher.
+   * Import publisher.
    *
    * @param EntityMetadataWrapper $wrapper
    *   The wrapped Biblio object.
@@ -117,7 +137,7 @@ class BiblioStyleBibtex extends BiblioStyleBase implements BiblioStyleImportInte
    * @param $entry
    *   The data to import from.
    */
-  private function importPublisher(EntityMetadataWrapper $wrapper, $tag, $entry) {
+  public function importPublisher(EntityMetadataWrapper $wrapper, $key, $entry) {
     $types = array(
       'organization',
       'school',
@@ -136,12 +156,12 @@ class BiblioStyleBibtex extends BiblioStyleBase implements BiblioStyleImportInte
       return;
     }
 
-    $entry[$tag] = $value;
-    $this->import($wrapper, $tag, $entry);
+    $entry[$key] = $value;
+    $this->import($wrapper, $key, $entry);
   }
 
   /**
-   * Get the value of a secondary title.
+   * Import secondary title.
    *
    * @param EntityMetadataWrapper $wrapper
    *   The wrapped Biblio object.
@@ -150,7 +170,7 @@ class BiblioStyleBibtex extends BiblioStyleBase implements BiblioStyleImportInte
    * @param $entry
    *   The data to import from.
    */
-  private function importSecondaryTitle(EntityMetadataWrapper $wrapper, $tag, $entry) {
+  public function importSecondaryTitle(EntityMetadataWrapper $wrapper, $key, $entry) {
     $types = array(
       'booktitle',
       'series',
@@ -168,12 +188,12 @@ class BiblioStyleBibtex extends BiblioStyleBase implements BiblioStyleImportInte
       return;
     }
 
-    $entry[$tag] = $value;
-    $this->import($wrapper, $tag, $entry);
+    $entry[$key] = $value;
+    $this->import($wrapper, $key, $entry);
   }
 
   /**
-   * Get the value of a tertiary title.
+   * Import tertiary title.
    *
    * @param EntityMetadataWrapper $wrapper
    *   The wrapped Biblio object.
@@ -182,13 +202,13 @@ class BiblioStyleBibtex extends BiblioStyleBase implements BiblioStyleImportInte
    * @param $entry
    *   The data to import from.
    */
-  private function importTertiaryTitle(EntityMetadataWrapper $wrapper, $tag, $entry) {
+  public function importTertiaryTitle(EntityMetadataWrapper $wrapper, $key, $entry) {
     if (empty($entry['series']) || empty($entry['booktitle'])) {
       return;
     }
 
-    $entry[$tag] = $entry['series'];
-    $this->import($wrapper, $tag, $entry);
+    $entry[$key] = $entry['series'];
+    $this->import($wrapper, $key, $entry);
   }
 
   /**
