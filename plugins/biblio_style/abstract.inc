@@ -231,12 +231,14 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
    * Add contributors to the field collection of a Biblio.
    *
    * @param $names
-   *   String with name(s) of the contributors.
+   *   String with name(s) of the contributors, or an array of Biblio
+   *   contributor objects.
    * @param $role
    *   The role of the contributor (e.g "Author", "Editor).
    */
   public function addBiblioContributorsToCollection(Biblio $biblio, $names, $role) {
-    $contributors = $this->getBiblioContributorsFromNames($names);
+    $contributors = is_string($names) ? $this->getBiblioContributorsFromNames($names) : $names;
+
     foreach ($contributors as $contributor) {
       // Create contributors field collections.
       $field_collection = entity_create('field_collection_item', array('field_name' => 'contributor_field_collection'));
@@ -505,6 +507,38 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
       $return = $this->saveOrFindDuplicateFromImportData($result);
     }
     return $return;
+  }
+
+  /**
+   * Helper function to import existing or new keywords.
+   *
+   * @param EntityMetadataWrapper $wrapper
+   *   The wrapped Biblio.
+   * @param $property_name
+   *   The propery name. Defaults to "biblio_keywords".
+   * @param array $keywords
+   *   Array of term names.
+   * @param string $vocabulary_name
+   *   The vocabulary of the terms. Defaults to "biblio_keywords".
+   */
+  public function importKeywords(EntityMetadataWrapper $wrapper, $property_name = 'biblio_keywords', $keywords = array(), $vocabulary_name = 'biblio_keywords') {
+    $terms = array();
+    foreach ($keywords as $term_name) {
+      if (!$term = taxonomy_get_term_by_name($term_name, $vocabulary_name)) {
+        $vocabulary = taxonomy_vocabulary_machine_name_load($vocabulary_name);
+        $values = array(
+          'name' => $term_name,
+          'vid' => $vocabulary->vid,
+        );
+        $term = entity_create('taxonomy_term', $values);
+        taxonomy_term_save($term);
+      }
+
+      // taxonomy_get_term_by_name() returns an array, so normalize it.
+      $terms[] = is_array($term) ? reset($term) : $term;
+    }
+
+    $wrapper->{$property_name}->set($terms);
   }
 
   /**

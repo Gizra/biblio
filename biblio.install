@@ -23,7 +23,8 @@ function biblio_enable() {
     return;
   }
   biblio_add_publication_types();
-  biblio_create_fields_by_bundle();
+  // Create fields to all bundles. No need to cache clear after each field.
+  biblio_create_fields_by_bundle(array(), FALSE);
 }
 
 /**

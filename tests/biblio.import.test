@@ -17,13 +17,13 @@ class BiblioImportAndRenderTestCase extends DrupalWebTestCase {
     parent::setUp('biblio');
 
     biblio_add_publication_types();
-    biblio_create_fields_by_bundle(array('book'));
+    biblio_create_fields_by_bundle(array('book', 'journal'));
   }
 
   /**
    * Test BibTex.
    */
-  function testBibTex() {
+  function __testBibTex() {
     $data = '
 @Book{abramowitz+stegun,
   author    = "Milton {Abramowitz} and Irene A. {Stegun}",
@@ -59,7 +59,7 @@ class BiblioImportAndRenderTestCase extends DrupalWebTestCase {
   /**
    * Test end note tagged.
    */
-  function testEndNoteTagged() {
+  function __testEndNoteTagged() {
     $data = '
 %0 Book
 %A Gary King
@@ -88,5 +88,164 @@ class BiblioImportAndRenderTestCase extends DrupalWebTestCase {
     $output = $biblio->getText('endnote', array('type' => 'tagged'));
 
     $this->assertEqual(trim($output), trim($expected_result), 'EndNote render is equal to the expected result');
+  }
+
+  /**
+   * Test end note tagged.
+   */
+  function testPubMed() {
+    $data = '<?xml version="1.0"?>
+<!DOCTYPE PubmedArticleSet PUBLIC "-//NLM//DTD PubMedArticle, 1st January 2012//EN" "http://www.ncbi.nlm.nih.gov/corehtml/query/DTD/pubmed_120101.dtd">
+<PubmedArticleSet>
+
+
+<PubmedArticle>
+    <MedlineCitation Status="Publisher" Owner="NLM">
+        <PMID Version="1">22926178</PMID>
+        <DateCreated>
+            <Year>2012</Year>
+            <Month>8</Month>
+            <Day>28</Day>
+        </DateCreated>
+        <Article PubModel="Print-Electronic">
+            <Journal>
+                <ISSN IssnType="Electronic">1098-4275</ISSN>
+                <JournalIssue CitedMedium="Internet">
+                    <PubDate>
+                        <Year>2012</Year>
+                        <Month>Aug</Month>
+                        <Day>27</Day>
+                    </PubDate>
+                </JournalIssue>
+                <Title>Pediatrics</Title>
+                <ISOAbbreviation>Pediatrics</ISOAbbreviation>
+            </Journal>
+            <ArticleTitle>Assessment of Controversial Pediatric Asthma Management Options Using GRADE.</ArticleTitle>
+            <Pagination>
+                <MedlinePgn/>
+            </Pagination>
+            <Abstract>
+                <AbstractText>This is the Abstract.</AbstractText>
+            </Abstract>
+            <Affiliation>Department of Pediatrics, Emma Childrens Hospital, Academic Medical Center, Amsterdam, Netherlands;</Affiliation>
+            <AuthorList>
+                <Author>
+                    <LastName>Boluyt</LastName>
+                    <ForeName>Nicole</ForeName>
+                    <Initials>N</Initials>
+                </Author>
+                <Author>
+                    <LastName>Rottier</LastName>
+                    <ForeName>Bart L</ForeName>
+                    <Initials>BL</Initials>
+                </Author>
+                <Author>
+                    <LastName>de Jongste</LastName>
+                    <ForeName>Johan C</ForeName>
+                    <Initials>JC</Initials>
+                </Author>
+                <Author>
+                    <LastName>Riemsma</LastName>
+                    <ForeName>Rob</ForeName>
+                    <Initials>R</Initials>
+                </Author>
+                <Author>
+                    <LastName>Vrijlandt</LastName>
+                    <ForeName>Elianne J L E</ForeName>
+                    <Initials>EJ</Initials>
+                </Author>
+                <Author>
+                    <LastName>Brand</LastName>
+                    <ForeName>Paul L P</ForeName>
+                    <Initials>PL</Initials>
+                </Author>
+            </AuthorList>
+            <Language>ENG</Language>
+            <PublicationTypeList>
+                <PublicationType>JOURNAL ARTICLE</PublicationType>
+            </PublicationTypeList>
+            <ArticleDate DateType="Electronic">
+                <Year>2012</Year>
+                <Month>8</Month>
+                <Day>27</Day>
+            </ArticleDate>
+        </Article>
+        <MedlineJournalInfo>
+            <MedlineTA>Pediatrics</MedlineTA>
+            <NlmUniqueID>0376422</NlmUniqueID>
+            <ISSNLinking>0031-4005</ISSNLinking>
+        </MedlineJournalInfo>
+    </MedlineCitation>
+    <PubmedData>
+        <History>
+            <PubMedPubDate PubStatus="entrez">
+                <Year>2012</Year>
+                <Month>8</Month>
+                <Day>29</Day>
+                <Hour>6</Hour>
+                <Minute>0</Minute>
+            </PubMedPubDate>
+            <PubMedPubDate PubStatus="pubmed">
+                <Year>2012</Year>
+                <Month>8</Month>
+                <Day>29</Day>
+                <Hour>6</Hour>
+                <Minute>0</Minute>
+            </PubMedPubDate>
+            <PubMedPubDate PubStatus="medline">
+                <Year>2012</Year>
+                <Month>8</Month>
+                <Day>29</Day>
+                <Hour>6</Hour>
+                <Minute>0</Minute>
+            </PubMedPubDate>
+        </History>
+        <PublicationStatus>aheadofprint</PublicationStatus>
+        <ArticleIdList>
+            <ArticleId IdType="pii">peds.2011-3559</ArticleId>
+            <ArticleId IdType="doi">10.1542/peds.2011-3559</ArticleId>
+            <ArticleId IdType="pubmed">22926178</ArticleId>
+        </ArticleIdList>
+    </PubmedData>
+</PubmedArticle>
+
+
+</PubmedArticleSet>';
+
+    $expected_result = '@Journal{,
+	abstract = {This is the Abstract.},
+	author = {Nicole N. Boluyt and Bart L BL. Rottier and Johan C JC. de Jongste and Rob R. Riemsma and Elianne J L E EJ. Vrijlandt and Paul L P PL. Brand},
+	doi = {10.1542/peds.2011-3559},
+	secondary_title = {Pediatrics},
+	title = {Assessment of Controversial Pediatric Asthma Management Options Using GRADE.},
+	year = {2012}
+}';
+
+    // @todo: Make general.
+    biblio_create_field('biblio_doi', 'biblio', 'journal');
+    biblio_create_field('biblio_secondary_title', 'biblio', 'journal');
+
+    ctools_include('plugins');
+    $plugin = biblio_get_biblio_style('pubmed');
+    $class = ctools_plugin_load_class('biblio', 'biblio_style', 'pubmed', 'class');
+
+    $biblio_style = new $class($plugin);
+
+    $biblios = $biblio_style->import($data);
+    $biblio = $biblios['new'][0];
+
+    $wrapper = entity_metadata_wrapper('biblio', $biblio);
+    $values = array(
+      'title' => 'Assessment of Controversial Pediatric Asthma Management Options Using GRADE.',
+      'biblio_year' => '2012',
+      'biblio_secondary_title' => 'Pediatrics',
+      'biblio_abstract' => 'This is the Abstract.',
+      'biblio_doi' => '10.1542/peds.2011-3559',
+      'biblio_language' => 'ENG',
+    );
+
+    foreach ($values as $property_name => $value) {
+      $this->assertEqual($wrapper->{$property_name}->value(), $value);
+    }
   }
 }
