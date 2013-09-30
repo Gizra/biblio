@@ -140,6 +140,30 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
   }
 
   /**
+   * Generates an md5 string based on a biblio contributor object.
+   * The md5 is later used to determine whether or not two Biblio Contributor
+   * objects are the same and prevent duplications.
+   *
+   * @param $biblio_contributor
+   *  Biblio Contributor object.
+   *
+   * @return
+   *  MD5 string that represents the given biblio contributor.
+   */
+  public static function generateBiblioContributorMd5(BiblioContributor $biblio_contributor) {
+    $clone = clone $biblio_contributor;
+
+    unset($clone->cid);
+    unset($clone->revision_id);
+    unset($clone->changed);
+    unset($clone->created);
+    unset($clone->is_new);
+    unset($clone->md5);
+
+    return md5(serialize($clone));
+  }
+
+  /**
    * Searches for a biblio object identical to the given one.
    *
    * @param $biblio
@@ -179,16 +203,7 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
    *  Saved Biblio Contributor object.
    */
   public function getBiblioContributor(BiblioContributor $biblio_contributor) {
-    $clone = clone $biblio_contributor;
-
-    unset($clone->cid);
-    unset($clone->revision_id);
-    unset($clone->changed);
-    unset($clone->created);
-    unset($clone->is_new);
-    unset($clone->md5);
-
-    $md5 = md5(serialize($clone));
+    $md5 = $this->generateBiblioContributorMd5($biblio_contributor);
 
     $query = new EntityFieldQuery();
     $result = $query

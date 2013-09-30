@@ -84,12 +84,10 @@ class BiblioContributorInlineEntityFormController extends EntityInlineEntityForm
       '#maxlength' => 128,
     );
 
-
-
     field_attach_form('biblio_contributor', $biblio_contributor, $entity_form, $form_state);
 
     // Add all fields to the main fieldset.
-    foreach (field_info_instances('biblio_contributor', $biblio_contributor->type) as $instance) {
+    foreach (field_info_instances('biblio_contributor', 'biblio_contributor') as $instance) {
       $entity_form[$instance['field_name']]['#fieldset'] = 'details';
     }
 

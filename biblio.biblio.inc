@@ -716,7 +716,7 @@ function biblio_biblio_fields_info() {
         'settings' => array(
           'size' => '60',
         ),
-        'type' => 'text_textfield',
+        'type' => 'text_textarea',
         'weight' => '-3',
       ),
     ),
@@ -742,7 +742,7 @@ function biblio_biblio_fields_info() {
         'settings' => array(
           'size' => '60',
         ),
-        'type' => 'text_textfield',
+        'type' => 'text_textarea',
         'weight' => '-3',
       ),
     ),

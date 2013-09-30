@@ -16,6 +16,9 @@ class BiblioContributor extends Entity {
    */
   public function save() {
     $this->name = $this->lastname ? $this->firstname . ' ' . $this->lastname : $this->firstname;
+
+    $this->md5 = BiblioStyleBase::generateBiblioContributorMd5($this);
+
     parent::save();
   }
 }
