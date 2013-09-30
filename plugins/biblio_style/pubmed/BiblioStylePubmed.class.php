@@ -38,6 +38,8 @@ class BiblioStylePubmed extends BiblioStyleBase {
         $this->{$method}($wrapper, $property_name, $article->MedlineCitation, $article->PubmedData);
       }
 
+      $this->importContributors($biblio, $article->MedlineCitation);
+
       $biblios['success'][] = $biblio;
     }
 
@@ -101,6 +103,49 @@ class BiblioStylePubmed extends BiblioStyleBase {
       $abstract[] =  $output;
     }
     $wrapper->{$property_name}->set(implode("\n", $abstract));
+  }
+
+  /**
+   * Import contributors.
+   *
+   * @param Biblio $biblio
+   *   The Biblio object.
+   * @param SimpleXMLElement $data
+   *   A single PubMed article to be processed.
+   */
+  public function importContributors(Biblio $biblio, SimpleXMLElement $data) {
+    if (!isset($data->Article->AuthorList->Author)) {
+      return;
+    }
+    $contributors = array();
+    foreach ($data->Article->AuthorList->Author as $author) {
+      $values = array();
+      if (isset($author->CollectiveName)) {
+        // @todo.
+        $category = 5; // corporate author
+        $values['lastname'] = (string)$author->CollectiveName;
+
+      }
+      else {
+        $category = 1; //primary (human) author
+        $values['lastname'] = (string)$author->LastName;
+        if (isset($author->ForeName)) {
+          $values['firstname'] = (string) $author->ForeName;
+        }
+        elseif (isset($author->FirstName)) {
+          $values['firstname'] = (string) $author->FirstName;
+        }
+
+        if (isset($author->Initials)) {
+          $values['initials'] = (string) $author->Initials;
+        }
+      }
+      $contributor = biblio_contributor_create($values);
+      $contributors[] = $this->getBiblioContributor($contributor);
+    }
+
+    $this->addBiblioContributorsToCollection($biblio, $contributors, 'Author');
+
   }
 
   /**
@@ -211,6 +256,15 @@ class BiblioStylePubmed extends BiblioStyleBase {
     $return = parent::getMapping();
 
     $return['field'] = array(
+      /*
+
+      'biblio_citekey'  => $citekey,
+      'biblio_pubmed_id' => $this->id,
+      'biblio_pubmed_md5' => $this->md5,
+      'biblio_contributors' => $this->contributors(),
+
+       */
+
       'biblio_abstract' => array(
         'import_method' => 'importAbstract',
       ),

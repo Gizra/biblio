@@ -231,12 +231,14 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
    * Add contributors to the field collection of a Biblio.
    *
    * @param $names
-   *   String with name(s) of the contributors.
+   *   String with name(s) of the contributors, or an array of Biblio
+   *   contributor objects.
    * @param $role
    *   The role of the contributor (e.g "Author", "Editor).
    */
   public function addBiblioContributorsToCollection(Biblio $biblio, $names, $role) {
-    $contributors = $this->getBiblioContributorsFromNames($names);
+    $contributors = is_string($names) ? $this->getBiblioContributorsFromNames($names) : $names;
+
     foreach ($contributors as $contributor) {
       // Create contributors field collections.
       $field_collection = entity_create('field_collection_item', array('field_name' => 'contributor_field_collection'));
