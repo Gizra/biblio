@@ -52,8 +52,6 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote implements BiblioStyleIm
 
     xml_parser_free($parser);
 
-    // @todo: Check md5.
-    $wrapper->save();
     $biblios[] = $biblio;
     return array(
       'success' => $biblios,
@@ -167,9 +165,17 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote implements BiblioStyleIm
   }
 
   /**
-   * Generic import entry.
+   * Import generic property.
+   *
+   * @param EntityMetadataWrapper $wrapper
+   *   The wrapped Biblio object.
+   * @param $property
+   *   The property name to import.
+   * @param $data
+   *   The data to import from.
+   *
    */
-  public function importEntryGeneric(EntityMetadataWrapper $wrapper, $property, $data) {
+  public function importGeneric(EntityMetadataWrapper $wrapper, $property, $data) {
     // @todo: Make more generic + configurable?
     if (!isset($wrapper->{$property})) {
       // Create field.
@@ -181,8 +187,15 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote implements BiblioStyleIm
 
   /**
    * Import year and Biblio status.
+   *
+   * @param EntityMetadataWrapper $wrapper
+   *   The wrapped Biblio object.
+   * @param $property
+   *   The property name to import.
+   * @param $data
+   *   The data to import from.
    */
-  public function importEntryYear(EntityMetadataWrapper $wrapper, $property, $data) {
+  public function importYear(EntityMetadataWrapper $wrapper, $property, $data) {
     if (is_numeric($data)) {
       $wrapper->biblio_year->set($data);
       return;
@@ -205,13 +218,13 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote implements BiblioStyleIm
    * Import a Contributor.
    *
    * @param EntityMetadataWrapper $wrapper
-   *   The Biblio wrapper.
+   *   The wrapped Biblio object.
    * @param $role
    *   The role of the contributor.
    * @param $name
    *   The name of the contributor.
    */
-  public function importEntryContributor(EntityMetadataWrapper $wrapper, $role, $name) {
+  public function importContributor(EntityMetadataWrapper $wrapper, $role, $name) {
     $biblio = $wrapper->value();
 
     // Map the role to Biblio.
@@ -300,7 +313,7 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote implements BiblioStyleIm
         'author' => array(
           // We don't have a property for this key. The role name will be taken
           // from the parent tag (e.g. <authors>, <secondary-authors>).
-          'import_method' => 'importEntryContributor',
+          'import_method' => 'importContributor',
         ),
         'abbr-1' => array('property' => 'biblio_short_title'),
         'abstract' => array('property' => 'biblio_abstract'),
@@ -338,7 +351,7 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote implements BiblioStyleIm
         'work-type' => array('property' => 'biblio_type_of_work'),
         'year' => array(
           'property' => 'biblio_year',
-          'import_method' => 'importEntryYear',
+          'import_method' => 'importYear',
         ),
       ),
     );
@@ -347,7 +360,7 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote implements BiblioStyleIm
     // Add default values.
     foreach (array_keys($return['field']) as $key) {
       $return['field'][$key] += array(
-        'import_method' => 'importEntryGeneric',
+        'import_method' => 'importGeneric',
       );
     }
 
