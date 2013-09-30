@@ -89,8 +89,12 @@ class BiblioStyleBibtex extends BiblioStyleBase implements BiblioStyleImportInte
   /**
    * Get the value of a year.
    *
+   * @param EntityMetadataWrapper $wrapper
+   *   The wrapped Biblio object.
    * @param $key
+   *   The key to import.
    * @param $entry
+   *   The data to import from.
    */
   private function importYear(EntityMetadataWrapper $wrapper, $tag, $entry) {
     if (strtolower($entry[$tag]) == 'in press') {
@@ -106,8 +110,12 @@ class BiblioStyleBibtex extends BiblioStyleBase implements BiblioStyleImportInte
   /**
    * Get the value of a publisher.
    *
+   * @param EntityMetadataWrapper $wrapper
+   *   The wrapped Biblio object.
    * @param $key
+   *   The key to import.
    * @param $entry
+   *   The data to import from.
    */
   private function importPublisher(EntityMetadataWrapper $wrapper, $tag, $entry) {
     $types = array(
@@ -134,6 +142,13 @@ class BiblioStyleBibtex extends BiblioStyleBase implements BiblioStyleImportInte
 
   /**
    * Get the value of a secondary title.
+   *
+   * @param EntityMetadataWrapper $wrapper
+   *   The wrapped Biblio object.
+   * @param $key
+   *   The key to import.
+   * @param $entry
+   *   The data to import from.
    */
   private function importSecondaryTitle(EntityMetadataWrapper $wrapper, $tag, $entry) {
     $types = array(
@@ -159,6 +174,13 @@ class BiblioStyleBibtex extends BiblioStyleBase implements BiblioStyleImportInte
 
   /**
    * Get the value of a tertiary title.
+   *
+   * @param EntityMetadataWrapper $wrapper
+   *   The wrapped Biblio object.
+   * @param $key
+   *   The key to import.
+   * @param $entry
+   *   The data to import from.
    */
   private function importTertiaryTitle(EntityMetadataWrapper $wrapper, $tag, $entry) {
     if (empty($entry['series']) || empty($entry['booktitle'])) {
@@ -170,7 +192,12 @@ class BiblioStyleBibtex extends BiblioStyleBase implements BiblioStyleImportInte
   }
 
   /**
-   * Create Biblio Contributor entities.
+   * Import contributors.
+   *
+   * @param EntityMetadataWrapper $wrapper
+   *   The wrapped Biblio object.
+   * @param $entry
+   *   The data to import from.
    */
   public function importContributors(EntityMetadataWrapper $wrapper, $entry) {
     foreach (array('author', 'editor') as $type) {
