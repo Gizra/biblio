@@ -126,7 +126,7 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
 
         $contributors[] = array(
           $entity->biblio_contributor[LANGUAGE_NONE][0]['target_id'],
-          $entity->biblio_contributor_role[LANGUAGE_NONE][0]['target_id'],
+          empty($entity->biblio_contributor_role[LANGUAGE_NONE][0]['target_id'])? '' : $entity->biblio_contributor_role[LANGUAGE_NONE][0]['target_id'],
         );
       }
 
