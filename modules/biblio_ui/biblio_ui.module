@@ -315,7 +315,6 @@ function biblio_ui_entity_info_alter(&$info) {
       'label' => $bundle->name,
       'admin' => array(
         'path' => 'admin/structure/biblio/' . $bundle->type,
-        'real path' => 'admin/structure/biblio/' . str_replace('_', '-', $bundle->type),
         'access arguments' => array('manage biblio structure'),
       ),
     );
