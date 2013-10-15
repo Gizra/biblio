@@ -863,7 +863,7 @@ function biblio_biblio_fields_info() {
     ),
     'instance' => array(
       'label' => 'Contributor role',
-      'required' => FALSE,
+      'required' => TRUE,
       'widget' => array(
         'active' => 1,
         'module' => 'entityreference',
