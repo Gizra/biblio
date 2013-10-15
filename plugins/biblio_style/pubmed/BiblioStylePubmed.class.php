@@ -188,7 +188,7 @@ class BiblioStylePubmed extends BiblioStyleBase {
     foreach ($data->MeshHeadingList->MeshHeading as $heading) {
       $keywords[] = (string)$heading->DescriptorName;
     }
-    parent::importKeywords($wrapper, $property_name, $keywords);
+    parent::importKeywords($wrapper, $keywords, $property_name);
   }
 
 

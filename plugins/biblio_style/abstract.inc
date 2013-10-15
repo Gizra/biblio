@@ -536,7 +536,7 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
    * @param string $vocabulary_name
    *   The vocabulary of the terms. Defaults to "biblio_keywords".
    */
-  public function importKeywords(EntityMetadataWrapper $wrapper, $property_name = 'biblio_keywords', $keywords = array(), $vocabulary_name = 'biblio_keywords') {
+  public function importKeywords(EntityMetadataWrapper $wrapper, $keywords = array(), $property_name = 'biblio_keywords', $vocabulary_name = 'biblio_keywords') {
     $terms = array();
     foreach ($keywords as $term_name) {
       if (!$term = taxonomy_get_term_by_name($term_name, $vocabulary_name)) {
