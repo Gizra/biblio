@@ -1390,6 +1390,9 @@ function biblio_biblio_fields_info() {
       'film' => array(
         'label' => 'Series Title',
       ),
+      'magazine_article' => array(
+        'label' => 'Magazine',
+      ),
     ),
   );
 
