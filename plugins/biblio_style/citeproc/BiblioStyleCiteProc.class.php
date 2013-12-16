@@ -35,7 +35,11 @@ class BiblioStyleCiteProc extends BiblioStyleBase {
    * Map the fields from the Biblio entity to the ones known by CiteProc.
    */
   public function map() {
-    $this->mappedBiblio = new stdClass();
+    $mappedBiblio = new stdClass();
+
+    // Add the biblio type.
+    $mappedBiblio->type = str_replace('_', '-', $this->biblio->type);
+
     $mapping = $this->getMapping();
     $wrapper = entity_metadata_wrapper('biblio', $this->biblio);
 
@@ -45,7 +49,7 @@ class BiblioStyleCiteProc extends BiblioStyleBase {
         continue;
       }
 
-      $this->mappedBiblio->{$key} = $wrapper->{$field_name}->value();
+      $mappedBiblio->{$key} = $wrapper->{$field_name}->value();
     }
 
 
@@ -61,10 +65,10 @@ class BiblioStyleCiteProc extends BiblioStyleBase {
       if (strtolower($wrapper->biblio_status->value()) == 'in press') {
         // CiteProc currently doesn't support the literal key. So this is
         // actually ignored, however, this is the "right" way.
-        $this->mappedBiblio->{$key}->literal = 'In press';
+        $mappedBiblio->{$key}->literal = 'In press';
         // This hack is just to make sure the In Press is added.
         // @todo: Check localization.
-        $this->mappedBiblio->{$key}->{'date-parts'}[] = array('In press');
+        $mappedBiblio->{$key}->{'date-parts'}[] = array('In press');
         continue;
       }
 
@@ -93,7 +97,7 @@ class BiblioStyleCiteProc extends BiblioStyleBase {
         $date = array($wrapper->{$field_name}->value());
       }
 
-      $this->mappedBiblio->{$key}->{'date-parts'}[] = $date;
+      $mappedBiblio->{$key}->{'date-parts'}[] = $date;
     }
 
     // Add contributors.
@@ -116,12 +120,12 @@ class BiblioStyleCiteProc extends BiblioStyleBase {
         }
 
         if ($mapped_contributor) {
-          $this->mappedBiblio->{$type}[] = $mapped_contributor;
+          $mappedBiblio->{$type}[] = $mapped_contributor;
         }
       }
     }
 
-    return $this->mappedBiblio;
+    return $mappedBiblio;
   }
 
   public function getMapping() {
