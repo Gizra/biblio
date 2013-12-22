@@ -71,7 +71,7 @@ class BiblioStyleBibtex extends BiblioStyleBase implements BiblioStyleImportInte
       return;
     }
     $keywords = str_replace(';', ',', $entry[$key]);
-    parent::importKeywords($wrapper, explode(',', $keywords));
+    $this->importKeywordsList($wrapper, explode(',', $keywords));
   }
 
 
