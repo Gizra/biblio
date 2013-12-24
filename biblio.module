@@ -724,3 +724,12 @@ function biblio_views_pre_render(&$view) {
     $view->result[$key]->field_biblio_year[0]['rendered']['#markup'] = t('In Press');
   }
 }
+
+/**
+ * Implements hook_field_access().
+ */
+function biblio_field_access($op, $field, $entity_type, $entity, $account) {
+  if ($field['field_name'] == 'biblio_first_letter') {
+    return FALSE;
+  }
+}
