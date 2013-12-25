@@ -114,6 +114,14 @@ function biblio_ui_menu() {
     'type' => MENU_LOCAL_ACTION,
   );
 
+  $items['admin/structure/biblio/import/%'] = array(
+    'title' => 'Import a single biblio type',
+    'description' => 'Import a single predefined biblio type',
+    'access arguments' => array('administer biblio'),
+    'page callback' => 'biblio_ui_import_single_biblio_type',
+    'page arguments' => array(4),
+  );
+
   foreach (biblio_types() as $biblio_type) {
     $items['admin/structure/biblio/' . $biblio_type->type] = array(
       'title' => $biblio_type->name,
@@ -711,12 +719,12 @@ function biblio_ui_import_biblio_types() {
 
     $options[$type] = array(
       'title' => $info['name'],
-      'type' => l(t('Import'), 'foo'),
+      'type' => l(t('Import'), 'admin/structure/biblio/import/' . $type),
     );
   }
 
   $header = array(
-    'title' => array('data' => t('Title')),
+    'title' => array('data' => t('Title'), 'width' => '90%'),
     'type' => array('data' => t('Import')),
   );
 
@@ -764,6 +772,17 @@ function biblio_ui_import_biblio_types_submit($form, $form_state) {
   batch_set($batch);
 
   batch_process('admin/structure/biblio/import');
+}
+
+/**
+ * Import a single predefined biblio type.
+ */
+function biblio_ui_import_single_biblio_type($type) {
+  $info = biblio_get_types_info($type);
+  biblio_add_publication_types(array($type));
+  drupal_set_message(t('The %title has creates successfully.', array('%title' => $info['name'])));
+  drupal_goto('admin/structure/biblio/import');
+  return '';
 }
 
 /**
