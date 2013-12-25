@@ -105,6 +105,15 @@ function biblio_ui_menu() {
     'type' => MENU_LOCAL_ACTION,
   );
 
+  $items['admin/structure/biblio/import'] = array(
+    'title' => 'Import biblio types',
+    'description' => 'Import predefined biblio types',
+    'access arguments' => array('administer biblio'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('biblio_ui_import_biblio_types'),
+    'type' => MENU_LOCAL_ACTION,
+  );
+
   foreach (biblio_types() as $biblio_type) {
     $items['admin/structure/biblio/' . $biblio_type->type] = array(
       'title' => $biblio_type->name,
@@ -684,6 +693,77 @@ function biblio_ui_delete_bundle_submit($form, $form_state) {
   drupal_set_message(t('The bundle @title was deleted successfully.', array(
     '@title' => $form_state['#type']->name,
   )));
+}
+
+/**
+ * Import biblio types from predefined biblio types.
+ */
+function biblio_ui_import_biblio_types() {
+  $form = array();
+  $types = biblio_get_types_info();
+  $options = array();
+
+  foreach ($types as $type => $info) {
+
+    if (biblio_types($type)) {
+      continue;
+    }
+
+    $options[$type] = array(
+      'title' => $info['name'],
+      'type' => l(t('Import'), 'foo'),
+    );
+  }
+
+  $header = array(
+    'title' => array('data' => t('Title')),
+    'type' => array('data' => t('Import')),
+  );
+
+  $form['biblio_types'] = array(
+    '#type' => 'tableselect',
+    '#header' => $header,
+    '#options' => $options,
+    '#empty' => t('No content available.'),
+  );
+
+  $form['actions'] = array(
+    '#type' => 'actions',
+
+    'submit' => array(
+      '#type' => 'submit',
+      '#value' => t('Import selected'),
+    ),
+  );
+
+  return $form;
+}
+
+/**
+ * Submit handler; Add multiple biblio types.
+ */
+function biblio_ui_import_biblio_types_submit($form, $form_state) {
+  // Import all the selected biblio types via batch api.
+  foreach ($form_state['values']['biblio_types'] as $enable) {
+    if (!$enable) {
+      continue;
+    }
+
+    $bundles[] = $enable;
+  }
+
+  $batch = array(
+    'operations' => array(
+      array('biblio_add_publication_types', array($bundles)),
+    ),
+    'title' => t('Importing biblio types.'),
+    'progress_message' => t('Processed @current out of @total.'),
+    'error_message' => t('Example Batch has encountered an error.'),
+  );
+
+  batch_set($batch);
+
+  batch_process('admin/structure/biblio/import');
 }
 
 /**

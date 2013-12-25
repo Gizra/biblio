@@ -658,20 +658,31 @@ function biblio_fields_info($field_name = NULL) {
 /**
  * Create new Biblio bundles.
  *
+ * @param Array $types
+ *  List of specific types to create.
+ *
  * @todo: Make the bundles configurable?
  */
-function biblio_add_publication_types() {
-  foreach (biblio_get_types_info() as $values) {
-    $name = $values['name'];
+function biblio_add_publication_types($types = array()) {
+  $default_types = biblio_get_types_info();
+
+  foreach ($default_types as $type => $info) {
+
+    if ($types && !in_array($type, $types)) {
+      // The type was not specified in the list of types to enable. Skipping.
+      continue;
+    }
+
+    $name = $info['name'];
 
     $row = new stdClass();
     $row->type = strtolower(str_replace(' ', '_', $name));
     $row->name = $name;
-    $row->description = $values['description'];
+    $row->description = $info['description'];
+
     biblio_type_save($row);
   }
 }
-
 
 function biblio_get_types_info($type = NULL) {
   $return = &drupal_static(__FUNCTION__, array());
