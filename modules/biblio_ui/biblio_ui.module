@@ -819,11 +819,14 @@ function biblio_ui_create_fields($form, &$form_state, $bundle) {
     $options[$name] = $field['instance']['label'];
   }
 
+  // Sorting by the ABC the fields name.
+  asort($options);
+
   // Creating a select. When changing the description of the field will be shown
   // via AJAX.
   $selected_field_name = !empty($form_state['values']['field_name']) ? $form_state['values']['field_name'] : '';
   if ($selected_field_name && $selected_field_name != '---') {
-    $field_info = $fields[$selected_field_name]['description'];
+    $field_info = t('Description: <b>' . $fields[$selected_field_name]['instance']['description'] . '</b>');
   }
   else {
     $field_info = '';
