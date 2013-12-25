@@ -193,6 +193,8 @@ function biblio_biblio_fields_info() {
       'database' => array(),
       'film' => array(),
       'government_report' => array(),
+      'hearing' => array(),
+      'hearing' => array(),
     ),
   );
 
@@ -226,7 +228,7 @@ function biblio_biblio_fields_info() {
       ),
       'field_name' => 'biblio_year',
       'label' => 'Year of Publication',
-      // We will enfroce required only if the Publication status is set to
+      // We will enforce required only if the Publication status is set to
       // "published".
       'required' => FALSE,
       'settings' => array(
@@ -390,6 +392,7 @@ function biblio_biblio_fields_info() {
       ),
       'classical' => array(),
       'conference_proceedings' => array(),
+      'hearing' => array(),
     ),
   );
 
@@ -433,6 +436,9 @@ function biblio_biblio_fields_info() {
       'classical' => array(),
       'film' => array(
         'label' => 'Running Time',
+      ),
+      'hearing' => array(
+        'label' => 'Document Number',
       ),
     ),
   );
@@ -488,6 +494,9 @@ function biblio_biblio_fields_info() {
         'label' => 'Pagination',
       ),
       'government_report' => array(
+        'label' => 'Pagination',
+      ),
+      'hearing' => array(
         'label' => 'Pagination',
       ),
     ),
@@ -569,6 +578,8 @@ function biblio_biblio_fields_info() {
         'database' => array(),
         'film' => array(),
         'government_report' => array(),
+        'hearing' => array(),
+        'journal' => array(),
       ),
     ),
   );
@@ -617,6 +628,8 @@ function biblio_biblio_fields_info() {
       'database' => array(),
       'film' => array(),
       'government_report' => array(),
+      'hearing' => array(),
+      'journal' => array(),
     ),
   );
 
@@ -664,6 +677,8 @@ function biblio_biblio_fields_info() {
       'database' => array(),
       'film' => array(),
       'government_report' => array(),
+      'hearing' => array(),
+      'journal' => array(),
     ),
   );
 
@@ -961,6 +976,7 @@ function biblio_biblio_fields_info() {
       'classical' => array(),
       'conference_proceedings' => array(),
       'film' => array(),
+      'hearing' => array(),
     )
   );
 
@@ -1003,6 +1019,7 @@ function biblio_biblio_fields_info() {
       ),
       'classical' => array(),
       'film' => array(),
+      'hearing' => array(),
     ),
   );
 
@@ -1096,6 +1113,8 @@ function biblio_biblio_fields_info() {
       'database' => array(),
       'film' => array(),
       'government_report' => array(),
+      'hearing' => array(),
+      'journal' => array(),
     )
   );
 
@@ -1189,6 +1208,8 @@ function biblio_biblio_fields_info() {
       'database' => array(),
       'film' => array(),
       'government_report' => array(),
+      'hearing' => array(),
+      'journal' => array(),
     )
   );
 
@@ -1234,6 +1255,9 @@ function biblio_biblio_fields_info() {
       'conference_proceedings' => array(),
       'film' => array(
         'label' => 'Country',
+      ),
+      'hearing' => array(
+        'label' => 'City',
       ),
     ),
   );
@@ -1281,6 +1305,7 @@ function biblio_biblio_fields_info() {
       'database' => array(),
       'film' => array(),
       'government_report' => array(),
+      'hearing' => array(),
     ),
   );
 
@@ -1325,6 +1350,9 @@ function biblio_biblio_fields_info() {
       'classical' => array(),
       'conference_proceedings' => array(),
       'government_report' => array(),
+      'hearing' => array(
+        'label' => 'Session',
+      ),
     ),
   );
 
@@ -1393,6 +1421,9 @@ function biblio_biblio_fields_info() {
       'magazine_article' => array(
         'label' => 'Magazine',
       ),
+      'hearing' => array(
+        'label' => 'Committee',
+      ),
     ),
   );
 
@@ -1440,6 +1471,9 @@ function biblio_biblio_fields_info() {
       'government_report' => array(
         'label' => 'Series Title',
       ),
+      'hearing' => array(
+        'label' => 'Legislative Body',
+      ),
     ),
   );
 
@@ -1484,6 +1518,7 @@ function biblio_biblio_fields_info() {
       'database' => array(),
       'film' => array(),
       'government_report' => array(),
+      'hearing' => array(),
     ),
   );
 
@@ -1527,6 +1562,9 @@ function biblio_biblio_fields_info() {
         'label' => 'History',
       ),
       'classical' => array(),
+      'hearing' => array(
+        'label' => 'History',
+      ),
     ),
   );
 
