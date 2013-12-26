@@ -393,6 +393,7 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
     }
 
     // Fill results in the array.
+    $contributor_array['name'] = trim($firstname . ' ' . $lastname);
     $contributor_array['firstname'] = trim($firstname);
     $contributor_array['initials'] = substr(trim($initials), 0, 10);
     $contributor_array['lastname'] = trim($lastname);
