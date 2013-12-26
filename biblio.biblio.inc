@@ -194,7 +194,11 @@ function biblio_biblio_fields_info() {
       'film' => array(),
       'government_report' => array(),
       'hearing' => array(),
-      'hearing' => array(),
+      'journal' => array(),
+      'journal_article' => array(),
+      'legal_ruling' => array(),
+      'magazine_article' => array(),
+      'manuscript' => array(),
     ),
   );
 
@@ -318,6 +322,13 @@ function biblio_biblio_fields_info() {
         'label' => 'Page Cited',
       ),
       'government_report' => array(),
+      'journal_article' => array(
+        'label' => 'Start Page',
+      ),
+      'legal_ruling' => array(
+        'label' => 'Section Number',
+      ),
+      'magazine_article' => array(),
     ),
   );
 
@@ -351,6 +362,10 @@ function biblio_biblio_fields_info() {
     ),
     'bundles_info' => array(
       'government_report' => array(),
+      'journal_article' => array(),
+      'magazine_article' => array(
+        'label' => 'Issue Number',
+      ),
     ),
   );
 
@@ -393,6 +408,15 @@ function biblio_biblio_fields_info() {
       'classical' => array(),
       'conference_proceedings' => array(),
       'hearing' => array(),
+      'legal_ruling' => array(
+        'label' => 'Session Number',
+      ),
+      'magazine_aticle' => array(
+        'label' => 'Frequency',
+      ),
+      'manuscript' => array(
+        'label' => 'Manuscript Number',
+      ),
     ),
   );
 
@@ -439,6 +463,15 @@ function biblio_biblio_fields_info() {
       ),
       'hearing' => array(
         'label' => 'Document Number',
+      ),
+      'legal_ruling' => array(
+        'label' => 'Start Page',
+      ),
+      'magazine_article' => array(
+        'label' => 'Issue Number',
+      ),
+      'manuscript' => array(
+        'label' => 'Folio Number',
       ),
     ),
   );
@@ -499,6 +532,18 @@ function biblio_biblio_fields_info() {
       'hearing' => array(
         'label' => 'Pagination',
       ),
+      'journal_article' => array(
+        'label' => 'Pagination',
+      ),
+      'legal_ruling' => array(
+        'label' => 'Pagination',
+      ),
+      'magazine_article' => array(
+        'label' => 'Pagination',
+      ),
+      'manuscript' => array(
+        'label' => 'Pagination',
+      ),
     ),
   );
 
@@ -534,7 +579,9 @@ function biblio_biblio_fields_info() {
       'book' => array(),
       'book_chapter' => array(),
       'classical' => array(),
-    )
+      'journal_article' => array(),
+      'magazine_article' => array(),
+    ),
   );
 
   // Call number.
@@ -563,24 +610,28 @@ function biblio_biblio_fields_info() {
         'type' => 'text_textfield',
         'weight' => '-3',
       ),
-      // @todo: Applies to all?
-      'bundles_info' => array(
-        'artwork' => array(),
-        'audiovisual' => array(),
-        'book' => array(),
-        'book_chapter' => array(),
-        'bill' => array(),
-        'broadcast' => array(),
-        'chart' => array(),
-        'classical' => array(),
-        'conference_paper' => array(),
-        'conference_proceedings' => array(),
-        'database' => array(),
-        'film' => array(),
-        'government_report' => array(),
-        'hearing' => array(),
-        'journal' => array(),
-      ),
+    ),
+    // @todo: Applies to all?
+    'bundles_info' => array(
+      'artwork' => array(),
+      'audiovisual' => array(),
+      'book' => array(),
+      'book_chapter' => array(),
+      'bill' => array(),
+      'broadcast' => array(),
+      'chart' => array(),
+      'classical' => array(),
+      'conference_paper' => array(),
+      'conference_proceedings' => array(),
+      'database' => array(),
+      'film' => array(),
+      'government_report' => array(),
+      'hearing' => array(),
+      'journal' => array(),
+      'journal_article' => array(),
+      'legal_ruling' => array(),
+      'magazine_article' => array(),
+      'manuscript' => array(),
     ),
   );
 
@@ -630,6 +681,51 @@ function biblio_biblio_fields_info() {
       'government_report' => array(),
       'hearing' => array(),
       'journal' => array(),
+      'journal_article' => array(),
+      'legal_ruling' => array(),
+      'magazine_article' => array(),
+      'manuscript' => array(),
+    ),
+  );
+
+  // ISSN number.
+  $items['biblio_issn'] = array(
+    'field' => array(
+      'cardinality' => '1',
+      'field_name' => 'biblio_issn',
+      'module' => 'text',
+      'settings' => array(
+        'max_length' => '255',
+      ),
+      'type' => 'text',
+    ),
+    'instance' => array(
+      'label' => 'ISSN Number',
+      'description' => 'International Standard Serial Number',
+      'settings' => array(
+        'text_processing' => '0',
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'text',
+        'settings' => array(
+          'size' => '60',
+        ),
+        'type' => 'text_textfield',
+        'weight' => '-3',
+      ),
+    ),
+    'bundles_info' => array(
+      'journal_article' => array(
+        'label' => 'ISSN',
+      ),
+      'legal_ruling' => array(
+        'label' => 'Document Number',
+      ),
+      'magazine_article' => array(
+        'label' => 'ISSN',
+      ),
     ),
   );
 
@@ -679,6 +775,10 @@ function biblio_biblio_fields_info() {
       'government_report' => array(),
       'hearing' => array(),
       'journal' => array(),
+      'journal_article' => array(),
+      'legal_ruling' => array(),
+      'magazine_article' => array(),
+      'manuscript' => array(),
     ),
   );
 
@@ -977,6 +1077,9 @@ function biblio_biblio_fields_info() {
       'conference_proceedings' => array(),
       'film' => array(),
       'hearing' => array(),
+      'journal_article' => array(),
+      'magazine_article' => array(),
+      'manuscript' => array(),
     )
   );
 
@@ -1020,6 +1123,16 @@ function biblio_biblio_fields_info() {
       'classical' => array(),
       'film' => array(),
       'hearing' => array(),
+      'journal_article' => array(),
+      'legal_ruling' => array(
+        'label' => 'Abbreviation',
+      ),
+      'magazine_article' => array(
+        'label' => 'Alternate Magazine',
+      ),
+      'manuscript' => array(
+        'label' => 'Abbreviation',
+      ),
     ),
   );
 
@@ -1050,12 +1163,12 @@ function biblio_biblio_fields_info() {
         'type' => 'text_textfield',
         'weight' => '-3',
       ),
-      'bundles_info' => array(
-        'audiovisual' => array(
-          'label' => 'Type',
-        ),
-        'book' => array(),
+    ),
+    'bundles_info' => array(
+      'audiovisual' => array(
+        'label' => 'Type',
       ),
+      'book' => array(),
       'chart' => array(
         'label' => 'Type of Image',
       ),
@@ -1066,6 +1179,14 @@ function biblio_biblio_fields_info() {
       'film' => array(
         'label' => 'Medium',
       ),
+      'journal_article' => array(
+        'label' => 'Type of Article',
+      ),
+      'legal_ruling' => array(),
+      'magazine_article' => array(
+        'label' => 'Type of Article',
+      ),
+      'manuscript' => array(),
     ),
   );
 
@@ -1115,7 +1236,11 @@ function biblio_biblio_fields_info() {
       'government_report' => array(),
       'hearing' => array(),
       'journal' => array(),
-    )
+      'journal_article' => array(),
+      'legal_ruling' => array(),
+      'magazine_article' => array(),
+      'manuscript' => array(),
+    ),
   );
 
   // Biblio volume.
@@ -1148,7 +1273,6 @@ function biblio_biblio_fields_info() {
     ),
     'bundles_info' => array(
       'book' => array(),
-      'book_chapter' => array(),
       'bill' => array(
         'label' => 'Code Volume',
       ),
@@ -1161,6 +1285,13 @@ function biblio_biblio_fields_info() {
       'classical' => array(),
       'conference_proceedings' => array(),
       'government_report' => array(),
+      'journal_article' => array(),
+      'legal_ruling' => array(
+        'label' => 'Rule Number',
+      ),
+      'manuscript' => array(
+        'label' => 'Volume/Storage Container',
+      ),
     ),
   );
 
@@ -1210,6 +1341,10 @@ function biblio_biblio_fields_info() {
       'government_report' => array(),
       'hearing' => array(),
       'journal' => array(),
+      'journal_article' => array(),
+      'legal_ruling' => array(),
+      'magazine_article' => array(),
+      'manuscript' => array(),
     )
   );
 
@@ -1259,6 +1394,9 @@ function biblio_biblio_fields_info() {
       'hearing' => array(
         'label' => 'City',
       ),
+      'manuscript' => array(
+        'label' => 'City',
+      ),
     ),
   );
 
@@ -1306,6 +1444,10 @@ function biblio_biblio_fields_info() {
       'film' => array(),
       'government_report' => array(),
       'hearing' => array(),
+      'legal_hearing' => array(),
+      'manuscript' => array(
+        'label' => 'Library/Archive',
+      ),
     ),
   );
 
@@ -1353,6 +1495,8 @@ function biblio_biblio_fields_info() {
       'hearing' => array(
         'label' => 'Session',
       ),
+      'legal_ruling' => array(),
+      'magazine_article' => array(),
     ),
   );
 
@@ -1423,6 +1567,12 @@ function biblio_biblio_fields_info() {
       ),
       'hearing' => array(
         'label' => 'Committee',
+      ),
+      'journal_article' => array(
+        'label' => 'Journal',
+      ),
+      'manuscript' => array(
+        'label' => 'Collection Title',
       ),
     ),
   );
@@ -1519,6 +1669,10 @@ function biblio_biblio_fields_info() {
       'film' => array(),
       'government_report' => array(),
       'hearing' => array(),
+      'journal_article' => array(),
+      'legal_ruling' => array(),
+      'magazine_article' => array(),
+      'manuscript' => array(),
     ),
   );
 
@@ -1565,6 +1719,8 @@ function biblio_biblio_fields_info() {
       'hearing' => array(
         'label' => 'History',
       ),
+      'journal_article' => array(),
+      'magazine_article' => array(),
     ),
   );
 
@@ -1651,9 +1807,9 @@ function biblio_biblio_types_info() {
   $types['journal'] = array('name' => 'Journal');
   $types['journal_article'] = array('name' => 'Journal Article');
   $types['legal_ruling'] = array('name' => 'Legal Ruling');
-  $types['map'] = array('name' => 'Map');
-  $types['manuscript'] = array('name' => 'Manuscript');
   $types['magazine_article'] = array('name' => 'Magazine Article');
+  $types['manuscript'] = array('name' => 'Manuscript');
+  $types['map'] = array('name' => 'Map');
   $types['miscellaneous'] = array('name' => 'Miscellaneous');
   $types['miscellaneous_section'] = array('name' => 'Miscellaneous Section');
   $types['newspaper_article'] = array('name' => 'Newspaper Article');
@@ -1665,10 +1821,10 @@ function biblio_biblio_types_info() {
   $types['statute'] = array('name' => 'Statute');
   $types['thesis'] = array('name' => 'Thesis');
   $types['unpublished'] = array('name' => 'Unpublished');
-  $types['website'] = array('name' => 'Website');
   $types['web_article'] = array('name' => 'Web Article');
   $types['web_project_page'] = array('name' => 'Web project page');
   $types['web_service'] = array('name' => 'Web service');
+  $types['website'] = array('name' => 'Website');
 
   return $types;
 }
