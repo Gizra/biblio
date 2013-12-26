@@ -705,27 +705,6 @@ function biblio_get_types_info($type = NULL) {
 }
 
 /**
- * Implements hook_views_pre_render().
- *
- * Replace publication year dummy value (9999) with "In Press".
- * We have added this dummy value, so it would be easier to group publications
- * by In Press and than by the real publication year.
- */
-function biblio_views_pre_render(&$view) {
-  if ($view->name != 'biblio_year') {
-    return;
-  }
-
-  foreach ($view->result as $key => $value) {
-    if (empty($value->field_biblio_year[0]['rendered']) || $value->field_biblio_year[0]['rendered']['#markup'] != '9999') {
-      continue;
-    }
-
-    $view->result[$key]->field_biblio_year[0]['rendered']['#markup'] = t('In Press');
-  }
-}
-
-/**
  * Implements hook_field_access().
  */
 function biblio_field_access($op, $field, $entity_type, $entity, $account) {
