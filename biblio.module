@@ -503,7 +503,7 @@ function biblio_load_multiple($bids = array(), $reset = FALSE) {
  *   The name of the contributor. If given, this function will parse out the
  *   author name and automatically fill in any associated fields (first name,
  *   last name, initials, etc.) and the type
- * @param array  $values
+ * @param array $values
  *
  * @return object
  *  The contributor entity object
