@@ -7,8 +7,8 @@ class BiblioContributorTestCase extends DrupalWebTestCase {
 
   public static function getInfo() {
     return array(
-      'name' => 'Get contributor by name',
-      'description' => 'Test parsing different formats of contributor names.',
+      'name' => 'Test contributor names',
+      'description' => 'Test parsing different formats of contributor names and preventing duplications.',
       'group' => 'Biblio',
     );
   }
