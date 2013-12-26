@@ -110,6 +110,12 @@ class BiblioStyleCiteProc extends BiblioStyleBase {
         $mapped_contributor = new stdClass();
         $contributor_wrapper = $wrapper_contributor->biblio_contributor;
 
+        if (!$wrapper_contributor->biblio_contributor->value()) {
+          // No contributors.
+          continue;
+        }
+
+
         // Map the contributor data.
         foreach ($mapping['contributor']['text'] as $key => $field_name) {
           if (!isset($contributor_wrapper->{$field_name})) {

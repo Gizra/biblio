@@ -22,6 +22,12 @@ class Biblio extends Entity {
       $wrapper->biblio_status->set('published');
     }
 
+    if ($wrapper->biblio_status->value() != 'published') {
+      // Set the year to 0, to non-published publications, so it's easier to
+      // group them by year.
+      $wrapper->biblio_year->set(0);
+    }
+
     $this->md5 = BiblioStyleBase::generateBiblioMd5($this);
 
     if (empty($this->_skip_cache)) {
