@@ -150,8 +150,8 @@ function biblio_ui_menu() {
     );
 
     $items['admin/structure/biblio/' . $biblio_type->type . '/fields/add'] = array(
-      'title' => 'Add fields',
-      'description' => 'Import predefined biblio types',
+      'title' => 'Attach biblio fields',
+      'description' => 'Attach predefined biblio types',
       'access arguments' => array('administer biblio'),
       'page callback' => 'drupal_get_form',
       'page arguments' => array('biblio_ui_create_fields', 3),
@@ -721,33 +721,16 @@ function biblio_ui_import_biblio_types() {
   $options = array();
 
   foreach ($types as $type => $info) {
-
-    $links = array();
-
-    if (biblio_types($type)) {
-      $links[] = t('Imported');
-      $links[] = l(t('Add fields'), 'admin/structure/biblio/' . $type . '/fields/add/');
-    }
-    else {
-      $links[] = l(t('Import'), 'admin/structure/biblio/import/' . $type);
-    }
-
-    $options[$type] = array(
-      'title' => $info['name'],
-      'type' => theme('item_list', array('items' => $links, 'attributes' => array('class' => 'inline'))),
-    );
+    $options[$type] = $info['name'];
   }
 
-  $header = array(
-    'title' => array('data' => t('Title'), 'width' => '75%'),
-    'type' => array('data' => t('Actions')),
-  );
-
   $form['biblio_types'] = array(
-    '#type' => 'tableselect',
-    '#header' => $header,
+    '#type' => 'select',
+    '#title' => t('Biblio types'),
+    '#description' => t('Select biblio types to import'),
+    '#multiple' => TRUE,
     '#options' => $options,
-    '#empty' => t('No content available.'),
+    '#size' => 10,
   );
 
   $form['actions'] = array(
@@ -767,18 +750,18 @@ function biblio_ui_import_biblio_types() {
  */
 function biblio_ui_import_biblio_types_submit($form, $form_state) {
   // Import all the selected biblio types via batch api.
+  $operations = array();
   foreach ($form_state['values']['biblio_types'] as $enable) {
     if (!$enable) {
       continue;
     }
 
-    $bundles[] = $enable;
+    // Adding the fields for the bundle.
+    $operations[] = array('biblio_create_fields_by_bundle', array(array($enable)));
   }
 
   $batch = array(
-    'operations' => array(
-      array('biblio_add_publication_types', array($bundles)),
-    ),
+    'operations' => $operations,
     'title' => t('Importing biblio types.'),
     'progress_message' => t('Processed @current out of @total.'),
     'error_message' => t('Example Batch has encountered an error.'),
@@ -825,7 +808,7 @@ function biblio_ui_create_fields($form, &$form_state, $bundle) {
   // Creating a select. When changing the description of the field will be shown
   // via AJAX.
   $selected_field_name = !empty($form_state['values']['field_name']) ? $form_state['values']['field_name'] : '';
-  if ($selected_field_name && $selected_field_name != '---') {
+  if ($selected_field_name && isset($fields[$selected_field_name]['instance']['description']) && $selected_field_name != '---') {
     $field_info = t('Description: <b>' . $fields[$selected_field_name]['instance']['description'] . '</b>');
   }
   else {
@@ -853,20 +836,6 @@ function biblio_ui_create_fields($form, &$form_state, $bundle) {
     '#markup' => $field_info,
   );
 
-  // Get the existed fields for this bundle.
-  $form['existed_fields'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Existed fields'),
-    '#weight' => 5,
-    '#collapsible' => TRUE,
-    '#collapsed' => FALSE,
-
-    'existed_fields' => array(
-      '#type' => 'item',
-      '#markup' => biblio_ui_exists_fields_table($existed_fields),
-    ),
-  );
-
   $form['actions'] = array(
     '#type' => 'actions',
     'submit' => array(
@@ -884,35 +853,6 @@ function biblio_ui_create_fields($form, &$form_state, $bundle) {
  */
 function biblio_ui_fields_ajax_callback($form, $form_state) {
   return $form['field_info_wrapper'];
-}
-
-/**
- * Return a table with the existed fields for a biblio bundle.
- *
- * @param $bundle
- *  The bundle of the biblio.
- *
- * @return
- *  Table with the fields attached to the bundle.
- */
-function biblio_ui_exists_fields_table($bundle) {
-  $existed_fields = @field_info_instances('biblio', $bundle);
-
-  $rows = array();
-  foreach ($existed_fields as $info) {
-    $description = !empty($info['description']) ? $info['description'] : '';
-    $rows[] = array(
-      $info['label'],
-      $description,
-    );
-  }
-
-  $header = array(
-    t('Name'),
-    t('Description'),
-  );
-
-  return theme('table', array('header' => $header, 'rows' => $rows));
 }
 
 /**
