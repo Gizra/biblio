@@ -52,7 +52,9 @@ class biblio_handler_field_biblio_render extends views_handler_field {
       return;
     }
 
-    $options = array();
+    // @todo: Move this to the UI.
+    // Allow setting the options from a variable.
+    $options = variable_get('biblio_views_biblio_render_options', array());
     return $biblio->getText($this->options['style_name'], $options);
   }
 }
