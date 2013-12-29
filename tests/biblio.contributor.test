@@ -133,7 +133,7 @@ class BiblioContributorTestCase extends DrupalWebTestCase {
 
     // The expected result: The duplication was prevented so all 3 contributors
     // have the same ID.
-    $this->assertEqual($cids[0], $cids[1]);
-    $this->assertEqual($cids[1], $cids[2]);
+    $this->assertEqual($cids[0], $cids[1], 'Biblio Contributor duplication was prevented.');
+    $this->assertEqual($cids[1], $cids[2], 'Biblio Contributor duplication was prevented.');
   }
 }
