@@ -105,7 +105,7 @@ function biblio_ui_menu() {
     'type' => MENU_LOCAL_ACTION,
   );
 
-  $items['admin/structure/biblio/import'] = array(
+  $items['admin/structure/biblio/attach-fields'] = array(
     'title' => 'Attach biblio fields',
     'description' => 'Import predefined biblio types',
     'access arguments' => array('administer biblio'),
@@ -114,7 +114,7 @@ function biblio_ui_menu() {
     'type' => MENU_LOCAL_ACTION,
   );
 
-  $items['admin/structure/biblio/import/%'] = array(
+  $items['admin/structure/biblio/attach-fields/%'] = array(
     'title' => 'Import a single biblio type',
     'description' => 'Import a single predefined biblio type',
     'access arguments' => array('administer biblio'),
@@ -769,7 +769,7 @@ function biblio_ui_import_biblio_types_submit($form, $form_state) {
 
   batch_set($batch);
 
-  batch_process('admin/structure/biblio/import');
+  batch_process('admin/structure/biblio/attach-fields');
 }
 
 /**
@@ -779,7 +779,7 @@ function biblio_ui_import_single_biblio_type($type) {
   $info = biblio_get_types_info($type);
   biblio_add_publication_types(array($type));
   drupal_set_message(t('The %title was created successfully.', array('%title' => $info['name'])));
-  drupal_goto('admin/structure/biblio/import');
+  drupal_goto('admin/structure/biblio/attach-fields');
 }
 
 /**
