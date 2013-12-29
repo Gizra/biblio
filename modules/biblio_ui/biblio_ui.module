@@ -70,13 +70,13 @@ function biblio_ui_menu() {
   $export_formats = array('citeproc');
   foreach ($export_formats as $format) {
     $items['biblio/%biblio/export/' . $format] = array(
-      'title' => t('Export as %format', array('%format' => $format)),
+      'title' => t('Export as @format', array('@format' => $format)),
       'description callback' => 'biblio_ui_description_callback',
       'description arguments' => array(1, 'export'),
       'access arguments' => array('export biblio'), // TODO: is this an existing permission ?
       'page callback' => 'biblio_ui_export_biblio',
       'page arguments' => array(1, 3),
-      'type' => MENU_LOCAL_TASK,
+      'type' => MENU_LOCAL_ACTION,
       'weight' => '80',
     );
   }
