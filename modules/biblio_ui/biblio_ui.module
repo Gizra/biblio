@@ -49,7 +49,7 @@ function biblio_ui_menu() {
     'title' => 'Edit',
     'description callback' => 'biblio_ui_description_callback',
     'description arguments' => array(1, 'edit'),
-    'access arguments' => array('edit biblio'),
+    'access arguments' => array('edit biblio'),// TODO: is this an existing permission ?
     'page callback' => 'drupal_get_form',
     'page arguments' => array('biblio_ui_manage_biblio', 1),
     'type' => MENU_LOCAL_TASK,
@@ -60,12 +60,26 @@ function biblio_ui_menu() {
     'title' => 'Delete',
     'description callback' => 'biblio_ui_description_callback',
     'description arguments' => array(1, 'delete'),
-    'access arguments' => array('delete biblio'),
+    'access arguments' => array('delete biblio'),// TODO: is this an existing permission ?
     'page callback' => 'drupal_get_form',
     'page arguments' => array('biblio_ui_delete_biblio', 1),
     'type' => MENU_LOCAL_TASK,
     'weight' => '70',
   );
+
+  $export_formats = array('citeproc');
+  foreach ($export_formats as $format) {
+    $items['biblio/%biblio/export/' . $format] = array(
+      'title' => t('Export as %format', array('%format' => $format)),
+      'description callback' => 'biblio_ui_description_callback',
+      'description arguments' => array(1, 'export'),
+      'access arguments' => array('export biblio'), // TODO: is this an existing permission ?
+      'page callback' => 'biblio_ui_export_biblio',
+      'page arguments' => array(1, 3),
+      'type' => MENU_LOCAL_TASK,
+      'weight' => '80',
+    );
+  }
 
   if (module_exists('devel')) {
     $items['biblio/%biblio/devel'] = array(
@@ -76,7 +90,7 @@ function biblio_ui_menu() {
       'type' => MENU_LOCAL_TASK,
       'file' => 'devel.pages.inc',
       'file path' => drupal_get_path('module', 'devel'),
-      'weight' => 80,
+      'weight' => 90,
     );
   }
 
@@ -296,8 +310,19 @@ function biblio_ui_permission() {
  *  The title which the page should present.
  */
 function biblio_ui_description_callback($biblio, $action) {
+  switch ($action) {
+    case "edit":
+      $action_string = "Editing";
+      break;
+    case "delete":
+      $action_string = "Deleting";
+      break;
+    case "export":
+      $action_string = "Exporting";
+      break;
+  }
   return t('@action @title', array(
-    '@action' => $action == 'edit' ? 'Editing' : 'Deleting',
+    '@action' => $action_string,
     '@title' => $biblio->title,
   ));
 }

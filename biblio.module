@@ -100,6 +100,14 @@ function biblio_permission() {
       'title' => t('Delete own biblio entries'),
       'description' => t('Allows the user to delete his own biblio entities'),
     ),
+    'export biblio entries' => array(
+      'title' => t('Export biblio entries'),
+      'description' => t('Allows the user to export any biblio entities'),
+    ),
+    'export own biblio entries' => array(
+      'title' => t('Export own biblio entries'),
+      'description' => t('Allows the user to export his own biblio entities'),
+    ),
     'edit by all biblio authors' => array(
       'title' => t('Edit by all Biblio authors'),
       'description' => t('Allows any/all of the authors associated with a biblio entry to edit the biblio entry. This requires the Drupal UserID be mapped to a Biblio author ID'),
