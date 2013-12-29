@@ -23,7 +23,7 @@ class BiblioImportAndRenderTestCase extends DrupalWebTestCase {
   /**
    * Test BibTex.
    */
-  function __testBibTex() {
+  function testBibTex() {
     $data = '
 @Book{abramowitz+stegun,
   author    = "Milton {Abramowitz} and Irene A. {Stegun}",
