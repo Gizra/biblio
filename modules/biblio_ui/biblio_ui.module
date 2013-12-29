@@ -106,7 +106,7 @@ function biblio_ui_menu() {
   );
 
   $items['admin/structure/biblio/import'] = array(
-    'title' => 'Import biblio types',
+    'title' => 'Attach biblio fields',
     'description' => 'Import predefined biblio types',
     'access arguments' => array('administer biblio'),
     'page callback' => 'drupal_get_form',
@@ -802,6 +802,10 @@ function biblio_ui_create_fields($form, &$form_state, $bundle) {
     $options[$name] = $field['instance']['label'];
   }
 
+  if (!$options) {
+    drupal_set_message(t("There aren't any fields to add."), 'warning');
+  }
+
   // Sorting the fields name in alphabetical order.
   asort($options);
 
@@ -870,10 +874,11 @@ function biblio_ui_create_fields_validate($form, $form_state) {
 function biblio_ui_create_fields_submit($form, $form_state) {
   biblio_create_field($form_state['values']['field_name'], 'biblio', $form_state['bundle']);
 
+  $field_info = biblio_fields_info($form_state['values']['field_name']);
   $type = biblio_types($form_state['bundle']);
   drupal_set_message(t('The field %name added to the bundle %bundle succesfully.', array(
-    '%name' => $type->name,
-    '%bundle' => $form_state['bundle'],
+    '%name' => $field_info['instance']['label'],
+    '%bundle' => $type->name,
   )));
 }
 
