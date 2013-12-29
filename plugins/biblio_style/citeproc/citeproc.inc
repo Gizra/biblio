@@ -11,6 +11,8 @@ if (module_exists('libraries') && file_exists(libraries_get_path('citeproc-php')
       // Allow settings the path to custom CSL styles (should include the .csl
       // extension).
       'style_path' => libraries_get_path('citeproc-php') . '/style',
+      // Link to the biblio.
+      'label_as_link' => TRUE,
     ),
   );
 }
