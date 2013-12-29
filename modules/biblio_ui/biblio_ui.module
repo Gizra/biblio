@@ -802,7 +802,7 @@ function biblio_ui_create_fields($form, &$form_state, $bundle) {
     $options[$name] = $field['instance']['label'];
   }
 
-  // Sorting by the ABC the fields name.
+  // Sorting the fields name in alphabetical order.
   asort($options);
 
   // Creating a select. When changing the description of the field will be shown
