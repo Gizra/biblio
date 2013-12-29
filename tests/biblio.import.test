@@ -23,7 +23,7 @@ class BiblioImportAndRenderTestCase extends DrupalWebTestCase {
   /**
    * Test BibTex.
    */
-  function __testBibTex() {
+  function testBibTex() {
     $data = '
 @Book{abramowitz+stegun,
   author    = "Milton {Abramowitz} and Irene A. {Stegun}",
@@ -59,7 +59,7 @@ class BiblioImportAndRenderTestCase extends DrupalWebTestCase {
   /**
    * Test end note tagged.
    */
-  function __testEndNoteTagged() {
+  function testEndNoteTagged() {
     $data = '
 %0 Book
 %A Gary King
