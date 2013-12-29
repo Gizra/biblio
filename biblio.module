@@ -243,14 +243,21 @@ function biblio_views_api() {
 function biblio_migrate_api() {
   $migrations = array();
   if (db_table_exists('_biblio_1x')) {
-    $migrations['BiblioMigrateContributorCollections'] = array('class_name' => 'BiblioMigrateContributorCollections');
-    $migrations['BiblioMigrateTypes'] = array('class_name' => 'BiblioMigrateTypes');
-    $migrations['BiblioMigrateEntries'] = array('class_name' => 'BiblioMigrateEntries');
+    $migrations['BiblioMigrateContributorCollections'] = array('class_name' => 'BiblioMigrateContributorCollections', 'group_name' => 'biblio_3');
+    $migrations['BiblioMigrateTypes'] = array('class_name' => 'BiblioMigrateTypes', 'group_name' => 'biblio_3');
+    $migrations['BiblioMigrateEntries'] = array('class_name' => 'BiblioMigrateEntries', 'group_name' => 'biblio_3');
+
+    $groups = array(
+      'biblio_3' => array(
+        'title' => t('Biblio 3.x'),
+      ),
+    );
   }
 
   $api = array(
     'api' => 2,
     'migrations' => $migrations,
+    'groups' => $groups,
   );
   return $api;
 }
@@ -658,16 +665,28 @@ function biblio_fields_info($field_name = NULL) {
 /**
  * Create new Biblio bundles.
  *
+ * @param Array $types
+ *  List of specific types to create.
+ *
  * @todo: Make the bundles configurable?
  */
-function biblio_add_publication_types() {
-  foreach (biblio_get_types_info() as $values) {
-    $name = $values['name'];
+function biblio_add_publication_types($types = array()) {
+  $default_types = biblio_types();
+
+  foreach ($default_types as $type => $info) {
+
+    if ($types && !in_array($type, $types)) {
+      // The type was not specified in the list of types to enable. Skipping.
+      continue;
+    }
+
+    $name = $info['name'];
 
     $row = new stdClass();
     $row->type = strtolower(str_replace(' ', '_', $name));
     $row->name = $name;
-    $row->description = $values['description'];
+    $row->description = $info['description'];
+
     biblio_type_save($row);
   }
 }
@@ -676,8 +695,8 @@ function biblio_add_publication_types() {
  * Return default Biblio types definitions.
  *
  * @param $type
- *   Optional; The defintion of the given type. If empty, all types will be
- *   returned.
+ *  Optional; The definition of the given type. If empty, all types will be
+ *  returned.
  */
 function biblio_get_types_info($type = NULL) {
   $return = &drupal_static(__FUNCTION__, array());
