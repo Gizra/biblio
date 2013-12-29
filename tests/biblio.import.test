@@ -119,4 +119,5 @@ class BiblioImportAndRenderTestCase extends DrupalWebTestCase {
 
     $this->assertTrue(empty($biblios2['new']) && !empty($biblios2['duplicate']), 'Biblio duplication was successfully prevented.');
   }
+  
 }
