@@ -477,7 +477,7 @@ function biblio_create($type, $values = array()) {
  *   The biblio ID.
  *
  * @return object
- *   A fully-populated node object.
+ *   A fully-populated biblio object.
  */
 function biblio_load($bid) {
   return entity_load_single('biblio', $bid);

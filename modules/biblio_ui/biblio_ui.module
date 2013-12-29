@@ -69,6 +69,16 @@ function biblio_ui_menu() {
 
   $export_formats = array('citeproc');
   foreach ($export_formats as $format) {
+    $items['biblio/export/' . $format] = array(
+      'title' => t('Export all as @format', array('@format' => $format)),
+      'description callback' => 'biblio_ui_description_callback',
+      'description arguments' => array(1, 'export'),
+      'access arguments' => array('export biblio content'),
+      'page callback' => 'biblio_ui_export_biblio',
+      'page arguments' => array(null, 2),
+      'type' => MENU_LOCAL_ACTION,
+      'weight' => '80',
+    );
     $items['biblio/%biblio/export/' . $format] = array(
       'title' => t('Export as @format', array('@format' => $format)),
       'description callback' => 'biblio_ui_description_callback',
@@ -864,8 +874,20 @@ function biblio_ui_contributor_delete_form_submit($form, &$form_state) {
  * @param $format
  */
 function biblio_ui_export_biblio($biblio, $format) {
-  $filename = $biblio->title . "-" . $format . ".bib";
+  $for_print = array();
+  if ($biblio) {
+    $filename = $biblio->title . "-" . $format . ".bib";
+    $for_print[] = $biblio;
+  }
+  else {
+    $filename = $format . ".bib";
+    $for_print = biblio_load_multiple(FALSE);
+  }
+
   drupal_add_http_header('Content-type', 'application/text; charset=utf-8');
   drupal_add_http_header('Content-Disposition', 'attachment; filename="' . $filename . '"');
-  print_r($biblio->getText($format));
+
+  foreach ($for_print as $biblio) {
+    print_r($biblio->getText($format));
+  }
 }
