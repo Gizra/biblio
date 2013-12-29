@@ -673,6 +673,9 @@ function biblio_ui_manage_bundles_manage_submit($form, &$form_state) {
   drupal_set_message(t('The bundle @title was created successfully.', array(
     '@title' => $form_state['values']['name'],
   )));
+
+  // Clearing the menu cache after creating a new menu biblio type.
+  variable_set('menu_rebuild_needed', TRUE);
 }
 
 /**
@@ -709,11 +712,11 @@ function biblio_ui_delete_bundle_submit($form, $form_state) {
  */
 function biblio_ui_attach_biblio_fields() {
   $form = array();
-  $types = biblio_get_types_info();
+  $types = biblio_types();
   $options = array();
 
   foreach ($types as $type => $info) {
-    $options[$type] = $info['name'];
+    $options[$type] = $info->name;
   }
 
   $form['biblio_types'] = array(
