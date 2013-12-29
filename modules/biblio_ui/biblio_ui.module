@@ -743,13 +743,9 @@ function biblio_ui_attach_biblio_fields() {
 function biblio_ui_attach_biblio_fields_submit($form, $form_state) {
   // Import all the selected biblio types via batch api.
   $operations = array();
-  foreach ($form_state['values']['biblio_types'] as $enable) {
-    if (!$enable) {
-      continue;
-    }
-
-    // Adding the fields for the bundle.
-    $operations[] = array('biblio_create_fields_by_bundle', array(array($enable)));
+  foreach ($form_state['values']['biblio_types'] as $type) {
+    $bundles = array($type);
+    $operations[] = array('biblio_create_fields_by_bundle', array($bundles));
   }
 
   $batch = array(
@@ -793,12 +789,10 @@ function biblio_ui_create_fields($form, &$form_state, $bundle) {
 
   // Creating a select. When changing the description of the field will be shown
   // via AJAX.
+  $field_info = '';
   $selected_field_name = !empty($form_state['values']['field_name']) ? $form_state['values']['field_name'] : '';
-  if ($selected_field_name && isset($fields[$selected_field_name]['instance']['description']) && $selected_field_name != '---') {
+  if (isset($fields[$selected_field_name]['instance']['description'])) {
     $field_info = t('Description: <b>' . $fields[$selected_field_name]['instance']['description'] . '</b>');
-  }
-  else {
-    $field_info = '';
   }
 
   $form['field_info_wrapper'] = array(
@@ -811,7 +805,7 @@ function biblio_ui_create_fields($form, &$form_state, $bundle) {
     '#type' => 'select',
     '#title' => t('Select field to add'),
     '#description' => t('Select the field you would like to add.'),
-    '#options' => array('---' => t('Select a field')) + $options,
+    '#options' => array('' => t('Select a field')) + $options,
     '#ajax' => array(
       'callback' => 'biblio_ui_fields_ajax_callback',
       'wrapper' => 'field-info-wrapper',
@@ -845,8 +839,8 @@ function biblio_ui_fields_ajax_callback($form, $form_state) {
  * Validate handler; Attaching the field on the bundle.
  */
 function biblio_ui_create_fields_validate($form, $form_state) {
-  if ($form_state['values']['field_name'] == '---') {
-    form_set_error('field_name', t('Please select field.'));
+  if (!$form_state['values']['field_name']) {
+    form_set_error('field_name', t('Please select a field.'));
   }
 }
 
@@ -858,10 +852,12 @@ function biblio_ui_create_fields_submit($form, $form_state) {
 
   $field_info = biblio_fields_info($form_state['values']['field_name']);
   $type = biblio_types($form_state['bundle']);
-  drupal_set_message(t('The field %name added to the bundle %bundle succesfully.', array(
+
+  $params = array(
     '%name' => $field_info['instance']['label'],
     '%bundle' => $type->name,
-  )));
+  );
+  drupal_set_message(t('The field %name added to the bundle %bundle succesfully.', $params));
 }
 
 /**

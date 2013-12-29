@@ -684,7 +684,7 @@ function biblio_add_publication_types($types = array()) {
   }
 
   // Clearing the menu cache after creating a new menu biblio type.
-  drupal_flush_all_caches();
+  variable_set('menu_needs_rebuild', TRUE);
 }
 
 function biblio_get_types_info($type = NULL) {
