@@ -684,6 +684,13 @@ function biblio_add_publication_types($types = array()) {
   }
 }
 
+/**
+ * Return default Biblio types definitions.
+ *
+ * @param $type
+ *  Optional; The definition of the given type. If empty, all types will be
+ *  returned.
+ */
 function biblio_get_types_info($type = NULL) {
   $return = &drupal_static(__FUNCTION__, array());
 
