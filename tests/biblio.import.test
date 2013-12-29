@@ -110,13 +110,13 @@ class BiblioImportAndRenderTestCase extends DrupalWebTestCase {
 
     // Import the data to create a new biblio.
     $biblio_style1 = new $class($plugin);
-    $biblios1 = $biblio_style1->import($data);
+    $biblio_style1->import($data);
 
     // Import the same data again, to make sure it is not created again and that
     // instead the previous biblio is returned.
     $biblio_style2 = new $class($plugin);
     $biblios2 = $biblio_style2->import($data);
 
-    $this->assertTrue(!empty($biblios1['new']) && empty($biblios2['new']) && !empty($biblios2['duplicate']), 'Biblio duplication was successfully prevented.');
+    $this->assertTrue(empty($biblios2['new']) && !empty($biblios2['duplicate']), 'Biblio duplication was successfully prevented.');
   }
 }
