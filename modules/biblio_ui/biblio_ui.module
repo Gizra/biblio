@@ -771,13 +771,13 @@ function biblio_ui_create_fields($form, &$form_state, $bundle) {
   // Save the bundle for later.
   $form_state['bundle'] = $bundle;
 
-  // Get the existed fields and the fields which not yet added.
+  // Get the existing fields and the fields which not yet added.
   $fields = biblio_fields_info();
-  $existed_fields = field_info_instances('biblio', $bundle);
+  $existing_fields = field_info_instances('biblio', $bundle);
 
   $options = array();
   foreach ($fields as $name => $field) {
-    if (in_array($name, array_keys($existed_fields))) {
+    if (in_array($name, array_keys($existing_fields))) {
       continue;
     }
 
