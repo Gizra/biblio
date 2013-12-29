@@ -7,19 +7,61 @@ class BiblioMigrateEntries extends Migration {
 
   public $dependencies = array('BiblioMigrateTypes');
 
-  public function __construct() {
+  public function __construct($arguments = array()) {
+    parent::__construct($arguments);
+
     $this->description = t('Migrate biblio 1.x entries.');
 
     $this->query = db_select('_biblio_1x', 'b');
     $this->query->innerJoin('node', 'n', 'n.nid = b.nid AND n.vid = b.vid');
 
+    $fields = array(
+      'biblio_number',
+      'biblio_other_number',
+      'biblio_sort_title',
+      'biblio_secondary_title',
+      'biblio_tertiary_title',
+      'biblio_edition',
+      'biblio_publisher',
+      'biblio_place_published',
+      'biblio_year',
+      'biblio_volume',
+      'biblio_pages',
+      'biblio_date',
+      'biblio_isbn',
+      'biblio_lang',
+      'biblio_issue',
+      'biblio_type_of_work',
+      'biblio_accession_number',
+      'biblio_call_number',
+      'biblio_notes',
+      'biblio_research_notes',
+      'biblio_number_of_volumes',
+      'biblio_short_title',
+      'biblio_alternate_title',
+      'biblio_original_publication',
+      'biblio_reprint_edition',
+      'biblio_translated_title',
+      'biblio_section',
+      'biblio_citekey',
+      'biblio_coins',
+      'biblio_doi',
+      'biblio_issn',
+      'biblio_auth_address',
+      'biblio_label',
+      'biblio_refereed',
+      'biblio_md5',
+      'biblio_url',
+      'biblio_url_title',
+    );
+
     $this->query
-      ->fields('b')
+      ->fields('b', $fields)
       ->fields('n', array('nid', 'title', 'created', 'uid'))
       ->condition('n.status', NODE_PUBLISHED)
       ->condition('b.biblio_type', 0, '>');
 
-    parent::__construct();
+    $fields = array_merge($fields, array('title', 'uid', 'created', 'changed'));
 
     $source_key = array(
       'nid' => array(
@@ -36,21 +78,6 @@ class BiblioMigrateEntries extends Migration {
     // ok?
     $this->destination = new MigrateDestinationEntityAPI('biblio', 'book');
 
-    $fields = array(
-      'title',
-      'uid',
-      'created',
-      'changed',
-    );
-
-    foreach (array_keys(biblio_fields_info()) as $field_name) {
-
-      if (in_array($field_name, array('biblio_type', 'biblio_abstract', 'biblio_issued', 'biblio_status'))) {
-        continue;
-      }
-      $fields[] = $field_name;
-    }
-
     $this->addSimpleMappings($fields);
 
     $this
@@ -64,6 +91,12 @@ class BiblioMigrateEntries extends Migration {
     $this
       ->addFieldMapping('biblio_status', 'biblio_year')
       ->callbacks(array($this, 'prepareBiblioStatus'));
+
+    $this
+      ->addFieldMapping('biblio_language', 'biblio_lang');
+
+    $this
+      ->addFieldMapping('biblio_refereed_designation', 'biblio_refereed');
   }
 
   public function prepareBiblioStatus($value) {
@@ -79,3 +112,5 @@ class BiblioMigrateEntries extends Migration {
     }
   }
 }
+
+
