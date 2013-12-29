@@ -137,4 +137,19 @@ class BiblioContributorInlineEntityFormController extends EntityInlineEntityForm
 
     return $form;
   }
+
+  /**
+   * Overrides \EntityInlineEntityFormController::save()
+   *
+   * Add created and changed values.
+   */
+  public function save($entity, $context) {
+    if (empty($entity->cid)) {
+      $entity->created = REQUEST_TIME;
+    }
+
+    $entity->changed = REQUEST_TIME;
+
+    parent::save($entity, $context);
+  }
 }
