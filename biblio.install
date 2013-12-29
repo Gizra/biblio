@@ -19,10 +19,11 @@ function biblio_install() {
  * operation.
  */
 function biblio_enable() {
+  biblio_add_publication_types();
+
   if (!drupal_is_cli()) {
     return;
   }
-  biblio_add_publication_types();
   // Create fields to all bundles. No need to cache clear after each field.
   biblio_create_fields_by_bundle(array(), FALSE);
 }

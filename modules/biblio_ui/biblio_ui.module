@@ -105,6 +105,15 @@ function biblio_ui_menu() {
     'type' => MENU_LOCAL_ACTION,
   );
 
+  $items['admin/structure/biblio/attach-fields'] = array(
+    'title' => 'Attach biblio fields',
+    'description' => 'Import predefined biblio types',
+    'access arguments' => array('administer biblio'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('biblio_ui_attach_biblio_fields'),
+    'type' => MENU_LOCAL_ACTION,
+  );
+
   foreach (biblio_types() as $biblio_type) {
     $items['admin/structure/biblio/' . $biblio_type->type] = array(
       'title' => $biblio_type->name,
@@ -132,15 +141,24 @@ function biblio_ui_menu() {
       'weight' => 1,
     );
 
-    $items['admin/config/content/biblio'] = array(
-      'title' => 'Biblio settings',
-      'description' => 'Configure Biblio settings.',
-      'page callback' => 'drupal_get_form',
-      'page arguments' => array('biblio_ui_admin_form'),
+    $items['admin/structure/biblio/' . $biblio_type->type . '/fields/add'] = array(
+      'title' => 'Attach biblio fields',
+      'description' => 'Attach predefined biblio types',
       'access arguments' => array('administer biblio'),
-      'file' => 'biblio_ui.admin.inc'
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('biblio_ui_create_fields', 3),
+      'type' => MENU_LOCAL_ACTION,
     );
   }
+
+  $items['admin/config/content/biblio'] = array(
+    'title' => 'Biblio settings',
+    'description' => 'Configure Biblio settings.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('biblio_ui_admin_form'),
+    'access arguments' => array('administer biblio'),
+    'file' => 'biblio_ui.admin.inc'
+  );
 
   // Biblio contributor UI.
   $items['admin/biblio-contributor'] = array(
@@ -655,6 +673,9 @@ function biblio_ui_manage_bundles_manage_submit($form, &$form_state) {
   drupal_set_message(t('The bundle @title was created successfully.', array(
     '@title' => $form_state['values']['name'],
   )));
+
+  // Clearing the menu cache after creating a new menu biblio type.
+  variable_set('menu_rebuild_needed', TRUE);
 }
 
 /**
@@ -684,6 +705,162 @@ function biblio_ui_delete_bundle_submit($form, $form_state) {
   drupal_set_message(t('The bundle @title was deleted successfully.', array(
     '@title' => $form_state['#type']->name,
   )));
+}
+
+/**
+ * Attach biblio fields to biblio types.
+ */
+function biblio_ui_attach_biblio_fields() {
+  $form = array();
+  $types = biblio_types();
+  $options = array();
+
+  foreach ($types as $type => $info) {
+    $options[$type] = $info->name;
+  }
+
+  $form['biblio_types'] = array(
+    '#type' => 'select',
+    '#title' => t('Biblio types'),
+    '#description' => t('Select the biblio types you would like to attach the biblio fields.'),
+    '#multiple' => TRUE,
+    '#options' => $options,
+    '#size' => 10,
+  );
+
+  $form['actions'] = array(
+    '#type' => 'actions',
+
+    'submit' => array(
+      '#type' => 'submit',
+      '#value' => t('Attach fields to selected types'),
+    ),
+  );
+
+  return $form;
+}
+
+/**
+ * Submit handler; Attach biblio fields to selected biblio types.
+ */
+function biblio_ui_attach_biblio_fields_submit($form, $form_state) {
+  // Import all the selected biblio types via batch api.
+  $operations = array();
+  foreach ($form_state['values']['biblio_types'] as $type) {
+    $bundles = array($type);
+    $operations[] = array('biblio_create_fields_by_bundle', array($bundles));
+  }
+
+  $batch = array(
+    'operations' => $operations,
+    'title' => t('Attaching biblio fields to selected bundles.'),
+    'progress_message' => t('Processed @current out of @total.'),
+    'error_message' => t('Example Batch has encountered an error.'),
+  );
+
+  batch_set($batch);
+
+  batch_process('admin/structure/biblio/attach-fields');
+}
+
+/**
+ * Manage the fields of the biblio bundle.
+ */
+function biblio_ui_create_fields($form, &$form_state, $bundle) {
+  // Save the bundle for later.
+  $form_state['bundle'] = $bundle;
+
+  // Get the existing fields and the fields which not yet added.
+  $fields = biblio_fields_info();
+  $existing_fields = field_info_instances('biblio', $bundle);
+
+  $options = array();
+  foreach ($fields as $name => $field) {
+    if (in_array($name, array_keys($existing_fields))) {
+      continue;
+    }
+
+    $options[$name] = $field['instance']['label'];
+  }
+
+  if (!$options) {
+    drupal_set_message(t("There aren't any fields to add."), 'warning');
+  }
+
+  // Sorting the fields name in alphabetical order.
+  asort($options);
+
+  // Creating a select. When changing the description of the field will be shown
+  // via AJAX.
+  $field_info = '';
+  $selected_field_name = !empty($form_state['values']['field_name']) ? $form_state['values']['field_name'] : '';
+  if (isset($fields[$selected_field_name]['instance']['description'])) {
+    $field_info = t('Description: <b>' . $fields[$selected_field_name]['instance']['description'] . '</b>');
+  }
+
+  $form['field_info_wrapper'] = array(
+    '#prefix' => '<div id="field-info-wrapper">',
+    '#suffix' => '</div>',
+    '#parents' => array('field_info_wrapper'),
+  );
+
+  $form['field_info_wrapper']['field_name'] = array(
+    '#type' => 'select',
+    '#title' => t('Select field to add'),
+    '#description' => t('Select the field you would like to add.'),
+    '#options' => array('' => t('Select a field')) + $options,
+    '#ajax' => array(
+      'callback' => 'biblio_ui_fields_ajax_callback',
+      'wrapper' => 'field-info-wrapper',
+    ),
+  );
+
+  $form['field_info_wrapper']['description'] = array(
+    '#markup' => $field_info,
+  );
+
+  $form['actions'] = array(
+    '#type' => 'actions',
+    'submit' => array(
+      '#type' => 'submit',
+      '#value' => t('Add field'),
+    ),
+  );
+
+  return $form;
+}
+
+/**
+ * Ajax callback; Using AJAX we can display the description of each selected
+ * list.
+ */
+function biblio_ui_fields_ajax_callback($form, $form_state) {
+  return $form['field_info_wrapper'];
+}
+
+/**
+ * Validate handler; Attaching the field on the bundle.
+ */
+function biblio_ui_create_fields_validate($form, $form_state) {
+  if (!$form_state['values']['field_name']) {
+    form_set_error('field_name', t('Please select a field.'));
+  }
+}
+
+/**
+ * Submit handler; Attaching the field on the bundle.
+ */
+function biblio_ui_create_fields_submit($form, $form_state) {
+  biblio_create_field($form_state['values']['field_name'], 'biblio', $form_state['bundle']);
+
+  $field_info = biblio_fields_info($form_state['values']['field_name']);
+  $type = biblio_types($form_state['bundle']);
+
+  $params = array(
+    '%name' => $field_info['instance']['label'],
+    '%bundle' => $type->name,
+  );
+  drupal_set_message(t('The field %name added to the bundle %bundle succesfully.', $params));
 }
 
 /**
