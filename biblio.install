@@ -19,6 +19,7 @@ function biblio_install() {
  * operation.
  */
 function biblio_enable() {
+  return;
   if (!drupal_is_cli()) {
     return;
   }
