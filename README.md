@@ -1,5 +1,7 @@
 [![Build Status](https://travis-ci.org/amitaibu/biblio.png?branch=7.x-3.x)](https://travis-ci.org/amitaibu/biblio)
 
+# Biblio
+
 Biblio is used for importing and rendering bibliographies.
 
 ### Import API
