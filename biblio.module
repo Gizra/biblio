@@ -74,59 +74,59 @@ function biblio_permission() {
   return array(
     'administer biblio' => array(
       'title' => t('Administer Biblio'),
-      'description' => t('Allows full control (create, update, delete) of all Biblio nodes'),
+      'description' => t('Allows full control (create, update, delete) of all Biblio nodes.'),
     ),
     'access biblio content' => array(
       'title' => t('Access Biblio content'),
-      'description' => t('Allows the user to view Biblio nodes'),
+      'description' => t('Allows the user to view Biblio nodes.'),
     ),
    'create biblio content' => array(
      'title' => t('Create Biblio'),
-     'description' => t('Allows the user to create new Biblios'),
+     'description' => t('Allows the user to create new Biblios.'),
    ),
    'edit all biblio entries' => array(
      'title' => t('Edit all Biblio entries'),
-     'description' => t('Allows the user to edit ALL biblio entries regardless of who "owns" them, otherwise they are restricted to on'),
+     'description' => t('Allows the user to edit ALL biblio entries regardless of who "owns" them, otherwise they are restricted to on.'),
    ),
    'edit own biblio entries' => array(
      'title' => t('Edit own Biblio entries'),
-     'description' => t('Allows the user to edit his own biblio entries'),
+     'description' => t('Allows the user to edit their own biblio entries.'),
    ),
     'delete biblio entries' => array(
       'title' => t('Delete biblio entries'),
-      'description' => t('Allows the user to delete any biblio entities'),
+      'description' => t('Allows the user to delete any biblio entities.'),
     ),
     'delete own biblio entries' => array(
       'title' => t('Delete own biblio entries'),
-      'description' => t('Allows the user to delete his own biblio entities'),
+      'description' => t('Allows the user to delete their own biblio entities.'),
     ),
     'edit by all biblio authors' => array(
       'title' => t('Edit by all Biblio authors'),
-      'description' => t('Allows any/all of the authors associated with a biblio entry to edit the biblio entry. This requires the Drupal UserID be mapped to a Biblio author ID'),
+      'description' => t('Allows any/all of the authors associated with a biblio entry to edit the biblio entry. This requires the Drupal UserID be mapped to a Biblio author ID.'),
     ),
     'edit biblio authors' => array(
       'title' => t('Edit Biblio authors'),
-      'description' => t('Allows the user to edit author information'),
+      'description' => t('Allows the user to edit author information.'),
     ),
     'manage biblio structure' => array(
       'title' => t('Manage Biblio structure'),
-      'description' => t('This determines if the user will be able to modify field and display settings for biblio and contributor entities (admin/structure/biblio)'),
+      'description' => t('This determines if the user will be able to modify field and display settings for biblio and contributor entities (admin/structure/biblio).'),
     ),
     'manage biblio content' => array(
       'title' => t('Manage Biblio content'),
-      'description' => t('This determines if the user will be able to access the managment interface for biblios and contributors (admin/content/biblio)'),
+      'description' => t('This determines if the user will be able to access the managment interface for biblios and contributors (admin/content/biblio).'),
     ),
     'import from file' => array(
       'title' => t('Import from file'),
-      'description' => t('Allows the user to import bibliographic data from files such as BibTex, RIS, EndNote'),
+      'description' => t('Allows the user to import bibliographic data from files such as BibTex, RIS, EndNote.'),
     ),
     'show export links' => array(
       'title' => t('Show export links'),
-      'description' => t('Allows users to see links which allow export of bibliographic data for an individual entry or the entire result set'),
+      'description' => t('Allows users to see links which allow export of bibliographic data for an individual entry or the entire result set.'),
     ),
     'show download links' => array(
       'title' => t('Show download links'),
-      'description' => t('Allows users to see links to any attachements associated with the Biblio entry'),
+      'description' => t('Allows users to see links to any attachements associated with the Biblio entry.'),
     ),
     'show own download links' => array(
       'title' => t('Show own download links'),
@@ -134,15 +134,15 @@ function biblio_permission() {
     ),
     'show filter tab' => array(
       'title' => t('Show filter tab'),
-      'description' => t('This determines if the "Filter" tab on the Biblio list page will be shown to the user'),
+      'description' => t('This determines if the "Filter" tab on the Biblio list page will be shown to the user.'),
     ),
     'show sort links' => array(
       'title' => t('Show sort links'),
-      'description' => t('This determines if the "Sort" links on the Biblio list page will be shown to the user'),
+      'description' => t('This determines if the "Sort" links on the Biblio list page will be shown to the user.'),
     ),
     'view full text' => array(
       'title' => t('Show full text'),
-      'description' => t('This determines if the user will be able to access the "Full Text" of the article if it is available'),
+      'description' => t('This determines if the user will be able to access the "Full Text" of the article if it is available.'),
     ),
   );
 }
@@ -476,7 +476,7 @@ function biblio_create($type, $values = array()) {
  *   The biblio ID.
  *
  * @return object
- *   A fully-populated node object.
+ *   A fully-populated biblio object.
  */
 function biblio_load($bid) {
   return entity_load_single('biblio', $bid);
