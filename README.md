@@ -24,7 +24,7 @@ $biblio->getText($biblio_style);
 ```php
 // Here you need to specify the biblio style of the data you wish to import.
 // In this example, the style is BibTex.
-$imported_data_style = 'bibtex';
+$data_style = 'bibtex';
 
 // The data you wish to import.
 // In this example it is a book.
@@ -40,8 +40,8 @@ $data = '
 
 // Get the relevant biblio class to handle the information.
 ctools_include('plugins');
-$plugin = biblio_get_biblio_style($imported_data_style);
-$class = ctools_plugin_load_class('biblio', 'biblio_style', $imported_data_style, 'class');
+$plugin = biblio_get_biblio_style($data_style);
+$class = ctools_plugin_load_class('biblio', 'biblio_style', $data_style, 'class');
 
 // Create the biblio using the relevant class.
 $biblio_style = new $class($plugin);
