@@ -91,3 +91,10 @@ $contributors = BiblioContributorUtility::getBiblioContributorsFromNames($names)
   $biblio->getText('citeproc', array('style_name' => 'ama'));
   $biblio->getText('citeproc');
 ```
+
+### Example moudle
+
+For more useful examples, we recommend enabling the module ``biblio_example``.
+
+
+Developed by [Gizra](http://gizra.com)
