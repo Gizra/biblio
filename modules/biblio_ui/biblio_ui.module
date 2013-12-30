@@ -1047,7 +1047,7 @@ function biblio_ui_export_access($style_name, $bids) {
     return;
   }
 
-  if (!biblio_get_biblio_style($style_name)) {
+  if (!biblio_get_exportable_biblio_style($style_name)) {
     // Style name doesn't exist.
     return;
   }
@@ -1069,7 +1069,7 @@ function biblio_ui_export_access($style_name, $bids) {
  *   Comma-separated list of Biblio IDs.
  */
 function biblio_ui_export($style_name, $bids) {
-  $plugin = biblio_get_biblio_style($style_name);
+  $plugin = biblio_get_exportable_biblio_style($style_name);
   $filename = $style_name . '.' . $plugin['export extension'];
 
   drupal_add_http_header('Content-type', 'application/text; charset=utf-8');
@@ -1108,8 +1108,23 @@ function biblio_ui_load_biblios_from_string($bids_string = '') {
  * Theme callback - display a button for export.
  */
 function theme_biblio_ui_export_area($variables) {
-  $title = 'Export';
+  $title = t('Export');
   $links = array();
-  return theme('ctools_dropdown', array('links' => $links, 'title' => $title, 'attributes' => array('class' => array('biblio-export-buttons'))));
+  foreach (biblio_get_exportable_biblio_styles() as $style_name => $style) {
+    // @todo: right entity ids, proper link (consider base ?)
+    $links[$style_name] = array(
+      'href' => '/biblio/export/' . $style_name . '/1',
+      'title' => $style['title'],
+      'attributes' => array(
+        'title' => t('Click to download Biblio in @format format', array('@format' => $style_name)),
+      ),
+    );
+  }
 
+  $attributes = array(
+    'links' => $links,
+    'title' => $title,
+    'attributes' => array('class' => array('biblio-export-buttons')),
+  );
+  return theme('ctools_dropdown', $attributes);
 }
