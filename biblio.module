@@ -671,9 +671,7 @@ function biblio_fields_info($field_name = NULL) {
  * @todo: Make the bundles configurable?
  */
 function biblio_add_publication_types($types = array()) {
-  $default_types = biblio_types();
-
-  foreach ($default_types as $type => $info) {
+  foreach (biblio_get_types_info() as $type => $info) {
 
     if ($types && !in_array($type, $types)) {
       // The type was not specified in the list of types to enable. Skipping.
