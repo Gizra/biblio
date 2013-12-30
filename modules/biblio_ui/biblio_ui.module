@@ -1031,7 +1031,7 @@ function biblio_ui_contributor_delete_form_submit($form, &$form_state) {
 }
 
 /**
- * Allow export based on existing Biblio style and user access.
+ * Menu item; Allow export based on existing Biblio style and user access.
  *
  * @param $style_name
  *   Biblio style name.
