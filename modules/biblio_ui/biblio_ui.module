@@ -1081,8 +1081,7 @@ function biblio_ui_export($style_name, $bids) {
  *   Comma-separated list of Biblio ids.
  *
  * @return array|bool
- *   FALSE in case of a bad input or non existing Biblio entity. Array of Biblio
- *   entities if ok.
+ *   Array of loaded Biblio, or FALSE if none found.
  */
 function biblio_ui_load_biblios_from_string($bids_string = '') {
   if (!$bids = explode(',', $bids_string)) {
