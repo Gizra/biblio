@@ -1,12 +1,5 @@
 [![Build Status](https://travis-ci.org/amitaibu/biblio.png?branch=7.x-3.x)](https://travis-ci.org/amitaibu/biblio)
 
-### Render API
-
-```php
-$biblio = bilbio_load(1);
-$biblio->getText('bibtex');
-```
-
 ### Import API
 
 ```php
@@ -45,7 +38,28 @@ $biblios = $biblio_style->import($data);
 $new_biblio = $biblios['new'][0];
 ```
 
+### Render API
 
+```php
+// Loading the biblio.
+$biblio_bid = 1;
+$biblio = bilbio_load($biblio_bid);
+
+// Specify the style in which you wish the output to be.
+// In this example, we want it to be in BibTex style.
+$biblio_style = 'bibtex';
+
+// Each style has certain settings it accepts, so set the needed options according to the style you chose.
+// For example, the style BibTex allows you to choose the opening and closing tags for the values.
+// In this example, we want the biblio output to be rendered with double quotes.
+$options = array(
+  'opening_tag' => '"',
+  'closing_tag' => '"',
+);
+
+// Render the biblio.
+$biblio->getText($biblio_style, $options);
+```
 
 ### CiteProc
 
