@@ -146,7 +146,7 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
    *  Biblio object.
    *
    * @return
-   *  The duplicate Biblio ID, FALSE if not found.
+   *  The duplicate Biblio object, FALSE if not found.
    */
   public function isDuplicate(Biblio $biblio) {
     $md5 = $this->generateBiblioMd5($biblio);

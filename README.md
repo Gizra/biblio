@@ -4,12 +4,27 @@
 
 Biblio is used for importing and rendering bibliographies.
 
+### Render API
+
+```php
+// Loading the biblio.
+$biblio_bid = 1;
+$biblio = bilbio_load($biblio_bid);
+
+// Specify the style in which you wish the output to be.
+// In this example, we want it to be in BibTex style.
+$biblio_style = 'bibtex';
+
+// Render the biblio.
+$biblio->getText($biblio_style);
+```
+
 ### Import API
 
 ```php
 // Here you need to specify the biblio style of the data you wish to import.
 // In this example, the style is BibTex.
-$imported_data_style = 'bibtex';
+$data_style = 'bibtex';
 
 // The data you wish to import.
 // In this example it is a book.
@@ -25,8 +40,8 @@ $data = '
 
 // Get the relevant biblio class to handle the information.
 ctools_include('plugins');
-$plugin = biblio_get_biblio_style($imported_data_style);
-$class = ctools_plugin_load_class('biblio', 'biblio_style', $imported_data_style, 'class');
+$plugin = biblio_get_biblio_style($data_style);
+$class = ctools_plugin_load_class('biblio', 'biblio_style', $data_style, 'class');
 
 // Create the biblio using the relevant class.
 $biblio_style = new $class($plugin);
@@ -35,34 +50,13 @@ $biblio_style = new $class($plugin);
 // This returns an array because multiple biblios can be imported at once.
 // The biblios in the array are grouped by the result:
 //   'new'       - New biblios, created in the import process.
-//   'duplicate' - Existing biblios, when one or more of the biblios in the data are identical to existing biblios.
-//   'error'     - Errors that occured during the import process, this means one or more biblios failed to import.
+//   'duplicate' - Existing biblios, when one or more of the biblios in the data are
+//                 identical to existing biblios.
+//   'error'     - Errors that occured during the import process, this means one or more
+//                 biblios failed to import.
 // In this example, the array will contain only one biblio, categorized as 'new'.
 $biblios = $biblio_style->import($data);
 $new_biblio = $biblios['new'][0];
-```
-
-### Render API
-
-```php
-// Loading the biblio.
-$biblio_bid = 1;
-$biblio = bilbio_load($biblio_bid);
-
-// Specify the style in which you wish the output to be.
-// In this example, we want it to be in BibTex style.
-$biblio_style = 'bibtex';
-
-// Each style has certain settings it accepts, so set the needed options according to the style you chose.
-// For example, the style BibTex allows you to choose the opening and closing tags for the values.
-// In this example, we want the biblio output to be rendered with double quotes.
-$options = array(
-  'opening_tag' => '"',
-  'closing_tag' => '"',
-);
-
-// Render the biblio.
-$biblio->getText($biblio_style, $options);
 ```
 
 ### CiteProc

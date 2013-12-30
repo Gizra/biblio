@@ -7,8 +7,8 @@ class BiblioContributorTestCase extends DrupalWebTestCase {
 
   public static function getInfo() {
     return array(
-      'name' => 'Get contributor by name',
-      'description' => 'Test parsing different formats of contributor names.',
+      'name' => 'Test contributor names',
+      'description' => 'Test parsing different formats of contributor names and preventing duplications.',
       'group' => 'Biblio',
     );
   }
@@ -106,5 +106,34 @@ class BiblioContributorTestCase extends DrupalWebTestCase {
     $this->assertEqual($biblio_contributors[7]->initials, 'W');
     $this->assertEqual($biblio_contributors[7]->suffix, 'Jr. III');
     $this->assertEqual($biblio_contributors[7]->lastname, 'Bush');
+  }
+
+  /**
+   * Test preventing duplications in contributors' names.
+   */
+  function testDuplicateBiblioContributorsMd5() {
+    // Get biblio class.
+    ctools_include('plugins');
+    $plugin = biblio_get_biblio_style('bibtex');
+    $class = ctools_plugin_load_class('biblio', 'biblio_style', 'bibtex', 'class');
+    $biblio_style = new $class($plugin);
+
+    $cids = array();
+
+    // Attempt to create 2 contributors with the same name.
+    $data = 'Harry J. K. de la Potter and Harry J. K. de la Potter';
+    $biblio_contributors1 = $biblio_style->getBiblioContributorsFromNames($data);
+
+    // The expected result: The duplication was prevented so the 2 contributors
+    // have the same ID.
+    $this->assertEqual($biblio_contributors1[0]->cid, $biblio_contributors1[1]->cid, 'Biblio Contributor duplication was prevented.');
+
+    // Attempt to create another contributor with the same name.
+    $data = 'Harry J. K. de la Potter';
+    $biblio_contributors2 = $biblio_style->getBiblioContributorsFromNames($data);
+
+    // The expected result: The duplication was prevented so the 2 contributors
+    // have the same ID.
+    $this->assertEqual($biblio_contributors1[0]->cid, $biblio_contributors2[0]->cid, 'Biblio Contributor duplication was prevented.');
   }
 }

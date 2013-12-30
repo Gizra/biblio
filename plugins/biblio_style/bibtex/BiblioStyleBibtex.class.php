@@ -46,7 +46,6 @@ class BiblioStyleBibtex extends BiblioStyleBase implements BiblioStyleImportInte
 
         $method = $map[$key]['import_method'];
         $this->{$method}($wrapper, $key, $entry);
-
       }
 
       $this->importContributors($wrapper, $entry);
@@ -122,7 +121,7 @@ class BiblioStyleBibtex extends BiblioStyleBase implements BiblioStyleImportInte
       return;
     }
 
-    $this->import($wrapper, $key, $entry);
+    $this->importGeneric($wrapper, $key, $entry);
   }
 
   /**
@@ -155,7 +154,7 @@ class BiblioStyleBibtex extends BiblioStyleBase implements BiblioStyleImportInte
     }
 
     $entry[$key] = $value;
-    $this->import($wrapper, $key, $entry);
+    $this->importGeneric($wrapper, $key, $entry);
   }
 
   /**
@@ -187,7 +186,7 @@ class BiblioStyleBibtex extends BiblioStyleBase implements BiblioStyleImportInte
     }
 
     $entry[$key] = $value;
-    $this->import($wrapper, $key, $entry);
+    $this->importGeneric($wrapper, $key, $entry);
   }
 
   /**
@@ -206,7 +205,7 @@ class BiblioStyleBibtex extends BiblioStyleBase implements BiblioStyleImportInte
     }
 
     $entry[$key] = $entry['series'];
-    $this->import($wrapper, $key, $entry);
+    $this->importGeneric($wrapper, $key, $entry);
   }
 
   /**
@@ -673,7 +672,7 @@ class BiblioStyleBibtex extends BiblioStyleBase implements BiblioStyleImportInte
     foreach ($return['field'] as $key => $value) {
       $return['field'][$key] += array(
         'method' => 'formatGeneric',
-        'import_method' => 'import',
+        'import_method' => 'importGeneric',
         'use_key' => TRUE,
       );
     }
