@@ -18,7 +18,7 @@ package = Biblio
 configure = admin/config/content/biblio
 
 files[] = plugins/biblio_style/abstract.inc
-files[] = includes/BiblioContributor.class.php
+files[] = includes/BiblioContributorHelper.inc
 files[] = includes/biblio.controller.inc
 files[] = includes/biblio.contributor.controller.inc
 
