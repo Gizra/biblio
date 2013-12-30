@@ -9,7 +9,7 @@ class BiblioMigrateEntries extends Migration {
 
   public function __construct($arguments = array()) {
     parent::__construct($arguments);
-
+    
     $this->description = t('Migrate biblio 1.x entries.');
 
     $this->query = db_select('_biblio_1x', 'b');
@@ -53,6 +53,8 @@ class BiblioMigrateEntries extends Migration {
       'biblio_md5',
       'biblio_url',
       'biblio_url_title',
+      'biblio_type',
+      'biblio_abst_e',
     );
 
     $this->query
@@ -62,6 +64,11 @@ class BiblioMigrateEntries extends Migration {
       ->condition('b.biblio_type', 0, '>');
 
     $fields = array_merge($fields, array('title', 'uid', 'created', 'changed'));
+
+    // Remove these fields which have a different name now.
+    $fields = array_diff($fields, array('biblio_abst_e', 'biblio_type'));
+    
+    $this->addSimpleMappings($fields);
 
     $source_key = array(
       'nid' => array(
@@ -77,8 +84,6 @@ class BiblioMigrateEntries extends Migration {
     // @todo: All bundles have all the field, so we hardcode the bundle. Is this
     // ok?
     $this->destination = new MigrateDestinationEntityAPI('biblio', 'book');
-
-    $this->addSimpleMappings($fields);
 
     $this
       ->addFieldMapping('type', 'biblio_type')
@@ -112,5 +117,3 @@ class BiblioMigrateEntries extends Migration {
     }
   }
 }
-
-
