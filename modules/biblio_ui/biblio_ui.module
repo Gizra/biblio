@@ -1047,7 +1047,7 @@ function biblio_ui_export_access($style_name, $bids) {
   if (!biblio_get_biblio_style($style_name)) {
     return FALSE;
   }
-  if (!_biblio_ui_load_biblios($bids)) {
+  if (!biblio_ui_load_biblios_from_string($bids)) {
     return FALSE;
   }
   return TRUE;
@@ -1069,31 +1069,25 @@ function biblio_ui_export($style_name, $bids) {
   drupal_add_http_header('Content-type', 'application/text; charset=utf-8');
   drupal_add_http_header('Content-Disposition', 'attachment; filename="' . $filename . '"');
 
-  foreach (_biblio_ui_load_biblios($bids) as $biblio) {
+  foreach (biblio_ui_load_biblios_from_string($bids) as $biblio) {
     print_r($biblio->getText($style_name));
   }
 }
 
 /**
- * Load biblio entities from string of ids.
+ * Load Biblio entities from string of comma separated IDs.
  *
- * @param $bids
- *   Comma-separated list of biblio ids.
+ * @param $bids_string
+ *   Comma-separated list of Biblio ids.
  *
  * @return array|bool
- *   False in case of a bad input or non existing biblio entity. Array of biblio entities if ok.
+ *   FALSE in case of a bad input or non existing Biblio entity. Array of Biblio
+ *   entities if ok.
  */
-function _biblio_ui_load_biblios($bids) {
-  if (!$bids) {
-    return FALSE;
+function biblio_ui_load_biblios_from_string($bids_string = '') {
+  if ($bids = explode(',', $bids_string)) {
+    return;
   }
-  $biblios = array();
-  foreach (explode(',', $bids) as $bid) {
-    $biblio = biblio_load($bid);
-    if (!$biblio) {
-      return FALSE;
-    }
-    $biblios[] = $biblio;
-  }
-  return $biblios;
+
+  return biblio_load_multiple($bids);
 }
