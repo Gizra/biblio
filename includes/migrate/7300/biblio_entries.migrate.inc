@@ -9,7 +9,7 @@ class BiblioMigrateEntries extends Migration {
 
   public function __construct($arguments = array()) {
     parent::__construct($arguments);
-    
+
     $this->description = t('Migrate biblio 1.x entries.');
 
     $this->query = db_select('_biblio_1x', 'b');
