@@ -1103,3 +1103,13 @@ function biblio_ui_load_biblios_from_string($bids_string = '') {
 
   return biblio_load_multiple($bids);
 }
+
+/**
+ * Theme callback - display a button for export.
+ */
+function theme_biblio_ui_export_area($variables) {
+  $title = 'Export';
+  $links = array();
+  return theme('ctools_dropdown', array('links' => $links, 'title' => $title, 'attributes' => array('class' => array('biblio-export-buttons'))));
+
+}

@@ -6,7 +6,7 @@ class biblio_ui_handler_export_area extends views_handler_area {
       '#title' => t('Title'),
       '#value' => "Hello world",
     );
-    $output = theme('fieldset', $element);
+    $output = theme('biblio_ui_export_area', $element);
     return $output;
   }
 }
