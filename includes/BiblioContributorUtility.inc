@@ -4,7 +4,7 @@
  * @file
  * Helper class for handling Biblio Contributors.
  */
-class BiblioContributorHelper {
+class BiblioContributorUtility {
   /**
    * Get saved contributor objects by their names.
    *
@@ -21,11 +21,11 @@ class BiblioContributorHelper {
     $contributors = array();
     foreach ($names as $name) {
       // Parse contributor's name to get each part separately.
-      $values = BiblioContributorHelper::parseContributorName($name);
+      $values = BiblioContributorUtility::parseContributorName($name);
 
       // Get existing Biblio Contributor object, save it if it doesn't exist.
       $biblio_contributor = biblio_contributor_create($values);
-      $biblio_contributor = BiblioContributorHelper::getBiblioContributor($biblio_contributor);
+      $biblio_contributor = BiblioContributorUtility::getBiblioContributor($biblio_contributor);
 
       $contributors[] = $biblio_contributor;
     }
@@ -95,7 +95,7 @@ class BiblioContributorHelper {
       // 'Bush, George W', 'de la Bush, George W' etc.
 
       // Get last name and prefix separately.
-      list ($lastname, $prefix) = BiblioContributorHelper::getLastname(array_shift($name_parts));
+      list ($lastname, $prefix) = BiblioContributorUtility::getLastname(array_shift($name_parts));
     }
     else {
       // There are 2 commas in full name, such as in 'Bush, Jr. III, George W'.
@@ -104,13 +104,13 @@ class BiblioContributorHelper {
       $appellation = implode(' ', array_splice($name_parts, 1, 1));
 
       // Get last name and prefix separately.
-      list($lastname, $prefix) = BiblioContributorHelper::getLastname(array_shift($name_parts));
+      list($lastname, $prefix) = BiblioContributorUtility::getLastname(array_shift($name_parts));
     }
 
     // After removing the last name, prefix and appellation from the full name,
     // we are left with first name and initials, and perhaps last name prefix.
     $remainder = implode(' ', $name_parts);
-    list($firstname, $initials, $prefix2) = BiblioContributorHelper::getFirstnameInitials($remainder);
+    list($firstname, $initials, $prefix2) = BiblioContributorUtility::getFirstnameInitials($remainder);
 
     if (!empty($prefix2)) {
       // Found a prefix in remainder, add it to the last name prefix.
@@ -244,7 +244,7 @@ class BiblioContributorHelper {
    *  Saved Biblio Contributor object.
    */
   public static function getBiblioContributor(BiblioContributor $biblio_contributor) {
-    $md5 = BiblioContributorHelper::generateBiblioContributorMd5($biblio_contributor);
+    $md5 = BiblioContributorUtility::generateBiblioContributorMd5($biblio_contributor);
 
     $query = new EntityFieldQuery();
     $result = $query

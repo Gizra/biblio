@@ -225,7 +225,7 @@ class BiblioStyleBibtex extends BiblioStyleBase implements BiblioStyleImportInte
       $biblio = $wrapper->value();
 
       // Get array of saved contributor objects from string of names.
-      $contributors = BiblioContributorHelper::getBiblioContributorsFromNames($entry[$type]);
+      $contributors = BiblioContributorUtility::getBiblioContributorsFromNames($entry[$type]);
 
       foreach ($contributors as $contributor) {
         // Create contributors field collections without saving them.

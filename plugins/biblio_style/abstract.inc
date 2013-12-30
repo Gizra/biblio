@@ -196,7 +196,7 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
    *   The role of the contributor (e.g "Author", "Editor).
    */
   public function addBiblioContributorsToCollection(Biblio $biblio, $names, $role) {
-    $contributors = is_string($names) ? BiblioContributorHelper::getBiblioContributorsFromNames($names) : $names;
+    $contributors = is_string($names) ? BiblioContributorUtility::getBiblioContributorsFromNames($names) : $names;
 
     foreach ($contributors as $contributor) {
       // Create contributors field collections.
