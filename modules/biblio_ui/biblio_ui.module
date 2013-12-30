@@ -49,7 +49,7 @@ function biblio_ui_menu() {
     'title' => 'Edit',
     'description callback' => 'biblio_ui_description_callback',
     'description arguments' => array(1, 'edit'),
-    'access arguments' => array('edit biblio'),// TODO: is this an existing permission ?
+    'access arguments' => array('edit biblio'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('biblio_ui_manage_biblio', 1),
     'type' => MENU_LOCAL_TASK,
@@ -60,36 +60,22 @@ function biblio_ui_menu() {
     'title' => 'Delete',
     'description callback' => 'biblio_ui_description_callback',
     'description arguments' => array(1, 'delete'),
-    'access arguments' => array('delete biblio'),// TODO: is this an existing permission ?
+    'access arguments' => array('delete biblio'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('biblio_ui_delete_biblio', 1),
     'type' => MENU_LOCAL_TASK,
     'weight' => '70',
   );
 
-  $export_formats = array('citeproc');
-  foreach ($export_formats as $format) {
-    $items['biblio/export/' . $format] = array(
-      'title' => t('Export all as @format', array('@format' => $format)),
-      'description callback' => 'biblio_ui_description_callback',
-      'description arguments' => array(1, 'export'),
-      'access arguments' => array('export biblio content'),
-      'page callback' => 'biblio_ui_export_biblio',
-      'page arguments' => array(null, 2),
-      'type' => MENU_LOCAL_ACTION,
-      'weight' => '80',
-    );
-    $items['biblio/%biblio/export/' . $format] = array(
-      'title' => t('Export as @format', array('@format' => $format)),
-      'description callback' => 'biblio_ui_description_callback',
-      'description arguments' => array(1, 'export'),
-      'access arguments' => array('export biblio'), // TODO: is this an existing permission ?
-      'page callback' => 'biblio_ui_export_biblio',
-      'page arguments' => array(1, 3),
-      'type' => MENU_LOCAL_ACTION,
-      'weight' => '80',
-    );
-  }
+  $items['biblio/export/%/%'] = array(
+    'title' => t('Export biblio'),
+    'description callback' => 'biblio_ui_description_callback',
+    'description arguments' => array(1, 'export'),
+    'access callback' => 'biblio_ui_export_access',
+    'access arguments' => array(2, 'view biblio'),
+    'page callback' => 'biblio_ui_export_biblio',
+    'page arguments' => array(2, 3),
+  );
 
   if (module_exists('devel')) {
     $items['biblio/%biblio/devel'] = array(
@@ -100,7 +86,7 @@ function biblio_ui_menu() {
       'type' => MENU_LOCAL_TASK,
       'file' => 'devel.pages.inc',
       'file path' => drupal_get_path('module', 'devel'),
-      'weight' => 90,
+      'weight' => 80,
     );
   }
 
@@ -868,6 +854,20 @@ function biblio_ui_contributor_delete_form_submit($form, &$form_state) {
 }
 
 /**
+ * Allow export based on existing Biblio style and user access.
+ *
+ * @param $style_name
+ *   Biblio style name.
+ * @param $access_string
+ *   User access permission.
+ *
+ * @return bool
+ */
+function biblio_ui_export_access($style_name, $access_string) {
+  return (biblio_get_biblio_style($style_name) && user_access($access_string));
+}
+
+/**
  * Export a biblio entity to a file by a given format.
  *
  * @param array $biblio
@@ -877,20 +877,21 @@ function biblio_ui_contributor_delete_form_submit($form, &$form_state) {
  *
  * @throws Exception
  */
-function biblio_ui_export_biblio($biblio = array(), $style_name = 'bibtex') {
-  if (!$plugin = biblio_get_biblio_style($style_name)) {
-    // @todo: Add own exception.
-    throw new Exception(format_string('Biblio style "@style" does not exist.', array('@style' => $style_name)));
-  }
+function biblio_ui_export_biblio($style_name, $bids = NULL) {
+  $plugin = biblio_get_biblio_style($style_name);
+  $filename = $style_name . '.' . $plugin['export extension'];
 
   $for_print = array();
-  if ($biblio) {
-    $filename = $biblio->title . "-" . $style_name . '.' . $plugin['export extension'];
-    $for_print[] = $biblio;
+  if ($bids == 'all') {
+    $for_print = biblio_load_multiple(FALSE);
   }
   else {
-    $filename = $style_name . '.' . $plugin['export extension'];
-    $for_print = biblio_load_multiple(FALSE);
+    foreach (explode(',', $bids) as $bid) {
+      $biblio = biblio_load($bid);
+      if ($biblio) {
+        $for_print[] = $biblio;
+      }
+    }
   }
 
   drupal_add_http_header('Content-type', 'application/text; charset=utf-8');
