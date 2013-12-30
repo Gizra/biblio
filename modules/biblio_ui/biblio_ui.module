@@ -1035,8 +1035,8 @@ function biblio_ui_contributor_delete_form_submit($form, &$form_state) {
  *
  * @param $style_name
  *   Biblio style name.
- * @param $access_string
- *   User access permission.
+ * @param $bids
+ *   String of comma separated Biblio IDs.
  *
  * @return bool
  */
@@ -1065,7 +1065,7 @@ function biblio_ui_export_access($style_name, $bids) {
  *   Biblio style string.
  *
  * @param string $bids
- *   Comma-separated list of biblio ids.
+ *   Comma-separated list of Biblio IDs.
  */
 function biblio_ui_export($style_name, $bids) {
   $plugin = biblio_get_biblio_style($style_name);
@@ -1083,7 +1083,7 @@ function biblio_ui_export($style_name, $bids) {
  * Load Biblio entities from string of comma separated IDs.
  *
  * @param $bids_string
- *   Comma-separated list of Biblio ids.
+ *   Comma-separated list of Biblio IDs.
  *
  * @return array|bool
  *   Array of loaded Biblio, or FALSE if none found.
@@ -1091,6 +1091,13 @@ function biblio_ui_export($style_name, $bids) {
 function biblio_ui_load_biblios_from_string($bids_string = '') {
   if (!$bids = explode(',', $bids_string)) {
     return;
+  }
+
+  // Verify each item is a number.
+  foreach ($bids as $bid) {
+    if (!is_numeric($bid)) {
+      return;
+    }
   }
 
   return biblio_load_multiple($bids);
