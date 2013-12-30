@@ -74,8 +74,6 @@ class BiblioStyleBibtex extends BiblioStyleBase implements BiblioStyleImportInte
     $this->importKeywordsList($wrapper, explode(',', $keywords));
   }
 
-
-
   /**
    * Import a generic property.
    *
