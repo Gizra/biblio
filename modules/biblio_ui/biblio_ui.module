@@ -67,6 +67,16 @@ function biblio_ui_menu() {
     'weight' => '70',
   );
 
+  $items['biblio/export/%/%'] = array(
+    'title' => t('Export biblio'),
+    'description callback' => 'biblio_ui_description_callback',
+    'description arguments' => array(1, 'export'),
+    'access callback' => 'biblio_ui_export_access',
+    'access arguments' => array(2, 3),
+    'page callback' => 'biblio_ui_export',
+    'page arguments' => array(2, 3),
+  );
+
   if (module_exists('devel')) {
     $items['biblio/%biblio/devel'] = array(
       'title' => 'Devel',
@@ -314,8 +324,19 @@ function biblio_ui_permission() {
  *  The title which the page should present.
  */
 function biblio_ui_description_callback($biblio, $action) {
+  switch ($action) {
+    case "edit":
+      $action_string = "Editing";
+      break;
+    case "delete":
+      $action_string = "Deleting";
+      break;
+    case "export":
+      $action_string = "Exporting";
+      break;
+  }
   return t('@action @title', array(
-    '@action' => $action == 'edit' ? 'Editing' : 'Deleting',
+    '@action' => $action_string,
     '@title' => $biblio->title,
   ));
 }
@@ -1007,4 +1028,77 @@ function biblio_ui_contributor_delete_form_submit($form, &$form_state) {
   $contributor->delete();
 
   $form_state['redirect'] = 'admin/biblio-contributor';
+}
+
+/**
+ * Menu access; Allow export based on existing Biblio style and user access.
+ *
+ * @param $style_name
+ *   Biblio style name.
+ * @param $bids
+ *   String of comma separated Biblio IDs.
+ *
+ * @return bool
+ */
+function biblio_ui_export_access($style_name, $bids) {
+  if (!user_access('view biblio')) {
+    // User can't view Biblios.
+    return;
+  }
+
+  if (!biblio_get_biblio_style($style_name)) {
+    // Style name doesn't exist.
+    return;
+  }
+
+  if (!biblio_ui_load_biblios_from_string($bids)) {
+    // No Biblios found on string.
+    return;
+  }
+  return TRUE;
+}
+
+/**
+ * Export a biblio entity to a file by a given format.
+ *
+ * @param string $style_name
+ *   Biblio style string.
+ *
+ * @param string $bids
+ *   Comma-separated list of Biblio IDs.
+ */
+function biblio_ui_export($style_name, $bids) {
+  $plugin = biblio_get_biblio_style($style_name);
+  $filename = $style_name . '.' . $plugin['export extension'];
+
+  drupal_add_http_header('Content-type', 'application/text; charset=utf-8');
+  drupal_add_http_header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+
+  foreach (biblio_ui_load_biblios_from_string($bids) as $biblio) {
+    print_r($biblio->getText($style_name));
+  }
+}
+
+/**
+ * Load Biblio entities from string of comma separated IDs.
+ *
+ * @param $bids_string
+ *   Comma-separated list of Biblio IDs.
+ *
+ * @return array|bool
+ *   Array of loaded Biblio, or FALSE if none found.
+ */
+function biblio_ui_load_biblios_from_string($bids_string = '') {
+  if (!$bids = explode(',', $bids_string)) {
+    return;
+  }
+
+  // Verify each item is a number.
+  foreach ($bids as $bid) {
+    if (!is_numeric($bid)) {
+      return;
+    }
+  }
+
+  return biblio_load_multiple($bids);
 }
