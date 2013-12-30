@@ -36,13 +36,19 @@ function biblio_views_default_views() {
   $handler->display->display_options['pager']['options']['quantity'] = '9';
   $handler->display->display_options['style_plugin'] = 'list';
   $handler->display->display_options['row_plugin'] = 'fields';
+  /* Header: Biblio: Biblio export UI */
+  $handler->display->display_options['header']['biblio_export']['id'] = 'biblio_export';
+  $handler->display->display_options['header']['biblio_export']['table'] = 'biblio';
+  $handler->display->display_options['header']['biblio_export']['field'] = 'biblio_export';
+  $handler->display->display_options['header']['biblio_export']['label'] = '';
+  $handler->display->display_options['header']['biblio_export']['empty'] = TRUE;
   /* Field: Biblio: Render bilbio (Get text) */
   $handler->display->display_options['fields']['biblio_render']['id'] = 'biblio_render';
   $handler->display->display_options['fields']['biblio_render']['table'] = 'biblio';
   $handler->display->display_options['fields']['biblio_render']['field'] = 'biblio_render';
   $handler->display->display_options['fields']['biblio_render']['label'] = '';
   $handler->display->display_options['fields']['biblio_render']['element_label_colon'] = FALSE;
-  /* Sort criterion: Biblio: Issued (biblio_year) */
+  /* Sort criterion: Biblio: Year of Publication (biblio_year) */
   $handler->display->display_options['sorts']['biblio_year_value']['id'] = 'biblio_year_value';
   $handler->display->display_options['sorts']['biblio_year_value']['table'] = 'field_data_biblio_year';
   $handler->display->display_options['sorts']['biblio_year_value']['field'] = 'biblio_year_value';
