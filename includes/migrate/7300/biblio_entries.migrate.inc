@@ -65,6 +65,9 @@ class BiblioMigrateEntries extends Migration {
 
     $fields = array_merge($fields, array('title', 'uid', 'created', 'changed'));
 
+    // Remove these fields which have a different name now.
+    $fields = array_diff($fields, array('biblio_abst_e', 'biblio_type'));
+    
     $this->addSimpleMappings($fields);
 
     $source_key = array(
