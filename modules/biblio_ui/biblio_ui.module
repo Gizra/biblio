@@ -912,7 +912,7 @@ function biblio_ui_export($style_name, $bids) {
  */
 function _biblio_ui_load_biblios($bids) {
   if (!$bids) {
-    return FALSE:
+    return FALSE;
   }
   $biblios = array();
   foreach (explode(',', $bids) as $bid) {
