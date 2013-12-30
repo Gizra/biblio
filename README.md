@@ -62,6 +62,7 @@ $new_biblio = $biblios['new'][0];
 ### Create/Load Biblio Contributor API
 
 Creation and loading of Biblio Contributors are done the same way.
+
 The method ``BiblioContributorUtility::getBiblioContributorsFromNames()`` accepts a string
 of contributors' names seperated by the word "and" or the sign "&",
 and returns an array of Biblio Contributor objects, saved and ready to use.
