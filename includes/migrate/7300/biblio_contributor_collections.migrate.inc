@@ -8,7 +8,7 @@ class BiblioMigrateContributorCollections extends Migration {
     'BiblioMigrateEntries',
   );
 
-  public function __construct() {
+  public function __construct($arguments = array()) {
     $this->description = t('Migrate biblio 1.x contributors into field collections.');
 
     // Fetch the used contributor types.
@@ -17,7 +17,7 @@ class BiblioMigrateContributorCollections extends Migration {
     $this->query->fields('c', array('nid', 'cid', 'auth_type'));
     $this->query->addField('ctd', 'title', 'role');
 
-    parent::__construct();
+    parent::__construct($arguments);
 
     $source_key = array(
       'nid' => array(

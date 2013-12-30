@@ -6,7 +6,7 @@
 
 class BiblioMigrateTypes extends Migration {
 
-  public function __construct() {
+  public function __construct($arguments = array()) {
     $this->description = t('Migrate biblio 1.x entry types.');
 
     // Select the only the types that were in use in the 1.x biblio.
@@ -14,7 +14,7 @@ class BiblioMigrateTypes extends Migration {
     $this->query->innerJoin('_biblio_1x', 'b', 'biblio_type = tid');
     $this->query->distinct();
 
-    parent::__construct();
+    parent::__construct($arguments);
 
     $source_key = array(
       'tid' => array(

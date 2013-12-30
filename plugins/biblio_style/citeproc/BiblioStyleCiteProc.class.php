@@ -27,7 +27,16 @@ class BiblioStyleCiteProc extends BiblioStyleBase {
 
     // Pass CiteProc the mapped biblio.
     $mapped_data = $this->map();
-    return $citeproc->render($mapped_data);
+
+    $output =  $citeproc->render($mapped_data);
+
+    if (!empty($this->plugin['options']['label_as_link'])) {
+      // Show label as link.
+      $url = entity_uri('biblio', $this->biblio);
+      $output = str_replace($mapped_data->title, l($mapped_data->title, $url['path'], $url['options']), $output);
+    }
+
+    return $output;
   }
 
 
