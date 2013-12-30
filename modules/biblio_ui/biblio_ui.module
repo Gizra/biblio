@@ -1085,7 +1085,7 @@ function biblio_ui_export($style_name, $bids) {
  *   entities if ok.
  */
 function biblio_ui_load_biblios_from_string($bids_string = '') {
-  if ($bids = explode(',', $bids_string)) {
+  if (!$bids = explode(',', $bids_string)) {
     return;
   }
 
