@@ -510,7 +510,7 @@ function biblio_load_multiple($bids = array(), $reset = FALSE) {
  *   The name of the contributor. If given, this function will parse out the
  *   author name and automatically fill in any associated fields (first name,
  *   last name, initials, etc.) and the type
- * @param array  $values
+ * @param array $values
  *
  * @return object
  *  The contributor entity object
@@ -671,9 +671,7 @@ function biblio_fields_info($field_name = NULL) {
  * @todo: Make the bundles configurable?
  */
 function biblio_add_publication_types($types = array()) {
-  $default_types = biblio_types();
-
-  foreach ($default_types as $type => $info) {
+  foreach (biblio_get_types_info() as $type => $info) {
 
     if ($types && !in_array($type, $types)) {
       // The type was not specified in the list of types to enable. Skipping.

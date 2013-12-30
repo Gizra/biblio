@@ -16,14 +16,13 @@ class BiblioImportAndRenderTestCase extends DrupalWebTestCase {
   function setUp() {
     parent::setUp('biblio');
 
-    biblio_add_publication_types();
     biblio_create_fields_by_bundle(array('book', 'journal'));
   }
 
   /**
    * Test BibTex.
    */
-  function __testBibTex() {
+  function testBibTex() {
     $data = '
 @Book{abramowitz+stegun,
   author    = "Milton {Abramowitz} and Irene A. {Stegun}",
@@ -59,7 +58,7 @@ class BiblioImportAndRenderTestCase extends DrupalWebTestCase {
   /**
    * Test end note tagged.
    */
-  function __testEndNoteTagged() {
+  function testEndNoteTagged() {
     $data = '
 %0 Book
 %A Gary King
@@ -88,5 +87,35 @@ class BiblioImportAndRenderTestCase extends DrupalWebTestCase {
     $output = $biblio->getText('endnote', array('type' => 'tagged'));
 
     $this->assertEqual(trim($output), trim($expected_result), 'EndNote render is equal to the expected result');
+  }
+
+  /**
+   * Test preventing duplicate biblios, using BibTex import.
+   */
+  function testMd5() {
+    $data = '
+@Book{abramowitze+stegune,
+  author    = "Hilton {Abramowitze} and Serene A. {Stegune}",
+  title     = "Handbook of Mathematical Functions with Formulas, Graphs, and Mathematical Tables",
+  publisher = "Dover",
+  year      =  1982,
+  address   = "Los Angeles",
+  edition   = "ninth Dover printing, tenth GPO printing"
+}';
+
+    ctools_include('plugins');
+    $plugin = biblio_get_biblio_style('bibtex');
+    $class = ctools_plugin_load_class('biblio', 'biblio_style', 'bibtex', 'class');
+
+    // Import the data to create a new biblio.
+    $biblio_style1 = new $class($plugin);
+    $biblio_style1->import($data);
+
+    // Import the same data again, to make sure it is not created again and that
+    // instead the previous biblio is returned.
+    $biblio_style2 = new $class($plugin);
+    $biblios2 = $biblio_style2->import($data);
+
+    $this->assertTrue(empty($biblios2['new']) && !empty($biblios2['duplicate']), 'Biblio duplication was successfully prevented.');
   }
 }
