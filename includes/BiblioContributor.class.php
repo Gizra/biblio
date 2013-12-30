@@ -15,18 +15,18 @@ class BiblioContributor {
    * @return
    *  Array of saved contributor objects.
    */
-  public function getBiblioContributorsFromNames($names) {
+  public static function getBiblioContributorsFromNames($names) {
     // Split names.
     $names = preg_split("/(and|&)/i", trim($names));
 
     $contributors = array();
     foreach ($names as $name) {
       // Parse contributor's name to get each part separately.
-      $values = $this->parseContributorName($name);
+      $values = BiblioContributor::parseContributorName($name);
 
       // Get existing Biblio Contributor object, save it if it doesn't exist.
       $biblio_contributor = biblio_contributor_create($values);
-      $biblio_contributor = $this->getBiblioContributor($biblio_contributor);
+      $biblio_contributor = BiblioContributor::getBiblioContributor($biblio_contributor);
 
       $contributors[] = $biblio_contributor;
     }
@@ -43,7 +43,7 @@ class BiblioContributor {
    * @return
    *  Array of parsed name, ready for creating a contributor.
    */
-  public function parseContributorName($full_name) {
+  public static function parseContributorName($full_name) {
 
     // @todo
     /*if (isset($contributor_array['auth_category']) && $contributor_array['auth_category'] == 5) {
@@ -96,7 +96,7 @@ class BiblioContributor {
       // 'Bush, George W', 'de la Bush, George W' etc.
 
       // Get last name and prefix separately.
-      list ($lastname, $prefix) = $this->getLastname(array_shift($name_parts));
+      list ($lastname, $prefix) = BiblioContributor::getLastname(array_shift($name_parts));
     }
     else {
       // There are 2 commas in full name, such as in 'Bush, Jr. III, George W'.
@@ -105,13 +105,13 @@ class BiblioContributor {
       $appellation = implode(' ', array_splice($name_parts, 1, 1));
 
       // Get last name and prefix separately.
-      list($lastname, $prefix) = $this->getLastname(array_shift($name_parts));
+      list($lastname, $prefix) = BiblioContributor::getLastname(array_shift($name_parts));
     }
 
     // After removing the last name, prefix and appellation from the full name,
     // we are left with first name and initials, and perhaps last name prefix.
     $remainder = implode(' ', $name_parts);
-    list($firstname, $initials, $prefix2) = $this->getFirstnameInitials($remainder);
+    list($firstname, $initials, $prefix2) = BiblioContributor::getFirstnameInitials($remainder);
 
     if (!empty($prefix2)) {
       // Found a prefix in remainder, add it to the last name prefix.
@@ -137,7 +137,7 @@ class BiblioContributor {
    * @return
    *   Array with three separated strings: first name, initials and prefix.
    */
-  public function getFirstnameInitials($value) {
+  public static function getFirstnameInitials($value) {
     $prefix = array();
     $firstname = array();
     $initials = array();
@@ -182,7 +182,7 @@ class BiblioContributor {
    * @return
    *   Array with two separated strings: last name and last name prefix.
    */
-  public function getLastname($value) {
+  public static function getLastname($value) {
     $prefix  = array();
     $lastname = array();
 
@@ -244,8 +244,8 @@ class BiblioContributor {
    * @return
    *  Saved Biblio Contributor object.
    */
-  public function getBiblioContributor(BiblioContributor $biblio_contributor) {
-    $md5 = $this->generateBiblioContributorMd5($biblio_contributor);
+  public static function getBiblioContributor(BiblioContributor $biblio_contributor) {
+    $md5 = BiblioContributor::generateBiblioContributorMd5($biblio_contributor);
 
     $query = new EntityFieldQuery();
     $result = $query
