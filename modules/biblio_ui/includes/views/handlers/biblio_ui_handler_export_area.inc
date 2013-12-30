@@ -1,5 +1,5 @@
 <?php
-class yourmodule_handler_collapsible_area_text extends views_handler_area_text {
+class biblio_ui_handler_export_area extends views_handler_area {
   function render($empty = FALSE) {
 // Here you just return a string of your content you want.
     if ($render = parent::render($empty)) {
@@ -8,7 +8,7 @@ class yourmodule_handler_collapsible_area_text extends views_handler_area_text {
         '#title' => t('Title'),
         '#value' => $render,
       );
-      $output = theme('fieldset', $element);
+      $output = "hello world";//theme('fieldset', $element);
       return $output;
     }
   }
