@@ -870,12 +870,11 @@ function biblio_ui_export_access($style_name, $access_string) {
 /**
  * Export a biblio entity to a file by a given format.
  *
- * @param array $biblio
- *   An array of biblio entities.
  * @param string $style_name
- *   A style plugin name.
+ *   Biblio style string.
  *
- * @throws Exception
+ * @param string $bids
+ *   Comma-separated list of biblio ids.
  */
 function biblio_ui_export_biblio($style_name, $bids = NULL) {
   $plugin = biblio_get_biblio_style($style_name);
