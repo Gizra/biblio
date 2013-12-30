@@ -1066,15 +1066,11 @@ function biblio_ui_export($style_name, $bids) {
   $plugin = biblio_get_biblio_style($style_name);
   $filename = $style_name . '.' . $plugin['export extension'];
 
-  $for_print = _biblio_ui_load_biblios($bids);
-
   drupal_add_http_header('Content-type', 'application/text; charset=utf-8');
   drupal_add_http_header('Content-Disposition', 'attachment; filename="' . $filename . '"');
 
-  if ($for_print) {
-    foreach ($for_print as $biblio) {
-      print_r($biblio->getText($style_name));
-    }
+  foreach (_biblio_ui_load_biblios($bids) as $biblio) {
+    print_r($biblio->getText($style_name));
   }
 }
 
