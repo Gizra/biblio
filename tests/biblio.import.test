@@ -16,7 +16,6 @@ class BiblioImportAndRenderTestCase extends DrupalWebTestCase {
   function setUp() {
     parent::setUp('biblio');
 
-    biblio_add_publication_types();
     biblio_create_fields_by_bundle(array('book', 'journal'));
   }
 
