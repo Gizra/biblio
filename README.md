@@ -92,7 +92,7 @@ $contributors = BiblioContributorUtility::getBiblioContributorsFromNames($names)
   $biblio->getText('citeproc');
 ```
 
-### Example moudle
+### Example module
 
 For more useful examples, we recommend enabling the module ``biblio_example``.
 
