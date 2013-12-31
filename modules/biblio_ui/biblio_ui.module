@@ -77,6 +77,16 @@ function biblio_ui_menu() {
     'page arguments' => array(2, 3),
   );
 
+  $items['biblio/export_view/%/%'] = array(
+    'title' => t('Export biblio by view'),
+    'description callback' => 'biblio_ui_description_callback',
+    'description arguments' => array(1, 'export'),
+    'access callback' => 'biblio_ui_export_view_access',
+    'access arguments' => array(2, 3),
+    'page callback' => 'biblio_ui_export_view',
+    'page arguments' => array(2, 3),
+  );
+
   if (module_exists('devel')) {
     $items['biblio/%biblio/devel'] = array(
       'title' => 'Devel',
@@ -1059,6 +1069,24 @@ function biblio_ui_export_access($style_name, $bids) {
   return TRUE;
 }
 
+function biblio_ui_export_view_access($style_name, $view_name) {
+  if (!user_access('view biblio')) {
+    // User can't view Biblios.
+    return;
+  }
+
+  if (!biblio_get_exportable_biblio_style($style_name)) {
+    // Style name doesn't exist.
+    return;
+  }
+
+  if (!biblio_ui_check_view($view_name)) {
+    // The given view does not fit for biblio.
+    return;
+  }
+  return TRUE;
+}
+
 /**
  * Export a biblio entity to a file by a given format.
  *
@@ -1078,6 +1106,12 @@ function biblio_ui_export($style_name, $bids) {
   foreach (biblio_ui_load_biblios_from_string($bids) as $biblio) {
     print_r($biblio->getText($style_name));
   }
+}
+
+function biblio_ui_export_view($style_name, $view_name) {
+  $bids = array();
+  $view = views_get_view($view_name);
+  biblio_ui_export($style_name, $bids);
 }
 
 /**
@@ -1102,6 +1136,14 @@ function biblio_ui_load_biblios_from_string($bids_string = '') {
   }
 
   return biblio_load_multiple($bids);
+}
+
+function biblio_ui_check_view($view_name) {
+  $view = views_get_view($view_name);
+  if (!view) {
+    return;
+  }
+  // @todo - check it provides biblios
 }
 
 /**
