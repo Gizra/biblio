@@ -199,6 +199,10 @@ function biblio_biblio_fields_info() {
       'legal_ruling' => array(),
       'magazine_article' => array(),
       'manuscript' => array(),
+      'map' => array(),
+      'miscellaneous' => array(),
+      'miscellaneous_section' => array(),
+      'newspaper_article' => array(),
     ),
   );
 
@@ -329,6 +333,7 @@ function biblio_biblio_fields_info() {
         'label' => 'Section Number',
       ),
       'magazine_article' => array(),
+      'newspaper_article' => array(),
     ),
   );
 
@@ -411,11 +416,14 @@ function biblio_biblio_fields_info() {
       'legal_ruling' => array(
         'label' => 'Session Number',
       ),
-      'magazine_aticle' => array(
+      'magazine_article' => array(
         'label' => 'Frequency',
       ),
       'manuscript' => array(
         'label' => 'Manuscript Number',
+      ),
+      'newspaper_article' => array(
+        'label' => 'Frequency',
       ),
     ),
   );
@@ -472,6 +480,9 @@ function biblio_biblio_fields_info() {
       ),
       'manuscript' => array(
         'label' => 'Folio Number',
+      ),
+      'newspaper_article' => array(
+        'label' => 'Start Page',
       ),
     ),
   );
@@ -544,9 +555,48 @@ function biblio_biblio_fields_info() {
       'manuscript' => array(
         'label' => 'Pagination',
       ),
+      'map' => array(
+        'label' => 'Description',
+      ),
+      'newspaper_article' => array(
+        'label' => 'Pagination',
+      ),
     ),
   );
 
+  // Date.
+  $items['biblio_date'] = array(
+    'field' => array(
+      'cardinality' => '1',
+      'field_name' => 'biblio_date',
+      'module' => 'text',
+      'settings' => array(
+        'max_length' => '255',
+      ),
+      'type' => 'text',
+    ),
+    'instance' => array(
+      'label' => 'Date Published',
+      'settings' => array(
+        'text_processing' => '0',
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'text',
+        'settings' => array(
+          'size' => '60',
+        ),
+        'type' => 'text_textfield',
+        'weight' => '-3',
+      ),
+    ),
+    'bundles_info' => array(
+      'newspaper_article' => array(
+        'label' => 'Issue Date',
+      ),
+    ),
+  );
 
   // Reprint edition.
   $items['biblio_reprint_edition'] = array(
@@ -581,6 +631,7 @@ function biblio_biblio_fields_info() {
       'classical' => array(),
       'journal_article' => array(),
       'magazine_article' => array(),
+      'newspaper_article' => array(),
     ),
   );
 
@@ -632,6 +683,10 @@ function biblio_biblio_fields_info() {
       'legal_ruling' => array(),
       'magazine_article' => array(),
       'manuscript' => array(),
+      'map' => array(),
+      'miscellaneous' => array(),
+      'miscellaneous_section' => array(),
+      'newspaper_article' => array(),
     ),
   );
 
@@ -685,6 +740,10 @@ function biblio_biblio_fields_info() {
       'legal_ruling' => array(),
       'magazine_article' => array(),
       'manuscript' => array(),
+      'map' => array(),
+      'miscellaneous' => array(),
+      'miscellaneous_section' => array(),
+      'newspaper_article' => array(),
     ),
   );
 
@@ -724,6 +783,14 @@ function biblio_biblio_fields_info() {
         'label' => 'Document Number',
       ),
       'magazine_article' => array(
+        'label' => 'ISSN',
+      ),
+      'map' => array(
+        'label' => 'ISSN',
+      ),
+      'miscellaneous' => array(),
+      'miscellaneous_section' => array(),
+      'newspaper_article' => array(
         'label' => 'ISSN',
       ),
     ),
@@ -779,6 +846,11 @@ function biblio_biblio_fields_info() {
       'legal_ruling' => array(),
       'magazine_article' => array(),
       'manuscript' => array(),
+      'manuscript' => array(),
+      'map' => array(),
+      'miscellaneous' => array(),
+      'miscellaneous_section' => array(),
+      'newspaper_article' => array(),
     ),
   );
 
@@ -1049,7 +1121,7 @@ function biblio_biblio_fields_info() {
       'type' => 'text',
     ),
     'instance' => array(
-      'label' => 'Short title',
+      'label' => 'Short Title',
       'settings' => array(
         'text_processing' => '0',
         'user_register_form' => FALSE,
@@ -1080,6 +1152,8 @@ function biblio_biblio_fields_info() {
       'journal_article' => array(),
       'magazine_article' => array(),
       'manuscript' => array(),
+      'map' => array(),
+      'newspaper_article' => array(),
     )
   );
 
@@ -1133,6 +1207,7 @@ function biblio_biblio_fields_info() {
       'manuscript' => array(
         'label' => 'Abbreviation',
       ),
+      'map' => array(),
     ),
   );
 
@@ -1187,6 +1262,12 @@ function biblio_biblio_fields_info() {
         'label' => 'Type of Article',
       ),
       'manuscript' => array(),
+      'map' => array(
+        'label' => 'Type',
+      ),
+      'newspaper_article' => array(
+        'label' => 'Type of Article',
+      ),
     ),
   );
 
@@ -1240,6 +1321,10 @@ function biblio_biblio_fields_info() {
       'legal_ruling' => array(),
       'magazine_article' => array(),
       'manuscript' => array(),
+      'map' => array(),
+      'miscellaneous' => array(),
+      'miscellaneous_section' => array(),
+      'newspaper_article' => array(),
     ),
   );
 
@@ -1345,6 +1430,10 @@ function biblio_biblio_fields_info() {
       'legal_ruling' => array(),
       'magazine_article' => array(),
       'manuscript' => array(),
+      'map' => array(),
+      'miscellaneous' => array(),
+      'miscellaneous_section' => array(),
+      'newspaper_article' => array(),
     )
   );
 
@@ -1395,6 +1484,12 @@ function biblio_biblio_fields_info() {
         'label' => 'City',
       ),
       'manuscript' => array(
+        'label' => 'City',
+      ),
+      'map' => array(
+        'label' => 'City',
+      ),
+      'newspaper_article' => array(
         'label' => 'City',
       ),
     ),
@@ -1448,6 +1543,7 @@ function biblio_biblio_fields_info() {
       'manuscript' => array(
         'label' => 'Library/Archive',
       ),
+      'map' => array(),
     ),
   );
 
@@ -1497,6 +1593,7 @@ function biblio_biblio_fields_info() {
       ),
       'legal_ruling' => array(),
       'magazine_article' => array(),
+      'newspaper_article' => array(),
     ),
   );
 
@@ -1573,6 +1670,12 @@ function biblio_biblio_fields_info() {
       ),
       'manuscript' => array(
         'label' => 'Collection Title',
+      ),
+      'map' => array(
+        'label' => 'Series Title',
+      ),
+      'newspaper_article' => array(
+        'label' => 'Newspaper',
       ),
     ),
   );
@@ -1673,6 +1776,8 @@ function biblio_biblio_fields_info() {
       'legal_ruling' => array(),
       'magazine_article' => array(),
       'manuscript' => array(),
+      'map' => array(),
+      'newspaper_article' => array(),
     ),
   );
 
@@ -1721,6 +1826,7 @@ function biblio_biblio_fields_info() {
       ),
       'journal_article' => array(),
       'magazine_article' => array(),
+      'newspaper_article' => array(),
     ),
   );
 
@@ -1778,6 +1884,40 @@ function biblio_biblio_fields_info() {
         ),
         'type' => 'text_textfield',
         'weight' => '-3',
+      ),
+    ),
+  );
+
+  // Custom1.
+  $items['biblio_custom1'] = array(
+    'field' => array(
+      'cardinality' => '1',
+      'field_name' => 'biblio_custom1',
+      'module' => 'text',
+      'settings' => array(
+        'max_length' => '255',
+      ),
+      'type' => 'text',
+    ),
+    'instance' => array(
+      'label' => 'Custom 1',
+      'settings' => array(
+        'text_processing' => '0',
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'text',
+        'settings' => array(
+          'size' => '60',
+        ),
+        'type' => 'text_textfield',
+        'weight' => '-3',
+      ),
+    ),
+    'bundles_info' => array(
+      'map' => array(
+        'label' => 'Scale',
       ),
     ),
   );
