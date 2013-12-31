@@ -4,6 +4,6 @@ class biblio_ui_handler_export_area extends views_handler_area {
     $variables = array();
     $variables['view_name'] = $this->view->name;
     $variables['display_name'] = $this->view->current_display;
-    return theme('biblio_ui_export_area', $variables);
+    return theme('biblio_ui_view_export_area', $variables);
   }
 }

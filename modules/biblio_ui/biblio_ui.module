@@ -288,7 +288,8 @@ function biblio_ui_theme() {
   return array(
     'biblio_ui_add_biblio_list' => array(),
     'biblio_ui_bundle_overview' => array(),
-    'biblio_ui_export_area' => array(),
+    'biblio_ui_view_export_area' => array(),
+    'biblio_ui_entity_export_area' => array(),
   );
 }
 
@@ -1220,9 +1221,9 @@ function biblio_ui_is_biblio_view($view_name, $display_name) {
 }
 
 /**
- * Theme callback - display a button for export.
+ * Theme callback - display a button for export in a View.
  */
-function theme_biblio_ui_export_area($variables) {
+function theme_biblio_ui_view_export_area($variables) {
   $title = t('Export');
   $links = array();
   foreach (biblio_get_exportable_biblio_styles() as $style_name => $style) {
@@ -1241,4 +1242,50 @@ function theme_biblio_ui_export_area($variables) {
     'attributes' => array('class' => array('biblio-export-buttons')),
   );
   return theme('ctools_dropdown', $attributes);
+}
+
+/**
+ * Theme callback - display a button for export in Biblio entity.
+ */
+function theme_biblio_ui_entity_export_area($variables) {
+  $title = t('Export');
+  $links = array();
+  foreach (biblio_get_exportable_biblio_styles() as $style_name => $style) {
+    $links[$style_name] = array(
+      'href' => 'biblio/export/' . $style_name . '/' . $variables['bid'],
+      'title' => $style['title'],
+      'attributes' => array(
+        'title' => t('Click to download Biblio in @format format', array('@format' => $style_name)),
+      ),
+    );
+  }
+
+  $attributes = array(
+    'links' => $links,
+    'title' => $title,
+    'attributes' => array('class' => array('biblio-export-buttons')),
+  );
+  return theme('ctools_dropdown', $attributes);
+}
+
+/**
+ * Implementing hook_entity_view_alter().
+ * Used to add the Biblio export to the full view of a Biblio entity.
+ *
+ * @param $build
+ * @param $type
+ */
+function biblio_ui_biblio_view_alter(&$build, $type) {
+  if ($build['#view_mode'] != 'full') {
+    return;
+  }
+  $biblio = $build['#entity'];
+
+  $variables = array();
+  $variables['bid'] = $biblio->bid;
+
+  $build['export_form'] = array(
+    '#weight' => -10,
+    '#markup' => theme('biblio_ui_entity_export_area', $variables),
+  );
 }
