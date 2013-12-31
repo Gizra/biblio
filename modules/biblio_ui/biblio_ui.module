@@ -1204,8 +1204,7 @@ function biblio_ui_get_ids_from_string($bids_string = '') {
  * @return bool
  */
 function biblio_ui_is_biblio_view($view_name, $display_name) {
-  $view = views_get_view($view_name);
-  if (!$view) {
+  if (!$view = views_get_view($view_name)) {
     // View does not exist.
     return;
   }
