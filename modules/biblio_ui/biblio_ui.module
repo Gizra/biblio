@@ -1108,7 +1108,7 @@ function biblio_ui_export_view_access($style_name, $view_name, $display_name) {
  *
  * @param string $bids
  *   Comma-separated list of Biblio IDs.
- * @todo: if we won't use it directly, we rather get $bids as an array or ids
+ * @todo: if we won't use it directly, we rather get $bids as an array of ids.
  */
 function biblio_ui_export($style_name, $bids) {
   $plugin = biblio_get_exportable_biblio_style($style_name);
@@ -1204,7 +1204,6 @@ function theme_biblio_ui_export_area($variables) {
   $title = t('Export');
   $links = array();
   foreach (biblio_get_exportable_biblio_styles() as $style_name => $style) {
-    // @todo: right entity ids, proper link (consider base ?)
     $links[$style_name] = array(
       'href' => 'biblio/export_view/' . $style_name . '/' . $variables['view_name'] . '/' . $variables['display_name'],
       'title' => $style['title'],
