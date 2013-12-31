@@ -3,7 +3,7 @@
 /**
  * Test Render of CiteProc style plugin.
  */
-class CiteProcRenderTestCase extends DrupalWebTestCase {
+class BiblioCiteProcTestCase extends DrupalWebTestCase {
 
   /**
    * The Biblio object.
