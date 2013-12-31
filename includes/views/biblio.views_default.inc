@@ -48,7 +48,7 @@ function biblio_views_default_views() {
   $handler->display->display_options['fields']['biblio_render']['field'] = 'biblio_render';
   $handler->display->display_options['fields']['biblio_render']['label'] = '';
   $handler->display->display_options['fields']['biblio_render']['element_label_colon'] = FALSE;
-  /* Sort criterion: Biblio: Year of Publication (biblio_year) */
+  /* Sort criterion: Biblio: Issued (biblio_year) */
   $handler->display->display_options['sorts']['biblio_year_value']['id'] = 'biblio_year_value';
   $handler->display->display_options['sorts']['biblio_year_value']['table'] = 'field_data_biblio_year';
   $handler->display->display_options['sorts']['biblio_year_value']['field'] = 'biblio_year_value';
