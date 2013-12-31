@@ -1,0 +1,66 @@
+<?php
+
+/**
+ * Test Render of CiteProc style plugin.
+ */
+class CiteProcRenderTestCase extends DrupalWebTestCase {
+
+  /**
+   * The Biblio object.
+   *
+   * @var Biblio
+   */
+  public $biblio = NULL;
+
+  public static function getInfo() {
+    return array(
+      'name' => 'CiteProc Render',
+      'description' => 'Test rendering of CiteProc.',
+      'group' => 'Biblio',
+    );
+  }
+
+  function setUp() {
+    parent::setUp('biblio');
+
+    biblio_create_fields_by_bundle(array('book', 'journal'));
+
+    // Create a new Biblio.
+    $data = '
+@Book{abramowitz+stegun,
+  author    = "Milton {Abramowitz} and Irene A. {Stegun}",
+  title     = "Handbook of Mathematical Functions with Formulas, Graphs, and Mathematical Tables",
+  publisher = "Dover",
+  year      =  1964,
+  address   = "New York",
+  edition   = "ninth Dover printing, tenth GPO printing"
+}';
+
+    $biblio_style = biblio_get_class_from_style('bibtex');
+
+    $biblios = $biblio_style->import($data);
+    $this->biblio = $biblios['new'][0];
+  }
+
+  /**
+   * Test rendering link as label.
+   */
+  function testRenderLink() {
+    $biblio = $this->biblio;
+    $style_name = 'citeproc';
+
+    $options = array('label_as_link' => FALSE);
+    $output = $biblio->getText($style_name, $options);
+    $matches = array();
+    preg_match('/<a href=".*Handbook Of Mathematical Functions With Formulas, Graphs, And Mathematical Tables<\/a>/i', $output, $matches);
+    $this->assertFalse($matches, 'CiteProc is render without label as link.');
+
+    $options = array('label_as_link' => TRUE);
+    $output = $biblio->getText($style_name, $options);
+    $matches = array();
+    preg_match('/<a href=".*Handbook Of Mathematical Functions With Formulas, Graphs, And Mathematical Tables<\/a>/i', $output, $matches);
+
+    $this->assertTrue($matches[0], 'CiteProc is render with label as link.');
+  }
+
+}
