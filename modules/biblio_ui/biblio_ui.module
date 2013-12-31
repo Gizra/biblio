@@ -77,14 +77,14 @@ function biblio_ui_menu() {
     'page arguments' => array(2, 3),
   );
 
-  $items['biblio/export_view/%/%'] = array(
+  $items['biblio/export_view/%/%/%'] = array(
     'title' => t('Export biblio by view'),
     'description callback' => 'biblio_ui_description_callback',
     'description arguments' => array(1, 'export'),
     'access callback' => 'biblio_ui_export_view_access',
-    'access arguments' => array(2, 3),
+    'access arguments' => array(2, 3, 4),
     'page callback' => 'biblio_ui_export_view',
-    'page arguments' => array(2, 3),
+    'page arguments' => array(2, 3, 4),
   );
 
   if (module_exists('devel')) {
@@ -1069,7 +1069,19 @@ function biblio_ui_export_access($style_name, $bids) {
   return TRUE;
 }
 
-function biblio_ui_export_view_access($style_name, $view_name) {
+
+/**
+ * Menu access; Allow export based on existing Biblio style and user access.
+ *
+ * @param $style_name
+ *   Biblio style name.
+ * @param $view_name
+ * @param $display_name
+ *   Biblio related view and display name.
+ *
+ * @return bool
+ */
+function biblio_ui_export_view_access($style_name, $view_name, $display_name) {
   if (!user_access('view biblio')) {
     // User can't view Biblios.
     return;
@@ -1080,10 +1092,11 @@ function biblio_ui_export_view_access($style_name, $view_name) {
     return;
   }
 
-  if (!biblio_ui_check_view($view_name)) {
-    // The given view does not fit for biblio.
+  if (!biblio_ui_check_view($view_name, $display_name)) {
+    // The given view/display does not fit for biblio.
     return;
   }
+
   return TRUE;
 }
 
@@ -1095,6 +1108,7 @@ function biblio_ui_export_view_access($style_name, $view_name) {
  *
  * @param string $bids
  *   Comma-separated list of Biblio IDs.
+ * @todo: if we won't use it directly, we rather get $bids as an array or ids
  */
 function biblio_ui_export($style_name, $bids) {
   $plugin = biblio_get_exportable_biblio_style($style_name);
@@ -1108,10 +1122,31 @@ function biblio_ui_export($style_name, $bids) {
   }
 }
 
-function biblio_ui_export_view($style_name, $view_name) {
+/**
+ * @param $style_name
+ *   Biblio style string.
+ *
+ * @param $view_name
+ * @param $display_name
+ *   Biblio related view and display name.
+ */
+function biblio_ui_export_view($style_name, $view_name, $display_name) {
   $bids = array();
+
   $view = views_get_view($view_name);
-  biblio_ui_export($style_name, $bids);
+  $view->set_display($display_name);
+
+  // Disable pager. Need to export all at once.
+  $pager = $view->display_handler->get_option('pager');
+  $pager['type'] = 'none';
+  $view->display_handler->set_option('pager', $pager);
+
+  // Execute and gather the IDs.
+  $view->execute($display_name);
+  foreach ($view->result as $biblio) {
+    $bids[] = $biblio->bid;
+  }
+  biblio_ui_export($style_name, implode(',', $bids));
 }
 
 /**
@@ -1138,12 +1173,28 @@ function biblio_ui_load_biblios_from_string($bids_string = '') {
   return biblio_load_multiple($bids);
 }
 
-function biblio_ui_check_view($view_name) {
+/**
+ * Verify the given view and display names exist and related to biblio.
+ *
+ * @param $view_name
+ * @param $display_name
+ * @return bool
+ */
+function biblio_ui_check_view($view_name, $display_name) {
   $view = views_get_view($view_name);
-  if (!view) {
+  if (!$view) {
+    // View does not exist.
     return;
   }
-  // @todo - check it provides biblios
+  if ($view->base_table != 'biblio') {
+    // View does not provide biblio entities.
+    return;
+  }
+  if (!$view->access($display_name)) {
+    // No access to the given display.
+    return;
+  }
+  return TRUE;
 }
 
 /**
@@ -1155,7 +1206,7 @@ function theme_biblio_ui_export_area($variables) {
   foreach (biblio_get_exportable_biblio_styles() as $style_name => $style) {
     // @todo: right entity ids, proper link (consider base ?)
     $links[$style_name] = array(
-      'href' => '/biblio/export/' . $style_name . '/1',
+      'href' => 'biblio/export_view/' . $style_name . '/' . $variables['view_name'] . '/' . $variables['display_name'],
       'title' => $style['title'],
       'attributes' => array(
         'title' => t('Click to download Biblio in @format format', array('@format' => $style_name)),
