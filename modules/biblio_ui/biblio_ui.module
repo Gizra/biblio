@@ -1073,14 +1073,12 @@ function biblio_ui_export_access($style_name, $bids_string) {
  * Menu access; Allow export based on existing Biblio style and user access.
  *
  * @param $style_name
- *   Biblio style name.
- *
+ *   Biblio style string.
  * @param $view_name
  *   Biblio related View name.
- *
  * @param $display_name
- *   Biblio related display name.
- *
+ *   Biblio related View display name.
+ * 
  * @return bool
  */
 function biblio_ui_export_view_access($style_name, $view_name, $display_name) {
@@ -1107,7 +1105,6 @@ function biblio_ui_export_view_access($style_name, $view_name, $display_name) {
  *
  * @param $style_name
  *   Biblio style string.
- *
  * @param array $bids
  *   Array of Biblio IDs.
  */
@@ -1128,7 +1125,6 @@ function biblio_ui_export($style_name, $bids = array()) {
  *
  * @param $style_name
  *   Biblio style string.
- *
  * @param $bids_string
  *   Comma-separated list of Biblio IDs.
  */
@@ -1142,10 +1138,8 @@ function biblio_ui_export_menu_item($style_name, $bids_string = '') {
  *
  * @param $style_name
  *   Biblio style string.
- *
  * @param $view_name
  *   Biblio related View name.
- *
  * @param $display_name
  *   Biblio related View display name.
  */
@@ -1197,7 +1191,6 @@ function biblio_ui_get_ids_from_string($bids_string = '') {
  *
  * @param $view_name
  *   View name.
- *
  * @param $display_name
  *   View display name.
  *
