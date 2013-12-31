@@ -7,7 +7,7 @@ class BiblioContributorTestCase extends DrupalWebTestCase {
 
   public static function getInfo() {
     return array(
-      'name' => 'Test contributor names',
+      'name' => 'Contributors name',
       'description' => 'Test parsing different formats of contributor names and preventing duplications.',
       'group' => 'Biblio',
     );
@@ -20,13 +20,7 @@ class BiblioContributorTestCase extends DrupalWebTestCase {
   /**
    * Test parsing different formats of contributor names.
    */
-  function testGetBiblioContributorsFromNames() {
-    ctools_include('plugins');
-    $plugin = biblio_get_biblio_style('bibtex');
-    $class = ctools_plugin_load_class('biblio', 'biblio_style', 'bibtex', 'class');
-
-    $biblio_style = new $class($plugin);
-
+  function __testGetBiblioContributorsFromNames() {
     // Test single last name.
     $data = 'Bush';
     $biblio_contributors = BiblioContributorUtility::getBiblioContributorsFromNames($data);
