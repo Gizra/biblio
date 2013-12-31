@@ -68,17 +68,17 @@ function biblio_ui_menu() {
   );
 
   $items['biblio/export/%/%'] = array(
-    'title' => t('Export biblio'),
+    'title' => t('Export Biblio'),
     'description callback' => 'biblio_ui_description_callback',
     'description arguments' => array(1, 'export'),
     'access callback' => 'biblio_ui_export_access',
     'access arguments' => array(2, 3),
-    'page callback' => 'biblio_ui_export',
+    'page callback' => 'biblio_ui_export_menu_item',
     'page arguments' => array(2, 3),
   );
 
   $items['biblio/export_view/%/%/%'] = array(
-    'title' => t('Export biblio by view'),
+    'title' => t('Export Biblio by View'),
     'description callback' => 'biblio_ui_description_callback',
     'description arguments' => array(1, 'export'),
     'access callback' => 'biblio_ui_export_view_access',
@@ -613,9 +613,7 @@ function biblio_ui_manage_bundles() {
     array('data' => t('Operations'), 'colspan' => 5, 'width' => '50%')
   );
 
-  $output = theme('table', array('header' => $headers, 'rows' => $data));
-
-  return $output;
+  return theme('table', array('header' => $headers, 'rows' => $data));
 }
 
 /**
@@ -1075,9 +1073,12 @@ function biblio_ui_export_access($style_name, $bids) {
  *
  * @param $style_name
  *   Biblio style name.
+ *
  * @param $view_name
+ *   Biblio related View name.
+ *
  * @param $display_name
- *   Biblio related view and display name.
+ *   Biblio related display name.
  *
  * @return bool
  */
@@ -1092,8 +1093,8 @@ function biblio_ui_export_view_access($style_name, $view_name, $display_name) {
     return;
   }
 
-  if (!biblio_ui_check_view($view_name, $display_name)) {
-    // The given view/display does not fit for biblio.
+  if (!biblio_ui_is_biblio_view($view_name, $display_name)) {
+    // The given view/display does not fit for Biblio.
     return;
   }
 
@@ -1101,34 +1102,51 @@ function biblio_ui_export_view_access($style_name, $view_name, $display_name) {
 }
 
 /**
- * Export a biblio entity to a file by a given format.
+ * Export a Biblio entity to a file by a given format and array of IDs.
  *
- * @param string $style_name
+ * @param $style_name
  *   Biblio style string.
  *
- * @param string $bids
- *   Comma-separated list of Biblio IDs.
- * @todo: if we won't use it directly, we rather get $bids as an array of ids.
+ * @param array $bids
+ *   Array of Biblio IDs.
  */
-function biblio_ui_export($style_name, $bids) {
+function biblio_ui_export($style_name, $bids = array()) {
   $plugin = biblio_get_exportable_biblio_style($style_name);
   $filename = $style_name . '.' . $plugin['export extension'];
 
   drupal_add_http_header('Content-type', 'application/text; charset=utf-8');
   drupal_add_http_header('Content-Disposition', 'attachment; filename="' . $filename . '"');
 
-  foreach (biblio_ui_load_biblios_from_string($bids) as $biblio) {
+  foreach (biblio_load_multiple($bids) as $biblio) {
     print_r($biblio->getText($style_name));
   }
 }
 
 /**
+ * Export a Biblio entity to a file by a given format.
+ *
+ * @param $style_name
+ *   Biblio style string.
+ *
+ * @param $bids_string
+ *   Comma-separated list of Biblio IDs.
+ */
+function biblio_ui_export_menu_item($style_name, $bids_string = '') {
+  $bids = biblio_ui_get_ids_from_string($bids_string);
+  biblio_ui_export($style_name, $bids);
+}
+
+/**
+ * Export a Biblio entities to a file by a View.
+ *
  * @param $style_name
  *   Biblio style string.
  *
  * @param $view_name
+ *   Biblio related View name.
+ *
  * @param $display_name
- *   Biblio related view and display name.
+ *   Biblio related View display name.
  */
 function biblio_ui_export_view($style_name, $view_name, $display_name) {
   $bids = array();
@@ -1150,15 +1168,15 @@ function biblio_ui_export_view($style_name, $view_name, $display_name) {
 }
 
 /**
- * Load Biblio entities from string of comma separated IDs.
+ * Get IDs from string of comma separated numbers.
  *
  * @param $bids_string
  *   Comma-separated list of Biblio IDs.
  *
  * @return array|bool
- *   Array of loaded Biblio, or FALSE if none found.
+ *   Array of Biblio IDs, or FALSE if none found.
  */
-function biblio_ui_load_biblios_from_string($bids_string = '') {
+function biblio_ui_get_ids_from_string($bids_string = '') {
   if (!$bids = explode(',', $bids_string)) {
     return;
   }
@@ -1170,24 +1188,28 @@ function biblio_ui_load_biblios_from_string($bids_string = '') {
     }
   }
 
-  return biblio_load_multiple($bids);
+  return $bids;
 }
 
 /**
- * Verify the given view and display names exist and related to biblio.
+ * Verify the given View and display names exist and related to Biblio.
  *
  * @param $view_name
+ *   View name.
+ *
  * @param $display_name
+ *   View display name.
+ *
  * @return bool
  */
-function biblio_ui_check_view($view_name, $display_name) {
+function biblio_ui_is_biblio_view($view_name, $display_name) {
   $view = views_get_view($view_name);
   if (!$view) {
     // View does not exist.
     return;
   }
   if ($view->base_table != 'biblio') {
-    // View does not provide biblio entities.
+    // View does not provide Biblio entities.
     return;
   }
   if (!$view->access($display_name)) {

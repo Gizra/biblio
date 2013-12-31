@@ -43,7 +43,7 @@ function biblio_ui_views_data() {
   );
 
   $data['biblio']['biblio_export'] = array(
-    'title' => t('Biblio export UI'),
+    'title' => t('Export links'),
     'help' => t('Provide UI for exporting Biblio.'),
     'area'=> array(
       'handler' => 'biblio_ui_handler_export_area',

@@ -236,7 +236,7 @@ function biblio_get_exportable_biblio_styles() {
   ctools_include('plugins');
   $exportable_plugins = array();
   foreach (biblio_get_biblio_styles() as $plugin_name => $style) {
-    if (isset($style['export extension'])) {
+    if (!empty($style['export extension'])) {
       $exportable_plugins[$plugin_name] = $style;
     }
   }
