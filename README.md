@@ -4,7 +4,7 @@
 
 Biblio is used for importing and rendering bibliographies.
 
-### Render API
+### Render Biblio API
 
 ```php
 // Loading the biblio.
@@ -19,7 +19,7 @@ $biblio_style = 'bibtex';
 $biblio->getText($biblio_style);
 ```
 
-### Import API
+### Import Biblio API
 
 ```php
 // Here you need to specify the biblio style of the data you wish to import.
@@ -52,11 +52,31 @@ $biblio_style = new $class($plugin);
 //   'new'       - New biblios, created in the import process.
 //   'duplicate' - Existing biblios, when one or more of the biblios in the data are
 //                 identical to existing biblios.
-//   'error'     - Errors that occured during the import process, this means one or more
-//                 biblios failed to import.
+//   'error'     - Errors that occured during the import process, this means one or
+//                 more biblios failed to import.
 // In this example, the array will contain only one biblio, categorized as 'new'.
 $biblios = $biblio_style->import($data);
 $new_biblio = $biblios['new'][0];
+```
+
+### Create/Load Biblio Contributor API
+
+Creation and loading of Biblio Contributors are done the same way.
+
+The method ``BiblioContributorUtility::getBiblioContributorsFromNames()`` accepts a string
+of contributors' names, seperated by the word "and" or the sign "&",
+and returns an array of Biblio Contributor objects, saved and ready to use.
+
+For each name in the given string, the method attempts to find an existing contributor
+with the exact name. If found, the existing contributor will be returned. If not, a new
+contributor will be created and returned.
+
+```php
+// Biblio Contributors' names.
+$names = 'George Bush and Abraham Lincoln';
+
+// Get saved Biblio Contributor objects.
+$contributors = BiblioContributorUtility::getBiblioContributorsFromNames($names);
 ```
 
 ### CiteProc
@@ -71,3 +91,10 @@ $new_biblio = $biblios['new'][0];
   $biblio->getText('citeproc', array('style_name' => 'ama'));
   $biblio->getText('citeproc');
 ```
+
+### Example module
+
+For more useful examples, we recommend enabling the module ``biblio_example``.
+
+
+Developed by [Gizra](http://gizra.com)
