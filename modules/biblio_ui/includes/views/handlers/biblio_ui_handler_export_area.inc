@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * Contains biblio_ui_handler_export_area
+ */
 class biblio_ui_handler_export_area extends views_handler_area {
   function render($empty = FALSE) {
     $variables = array();
