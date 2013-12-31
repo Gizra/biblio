@@ -1164,7 +1164,7 @@ function biblio_ui_export_view($style_name, $view_name, $display_name) {
   foreach ($view->result as $biblio) {
     $bids[] = $biblio->bid;
   }
-  biblio_ui_export($style_name, implode(',', $bids));
+  biblio_ui_export($style_name, $bids);
 }
 
 /**
