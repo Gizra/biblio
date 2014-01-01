@@ -445,17 +445,19 @@ function biblio_entity_access($op, $type = NULL, $account = NULL) {
   if (!isset($account)) {
     $account = $user;
   }
+
+  if (user_access('administer biblio', $account)) {
+    return TRUE;
+  }
+
   switch ($op) {
     case 'create':
-      return user_access('administer biblio', $account)
-          || user_access('create biblio', $account);
+      return user_access('create biblio', $account);
     case 'view':
-      return user_access('administer biblio', $account)
-          || user_access('access biblio content', $account);
+      return user_access('access biblio content', $account);
     case 'delete':
     case 'update':
-      return user_access('administer biblio')
-          || user_access('edit all biblio entries');
+      return user_access('edit all biblio entries', $account);
   }
 }
 
