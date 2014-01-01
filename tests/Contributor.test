@@ -7,7 +7,7 @@ class BiblioContributorTestCase extends DrupalWebTestCase {
 
   public static function getInfo() {
     return array(
-      'name' => 'Test contributor names',
+      'name' => 'Contributors name',
       'description' => 'Test parsing different formats of contributor names and preventing duplications.',
       'group' => 'Biblio',
     );
@@ -21,34 +21,28 @@ class BiblioContributorTestCase extends DrupalWebTestCase {
    * Test parsing different formats of contributor names.
    */
   function testGetBiblioContributorsFromNames() {
-    ctools_include('plugins');
-    $plugin = biblio_get_biblio_style('bibtex');
-    $class = ctools_plugin_load_class('biblio', 'biblio_style', 'bibtex', 'class');
-
-    $biblio_style = new $class($plugin);
-
     // Test single last name.
     $data = 'Bush';
-    $biblio_contributors = $biblio_style->getBiblioContributorsFromNames($data);
+    $biblio_contributors = BiblioContributorUtility::getBiblioContributorsFromNames($data);
     $this->assertEqual($biblio_contributors[0]->lastname, 'Bush');
 
     // Test single name with multiple spaces.
     $data = '  George    W.    Bush  ';
-    $biblio_contributors = $biblio_style->getBiblioContributorsFromNames($data);
+    $biblio_contributors = BiblioContributorUtility::getBiblioContributorsFromNames($data);
     $this->assertEqual($biblio_contributors[0]->firstname, 'George');
     $this->assertEqual($biblio_contributors[0]->initials, 'W');
     $this->assertEqual($biblio_contributors[0]->lastname, 'Bush');
 
     // Test single name with a comma and spaces.
     $data = '  Bush  ,   George   W  ';
-    $biblio_contributors = $biblio_style->getBiblioContributorsFromNames($data);
+    $biblio_contributors = BiblioContributorUtility::getBiblioContributorsFromNames($data);
     $this->assertEqual($biblio_contributors[0]->firstname, 'George');
     $this->assertEqual($biblio_contributors[0]->initials, 'W');
     $this->assertEqual($biblio_contributors[0]->lastname, 'Bush');
 
     // Test single name with a prefix and with multiple spaces.
     $data = '  de   la   Bush  ,  George    W  ';
-    $biblio_contributors = $biblio_style->getBiblioContributorsFromNames($data);
+    $biblio_contributors = BiblioContributorUtility::getBiblioContributorsFromNames($data);
     $this->assertEqual($biblio_contributors[0]->firstname, 'George');
     $this->assertEqual($biblio_contributors[0]->initials, 'W');
     $this->assertEqual($biblio_contributors[0]->prefix, 'de la');
@@ -56,7 +50,7 @@ class BiblioContributorTestCase extends DrupalWebTestCase {
 
     // Test single name with a suffix, two commas, and with multiple spaces.
     $data = '  Bush   ,  Jr.   III  , George   W.   ';
-    $biblio_contributors = $biblio_style->getBiblioContributorsFromNames($data);
+    $biblio_contributors = BiblioContributorUtility::getBiblioContributorsFromNames($data);
     $this->assertEqual($biblio_contributors[0]->firstname, 'George');
     $this->assertEqual($biblio_contributors[0]->initials, 'W');
     $this->assertEqual($biblio_contributors[0]->suffix, 'Jr. III');
@@ -64,7 +58,7 @@ class BiblioContributorTestCase extends DrupalWebTestCase {
 
     // Test two names separated by 'and', with extra spaces.
     $data = 'George W. Bush   and    George Bush ';
-    $biblio_contributors = $biblio_style->getBiblioContributorsFromNames($data);
+    $biblio_contributors = BiblioContributorUtility::getBiblioContributorsFromNames($data);
     $this->assertEqual($biblio_contributors[0]->firstname, 'George');
     $this->assertEqual($biblio_contributors[0]->initials, 'W');
     $this->assertEqual($biblio_contributors[0]->lastname, 'Bush');
@@ -76,7 +70,7 @@ class BiblioContributorTestCase extends DrupalWebTestCase {
       'and Bush, George and Bush, G W and Bush, George W and de la Bush, George W ' .
       'and Bush, Jr. III, George W';
 
-    $biblio_contributors = $biblio_style->getBiblioContributorsFromNames($data);
+    $biblio_contributors = BiblioContributorUtility::getBiblioContributorsFromNames($data);
 
     $this->assertEqual($biblio_contributors[0]->firstname, 'George');
     $this->assertEqual($biblio_contributors[0]->initials, 'W');
@@ -112,17 +106,9 @@ class BiblioContributorTestCase extends DrupalWebTestCase {
    * Test preventing duplications in contributors' names.
    */
   function testDuplicateBiblioContributorsMd5() {
-    // Get biblio class.
-    ctools_include('plugins');
-    $plugin = biblio_get_biblio_style('bibtex');
-    $class = ctools_plugin_load_class('biblio', 'biblio_style', 'bibtex', 'class');
-    $biblio_style = new $class($plugin);
-
-    $cids = array();
-
     // Attempt to create 2 contributors with the same name.
     $data = 'Harry J. K. de la Potter and Harry J. K. de la Potter';
-    $biblio_contributors1 = $biblio_style->getBiblioContributorsFromNames($data);
+    $biblio_contributors1 = BiblioContributorUtility::getBiblioContributorsFromNames($data);
 
     // The expected result: The duplication was prevented so the 2 contributors
     // have the same ID.
@@ -130,7 +116,7 @@ class BiblioContributorTestCase extends DrupalWebTestCase {
 
     // Attempt to create another contributor with the same name.
     $data = 'Harry J. K. de la Potter';
-    $biblio_contributors2 = $biblio_style->getBiblioContributorsFromNames($data);
+    $biblio_contributors2 = BiblioContributorUtility::getBiblioContributorsFromNames($data);
 
     // The expected result: The duplication was prevented so the 2 contributors
     // have the same ID.
