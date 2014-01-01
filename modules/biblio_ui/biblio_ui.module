@@ -548,7 +548,7 @@ function biblio_ui_manage_biblio($form, &$form_state, $type) {
     '#type' => 'actions',
     'submit' => array(
       '#type' => 'submit',
-      '#value' => t('Send'),
+      '#value' => t('Save'),
     ),
     'cancel' => array(
       '#markup' => l(t('Cancel'), 'biblio'),
@@ -1015,7 +1015,7 @@ function biblio_ui_contributor_create_form($form, &$form_state, BiblioContributo
     '#type' => 'actions',
     'submit' => array(
       '#type' => 'submit',
-      '#value' => t('Send'),
+      '#value' => t('Save'),
     ),
     'cancel' => array(
       '#markup' => l(t('Cancel'), 'biblio-contributor'),

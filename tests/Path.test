@@ -15,7 +15,7 @@ class BiblioPathTestCase extends DrupalWebTestCase {
     return array(
       'name' => 'Path alias functionality',
       'description' => 'Add, edit, delete, and change alias and verify its consistency in the database.',
-      'group' => 'Bilbio',
+      'group' => 'Biblio',
     );
   }
 
@@ -69,13 +69,13 @@ class BiblioPathTestCase extends DrupalWebTestCase {
 
     // Set alias to second test node.
     // Leave $edit['path[alias]'] the same.
-    $this->drupalPost('bilbio/' . $bilbio2->bid . '/edit', $edit, t('Save'));
+    $this->drupalPost('bilbio/' . $bilbio2->bid . '/edit', $edit, t('Send'));
 
     // Confirm that the alias didn't make a duplicate.
     $this->assertText(t('The alias is already in use.'), 'Attempt to moved alias was rejected.');
 
     // Delete alias.
-    $this->drupalPost('bilbio/' . $bilbio1->bid . '/edit', array('path[alias]' => ''), t('Save'));
+    $this->drupalPost('bilbio/' . $bilbio1->bid . '/edit', array('path[alias]' => ''), t('Send'));
 
     // Confirm that the alias no longer works.
     $this->drupalGet($edit['path[alias]']);
