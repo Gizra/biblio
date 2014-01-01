@@ -1223,7 +1223,7 @@ function theme_biblio_ui_view_export_area($variables) {
       'href' => 'biblio/export_view/' . $style_name . '/' . $variables['view_name'] . '/' . $variables['display_name'],
       'title' => $style['title'],
       'attributes' => array(
-        'title' => t('Click to download Biblio in @format format', array('@format' => $style_name)),
+        'title' => t('Click to Download Biblio in @format format', array('@format' => $style_name)),
       ),
     );
   }
@@ -1247,7 +1247,7 @@ function theme_biblio_ui_entity_export_area($variables) {
       'href' => 'biblio/export/' . $style_name . '/' . $variables['bid'],
       'title' => $style['title'],
       'attributes' => array(
-        'title' => t('Click to download Biblio in @format format', array('@format' => $style_name)),
+        'title' => t('Click to Download Biblio in @format format', array('@format' => $style_name)),
       ),
     );
   }
