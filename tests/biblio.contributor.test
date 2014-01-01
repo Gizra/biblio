@@ -21,12 +21,6 @@ class BiblioContributorTestCase extends DrupalWebTestCase {
    * Test parsing different formats of contributor names.
    */
   function testGetBiblioContributorsFromNames() {
-    ctools_include('plugins');
-    $plugin = biblio_get_biblio_style('bibtex');
-    $class = ctools_plugin_load_class('biblio', 'biblio_style', 'bibtex', 'class');
-
-    $biblio_style = new $class($plugin);
-
     // Test single last name.
     $data = 'Bush';
     $biblio_contributors = BiblioContributorUtility::getBiblioContributorsFromNames($data);
@@ -112,26 +106,18 @@ class BiblioContributorTestCase extends DrupalWebTestCase {
    * Test preventing duplications in contributors' names.
    */
   function testDuplicateBiblioContributorsMd5() {
-    // Get biblio class.
-    ctools_include('plugins');
-    $plugin = biblio_get_biblio_style('bibtex');
-    $class = ctools_plugin_load_class('biblio', 'biblio_style', 'bibtex', 'class');
-    $biblio_style = new $class($plugin);
-
-    $cids = array();
-
     // Attempt to create 2 contributors with the same name.
     $data = 'Harry J. K. de la Potter and Harry J. K. de la Potter';
-    $biblio_contributors1 = $biblio_style->getBiblioContributorsFromNames($data);
-
+    $biblio_contributors1 = BiblioContributorUtility::getBiblioContributorsFromNames($data);
+debug($biblio_contributors1);
     // The expected result: The duplication was prevented so the 2 contributors
     // have the same ID.
     $this->assertEqual($biblio_contributors1[0]->cid, $biblio_contributors1[1]->cid, 'Biblio Contributor duplication was prevented.');
 
     // Attempt to create another contributor with the same name.
     $data = 'Harry J. K. de la Potter';
-    $biblio_contributors2 = $biblio_style->getBiblioContributorsFromNames($data);
-
+    $biblio_contributors2 = BiblioContributorUtility::getBiblioContributorsFromNames($data);
+    debug($biblio_contributors2);
     // The expected result: The duplication was prevented so the 2 contributors
     // have the same ID.
     $this->assertEqual($biblio_contributors1[0]->cid, $biblio_contributors2[0]->cid, 'Biblio Contributor duplication was prevented.');
