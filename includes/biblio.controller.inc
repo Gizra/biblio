@@ -23,6 +23,7 @@ class Biblio extends Entity {
     }
     return entity_get_controller($this->entityType)->buildContent($this, $view_mode, $langcode, $content);
   }
+  
   /**
    * Override Entity:save().
    *
