@@ -208,6 +208,13 @@ function biblio_biblio_fields_info() {
       'presentation' => array(),
       'report' => array(),
       'software' => array(),
+      'statute' => array(),
+      'thesis' => array(),
+      'unpublished' => array(),
+      'web_article' => array(),
+      'web_project_page' => array(),
+      'web_service' => array(),
+      'website' => array(),
     ),
   );
 
@@ -342,6 +349,9 @@ function biblio_biblio_fields_info() {
       'patent' => array(
         'label' => 'International Patent Number',
       ),
+      'statute' => array(
+        'label' => 'Sections',
+      ),
     ),
   );
 
@@ -436,6 +446,9 @@ function biblio_biblio_fields_info() {
       'personal' => array(
         'label' => 'Communication Number',
       ),
+      'statute' => array(
+        'label' => 'Statute Number',
+      ),
     ),
   );
 
@@ -503,6 +516,15 @@ function biblio_biblio_fields_info() {
       ),
       'report' => array(
         'label' => 'Document Number',
+      ),
+      'statute' => array(
+        'label' => 'Public Law Number',
+      ),
+      'unpublished' => array(
+        'label' => 'Number',
+      ),
+      'web_article' => array(
+        'label' => 'Access Date',
       ),
     ),
   );
@@ -591,6 +613,18 @@ function biblio_biblio_fields_info() {
         'label' => 'Pagination',
       ),
       'software' => array(
+        'label' => 'Description',
+      ),
+      'statute' => array(
+        'label' => 'Pagination',
+      ),
+      'thesis' => array(
+        'label' => 'Number of Pages',
+      ),
+      'unpublished' => array(
+        'label' => 'Pagination',
+      ),
+      'web_article' => array(
         'label' => 'Description',
       ),
     ),
@@ -724,6 +758,13 @@ function biblio_biblio_fields_info() {
       'presentation' => array(),
       'report' => array(),
       'software' => array(),
+      'statute' => array(),
+      'thesis' => array(),
+      'unpublished' => array(),
+      'web_article' => array(),
+      'web_project_page' => array(),
+      'web_service' => array(),
+      'website' => array(),
     ),
   );
 
@@ -786,6 +827,13 @@ function biblio_biblio_fields_info() {
       'presentation' => array(),
       'report' => array(),
       'software' => array(),
+      'statute' => array(),
+      'thesis' => array(),
+      'unpublished' => array(),
+      'web_article' => array(),
+      'web_project_page' => array(),
+      'web_service' => array(),
+      'website' => array(),
     ),
   );
 
@@ -842,6 +890,9 @@ function biblio_biblio_fields_info() {
         'label' => 'Report Number',
       ),
       'software' => array(
+        'label' => 'ISSN',
+      ),
+      'web_article' => array(
         'label' => 'ISSN',
       ),
     ),
@@ -907,6 +958,13 @@ function biblio_biblio_fields_info() {
       'presentation' => array(),
       'report' => array(),
       'software' => array(),
+      'statute' => array(),
+      'thesis' => array(),
+      'unpublished' => array(),
+      'web_article' => array(),
+      'web_project_page' => array(),
+      'web_service' => array(),
+      'website' => array(),
     ),
   );
 
@@ -1214,6 +1272,10 @@ function biblio_biblio_fields_info() {
       'personal' => array(),
       'report' => array(),
       'software' => array(),
+      'statute' => array(),
+      'thesis' => array(),
+      'unpublished' => array(),
+      'web_article' => array(),
     )
   );
 
@@ -1273,6 +1335,13 @@ function biblio_biblio_fields_info() {
       ),
       'report' => array(),
       'software' => array(),
+      'statute' => array(
+        'label' => 'Abbreviation',
+      ),
+      'unpublished' => array(
+        'label' => 'Abbreviation',
+      ),
+      'web_article' => array(),
     ),
   );
 
@@ -1342,6 +1411,13 @@ function biblio_biblio_fields_info() {
       'report' => array(
         'label' => 'Type',
       ),
+      'thesis' => array(
+        'label' => 'Thesis Type',
+      ),
+      'unpublished' => array(),
+      'web_article' => array(
+        'label' => 'Type of Medium',
+      ),
     ),
   );
 
@@ -1404,6 +1480,13 @@ function biblio_biblio_fields_info() {
       'presentation' => array(),
       'report' => array(),
       'software' => array(),
+      'statute' => array(),
+      'thesis' => array(),
+      'unpublished' => array(),
+      'web_article' => array(),
+      'web_project_page' => array(),
+      'web_service' => array(),
+      'website' => array(),
     ),
   );
 
@@ -1458,6 +1541,15 @@ function biblio_biblio_fields_info() {
       ),
       'patent' => array(
         'label' => 'Patent Version Number',
+      ),
+      'statute' => array(
+        'label' => 'Code Number',
+      ),
+      'thesis' => array(
+        'label' => 'degree',
+      ),
+      'web_article' => array(
+        'label' => 'Access Year',
       ),
     ),
   );
@@ -1521,6 +1613,13 @@ function biblio_biblio_fields_info() {
       'presentation' => array(),
       'report' => array(),
       'software' => array(),
+      'statute' => array(),
+      'thesis' => array(),
+      'unpublished' => array(),
+      'web_article' => array(),
+      'web_project_page' => array(),
+      'web_service' => array(),
+      'website' => array(),
     )
   );
 
@@ -1575,6 +1674,12 @@ function biblio_biblio_fields_info() {
       'personal' => array(),
       'report' => array(),
       'software' => array(),
+      'statute' => array(
+        'label' => 'Country',
+      ),
+      'thesis' => array(),
+      'unpublished' => array(),
+      'web_article' => array(),
     ),
   );
 
@@ -1635,6 +1740,13 @@ function biblio_biblio_fields_info() {
         'label' => 'Institution',
       ),
       'software' => array(),
+      'thesis' => array(
+        'label' => 'University',
+      ),
+      'unpublished' => array(
+        'label' => 'Institution',
+      ),
+      'web_article' => array(),
     ),
   );
 
@@ -1694,6 +1806,10 @@ function biblio_biblio_fields_info() {
       'software' => array(
         'label' => 'Version',
       ),
+      'statute' => array(
+        'label' => 'Session',
+      ),
+      'web_article' => array(),
     ),
   );
 
@@ -1786,6 +1902,14 @@ function biblio_biblio_fields_info() {
       'software' => array(
         'label' => 'Book Title',
       ),
+      'statute' => array(
+        'label' => 'Code',
+      ),
+      'thesis' => array(
+        'label' => 'Academic Department',
+      ),
+      'unpublished' => array(),
+      'web_article' => array(),
     ),
   );
 
@@ -1894,6 +2018,10 @@ function biblio_biblio_fields_info() {
       'personal' => array(),
       'report' => array(),
       'software' => array(),
+      'statute' => array(),
+      'thesis' => array(),
+      'unpublished' => array(),
+      'web_article' => array(),
     ),
   );
 
@@ -1948,6 +2076,13 @@ function biblio_biblio_fields_info() {
         'label' => 'Contents',
       ),
       'software' => array(
+        'label' => 'Contents',
+      ),
+      'statute' => array(
+        'label' => 'History',
+      ),
+      'thesis' => array(),
+      'web_article' => array(
         'label' => 'Contents',
       ),
     ),
@@ -2045,6 +2180,7 @@ function biblio_biblio_fields_info() {
       'software' => array(
         'label' => 'Computer',
       ),
+      'thesis' => array(),
     ),
   );
 
@@ -2079,6 +2215,7 @@ function biblio_biblio_fields_info() {
       'patent' => array(
         'label' => 'Issue Date',
       ),
+      'thesis' => array(),
     ),
   );
 
@@ -2113,6 +2250,7 @@ function biblio_biblio_fields_info() {
       'patent' => array(
         'label' => 'Designated States',
       ),
+      'thesis' => array(),
     ),
   );
 
@@ -2147,6 +2285,7 @@ function biblio_biblio_fields_info() {
       'patent' => array(
         'label' => 'Attorney/Agent',
       ),
+      'thesis' => array(),
     ),
   );
 
@@ -2181,6 +2320,7 @@ function biblio_biblio_fields_info() {
       'patent' => array(
         'label' => 'References',
       ),
+      'thesis' => array(),
     ),
   );
 
@@ -2215,6 +2355,7 @@ function biblio_biblio_fields_info() {
       'patent' => array(
         'label' => 'Legal Status',
       ),
+      'thesis' => array(),
     ),
   );
 
@@ -2244,6 +2385,9 @@ function biblio_biblio_fields_info() {
         'type' => 'text_textfield',
         'weight' => '-3',
       ),
+    ),
+    'bundles_info' => array(
+      'thesis' => array(),
     ),
   );
 
@@ -2283,7 +2427,6 @@ function biblio_biblio_types_info() {
   $types['presentation'] = array('name' => 'Presentation');
   $types['report'] = array('name' => 'Report');
   $types['software'] = array('name' => 'Software');
-
   $types['statute'] = array('name' => 'Statute');
   $types['thesis'] = array('name' => 'Thesis');
   $types['unpublished'] = array('name' => 'Unpublished');
