@@ -460,27 +460,23 @@ function biblio_entity_access($op, $type = NULL, $account = NULL) {
 }
 
 /**
- * Implements hook_entity_presave().
+ * Implements hook_biblio_insert().
  *
  * Save the path of the Biblio entry.
  */
-function biblio_entity_presave($entity, $type) {
-  if ($type != 'biblio') {
-    return;
-  }
-
+function biblio_biblio_insert($biblio) {
   if (!module_exists('path')) {
     return;
   }
 
-  if (isset($entity->path)) {
-    $path = $entity->path;
+  if (isset($biblio->path)) {
+    $path = $biblio->path;
     $path['alias'] = trim($path['alias']);
     // Only save a non-empty alias.
     if (!empty($path['alias'])) {
       // Ensure fields for programmatic executions.
-      $langcode = entity_language('biblio', $entity);
-      $path['source'] = 'biblio/' . $entity->bid;
+      $langcode = entity_language('biblio', $biblio);
+      $path['source'] = 'biblio/' . $biblio->bid;
       $path['language'] = isset($langcode) ? $langcode : LANGUAGE_NONE;
       path_save($path);
     }
@@ -488,32 +484,56 @@ function biblio_entity_presave($entity, $type) {
 }
 
 /**
- * Implements hook_entity_load().
+ * Implements hook_biblio_update().
+ *
+ * Update the path of the Biblio entry.
  */
-function biblio_entity_load($entities, $type) {
-  if ($type != 'biblio') {
+function biblio_biblio_update($biblio) {
+  if (!module_exists('path')) {
     return;
   }
 
-  foreach ($entities as $entity) {
-    $conditions = array(
-      'source' => 'biblio/' . $entity->bid,
-      'language' => LANGUAGE_NONE,
-    );
-    $entity->path = path_load($conditions);
+  if (isset($biblio->path)) {
+    $path = $biblio->path;
+    $path['alias'] = trim($path['alias']);
+    // Only save a non-empty alias.
+    if (!empty($path['alias'])) {
+      // Ensure fields for programmatic executions.
+      $langcode = entity_language('biblio', $biblio);
+      $path['source'] = 'biblio/' . $biblio->bid;
+      $path['language'] = isset($langcode) ? $langcode : LANGUAGE_NONE;
+      path_save($path);
+    }
   }
 }
 
 /**
- * Implements hook_entity_delete().
+ * Implements hook_biblio_load().
  */
-function biblio_entity_delete($entity, $type) {
-  if ($type != 'biblio') {
+function biblio_biblio_load($biblios) {
+  if (!module_exists('path')) {
+    return;
+  }
+
+  foreach ($biblios as $biblio) {
+    $conditions = array(
+      'source' => 'biblio/' . $biblio->bid,
+      'language' => LANGUAGE_NONE,
+    );
+    $biblio->path = path_load($conditions);
+  }
+}
+
+/**
+ * Implements hook_biblio_delete().
+ */
+function biblio_biblio_delete($biblio) {
+  if (!module_exists('path')) {
     return;
   }
 
   $criteria = array(
-    'source' => 'biblio/' . $entity->bid,
+    'source' => 'biblio/' . $biblio->bid,
     'language' => LANGUAGE_NONE,
   );
   path_delete($criteria);

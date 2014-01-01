@@ -479,6 +479,8 @@ function biblio_ui_manage_biblio($form, &$form_state, $type) {
     '#description' => t('Leave blank for %anonymous.', array('%anonymous' => variable_get('anonymous', t('Anonymous')))),
   );
 
+  // Add the path field to the Biblio form. This is based on the path module
+  // function path_form_node_form_alter().
   $path = array();
   if (!empty($form['#entity']->bid)) {
     $conditions = array('source' => 'biblio/' . $form['#entity']->bid);
