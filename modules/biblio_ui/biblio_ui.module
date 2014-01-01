@@ -418,7 +418,20 @@ function theme_biblio_ui_add_biblio_list($variables) {
 /**
  * Viewing a biblio entity entry.
  */
-function biblio_ui_view_biblio($biblio) {
+function biblio_ui_view_biblio($biblio, $view_mode = 'full') {
+
+  // Add the export if it is visible.
+  $fields = field_extra_fields_get_display('biblio', $biblio->type, $view_mode);
+  if (isset($fields['export']) && $fields['export']['visible']) {
+    $variables = array();
+    $variables['bid'] = $biblio->bid;
+
+    $biblio->export = array(
+      '#markup' => theme('biblio_ui_entity_export_area', $variables),
+      '#weight' => $fields['export']['weight'],
+    );
+  }
+
   $wrapper = entity_metadata_wrapper('biblio', $biblio);
   $info = $wrapper->view();
   $content = $info['biblio'][$wrapper->getIdentifier()];
@@ -1261,23 +1274,22 @@ function theme_biblio_ui_entity_export_area($variables) {
 }
 
 /**
- * Implementing hook_entity_view_alter().
- * Used to add the Biblio export to the full view of a Biblio entity.
- *
- * @param $build
- * @param $type
+ * Implementation of hook_field_extra_fields().
  */
-function biblio_ui_biblio_view_alter(&$build, $type) {
-  if ($build['#view_mode'] != 'full') {
-    return;
+function biblio_ui_field_extra_fields() {
+
+  $return = array();
+  $info = entity_get_info('biblio');
+  foreach (array_keys($info['bundles']) as $bundle) {
+    $return['biblio'][$bundle] = array(
+      'display' => array(
+        'export' => array(
+          'label' => t('Export links'),
+          'description' => t('Export Biblio to a file.'),
+          'weight' => -10,
+        ),
+      ),
+    );
   }
-  $biblio = $build['#entity'];
-
-  $variables = array();
-  $variables['bid'] = $biblio->bid;
-
-  $build['export_form'] = array(
-    '#weight' => -10,
-    '#markup' => theme('biblio_ui_entity_export_area', $variables),
-  );
+  return $return;
 }
