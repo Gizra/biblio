@@ -24,7 +24,7 @@ class BiblioPathTestCase extends DrupalWebTestCase {
     biblio_create_fields_by_bundle(array('book'));
 
     // Create test user and login.
-    $web_user = $this->drupalCreateUser(array('create page content', 'edit own page content', 'administer url aliases', 'create url aliases'));
+    $web_user = $this->drupalCreateUser(array('administer biblio', 'create url aliases'));
     $this->drupalLogin($web_user);
   }
 
@@ -39,7 +39,7 @@ class BiblioPathTestCase extends DrupalWebTestCase {
     // Create alias.
     $edit = array();
     $edit['path[alias]'] = $this->randomName(8);
-    $this->drupalPost('bilbio/' . $bilbio1->bid . '/edit', $edit, t('Save'));
+    $this->drupalPost('biblio/' . $bilbio1->bid . '/edit', $edit, t('Save'));
 
     // Confirm that the alias works.
     $this->drupalGet($edit['path[alias]']);
@@ -51,7 +51,7 @@ class BiblioPathTestCase extends DrupalWebTestCase {
     $edit['path[alias]'] = "- ._~!$'\"()*@[]?&+%#,;=:" . // "Special" ASCII characters.
       "%23%25%26%2B%2F%3F" . // Characters that look like a percent-escaped string.
       "éøïвβ中國書۞"; // Characters from various non-ASCII alphabets.
-    $this->drupalPost('bilbio/' . $bilbio1->bid . '/edit', $edit, t('Save'));
+    $this->drupalPost('biblio/' . $bilbio1->bid . '/edit', $edit, t('Save'));
 
     // Confirm that the alias works.
     $this->drupalGet($edit['path[alias]']);
@@ -69,13 +69,13 @@ class BiblioPathTestCase extends DrupalWebTestCase {
 
     // Set alias to second test node.
     // Leave $edit['path[alias]'] the same.
-    $this->drupalPost('bilbio/' . $bilbio2->bid . '/edit', $edit, t('Send'));
+    $this->drupalPost('biblio/' . $bilbio2->bid . '/edit', $edit, t('Save'));
 
     // Confirm that the alias didn't make a duplicate.
     $this->assertText(t('The alias is already in use.'), 'Attempt to moved alias was rejected.');
 
     // Delete alias.
-    $this->drupalPost('bilbio/' . $bilbio1->bid . '/edit', array('path[alias]' => ''), t('Send'));
+    $this->drupalPost('biblio/' . $bilbio1->bid . '/edit', array('path[alias]' => ''), t('Send'));
 
     // Confirm that the alias no longer works.
     $this->drupalGet($edit['path[alias]']);
