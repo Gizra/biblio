@@ -479,6 +479,53 @@ function biblio_ui_manage_biblio($form, &$form_state, $type) {
     '#description' => t('Leave blank for %anonymous.', array('%anonymous' => variable_get('anonymous', t('Anonymous')))),
   );
 
+  $path = array();
+  if (!empty($form['#entity']->bid)) {
+    $conditions = array('source' => 'biblio/' . $form['#entity']->bid);
+    $langcode = entity_language('biblio', $form['#entity']);
+    if ($langcode && $langcode != LANGUAGE_NONE) {
+      $conditions['language'] = $langcode;
+    }
+    $path = path_load($conditions);
+    if ($path === FALSE) {
+      $path = array();
+    }
+  }
+  $path += array(
+    'pid' => NULL,
+    'source' => isset($form['#entity']->bid) ? 'biblio/' . $form['#entity']->bid : NULL,
+    'alias' => '',
+    'language' => isset($langcode) ? $langcode : LANGUAGE_NONE,
+  );
+
+  $form['path'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('URL path settings'),
+    '#collapsible' => TRUE,
+    '#collapsed' => empty($path['alias']),
+    '#group' => 'additional_settings',
+    '#attributes' => array(
+      'class' => array('path-form'),
+    ),
+    '#attached' => array(
+      'js' => array(drupal_get_path('module', 'path') . '/path.js'),
+    ),
+    '#access' => user_access('create url aliases') || user_access('administer url aliases'),
+    '#weight' => 30,
+    '#tree' => TRUE,
+    '#element_validate' => array('path_form_element_validate'),
+  );
+  $form['path']['alias'] = array(
+    '#type' => 'textfield',
+    '#title' => t('URL alias'),
+    '#default_value' => $path['alias'],
+    '#maxlength' => 255,
+    '#description' => t('Optionally specify an alternative URL by which this content can be accessed. For example, type "about" when writing an about page. Use a relative path and don\'t add a trailing slash or the URL alias won\'t work.'),
+  );
+  $form['path']['pid'] = array('#type' => 'value', '#value' => $path['pid']);
+  $form['path']['source'] = array('#type' => 'value', '#value' => $path['source']);
+  $form['path']['language'] = array('#type' => 'value', '#value' => $path['language']);
+
   $form['published'] = array(
     '#type' => 'fieldset',
     '#title' => t('Published'),
@@ -541,6 +588,7 @@ function biblio_ui_manage_biblio_submit($form, &$form_state) {
   field_attach_submit('biblio', $biblio, $form, $form_state);
 
   $biblio->title = $form_state['values']['title'];
+  $biblio->path = $form_state['values']['path'];
 
   $timestamp_property = empty($biblio->is_new) ? 'changed' : 'created';
 

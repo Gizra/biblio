@@ -460,6 +460,66 @@ function biblio_entity_access($op, $type = NULL, $account = NULL) {
 }
 
 /**
+ * Implements hook_entity_presave().
+ *
+ * Save the path of the Biblio entry.
+ */
+function biblio_entity_presave($entity, $type) {
+  if ($type != 'biblio') {
+    return;
+  }
+
+  if (!module_exists('path')) {
+    return;
+  }
+
+  if (isset($entity->path)) {
+    $path = $entity->path;
+    $path['alias'] = trim($path['alias']);
+    // Only save a non-empty alias.
+    if (!empty($path['alias'])) {
+      // Ensure fields for programmatic executions.
+      $langcode = entity_language('biblio', $entity);
+      $path['source'] = 'biblio/' . $entity->bid;
+      $path['language'] = isset($langcode) ? $langcode : LANGUAGE_NONE;
+      path_save($path);
+    }
+  }
+}
+
+/**
+ * Implements hook_entity_load().
+ */
+function biblio_entity_load($entities, $type) {
+  if ($type != 'biblio') {
+    return;
+  }
+
+  foreach ($entities as $entity) {
+    $conditions = array(
+      'source' => 'biblio/' . $entity->bid,
+      'language' => LANGUAGE_NONE,
+    );
+    $entity->path = path_load($conditions);
+  }
+}
+
+/**
+ * Implements hook_entity_delete().
+ */
+function biblio_entity_delete($entity, $type) {
+  if ($type != 'biblio') {
+    return;
+  }
+
+  $criteria = array(
+    'source' => 'biblio/' . $entity->bid,
+    'language' => LANGUAGE_NONE,
+  );
+  path_delete($criteria);
+}
+
+/**
  * Create a biblio entity object
  *
  * @param $type
