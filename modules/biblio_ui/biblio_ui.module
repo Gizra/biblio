@@ -418,7 +418,18 @@ function theme_biblio_ui_add_biblio_list($variables) {
 /**
  * Viewing a biblio entity entry.
  */
-function biblio_ui_view_biblio($biblio, $view_mode = 'full') {
+function biblio_ui_view_biblio($biblio, $view_mode = 'full', $langcode = NULL) {
+
+  // Remove previously built content, if exists.
+  $biblio->content = array();
+
+  // Allow modules to change the view mode.
+  $context = array(
+    'entity_type' => 'biblio',
+    'entity' => $biblio,
+    'langcode' => $langcode,
+  );
+  drupal_alter('entity_view_mode', $view_mode, $context);
 
   // Add the export if it is visible.
   $fields = field_extra_fields_get_display('biblio', $biblio->type, $view_mode);
@@ -426,17 +437,46 @@ function biblio_ui_view_biblio($biblio, $view_mode = 'full') {
     $variables = array();
     $variables['bid'] = $biblio->bid;
 
-    $biblio->export = array(
+    $biblio->content['export'] = array(
       '#markup' => theme('biblio_ui_entity_export_area', $variables),
       '#weight' => $fields['export']['weight'],
     );
   }
 
+  // Build fields content.
+  // In case of a multiple view, taxonomy_term_view_multiple() already ran the
+  // 'prepare_view' step. An internal flag prevents the operation from running
+  // twice.
+  field_attach_prepare_view('biblio', array($biblio->bid => $biblio), $view_mode, $langcode);
+  entity_prepare_view('biblio', array($biblio->bid => $biblio), $langcode);
+  $biblio->content += field_attach_view('biblio', $biblio, $view_mode, $langcode);
+
+  // Allow modules to make their own additions to the taxonomy term.
+  module_invoke_all('biblio_view', $biblio, $view_mode, $langcode);
+  module_invoke_all('entity_view', $biblio, 'biblio', $view_mode, $langcode);
+
+  // Make sure the current view mode is stored if no module has already
+  // populated the related key.
+  $biblio->content += array('#view_mode' => $view_mode);
+/*
   $wrapper = entity_metadata_wrapper('biblio', $biblio);
   $info = $wrapper->view();
   $content = $info['biblio'][$wrapper->getIdentifier()];
+*/
+  $build = $biblio->content;
 
-  return render($content);
+  // We don't need duplicate rendering info in $term->content.
+  unset($biblio->content);
+  $build += array(
+    '#theme' => 'biblio',
+    '#biblio' => $biblio,
+    '#view_mode' => $view_mode,
+    '#language' => $langcode,
+  );
+  $type = 'biblio';
+  drupal_alter(array('biblio_view', 'entity_view'), $build, $type);
+  return $build;
+//  return render($content);
 }
 
 /**
