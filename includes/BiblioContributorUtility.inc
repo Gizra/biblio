@@ -220,6 +220,9 @@ class BiblioContributorUtility {
    *  MD5 string that represents the given biblio contributor.
    */
   public static function generateBiblioContributorMd5(BiblioContributor $biblio_contributor) {
+    // The property 'name' must be set in every contributor, since it is used as
+    // the title of the entity. We set it now, right before generating the MD5,
+    // so it will be included in the MD5 calculation.
     $biblio_contributor->name = $biblio_contributor->lastname ? $biblio_contributor->firstname . ' ' . $biblio_contributor->lastname : $biblio_contributor->firstname;
 
     $clone = clone $biblio_contributor;
