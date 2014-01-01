@@ -220,6 +220,8 @@ class BiblioContributorUtility {
    *  MD5 string that represents the given biblio contributor.
    */
   public static function generateBiblioContributorMd5(BiblioContributor $biblio_contributor) {
+    $biblio_contributor->name = $biblio_contributor->lastname ? $biblio_contributor->firstname . ' ' . $biblio_contributor->lastname : $biblio_contributor->firstname;
+
     $clone = clone $biblio_contributor;
 
     unset($clone->cid);

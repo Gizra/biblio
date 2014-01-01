@@ -109,7 +109,7 @@ class BiblioContributorTestCase extends DrupalWebTestCase {
     // Attempt to create 2 contributors with the same name.
     $data = 'Harry J. K. de la Potter and Harry J. K. de la Potter';
     $biblio_contributors1 = BiblioContributorUtility::getBiblioContributorsFromNames($data);
-debug($biblio_contributors1);
+
     // The expected result: The duplication was prevented so the 2 contributors
     // have the same ID.
     $this->assertEqual($biblio_contributors1[0]->cid, $biblio_contributors1[1]->cid, 'Biblio Contributor duplication was prevented.');
@@ -117,7 +117,7 @@ debug($biblio_contributors1);
     // Attempt to create another contributor with the same name.
     $data = 'Harry J. K. de la Potter';
     $biblio_contributors2 = BiblioContributorUtility::getBiblioContributorsFromNames($data);
-    debug($biblio_contributors2);
+
     // The expected result: The duplication was prevented so the 2 contributors
     // have the same ID.
     $this->assertEqual($biblio_contributors1[0]->cid, $biblio_contributors2[0]->cid, 'Biblio Contributor duplication was prevented.');
