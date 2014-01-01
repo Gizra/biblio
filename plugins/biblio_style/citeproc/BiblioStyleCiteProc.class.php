@@ -28,12 +28,20 @@ class BiblioStyleCiteProc extends BiblioStyleBase {
     // Pass CiteProc the mapped biblio.
     $mapped_data = $this->map();
 
+    if (!empty($this->plugin['options']['label_as_link'])) {
+      // Add a prefix and suffix to the title, so it's later easier to replace
+      // it with a link to the Biblio.
+      $mapped_data->title = '---REPLACE---' . $mapped_data->title . '---REPLACE---';
+    }
+
     $output =  $citeproc->render($mapped_data);
 
     if (!empty($this->plugin['options']['label_as_link'])) {
       // Show label as link.
+      $matches = array();
+      preg_match('/---REPLACE---(.*)---REPLACE---/i', $output, $matches);
       $url = entity_uri('biblio', $this->biblio);
-      $output = str_replace($mapped_data->title, l($mapped_data->title, $url['path'], $url['options']), $output);
+      $output = str_replace($matches[0], l($matches[1], $url['path'], $url['options']), $output);
     }
 
     return $output;
