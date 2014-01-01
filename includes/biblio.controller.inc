@@ -9,6 +9,24 @@ class Biblio extends Entity {
     parent::__construct($values, 'biblio');
   }
 
+  public function buildContent($view_mode = 'full', $langcode = NULL, $content = array()) {
+    // Add the export if it is visible.
+    $fields = field_extra_fields_get_display('biblio', $this->type, $view_mode);
+    if (isset($fields['export']) && $fields['export']['visible']) {
+      $variables = array();
+      $variables['bid'] = $this->bid;
+
+      $content['export'] = array(
+        '#markup' => theme('biblio_ui_entity_export_area', $variables),
+        '#weight' => $fields['export']['weight'],
+      );
+    }
+
+    // Calling parent::buildContent() won't work, since we need to send the
+    // content as well.
+    return entity_get_controller($this->entityType)->buildContent($this, $view_mode, $langcode, $content);
+  }
+
   /**
    * Override Entity:save().
    *
