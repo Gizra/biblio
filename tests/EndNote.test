@@ -1,0 +1,55 @@
+<?php
+
+/**
+ * Test BibTeX style plugin.
+ */
+class BiblioEndNoteTestCase extends DrupalWebTestCase {
+
+  public static function getInfo() {
+    return array(
+      'name' => 'EndNote',
+      'description' => 'Test Import and render of EndNote style plugin.',
+      'group' => 'Biblio',
+    );
+  }
+
+  function setUp() {
+    parent::setUp('biblio');
+
+    biblio_create_fields_by_bundle(array('book', 'journal'));
+  }
+
+  /**
+   * Test end note tagged.
+   */
+  function testEndNoteTagged() {
+    $data = '
+%0 Book
+%A Gary King
+%B PS: Political Science and Politics
+%D 2013
+%G eng
+%T Restructuring the Social Sciences: Reflections from Harvard’s Institute for Quantitative Social Science
+%X The social sciences are undergoing a dramatic transformation from studying problems to solving them.';
+
+    $expected_result = '%0 Book
+%D 2013
+%G eng
+%T Restructuring the Social Sciences: Reflections from Harvard’s Institute for Quantitative Social Science
+%X The social sciences are undergoing a dramatic transformation from studying problems to solving them.
+%A Gary King
+%B PS: Political Science and Politics';
+
+    ctools_include('plugins');
+    $plugin = biblio_get_biblio_style('endnote');
+    $class = ctools_plugin_load_class('biblio', 'biblio_style', 'endnote', 'class');
+
+    $biblio_style = new $class($plugin);
+
+    $biblios = $biblio_style->import($data);
+    $biblio = $biblios['new'][0];
+    $output = $biblio->getText('endnote', array('type' => 'tagged'));
+
+    $this->assertEqual(trim($output), trim($expected_result), 'EndNote render is equal to the expected result');
+  }
+}
