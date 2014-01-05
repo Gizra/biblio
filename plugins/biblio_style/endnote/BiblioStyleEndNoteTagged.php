@@ -61,7 +61,7 @@ class BiblioStyleEndNoteTagged extends BiblioStyleEndNote implements BiblioStyle
     $role = $map['field'][$tag]['role'];
 
     $biblio = $wrapper->value();
-    $this->addBiblioContributorsToCollection($biblio, $value, $role);
+    $biblio->addContributors($value, $role);
   }
 
   /**

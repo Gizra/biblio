@@ -129,7 +129,44 @@ class Biblio extends Entity {
   /**
    * Build the uri of the biblio.
    */
-  function uri() {
+  public function uri() {
     return array('path' => 'biblio/' . $this->bid);
+  }
+
+  /**
+   * Add contributors to the field collection of a Biblio.
+   *
+   * @param $names
+   *   String with name(s) of the contributors, or an array of Biblio
+   *   contributor objects.
+   * @param $role
+   *   The role of the contributor (e.g "Author", "Editor").
+   */
+  public function addContributors($names, $role = 'Author') {
+    $contributors = is_string($names) ? BiblioContributorUtility::getBiblioContributorsFromNames($names) : $names;
+
+    foreach ($contributors as $contributor) {
+      $field_collection = entity_create('field_collection_item', array('field_name' => 'contributor_field_collection'));
+      $field_collection->setHostEntity('biblio', $this);
+      $collection_wrapper = entity_metadata_wrapper('field_collection_item', $field_collection);
+      $collection_wrapper->biblio_contributor->set($contributor);
+
+      // @todo: Add reference to correct term.
+      if ($term = taxonomy_get_term_by_name(ucfirst($role), 'biblio_roles')) {
+        $term = reset($term);
+      }
+      else {
+        // Create a new term.
+        $vocabulary = taxonomy_vocabulary_machine_name_load('biblio_roles');
+        $values = array(
+          'name' => ucfirst($role),
+          'vid' => $vocabulary->vid,
+        );
+        $term = entity_create('taxonomy_term', $values);
+        taxonomy_term_save($term);
+      }
+
+      $collection_wrapper->biblio_contributor_role->set($term);
+    }
   }
 }

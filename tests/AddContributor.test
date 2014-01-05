@@ -1,0 +1,46 @@
+<?php
+
+/**
+ * @file
+ * Contains BiblioAddContributorTestCase.
+ */
+
+class BiblioAddContributorTestCase extends DrupalWebTestCase {
+
+  public static function getInfo() {
+    return array(
+      'name' => 'Add Contributors',
+      'description' => 'Test adding contributors to a Biblio entity.',
+      'group' => 'Biblio',
+    );
+  }
+
+  function setUp() {
+    parent::setUp('biblio');
+    biblio_create_fields_by_bundle(array('book'));
+  }
+
+  /**
+   * Test adding contributors.
+   */
+  function testAddContributors() {
+    $biblio = biblio_create('book');
+    $biblio->addContributors('John Doe and Ploni Almoni');
+
+    $biblio->save();
+
+    $wrapper = entity_metadata_wrapper('biblio', $biblio);
+    $this->assertEqual('John Doe', $wrapper->contributor_field_collection[0]->biblio_contributor->label());
+    $this->assertEqual('Author', $wrapper->contributor_field_collection[0]->biblio_contributor_role->label());
+
+    $this->assertEqual('Ploni Almoni', $wrapper->contributor_field_collection[1]->biblio_contributor->label());
+    $this->assertEqual('Author', $wrapper->contributor_field_collection[1]->biblio_contributor_role->label());
+
+    $biblio->addContributors('John Smith', 'Editor');
+    $biblio->save();
+
+    $wrapper = entity_metadata_wrapper('biblio', $biblio);
+    $this->assertEqual('John Smith', $wrapper->contributor_field_collection[2]->biblio_contributor->label());
+    $this->assertEqual('Editor', $wrapper->contributor_field_collection[2]->biblio_contributor_role->label());
+  }
+}

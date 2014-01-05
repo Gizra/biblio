@@ -55,6 +55,7 @@ files[] = includes/migrate/7300/biblio_entries.migrate.inc
 files[] = includes/migrate/7300/biblio_types.migrate.inc
 
 ; Tests
+files[] = tests/AddContributor.test
 files[] = tests/BibTex.test
 files[] = tests/CiteProc.test
 files[] = tests/Contributor.test
