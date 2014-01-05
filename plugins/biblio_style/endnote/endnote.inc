@@ -6,9 +6,14 @@ $plugin = array(
   'class' => 'BiblioStyleEndNote',
   'import' => TRUE,
   'export' => array(
-    'xml' => array(
+    'xml7' => array(
+      'class' => 'BiblioStyleEndNoteXML7',
+      'name' => t('XML7'),
+      'file extension' => 'xml',
+    ),
+    'xml8' => array(
       'class' => 'BiblioStyleEndNoteXML8',
-      'name' => t('XML'),
+      'name' => t('XML8'),
       'file extension' => 'xml',
     ),
     'tagged' => array(
