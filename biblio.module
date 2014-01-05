@@ -288,7 +288,7 @@ function biblio_views_api() {
  * Implements hook_migrate_api().
  */
 function biblio_migrate_api() {
-  $migrations = array();
+  $migrations = $groups = array();
   if (db_table_exists('_biblio_1x')) {
     $migrations['BiblioMigrateContributorCollections'] = array('class_name' => 'BiblioMigrateContributorCollections', 'group_name' => 'biblio_3');
     $migrations['BiblioMigrateTypes'] = array('class_name' => 'BiblioMigrateTypes', 'group_name' => 'biblio_3');
