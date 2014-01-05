@@ -12,7 +12,6 @@ $plugin = array(
   ),
   'export' => array(
     'bib' => array(
-      'class' => 'BiblioStyleBibtex',
       'name' => t('BibTeX'),
       'file extension' => 'bib',
     ),

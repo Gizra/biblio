@@ -1148,23 +1148,16 @@ function biblio_ui_is_biblio_view($view_name, $display_name) {
 function theme_biblio_ui_view_export_area($variables) {
   $links = array();
   foreach (biblio_get_exportable_biblio_styles() as $style_name => $style) {
-    foreach ($style['export'] as $format_name => $format) {
-      if (count($style['export']) == 1) {
-        $title_attr = t('Click to download Biblio in @format format', array('@format' => $style['title']));
-        $title = $style['title'];
+    if (!empty($style['export'])) {
+      foreach ($style['export'] as $format_name => $format) {
+        $links[$style_name . "_" . $format_name] = array(
+          'href' => 'biblio/export_view/' . $style_name . '/' . $format_name . '/' . $variables['view_name'] . '/' . $variables['display_name'],
+          'title' => $format_name,
+          'attributes' => array(
+            'title' => t('Click to download Biblio in @format format', array('@format' => $format_name)),
+          ),
+        );
       }
-      else {
-        $title_attr = t('Click to download Biblio in @format (@format_name) format', array('@format' => $style['title'], '@format_name' => $format_name));
-        $title = $style['title'] . ' (' . $format_name . ')';
-      }
-
-      $links[$style_name . "_" . $format_name] = array(
-        'href' => 'biblio/export_view/' . $style_name . '/' . $format_name . '/' . $variables['view_name'] . '/' . $variables['display_name'],
-        'title' => $title,
-        'attributes' => array(
-          'title' => $title_attr,
-        ),
-      );
     }
   }
 
