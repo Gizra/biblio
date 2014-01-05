@@ -67,6 +67,16 @@ function biblio_ui_menu() {
     'weight' => '70',
   );
 
+  $items['biblio/export/%/%/%'] = array(
+    'title' => t('Export Biblio'),
+    'description callback' => 'biblio_ui_description_callback',
+    'description arguments' => array(1, 'export'),
+    'access callback' => 'biblio_ui_export_access',
+    'access arguments' => array(2, 3, 4),
+    'page callback' => 'biblio_ui_export_menu_item',
+    'page arguments' => array(2, 3, 4),
+  );
+
   $items['biblio/export_view/%/%/%/%'] = array(
     'title' => t('Export Biblio by View'),
     'description callback' => 'biblio_ui_description_callback',
@@ -279,6 +289,7 @@ function biblio_ui_theme() {
     'biblio_ui_add_biblio_list' => array(),
     'biblio_ui_bundle_overview' => array(),
     'biblio_ui_view_export_area' => array(),
+    'biblio_ui_entity_export_area' => array(),
   );
 }
 
@@ -1048,17 +1059,14 @@ function biblio_ui_export_view_access($style_name, $format_name, $view_name, $di
     // User can't view Biblios.
     return;
   }
-
   if (!biblio_get_exportable_biblio_style($style_name, $format_name)) {
     // Style name doesn't exist.
     return;
   }
-
   if (!biblio_ui_is_biblio_view($view_name, $display_name)) {
     // The given view/display does not fit for Biblio.
     return;
   }
-
   return TRUE;
 }
 
@@ -1073,7 +1081,7 @@ function biblio_ui_export_view_access($style_name, $format_name, $view_name, $di
  *   Array of Biblio IDs.
  */
 function biblio_ui_export($style_name, $format_name, $bids = array()) {
-  $plugin = biblio_get_exportable_biblio_style($style_name);
+  $plugin = biblio_get_exportable_biblio_style($style_name, $format_name);
   $filename = $style_name . '.' . $plugin['export'][$format_name]['extension'];
 
   drupal_add_http_header('Content-type', 'application/text; charset=utf-8');
@@ -1088,32 +1096,67 @@ function biblio_ui_export($style_name, $format_name, $bids = array()) {
 }
 
 /**
- * Export a Biblio entities to a file by a View.
+ * Menu access; Allow export based on existing Biblio style and user access.
+ *
+ * @param $style_name
+ *   Biblio style name.
+ * @param $format_name
+ *   Biblio export format string.
+ * @param $bids_string
+ *   String of comma separated Biblio IDs.
+ *
+ * @return bool
+ */
+function biblio_ui_export_access($style_name, $format_name, $bids_string) {
+  if (!user_access('view biblio')) {
+    // User can't view Biblios.
+    return;
+  }
+  if (!biblio_get_exportable_biblio_style($style_name, $format_name)) {
+    // Style name doesn't exist.
+    return;
+  }
+  if (!biblio_ui_get_ids_from_string($bids_string)) {
+    // No Biblios found on string.
+    return;
+   }
+   return TRUE;
+ }
+
+
+/**
+ * Export a Biblio entity to a file by a given format.
  *
  * @param $style_name
  *   Biblio style string.
- * @param $view_name
- *   Biblio related View name.
- * @param $display_name
- *   Biblio related View display name.
+ * @param $bids_string
+ *   Comma-separated list of Biblio IDs.
  */
-function biblio_ui_export_view($style_name, $view_name, $display_name) {
-  $bids = array();
+function biblio_ui_export_menu_item($style_name, $format_name, $bids_string = '') {
+  $bids = biblio_ui_get_ids_from_string($bids_string);
+  biblio_ui_export($style_name, $format_name, $bids);
+}
 
-  $view = views_get_view($view_name);
-  $view->set_display($display_name);
-
-  // Disable pager. Need to export all at once.
-  $pager = $view->display_handler->get_option('pager');
-  $pager['type'] = 'none';
-  $view->display_handler->set_option('pager', $pager);
-
-  // Execute and gather the IDs.
-  $view->execute($display_name);
-  foreach ($view->result as $biblio) {
-    $bids[] = $biblio->bid;
+/**
+ * Get IDs from string of comma separated numbers.
+ *
+ * @param $bids_string
+ *   Comma-separated list of Biblio IDs.
+ *
+ * @return array|bool
+ *   Array of Biblio IDs, or FALSE if none found.
+ */
+function biblio_ui_get_ids_from_string($bids_string = '') {
+  if (!$bids = explode(',', $bids_string)) {
+    return;
   }
-  biblio_ui_export($style_name, $bids);
+  // Verify each item is a number.
+  foreach ($bids as $bid) {
+    if (!is_numeric($bid)) {
+      return;
+    }
+  }
+  return $bids;
 }
 
 /**
@@ -1149,7 +1192,7 @@ function theme_biblio_ui_view_export_area($variables) {
   $links = array();
   foreach (biblio_get_exportable_biblio_styles() as $style_name => $style) {
     if (!empty($style['export'])) {
-      foreach ($style['export'] as $format_name => $format) {
+      foreach (array_keys($style['export']) as $format_name) {
         $links[$style_name . "_" . $format_name] = array(
           'href' => 'biblio/export_view/' . $style_name . '/' . $format_name . '/' . $variables['view_name'] . '/' . $variables['display_name'],
           'title' => $format_name,
@@ -1160,11 +1203,58 @@ function theme_biblio_ui_view_export_area($variables) {
       }
     }
   }
-
   $attributes = array(
     'links' => $links,
     'title' => t('Export'),
     'attributes' => array('class' => array('biblio-export-buttons')),
   );
   return theme('ctools_dropdown', $attributes);
+}
+
+/**
+ * Theme callback - display a button for export in Biblio entity.
+ */
+function theme_biblio_ui_entity_export_area($variables) {
+  $title = t('Export');
+  $links = array();
+  foreach (biblio_get_exportable_biblio_styles() as $style_name => $style) {
+    if (!empty($style['export'])) {
+      foreach (array_keys($style['export']) as $format_name) {
+        $links[$style_name] = array(
+          'href' => 'biblio/export/' . $style_name . '/' . $format_name . '/' . $variables['bid'],
+          'title' => $style['title'],
+          'attributes' => array(
+            'title' => t('Click to Download Biblio in @format format', array('@format' => $style_name)),
+          ),
+        );
+      }
+    }
+  }
+
+  $attributes = array(
+    'links' => $links,
+    'title' => $title,
+    'attributes' => array('class' => array('biblio-export-buttons')),
+  );
+  return theme('ctools_dropdown', $attributes);
+}
+
+/**
+ * Implementation of hook_field_extra_fields().
+ */
+function biblio_ui_field_extra_fields() {
+  $return = array();
+  $info = entity_get_info('biblio');
+  foreach (array_keys($info['bundles']) as $bundle) {
+    $return['biblio'][$bundle] = array(
+      'display' => array(
+        'export' => array(
+          'label' => t('Export links'),
+          'description' => t('Export Biblio to a file.'),
+          'weight' => -10,
+        ),
+      ),
+    );
+  }
+  return $return;
 }
