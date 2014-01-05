@@ -1082,7 +1082,7 @@ function biblio_ui_export_view_access($style_name, $format_name, $view_name, $di
  */
 function biblio_ui_export($style_name, $format_name, $bids = array()) {
   $plugin = biblio_get_exportable_biblio_style($style_name, $format_name);
-  $filename = $style_name . '.' . $plugin['export'][$format_name]['extension'];
+  $filename = $style_name . '.' . $plugin['export'][$format_name]['file extension'];
 
   drupal_add_http_header('Content-type', 'application/text; charset=utf-8');
   drupal_add_http_header('Content-Disposition', 'attachment; filename="' . $filename . '"');
@@ -1225,12 +1225,12 @@ function theme_biblio_ui_view_export_area($variables) {
   $links = array();
   foreach (biblio_get_exportable_biblio_styles() as $style_name => $style) {
     if (!empty($style['export'])) {
-      foreach (array_keys($style['export']) as $format_name) {
+      foreach ($style['export'] as $format_name => $format) {
         $links[$style_name . "_" . $format_name] = array(
           'href' => 'biblio/export_view/' . $style_name . '/' . $format_name . '/' . $variables['view_name'] . '/' . $variables['display_name'],
-          'title' => $format_name,
+          'title' => $format['name'],
           'attributes' => array(
-            'title' => t('Click to download Biblio in @format format', array('@format' => $format_name)),
+            'title' => t('Click to download Biblio in @format format', array('@format' => $format['name'])),
           ),
         );
       }
@@ -1252,12 +1252,12 @@ function theme_biblio_ui_entity_export_area($variables) {
   $links = array();
   foreach (biblio_get_exportable_biblio_styles() as $style_name => $style) {
     if (!empty($style['export'])) {
-      foreach (array_keys($style['export']) as $format_name) {
+      foreach ($style['export'] as $format_name => $format) {
         $links[$style_name] = array(
           'href' => 'biblio/export/' . $style_name . '/' . $format_name . '/' . $variables['bid'],
-          'title' => $style['title'],
+          'title' => $format['name'],
           'attributes' => array(
-            'title' => t('Click to Download Biblio in @format format', array('@format' => $style_name)),
+            'title' => t('Click to Download Biblio in @format format', array('@format' => $format['name'])),
           ),
         );
       }
