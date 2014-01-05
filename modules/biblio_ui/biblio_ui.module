@@ -1230,7 +1230,7 @@ function theme_biblio_ui_view_export_area($variables) {
           'href' => 'biblio/export_view/' . $style_name . '/' . $format_name . '/' . $variables['view_name'] . '/' . $variables['display_name'],
           'title' => $format['name'],
           'attributes' => array(
-            'title' => t('Click to download Biblio in @format format', array('@format' => $format['name'])),
+            'title' => t('Click to Download Biblio in @format format', array('@format' => $format['name'])),
           ),
         );
       }
