@@ -71,7 +71,7 @@ class Biblio extends Entity {
     $class = ctools_plugin_load_class('biblio', 'biblio_style', $style_name, 'class');
 
     $biblio_style = new $class($plugin, $this);
-    $output = $biblio_style->render();
+    $output = $biblio_style->render($options);
 
     // @todo: We do this because the title might have link. Is there a nicer way?
     $this->title = strip_tags($this->title);
