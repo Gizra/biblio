@@ -1142,13 +1142,24 @@ function theme_biblio_ui_view_export_area($variables) {
   $title = t('Export');
   $links = array();
   foreach (biblio_get_exportable_biblio_styles() as $style_name => $style) {
-    $links[$style_name] = array(
-      'href' => 'biblio/export_view/' . $style_name . '/' . $variables['view_name'] . '/' . $variables['display_name'],
-      'title' => $style['title'],
-      'attributes' => array(
-        'title' => t('Click to download Biblio in @format format', array('@format' => $style_name)),
-      ),
-    );
+    foreach ($style['export'] as $format_name => $format) {
+      if (count($style['export']) == 1) {
+        $title_attr = t('Click to download Biblio in @format format', array('@format' => $style_name));
+        $title = $style_name;
+      }
+      else {
+        $title_attr = t('Click to download Biblio in @format (@format_name) format', array('@format' => $style_name, 'format_name' => $format_name));
+        $title = $style_name . ' (' . $format_name . ')';
+      }
+
+      $links[$style_name . "_" . $format_name] = array(
+        'href' => 'biblio/export_view/' . $style_name . '/' . $format_name . '/' . $variables['view_name'] . '/' . $variables['display_name'],
+        'title' => $title,
+        'attributes' => array(
+          'title' => $title_attr,
+        ),
+      );
+    }
   }
 
   $attributes = array(
