@@ -252,7 +252,7 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote implements BiblioStyleIm
         $role = 'Translator';
     }
 
-    $this->addBiblioContributorsToCollection($biblio, $name, $role);
+    $this->addContributors($name, $role);
   }
 
 

@@ -504,7 +504,7 @@ function biblio_entity_access($op, $type = NULL, $account = NULL) {
  *  An associative array of any additional values to be set when creating this
  *  entity. These values will be carried throughout the biblio object's life.
  *  Example: $values['type'] => 'book';
- * @return object
+ * @return Biblio
  *  The biblio object, with default values.
  */
 function biblio_create($type, $values = array()) {
