@@ -75,7 +75,7 @@ class BiblioPathTestCase extends DrupalWebTestCase {
     $this->assertText(t('The alias is already in use.'), 'Attempt to moved alias was rejected.');
 
     // Delete alias.
-    $this->drupalPost('biblio/' . $bilbio1->bid . '/edit', array('path[alias]' => ''), t('Send'));
+    $this->drupalPost('biblio/' . $bilbio1->bid . '/edit', array('path[alias]' => ''), t('Save'));
 
     // Confirm that the alias no longer works.
     $this->drupalGet($edit['path[alias]']);

@@ -498,14 +498,12 @@ function biblio_biblio_update($biblio) {
   if (isset($biblio->path)) {
     $path = $biblio->path;
     $path['alias'] = trim($path['alias']);
-    // Only save a non-empty alias.
-    if (!empty($path['alias'])) {
-      // Ensure fields for programmatic executions.
-      $langcode = entity_language('biblio', $biblio);
-      $path['source'] = 'biblio/' . $biblio->bid;
-      $path['language'] = isset($langcode) ? $langcode : LANGUAGE_NONE;
-      path_save($path);
-    }
+
+    // Ensure fields for programmatic executions.
+    $langcode = entity_language('biblio', $biblio);
+    $path['source'] = 'biblio/' . $biblio->bid;
+    $path['language'] = isset($langcode) ? $langcode : LANGUAGE_NONE;
+    path_save($path);
   }
 }
 
