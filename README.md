@@ -73,7 +73,6 @@ $biblio->addContributors('John Doe and Ploni Almoni');
 
 // Add an editor.
 $biblio->addContributors('John Smith', 'Editor');
-
 ```
 
 ### CiteProc
