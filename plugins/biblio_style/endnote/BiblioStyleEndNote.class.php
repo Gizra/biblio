@@ -61,10 +61,7 @@ class BiblioStyleEndNote extends BiblioStyleBase {
       'type' => 'tagged',
     );
     switch ($options['type']) {
-      case 'xml7':
-        $class_name = 'BiblioStyleEndNoteXML7';
-        break;
-      case 'xml8':
+      case 'xml':
         $class_name = 'BiblioStyleEndNoteXML8';
         break;
       default:
