@@ -1253,7 +1253,7 @@ function theme_biblio_ui_entity_export_area($variables) {
   foreach (biblio_get_exportable_biblio_styles() as $style_name => $style) {
     if (!empty($style['export'])) {
       foreach ($style['export'] as $format_name => $format) {
-        $links[$style_name] = array(
+        $links[$style_name . "_" . $format_name] = array(
           'href' => 'biblio/export/' . $style_name . '/' . $format_name . '/' . $variables['bid'],
           'title' => $format['name'],
           'attributes' => array(
