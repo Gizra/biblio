@@ -1096,6 +1096,37 @@ function biblio_ui_export($style_name, $format_name, $bids = array()) {
 }
 
 /**
+ * Export a Biblio entities to a file by a View.
+ *
+ * @param $style_name
+ *   Biblio style string.
+ * @param $format_name
+ *   Biblio export format string.
+ * @param $view_name
+ *   Biblio related View name.
+ * @param $display_name
+ *   Biblio related View display name.
+ */
+function biblio_ui_export_view($style_name, $format_name, $view_name, $display_name) {
+  $bids = array();
+
+  $view = views_get_view($view_name);
+  $view->set_display($display_name);
+
+  // Disable pager. Need to export all at once.
+  $pager = $view->display_handler->get_option('pager');
+  $pager['type'] = 'none';
+  $view->display_handler->set_option('pager', $pager);
+
+  // Execute and gather the IDs.
+  $view->execute($display_name);
+  foreach ($view->result as $biblio) {
+    $bids[] = $biblio->bid;
+  }
+  biblio_ui_export($style_name, $format_name, $bids);
+}
+
+/**
  * Menu access; Allow export based on existing Biblio style and user access.
  *
  * @param $style_name
@@ -1129,6 +1160,8 @@ function biblio_ui_export_access($style_name, $format_name, $bids_string) {
  *
  * @param $style_name
  *   Biblio style string.
+ * @param $format_name
+ *   Biblio export format string.
  * @param $bids_string
  *   Comma-separated list of Biblio IDs.
  */
