@@ -17,7 +17,6 @@ class BiblioStyleEndNote extends BiblioStyleBase {
         'xml' => t('XML'),
       ),
       '#default_value' => 'tagged',
-
     );
 
     return $form;
@@ -30,7 +29,6 @@ class BiblioStyleEndNote extends BiblioStyleBase {
     $options += array(
       'type' => 'tagged',
     );
-
 
     $class_name = FALSE;
     if ($options['type'] == 'tagged') {
