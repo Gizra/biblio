@@ -60,8 +60,17 @@ class BiblioStyleEndNote extends BiblioStyleBase {
     $options += array(
       'type' => 'tagged',
     );
-
-    $class_name = $options['type'] == 'tagged' ? 'BiblioStyleEndNoteTagged' : 'BiblioStyleEndNoteXML';
+    switch ($options['type']) {
+      case 'xml7':
+        $class_name = 'BiblioStyleEndNoteXML7';
+        break;
+      case 'xml8':
+        $class_name = 'BiblioStyleEndNoteXML8';
+        break;
+      default:
+        $class_name = 'BiblioStyleEndNoteTagged';
+        break;
+    }
 
     $handler = new $class_name( $this->plugin, $this->biblio);
     return $handler->render($options, $langcode);
