@@ -226,7 +226,7 @@ function biblio_biblio_fields_info() {
       ),
       'field_name' => 'biblio_year',
       'label' => 'Year of Publication',
-      // We will enfroce required only if the Publication status is set to
+      // We will enforce required only if the Publication status is set to
       // "published".
       'required' => FALSE,
       'settings' => array(

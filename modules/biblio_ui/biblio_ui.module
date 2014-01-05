@@ -67,14 +67,14 @@ function biblio_ui_menu() {
     'weight' => '70',
   );
 
-  $items['biblio/export/%/%'] = array(
-    'title' => t('Export biblio'),
+  $items['biblio/export_view/%/%/%'] = array(
+    'title' => t('Export Biblio by View'),
     'description callback' => 'biblio_ui_description_callback',
     'description arguments' => array(1, 'export'),
-    'access callback' => 'biblio_ui_export_access',
-    'access arguments' => array(2, 3),
-    'page callback' => 'biblio_ui_export',
-    'page arguments' => array(2, 3),
+    'access callback' => 'biblio_ui_export_view_access',
+    'access arguments' => array(2, 3, 4),
+    'page callback' => 'biblio_ui_export_view',
+    'page arguments' => array(2, 3, 4),
   );
 
   if (module_exists('devel')) {
@@ -278,6 +278,7 @@ function biblio_ui_theme() {
   return array(
     'biblio_ui_add_biblio_list' => array(),
     'biblio_ui_bundle_overview' => array(),
+    'biblio_ui_view_export_area' => array(),
   );
 }
 
@@ -602,9 +603,7 @@ function biblio_ui_manage_bundles() {
     array('data' => t('Operations'), 'colspan' => 5, 'width' => '50%')
   );
 
-  $output = theme('table', array('header' => $headers, 'rows' => $data));
-
-  return $output;
+  return theme('table', array('header' => $headers, 'rows' => $data));
 }
 
 /**
@@ -1034,71 +1033,128 @@ function biblio_ui_contributor_delete_form_submit($form, &$form_state) {
  * Menu access; Allow export based on existing Biblio style and user access.
  *
  * @param $style_name
- *   Biblio style name.
- * @param $bids
- *   String of comma separated Biblio IDs.
- *
+ *   Biblio style string.
+ * @param $view_name
+ *   Biblio related View name.
+ * @param $display_name
+ *   Biblio related View display name.
+ * 
  * @return bool
  */
-function biblio_ui_export_access($style_name, $bids) {
+function biblio_ui_export_view_access($style_name, $view_name, $display_name) {
   if (!user_access('view biblio')) {
     // User can't view Biblios.
     return;
   }
 
-  if (!biblio_get_biblio_style($style_name)) {
+  if (!biblio_get_exportable_biblio_style($style_name)) {
     // Style name doesn't exist.
     return;
   }
 
-  if (!biblio_ui_load_biblios_from_string($bids)) {
-    // No Biblios found on string.
+  if (!biblio_ui_is_biblio_view($view_name, $display_name)) {
+    // The given view/display does not fit for Biblio.
+    return;
+  }
+
+  return TRUE;
+}
+
+/**
+ * Export a Biblio entity to a file by a given format and array of IDs.
+ *
+ * @param $style_name
+ *   Biblio style string.
+ * @param array $bids
+ *   Array of Biblio IDs.
+ */
+function biblio_ui_export($style_name, $bids = array()) {
+  $plugin = biblio_get_exportable_biblio_style($style_name);
+  $filename = $style_name . '.' . $plugin['export extension'];
+
+  drupal_add_http_header('Content-type', 'application/text; charset=utf-8');
+  drupal_add_http_header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+
+  foreach (biblio_load_multiple($bids) as $biblio) {
+    print_r($biblio->getText($style_name));
+  }
+}
+
+/**
+ * Export a Biblio entities to a file by a View.
+ *
+ * @param $style_name
+ *   Biblio style string.
+ * @param $view_name
+ *   Biblio related View name.
+ * @param $display_name
+ *   Biblio related View display name.
+ */
+function biblio_ui_export_view($style_name, $view_name, $display_name) {
+  $bids = array();
+
+  $view = views_get_view($view_name);
+  $view->set_display($display_name);
+
+  // Disable pager. Need to export all at once.
+  $pager = $view->display_handler->get_option('pager');
+  $pager['type'] = 'none';
+  $view->display_handler->set_option('pager', $pager);
+
+  // Execute and gather the IDs.
+  $view->execute($display_name);
+  foreach ($view->result as $biblio) {
+    $bids[] = $biblio->bid;
+  }
+  biblio_ui_export($style_name, $bids);
+}
+
+/**
+ * Verify the given View and display names exist and related to Biblio.
+ *
+ * @param $view_name
+ *   View name.
+ * @param $display_name
+ *   View display name.
+ *
+ * @return bool
+ */
+function biblio_ui_is_biblio_view($view_name, $display_name) {
+  if (!$view = views_get_view($view_name)) {
+    // View does not exist.
+    return;
+  }
+  if ($view->base_table != 'biblio') {
+    // View does not provide Biblio entities.
+    return;
+  }
+  if (!$view->access($display_name)) {
+    // No access to the given display.
     return;
   }
   return TRUE;
 }
 
 /**
- * Export a biblio entity to a file by a given format.
- *
- * @param string $style_name
- *   Biblio style string.
- *
- * @param string $bids
- *   Comma-separated list of Biblio IDs.
+ * Theme callback - display a button for export in a View.
  */
-function biblio_ui_export($style_name, $bids) {
-  $plugin = biblio_get_biblio_style($style_name);
-  $filename = $style_name . '.' . $plugin['export extension'];
-
-  drupal_add_http_header('Content-type', 'application/text; charset=utf-8');
-  drupal_add_http_header('Content-Disposition', 'attachment; filename="' . $filename . '"');
-
-  foreach (biblio_ui_load_biblios_from_string($bids) as $biblio) {
-    print_r($biblio->getText($style_name));
-  }
-}
-
-/**
- * Load Biblio entities from string of comma separated IDs.
- *
- * @param $bids_string
- *   Comma-separated list of Biblio IDs.
- *
- * @return array|bool
- *   Array of loaded Biblio, or FALSE if none found.
- */
-function biblio_ui_load_biblios_from_string($bids_string = '') {
-  if (!$bids = explode(',', $bids_string)) {
-    return;
+function theme_biblio_ui_view_export_area($variables) {
+  $title = t('Export');
+  $links = array();
+  foreach (biblio_get_exportable_biblio_styles() as $style_name => $style) {
+    $links[$style_name] = array(
+      'href' => 'biblio/export_view/' . $style_name . '/' . $variables['view_name'] . '/' . $variables['display_name'],
+      'title' => $style['title'],
+      'attributes' => array(
+        'title' => t('Click to download Biblio in @format format', array('@format' => $style_name)),
+      ),
+    );
   }
 
-  // Verify each item is a number.
-  foreach ($bids as $bid) {
-    if (!is_numeric($bid)) {
-      return;
-    }
-  }
-
-  return biblio_load_multiple($bids);
+  $attributes = array(
+    'links' => $links,
+    'title' => $title,
+    'attributes' => array('class' => array('biblio-export-buttons')),
+  );
+  return theme('ctools_dropdown', $attributes);
 }

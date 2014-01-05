@@ -3,7 +3,6 @@
 if (module_exists('libraries') && file_exists(libraries_get_path('citeproc-php') . '/CiteProc.php')) {
   $plugin = array(
     'title' => t('CiteProc'),
-    'export extension' => 'csl',
     'description' => t('CiteProc styles.'),
     'class' => 'BiblioStyleCiteProc',
     'options' => array(
