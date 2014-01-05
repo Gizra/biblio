@@ -49,12 +49,13 @@ $biblio_style = new $class($plugin);
 // Import the biblios from $data.
 // This returns an array because multiple biblios can be imported at once.
 // The biblios in the array are grouped by the result:
-//   'new'       - New biblios, created in the import process.
-//   'duplicate' - Existing biblios, when one or more of the biblios in the data are
-//                 identical to existing biblios.
-//   'error'     - Errors that occured during the import process, this means one or
-//                 more biblios failed to import.
-// In this example, the array will contain only one biblio, categorized as 'new'.
+//   - 'new': New biblios, created in the import process.
+//   - 'duplicate': Existing biblios, when one or more of the biblios in the data
+//      are identical to existing biblios.
+//   - 'error': Errors that occured during the import process, this means one or
+//     more biblios failed to import.
+// In this example, the array will contain only one biblio, categorized as
+// 'new'.
 $biblios = $biblio_style->import($data);
 $new_biblio = $biblios['new'][0];
 ```
