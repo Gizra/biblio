@@ -15,7 +15,7 @@ if (module_exists('libraries') && file_exists(libraries_get_path('citeproc-php')
       'label_as_link' => TRUE,
     ),
     'export' => array(
-      'csl' => array(
+      'citeproc' => array(
         'name' => t('Citeproc'),
         'file extension' => 'csl',
       ),

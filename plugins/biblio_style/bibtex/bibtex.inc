@@ -11,7 +11,7 @@ $plugin = array(
     'closing_tag' => '}',
   ),
   'export' => array(
-    'bib' => array(
+    'bibtex' => array(
       'name' => t('BibTeX'),
       'file extension' => 'bib',
     ),
