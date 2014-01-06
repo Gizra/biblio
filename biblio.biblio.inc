@@ -2111,6 +2111,7 @@ function biblio_biblio_fields_info() {
         0 => array(
           'value' => 'published',
         ),
+      ),
       'widget' => array(
         'module' => 'options',
         'type' => 'options_select',
