@@ -124,25 +124,22 @@ function biblio_permission() {
       'title' => t('Show export links'),
       'description' => t('Allows users to see links which allow export of bibliographic data for an individual entry or the entire result set.'),
     ),
-    'show download links' => array(
-      'title' => t('Show download links'),
-      'description' => t('Allows users to see links to any attachements associated with the Biblio entry.'),
+    // Contributor permissions.
+    'create biblio contributor entry' => array(
+      'title' => t('Create biblio contributor entry'),
+      'description' => t('Grant to the user the permission to create a biblio contributor via the UI'),
     ),
-    'show own download links' => array(
-      'title' => t('Show own download links'),
-      'description' => t('Allows user to only see download links on entries for which they are the owner.'),
+    'update biblio contributor entry' => array(
+      'title' => t('Update biblio contributor entry'),
+      'description' => t('Grant to the user the permission to update a biblio contributor via the UI'),
     ),
-    'show filter tab' => array(
-      'title' => t('Show filter tab'),
-      'description' => t('This determines if the "Filter" tab on the Biblio list page will be shown to the user.'),
+    'delete biblio contributor entry' => array(
+      'title' => t('Delete biblio contributor entry'),
+      'description' => t('Grant to the user the permission to delete a biblio contributor via the UI'),
     ),
-    'show sort links' => array(
-      'title' => t('Show sort links'),
-      'description' => t('This determines if the "Sort" links on the Biblio list page will be shown to the user.'),
-    ),
-    'view full text' => array(
-      'title' => t('Show full text'),
-      'description' => t('This determines if the user will be able to access the "Full Text" of the article if it is available.'),
+    'view biblio contributor entry' => array(
+      'title' => t('View biblio contributor entry'),
+      'description' => t('Grant to the user the permission to view a biblio contributor via the UI'),
     ),
   );
 }
