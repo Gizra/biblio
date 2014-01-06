@@ -63,4 +63,14 @@ class BiblioCiteProcTestCase extends DrupalWebTestCase {
     $this->assertTrue($matches[0], 'CiteProc is render with label as link.');
   }
 
+  /**
+   * Test the default style of CiteProc.
+   */
+  function testChicagoAuthorDateStyle() {
+    $biblio = $this->biblio;
+    $output = $biblio->getText('citeproc');
+    $expected_value = '';
+
+    $this->assertTrue($output, $expected_value);
+  }
 }
