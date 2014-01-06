@@ -68,7 +68,7 @@ class BiblioCiteProcTestCase extends DrupalWebTestCase {
    */
   function testChicagoAuthorDateStyle() {
     $biblio = $this->biblio;
-    $output = $biblio->getText('citeproc');
+    $output = $biblio->getText('citeproc', array('style_name' => 'chicago-author-date'));
     $expected_value = 'Abramowitz, Milton, and Irene A Stegun. 1964. Handbook Of Mathematical Functions With Formulas, Graphs, And Mathematical Tables. ninth Dover printing, tenth GPO printing. New York: Dover.';
 
     $this->assertEqual(strip_tags($output), $expected_value);
