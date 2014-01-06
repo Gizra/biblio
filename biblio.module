@@ -329,7 +329,6 @@ function biblio_entity_info() {
     'label' => t('Biblio'),
     'entity class' => 'Biblio',
     'controller class' => 'EntityAPIController',
-    'views controller class' => 'EntityDefaultViewsController',
     'base table' => 'biblio',
     'fieldable' => TRUE,
     'entity keys' => array(
