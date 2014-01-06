@@ -1,0 +1,83 @@
+<?php
+
+/**
+ * @file
+ * Tests for the integration with the Path module.
+ */
+
+/**
+ * Provides a base class for testing the Path module.
+ *
+ * @see PathTestCase
+ */
+class BiblioPathTestCase extends DrupalWebTestCase {
+  public static function getInfo() {
+    return array(
+      'name' => 'Path alias functionality',
+      'description' => 'Add, edit, delete, and change alias and verify its consistency in the database.',
+      'group' => 'Biblio',
+    );
+  }
+
+  function setUp() {
+    parent::setUp('path', 'biblio_ui');
+    biblio_create_fields_by_bundle(array('book'));
+
+    // Create test user and login.
+    $web_user = $this->drupalCreateUser(array('administer biblio', 'create url aliases'));
+    $this->drupalLogin($web_user);
+  }
+
+  /**
+   * Tests alias functionality through the Biblio interfaces.
+   */
+  function testBiblioAlias() {
+    // Create test Bilbio.
+    $biblio1 = biblio_create('book', array('title' => 'biblio1'));
+    $biblio1->save();
+
+    // Create alias.
+    $edit = array();
+    $edit['path[alias]'] = $this->randomName(8);
+    $this->drupalPost('biblio/' . $biblio1->bid . '/edit', $edit, t('Save'));
+
+    // Confirm that the alias works.
+    $this->drupalGet($edit['path[alias]']);
+    $this->assertText($biblio1->title, 'Alias works.');
+    $this->assertResponse(200);
+
+    // Change alias.
+    $previous = $edit['path[alias]'];
+    $edit['path[alias]'] = $this->randomName(8);
+    $this->drupalPost('biblio/' . $biblio1->bid . '/edit', $edit, t('Save'));
+
+    // Confirm that the alias works.
+    $this->drupalGet($edit['path[alias]']);
+    $this->assertText($biblio1->title, 'Changed alias works.');
+    $this->assertResponse(200);
+
+    // Make sure that previous alias no longer works.
+    $this->drupalGet($previous);
+    $this->assertNoText($biblio1->title, 'Previous alias no longer works.');
+    $this->assertResponse(404);
+
+    // Create second test Bilbio.
+    $biblio2 = biblio_create('book', array('title' => 'biblio2'));
+    $biblio2->save();
+
+    // Set alias to second test Bilbio.
+    // Leave $edit['path[alias]'] the same.
+    $this->drupalPost('biblio/' . $biblio2->bid . '/edit', $edit, t('Save'));
+
+    // Confirm that the alias didn't make a duplicate.
+    $this->assertText(t('The alias is already in use.'), 'Attempt to moved alias was rejected.');
+
+    // Delete alias.
+    $this->drupalPost('biblio/' . $biblio1->bid . '/edit', array('path[alias]' => ''), t('Save'));
+
+    // Confirm that the alias no longer works.
+    $this->drupalGet($edit['path[alias]']);
+    $this->assertNoText($biblio1->title, 'Alias was successfully deleted.');
+    $this->assertResponse(404);
+  }
+}

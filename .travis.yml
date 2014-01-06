@@ -30,6 +30,7 @@ before_script:
   - ln -s $(readlink -e $(cd -)) biblio/drupal/sites/all/modules/biblio
   - cd biblio/drupal
 
+  - drush dl views
   # Download CiteProc related modules and libraries.
   - drush dl libraries
   - git clone https://github.com/gbv/citeproc-php.git sites/all/libraries/citeproc-php

@@ -61,4 +61,5 @@ files[] = tests/CiteProc.test
 files[] = tests/Contributor.test
 files[] = tests/EndNote.test
 files[] = tests/ImportPreventDuplicates.test
+files[] = tests/Path.test
 

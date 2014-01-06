@@ -482,31 +482,105 @@ function biblio_entity_access($op, $type = NULL, $account = NULL) {
   if (!isset($account)) {
     $account = $user;
   }
+
+  if (user_access('administer biblio', $account)) {
+    return TRUE;
+  }
+
   switch ($op) {
     case 'create':
-      return user_access('administer biblio', $account)
-          || user_access('create biblio', $account);
+      return user_access('create biblio', $account);
     case 'view':
-      return user_access('administer biblio', $account)
-          || user_access('access biblio content', $account);
+      return user_access('access biblio content', $account);
     case 'delete':
     case 'update':
-      return user_access('administer biblio')
-          || user_access('edit all biblio entries');
+      return user_access('edit all biblio entries', $account);
   }
 }
 
 /**
- * Create a biblio entity object
+ * Implements hook_biblio_insert().
+ *
+ * Save the path of the Biblio entry.
+ */
+function biblio_biblio_insert($biblio) {
+  if (!module_exists('path')) {
+    return;
+  }
+
+  if (isset($biblio->path)) {
+    $path = $biblio->path;
+    $path['alias'] = trim($path['alias']);
+    // Only save a non-empty alias.
+    if (!empty($path['alias'])) {
+      // Ensure fields for programmatic executions.
+      $langcode = entity_language('biblio', $biblio);
+      $path['source'] = 'biblio/' . $biblio->bid;
+      $path['language'] = isset($langcode) ? $langcode : LANGUAGE_NONE;
+      path_save($path);
+    }
+  }
+}
+
+/**
+ * Implements hook_biblio_update().
+ *
+ * Update the path of the Biblio entry.
+ */
+function biblio_biblio_update($biblio) {
+  if (!module_exists('path')) {
+    return;
+  }
+
+  if (isset($biblio->path)) {
+    $path = $biblio->path;
+    $path['alias'] = trim($path['alias']);
+    // Delete old alias if user erased it.
+    if (!empty($path['pid']) && empty($path['alias'])) {
+      path_delete($path['pid']);
+    }
+    biblio_biblio_insert($biblio);
+  }
+}
+
+/**
+ * Implements hook_biblio_delete().
+ */
+function biblio_biblio_delete($biblio) {
+  if (!module_exists('path')) {
+    return;
+  }
+
+  $conditions = array('source' => 'biblio/' . $biblio->bid);
+  path_delete($conditions);
+}
+
+/**
+ * Implements hook_biblio_load().
+ */
+function biblio_biblio_load($biblios) {
+  if (!module_exists('path')) {
+    return;
+  }
+
+  foreach ($biblios as $biblio) {
+    $conditions = array('source' => 'biblio/' . $biblio->bid);
+    $biblio->path = path_load($conditions);
+  }
+}
+
+/**
+ * Create a Biblio entity object.
  *
  * @param $type
- *  The publication type of the biblio to be created (bundle)
+ *  The publication type of the Biblio to be created (bundle).
  * @param array $values
  *  An associative array of any additional values to be set when creating this
  *  entity. These values will be carried throughout the biblio object's life.
- *  Example: $values['type'] => 'book';
+ *  Example: $values['title'] => 'new publication';
+ *
  * @return Biblio
- *  The biblio object, with default values.
+ *  The Biblio object, with default values.
  */
 function biblio_create($type, $values = array()) {
   if (empty($account)) {
@@ -515,7 +589,6 @@ function biblio_create($type, $values = array()) {
   }
   $values['type'] = $type;
   $values['uid'] = $account->uid;
-  $values['title'] = '';
   $values += array(
     'created' => REQUEST_TIME,
     'changed' => REQUEST_TIME,
@@ -607,7 +680,8 @@ function biblio_contributor_load_multiple($cids = array()) {
  * Attach fields to bundles.
  *
  * @param $bundles
- *   Array with the bundles to process, or empty array to use all Biblio bundles.
+ *   Array with the bundles to process, or empty array to use all Biblio
+ *   bundles.
  */
 function biblio_create_fields_by_bundle($bundles = array(), $clear_cache = TRUE) {
   $entity_info = entity_get_info('biblio');
@@ -617,8 +691,6 @@ function biblio_create_fields_by_bundle($bundles = array(), $clear_cache = TRUE)
   foreach ($bundles as $bundle) {
     foreach ($fields_info as $field_name => $field_info) {
       if (in_array($field_name, array('biblio_contributor_role', 'biblio_contributor'))) {
-        // @todo: Add better way to distniush fields that don't need to be
-        // attached to the Biblio entity.
         continue;
       }
 
@@ -638,9 +710,9 @@ function biblio_create_fields_by_bundle($bundles = array(), $clear_cache = TRUE)
  * Create a biblio field in a bundle.
  *
  * @param string $field_name
- *   The field name
+ *   The field name.
  * @param string $entity_type
- *   The entity type
+ *   The entity type.
  * @param string $bundle
  *   The bundle name.
  * @param array $biblio_field
