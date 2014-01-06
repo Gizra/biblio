@@ -22,10 +22,6 @@ $biblio->getText($biblio_style);
 ### Import Biblio API
 
 ```php
-// Here you need to specify the biblio style of the data you wish to import.
-// In this example, the style is BibTex.
-$data_style = 'bibtex';
-
 // The data you wish to import.
 // In this example it is a book.
 $data = '
@@ -38,26 +34,11 @@ $data = '
   edition   = "ninth ABC printing, tenth DEF printing"
 }';
 
-// Get the relevant biblio class to handle the information.
-ctools_include('plugins');
-$plugin = biblio_get_biblio_style($data_style);
-$class = ctools_plugin_load_class('biblio', 'biblio_style', $data_style, 'class');
+// Get the relevant biblio style class to handle the information.
+$biblio_style = biblio_get_class_from_style('bibtex')
 
-// Create the biblio using the relevant class.
-$biblio_style = new $class($plugin);
-
-// Import the biblios from $data.
-// This returns an array because multiple biblios can be imported at once.
-// The biblios in the array are grouped by the result:
-//   - 'new': New biblios, created in the import process.
-//   - 'duplicate': Existing biblios, when one or more of the biblios in the data
-//      are identical to existing biblios.
-//   - 'error': Errors that occured during the import process, this means one or
-//     more biblios failed to import.
-// In this example, the array will contain only one biblio, categorized as
-// 'new'.
+// Import the Biblios.
 $biblios = $biblio_style->import($data);
-$new_biblio = $biblios['new'][0];
 ```
 
 ### Adding Contributors
