@@ -29,10 +29,10 @@ class BiblioPathTestCase extends DrupalWebTestCase {
   }
 
   /**
-   * Tests alias functionality through the biblio interfaces.
+   * Tests alias functionality through the Biblio interfaces.
    */
   function testBiblioAlias() {
-    // Create test node.
+    // Create test Bilbio.
     $bilbio1 = biblio_create('book', array('title' => 'biblio1'));
     $bilbio1->save();
 
@@ -63,11 +63,11 @@ class BiblioPathTestCase extends DrupalWebTestCase {
     $this->assertNoText($bilbio1->title, 'Previous alias no longer works.');
     $this->assertResponse(404);
 
-    // Create second test node.
+    // Create second test Bilbio.
     $bilbio2 = biblio_create('book', array('title' => 'biblio2'));
     $bilbio2->save();
 
-    // Set alias to second test node.
+    // Set alias to second test Bilbio.
     // Leave $edit['path[alias]'] the same.
     $this->drupalPost('biblio/' . $bilbio2->bid . '/edit', $edit, t('Save'));
 
