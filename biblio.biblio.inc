@@ -2105,7 +2105,8 @@ function biblio_biblio_fields_info() {
     'instance' => array(
       'label' => t('Publication status'),
       'description' => t('Determine the publication status (In press, Submitted, Published, etc\').'),
-      'display_label' => 1,
+      'display_label' => TRUE,
+      'required' => TRUE,
       'widget' => array(
         'module' => 'options',
         'type' => 'options_select',
