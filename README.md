@@ -49,34 +49,30 @@ $biblio_style = new $class($plugin);
 // Import the biblios from $data.
 // This returns an array because multiple biblios can be imported at once.
 // The biblios in the array are grouped by the result:
-//   'new'       - New biblios, created in the import process.
-//   'duplicate' - Existing biblios, when one or more of the biblios in the data are
-//                 identical to existing biblios.
-//   'error'     - Errors that occured during the import process, this means one or
-//                 more biblios failed to import.
-// In this example, the array will contain only one biblio, categorized as 'new'.
+//   - 'new': New biblios, created in the import process.
+//   - 'duplicate': Existing biblios, when one or more of the biblios in the data
+//      are identical to existing biblios.
+//   - 'error': Errors that occured during the import process, this means one or
+//     more biblios failed to import.
+// In this example, the array will contain only one biblio, categorized as
+// 'new'.
 $biblios = $biblio_style->import($data);
 $new_biblio = $biblios['new'][0];
 ```
 
-### Create/Load Biblio Contributor API
+### Adding Contributors
 
-Creation and loading of Biblio Contributors are done the same way.
-
-The method ``BiblioContributorUtility::getBiblioContributorsFromNames()`` accepts a string
-of contributors' names, seperated by the word "and" or the sign "&",
-and returns an array of Biblio Contributor objects, saved and ready to use.
-
-For each name in the given string, the method attempts to find an existing contributor
-with the exact name. If found, the existing contributor will be returned. If not, a new
-contributor will be created and returned.
+Contributors can be added using the ``Biblio::addContributors`` helper method.
 
 ```php
 // Biblio Contributors' names.
-$names = 'George Bush and Abraham Lincoln';
+$biblio = biblio_create('book');
 
-// Get saved Biblio Contributor objects.
-$contributors = BiblioContributorUtility::getBiblioContributorsFromNames($names);
+// Add multiple authors.
+$biblio->addContributors('John Doe and Ploni Almoni');
+
+// Add an editor.
+$biblio->addContributors('John Smith', 'Editor');
 ```
 
 ### CiteProc

@@ -193,6 +193,28 @@ function biblio_biblio_fields_info() {
       'database' => array(),
       'film' => array(),
       'government_report' => array(),
+      'hearing' => array(),
+      'journal' => array(),
+      'journal_article' => array(),
+      'legal_ruling' => array(),
+      'magazine_article' => array(),
+      'manuscript' => array(),
+      'map' => array(),
+      'miscellaneous' => array(),
+      'miscellaneous_section' => array(),
+      'newspaper_article' => array(),
+      'patent' => array(),
+      'personal' => array(),
+      'presentation' => array(),
+      'report' => array(),
+      'software' => array(),
+      'statute' => array(),
+      'thesis' => array(),
+      'unpublished' => array(),
+      'web_article' => array(),
+      'web_project_page' => array(),
+      'web_service' => array(),
+      'website' => array(),
     ),
   );
 
@@ -226,7 +248,7 @@ function biblio_biblio_fields_info() {
       ),
       'field_name' => 'biblio_year',
       'label' => 'Year of Publication',
-      // We will enfroce required only if the Publication status is set to
+      // We will enforce required only if the Publication status is set to
       // "published".
       'required' => FALSE,
       'settings' => array(
@@ -316,6 +338,20 @@ function biblio_biblio_fields_info() {
         'label' => 'Page Cited',
       ),
       'government_report' => array(),
+      'journal_article' => array(
+        'label' => 'Start Page',
+      ),
+      'legal_ruling' => array(
+        'label' => 'Section Number',
+      ),
+      'magazine_article' => array(),
+      'newspaper_article' => array(),
+      'patent' => array(
+        'label' => 'International Patent Number',
+      ),
+      'statute' => array(
+        'label' => 'Sections',
+      ),
     ),
   );
 
@@ -349,6 +385,10 @@ function biblio_biblio_fields_info() {
     ),
     'bundles_info' => array(
       'government_report' => array(),
+      'journal_article' => array(),
+      'magazine_article' => array(
+        'label' => 'Issue Number',
+      ),
     ),
   );
 
@@ -390,6 +430,25 @@ function biblio_biblio_fields_info() {
       ),
       'classical' => array(),
       'conference_proceedings' => array(),
+      'hearing' => array(),
+      'legal_ruling' => array(
+        'label' => 'Session Number',
+      ),
+      'magazine_article' => array(
+        'label' => 'Frequency',
+      ),
+      'manuscript' => array(
+        'label' => 'Manuscript Number',
+      ),
+      'newspaper_article' => array(
+        'label' => 'Frequency',
+      ),
+      'personal' => array(
+        'label' => 'Communication Number',
+      ),
+      'statute' => array(
+        'label' => 'Statute Number',
+      ),
     ),
   );
 
@@ -433,6 +492,39 @@ function biblio_biblio_fields_info() {
       'classical' => array(),
       'film' => array(
         'label' => 'Running Time',
+      ),
+      'hearing' => array(
+        'label' => 'Document Number',
+      ),
+      'legal_ruling' => array(
+        'label' => 'Start Page',
+      ),
+      'magazine_article' => array(
+        'label' => 'Issue Number',
+      ),
+      'manuscript' => array(
+        'label' => 'Folio Number',
+      ),
+      'newspaper_article' => array(
+        'label' => 'Start Page',
+      ),
+      'patent' => array(
+        'label' => 'Application Number',
+      ),
+      'personal' => array(
+        'label' => 'Folio Number',
+      ),
+      'report' => array(
+        'label' => 'Document Number',
+      ),
+      'statute' => array(
+        'label' => 'Public Law Number',
+      ),
+      'unpublished' => array(
+        'label' => 'Number',
+      ),
+      'web_article' => array(
+        'label' => 'Access Date',
       ),
     ),
   );
@@ -490,9 +582,87 @@ function biblio_biblio_fields_info() {
       'government_report' => array(
         'label' => 'Pagination',
       ),
+      'hearing' => array(
+        'label' => 'Pagination',
+      ),
+      'journal_article' => array(
+        'label' => 'Pagination',
+      ),
+      'legal_ruling' => array(
+        'label' => 'Pagination',
+      ),
+      'magazine_article' => array(
+        'label' => 'Pagination',
+      ),
+      'manuscript' => array(
+        'label' => 'Pagination',
+      ),
+      'map' => array(
+        'label' => 'Description',
+      ),
+      'newspaper_article' => array(
+        'label' => 'Pagination',
+      ),
+      'patent' => array(
+        'label' => 'Pagination',
+      ),
+      'personal' => array(
+        'label' => 'Pagination',
+      ),
+      'report' => array(
+        'label' => 'Pagination',
+      ),
+      'software' => array(
+        'label' => 'Description',
+      ),
+      'statute' => array(
+        'label' => 'Pagination',
+      ),
+      'thesis' => array(
+        'label' => 'Number of Pages',
+      ),
+      'unpublished' => array(
+        'label' => 'Pagination',
+      ),
+      'web_article' => array(
+        'label' => 'Description',
+      ),
     ),
   );
 
+  // Date.
+  $items['biblio_date'] = array(
+    'field' => array(
+      'cardinality' => '1',
+      'field_name' => 'biblio_date',
+      'module' => 'text',
+      'settings' => array(
+        'max_length' => '255',
+      ),
+      'type' => 'text',
+    ),
+    'instance' => array(
+      'label' => 'Date Published',
+      'settings' => array(
+        'text_processing' => '0',
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'text',
+        'settings' => array(
+          'size' => '60',
+        ),
+        'type' => 'text_textfield',
+        'weight' => '-3',
+      ),
+    ),
+    'bundles_info' => array(
+      'newspaper_article' => array(
+        'label' => 'Issue Date',
+      ),
+    ),
+  );
 
   // Reprint edition.
   $items['biblio_reprint_edition'] = array(
@@ -525,7 +695,10 @@ function biblio_biblio_fields_info() {
       'book' => array(),
       'book_chapter' => array(),
       'classical' => array(),
-    )
+      'journal_article' => array(),
+      'magazine_article' => array(),
+      'newspaper_article' => array(),
+    ),
   );
 
   // Call number.
@@ -554,22 +727,44 @@ function biblio_biblio_fields_info() {
         'type' => 'text_textfield',
         'weight' => '-3',
       ),
-      // @todo: Applies to all?
-      'bundles_info' => array(
-        'artwork' => array(),
-        'audiovisual' => array(),
-        'book' => array(),
-        'book_chapter' => array(),
-        'bill' => array(),
-        'broadcast' => array(),
-        'chart' => array(),
-        'classical' => array(),
-        'conference_paper' => array(),
-        'conference_proceedings' => array(),
-        'database' => array(),
-        'film' => array(),
-        'government_report' => array(),
-      ),
+    ),
+    // @todo: Applies to all?
+    'bundles_info' => array(
+      'artwork' => array(),
+      'audiovisual' => array(),
+      'book' => array(),
+      'book_chapter' => array(),
+      'bill' => array(),
+      'broadcast' => array(),
+      'chart' => array(),
+      'classical' => array(),
+      'conference_paper' => array(),
+      'conference_proceedings' => array(),
+      'database' => array(),
+      'film' => array(),
+      'government_report' => array(),
+      'hearing' => array(),
+      'journal' => array(),
+      'journal_article' => array(),
+      'legal_ruling' => array(),
+      'magazine_article' => array(),
+      'manuscript' => array(),
+      'map' => array(),
+      'miscellaneous' => array(),
+      'miscellaneous_section' => array(),
+      'newspaper_article' => array(),
+      'patent' => array(),
+      'personal' => array(),
+      'presentation' => array(),
+      'report' => array(),
+      'software' => array(),
+      'statute' => array(),
+      'thesis' => array(),
+      'unpublished' => array(),
+      'web_article' => array(),
+      'web_project_page' => array(),
+      'web_service' => array(),
+      'website' => array(),
     ),
   );
 
@@ -617,6 +812,89 @@ function biblio_biblio_fields_info() {
       'database' => array(),
       'film' => array(),
       'government_report' => array(),
+      'hearing' => array(),
+      'journal' => array(),
+      'journal_article' => array(),
+      'legal_ruling' => array(),
+      'magazine_article' => array(),
+      'manuscript' => array(),
+      'map' => array(),
+      'miscellaneous' => array(),
+      'miscellaneous_section' => array(),
+      'newspaper_article' => array(),
+      'patent' => array(),
+      'personal' => array(),
+      'presentation' => array(),
+      'report' => array(),
+      'software' => array(),
+      'statute' => array(),
+      'thesis' => array(),
+      'unpublished' => array(),
+      'web_article' => array(),
+      'web_project_page' => array(),
+      'web_service' => array(),
+      'website' => array(),
+    ),
+  );
+
+  // ISSN number.
+  $items['biblio_issn'] = array(
+    'field' => array(
+      'cardinality' => '1',
+      'field_name' => 'biblio_issn',
+      'module' => 'text',
+      'settings' => array(
+        'max_length' => '255',
+      ),
+      'type' => 'text',
+    ),
+    'instance' => array(
+      'label' => 'ISSN Number',
+      'description' => 'International Standard Serial Number',
+      'settings' => array(
+        'text_processing' => '0',
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'text',
+        'settings' => array(
+          'size' => '60',
+        ),
+        'type' => 'text_textfield',
+        'weight' => '-3',
+      ),
+    ),
+    'bundles_info' => array(
+      'journal_article' => array(
+        'label' => 'ISSN',
+      ),
+      'legal_ruling' => array(
+        'label' => 'Document Number',
+      ),
+      'magazine_article' => array(
+        'label' => 'ISSN',
+      ),
+      'map' => array(
+        'label' => 'ISSN',
+      ),
+      'miscellaneous' => array(),
+      'miscellaneous_section' => array(),
+      'newspaper_article' => array(
+        'label' => 'ISSN',
+      ),
+      'patent' => array(
+        'label' => 'Patent Number',
+      ),
+      'report' => array(
+        'label' => 'Report Number',
+      ),
+      'software' => array(
+        'label' => 'ISSN',
+      ),
+      'web_article' => array(
+        'label' => 'ISSN',
+      ),
     ),
   );
 
@@ -664,6 +942,29 @@ function biblio_biblio_fields_info() {
       'database' => array(),
       'film' => array(),
       'government_report' => array(),
+      'hearing' => array(),
+      'journal' => array(),
+      'journal_article' => array(),
+      'legal_ruling' => array(),
+      'magazine_article' => array(),
+      'manuscript' => array(),
+      'manuscript' => array(),
+      'map' => array(),
+      'miscellaneous' => array(),
+      'miscellaneous_section' => array(),
+      'newspaper_article' => array(),
+      'patent' => array(),
+      'personal' => array(),
+      'presentation' => array(),
+      'report' => array(),
+      'software' => array(),
+      'statute' => array(),
+      'thesis' => array(),
+      'unpublished' => array(),
+      'web_article' => array(),
+      'web_project_page' => array(),
+      'web_service' => array(),
+      'website' => array(),
     ),
   );
 
@@ -934,7 +1235,7 @@ function biblio_biblio_fields_info() {
       'type' => 'text',
     ),
     'instance' => array(
-      'label' => 'Short title',
+      'label' => 'Short Title',
       'settings' => array(
         'text_processing' => '0',
         'user_register_form' => FALSE,
@@ -961,6 +1262,20 @@ function biblio_biblio_fields_info() {
       'classical' => array(),
       'conference_proceedings' => array(),
       'film' => array(),
+      'hearing' => array(),
+      'journal_article' => array(),
+      'magazine_article' => array(),
+      'manuscript' => array(),
+      'map' => array(),
+      'newspaper_article' => array(),
+      'patent' => array(),
+      'personal' => array(),
+      'report' => array(),
+      'software' => array(),
+      'statute' => array(),
+      'thesis' => array(),
+      'unpublished' => array(),
+      'web_article' => array(),
     )
   );
 
@@ -1003,6 +1318,30 @@ function biblio_biblio_fields_info() {
       ),
       'classical' => array(),
       'film' => array(),
+      'hearing' => array(),
+      'journal_article' => array(),
+      'legal_ruling' => array(
+        'label' => 'Abbreviation',
+      ),
+      'magazine_article' => array(
+        'label' => 'Alternate Magazine',
+      ),
+      'manuscript' => array(
+        'label' => 'Abbreviation',
+      ),
+      'map' => array(),
+      'personal' => array(
+        'label' => 'Abbreviation',
+      ),
+      'report' => array(),
+      'software' => array(),
+      'statute' => array(
+        'label' => 'Abbreviation',
+      ),
+      'unpublished' => array(
+        'label' => 'Abbreviation',
+      ),
+      'web_article' => array(),
     ),
   );
 
@@ -1033,12 +1372,12 @@ function biblio_biblio_fields_info() {
         'type' => 'text_textfield',
         'weight' => '-3',
       ),
-      'bundles_info' => array(
-        'audiovisual' => array(
-          'label' => 'Type',
-        ),
-        'book' => array(),
+    ),
+    'bundles_info' => array(
+      'audiovisual' => array(
+        'label' => 'Type',
       ),
+      'book' => array(),
       'chart' => array(
         'label' => 'Type of Image',
       ),
@@ -1048,6 +1387,36 @@ function biblio_biblio_fields_info() {
       'conference_proceedings' => array(),
       'film' => array(
         'label' => 'Medium',
+      ),
+      'journal_article' => array(
+        'label' => 'Type of Article',
+      ),
+      'legal_ruling' => array(),
+      'magazine_article' => array(
+        'label' => 'Type of Article',
+      ),
+      'manuscript' => array(),
+      'map' => array(
+        'label' => 'Type',
+      ),
+      'newspaper_article' => array(
+        'label' => 'Type of Article',
+      ),
+      'patent' => array(
+        'label' => 'Patent Type',
+      ),
+      'personal' => array(
+        'label' => 'Type',
+      ),
+      'report' => array(
+        'label' => 'Type',
+      ),
+      'thesis' => array(
+        'label' => 'Thesis Type',
+      ),
+      'unpublished' => array(),
+      'web_article' => array(
+        'label' => 'Type of Medium',
       ),
     ),
   );
@@ -1096,7 +1465,29 @@ function biblio_biblio_fields_info() {
       'database' => array(),
       'film' => array(),
       'government_report' => array(),
-    )
+      'hearing' => array(),
+      'journal' => array(),
+      'journal_article' => array(),
+      'legal_ruling' => array(),
+      'magazine_article' => array(),
+      'manuscript' => array(),
+      'map' => array(),
+      'miscellaneous' => array(),
+      'miscellaneous_section' => array(),
+      'newspaper_article' => array(),
+      'patent' => array(),
+      'personal' => array(),
+      'presentation' => array(),
+      'report' => array(),
+      'software' => array(),
+      'statute' => array(),
+      'thesis' => array(),
+      'unpublished' => array(),
+      'web_article' => array(),
+      'web_project_page' => array(),
+      'web_service' => array(),
+      'website' => array(),
+    ),
   );
 
   // Biblio volume.
@@ -1129,7 +1520,6 @@ function biblio_biblio_fields_info() {
     ),
     'bundles_info' => array(
       'book' => array(),
-      'book_chapter' => array(),
       'bill' => array(
         'label' => 'Code Volume',
       ),
@@ -1142,6 +1532,25 @@ function biblio_biblio_fields_info() {
       'classical' => array(),
       'conference_proceedings' => array(),
       'government_report' => array(),
+      'journal_article' => array(),
+      'legal_ruling' => array(
+        'label' => 'Rule Number',
+      ),
+      'manuscript' => array(
+        'label' => 'Volume/Storage Container',
+      ),
+      'patent' => array(
+        'label' => 'Patent Version Number',
+      ),
+      'statute' => array(
+        'label' => 'Code Number',
+      ),
+      'thesis' => array(
+        'label' => 'degree',
+      ),
+      'web_article' => array(
+        'label' => 'Access Year',
+      ),
     ),
   );
 
@@ -1189,6 +1598,28 @@ function biblio_biblio_fields_info() {
       'database' => array(),
       'film' => array(),
       'government_report' => array(),
+      'hearing' => array(),
+      'journal' => array(),
+      'journal_article' => array(),
+      'legal_ruling' => array(),
+      'magazine_article' => array(),
+      'manuscript' => array(),
+      'map' => array(),
+      'miscellaneous' => array(),
+      'miscellaneous_section' => array(),
+      'newspaper_article' => array(),
+      'patent' => array(),
+      'personal' => array(),
+      'presentation' => array(),
+      'report' => array(),
+      'software' => array(),
+      'statute' => array(),
+      'thesis' => array(),
+      'unpublished' => array(),
+      'web_article' => array(),
+      'web_project_page' => array(),
+      'web_service' => array(),
+      'website' => array(),
     )
   );
 
@@ -1235,6 +1666,20 @@ function biblio_biblio_fields_info() {
       'film' => array(
         'label' => 'Country',
       ),
+      'hearing' => array(),
+      'manuscript' => array(),
+      'map' => array(),
+      'newspaper_article' => array(),
+      'patent' => array(),
+      'personal' => array(),
+      'report' => array(),
+      'software' => array(),
+      'statute' => array(
+        'label' => 'Country',
+      ),
+      'thesis' => array(),
+      'unpublished' => array(),
+      'web_article' => array(),
     ),
   );
 
@@ -1281,6 +1726,27 @@ function biblio_biblio_fields_info() {
       'database' => array(),
       'film' => array(),
       'government_report' => array(),
+      'hearing' => array(),
+      'legal_hearing' => array(),
+      'manuscript' => array(
+        'label' => 'Library/Archive',
+      ),
+      'map' => array(),
+      'patent' => array(
+        'label' => 'Assignee',
+      ),
+      'personal' => array(),
+      'report' => array(
+        'label' => 'Institution',
+      ),
+      'software' => array(),
+      'thesis' => array(
+        'label' => 'University',
+      ),
+      'unpublished' => array(
+        'label' => 'Institution',
+      ),
+      'web_article' => array(),
     ),
   );
 
@@ -1325,6 +1791,25 @@ function biblio_biblio_fields_info() {
       'classical' => array(),
       'conference_proceedings' => array(),
       'government_report' => array(),
+      'hearing' => array(
+        'label' => 'Session',
+      ),
+      'legal_ruling' => array(),
+      'magazine_article' => array(),
+      'newspaper_article' => array(),
+      'patent' => array(
+        'label' => 'International Patent Classification',
+      ),
+      'personal' => array(
+        'label' => 'Description',
+      ),
+      'software' => array(
+        'label' => 'Version',
+      ),
+      'statute' => array(
+        'label' => 'Session',
+      ),
+      'web_article' => array(),
     ),
   );
 
@@ -1393,6 +1878,38 @@ function biblio_biblio_fields_info() {
       'magazine_article' => array(
         'label' => 'Magazine',
       ),
+      'hearing' => array(
+        'label' => 'Committee',
+      ),
+      'journal_article' => array(
+        'label' => 'Journal',
+      ),
+      'manuscript' => array(
+        'label' => 'Collection Title',
+      ),
+      'map' => array(
+        'label' => 'Series Title',
+      ),
+      'newspaper_article' => array(
+        'label' => 'Newspaper',
+      ),
+      'patent' => array(
+        'label' => 'Published Source',
+      ),
+      'report' => array(
+        'label' => 'Series Title',
+      ),
+      'software' => array(
+        'label' => 'Book Title',
+      ),
+      'statute' => array(
+        'label' => 'Code',
+      ),
+      'thesis' => array(
+        'label' => 'Academic Department',
+      ),
+      'unpublished' => array(),
+      'web_article' => array(),
     ),
   );
 
@@ -1440,6 +1957,12 @@ function biblio_biblio_fields_info() {
       'government_report' => array(
         'label' => 'Series Title',
       ),
+      'hearing' => array(
+        'label' => 'Legislative Body',
+      ),
+      'patent' => array(
+        'label' => 'International Title',
+      ),
     ),
   );
 
@@ -1484,6 +2007,21 @@ function biblio_biblio_fields_info() {
       'database' => array(),
       'film' => array(),
       'government_report' => array(),
+      'hearing' => array(),
+      'journal_article' => array(),
+      'legal_ruling' => array(),
+      'magazine_article' => array(),
+      'manuscript' => array(),
+      'map' => array(),
+      'newspaper_article' => array(),
+      'patent' => array(),
+      'personal' => array(),
+      'report' => array(),
+      'software' => array(),
+      'statute' => array(),
+      'thesis' => array(),
+      'unpublished' => array(),
+      'web_article' => array(),
     ),
   );
 
@@ -1527,6 +2065,26 @@ function biblio_biblio_fields_info() {
         'label' => 'History',
       ),
       'classical' => array(),
+      'hearing' => array(
+        'label' => 'History',
+      ),
+      'journal_article' => array(),
+      'magazine_article' => array(),
+      'newspaper_article' => array(),
+      'patent' => array(),
+      'report' => array(
+        'label' => 'Contents',
+      ),
+      'software' => array(
+        'label' => 'Contents',
+      ),
+      'statute' => array(
+        'label' => 'History',
+      ),
+      'thesis' => array(),
+      'web_article' => array(
+        'label' => 'Contents',
+      ),
     ),
   );
 
@@ -1588,6 +2146,251 @@ function biblio_biblio_fields_info() {
     ),
   );
 
+  // Custom1.
+  $items['biblio_custom1'] = array(
+    'field' => array(
+      'cardinality' => '1',
+      'field_name' => 'biblio_custom1',
+      'module' => 'text',
+      'settings' => array(
+        'max_length' => '255',
+      ),
+      'type' => 'text',
+    ),
+    'instance' => array(
+      'label' => 'Custom 1',
+      'settings' => array(
+        'text_processing' => '0',
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'text',
+        'settings' => array(
+          'size' => '60',
+        ),
+        'type' => 'text_textfield',
+        'weight' => '-3',
+      ),
+    ),
+    'bundles_info' => array(
+      'map' => array(
+        'label' => 'Scale',
+      ),
+      'software' => array(
+        'label' => 'Computer',
+      ),
+      'thesis' => array(),
+    ),
+  );
+
+  // Custom2.
+  $items['biblio_custom2'] = array(
+    'field' => array(
+      'cardinality' => '1',
+      'field_name' => 'biblio_custom2',
+      'module' => 'text',
+      'settings' => array(
+        'max_length' => '255',
+      ),
+      'type' => 'text',
+    ),
+    'instance' => array(
+      'label' => 'Custom 1',
+      'settings' => array(
+        'text_processing' => '0',
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'text',
+        'settings' => array(
+          'size' => '60',
+        ),
+        'type' => 'text_textfield',
+        'weight' => '-3',
+      ),
+    ),
+    'bundles_info' => array(
+      'patent' => array(
+        'label' => 'Issue Date',
+      ),
+      'thesis' => array(),
+    ),
+  );
+
+  // Custom3.
+  $items['biblio_custom3'] = array(
+    'field' => array(
+      'cardinality' => '1',
+      'field_name' => 'biblio_custom3',
+      'module' => 'text',
+      'settings' => array(
+        'max_length' => '255',
+      ),
+      'type' => 'text',
+    ),
+    'instance' => array(
+      'label' => 'Custom 1',
+      'settings' => array(
+        'text_processing' => '0',
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'text',
+        'settings' => array(
+          'size' => '60',
+        ),
+        'type' => 'text_textfield',
+        'weight' => '-3',
+      ),
+    ),
+    'bundles_info' => array(
+      'patent' => array(
+        'label' => 'Designated States',
+      ),
+      'thesis' => array(),
+    ),
+  );
+
+  // Custom4.
+  $items['biblio_custom4'] = array(
+    'field' => array(
+      'cardinality' => '1',
+      'field_name' => 'biblio_custom4',
+      'module' => 'text',
+      'settings' => array(
+        'max_length' => '255',
+      ),
+      'type' => 'text',
+    ),
+    'instance' => array(
+      'label' => 'Custom 1',
+      'settings' => array(
+        'text_processing' => '0',
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'text',
+        'settings' => array(
+          'size' => '60',
+        ),
+        'type' => 'text_textfield',
+        'weight' => '-3',
+      ),
+    ),
+    'bundles_info' => array(
+      'patent' => array(
+        'label' => 'Attorney/Agent',
+      ),
+      'thesis' => array(),
+    ),
+  );
+
+  // Custom5.
+  $items['biblio_custom5'] = array(
+    'field' => array(
+      'cardinality' => '1',
+      'field_name' => 'biblio_custom5',
+      'module' => 'text',
+      'settings' => array(
+        'max_length' => '255',
+      ),
+      'type' => 'text',
+    ),
+    'instance' => array(
+      'label' => 'Custom 1',
+      'settings' => array(
+        'text_processing' => '0',
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'text',
+        'settings' => array(
+          'size' => '60',
+        ),
+        'type' => 'text_textfield',
+        'weight' => '-3',
+      ),
+    ),
+    'bundles_info' => array(
+      'patent' => array(
+        'label' => 'References',
+      ),
+      'thesis' => array(),
+    ),
+  );
+
+  // Custom6.
+  $items['biblio_custom6'] = array(
+    'field' => array(
+      'cardinality' => '1',
+      'field_name' => 'biblio_custom6',
+      'module' => 'text',
+      'settings' => array(
+        'max_length' => '255',
+      ),
+      'type' => 'text',
+    ),
+    'instance' => array(
+      'label' => 'Custom 6',
+      'settings' => array(
+        'text_processing' => '0',
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'text',
+        'settings' => array(
+          'size' => '60',
+        ),
+        'type' => 'text_textfield',
+        'weight' => '-3',
+      ),
+    ),
+    'bundles_info' => array(
+      'patent' => array(
+        'label' => 'Legal Status',
+      ),
+      'thesis' => array(),
+    ),
+  );
+
+  // Custom7.
+  $items['biblio_custom7'] = array(
+    'field' => array(
+      'cardinality' => '1',
+      'field_name' => 'biblio_custom7',
+      'module' => 'text',
+      'settings' => array(
+        'max_length' => '255',
+      ),
+      'type' => 'text',
+    ),
+    'instance' => array(
+      'label' => 'Custom 7',
+      'settings' => array(
+        'text_processing' => '0',
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'text',
+        'settings' => array(
+          'size' => '60',
+        ),
+        'type' => 'text_textfield',
+        'weight' => '-3',
+      ),
+    ),
+    'bundles_info' => array(
+      'thesis' => array(),
+    ),
+  );
+
   return $items;
 }
 
@@ -1613,9 +2416,9 @@ function biblio_biblio_types_info() {
   $types['journal'] = array('name' => 'Journal');
   $types['journal_article'] = array('name' => 'Journal Article');
   $types['legal_ruling'] = array('name' => 'Legal Ruling');
-  $types['map'] = array('name' => 'Map');
-  $types['manuscript'] = array('name' => 'Manuscript');
   $types['magazine_article'] = array('name' => 'Magazine Article');
+  $types['manuscript'] = array('name' => 'Manuscript');
+  $types['map'] = array('name' => 'Map');
   $types['miscellaneous'] = array('name' => 'Miscellaneous');
   $types['miscellaneous_section'] = array('name' => 'Miscellaneous Section');
   $types['newspaper_article'] = array('name' => 'Newspaper Article');
@@ -1627,10 +2430,10 @@ function biblio_biblio_types_info() {
   $types['statute'] = array('name' => 'Statute');
   $types['thesis'] = array('name' => 'Thesis');
   $types['unpublished'] = array('name' => 'Unpublished');
-  $types['website'] = array('name' => 'Website');
   $types['web_article'] = array('name' => 'Web Article');
   $types['web_project_page'] = array('name' => 'Web project page');
   $types['web_service'] = array('name' => 'Web service');
+  $types['website'] = array('name' => 'Website');
 
   return $types;
 }

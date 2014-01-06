@@ -36,6 +36,12 @@ function biblio_views_default_views() {
   $handler->display->display_options['pager']['options']['quantity'] = '9';
   $handler->display->display_options['style_plugin'] = 'list';
   $handler->display->display_options['row_plugin'] = 'fields';
+  /* Header: Biblio: Biblio export UI */
+  $handler->display->display_options['header']['biblio_export']['id'] = 'biblio_export';
+  $handler->display->display_options['header']['biblio_export']['table'] = 'biblio';
+  $handler->display->display_options['header']['biblio_export']['field'] = 'biblio_export';
+  $handler->display->display_options['header']['biblio_export']['label'] = '';
+  $handler->display->display_options['header']['biblio_export']['empty'] = TRUE;
   /* Field: Biblio: Render bilbio (Get text) */
   $handler->display->display_options['fields']['biblio_render']['id'] = 'biblio_render';
   $handler->display->display_options['fields']['biblio_render']['table'] = 'biblio';
@@ -92,6 +98,10 @@ function biblio_views_default_views() {
     ),
   );
   $handler->display->display_options['row_plugin'] = 'fields';
+  /* Header: Biblio: Export links */
+  $handler->display->display_options['header']['biblio_export']['id'] = 'biblio_export';
+  $handler->display->display_options['header']['biblio_export']['table'] = 'biblio';
+  $handler->display->display_options['header']['biblio_export']['field'] = 'biblio_export';
   /* Field: Biblio: Publication status */
   $handler->display->display_options['fields']['biblio_status']['id'] = 'biblio_status';
   $handler->display->display_options['fields']['biblio_status']['table'] = 'field_data_biblio_status';
@@ -158,7 +168,11 @@ function biblio_views_default_views() {
     ),
   );
   $handler->display->display_options['row_plugin'] = 'fields';
-  /* Field: Biblio: Publication summary character */
+  /* Header: Biblio: Export links */
+  $handler->display->display_options['header']['biblio_export']['id'] = 'biblio_export';
+  $handler->display->display_options['header']['biblio_export']['table'] = 'biblio';
+  $handler->display->display_options['header']['biblio_export']['field'] = 'biblio_export';
+  /* Field: Biblio: Publication first letter */
   $handler->display->display_options['fields']['biblio_first_letter']['id'] = 'biblio_first_letter';
   $handler->display->display_options['fields']['biblio_first_letter']['table'] = 'field_data_biblio_first_letter';
   $handler->display->display_options['fields']['biblio_first_letter']['field'] = 'biblio_first_letter';
@@ -171,7 +185,7 @@ function biblio_views_default_views() {
   $handler->display->display_options['fields']['biblio_render']['field'] = 'biblio_render';
   $handler->display->display_options['fields']['biblio_render']['label'] = '';
   $handler->display->display_options['fields']['biblio_render']['element_label_colon'] = FALSE;
-  /* Sort criterion: Biblio: Publication summary character (biblio_first_letter) */
+  /* Sort criterion: Biblio: Publication first letter (biblio_first_letter) */
   $handler->display->display_options['sorts']['biblio_first_letter_value']['id'] = 'biblio_first_letter_value';
   $handler->display->display_options['sorts']['biblio_first_letter_value']['table'] = 'field_data_biblio_first_letter';
   $handler->display->display_options['sorts']['biblio_first_letter_value']['field'] = 'biblio_first_letter_value';

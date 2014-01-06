@@ -18,6 +18,7 @@ package = Biblio
 configure = admin/config/content/biblio
 
 files[] = plugins/biblio_style/abstract.inc
+files[] = includes/BiblioContributorUtility.inc
 files[] = includes/biblio.controller.inc
 files[] = includes/biblio.contributor.controller.inc
 
@@ -54,6 +55,7 @@ files[] = includes/migrate/7300/biblio_entries.migrate.inc
 files[] = includes/migrate/7300/biblio_types.migrate.inc
 
 ; Tests
+files[] = tests/AddContributor.test
 files[] = tests/BibTex.test
 files[] = tests/CiteProc.test
 files[] = tests/Contributor.test
