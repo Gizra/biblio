@@ -58,11 +58,11 @@ function biblio_permission() {
      'title' => t('Create Biblio'),
      'description' => t('Allows the user to create new Biblios.'),
    ),
-   'edit biblio entries' => array(
+   'edit biblio content' => array(
      'title' => t('Edit Biblio'),
      'description' => t('Allows the user to edit any biblio.'),
    ),
-    'delete biblio entries' => array(
+    'delete biblio content' => array(
       'title' => t('Delete biblio'),
       'description' => t('Allows the user to delete any biblio.'),
     ),
@@ -441,8 +441,8 @@ function biblio_entity_access($op, $entity, $account, $entity_type) {
   $strings = array(
     'biblio' => array(
       'create' => 'create biblio content',
-      'update' => 'edit biblio entries',
-      'delete' => 'delete biblio entries',
+      'update' => 'edit biblio content',
+      'delete' => 'delete biblio content',
       'view' => 'access biblio content',
     ),
     'biblio_contributor' => array(
