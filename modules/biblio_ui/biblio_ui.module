@@ -177,14 +177,16 @@ function biblio_ui_menu() {
   // Biblio contributor UI.
   $items['admin/biblio-contributor'] = array(
     'title' => 'Biblio contributor',
-    'access arguments' => array('create biblio contributor entry'),
+    'access callback' => 'biblio_contributor_access',
+    'access arguments' => array('create'),
     'page callback' => array('views_embed_view'),
     'page arguments' => array('biblio_contributor'),
   );
 
   $items['admin/biblio-contributor/add'] = array(
     'title' => 'Add biblio contributor',
-    'access arguments' => array('create biblio contributor entry'),
+    'access callback' => 'biblio_contributor_access',
+    'access arguments' => array('create'),
     'page callback' => array('drupal_get_form'),
     'page arguments' => array('biblio_ui_contributor_create_form'),
     'type' => MENU_LOCAL_ACTION,
@@ -193,7 +195,7 @@ function biblio_ui_menu() {
   $items['biblio-contributor/%biblio_contributor/edit'] = array(
     'title' => 'Edit',
     'description arguments' => array(1, 'edit'),
-    'access callback' => 'biblio_access',
+    'access callback' => 'biblio_contributor_access',
     'access arguments' => array('edit', 1),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('biblio_ui_contributor_create_form', 1),
@@ -204,7 +206,7 @@ function biblio_ui_menu() {
   $items['biblio-contributor/%biblio_contributor/delete'] = array(
     'title' => 'Delete',
     'description arguments' => array(1, 'delete'),
-    'access callback' => 'biblio_access',
+    'access callback' => 'biblio_contributor_access',
     'access arguments' => array('delete', 1),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('biblio_ui_contributor_delete_form', 1),

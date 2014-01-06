@@ -348,7 +348,7 @@ function biblio_entity_info() {
     'label callback' => 'entity_class_label',
     'uri callback' => 'entity_class_uri',
     'module' => 'biblio',
-    'access callback' => 'biblio_access',
+    'access callback' => 'biblio_contributor_access',
     'inline entity form' => array(
       'controller' => 'BiblioContributorInlineEntityFormController',
     ),
@@ -458,24 +458,13 @@ function biblio_access($op, $entity = NULL, $account = NULL, $entity_type = NULL
   }
 
   $strings = array(
-    'biblio' => array(
-      'create' => 'create biblio content',
-      'update' => 'edit biblio content',
-      'delete' => 'delete biblio content',
-      'view' => 'access biblio content',
-    ),
-    'biblio_contributor' => array(
-      'create' => 'create biblio contributor',
-      'update' => 'edit biblio contributor',
-      'delete' => 'delete biblio contributor',
-      'view' => 'view biblio contributor',
-    ),
+    'create' => 'create biblio content',
+    'update' => 'edit biblio content',
+    'delete' => 'delete biblio content',
+    'view' => 'access biblio content',
   );
 
-  // See if we can use the entity type from the entity object.
-  $entity_type = is_object($entity_type) && !$entity_type ? $entity->entityType() : $entity_type;
-
-  $string = $strings[$entity_type][$op];
+  $string = $strings[$op];
 
   // When checking the access on the biblio entity we need to check if the user
   // can delete/update entries which created by himself/other users.
@@ -486,6 +475,38 @@ function biblio_access($op, $entity = NULL, $account = NULL, $entity_type = NULL
   }
 
   return user_access($string, $account);
+}
+
+/**
+ * Access function for the biblio contributor entity.
+ *
+ * @param $op
+ *  The type of the operation.
+ * @param Biblio|BiblioContributor $entity
+ *  The entity object.
+ * @param $account
+ *  The user object.
+ * @param $entity_type
+ *  The entity type.
+ *
+ * @return bool
+ *  Return TRUE/FALSE if the user has the privilege for this action.
+ */
+function biblio_contributor_access($op, $entity = NULL, $account = NULL, $entity_type = NULL) {
+  global $user;
+
+  if (!$account) {
+    $account = $user;
+  }
+
+  $strings = array(
+    'create' => 'create biblio contributor',
+    'update' => 'edit biblio contributor',
+    'delete' => 'delete biblio contributor',
+    'view' => 'view biblio contributor',
+  );
+
+  return user_access($strings[$op], $account);
 }
 
 /**
