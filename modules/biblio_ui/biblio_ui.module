@@ -1208,7 +1208,8 @@ function biblio_ui_get_ids_from_string($bids_string = '') {
  * @param $display_name
  *   View display name.
  *
- * @return TRUE if Biblio view and display exist and accessible.
+ * @return
+ *   TRUE if Biblio view and display exist and accessible.
  *   FALSE otherwise.
  */
 function biblio_ui_is_biblio_view($view_name, $display_name) {
