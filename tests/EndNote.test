@@ -40,11 +40,7 @@ class BiblioEndNoteTestCase extends DrupalWebTestCase {
 %A Gary King
 %B PS: Political Science and Politics';
 
-    ctools_include('plugins');
-    $plugin = biblio_get_biblio_style('endnote');
-    $class = ctools_plugin_load_class('biblio', 'biblio_style', 'endnote', 'class');
-
-    $biblio_style = new $class($plugin);
+    $biblio_style = biblio_get_class_from_style('endnote');
 
     $biblios = $biblio_style->import($data);
     $biblio = $biblios['new'][0];

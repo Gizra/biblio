@@ -33,17 +33,15 @@ class BiblioImportPreventDuplicateTestCase extends DrupalWebTestCase {
   edition   = "ninth Dover printing, tenth GPO printing"
 }';
 
-    ctools_include('plugins');
-    $plugin = biblio_get_biblio_style('bibtex');
-    $class = ctools_plugin_load_class('biblio', 'biblio_style', 'bibtex', 'class');
+
 
     // Import the data to create a new biblio.
-    $biblio_style1 = new $class($plugin);
+    $biblio_style1 = biblio_get_class_from_style('bibtex');
     $biblio_style1->import($data);
 
     // Import the same data again, to make sure it is not created again and that
     // instead the previous biblio is returned.
-    $biblio_style2 = new $class($plugin);
+    $biblio_style2 = biblio_get_class_from_style('bibtex');
     $biblios2 = $biblio_style2->import($data);
 
     $this->assertTrue(empty($biblios2['new']) && !empty($biblios2['duplicate']), 'Biblio duplication was successfully prevented.');
