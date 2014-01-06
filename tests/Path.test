@@ -46,9 +46,9 @@ class BiblioPathTestCase extends DrupalWebTestCase {
     $this->assertText($biblio1->title, 'Alias works.');
     $this->assertResponse(200);
 
-    // Change alias to one containing "exotic" characters.
+    // Change alias.
     $previous = $edit['path[alias]'];
-    $edit['path[alias]'] = "another-path"; // Characters from various non-ASCII alphabets.
+    $edit['path[alias]'] = $this->randomame(8);
     $this->drupalPost('biblio/' . $biblio1->bid . '/edit', $edit, t('Save'));
 
     // Confirm that the alias works.
