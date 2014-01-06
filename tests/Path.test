@@ -58,7 +58,8 @@ class BiblioPathTestCase extends DrupalWebTestCase {
     $this->assertText($biblio1->title, 'Changed alias works.');
     $this->assertResponse(200);
 
-    // Make sure that previous alias no longer works.
+    drupal_static_reset('drupal_lookup_path');
+    // Confirm that previous alias no longer works.
     $this->drupalGet($previous);
     $this->assertNoText($biblio1->title, 'Previous alias no longer works.');
     $this->assertResponse(404);
