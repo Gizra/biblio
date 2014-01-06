@@ -495,28 +495,6 @@ function biblio_entity_access($op, $type = NULL, $account = NULL) {
  * Save the path of the Biblio entry.
  */
 function biblio_biblio_insert($biblio) {
-  biblio_create_path($biblio);
-}
-
-/**
- * Implements hook_biblio_update().
- *
- * Update the path of the Biblio entry.
- */
-function biblio_biblio_update($biblio) {
-  biblio_create_path($biblio, 'update');
-}
-
-/**
- * Insert or update path alias.
- *
- * @param Biblio $biblio
- *   The Biblio object.
- * @param $op
- *   The operation that invoked this function. Can be "insert" or "update".
- *   Defaults to "insert".
- */
-function biblio_create_path(Biblio $biblio, $op = 'insert') {
   if (!module_exists('path')) {
     return;
   }
@@ -524,8 +502,8 @@ function biblio_create_path(Biblio $biblio, $op = 'insert') {
   if (isset($biblio->path)) {
     $path = $biblio->path;
     $path['alias'] = trim($path['alias']);
-
-    if (!empty($path['alias']) || $op == 'update') {
+    // Only save a non-empty alias.
+    if (!empty($path['alias'])) {
       // Ensure fields for programmatic executions.
       $langcode = entity_language('biblio', $biblio);
       $path['source'] = 'biblio/' . $biblio->bid;
@@ -536,19 +514,23 @@ function biblio_create_path(Biblio $biblio, $op = 'insert') {
 }
 
 /**
- * Implements hook_biblio_load().
+ * Implements hook_biblio_update().
+ *
+ * Update the path of the Biblio entry.
  */
-function biblio_biblio_load($biblios) {
+function biblio_biblio_update($biblio) {
   if (!module_exists('path')) {
     return;
   }
 
-  foreach ($biblios as $biblio) {
-    $conditions = array(
-      'source' => 'biblio/' . $biblio->bid,
-      'language' => LANGUAGE_NONE,
-    );
-    $biblio->path = path_load($conditions);
+  if (isset($biblio->path)) {
+    $path = $biblio->path;
+    $path['alias'] = trim($path['alias']);
+    // Delete old alias if user erased it.
+    if (!empty($path['pid']) && empty($path['alias'])) {
+      path_delete($path['pid']);
+    }
+    biblio_biblio_insert($biblio);
   }
 }
 
@@ -560,11 +542,22 @@ function biblio_biblio_delete($biblio) {
     return;
   }
 
-  $criteria = array(
-    'source' => 'biblio/' . $biblio->bid,
-    'language' => LANGUAGE_NONE,
-  );
-  path_delete($criteria);
+  $conditions = array('source' => 'biblio/' . $biblio->bid);
+  path_delete($conditions);
+}
+
+/**
+ * Implements hook_biblio_load().
+ */
+function biblio_biblio_load($biblios) {
+  if (!module_exists('path')) {
+    return;
+  }
+
+  foreach ($biblios as $biblio) {
+    $conditions = array('source' => 'biblio/' . $biblio->bid);
+    $biblio->path = path_load($conditions);
+  }
 }
 
 /**
