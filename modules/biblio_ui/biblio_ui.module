@@ -1239,7 +1239,7 @@ function theme_biblio_ui_view_export_area($variables) {
   $attributes = array(
     'links' => $links,
     'title' => t('Export'),
-    'attributes' => array('class' => array('biblio-export-buttons')),
+    'class' => 'biblio-export-buttons',
   );
   return theme('ctools_dropdown', $attributes);
 }
@@ -1267,7 +1267,7 @@ function theme_biblio_ui_entity_export_area($variables) {
   $attributes = array(
     'links' => $links,
     'title' => $title,
-    'attributes' => array('class' => array('biblio-export-buttons')),
+    'class' => 'biblio-export-buttons',
   );
   return theme('ctools_dropdown', $attributes);
 }
