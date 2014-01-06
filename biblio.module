@@ -197,6 +197,7 @@ function biblio_ctools_plugin_directory($module, $plugin) {
  *
  * @param $style_name
  *   The style plugin name.
+ *
  * @return BiblioStyleInterface
  *   The Biblio style object.
  */
@@ -212,7 +213,7 @@ function biblio_get_class_from_style($style_name) {
  * Helper function to include CTools plugins and get a notifier plguin.
  *
  * @param $plugin_name
- *   The plugin that should be laoded.
+ *   The plugin that should be loaded.
  */
 function biblio_get_biblio_style($style_name) {
   ctools_include('plugins');
@@ -220,15 +221,26 @@ function biblio_get_biblio_style($style_name) {
 }
 
 /**
- * Helper function to return only exportable biblio style.
+ * Helper function to return only exportable Biblio style.
  *
  * @param $style_name
  *   The plugin that should be loaded.
+ * @param $export_format_name
+ *   (Optional) Export format name.
+ *
  * @return array
+ *   Biblio style plugin.
  */
-function biblio_get_exportable_biblio_style($style_name) {
+function biblio_get_exportable_biblio_style($style_name, $export_format_name = NULL) {
   $style = biblio_get_biblio_style($style_name);
-  if (empty($style['export extension'])) {
+  if (empty($style['export'])) {
+    // No export information - not a exportable plugin.
+    return;
+  }
+  if ($export_format_name == NULL) {
+    return $style;
+  }
+  if (empty($style['export'][$export_format_name])) {
     return;
   }
   return $style;
@@ -241,7 +253,7 @@ function biblio_get_exportable_biblio_styles() {
   ctools_include('plugins');
   $exportable_plugins = array();
   foreach (biblio_get_biblio_styles() as $plugin_name => $style) {
-    if (!empty($style['export extension'])) {
+    if (!empty($style['export'])) {
       $exportable_plugins[$plugin_name] = $style;
     }
   }

@@ -14,5 +14,11 @@ if (module_exists('libraries') && file_exists(libraries_get_path('citeproc-php')
       // Link to the biblio.
       'label_as_link' => TRUE,
     ),
+    'export' => array(
+      'citeproc' => array(
+        'name' => t('Citeproc'),
+        'file extension' => 'csl',
+      ),
+    ),
   );
 }
