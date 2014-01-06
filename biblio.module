@@ -568,16 +568,17 @@ function biblio_biblio_delete($biblio) {
 }
 
 /**
- * Create a biblio entity object
+ * Create a Biblio entity object.
  *
  * @param $type
- *  The publication type of the biblio to be created (bundle)
+ *  The publication type of the Biblio to be created (bundle).
  * @param array $values
  *  An associative array of any additional values to be set when creating this
  *  entity. These values will be carried throughout the biblio object's life.
  *  Example: $values['title'] => 'new publication';
+ *
  * @return Biblio
- *  The biblio object, with default values.
+ *  The Biblio object, with default values.
  */
 function biblio_create($type, $values = array()) {
   if (empty($account)) {
