@@ -59,16 +59,16 @@ function biblio_permission() {
      'description' => t('Allows the user to create new Biblios.'),
    ),
    'edit biblio entries' => array(
-     'title' => t('Edit Biblio entries'),
-     'description' => t('Allows the user to edit any biblio entries.'),
+     'title' => t('Edit Biblio'),
+     'description' => t('Allows the user to edit any biblio.'),
    ),
     'delete biblio entries' => array(
-      'title' => t('Delete biblio entries'),
-      'description' => t('Allows the user to delete any biblio entities.'),
+      'title' => t('Delete biblio'),
+      'description' => t('Allows the user to delete any biblio.'),
     ),
     'edit by all biblio authors' => array(
       'title' => t('Edit by all Biblio authors'),
-      'description' => t('Allows any/all of the authors associated with a biblio entry to edit the biblio entry. This requires the Drupal UserID be mapped to a Biblio author ID.'),
+      'description' => t('Allows any/all of the authors associated with a biblio to edit the biblio. This requires the Drupal User ID be mapped to a Biblio author ID.'),
     ),
     'edit biblio authors' => array(
       'title' => t('Edit Biblio authors'),
@@ -91,20 +91,20 @@ function biblio_permission() {
       'description' => t('Allows users to see links which allow export of bibliographic data for an individual entry or the entire result set.'),
     ),
     // Contributor permissions.
-    'create biblio contributor entry' => array(
-      'title' => t('Create biblio contributor entry'),
+    'create biblio contributor' => array(
+      'title' => t('Create biblio contributor'),
       'description' => t('Grant to the user the permission to create a biblio contributor via the UI.3'),
     ),
-    'edit biblio contributor entry' => array(
-      'title' => t('Update biblio contributor entry'),
+    'edit biblio contributor' => array(
+      'title' => t('Edit biblio contributor'),
       'description' => t('Grant to the user the permission to update a biblio contributor via the UI.'),
     ),
-    'delete biblio contributor entry' => array(
-      'title' => t('Delete biblio contributor entry'),
+    'delete biblio contributor' => array(
+      'title' => t('Delete biblio contributor'),
       'description' => t('Grant to the user the permission to delete a biblio contributor via the UI.'),
     ),
-    'view biblio contributor entry' => array(
-      'title' => t('View biblio contributor entry'),
+    'view biblio contributor' => array(
+      'title' => t('View biblio contributor'),
       'description' => t('Grant to the user the permission to view a biblio contributor via the UI.'),
     ),
   );
@@ -446,10 +446,10 @@ function biblio_entity_access($op, $entity, $account, $entity_type) {
       'view' => 'access biblio content',
     ),
     'biblio_contributor' => array(
-      'create' => 'create biblio contributor entry',
-      'update' => 'edit biblio contributor entry',
-      'delete' => 'delete biblio contributor entry',
-      'view' => 'view biblio contributor entry',
+      'create' => 'create biblio contributor',
+      'update' => 'edit biblio contributor',
+      'delete' => 'delete biblio contributor',
+      'view' => 'view biblio contributor',
     ),
   );
 
