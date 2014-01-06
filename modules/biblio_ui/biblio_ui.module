@@ -75,22 +75,22 @@ function biblio_ui_menu() {
     'description callback' => 'biblio_ui_description_callback',
     'description arguments' => array(1, 'export'),
     'access callback' => 'biblio_ui_export_access',
-    'access arguments' => array(2, 3),
+    'access arguments' => array(2, 3, 4),
     'page callback' => 'biblio_ui_export_menu_item',
-    'page arguments' => array(2, 3),
+    'page arguments' => array(2, 3, 4),
   );
 
   // For example:
   // biblio/export_view/biblio/page/endnote
   // biblio/export_view/biblio/page/endnote/tagged
-  $items['biblio/export_view/%/%/%/%'] = array(
+  $items['biblio/export_view/%/%/%'] = array(
     'title' => t('Export Biblio by View'),
     'description callback' => 'biblio_ui_description_callback',
     'description arguments' => array(1, 'export'),
     'access callback' => 'biblio_ui_export_view_access',
-    'access arguments' => array(2, 3, 4),
+    'access arguments' => array(2, 3, 4, 5),
     'page callback' => 'biblio_ui_export_view',
-    'page arguments' => array(2, 3, 4),
+    'page arguments' => array(2, 3, 4, 5),
   );
 
   if (module_exists('devel')) {
@@ -1086,15 +1086,19 @@ function biblio_ui_export_view_access($view_name, $display_name, $style_name, $f
  */
 function biblio_ui_export($bids = array(), $style_name, $format_name = NULL) {
   $plugin = biblio_get_exportable_biblio_style($style_name, $format_name);
-  $filename = $style_name . '.' . $plugin['export'][$format_name]['file extension'];
+
+  // Use the first format if not given.
+  if (!$format_name) {
+    $format_name = reset(array_keys($plugin['export']));
+  }
+  $format = $plugin['export'][$format_name];
+  $filename = $style_name . '.' . $format['file extension'];
 
   drupal_add_http_header('Content-type', 'application/text; charset=utf-8');
   drupal_add_http_header('Content-Disposition', 'attachment; filename="' . $filename . '"');
 
   $options = array();
-  if ($format_name) {
-    $options['type'] = $format_name;
-  }
+  $options['type'] = $format_name;
 
   foreach (biblio_load_multiple($bids) as $biblio) {
     print_r($biblio->getText($style_name, $options));
