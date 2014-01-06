@@ -1,0 +1,12 @@
+<?php
+/**
+ * @file
+ * Install file for the biblio module.
+ */
+
+/**
+ * Implements hook_uninstall();
+ */
+function biblio_ui_uninstall() {
+  variable_del('biblio_debug');
+}

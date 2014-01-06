@@ -283,37 +283,6 @@ function biblio_ui_theme() {
 }
 
 /**
- * Implements hook_uninstall();
- */
-function biblio_ui_uninstall() {
-  variable_del('biblio_debug');
-}
-
-/**
- * Implements hook_permission().
- */
-function biblio_ui_permission() {
-  return array(
-    'create biblio contributor entry' => array(
-      'title' => t('Create biblio contributor entry'),
-      'description' => t('Grant to the user the permission to create a biblio contributor via the UI'),
-    ),
-    'update biblio contributor entry' => array(
-      'title' => t('Update biblio contributor entry'),
-      'description' => t('Grant to the user the permission to update a biblio contributor via the UI'),
-    ),
-    'delete biblio contributor entry' => array(
-      'title' => t('Delete biblio contributor entry'),
-      'description' => t('Grant to the user the permission to delete a biblio contributor via the UI'),
-    ),
-    'view biblio contributor entry' => array(
-      'title' => t('View biblio contributor entry'),
-      'description' => t('Grant to the user the permission to view a biblio contributor via the UI'),
-    ),
-  );
-}
-
-/**
  * Generating a description for page when editing or deleting a biblio.
  *
  * @param $biblio
@@ -1038,7 +1007,7 @@ function biblio_ui_contributor_delete_form_submit($form, &$form_state) {
  *   Biblio related View name.
  * @param $display_name
  *   Biblio related View display name.
- * 
+ *
  * @return bool
  */
 function biblio_ui_export_view_access($style_name, $view_name, $display_name) {
