@@ -54,17 +54,25 @@ function biblio_permission() {
       'title' => t('Access Biblio content'),
       'description' => t('Allows the user to view Biblio nodes.'),
     ),
-   'create biblio content' => array(
+    'create biblio content' => array(
      'title' => t('Create Biblio'),
      'description' => t('Allows the user to create new Biblios.'),
-   ),
-   'edit biblio content' => array(
-     'title' => t('Edit Biblio'),
-     'description' => t('Allows the user to edit any biblio.'),
-   ),
+    ),
+    'edit biblio content' => array(
+      'title' => t('Edit Biblio'),
+      'description' => t('Allows the user to edit any biblio.'),
+    ),
+    'edit own biblio content' => array(
+      'title' => t('Edit own Biblio'),
+      'description' => t('Allows the user to edit his own biblio.'),
+    ),
     'delete biblio content' => array(
       'title' => t('Delete biblio'),
       'description' => t('Allows the user to delete any biblio.'),
+    ),
+    'delete own biblio content' => array(
+      'title' => t('Delete own biblio'),
+      'description' => t('Allows the user to delete his own biblio.'),
     ),
     'edit by all biblio authors' => array(
       'title' => t('Edit by all Biblio authors'),
@@ -129,7 +137,6 @@ function biblio_ctools_plugin_type() {
   );
   return $plugins;
 }
-
 
 /**
  * Add defaults values to the notifier plugins.
@@ -302,7 +309,7 @@ function biblio_entity_info() {
     // It executes our entity defaultUri() method
     'uri callback' => 'entity_class_uri',
     'module' => 'biblio',
-    'access callback' => 'biblio_entity_access',
+    'access callback' => 'biblio_access',
     'views controller class' => 'BiblioViewsController',
     'metadata controller class' => 'BiblioMetadataController',
   );
@@ -341,7 +348,7 @@ function biblio_entity_info() {
     'label callback' => 'entity_class_label',
     'uri callback' => 'entity_class_uri',
     'module' => 'biblio',
-    'access callback' => 'biblio_entity_access',
+    'access callback' => 'biblio_access',
     'inline entity form' => array(
       'controller' => 'BiblioContributorInlineEntityFormController',
     ),
@@ -429,9 +436,21 @@ function biblio_type_delete($type) {
 }
 
 /**
- * Access callback for the entity API.
+ * Access function for the biblio entity.
+ *
+ * @param $op
+ *  The type of the operation.
+ * @param Biblio|BiblioContributor $entity
+ *  The entity object.
+ * @param $account
+ *  The user object.
+ * @param $entity_type
+ *  The entity type.
+ *
+ * @return bool
+ *  Return TRUE/FALSE if the user has the privilege for this action.
  */
-function biblio_entity_access($op, $entity, $account, $entity_type) {
+function biblio_access($op, $entity = NULL, $account = NULL, $entity_type = NULL) {
   global $user;
 
   if (!$account) {
@@ -453,7 +472,20 @@ function biblio_entity_access($op, $entity, $account, $entity_type) {
     ),
   );
 
-  return user_access($strings[$entity_type][$op], $account);
+  // See if we can use the entity type from the entity object.
+  $entity_type = is_object($entity_type) && !$entity_type ? $entity->entityType() : $entity_type;
+
+  $string = $strings[$entity_type][$op];
+
+  // When checking the access on the biblio entity we need to check if the user
+  // can delete/update entries which created by himself/other users.
+  if (is_object($entity) && $entity_type == 'biblio') {
+    if ($entity->uid == $account->uid) {
+      $string = $op == 'delete' ? 'delete own biblio content' : 'edit own biblio content';
+    }
+  }
+
+  return user_access($string, $account);
 }
 
 /**
