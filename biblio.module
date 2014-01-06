@@ -495,22 +495,7 @@ function biblio_entity_access($op, $type = NULL, $account = NULL) {
  * Save the path of the Biblio entry.
  */
 function biblio_biblio_insert($biblio) {
-  if (!module_exists('path')) {
-    return;
-  }
-
-  if (isset($biblio->path)) {
-    $path = $biblio->path;
-    $path['alias'] = trim($path['alias']);
-    // Only save a non-empty alias.
-    if (!empty($path['alias'])) {
-      // Ensure fields for programmatic executions.
-      $langcode = entity_language('biblio', $biblio);
-      $path['source'] = 'biblio/' . $biblio->bid;
-      $path['language'] = isset($langcode) ? $langcode : LANGUAGE_NONE;
-      path_save($path);
-    }
-  }
+  biblio_create_path($biblio);
 }
 
 /**
@@ -519,6 +504,19 @@ function biblio_biblio_insert($biblio) {
  * Update the path of the Biblio entry.
  */
 function biblio_biblio_update($biblio) {
+  biblio_create_path($biblio, 'update');
+}
+
+/**
+ * Insert or update path alias.
+ *
+ * @param Biblio $biblio
+ *   The Bilbio object.
+ * @param $op
+ *   The operation that invoked this function. Can be "insert" or "update".
+ *   Defaults to "insert".
+ */
+function biblio_create_path(Biblio $biblio, $op = 'insert') {
   if (!module_exists('path')) {
     return;
   }
@@ -527,11 +525,13 @@ function biblio_biblio_update($biblio) {
     $path = $biblio->path;
     $path['alias'] = trim($path['alias']);
 
-    // Ensure fields for programmatic executions.
-    $langcode = entity_language('biblio', $biblio);
-    $path['source'] = 'biblio/' . $biblio->bid;
-    $path['language'] = isset($langcode) ? $langcode : LANGUAGE_NONE;
-    path_save($path);
+    if (!empty($path['alias']) || $op == 'update') {
+      // Ensure fields for programmatic executions.
+      $langcode = entity_language('biblio', $biblio);
+      $path['source'] = 'biblio/' . $biblio->bid;
+      $path['language'] = isset($langcode) ? $langcode : LANGUAGE_NONE;
+      path_save($path);
+    }
   }
 }
 
