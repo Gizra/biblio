@@ -48,7 +48,7 @@ class BiblioPathTestCase extends DrupalWebTestCase {
 
     // Change alias.
     $previous = $edit['path[alias]'];
-    $edit['path[alias]'] = $this->randomame(8);
+    $edit['path[alias]'] = $this->randomName(8);
     $this->drupalPost('biblio/' . $biblio1->bid . '/edit', $edit, t('Save'));
 
     // Confirm that the alias works.
