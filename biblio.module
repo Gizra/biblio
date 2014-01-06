@@ -678,7 +678,8 @@ function biblio_contributor_load_multiple($cids = array()) {
  * Attach fields to bundles.
  *
  * @param $bundles
- *   Array with the bundles to process, or empty array to use all Biblio bundles.
+ *   Array with the bundles to process, or empty array to use all Biblio
+ *   bundles.
  */
 function biblio_create_fields_by_bundle($bundles = array(), $clear_cache = TRUE) {
   $entity_info = entity_get_info('biblio');
@@ -688,8 +689,6 @@ function biblio_create_fields_by_bundle($bundles = array(), $clear_cache = TRUE)
   foreach ($bundles as $bundle) {
     foreach ($fields_info as $field_name => $field_info) {
       if (in_array($field_name, array('biblio_contributor_role', 'biblio_contributor'))) {
-        // @todo: Add better way to distniush fields that don't need to be
-        // attached to the Biblio entity.
         continue;
       }
 
@@ -709,9 +708,9 @@ function biblio_create_fields_by_bundle($bundles = array(), $clear_cache = TRUE)
  * Create a biblio field in a bundle.
  *
  * @param string $field_name
- *   The field name
+ *   The field name.
  * @param string $entity_type
- *   The entity type
+ *   The entity type.
  * @param string $bundle
  *   The bundle name.
  * @param array $biblio_field

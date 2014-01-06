@@ -33,7 +33,6 @@ class BiblioPathTestCase extends DrupalWebTestCase {
    */
   function testBiblioAlias() {
     // Create test Bilbio.
-    return;
     $biblio1 = biblio_create('book', array('title' => 'biblio1'));
     $biblio1->save();
 
