@@ -231,26 +231,8 @@ function biblio_get_biblio_style($style_name) {
  * @param $export_format_name
  *   (Optional) Export format name.
  *
- * @return plugin
- *   CTools plugin array.
- *   An exportable plugin should include an 'export' section, with 1 or more
- *   export formats, as in the example below:
- * $plugin = array(
- *   'title' => t('EndNote'),
- *   'description' => t('Endnote (tagged or XML) style.'),
- *   'class' => 'BiblioStyleEndNote',
- *   'import' => TRUE,
- *   'export' => array(
- *     'xml' => array(
- *       'name' => t('EndNote - XML'),
- *       'file extension' => 'xml',
- *     ),
- *     'tagged' => array(
- *       'name' => t('EndNote - Tagged'),
- *       'file extension' => 'enl',
- *     ),
- *   ),
- * );
+ * @return array
+ *   Biblio style plugin.
  */
 function biblio_get_exportable_biblio_style($style_name, $export_format_name = NULL) {
   $style = biblio_get_biblio_style($style_name);
