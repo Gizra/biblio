@@ -31,14 +31,14 @@ function biblio_ui_menu() {
   $items['biblio/%biblio'] = array(
     'title callback' => 'biblio_ui_biblio_title',
     'title arguments' => array(1),
-    'access arguments' => array('view biblio'),
+    'access arguments' => array('access biblio content'),
     'page callback' => 'biblio_ui_view_biblio',
     'page arguments' => array(1),
   );
 
   $items['biblio/%biblio/view'] = array(
     'title' => 'View',
-    'access arguments' => array('view biblio'),
+    'access arguments' => array('access biblio content'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('biblio_ui_manage_biblio', 1),
     'type' => MENU_DEFAULT_LOCAL_TASK,
@@ -49,7 +49,7 @@ function biblio_ui_menu() {
     'title' => 'Edit',
     'description callback' => 'biblio_ui_description_callback',
     'description arguments' => array(1, 'edit'),
-    'access arguments' => array('edit biblio'),
+    'access arguments' => array('edit biblio entries'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('biblio_ui_manage_biblio', 1),
     'type' => MENU_LOCAL_TASK,
@@ -60,7 +60,7 @@ function biblio_ui_menu() {
     'title' => 'Delete',
     'description callback' => 'biblio_ui_description_callback',
     'description arguments' => array(1, 'delete'),
-    'access arguments' => array('delete biblio'),
+    'access arguments' => array('delete biblio entries'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('biblio_ui_delete_biblio', 1),
     'type' => MENU_LOCAL_TASK,
