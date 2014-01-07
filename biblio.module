@@ -101,7 +101,7 @@ function biblio_permission() {
     // Contributor permissions.
     'create biblio contributor' => array(
       'title' => t('Create biblio contributor'),
-      'description' => t('Grant to the user the permission to create a biblio contributor via the UI.3'),
+      'description' => t('Grant to the user the permission to create a biblio contributor via the UI.'),
     ),
     'edit biblio contributor' => array(
       'title' => t('Edit biblio contributor'),
