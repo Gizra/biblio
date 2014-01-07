@@ -57,13 +57,15 @@ class BiblioMigrateEntries extends Migration {
       'biblio_type',
       'biblio_abst_e',
     );
+    $entity_info = entity_get_info('biblio');
+    $bundle = $entity_info['bundles'][$arguments['bundle_name']];
 
     $this->query
       ->fields('b', $fields)
       ->fields('n', array('nid', 'title', 'created', 'uid'))
       ->condition('n.status', NODE_PUBLISHED)
       ->condition('b.biblio_type', 0, '>')
-      ->condition('t.name', $arguments['bundle_name'], '=');
+      ->condition('t.name', $bundle['name'], '=');
 
     $fields = array_merge($fields, array('title', 'uid', 'created', 'changed'));
 

@@ -302,5 +302,7 @@ function biblio_update_7300() {
   _biblio_install_add_biblio_roles();
   biblio_add_publication_types();
   biblio_create_fields_by_bundle();
+  biblio_register_migrate();
+
   return t('Old Biblio tables were renamed and the new tables were created.');
 }
