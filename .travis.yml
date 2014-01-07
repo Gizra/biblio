@@ -31,6 +31,11 @@ before_script:
   - cd biblio/drupal
 
   - drush dl views
+  # Hack to fix Inline entity form's module strict warning.
+  - drush dl inline_entity_form -y
+  - curl -O https://drupal.org/files/issues/inline_entity_form-fix_undefined_indexes_in_form_alter-2165113.patch
+  - patch -p1 /home/travis/build/biblio/drupal/sites/all/modules/inline_entity_form/inline_entity_form.module < inline_entity_form-fix_undefined_indexes_in_form_alter-2165113.patch
+
   # Download CiteProc related modules and libraries.
   - drush dl libraries
   - git clone https://github.com/gbv/citeproc-php.git sites/all/libraries/citeproc-php
@@ -41,4 +46,4 @@ before_script:
   - drush runserver 127.0.0.1:8080 &
   - until netstat -an 2>/dev/null | grep '8080.*LISTEN'; do true; done
 
-script: drush test-run 'Biblio' --uri=http://127.0.0.1:8080
+script: drush test-run 'Biblio,Biblio UI' --uri=http://127.0.0.1:8080
