@@ -893,6 +893,9 @@ function biblio_migrate_api() {
   return $api;
 }
 
+/**
+ * Register Migration for all existing Biblio entities.
+ */
 function biblio_register_migrate() {
   if (!module_exists('migrate')) {
     // Migrate module is not a dependency, so we need to verify it is installed.
