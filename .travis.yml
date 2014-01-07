@@ -31,9 +31,10 @@ before_script:
   - cd biblio/drupal
 
   # Hack to fix Inline entity form's module strict warning.
-  - drush dl inline_entity_form
+  - drush dl inline_entity_form -y
   - curl -O https://drupal.org/files/issues/inline_entity_form-fix_undefined_indexes_in_form_alter-2165113.patch
   - patch -p1 /home/travis/build/zariz/drupal/sites/all/modules/inline_entity_form/inline_entity_form.module < inline_entity_form-fix_undefined_indexes_in_form_alter-2165113.patch
+  - cat /home/travis/build/zariz/drupal/sites/all/modules/inline_entity_form/inline_entity_form.module.rej
 
   # Download CiteProc related modules and libraries.
   - drush dl libraries
