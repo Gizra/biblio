@@ -5,7 +5,8 @@
  */
 class BiblioMigrateContributorCollections extends Migration {
   public $dependencies = array(
-    'BiblioMigrateEntries',
+ //   'BiblioMigrateEntries',
+ // @todo: can't depend on this
   );
 
   public function __construct($arguments = array()) {
