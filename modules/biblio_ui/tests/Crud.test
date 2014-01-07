@@ -1,0 +1,50 @@
+<?php
+
+/**
+ * @file
+ * Contains BiblioUiCrudTestCase
+ */
+
+class BiblioUiCrudTestCase extends DrupalWebTestCase {
+
+  /**
+   * The Biblio object.
+   *
+   * @var Biblio
+   */
+  public $biblio = NULL;
+
+  public static function getInfo() {
+    return array(
+      'name' => 'CRUD',
+      'description' => 'Create, update and delete of Biblios via the UI.',
+      'group' => 'Biblio UI',
+    );
+  }
+
+  function setUp() {
+    parent::setUp('biblio_ui');
+    biblio_create_fields_by_bundle(array('book'));
+
+    // Create test user and login.
+    $web_user = $this->drupalCreateUser(array('administer biblio', 'create url aliases'));
+    $this->drupalLogin($web_user);
+  }
+
+  /**
+   * Test CRUD of Biblios via the UI.
+   */
+  function testCrud() {
+    $title = $this->randomName(8);
+
+    // Create alias.
+    $edit = array(
+      'title' => $title,
+      'biblio_year[und][0][value]' => 2014,
+    );
+    $this->drupalPost('biblio/add/book', $edit, t('Save'));
+
+    $this->assertText($title, 'Biblio created.');
+    $this->assertResponse(200);
+  }
+}
