@@ -306,6 +306,9 @@ function biblio_migrate_api() {
       // Telling the site owner "Biblio 3.x migration requires Migrate version
       // 2.6 and above"
     }
+    elseif (!module_exists('migrate_extras')) {
+      // @todo: give message migrate will work only when migrate_extras avaliable
+    }
     else {
       $migrations['BiblioMigrateContributorCollections'] = array(
         'class_name' => 'BiblioMigrateContributorCollections',
