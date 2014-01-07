@@ -479,8 +479,10 @@ function biblio_access($op, Biblio $entity = NULL, $account = NULL, $entity_type
 
   // When checking the access on the biblio entity we need to check if the user
   // can delete/update entries which created by himself/other users.
-  if (is_object($entity)) {
-    if ($entity->uid == $account->uid) {
+  if (is_object($entity) && in_array($op, array('update', 'delete'))) {
+    if (!user_access($string, $account) && $entity->uid == $account->uid) {
+      // The user can't delete/update any publication. We need to check if the
+      // user can update/delete his own biblio entries.
       $string = $op == 'delete' ? 'delete own biblio content' : 'edit own biblio content';
     }
   }

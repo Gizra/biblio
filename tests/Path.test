@@ -24,8 +24,8 @@ class BiblioPathTestCase extends DrupalWebTestCase {
     biblio_create_fields_by_bundle(array('book'));
 
     // Create test user and login.
-    $web_user = $this->drupalCreateUser(array('administer biblio', 'create url aliases'));
-    $this->drupalLogin($web_user);
+    $webuser = $this->drupalCreateUser(array('administer biblio','create url aliases','create biblio content','edit biblio content'));
+    $this->drupalLogin($webuser);
   }
 
   /**
