@@ -548,7 +548,6 @@ function biblio_ui_manage_biblio($form, &$form_state, $type) {
     'submit' => array(
       '#type' => 'submit',
       '#value' => t('Save'),
-      '#submit' => array(),
     ),
     'cancel' => array(
       '#markup' => l(t('Cancel'), 'biblio'),
