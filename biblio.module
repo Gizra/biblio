@@ -267,22 +267,6 @@ function biblio_views_api() {
 }
 
 /**
- * Implements hook_migrate_api().
- */
-function biblio_migrate_api() {
-  $groups = array(
-    'biblio_3' => array(
-      'title' => t('Biblio 3.x'),
-    ),
-  );
-  $api = array(
-    'api' => 2,
-    'groups' => $groups,
-  );
-  return $api;
-}
-
-/**
  * Implements hook_entity_info().
  *
  * Inform the Drupal and the Field API about entity types.
@@ -881,6 +865,34 @@ function biblio_field_access($op, $field, $entity_type, $entity, $account) {
   }
 }
 
+/**
+ * Implements hook_migrate_api().
+ */
+function biblio_migrate_api() {
+  biblio_register_migrate();
+
+  $migrations['BiblioMigrateContributorCollections'] = array(
+    'class_name' => 'BiblioMigrateContributorCollections',
+    'group_name' => 'biblio_3',
+  );
+  $migrations['BiblioMigrateTypes'] = array(
+    'class_name' => 'BiblioMigrateTypes',
+    'group_name' => 'biblio_3',
+  );
+
+  $groups = array(
+    'biblio_3' => array(
+      'title' => t('Biblio 3.x'),
+    ),
+  );
+  $api = array(
+    'api' => 2,
+    'migrations' => $migrations,
+    'groups' => $groups,
+  );
+  return $api;
+}
+
 function biblio_register_migrate() {
   if (!module_exists('migrate')) {
     // Migrate module is not a dependency, so we need to verify it is installed.
@@ -905,7 +917,7 @@ function biblio_register_migrate() {
 
   $entity_info = entity_get_info('biblio');
 
-  foreach ($entity_info['bundles'] as $bundle_name => $bundle) {
+  foreach (array_keys($entity_info['bundles']) as $bundle_name) {
     $machine_name = 'BiblioMigrateEntries_' . $bundle_name;
     $arguments = array();
     $arguments['bundle_name'] = $bundle_name;

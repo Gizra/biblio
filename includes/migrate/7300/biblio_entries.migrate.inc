@@ -65,7 +65,7 @@ class BiblioMigrateEntries extends Migration {
       ->fields('n', array('nid', 'title', 'created', 'uid'))
       ->condition('n.status', NODE_PUBLISHED)
       ->condition('b.biblio_type', 0, '>')
-      ->condition('t.name', $bundle['name'], '=');
+      ->condition('t.name', $bundle['label'], '=');
 
     $fields = array_merge($fields, array('title', 'uid', 'created', 'changed'));
 
