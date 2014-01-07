@@ -297,43 +297,13 @@ function biblio_views_api() {
  * Implements hook_migrate_api().
  */
 function biblio_migrate_api() {
-  $migrations = $groups = array();
-  if (db_table_exists('_biblio_1x')) {
-    // We need to make sure we've got at least the Migrate 2.6 beta - identify
-    // it by the new MigrateDefaultFieldHandler class.
-    if (!class_exists('MigrateDefaultFieldHandler')) {
-      // @todo: give message via drupal_set_message, watchdog, or nothing ?
-      // Telling the site owner "Biblio 3.x migration requires Migrate version
-      // 2.6 and above"
-    }
-    elseif (!module_exists('migrate_extras')) {
-      // @todo: give message migrate will work only when migrate_extras avaliable
-    }
-    else {
-      $migrations['BiblioMigrateContributorCollections'] = array(
-        'class_name' => 'BiblioMigrateContributorCollections',
-        'group_name' => 'biblio_3',
-      );
-      $migrations['BiblioMigrateTypes'] = array(
-        'class_name' => 'BiblioMigrateTypes',
-        'group_name' => 'biblio_3',
-      );
-      $migrations['BiblioMigrateEntries'] = array(
-        'class_name' => 'BiblioMigrateEntries',
-        'group_name' => 'biblio_3',
-      );
-
-      $groups = array(
-        'biblio_3' => array(
-          'title' => t('Biblio 3.x'),
-        ),
-      );
-    }
-  }
-
+  $groups = array(
+    'biblio_3' => array(
+      'title' => t('Biblio 3.x'),
+    ),
+  );
   $api = array(
     'api' => 2,
-    'migrations' => $migrations,
     'groups' => $groups,
   );
   return $api;
@@ -881,5 +851,37 @@ function biblio_get_types_info($type = NULL) {
 function biblio_field_access($op, $field, $entity_type, $entity, $account) {
   if ($field['field_name'] == 'biblio_first_letter') {
     return FALSE;
+  }
+}
+
+function biblio_register_migrate() {
+  if (!module_exists('migrate')) {
+    // Migrate module is not a dependency, so we need to verify it is installed.
+    return;
+  }
+  if (!module_exists('migrate_extras')) {
+    // @todo: give message migrate will work only when migrate_extras avaliable
+    return;
+  }
+  if (!db_table_exists('_biblio_1x')) {
+    // Migrate is relevant only if there is old Biblio 1.x DB table to work on.
+    return;
+  }
+  if (!class_exists('MigrateDefaultFieldHandler')) {
+    // We need to make sure we've got at least the Migrate 2.6 beta - identify
+    // it by the new MigrateDefaultFieldHandler class.
+    // @todo: give message via drupal_set_message, watchdog, or nothing ?
+    // Telling the site owner "Biblio 3.x migration requires Migrate version
+    // 2.6 and above"
+    return;
+  }
+
+  $bundles = array('book');
+  foreach ($bundles as $bundle_name) {
+    $machine_name = 'BiblioMigrateEntries_' . $bundle_name;
+    $arguments = array();
+    $arguments['bundle_name'] = $bundle_name;
+    $arguments['group_name'] = 'biblio_3';
+    Migration::registerMigration('BiblioMigrateEntries', $machine_name, $arguments);
   }
 }

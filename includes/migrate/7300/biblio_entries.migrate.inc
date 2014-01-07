@@ -14,6 +14,7 @@ class BiblioMigrateEntries extends Migration {
 
     $this->query = db_select('_biblio_1x', 'b');
     $this->query->innerJoin('node', 'n', 'n.nid = b.nid AND n.vid = b.vid');
+    $this->query->join('_biblio_types_1x', 't', 't.tid=b.biblio_type');
 
     $fields = array(
       'biblio_number',
@@ -52,7 +53,7 @@ class BiblioMigrateEntries extends Migration {
       'biblio_refereed',
       'biblio_md5',
       'biblio_url',
-      'biblio_url_title',
+ // @todo - sometimes does not exist     'biblio_url_title',
       'biblio_type',
       'biblio_abst_e',
     );
@@ -61,7 +62,8 @@ class BiblioMigrateEntries extends Migration {
       ->fields('b', $fields)
       ->fields('n', array('nid', 'title', 'created', 'uid'))
       ->condition('n.status', NODE_PUBLISHED)
-      ->condition('b.biblio_type', 0, '>');
+      ->condition('b.biblio_type', 0, '>')
+      ->condition('t.name', $arguments['bundle_name'], '=');
 
     $fields = array_merge($fields, array('title', 'uid', 'created', 'changed'));
 
@@ -80,7 +82,7 @@ class BiblioMigrateEntries extends Migration {
 
     // @todo: All bundles have all the field, so we hardcode the bundle. Is this
     // ok?
-    $this->destination = new MigrateDestinationEntityAPI('biblio', 'book');
+    $this->destination = new MigrateDestinationEntityAPI('biblio', $arguments['bundle_name']);
 
     $this
       ->addFieldMapping('type', 'biblio_type')

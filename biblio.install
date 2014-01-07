@@ -16,6 +16,7 @@ function biblio_install() {
  */
 function biblio_enable() {
   biblio_add_publication_types();
+  biblio_register_migrate();
 }
 
 /**
