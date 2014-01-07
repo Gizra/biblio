@@ -16,7 +16,7 @@ class BiblioBibtexTestCase extends DrupalWebTestCase {
   function setUp() {
     parent::setUp('biblio');
 
-    biblio_create_fields_by_bundle(array('book', 'journal'));
+    biblio_create_fields_by_bundle(array('book'));
   }
 
   /**
@@ -42,11 +42,7 @@ class BiblioBibtexTestCase extends DrupalWebTestCase {
 	year = "1964"
 }';
 
-    ctools_include('plugins');
-    $plugin = biblio_get_biblio_style('bibtex');
-    $class = ctools_plugin_load_class('biblio', 'biblio_style', 'bibtex', 'class');
-
-    $biblio_style = new $class($plugin);
+    $biblio_style = biblio_get_class_from_style('bibtex');
 
     $biblios = $biblio_style->import($data);
     $biblio = $biblios['new'][0];
