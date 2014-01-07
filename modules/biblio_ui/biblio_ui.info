@@ -14,3 +14,6 @@ files[] = includes/views/handlers/biblio_ui_handler_export_area.inc
 files[] = includes/views/handlers/biblio_contributor_ui_handler_delete.inc
 files[] = includes/views/handlers/biblio_contributor_ui_handler_edit.inc
 
+; Tests
+files[] = tests/Crud.test
+

@@ -5,7 +5,7 @@
 class biblio_contributor_ui_handler_edit extends views_handler_field_entity {
 
   function render($values) {
-    if (user_access('update biblio contributor entry')) {
+    if (user_access('edit biblio contributor entry')) {
       return l(t('Edit'), 'biblio-contributor/' . $values->cid . '/edit');
     }
   }

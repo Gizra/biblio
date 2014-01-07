@@ -58,12 +58,13 @@ $biblio->addContributors('John Smith', 'Editor');
 
 ### CiteProc
 
-* Download https://github.com/gbv/citeproc-php and place it under libraries/citeproc-php
-* Enable libraries module
-* Execute code:
+* Download https://github.com/gbv/citeproc-php and place it under ``sites/all/libraries/citeproc-php``
+* Optional but recommended - Download https://github.com/citation-style-language/styles and place it under ``sites/all/libraries/styles``
+* Enable [libraries](https://drupal.org/project/libraries) module
+
+Styles can now be rendered using CiteProc, for example:
 
 ```php
-
   $biblio = biblio_create('journal');
   $biblio->getText('citeproc', array('style_name' => 'ama'));
   $biblio->getText('citeproc');

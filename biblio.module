@@ -38,32 +38,6 @@ function biblio_hook_info() {
 }
 
 /**
- * Implements hook_access().
- */
-function biblio_access($op, $node = '') {
-  global $user;
-
-  switch ($op) {
-    case 'admin':
-      return user_access('administer biblio');
-    case 'import':
-      return user_access('import from file');
-    case 'export':
-      return user_access('show export links');
-    case 'edit_author':
-        if (user_access('administer biblio') || user_access('edit biblio authors')) return NODE_ACCESS_ALLOW;
-        break;
-    case 'download':
-      if (user_access('show download links') || (user_access('show own download links') && ($user->uid == $node->uid))) return NODE_ACCESS_ALLOW;
-      break;
-    case 'rss':
-      return variable_get('biblio_rss', 0);
-    default:
-  }
-  return NODE_ACCESS_IGNORE;
-}
-
-/**
  * Implements hook_permission().
  *
  * Since we are limiting the ability to create new nodes to certain users,
@@ -80,29 +54,29 @@ function biblio_permission() {
       'title' => t('Access Biblio content'),
       'description' => t('Allows the user to view Biblio nodes.'),
     ),
-   'create biblio content' => array(
+    'create biblio content' => array(
      'title' => t('Create Biblio'),
      'description' => t('Allows the user to create new Biblios.'),
-   ),
-   'edit all biblio entries' => array(
-     'title' => t('Edit all Biblio entries'),
-     'description' => t('Allows the user to edit ALL biblio entries regardless of who "owns" them, otherwise they are restricted to on.'),
-   ),
-   'edit own biblio entries' => array(
-     'title' => t('Edit own Biblio entries'),
-     'description' => t('Allows the user to edit their own biblio entries.'),
-   ),
-    'delete biblio entries' => array(
-      'title' => t('Delete biblio entries'),
-      'description' => t('Allows the user to delete any biblio entities.'),
     ),
-    'delete own biblio entries' => array(
-      'title' => t('Delete own biblio entries'),
-      'description' => t('Allows the user to delete their own biblio entities.'),
+    'edit biblio content' => array(
+      'title' => t('Edit Biblio'),
+      'description' => t('Allows the user to edit any biblio.'),
+    ),
+    'edit own biblio content' => array(
+      'title' => t('Edit own Biblio'),
+      'description' => t('Allows the user to edit his own biblio.'),
+    ),
+    'delete biblio content' => array(
+      'title' => t('Delete biblio'),
+      'description' => t('Allows the user to delete any biblio.'),
+    ),
+    'delete own biblio content' => array(
+      'title' => t('Delete own biblio'),
+      'description' => t('Allows the user to delete his own biblio.'),
     ),
     'edit by all biblio authors' => array(
       'title' => t('Edit by all Biblio authors'),
-      'description' => t('Allows any/all of the authors associated with a biblio entry to edit the biblio entry. This requires the Drupal UserID be mapped to a Biblio author ID.'),
+      'description' => t('Allows any/all of the authors associated with a biblio to edit the biblio. This requires the Drupal User ID be mapped to a Biblio author ID.'),
     ),
     'edit biblio authors' => array(
       'title' => t('Edit Biblio authors'),
@@ -125,21 +99,21 @@ function biblio_permission() {
       'description' => t('Allows users to see links which allow export of bibliographic data for an individual entry or the entire result set.'),
     ),
     // Contributor permissions.
-    'create biblio contributor entry' => array(
-      'title' => t('Create biblio contributor entry'),
-      'description' => t('Grant to the user the permission to create a biblio contributor via the UI'),
+    'create biblio contributor' => array(
+      'title' => t('Create biblio contributor'),
+      'description' => t('Grant to the user the permission to create a biblio contributor via the UI.'),
     ),
-    'update biblio contributor entry' => array(
-      'title' => t('Update biblio contributor entry'),
-      'description' => t('Grant to the user the permission to update a biblio contributor via the UI'),
+    'edit biblio contributor' => array(
+      'title' => t('Edit biblio contributor'),
+      'description' => t('Grant to the user the permission to update a biblio contributor via the UI.'),
     ),
-    'delete biblio contributor entry' => array(
-      'title' => t('Delete biblio contributor entry'),
-      'description' => t('Grant to the user the permission to delete a biblio contributor via the UI'),
+    'delete biblio contributor' => array(
+      'title' => t('Delete biblio contributor'),
+      'description' => t('Grant to the user the permission to delete a biblio contributor via the UI.'),
     ),
-    'view biblio contributor entry' => array(
-      'title' => t('View biblio contributor entry'),
-      'description' => t('Grant to the user the permission to view a biblio contributor via the UI'),
+    'view biblio contributor' => array(
+      'title' => t('View biblio contributor'),
+      'description' => t('Grant to the user the permission to view a biblio contributor via the UI.'),
     ),
   );
 }
@@ -163,7 +137,6 @@ function biblio_ctools_plugin_type() {
   );
   return $plugins;
 }
-
 
 /**
  * Add defaults values to the notifier plugins.
@@ -338,7 +311,7 @@ function biblio_entity_info() {
     // It executes our entity defaultUri() method
     'uri callback' => 'entity_class_uri',
     'module' => 'biblio',
-    'access callback' => 'biblio_entity_access',
+    'access callback' => 'biblio_access',
     'views controller class' => 'BiblioViewsController',
     'metadata controller class' => 'BiblioMetadataController',
   );
@@ -377,7 +350,7 @@ function biblio_entity_info() {
     'label callback' => 'entity_class_label',
     'uri callback' => 'entity_class_uri',
     'module' => 'biblio',
-    'access callback' => 'biblio_entity_access',
+    'access callback' => 'biblio_contributor_access',
     'inline entity form' => array(
       'controller' => 'BiblioContributorInlineEntityFormController',
     ),
@@ -465,27 +438,81 @@ function biblio_type_delete($type) {
 }
 
 /**
- * Access callback for the entity API.
+ * Access function for the biblio entity.
+ *
+ * @param $op
+ *  The type of the operation.
+ * @param Biblio $entity
+ *  The entity object.
+ * @param $account
+ *  The user object.
+ * @param $entity_type
+ *  The entity type.
+ *
+ * @return bool
+ *  Return TRUE/FALSE if the user has the privilege for this action.
  */
-function biblio_entity_access($op, $type = NULL, $account = NULL) {
+function biblio_access($op, Biblio $entity = NULL, $account = NULL, $entity_type = NULL) {
   global $user;
-  if (!isset($account)) {
-    $account = $user;
-  }
+  $account = $account ? $account : user_load($user->uid);
 
   if (user_access('administer biblio', $account)) {
     return TRUE;
   }
 
-  switch ($op) {
-    case 'create':
-      return user_access('create biblio', $account);
-    case 'view':
-      return user_access('access biblio content', $account);
-    case 'delete':
-    case 'update':
-      return user_access('edit all biblio entries', $account);
+  $strings = array(
+    'create' => 'create biblio content',
+    'update' => 'edit biblio content',
+    'delete' => 'delete biblio content',
+    'view' => 'access biblio content',
+  );
+
+  $string = $strings[$op];
+
+  // When checking the access on the biblio entity we need to check if the user
+  // can delete/update entries which created by himself/other users.
+  if (is_object($entity) && in_array($op, array('update', 'delete'))) {
+    if (!user_access($string, $account) && $entity->uid == $account->uid) {
+      // The user can't delete/update any publication. We need to check if the
+      // user can update/delete his own biblio entries.
+      $string = $op == 'delete' ? 'delete own biblio content' : 'edit own biblio content';
+    }
   }
+
+  return user_access($string, $account);
+}
+
+/**
+ * Access function for the biblio contributor entity.
+ *
+ * @param $op
+ *  The type of the operation.
+ * @param BiblioContributor $entity
+ *  The entity object.
+ * @param $account
+ *  The user object.
+ * @param $entity_type
+ *  The entity type.
+ *
+ * @return bool
+ *  Return TRUE/FALSE if the user has the privilege for this action.
+ */
+function biblio_contributor_access($op, BiblioContributor $entity = NULL, $account = NULL, $entity_type = NULL) {
+  global $user;
+  $account = $account ? $account : user_load($user->uid);
+
+  if (user_access('administer biblio', $account)) {
+    return TRUE;
+  }
+
+  $strings = array(
+    'create' => 'create biblio contributor',
+    'update' => 'edit biblio contributor',
+    'delete' => 'delete biblio contributor',
+    'view' => 'view biblio contributor',
+  );
+
+  return user_access($strings[$op], $account);
 }
 
 /**
