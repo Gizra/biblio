@@ -14,7 +14,7 @@ function biblio_ui_menu() {
   $items['biblio/add'] = array(
     'title' => 'Add biblio entries',
     'description' => 'Select a biblio type to create an entry for.',
-    'access callback' => 'biblio_entity_access',
+    'access callback' => 'biblio_access',
     'access arguments' => array('create'),
     'page callback' => 'biblio_ui_add_biblio_list',
   );
@@ -23,7 +23,7 @@ function biblio_ui_menu() {
     $items['biblio/add/' . $type] = array(
       'title' => $info->name,
       'description' => 'Create biblio entries.',
-      'access callback' => 'biblio_entity_access',
+      'access callback' => 'biblio_access',
       'access arguments' => array('create'),
       'page callback' => 'drupal_get_form',
       'page arguments' => array('biblio_ui_manage_biblio', $type),
