@@ -440,7 +440,7 @@ function biblio_type_delete($type) {
  *
  * @param $op
  *  The type of the operation.
- * @param Biblio|BiblioContributor $entity
+ * @param Biblio $entity
  *  The entity object.
  * @param $account
  *  The user object.
@@ -450,7 +450,7 @@ function biblio_type_delete($type) {
  * @return bool
  *  Return TRUE/FALSE if the user has the privilege for this action.
  */
-function biblio_access($op, $entity = NULL, $account = NULL, $entity_type = NULL) {
+function biblio_access($op, Biblio $entity = NULL, $account = NULL, $entity_type = NULL) {
   global $user;
 
   if (!$account) {
@@ -468,7 +468,7 @@ function biblio_access($op, $entity = NULL, $account = NULL, $entity_type = NULL
 
   // When checking the access on the biblio entity we need to check if the user
   // can delete/update entries which created by himself/other users.
-  if (is_object($entity) && $entity_type == 'biblio') {
+  if (is_object($entity)) {
     if ($entity->uid == $account->uid) {
       $string = $op == 'delete' ? 'delete own biblio content' : 'edit own biblio content';
     }
@@ -482,7 +482,7 @@ function biblio_access($op, $entity = NULL, $account = NULL, $entity_type = NULL
  *
  * @param $op
  *  The type of the operation.
- * @param Biblio|BiblioContributor $entity
+ * @param BiblioContributor $entity
  *  The entity object.
  * @param $account
  *  The user object.
@@ -492,7 +492,7 @@ function biblio_access($op, $entity = NULL, $account = NULL, $entity_type = NULL
  * @return bool
  *  Return TRUE/FALSE if the user has the privilege for this action.
  */
-function biblio_contributor_access($op, $entity = NULL, $account = NULL, $entity_type = NULL) {
+function biblio_contributor_access($op, BiblioContributor $entity = NULL, $account = NULL, $entity_type = NULL) {
   global $user;
 
   if (!$account) {
