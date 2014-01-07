@@ -299,15 +299,33 @@ function biblio_views_api() {
 function biblio_migrate_api() {
   $migrations = $groups = array();
   if (db_table_exists('_biblio_1x')) {
-    $migrations['BiblioMigrateContributorCollections'] = array('class_name' => 'BiblioMigrateContributorCollections', 'group_name' => 'biblio_3');
-    $migrations['BiblioMigrateTypes'] = array('class_name' => 'BiblioMigrateTypes', 'group_name' => 'biblio_3');
-    $migrations['BiblioMigrateEntries'] = array('class_name' => 'BiblioMigrateEntries', 'group_name' => 'biblio_3');
+    // We need to make sure we've got at least the Migrate 2.6 beta - identify
+    // it by the new MigrateDefaultFieldHandler class.
+    if (!class_exists('MigrateDefaultFieldHandler')) {
+      // @todo: give message via drupal_set_message, watchdog, or nothing ?
+      // Telling the site owner "Biblio 3.x migration requires Migrate version
+      // 2.6 and above"
+    }
+    else {
+      $migrations['BiblioMigrateContributorCollections'] = array(
+        'class_name' => 'BiblioMigrateContributorCollections',
+        'group_name' => 'biblio_3',
+      );
+      $migrations['BiblioMigrateTypes'] = array(
+        'class_name' => 'BiblioMigrateTypes',
+        'group_name' => 'biblio_3',
+      );
+      $migrations['BiblioMigrateEntries'] = array(
+        'class_name' => 'BiblioMigrateEntries',
+        'group_name' => 'biblio_3',
+      );
 
-    $groups = array(
-      'biblio_3' => array(
-        'title' => t('Biblio 3.x'),
-      ),
-    );
+      $groups = array(
+        'biblio_3' => array(
+          'title' => t('Biblio 3.x'),
+        ),
+      );
+    }
   }
 
   $api = array(
