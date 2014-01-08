@@ -617,7 +617,7 @@ function biblio_update_alias(Biblio $biblio, $op = NULL) {
   if (!$op) {
     // When the operation is not provided we need to set the value by the is_new
     // property.
-    $op = $biblio->bid ? 'insert' : 'update';
+    $op = $biblio->bid ? 'update' : 'insert';
   }
 
   module_load_include('inc', 'pathauto');
