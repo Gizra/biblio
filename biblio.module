@@ -869,34 +869,8 @@ function biblio_field_access($op, $field, $entity_type, $entity, $account) {
  * Implements hook_migrate_api().
  */
 function biblio_migrate_api() {
-  $migrations = array();
-  if (biblio_check_biblio_migration_needed()) {
-    biblio_register_migrate();
-
-    $migrations['BiblioMigrateContributorCollections'] = array(
-      'class_name' => 'BiblioMigrateContributorCollections',
-      'group_name' => 'biblio_3',
-    );
-    $migrations['BiblioMigrateTypes'] = array(
-      'class_name' => 'BiblioMigrateTypes',
-      'group_name' => 'biblio_3',
-    );
-  }
-  else {
-    // Activly deregister Migration.
-    Migration::deregisterMigration('BiblioMigrateContributorCollections');
-    Migration::deregisterMigration('BiblioMigrateTypes');
-  }
-
-  $groups = array(
-    'biblio_3' => array(
-      'title' => t('Biblio 3.x'),
-    ),
-  );
   $api = array(
     'api' => 2,
-    'migrations' => $migrations,
-    'groups' => $groups,
   );
   return $api;
 }
@@ -932,16 +906,41 @@ function biblio_check_biblio_migration_needed() {
  * Register Migration for all existing Biblio entities.
  */
 function biblio_register_migrate() {
-  if (!biblio_check_biblio_migration_needed()) {
-    return;
+  $group_name = 'biblio_3';
+  $register = biblio_check_biblio_migration_needed();
+
+  // Handle group.
+  if ($register) {
+    MigrateGroup::register($group_name, 'Biblio 3.x');
   }
+  else {
+    MigrateGroup::deregister($group_name);
+  }
+
+  // Handle "static" migrations.
+  if ($register) {
+    $arguments = array();
+    $arguments['group_name'] = $group_name;
+    Migration::registerMigration('BiblioMigrateContributorCollections', 'BiblioMigrateContributorCollections', $arguments);
+    Migration::registerMigration('BiblioMigrateTypes', 'BiblioMigrateTypes', $arguments);
+  }
+  else {
+    Migration::deregisterMigration('BiblioMigrateContributorCollections');
+    Migration::deregisterMigration('BiblioMigrateTypes');
+  }
+
+  // Handle per bundle migration.
   $entity_info = entity_get_info('biblio');
 
   foreach (array_keys($entity_info['bundles']) as $bundle_name) {
     $machine_name = 'BiblioMigrateEntries_' . $bundle_name;
-    $arguments = array();
-    $arguments['bundle_name'] = $bundle_name;
-    $arguments['group_name'] = 'biblio_3';
-    Migration::registerMigration('BiblioMigrateEntries', $machine_name, $arguments);
+    if ($register) {
+      $arguments = array();
+      $arguments['bundle_name'] = $bundle_name;
+      $arguments['group_name'] = $group_name;
+      Migration::registerMigration('BiblioMigrateEntries', $machine_name, $arguments);
+    } else {
+      Migration::deregisterMigration($machine_name);
+    }
   }
 }
