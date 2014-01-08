@@ -81,3 +81,56 @@ class BiblioPathTestCase extends DrupalWebTestCase {
     $this->assertResponse(404);
   }
 }
+
+/**
+ * Testing pathauto integration.
+ */
+class BiblioPathAutoTestCase extends DrupalWebTestCase {
+  public static function getInfo() {
+    return array(
+      'name' => 'Path auto functionality',
+      'description' => 'Testing the integration between biblio and pathauto.',
+      'group' => 'Biblio',
+      'dependencies' => array('pathauto'),
+    );
+  }
+
+  function setUp() {
+    parent::setUp('pathauto', 'biblio_ui');
+    biblio_create_fields_by_bundle(array('book'));
+
+    // Create test user and login.
+    $web_user = $this->drupalCreateUser(array('administer biblio', 'create url aliases'));
+    $this->drupalLogin($web_user);
+
+    // Define the path of auto path for biblio.
+    variable_set('pathauto_biblio_pattern', 'biblio/[biblio:title]');
+  }
+
+  /**
+   * Tests alias functionality through the Biblio interfaces.
+   */
+  function testBiblioAlias() {
+    // Create test biblio.
+    $biblio = biblio_create('book', array('title' => 'Testing'));
+    $biblio->save();
+
+    // Confirm that the path generated succesfully.
+    $this->drupalGet('biblio/testing');
+    $this->assertText($biblio->label(), 'The path was generated succesfully.');
+    $this->assertResponse(200);
+
+    // Update the title so we the path will change as well.
+    $biblio->title = 'Updated testing';
+    $biblio->save();
+
+    // Confirm the alias changed as well.
+    $this->drupalGet('biblio/updated-testing');
+    $this->assertText($biblio->label(), 'The path was updated succesfully.');
+    $this->assertResponse(200);
+
+    // After the deleting a biblio the path should be deleted as well.
+    $biblio->delete();
+    $this->assertFalse(path_load(array('source' => 'biblio/' . $biblio->identifier()), 'The path was removed after deleting biblio'));
+  }
+}
