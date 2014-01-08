@@ -4,6 +4,7 @@ core = 7.x
 
 dependencies[] = date
 dependencies[] = entity
+dependencies[] = entity_token
 dependencies[] = entityreference
 dependencies[] = image
 dependencies[] = inline_entity_form

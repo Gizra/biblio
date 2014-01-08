@@ -551,7 +551,7 @@ function biblio_biblio_insert($biblio) {
     return;
   }
 
-  biblio_update_alias($biblio, 'insert');
+  biblio_update_alias($biblio);
 }
 
 /**
@@ -578,7 +578,7 @@ function biblio_biblio_update($biblio) {
     return;
   }
 
-  biblio_update_alias($biblio, 'update');
+  biblio_update_alias($biblio);
 }
 
 /**
@@ -603,19 +603,21 @@ function biblio_biblio_delete($biblio) {
  * Update the URL aliases for an individual biblio.
  *
  * @param $node
- *   A node object.
+ *  A node object.
  * @param $op
- *   Operation being performed on the node ('insert', 'update' or 'bulkupdate').
+ *  Operation being performed on the node ('insert', 'update' or 'bulkupdate').
+ *  NULL by default.
  */
-function biblio_update_alias(Biblio $biblio, $op) {
-  // Skip processing if the user has disabled pathauto for the node.
-  if (isset($biblio->path['pathauto']) && empty($biblio->path['pathauto'])) {
-    return;
-  }
-
+function biblio_update_alias(Biblio $biblio, $op = NULL) {
   // Skip processing if the node has no pattern.
   if (!pathauto_pattern_load_by_entity('biblio')) {
     return;
+  }
+
+  if (!$op) {
+    // When the operation is not provided we need to set the value by the is_new
+    // property.
+    $op = $biblio->is_new ? 'insert' : 'update';
   }
 
   module_load_include('inc', 'pathauto');
