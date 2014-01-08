@@ -31,6 +31,7 @@ before_script:
   - cd biblio/drupal
 
   - drush dl views
+  - drush dl pathauto
   # Hack to fix Inline entity form's module strict warning.
   - drush dl inline_entity_form -y
   - curl -O https://drupal.org/files/issues/inline_entity_form-fix_undefined_indexes_in_form_alter-2165113.patch
