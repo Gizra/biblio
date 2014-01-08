@@ -939,7 +939,8 @@ function biblio_register_migrate() {
       $arguments['bundle_name'] = $bundle_name;
       $arguments['group_name'] = $group_name;
       Migration::registerMigration('BiblioMigrateEntries', $machine_name, $arguments);
-    } else {
+    }
+    else {
       Migration::deregisterMigration($machine_name);
     }
   }
