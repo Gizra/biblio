@@ -14,6 +14,8 @@ class BiblioMigrateEntries extends Migration {
 
     $this->query = db_select('_biblio_1x', 'b');
     $this->query->innerJoin('node', 'n', 'n.nid = b.nid AND n.vid = b.vid');
+
+    // Join with types to be able to filter by type name.
     $this->query->join('_biblio_types_1x', 't', 't.tid=b.biblio_type');
 
     $fields = array(
@@ -65,6 +67,9 @@ class BiblioMigrateEntries extends Migration {
       ->fields('n', array('nid', 'title', 'created', 'uid'))
       ->condition('n.status', NODE_PUBLISHED)
       ->condition('b.biblio_type', 0, '>')
+
+      // Filter by bundle name, which exist only on the _biblio_types_1x table.
+      // (_biblio_1x table has only the type ID).
       ->condition('t.name', $bundle['label'], '=');
 
     $fields = array_merge($fields, array('title', 'uid', 'created', 'changed'));
