@@ -882,6 +882,11 @@ function biblio_migrate_api() {
       'group_name' => 'biblio_3',
     );
   }
+  else {
+    // Activly deregister Migration.
+    Migration::deregisterMigration('BiblioMigrateContributorCollections');
+    Migration::deregisterMigration('BiblioMigrateTypes');
+  }
 
   $groups = array(
     'biblio_3' => array(
@@ -895,7 +900,6 @@ function biblio_migrate_api() {
   );
   return $api;
 }
-
 
 /**
  * @return bool
