@@ -10,7 +10,7 @@
  * Implements hook_pathauto().
  */
 function biblio_pathauto($op) {
-  if (!$op != 'settings') {
+  if ($op != 'settings') {
     return;
   }
 
