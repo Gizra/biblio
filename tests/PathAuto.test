@@ -18,7 +18,7 @@ class BiblioPathAutoTestCase extends DrupalWebTestCase {
   }
 
   function setUp() {
-    parent::setUp('biblio_ui', 'pathauto');
+    parent::setUp('pathauto');
     biblio_create_fields_by_bundle(array('book'));
 
     // Create test user and login.
