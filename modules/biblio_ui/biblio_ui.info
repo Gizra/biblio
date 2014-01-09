@@ -3,7 +3,7 @@ description = Providing UI for the biblio module.
 core = 7.x
 
 dependencies[] = biblio
-dependencies[] = views_ui
+dependencies[] = views
 
 package = Biblio
 
