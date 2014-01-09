@@ -365,7 +365,26 @@ function biblio_entity_info() {
     ),
   );
 
+  return $return;
+}
 
+/**
+ * Implements hook_field_extra_fields().
+ */
+function biblio_field_extra_fields() {
+  $return = array();
+  $info = entity_get_info('biblio');
+  foreach (array_keys($info['bundles']) as $bundle) {
+    $return['biblio'][$bundle] = array(
+      'display' => array(
+        'get_text' => array(
+          'label' => t('Citeproc'),
+          'description' => t('Display the citeproc of the biblio.'),
+          'weight' => 0,
+        ),
+      ),
+    );
+  }
   return $return;
 }
 

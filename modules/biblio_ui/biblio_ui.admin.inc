@@ -15,5 +15,17 @@ function biblio_ui_admin_form($form, &$form_state) {
     '#default_value' => variable_get('biblio_debug'),
   );
 
+  $options = array();
+  foreach (biblio_get_biblio_styles() as $plugin_name => $plugin) {
+    $options[$plugin_name] = $plugin['title'];
+  }
+  $form['biblio_citeproc_default_style'] = array(
+    '#type' => 'select',
+    '#title' => t('CiteProc default style'),
+    '#description' => t('Select the default citeproc you would like to display in the CiteProc field.'),
+    '#default_value' => variable_get('biblio_citeproc_default_style', 'citeproc'),
+    '#options' => $options,
+  );
+
   return system_settings_form($form);
 }
