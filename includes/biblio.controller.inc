@@ -22,11 +22,11 @@ class Biblio extends Entity {
       );
     }
 
-    if (isset($fields['get_text']) && $fields['get_text']['visible']) {
+    if (isset($fields['biblio_get_text']) && $fields['biblio_get_text']['visible']) {
       $options = variable_get('biblio_views_biblio_render_options', array());
-      $content['get_text'] = array(
-        '#markup' => $this->getText(variable_get('biblio_citeproc_default_style', 'citeproc'), $options),
-        '#weight' => $fields['get_text']['weight'],
+      $content['biblio_get_text'] = array(
+        '#markup' => $this->getText(variable_get('biblio_default_style', 'citeproc'), $options),
+        '#weight' => $fields['biblio_get_text']['weight'],
       );
     }
 

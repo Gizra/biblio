@@ -19,11 +19,11 @@ function biblio_ui_admin_form($form, &$form_state) {
   foreach (biblio_get_biblio_styles() as $plugin_name => $plugin) {
     $options[$plugin_name] = $plugin['title'];
   }
-  $form['biblio_citeproc_default_style'] = array(
+  $form['biblio_default_style'] = array(
     '#type' => 'select',
-    '#title' => t('CiteProc default style'),
-    '#description' => t('Select the default citeproc you would like to display in the CiteProc field.'),
-    '#default_value' => variable_get('biblio_citeproc_default_style', 'citeproc'),
+    '#title' => t('Biblio default style'),
+    '#description' => t('Select the default text style you would like to display in the rendered Biblio field.'),
+    '#default_value' => variable_get('biblio_default_style', 'citeproc'),
     '#options' => $options,
   );
 

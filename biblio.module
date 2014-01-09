@@ -377,9 +377,9 @@ function biblio_field_extra_fields() {
   foreach (array_keys($info['bundles']) as $bundle) {
     $return['biblio'][$bundle] = array(
       'display' => array(
-        'get_text' => array(
-          'label' => t('CiteProc'),
-          'description' => t('Display the citeproc of the biblio.'),
+        'biblio_get_text' => array(
+          'label' => t('Rendered Biblio'),
+          'description' => t('Display the rendered text of the biblio.'),
           'weight' => 0,
         ),
       ),
