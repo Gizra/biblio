@@ -35,7 +35,6 @@ class BiblioPathAutoTestCase extends DrupalWebTestCase {
   function testBiblioAlias() {
     // Create test biblio.
     $biblio = biblio_create('book', array('title' => 'Testing'));
-    return;
     $biblio->save();
 
     // Confirm that the path generated succesfully.
