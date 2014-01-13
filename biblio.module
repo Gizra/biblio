@@ -876,6 +876,8 @@ function biblio_migrate_api() {
 }
 
 /**
+ * Check whether Biblio migration from 1.x to 3.x is needed.
+ *
  * @return bool
  *   TRUE if Biblio 1.x migration needs to be registrated.
  */
@@ -885,7 +887,7 @@ function biblio_check_biblio_migration_needed() {
     return;
   }
   if (!module_exists('migrate_extras')) {
-    // @todo: give message migrate will work only when migrate_extras avaliable
+    // @todo: give message migrate will work only when migrate_extras available
     return;
   }
   if (!db_table_exists('_biblio_1x')) {

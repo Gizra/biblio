@@ -55,7 +55,6 @@ class BiblioMigrateEntries extends Migration {
       'biblio_refereed',
       'biblio_md5',
       'biblio_url',
- // @todo - sometimes does not exist     'biblio_url_title',
       'biblio_type',
       'biblio_abst_e',
     );
@@ -86,9 +85,6 @@ class BiblioMigrateEntries extends Migration {
 
     $this->map = new MigrateSQLMap($this->machineName, $source_key, MigrateDestinationEntityAPI::getKeySchema('biblio'));
     $this->source = new MigrateSourceSQL($this->query);
-
-    // @todo: All bundles have all the field, so we hardcode the bundle. Is this
-    // ok?
     $this->destination = new MigrateDestinationEntityAPI('biblio', $arguments['bundle_name']);
 
     $this
