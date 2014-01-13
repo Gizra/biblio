@@ -306,10 +306,6 @@ function biblio_entity_info() {
         'label' => t('Teaser'),
         'custom settings' => TRUE,
       ),
-      'title' => array(
-        'label' => t('Title'),
-        'custom settings' => FALSE,
-      ),
     ),
     // Entity API label callback that takes a look at our entity class method defaultLabel()
     'label callback' => 'entity_class_label',
