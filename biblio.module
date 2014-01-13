@@ -879,7 +879,7 @@ function biblio_migrate_api() {
  * Check whether Biblio migration from 1.x to 3.x is needed.
  *
  * @return bool
- *   TRUE if Biblio 1.x migration needs to be registrated.
+ *   TRUE if Biblio 1.x migration needs to be registered.
  */
 function biblio_check_biblio_migration_needed() {
   if (!module_exists('migrate')) {
@@ -887,7 +887,6 @@ function biblio_check_biblio_migration_needed() {
     return;
   }
   if (!module_exists('migrate_extras')) {
-    // @todo: give message migrate will work only when migrate_extras available
     return;
   }
   if (!db_table_exists('_biblio_1x')) {
@@ -897,53 +896,40 @@ function biblio_check_biblio_migration_needed() {
   if (!class_exists('MigrateDefaultFieldHandler')) {
     // We need to make sure we've got at least the Migrate 2.6 beta - identify
     // it by the new MigrateDefaultFieldHandler class.
-    // @todo: give message via drupal_set_message, watchdog, or nothing ?
-    // Telling the site owner "Biblio 3.x migration requires Migrate version
-    // 2.6 and above"
     return;
   }
   return TRUE;
 }
+
 /**
  * Register Migration for all existing Biblio entities.
+ *
+ * Since Migrate 2.6+ the static registration is done manually via admin/content/migrate/configure
+ * Without dynamically registering the group and dependencies of the dynamic parts, we will need to
+ * depend the dynamic migration on the static one, which is wrong. Hence we register everything
+ * dynamically.
  */
 function biblio_register_migrate() {
-  $group_name = 'biblio_3';
-  $register = biblio_check_biblio_migration_needed();
-
-  // Handle group.
-  if ($register) {
+  if (biblio_check_biblio_migration_needed()) {
+    $group_name = 'biblio_3';
+    // Register group.
     MigrateGroup::register($group_name, 'Biblio 3.x');
-  }
-  else {
-    MigrateGroup::deregister($group_name);
-  }
 
-  // Handle "static" migrations.
-  if ($register) {
+    // Register "static" migrations.
     $arguments = array();
     $arguments['group_name'] = $group_name;
     Migration::registerMigration('BiblioMigrateContributorCollections', 'BiblioMigrateContributorCollections', $arguments);
     Migration::registerMigration('BiblioMigrateTypes', 'BiblioMigrateTypes', $arguments);
-  }
-  else {
-    Migration::deregisterMigration('BiblioMigrateContributorCollections');
-    Migration::deregisterMigration('BiblioMigrateTypes');
-  }
 
-  // Handle per bundle migration.
-  $entity_info = entity_get_info('biblio');
+    // Handle per bundle migration.
+    $entity_info = entity_get_info('biblio');
 
-  foreach (array_keys($entity_info['bundles']) as $bundle_name) {
-    $machine_name = 'BiblioMigrateEntries_' . $bundle_name;
-    if ($register) {
+    foreach (array_keys($entity_info['bundles']) as $bundle_name) {
+      $machine_name = 'BiblioMigrateEntries_' . $bundle_name;
       $arguments = array();
       $arguments['bundle_name'] = $bundle_name;
       $arguments['group_name'] = $group_name;
       Migration::registerMigration('BiblioMigrateEntries', $machine_name, $arguments);
-    }
-    else {
-      Migration::deregisterMigration($machine_name);
     }
   }
 }
