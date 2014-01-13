@@ -258,9 +258,33 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote implements BiblioStyleIm
 
   /**
    * @inheritdoc
+   *
+   * @todo: Allow passing in options 'wrap' => TRUE, so we can remove the
+   * <records> tag,
    */
   public function render($options = array(), $langcode = NULL) {
+    $wrapper = entity_metadata_wrapper('biblio', $this->biblio);
 
+    $writer = new XMLWriter();
+    $writer->openMemory();
+    $writer->startDocument('1.0','UTF-8');
+    $writer->startElement("records");
+    $writer->startElement("record");
+
+    $this->addTitles($writer, $wrapper);
+
+    // $writer->writeAttribute("ah", "OK");
+    $writer->endElement();
+    $writer->endElement();
+    return $writer->outputMemory(true);
+  }
+
+  public function addTitles(XMLWriter $writer, EntityDrupalWrapper $wrapper) {
+    $writer->startElement('titles');
+    $writer->startElement('title');
+    $writer->text($wrapper->label());
+    $writer->endElement();
+    $writer->endElement();
   }
 
   /**
