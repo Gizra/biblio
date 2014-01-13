@@ -13,7 +13,7 @@ class BiblioPathAutoTestCase extends DrupalWebTestCase {
       'name' => 'Path auto functionality',
       'description' => 'Testing the integration between Biblio and Pathauto module.',
       'group' => 'Biblio',
-      'dependencies' => array('pathauto'),
+      // 'dependencies' => array('pathauto'),
     );
   }
 
