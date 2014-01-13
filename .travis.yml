@@ -38,11 +38,11 @@ before_script:
   - drush dl libraries
   - git clone https://github.com/gbv/citeproc-php.git sites/all/libraries/citeproc-php
   - git clone https://github.com/citation-style-language/styles.git sites/all/libraries/styles
-  - drush --yes pm-enable libraries biblio pathuato
+  - drush --yes pm-enable libraries biblio
 
   - drush dl views -y
   - drush dl pathauto -y
-  - drush --yes pathuato
+  - drush --yes pm-enable pathuato
 
   # start a web server on port 8080, run in the background; wait for initialization
   - drush runserver 127.0.0.1:8080 &
