@@ -869,8 +869,41 @@ function biblio_field_access($op, $field, $entity_type, $entity, $account) {
  * Implements hook_migrate_api().
  */
 function biblio_migrate_api() {
+  $migrations = $groups = array();
+  if (biblio_check_biblio_migration_needed()) {
+    $group_name = 'biblio_3';
+    $groups = array(
+      $group_name => array(
+        'title' => t('Biblio 3.x'),
+      ),
+    );
+    $migrations = array (
+      'BiblioMigrateContributorCollections' => array(
+        'group_name' => $group_name,
+        'class_name' => 'BiblioMigrateContributorCollections',
+      ),
+      'BiblioMigrateTypes' => array(
+        'group_name' => $group_name,
+        'class_name' => 'BiblioMigrateTypes',
+      ),
+    );
+
+    // Handle per bundle migration.
+    $entity_info = entity_get_info('biblio');
+
+    foreach (array_keys($entity_info['bundles']) as $bundle_name) {
+      $machine_name = 'BiblioMigrateEntries_' . $bundle_name;
+      $migration = array();
+      $migration['class_name'] = 'BiblioMigrateEntries';
+      $migration['bundle_name'] = $bundle_name;
+      $migration['group_name'] = $group_name;
+      $migrations[$machine_name] = $migration;
+    }
+  }
   $api = array(
     'api' => 2,
+    'groups' => $groups,
+    'migrations' => $migrations,
   );
   return $api;
 }
@@ -899,37 +932,4 @@ function biblio_check_biblio_migration_needed() {
     return;
   }
   return TRUE;
-}
-
-/**
- * Register Migration for all existing Biblio entities.
- *
- * Since Migrate 2.6+ the static registration is done manually via admin/content/migrate/configure
- * Without dynamically registering the group and dependencies of the dynamic parts, we will need to
- * depend the dynamic migration on the static one, which is wrong. Hence we register everything
- * dynamically.
- */
-function biblio_register_migrate() {
-  if (biblio_check_biblio_migration_needed()) {
-    $group_name = 'biblio_3';
-    // Register group.
-    MigrateGroup::register($group_name, 'Biblio 3.x');
-
-    // Register "static" migrations.
-    $arguments = array();
-    $arguments['group_name'] = $group_name;
-    Migration::registerMigration('BiblioMigrateContributorCollections', 'BiblioMigrateContributorCollections', $arguments);
-    Migration::registerMigration('BiblioMigrateTypes', 'BiblioMigrateTypes', $arguments);
-
-    // Handle per bundle migration.
-    $entity_info = entity_get_info('biblio');
-
-    foreach (array_keys($entity_info['bundles']) as $bundle_name) {
-      $machine_name = 'BiblioMigrateEntries_' . $bundle_name;
-      $arguments = array();
-      $arguments['bundle_name'] = $bundle_name;
-      $arguments['group_name'] = $group_name;
-      Migration::registerMigration('BiblioMigrateEntries', $machine_name, $arguments);
-    }
-  }
 }
