@@ -306,8 +306,8 @@ function biblio_entity_info() {
         'label' => t('Teaser'),
         'custom settings' => TRUE,
       ),
-      'rss' => array(
-        'label' => t('RSS'),
+      'title' => array(
+        'label' => t('Title'),
         'custom settings' => FALSE,
       ),
     ),
