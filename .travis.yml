@@ -24,7 +24,7 @@ before_script:
   # create new site, stubbing sendmail path with true to prevent delivery errors
   # and manually resolving drush path
   - mysql -e 'create database biblio'
-  - php -d sendmail_path=`which true` `pear config-get php_dir`/drush/drush.php --yes core-quick-drupal --profile=testing --no-server --db-url=mysql://root:@127.0.0.1/biblio --enable=simpletest biblio
+  - php -d sendmail_path=`which true` `pear config-get php_dir`/drush/drush.php --yes core-quick-drupal --profile=testing --no-server --db-url=mysql://root:@127.0.0.1/biblio --enable=simpletest biblio pathauto
 
   # reference and enable biblio in build site
   - ln -s $(readlink -e $(cd -)) biblio/drupal/sites/all/modules/biblio
