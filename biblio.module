@@ -333,7 +333,26 @@ function biblio_entity_info() {
     ),
   );
 
+  return $return;
+}
 
+/**
+ * Implements hook_field_extra_fields().
+ */
+function biblio_field_extra_fields() {
+  $return = array();
+  $info = entity_get_info('biblio');
+  foreach (array_keys($info['bundles']) as $bundle) {
+    $return['biblio'][$bundle] = array(
+      'display' => array(
+        'biblio_get_text' => array(
+          'label' => t('Rendered Biblio'),
+          'description' => t('Display the rendered text of the biblio.'),
+          'weight' => 0,
+        ),
+      ),
+    );
+  }
   return $return;
 }
 

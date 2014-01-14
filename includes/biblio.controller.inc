@@ -22,6 +22,14 @@ class Biblio extends Entity {
       );
     }
 
+    if (isset($fields['biblio_get_text']) && $fields['biblio_get_text']['visible']) {
+      $options = variable_get('biblio_views_biblio_render_options', array());
+      $content['biblio_get_text'] = array(
+        '#markup' => $this->getText(variable_get('biblio_default_style', 'citeproc'), $options),
+        '#weight' => $fields['biblio_get_text']['weight'],
+      );
+    }
+
     // Calling parent::buildContent() won't work, since we need to send the
     // content as well.
     return entity_get_controller($this->entityType)->buildContent($this, $view_mode, $langcode, $content);
