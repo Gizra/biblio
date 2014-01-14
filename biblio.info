@@ -63,3 +63,4 @@ files[] = tests/EndNote.test
 files[] = tests/ImportPreventDuplicates.test
 files[] = tests/Path.test
 
+
