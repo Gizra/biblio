@@ -18,7 +18,7 @@ class BiblioPathAutoTestCase extends DrupalWebTestCase {
   }
 
   function setUp() {
-    parent::setUp('pathauto');
+    parent::setUp('pathauto', 'biblio');
     biblio_create_fields_by_bundle(array('book'));
 
     // Create test user and login.
@@ -33,7 +33,6 @@ class BiblioPathAutoTestCase extends DrupalWebTestCase {
    * Tests alias functionality through the Biblio interfaces.
    */
   function testBiblioAlias() {
-    return;
     // Create test biblio.
     $biblio = biblio_create('book', array('title' => 'Testing'));
     $biblio->save();
