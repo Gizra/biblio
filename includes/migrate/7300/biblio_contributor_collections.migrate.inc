@@ -4,9 +4,6 @@
  * @file
  */
 class BiblioMigrateContributorCollections extends Migration {
-  public $dependencies = array(
-    'BiblioMigrateEntries',
-  );
 
   public function __construct($arguments = array()) {
     $this->description = t('Migrate biblio 1.x contributors into field collections.');

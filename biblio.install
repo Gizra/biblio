@@ -295,12 +295,12 @@ function biblio_update_7300() {
   // Enable the new needed modules. We also enable Biblio as we need to rely on
   // it and create Biblio types.
   if (!module_enable(array('biblio', 'biblio_ui', 'inline_entity_form', 'date', 'entity', 'entityreference', 'field_collection', 'libraries'))) {
-    throw new DrupalUpdateException('Inline entity form, Date, Entity reference, Field collection and Libraries modules must be present for Biblio 2.x.');
+    throw new DrupalUpdateException('Inline entity form, Date, Entity reference, Field collection and Libraries modules must be present for Biblio 3.x.');
   }
 
   _biblio_install_add_biblio_roles();
   biblio_add_publication_types();
   biblio_create_fields_by_bundle();
 
-  return t('Old biblio tables were renamed and the new tables were created.');
+  return t('Old Biblio tables were renamed and the new tables were created.');
 }

@@ -251,31 +251,6 @@ function biblio_views_api() {
 }
 
 /**
- * Implements hook_migrate_api().
- */
-function biblio_migrate_api() {
-  $migrations = $groups = array();
-  if (db_table_exists('_biblio_1x')) {
-    $migrations['BiblioMigrateContributorCollections'] = array('class_name' => 'BiblioMigrateContributorCollections', 'group_name' => 'biblio_3');
-    $migrations['BiblioMigrateTypes'] = array('class_name' => 'BiblioMigrateTypes', 'group_name' => 'biblio_3');
-    $migrations['BiblioMigrateEntries'] = array('class_name' => 'BiblioMigrateEntries', 'group_name' => 'biblio_3');
-
-    $groups = array(
-      'biblio_3' => array(
-        'title' => t('Biblio 3.x'),
-      ),
-    );
-  }
-
-  $api = array(
-    'api' => 2,
-    'migrations' => $migrations,
-    'groups' => $groups,
-  );
-  return $api;
-}
-
-/**
  * Implements hook_entity_info().
  *
  * Inform the Drupal and the Field API about entity types.
@@ -872,4 +847,73 @@ function biblio_field_access($op, $field, $entity_type, $entity, $account) {
   if ($field['field_name'] == 'biblio_first_letter') {
     return FALSE;
   }
+}
+
+/**
+ * Implements hook_migrate_api().
+ */
+function biblio_migrate_api() {
+  $migrations = $groups = array();
+  if (biblio_check_biblio_migration_needed()) {
+    $group_name = 'biblio_3';
+    $groups = array(
+      $group_name => array(
+        'title' => t('Biblio 3.x'),
+      ),
+    );
+    $migrations = array (
+      'BiblioMigrateContributorCollections' => array(
+        'group_name' => $group_name,
+        'class_name' => 'BiblioMigrateContributorCollections',
+      ),
+      'BiblioMigrateTypes' => array(
+        'group_name' => $group_name,
+        'class_name' => 'BiblioMigrateTypes',
+      ),
+    );
+
+    // Handle per bundle migration.
+    $entity_info = entity_get_info('biblio');
+
+    foreach (array_keys($entity_info['bundles']) as $bundle_name) {
+      $machine_name = 'BiblioMigrateEntries_' . $bundle_name;
+      $migration = array();
+      $migration['class_name'] = 'BiblioMigrateEntries';
+      $migration['bundle_name'] = $bundle_name;
+      $migration['group_name'] = $group_name;
+      $migrations[$machine_name] = $migration;
+    }
+  }
+  $api = array(
+    'api' => 2,
+    'groups' => $groups,
+    'migrations' => $migrations,
+  );
+  return $api;
+}
+
+/**
+ * Check whether Biblio migration from 1.x to 3.x is needed.
+ *
+ * @return bool
+ *   TRUE if Biblio 1.x migration needs to be registered.
+ */
+function biblio_check_biblio_migration_needed() {
+  if (!module_exists('migrate')) {
+    // Migrate module is not a dependency, so we need to verify it is installed.
+    return;
+  }
+  if (!module_exists('migrate_extras')) {
+    return;
+  }
+  if (!db_table_exists('_biblio_1x')) {
+    // Migrate is relevant only if there is old Biblio 1.x DB table to work on.
+    return;
+  }
+  if (!class_exists('MigrateDefaultFieldHandler')) {
+    // We need to make sure we've got at least the Migrate 2.6 beta - identify
+    // it by the new MigrateDefaultFieldHandler class.
+    return;
+  }
+  return TRUE;
 }
