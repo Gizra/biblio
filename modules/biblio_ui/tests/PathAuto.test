@@ -33,7 +33,6 @@ class BiblioUiPathAutoTestCase extends DrupalWebTestCase {
    * Tests alias functionality through the Biblio interfaces.
    */
   function testBiblioAlias() {
-    return;
     // Create test biblio.
     $biblio = biblio_create('book', array('title' => 'Testing'));
     $biblio->save();

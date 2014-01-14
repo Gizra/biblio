@@ -29,7 +29,6 @@ before_script:
   # reference and enable biblio in build site
   - ln -s $(readlink -e $(cd -)) biblio/drupal/sites/all/modules/biblio
   - cd biblio/drupal
-  - drush dl pathauto views libraries -y
   # Hack to fix Inline entity form's module strict warning.
   - drush dl inline_entity_form -y
   - curl -O https://drupal.org/files/issues/inline_entity_form-fix_undefined_indexes_in_form_alter-2165113.patch
@@ -44,4 +43,4 @@ before_script:
   - drush runserver 127.0.0.1:8080 &
   - until netstat -an 2>/dev/null | grep '8080.*LISTEN'; do true; done
 
-script: drush test-run 'BiblioUiPathAutoTestCase' --uri=http://127.0.0.1:8080
+script: drush test-run 'Biblio,Biblio UI' --uri=http://127.0.0.1:8080
