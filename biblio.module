@@ -272,7 +272,16 @@ function biblio_entity_info() {
       'bundle' => 'type',
     ),
     'load hook' => 'biblio_load',
-    'view modes' => array(),
+    'view modes' => array(
+      'full' => array(
+        'label' => t('Full content'),
+        'custom settings' => FALSE,
+      ),
+      'teaser' => array(
+        'label' => t('Teaser'),
+        'custom settings' => TRUE,
+      ),
+    ),
     // Entity API label callback that takes a look at our entity class method defaultLabel()
     'label callback' => 'entity_class_label',
     // This is also a standard Entity API callback for uri.
