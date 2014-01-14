@@ -533,6 +533,12 @@ function biblio_biblio_insert($biblio) {
       path_save($path);
     }
   }
+
+  if (!module_exists('pathauto')) {
+    return;
+  }
+
+  biblio_update_alias($biblio);
 }
 
 /**
@@ -554,6 +560,12 @@ function biblio_biblio_update($biblio) {
     }
     biblio_biblio_insert($biblio);
   }
+
+  if (!module_exists('pathauto')) {
+    return;
+  }
+
+  biblio_update_alias($biblio);
 }
 
 /**
@@ -566,6 +578,38 @@ function biblio_biblio_delete($biblio) {
 
   $conditions = array('source' => 'biblio/' . $biblio->bid);
   path_delete($conditions);
+
+  if (!module_exists('pathauto')) {
+    return;
+  }
+
+  pathauto_entity_path_delete_all('biblio', $biblio, "node/{$biblio->bid}");
+}
+
+/**
+ * Update the URL aliases for an individual biblio.
+ *
+ * @param $node
+ *  A node object.
+ * @param $op
+ *  Operation being performed on the node ('insert', 'update' or 'bulkupdate').
+ *  NULL by default.
+ */
+function biblio_update_alias(Biblio $biblio, $op = NULL) {
+  // Skip processing if the node has no pattern.
+  if (!pathauto_pattern_load_by_entity('biblio')) {
+    return;
+  }
+
+  if (!$op) {
+    // When the operation is not provided we need to set the value by the is_new
+    // property.
+    $op = $biblio->bid ? 'update' : 'insert';
+  }
+
+  module_load_include('inc', 'pathauto');
+  $uri = entity_uri('biblio', $biblio);
+  pathauto_create_alias('biblio', $op, $uri['path'], array('biblio' => $biblio));
 }
 
 /**

@@ -24,23 +24,21 @@ before_script:
   # create new site, stubbing sendmail path with true to prevent delivery errors
   # and manually resolving drush path
   - mysql -e 'create database biblio'
-  - php -d sendmail_path=`which true` `pear config-get php_dir`/drush/drush.php --yes core-quick-drupal --profile=testing --no-server --db-url=mysql://root:@127.0.0.1/biblio --enable=simpletest biblio
+  - php -d sendmail_path=`which true` `pear config-get php_dir`/drush/drush.php --yes core-quick-drupal --profile=testing --no-server --db-url=mysql://root:@127.0.0.1/biblio --enable=simpletest biblio pathauto
 
   # reference and enable biblio in build site
   - ln -s $(readlink -e $(cd -)) biblio/drupal/sites/all/modules/biblio
   - cd biblio/drupal
-
-  - drush dl views
+  - drush dl pathauto views libraries -y
   # Hack to fix Inline entity form's module strict warning.
   - drush dl inline_entity_form -y
   - curl -O https://drupal.org/files/issues/inline_entity_form-fix_undefined_indexes_in_form_alter-2165113.patch
   - patch -p1 /home/travis/build/biblio/drupal/sites/all/modules/inline_entity_form/inline_entity_form.module < inline_entity_form-fix_undefined_indexes_in_form_alter-2165113.patch
 
   # Download CiteProc related modules and libraries.
-  - drush dl libraries
   - git clone https://github.com/gbv/citeproc-php.git sites/all/libraries/citeproc-php
   - git clone https://github.com/citation-style-language/styles.git sites/all/libraries/styles
-  - drush --yes pm-enable libraries biblio
+  - drush --yes pm-enable libraries biblio pathauto
 
   # start a web server on port 8080, run in the background; wait for initialization
   - drush runserver 127.0.0.1:8080 &
