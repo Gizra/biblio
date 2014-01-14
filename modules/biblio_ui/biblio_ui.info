@@ -16,4 +16,6 @@ files[] = includes/views/handlers/biblio_contributor_ui_handler_edit.inc
 
 ; Tests
 files[] = tests/Crud.test
+files[] = tests/PathAuto.test
+
 

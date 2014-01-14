@@ -62,5 +62,5 @@ files[] = tests/Contributor.test
 files[] = tests/EndNote.test
 files[] = tests/ImportPreventDuplicates.test
 files[] = tests/Path.test
-files[] = tests/PathAuto.test
+
 
