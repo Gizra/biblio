@@ -29,6 +29,7 @@ before_script:
   # reference and enable biblio in build site
   - ln -s $(readlink -e $(cd -)) biblio/drupal/sites/all/modules/biblio
   - cd biblio/drupal
+  - drush dl pathauto views libraries -y
   # Hack to fix Inline entity form's module strict warning.
   - drush dl inline_entity_form -y
   - curl -O https://drupal.org/files/issues/inline_entity_form-fix_undefined_indexes_in_form_alter-2165113.patch
