@@ -7,12 +7,12 @@
 /**
  * Testing pathauto integration.
  */
-class BiblioPathAutoTestCase extends DrupalWebTestCase {
+class BiblioUiPathAutoTestCase extends DrupalWebTestCase {
   public static function getInfo() {
     return array(
       'name' => 'Path auto functionality',
       'description' => 'Testing the integration between Biblio and Pathauto module.',
-      'group' => 'Biblio',
+      'group' => 'Biblio UI',
       'dependencies' => array('pathauto'),
     );
   }
