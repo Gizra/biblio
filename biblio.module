@@ -51,11 +51,11 @@ function biblio_permission() {
       'description' => t('Allows the user to edit his own biblio.'),
     ),
     'delete biblio content' => array(
-      'title' => t('Delete biblio'),
+      'title' => t('Delete Biblio'),
       'description' => t('Allows the user to delete any biblio.'),
     ),
     'delete own biblio content' => array(
-      'title' => t('Delete own biblio'),
+      'title' => t('Delete own Biblio'),
       'description' => t('Allows the user to delete his own biblio.'),
     ),
     'edit by all biblio authors' => array(
@@ -84,19 +84,19 @@ function biblio_permission() {
     ),
     // Contributor permissions.
     'create biblio contributor' => array(
-      'title' => t('Create biblio contributor'),
+      'title' => t('Create Biblio contributor'),
       'description' => t('Grant to the user the permission to create a biblio contributor via the UI.'),
     ),
     'edit biblio contributor' => array(
-      'title' => t('Edit biblio contributor'),
+      'title' => t('Edit Biblio contributor'),
       'description' => t('Grant to the user the permission to update a biblio contributor via the UI.'),
     ),
     'delete biblio contributor' => array(
-      'title' => t('Delete biblio contributor'),
+      'title' => t('Delete Biblio contributor'),
       'description' => t('Grant to the user the permission to delete a biblio contributor via the UI.'),
     ),
     'view biblio contributor' => array(
-      'title' => t('View biblio contributor'),
+      'title' => t('View Biblio contributor'),
       'description' => t('Grant to the user the permission to view a biblio contributor via the UI.'),
     ),
   );

@@ -22,7 +22,7 @@ function biblio_ui_views_data() {
     'title' => t('Edit'),
     'help' => t('Link to edit the biblio entry.'),
     'field' => array(
-    'handler' => 'biblio_ui_handler_edit',
+      'handler' => 'biblio_ui_handler_edit',
     ),
   );
 
