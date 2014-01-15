@@ -987,5 +987,6 @@ function biblio_check_biblio_migration_needed() {
     // it by the new MigrateDefaultFieldHandler class.
     return;
   }
+
   return TRUE;
 }

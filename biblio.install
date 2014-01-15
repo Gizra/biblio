@@ -287,6 +287,10 @@ function biblio_update_7300() {
   db_rename_table('biblio_contributor_data', 'biblio_contributor');
 
   $schema = biblio_schema_7300();
+
+  db_add_field('biblio_contributor', 'created', $schema['biblio_contributor']['fields']['created']);
+  db_add_field('biblio_contributor', 'changed', $schema['biblio_contributor']['fields']['changed']);
+
   unset($schema['biblio_contributor']);
   foreach ($schema as $table => $table_schema) {
     db_create_table($table, $table_schema);
