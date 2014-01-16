@@ -990,3 +990,55 @@ function biblio_check_biblio_migration_needed() {
 
   return TRUE;
 }
+
+/**
+ * Implements hook_theme().
+ */
+function biblio_theme() {
+  $info['biblio'] = array(
+    'render element' => 'elements',
+    'template' => 'biblio',
+  );
+
+  return $info;
+}
+
+/**
+ * Implements hook_biblio_view_alter().
+ */
+function biblio_biblio_view_alter(&$build) {
+  $build['#theme'] = 'biblio';
+}
+
+/**
+ * Process variables for biblio.tpl.php.
+ */
+function template_preprocess_biblio(&$variables) {
+  $biblio = $variables['elements']['#entity'];
+
+  $variables['view_mode'] = $variables['elements']['#view_mode'];
+  $variables['biblio'] = $biblio;
+
+  // Helpful $content variable for templates.
+  $variables['content'] = array();
+  foreach (element_children($variables['elements']) as $key) {
+    $variables['content'][$key] = $variables['elements'][$key];
+  }
+
+  // Make the field variables available with the appropriate language.
+  field_attach_preprocess('biblio', $biblio, $variables['content'], $variables);
+  list(, , $bundle) = entity_extract_ids('biblio', $biblio);
+
+  // Gather CSS classes.
+  $variables['classes_array'][] = drupal_html_class('entity-biblio');
+  $variables['classes_array'][] = drupal_html_class('biblio-' . $bundle);
+
+  // Add suggestions.
+  $variables['theme_hook_suggestions'][] = 'biblio';
+  $variables['theme_hook_suggestions'][] = 'biblio__' . $bundle;
+  $variables['theme_hook_suggestions'][] = 'biblio__' . $bundle . '__' . $variables['view_mode'];
+
+  if ($id = entity_id('biblio', $biblio)) {
+    $variables['theme_hook_suggestions'][] = 'biblio__' . $id;
+  }
+}
