@@ -30,6 +30,8 @@ class Biblio extends Entity {
       );
     }
 
+    $content['#theme'] = 'biblio';
+
     // Calling parent::buildContent() won't work, since we need to send the
     // content as well.
     return entity_get_controller($this->entityType)->buildContent($this, $view_mode, $langcode, $content);
