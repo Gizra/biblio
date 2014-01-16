@@ -8,6 +8,14 @@ class BiblioMigrateContributorCollections extends Migration {
   public function __construct($arguments = array()) {
     $this->description = t('Migrate biblio 1.x contributors into field collections.');
 
+    $entity_info = entity_get_info('biblio');
+    $machine_names = array();
+    foreach (array_keys($entity_info['bundles']) as $bundle_name) {
+      $machine_names[] = 'BiblioMigrateEntries_' . $bundle_name;
+    }
+
+    $this->dependencies = $machine_names;
+
     // Fetch the used contributor types.
     $this->query = db_select('_biblio_contributor_1x', 'c');
     $this->query->innerJoin('_biblio_contributor_type_data_1x', 'ctd', 'c.auth_type = ctd.auth_type');
@@ -36,7 +44,10 @@ class BiblioMigrateContributorCollections extends Migration {
     $this->source = new MigrateSourceSQL($this->query);
     $this->destination = new BiblioMigrateDestinationFieldCollection('contributor_field_collection', array('host_entity_type' => 'biblio'));
 
-    $this->addFieldMapping('host_entity_id', 'nid')->sourceMigration('BiblioMigrateEntries');
+    $this
+      ->addFieldMapping('host_entity_id', 'nid')
+      ->sourceMigration($machine_names);
+
     $this->addFieldMapping('biblio_contributor', 'cid');
     $this->addFieldMapping('biblio_contributor_role', 'role');
 
@@ -45,7 +56,7 @@ class BiblioMigrateContributorCollections extends Migration {
 
   public function prepare($entity, $row) {
     // Replace the role name with its term ID.
-    $name = $entity->biblio_contributor_role[LANGUAGE_NONE][0]['target_id'];
+    $name = $row->role;
     if ($term = taxonomy_get_term_by_name($name, 'biblio_roles')) {
       $term = reset($term);
     }
