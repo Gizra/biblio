@@ -406,11 +406,12 @@ function theme_biblio_ui_add_biblio_list($variables) {
  * Viewing a biblio entity entry.
  */
 function biblio_ui_view_biblio(Biblio $biblio) {
-  $info = $biblio->view('full');
+  $info = $biblio->view();
 
   $info += array(
     '#theme' => 'biblio',
     '#entity' => $biblio,
+    '#view_mode' => 'full',
   );
 
   $info['#contextual_links']['biblio'] = array('biblio', array($biblio->identifier()));
