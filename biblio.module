@@ -1004,13 +1004,6 @@ function biblio_theme() {
 }
 
 /**
- * Implements hook_biblio_view_alter().
- */
-function biblio_biblio_view_alter(&$build) {
-  $build['#theme'] = 'biblio';
-}
-
-/**
  * Process variables for biblio.tpl.php.
  */
 function template_preprocess_biblio(&$variables) {

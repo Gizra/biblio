@@ -411,7 +411,7 @@ function theme_biblio_ui_add_biblio_list($variables) {
  *  The view mode. Default to full.
  *
  * @return
- *  The biblio object.
+ *  The rendered biblio object.
  */
 function biblio_ui_view_biblio(Biblio $biblio, $view_mode = 'full') {
   $info = $biblio->view();
