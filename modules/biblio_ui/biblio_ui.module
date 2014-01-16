@@ -406,7 +406,7 @@ function theme_biblio_ui_add_biblio_list($variables) {
  * Viewing a biblio entity entry.
  */
 function biblio_ui_view_biblio(Biblio $biblio) {
-  $info = $biblio->view();
+  $info = $biblio->view('full');
 
   $info += array(
     '#theme' => 'biblio',
