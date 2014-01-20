@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/amitaibu/biblio.png?branch=7.x-3.x)](https://travis-ci.org/amitaibu/biblio)
+[![Build Status](https://travis-ci.org/Gizra/biblio.png?branch=7.x-3.x)](https://travis-ci.org/Gizra/biblio)
 
 # Biblio
 
@@ -75,4 +75,6 @@ Styles can now be rendered using CiteProc, for example:
 For more useful examples, we recommend enabling the module ``biblio_example``.
 
 
-Developed by [Gizra](http://gizra.com)
+### Credits
+
+The 3.x version is developed by [Gizra](http://gizra.com) and sponsored by [Harvard OpenScholar](http://openscholar.harvard.edu/)
