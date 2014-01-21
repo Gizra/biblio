@@ -4,7 +4,27 @@
 
 Biblio is used for importing and rendering bibliographies.
 
-### Render Biblio API
+## Installation
+
+* Download https://github.com/gbv/citeproc-php and place it under ``sites/all/libraries/citeproc-php``
+* Optional but recommended - Download https://github.com/citation-style-language/styles and place it under ``sites/all/libraries/styles``
+* Enable [libraries](https://drupal.org/project/libraries) module
+* In ``admin/structure/biblio/attach-fields`` select all the Biblio types and click ``Attach fields to selected types`` 
+
+## Upgrade from 1.x
+
+* Backup your existing DB!
+* Download [Migrate](https://drupal.org/node/2029049) (version 2.6-rc1 or higher), and enable Migrate UI
+* Download and enable [Migrate extras](https://drupal.org/project/migrate_extras)
+* Replace the old ``biblio`` folder with the 3.x version
+* Execute ``update.php``
+* Follow the steps from the above "Installation" section
+* In ``admin/content/migrate/configure`` click on ``Register statically-defined classes``
+* In ``admin/content/migrate`` Select ``Biblio 3.x`` and ``Execute``
+
+Congrats, your Biblio installation is now upgraded to 3.x
+
+## Render Biblio API
 
 ```php
 // Loading the biblio.
@@ -19,7 +39,7 @@ $biblio_style = 'bibtex';
 $biblio->getText($biblio_style);
 ```
 
-### Import Biblio API
+## Import Biblio API
 
 ```php
 // The data you wish to import.
@@ -41,7 +61,7 @@ $biblio_style = biblio_get_class_from_style('bibtex')
 $biblios = $biblio_style->import($data);
 ```
 
-### Adding Contributors
+## Adding Contributors
 
 Contributors can be added using the ``Biblio::addContributors`` helper method.
 
@@ -58,10 +78,6 @@ $biblio->addContributors('John Smith', 'Editor');
 
 ### CiteProc
 
-* Download https://github.com/gbv/citeproc-php and place it under ``sites/all/libraries/citeproc-php``
-* Optional but recommended - Download https://github.com/citation-style-language/styles and place it under ``sites/all/libraries/styles``
-* Enable [libraries](https://drupal.org/project/libraries) module
-
 Styles can now be rendered using CiteProc, for example:
 
 ```php
@@ -70,11 +86,11 @@ Styles can now be rendered using CiteProc, for example:
   $biblio->getText('citeproc');
 ```
 
-### Example module
+## Example module
 
 For more useful examples, we recommend enabling the module ``biblio_example``.
 
 
-### Credits
+## Credits
 
 The 3.x version is developed by [Gizra](http://gizra.com) and sponsored by [Harvard OpenScholar](http://openscholar.harvard.edu/)
