@@ -260,7 +260,6 @@ class BiblioStyleEndNoteXML8 extends BiblioStyleEndNote implements BiblioStyleIm
    * @inheritdoc
    */
   public function render($options = array(), $langcode = NULL) {
-
   }
 
   /**
