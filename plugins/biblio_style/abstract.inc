@@ -70,6 +70,8 @@ abstract class BiblioStyleBase implements BiblioStyleInterface {
 
   /**
    * The Biblio entity.
+   *
+   * @return Biblio
    */
   protected $biblio;
 
