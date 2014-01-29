@@ -340,8 +340,11 @@ function biblio_entity_info() {
  * Implements hook_field_extra_fields().
  */
 function biblio_field_extra_fields() {
-  $return = array();
   $info = entity_get_info('biblio');
+  if (empty($info['bundles'])) {
+    return array();
+  }
+  $return = array();
   foreach (array_keys($info['bundles']) as $bundle) {
     $return['biblio'][$bundle] = array(
       'display' => array(
