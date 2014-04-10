@@ -3,12 +3,10 @@ description = Maintains bibliographic lists.
 core = 7.x
 
 dependencies[] = biblio
+dependencies[] = biblio_ui
 dependencies[] = field_collection
 dependencies[] = libraries
 
-; Devel generate is used in order to create content.
-dependencies[] = devel
-dependencies[] = devel_generate
 package = Biblio
 
 
