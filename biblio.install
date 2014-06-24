@@ -15,7 +15,13 @@ function biblio_install() {
  * Implements hook_enable().
  */
 function biblio_enable() {
-  biblio_add_publication_types();
+  $types = array(
+    'book',
+    'journal',
+    'presentation',
+  );
+  biblio_add_publication_types($types);
+  biblio_create_fields_by_bundle($types);
 }
 
 /**
