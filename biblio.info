@@ -32,7 +32,7 @@ files[] = views/biblio_handler_sort_contributor_lastname.inc
 files[] = views/biblio_handler_argument_many_to_one.inc
 files[] = views/biblio_handler_field_export_link.inc
 ; Information added by drupal.org packaging script on 2013-05-31
-version = "7.x-1.0-rc5+37-dev"
+version = "7.x-1.0-rc7"
 core = "7.x"
 project = "biblio"
 datestamp = "1370023530"

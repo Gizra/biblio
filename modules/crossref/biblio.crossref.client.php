@@ -55,7 +55,7 @@ class BiblioCrossRefClient
   public function fetch() {
     $this->query = $this->url . '?pid=' . $this->pid . '&noredirect=true&format=unixref&id=doi%3A' . $this->doi;
 
-    $request_options = array('method' => 'POST');
+    $request_options = array('method' => 'GET');
     $result = drupal_http_request($this->query, $request_options);
 
     if ($result->code != 200) {

@@ -344,7 +344,7 @@ function _install_csl($name = NULL, $csl = NULL, $sha = NULL, $all = FALSE, $upd
     }
   }
   else {
-    drupal_set_message(t('I could not parse the CSL provided as valid XML', 'error'));
+    drupal_set_message(t('I could not parse the CSL provided as valid XML'), 'error');
   }
 }
 
@@ -352,6 +352,10 @@ function _get_zip_from_github() {
   $zip_url = 'https://github.com/citation-style-language/styles/zipball/master';
   $destination = file_build_uri('Biblio-CiteProc-Styles.zip');
   $zip_file = system_retrieve_file($zip_url, $destination, TRUE, FILE_EXISTS_REPLACE);
+  if ($zip_file === FALSE){
+    drupal_set_message(t('Failed to fetch zipfile at @zipfile',array('@zipfile' => $zip_url)), 'error');
+    return;
+  }
   $usage = file_usage_list($zip_file);
   if (empty($usage)) {
     file_usage_add($zip_file, 'biblio_citeproc', 'csl', 0);
