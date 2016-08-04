@@ -63,6 +63,11 @@ class Biblio extends Entity {
       $this->cache_id = '';
     }
 
+    if (!$wrapper->biblio_status->value() && $wrapper->biblio_year->value()) {
+      // If Year is populated and Status is not, the status should be Published.
+      $wrapper->biblio_status->set('published');
+    }
+
     parent::save();
   }
 
